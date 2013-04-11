@@ -38,23 +38,14 @@
 // being local to the target being generated, and thus not subject to (e.g.) ELF
 // symbol interposition rules.
 
-#if !PLATFORM(CHROMIUM) && OS(WINDOWS)
-#define HAVE_INTERNAL_VISIBILITY 1
-#define WTF_INTERNAL
-#elif defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
+#if defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
 #define HAVE_INTERNAL_VISIBILITY 1
 #define WTF_INTERNAL __attribute__((visibility("hidden")))
 #else
 #define WTF_INTERNAL
 #endif
 
-#if !PLATFORM(CHROMIUM) && OS(WINDOWS)
-
-#define WTF_EXPORT_DECLARATION __declspec(dllexport)
-#define WTF_IMPORT_DECLARATION __declspec(dllimport)
-#define WTF_HIDDEN_DECLARATION
-
-#elif defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
+#if defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
 
 #define WTF_EXPORT_DECLARATION __attribute__((visibility("default")))
 #define WTF_IMPORT_DECLARATION WTF_EXPORT_DECLARATION
@@ -89,15 +80,7 @@
 
 #else // !USE(EXPORT_MACROS)
 
-#if !PLATFORM(CHROMIUM) && OS(WINDOWS) && !COMPILER(GCC)
-#if defined(BUILDING_WTF) || defined(STATICALLY_LINKED_WITH_WTF)
-#define WTF_EXPORTDATA __declspec(dllexport)
-#else
-#define WTF_EXPORTDATA __declspec(dllimport)
-#endif
-#else // PLATFORM(CHROMIUM) || !OS(WINDOWS) || COMPILER(GCC)
 #define WTF_EXPORTDATA
-#endif // !PLATFORM(CHROMIUM)...
 
 #define WTF_EXPORTCLASS WTF_EXPORTDATA
 
@@ -134,11 +117,7 @@
 #define WTF_EXPORT_PRIVATE_RTTI
 #define WTF_EXPORT_PRIVATE_NO_RTTI WTF_EXPORT_PRIVATE
 
-#if PLATFORM(WIN)
-#define WTF_EXPORT_STRING_API
-#else
 #define WTF_EXPORT_STRING_API WTF_EXPORT_PRIVATE
-#endif
 
 #define WTF_EXPORT_HIDDEN WTF_HIDDEN
 

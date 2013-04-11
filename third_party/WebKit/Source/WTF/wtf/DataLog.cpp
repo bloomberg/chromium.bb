@@ -66,11 +66,7 @@ static void initializeLogFileOnce()
 #endif
     char actualFilename[1024];
 
-#if PLATFORM(WIN)
-    _snprintf(actualFilename, sizeof(actualFilename), "%s.%d.txt", filename, GetCurrentProcessId());
-#else
     snprintf(actualFilename, sizeof(actualFilename), "%s.%d.txt", filename, getpid());
-#endif
 
     if (filename) {
         file = FilePrintStream::open(actualFilename, "w").leakPtr();

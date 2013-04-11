@@ -61,29 +61,12 @@ inline bool isUIThread() { return isMainThread(); }
 
 void initializeGCThreads();
 
-#if ENABLE(PARALLEL_GC)
-void registerGCThread();
-WTF_EXPORT_PRIVATE bool isMainThreadOrGCThread();
-#elif PLATFORM(MAC)
-WTF_EXPORT_PRIVATE bool isMainThreadOrGCThread();
-#else
 inline bool isMainThreadOrGCThread() { return isMainThread(); }
-#endif
 
 // NOTE: these functions are internal to the callOnMainThread implementation.
 void initializeMainThreadPlatform();
 void scheduleDispatchFunctionsOnMainThread();
 void dispatchFunctionsFromMainThread();
-
-#if PLATFORM(MAC)
-#if !USE(WEB_THREAD)
-// This version of initializeMainThread sets up the main thread as corresponding
-// to the process's main thread, and not necessarily the thread that calls this
-// function. It should only be used as a legacy aid for Mac WebKit.
-WTF_EXPORT_PRIVATE void initializeMainThreadToProcessMainThread();
-#endif // !USE(WEB_THREAD)
-void initializeMainThreadToProcessMainThreadPlatform();
-#endif
 
 } // namespace WTF
 
