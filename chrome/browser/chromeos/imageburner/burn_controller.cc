@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
+#include "chromeos/network/network_state_handler.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
@@ -126,7 +127,7 @@ class BurnControllerImpl
                               const base::FilePath& target_file_path) OVERRIDE {
     if (!target_device_path.empty() && !target_file_path.empty() &&
         state_machine_->new_burn_posible()) {
-      if (!burn_manager_->IsNetworkConnected()) {
+      if (!NetworkStateHandler::Get()->DefaultNetwork()) {
         delegate_->OnNoNetwork();
         return;
       }
