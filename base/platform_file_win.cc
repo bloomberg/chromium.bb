@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
@@ -117,6 +118,8 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
           *error = PLATFORM_FILE_ERROR_NO_SPACE;
           break;
         default:
+          UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownCreateFileErrors",
+                                      last_error);
           *error = PLATFORM_FILE_ERROR_FAILED;
       }
     }
