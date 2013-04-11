@@ -653,6 +653,7 @@ void DesktopRootWindowHostWin::HandleCancelMode() {
 }
 
 void DesktopRootWindowHostWin::HandleCaptureLost() {
+  root_window_host_delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
