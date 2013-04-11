@@ -87,7 +87,6 @@ const char kDisablePinchZoomScrollbars[]    = "disable-pinch-zoom-scrollbars";
 const char kCompositeToMailbox[] = "composite-to-mailbox";
 
 const char kEnablePartialSwap[] = "enable-partial-swap";
-const char kUIEnablePartialSwap[] = "ui-enable-partial-swap";
 
 const char kEnablePerTilePainting[] = "enable-per-tile-painting";
 const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";

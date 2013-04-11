@@ -480,8 +480,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
   cc::LayerTreeSettings settings;
   settings.refresh_rate =
       g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
-  settings.partial_swap_enabled =
-      command_line->HasSwitch(cc::switches::kUIEnablePartialSwap);
+  settings.partial_swap_enabled = true;
   settings.per_tile_painting_enabled =
       command_line->HasSwitch(cc::switches::kUIEnablePerTilePainting);
 
