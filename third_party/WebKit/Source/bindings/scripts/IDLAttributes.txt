@@ -29,7 +29,6 @@ CheckSecurityForNode
 Clamp
 Conditional=*
 Constructor
-ConstructorConditional=*
 RaisesException
 ConstructorTemplate=Event|TypedArray
 Custom

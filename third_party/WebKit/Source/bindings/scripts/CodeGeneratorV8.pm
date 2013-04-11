@@ -3262,10 +3262,7 @@ END
 END
 
     if (IsConstructable($interface)) {
-        my $conditionalString = $codeGenerator->GenerateConstructorConditionalString($interface);
-        push(@implContent, "#if $conditionalString\n") if $conditionalString;
         push(@implContent, "    desc->SetCallHandler(${v8InterfaceName}::constructorCallback);\n");
-        push(@implContent, "#endif // $conditionalString\n") if $conditionalString;
     }
 
     if ($access_check or @enabledAtRuntimeAttributes or @normalFunctions or $has_constants) {
