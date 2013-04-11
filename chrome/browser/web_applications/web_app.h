@@ -17,6 +17,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class ImageFamily;
+}
+
 namespace web_app {
 
 // Gets the user data directory for given web app. The path for the directory is
@@ -90,7 +94,8 @@ std::string GetWMClassFromAppName(std::string app_name);
 namespace internals {
 
 #if defined(OS_WIN)
-bool CheckAndSaveIcon(const base::FilePath& icon_file, const SkBitmap& image);
+bool CheckAndSaveIcon(const base::FilePath& icon_file,
+                      const gfx::ImageFamily& image);
 #endif
 
 // Implemented for each platform, does the platform specific parts of creating

@@ -41,8 +41,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -60,13 +60,13 @@ class AppInfoView : public views::View {
  public:
   AppInfoView(const string16& title,
               const string16& description,
-              const SkBitmap& icon);
+              const gfx::ImageFamily& icon);
 
   // Updates the title/description of the web app.
   void UpdateText(const string16& title, const string16& description);
 
   // Updates the icon of the web app.
-  void UpdateIcon(const gfx::Image& image);
+  void UpdateIcon(const gfx::ImageFamily& image);
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -74,7 +74,7 @@ class AppInfoView : public views::View {
  private:
   // Initializes the controls
   void Init(const string16& title,
-            const string16& description, const SkBitmap& icon);
+            const string16& description, const gfx::ImageFamily& icon);
 
   // Creates or updates description label.
   void PrepareDescriptionLabel(const string16& description);
@@ -89,7 +89,7 @@ class AppInfoView : public views::View {
 
 AppInfoView::AppInfoView(const string16& title,
                          const string16& description,
-                         const SkBitmap& icon)
+                         const gfx::ImageFamily& icon)
     : icon_(NULL),
       title_(NULL),
       description_(NULL) {
@@ -98,9 +98,9 @@ AppInfoView::AppInfoView(const string16& title,
 
 void AppInfoView::Init(const string16& title_text,
                        const string16& description_text,
-                       const SkBitmap& icon) {
+                       const gfx::ImageFamily& icon) {
   icon_ = new views::ImageView();
-  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(icon));
+  UpdateIcon(icon);
   icon_->SetImageSize(gfx::Size(kIconPreviewSizePixels,
                                 kIconPreviewSizePixels));
 
@@ -169,44 +169,14 @@ void AppInfoView::UpdateText(const string16& title,
   SetupLayout();
 }
 
-void AppInfoView::UpdateIcon(const gfx::Image& image) {
-  if (image.IsEmpty())
+void AppInfoView::UpdateIcon(const gfx::ImageFamily& image) {
+  // Get the icon closest to the desired preview size.
+  const gfx::Image* icon = image.GetBest(kIconPreviewSizePixels,
+                                         kIconPreviewSizePixels);
+  if (!icon || icon->IsEmpty())
+    // The family has no icons. Leave the image blank.
     return;
-
-  // image contains a single ImageSkia with all of the icons at different sizes.
-  // Create a new ImageSkia with just a single icon at the preferred size.
-  const gfx::ImageSkia& multires_image_skia = *(image.ToImageSkia());
-  std::vector<gfx::ImageSkiaRep> image_reps = multires_image_skia.image_reps();
-  // Find the smallest icon bigger or equal to the desired size. If it cannot be
-  // found, find the biggest icon smaller than the desired size. An icon's size
-  // is measured as the minimum of its width and height.
-  const gfx::ImageSkiaRep* smallest_larger = NULL;
-  const gfx::ImageSkiaRep* largest_smaller = NULL;
-  int smallest_larger_size = 0;
-  int largest_smaller_size = 0;
-  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
-       it != image_reps.end(); ++it) {
-    const gfx::ImageSkiaRep& image = *it;
-    int image_size = std::min(image.pixel_width(), image.pixel_height());
-    if (image_size >= kIconPreviewSizePixels) {
-      if (!smallest_larger || image_size < smallest_larger_size) {
-        smallest_larger = &image;
-        smallest_larger_size = image_size;
-      }
-    } else {
-      if (!largest_smaller || image_size > largest_smaller_size) {
-        largest_smaller = &image;
-        largest_smaller_size = image_size;
-      }
-    }
-  }
-  if (!smallest_larger && !largest_smaller) {
-    // Should never happen unless the image has no representations.
-    return;
-  }
-  const SkBitmap& bitmap = smallest_larger ?
-                           smallest_larger->sk_bitmap() :
-                           largest_smaller->sk_bitmap();
+  const SkBitmap& bitmap = *icon->ToSkBitmap();
   if (bitmap.width() == kIconPreviewSizePixels &&
       bitmap.height() == kIconPreviewSizePixels) {
     icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
@@ -285,8 +255,7 @@ CreateApplicationShortcutView::~CreateApplicationShortcutView() {}
 void CreateApplicationShortcutView::InitControls() {
   // Create controls
   app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
-      shortcut_info_.favicon.IsEmpty() ? SkBitmap() :
-                                         *shortcut_info_.favicon.ToSkBitmap());
+                              shortcut_info_.favicon);
   create_shortcuts_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -472,10 +441,10 @@ bool CreateUrlApplicationShortcutView::Accept() {
   if (!CreateApplicationShortcutView::Accept())
     return false;
 
-  extensions::TabHelper::FromWebContents(web_contents_)->
-      SetAppIcon(shortcut_info_.favicon.IsEmpty()
-          ? SkBitmap()
-          : *shortcut_info_.favicon.ToSkBitmap());
+  // Get the smallest icon in the icon family (should have only 1).
+  const gfx::Image* icon = shortcut_info_.favicon.GetBest(0, 0);
+  SkBitmap bitmap = icon ? icon->AsBitmap() : SkBitmap();
+  extensions::TabHelper::FromWebContents(web_contents_)->SetAppIcon(bitmap);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)
     chrome::ConvertTabToAppWindow(browser, web_contents_);
@@ -524,7 +493,7 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
   }
 
   if (!image.isNull()) {
-    shortcut_info_.favicon = gfx::Image::CreateFrom1xBitmap(image);
+    shortcut_info_.favicon.Add(gfx::ImageSkia::CreateFrom1xBitmap(image));
     static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
   } else {
     FetchIcon();

@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 
 class CommandLine;
 
@@ -101,7 +101,7 @@ class ShellIntegration {
     string16 title;
     string16 description;
     base::FilePath extension_path;
-    gfx::Image favicon;
+    gfx::ImageFamily favicon;
     base::FilePath profile_path;
   };
 

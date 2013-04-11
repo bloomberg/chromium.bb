@@ -24,18 +24,23 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/icon_family/IconFamily.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_family.h"
 
 namespace {
 
-// Creates a NSBitmapImageRep from |bitmap|.
-NSBitmapImageRep* SkBitmapToImageRep(const SkBitmap& bitmap) {
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
-    bitmap, color_space.get());
-  return base::mac::ObjCCast<NSBitmapImageRep>(
-      [[image representations] lastObject]);
+// Get the 100% image representation for |image|.
+// This returns the representation with the same width and height as |image|
+// itself. If there is no such representation, returns nil.
+NSBitmapImageRep* NSImageGet100PRepresentation(NSImage* image) {
+  NSSize image_size = [image size];
+  for (NSBitmapImageRep* image_rep in [image representations]) {
+    NSSize image_rep_size = [image_rep size];
+    if (image_rep_size.width == image_size.width &&
+        image_rep_size.height == image_size.height) {
+      return image_rep;
+    }
+  }
+  return nil;
 }
 
 // Adds |image_rep| to |icon_family|. Returns true on success, false on failure.
@@ -220,17 +225,16 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
-  if (info_.favicon.IsEmpty())
+  if (info_.favicon.empty())
     return true;
 
   scoped_nsobject<IconFamily> icon_family([[IconFamily alloc] init]);
   bool image_added = false;
-  info_.favicon.ToImageSkia()->EnsureRepsForSupportedScaleFactors();
-  std::vector<gfx::ImageSkiaRep> image_reps =
-      info_.favicon.ToImageSkia()->image_reps();
-  for (size_t i = 0; i < image_reps.size(); ++i) {
-    NSBitmapImageRep* image_rep = SkBitmapToImageRep(
-        image_reps[i].sk_bitmap());
+  for (gfx::ImageFamily::const_iterator it = info_.favicon.begin();
+       it != info_.favicon.end(); ++it) {
+    if (it->IsEmpty())
+      continue;
+    NSBitmapImageRep* image_rep = NSImageGet100PRepresentation(it->ToNSImage());
     if (!image_rep)
       continue;
 

@@ -29,6 +29,8 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -196,8 +198,8 @@ void UpdateShortcutWorker::DidDownloadFavicon(
 
   if (!bitmaps.empty() && !bitmaps[closest_index].isNull()) {
     // Update icon with download image and update shortcut.
-    shortcut_info_.favicon =
-        gfx::Image::CreateFrom1xBitmap(bitmaps[closest_index]);
+    shortcut_info_.favicon.Add(
+        gfx::Image::CreateFrom1xBitmap(bitmaps[closest_index]));
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(web_contents_);
     extensions_tab_helper->SetAppIcon(bitmaps[closest_index]);
@@ -271,8 +273,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
 
   base::FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
-  web_app::internals::CheckAndSaveIcon(icon_file,
-                                       *shortcut_info_.favicon.ToSkBitmap());
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
 
   // Update existing shortcuts' description, icon and app id.
   CheckExistingShortcuts();
@@ -337,9 +338,23 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
     // We are on the UI thread, and this image is needed from the FILE thread,
     // for creating shortcut icon files.
     image_skia.MakeThreadSafe();
-    shortcut_info.favicon = gfx::Image(image_skia);
+    shortcut_info.favicon.Add(gfx::Image(image_skia));
   } else {
-    shortcut_info.favicon = image;
+    // As described in UpdateShortcutInfoAndIconForApp, image contains all of
+    // the icons, hackily put into a single ImageSkia. Separate them out into
+    // individual ImageSkias and insert them into the icon family.
+    const gfx::ImageSkia& multires_image_skia = image.AsImageSkia();
+    // NOTE: We do not call ImageSkia::EnsureRepsForSupportedScaleFactors here.
+    // The image reps here are not really for different scale factors (ImageSkia
+    // is just being used as a handy container for multiple images).
+    std::vector<gfx::ImageSkiaRep> image_reps =
+        multires_image_skia.image_reps();
+    for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
+         it != image_reps.end(); ++it) {
+      gfx::ImageSkia image_skia(*it);
+      image_skia.MakeThreadSafe();
+      shortcut_info.favicon.Add(image_skia);
+    }
   }
 
   callback.Run(shortcut_info);
@@ -373,7 +388,7 @@ void GetShortcutInfoForTab(WebContents* web_contents,
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon = gfx::Image(favicon_tab_helper->GetFavicon());
+  info->favicon.Add(favicon_tab_helper->GetFavicon());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -407,6 +422,13 @@ void UpdateShortcutInfoAndIconForApp(
   ShellIntegration::ShortcutInfo shortcut_info =
       ShortcutInfoForExtensionAndProfile(&extension, profile);
 
+  // We want to load each icon into a separate ImageSkia to insert into an
+  // ImageFamily, but LoadImagesAsync currently only builds a single ImageSkia.
+  // Hack around this by loading all images into the ImageSkia as 100%
+  // representations, and later (in OnImageLoaded), pulling them out and
+  // individually inserting them into an ImageFamily.
+  // TODO(mgiuca): Have ImageLoader build the ImageFamily directly
+  // (http://crbug.com/230184).
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
     int size = kDesiredSizes[i];

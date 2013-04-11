@@ -20,11 +20,18 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 
 namespace {
 
 const base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
+
+// Width and height of icons exported to .ico files.
+// TODO(mgiuca): Remove when icon_util has the capability to save all icon
+// sizes, not just a single particular size.
+const int kIconExportSize = 32;
 
 // Calculates image checksum using MD5.
 void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
@@ -173,9 +180,14 @@ namespace internals {
 // Saves |image| to |icon_file| if the file is outdated and refresh shell's
 // icon cache to ensure correct icon is displayed. Returns true if icon_file
 // is up to date or successfully updated.
-bool CheckAndSaveIcon(const base::FilePath& icon_file, const SkBitmap& image) {
-  if (ShouldUpdateIcon(icon_file, image)) {
-    if (SaveIconWithCheckSum(icon_file, image)) {
+bool CheckAndSaveIcon(const base::FilePath& icon_file,
+                      const gfx::ImageFamily& image) {
+  // TODO(mgiuca): Save an icon with all icon sizes, not just an icon at a
+  // hard-coded fixed size. http://crbug.com/163864.
+  const gfx::Image* icon = image.GetBest(kIconExportSize, kIconExportSize);
+  SkBitmap bitmap = icon ? icon->AsBitmap() : SkBitmap();
+  if (ShouldUpdateIcon(icon_file, bitmap)) {
+    if (SaveIconWithCheckSum(icon_file, bitmap)) {
       // Refresh shell's icon cache. This call is quite disruptive as user would
       // see explorer rebuilding the icon cache. It would be great that we find
       // a better way to achieve this.
@@ -236,8 +248,7 @@ bool CreatePlatformShortcuts(
   // Creates an ico file to use with shortcut.
   base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
-  if (!web_app::internals::CheckAndSaveIcon(icon_file,
-        *shortcut_info.favicon.ToSkBitmap())) {
+  if (!web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon)) {
     return false;
   }
 
@@ -319,8 +330,7 @@ void UpdatePlatformShortcuts(
   base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
   if (file_util::PathExists(icon_file)) {
-    web_app::internals::CheckAndSaveIcon(icon_file,
-        *shortcut_info.favicon.ToSkBitmap());
+    web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
   }
 }
 

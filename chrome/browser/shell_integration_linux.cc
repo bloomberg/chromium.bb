@@ -21,6 +21,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -35,9 +37,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/image/image_family.h"
 
 using content::BrowserThread;
 
@@ -75,7 +75,7 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
 std::string CreateShortcutIcon(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const base::FilePath& shortcut_filename) {
-  if (shortcut_info.favicon.IsEmpty())
+  if (shortcut_info.favicon.empty())
     return std::string();
 
   // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
@@ -87,22 +87,20 @@ std::string CreateShortcutIcon(
       shortcut_filename.ReplaceExtension("png"));
   std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
 
-  std::vector<gfx::ImageSkiaRep> image_reps =
-      shortcut_info.favicon.ToImageSkia()->image_reps();
-  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
-       it != image_reps.end(); ++it) {
-    std::vector<unsigned char> png_data;
-    const SkBitmap& bitmap = it->sk_bitmap();
-    if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data)) {
+  for (gfx::ImageFamily::const_iterator it = shortcut_info.favicon.begin();
+       it != shortcut_info.favicon.end(); ++it) {
+    int width = it->Width();
+    scoped_refptr<base::RefCountedMemory> png_data = it->As1xPNGBytes();
+    if (png_data->size() == 0) {
       // If the bitmap could not be encoded to PNG format, skip it.
       LOG(WARNING) << "Could not encode icon " << icon_name << ".png at size "
-                   << bitmap.width() << ".";
+                   << width << ".";
       continue;
     }
     int bytes_written = file_util::WriteFile(temp_file_path,
-        reinterpret_cast<char*>(png_data.data()), png_data.size());
+        reinterpret_cast<const char*>(png_data->front()), png_data->size());
 
-    if (bytes_written != static_cast<int>(png_data.size()))
+    if (bytes_written != static_cast<int>(png_data->size()))
       return std::string();
 
     std::vector<std::string> argv;
@@ -115,14 +113,14 @@ std::string CreateShortcutIcon(
     argv.push_back("user");
 
     argv.push_back("--size");
-    argv.push_back(base::IntToString(bitmap.width()));
+    argv.push_back(base::IntToString(width));
 
     argv.push_back(temp_file_path.value());
     argv.push_back(icon_name);
     int exit_code;
     if (!LaunchXdgUtility(argv, &exit_code) || exit_code) {
       LOG(WARNING) << "Could not install icon " << icon_name << ".png at size "
-                   << bitmap.width() << ".";
+                   << width << ".";
     }
   }
   return icon_name;

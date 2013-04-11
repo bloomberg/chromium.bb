@@ -31,7 +31,7 @@ class Extension;
 }
 
 namespace gfx {
-class Image;
+class ImageFamily;
 }
 
 class CreateApplicationShortcutsDialogGtk
@@ -51,7 +51,7 @@ class CreateApplicationShortcutsDialogGtk
                        OnToggleCheckbox);
 
   virtual void CreateDialogBox(GtkWindow* parent);
-  virtual void CreateIconPixBuf(const gfx::Image& image);
+  virtual void CreateIconPixBuf(const gfx::ImageFamily& image);
 
   // This method is called after a shortcut is created.
   // Subclasses can override it to take some action at that time.

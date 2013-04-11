@@ -32,8 +32,9 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -82,37 +83,13 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 }
 
 void CreateApplicationShortcutsDialogGtk::CreateIconPixBuf(
-    const gfx::Image& image) {
-  const gfx::ImageSkia& image_skia = *(image.ToImageSkia());
-  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
-  // Find the smallest icon bigger or equal to the desired size. If it cannot be
-  // found, find the biggest icon smaller than the desired size.
-  const gfx::ImageSkiaRep* smallest_larger = NULL;
-  const gfx::ImageSkiaRep* largest_smaller = NULL;
-  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
-       it != image_reps.end(); ++it) {
-    if (it->pixel_width() >= kIconPreviewSizePixels) {
-      if (!smallest_larger ||
-          it->pixel_width() < smallest_larger->pixel_width()) {
-        smallest_larger = &*it;
-      }
-    } else {
-      if (!largest_smaller ||
-          it->pixel_width() > largest_smaller->pixel_width()) {
-        largest_smaller = &*it;
-      }
-    }
-  }
-  GdkPixbuf* pixbuf;
-  if (smallest_larger) {
-    pixbuf = gfx::GdkPixbufFromSkBitmap(smallest_larger->sk_bitmap());
-  } else if (largest_smaller) {
-    pixbuf = gfx::GdkPixbufFromSkBitmap(largest_smaller->sk_bitmap());
-  } else {
-    // Should never happen unless the image has no representations. Call
-    // ToGdkPixbuf which will presumably return a null image representation.
-    pixbuf = static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
-  }
+    const gfx::ImageFamily& image) {
+  // Get the icon closest to the desired preview size.
+  const gfx::Image* icon = image.GetBest(kIconPreviewSizePixels,
+                                         kIconPreviewSizePixels);
+  // There must be at least one icon in the image family.
+  CHECK(icon);
+  GdkPixbuf* pixbuf = icon->CopyGdkPixbuf();
   // Prepare the icon. Scale it to the correct size to display in the dialog.
   int pixbuf_width = gdk_pixbuf_get_width(pixbuf);
   int pixbuf_height = gdk_pixbuf_get_height(pixbuf);

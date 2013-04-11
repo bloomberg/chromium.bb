@@ -105,8 +105,7 @@ void CreateIconAndSetRelaunchDetails(
     return;
   }
   ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file,
-                                       *shortcut_info.favicon.ToSkBitmap());
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
 }
 #endif
 
