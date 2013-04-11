@@ -10,7 +10,7 @@
 namespace switches {
 
 #if defined(OS_ANDROID)
-extern const char kUseExternalVideoSurface[];
+extern const char kUseExternalVideoSurfaceThresholdInPixels[];
 #endif
 
 }  // namespace switches

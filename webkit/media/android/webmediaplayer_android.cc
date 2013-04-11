@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/video_frame.h"
@@ -52,12 +53,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseExternalVideoSurface)) {
-    needs_external_surface_ = true;
-    SetNeedsEstablishPeer(false);
-    ReallocateVideoFrame();
-  } else if (stream_texture_factory_.get()) {
+  if (stream_texture_factory_.get()) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
     stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
     ReallocateVideoFrame();
@@ -388,6 +384,23 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   has_size_info_ = true;
   if (natural_size_.width == width && natural_size_.height == height)
     return;
+
+  static bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseExternalVideoSurfaceThresholdInPixels);
+  static int threshold = 0;
+  static bool parsed_arg =
+      has_switch &&
+      base::StringToInt(
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kUseExternalVideoSurfaceThresholdInPixels),
+          &threshold);
+
+  if (parsed_arg && threshold <= width * height) {
+    needs_external_surface_ = true;
+    SetNeedsEstablishPeer(false);
+    if (!paused())
+      RequestExternalSurface();
+  }
 
   natural_size_.width = width;
   natural_size_.height = height;

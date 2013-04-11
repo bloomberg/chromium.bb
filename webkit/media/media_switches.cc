@@ -7,9 +7,12 @@
 namespace switches {
 
 #if defined(OS_ANDROID)
-// Always use external video surface. Normally, external video surfaces are used
-// sparingly.
-const char kUseExternalVideoSurface[] = "use-external-video-surface";
+// Use external video surface for video with more than or equal pixels to
+// specified value. For example, value of 0 will enable external video surface
+// for all videos, and value of 921600 (=1280*720) will enable external video
+// surface for 720p video and larger.
+const char kUseExternalVideoSurfaceThresholdInPixels[] =
+    "use-external-video-surface-threshold-in-pixels";
 #endif
 
 }  // namespace switches
