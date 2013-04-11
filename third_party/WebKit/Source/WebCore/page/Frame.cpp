@@ -556,7 +556,7 @@ void Frame::injectUserScripts(UserScriptInjectionTime injectionTime)
     if (!m_page)
         return;
 
-    if (loader()->stateMachine()->creatingInitialEmptyDocument() && !settings()->shouldInjectUserScriptsInInitialEmptyDocument())
+    if (loader()->stateMachine()->creatingInitialEmptyDocument())
         return;
 
     // Walk the hashtable. Inject by world.
