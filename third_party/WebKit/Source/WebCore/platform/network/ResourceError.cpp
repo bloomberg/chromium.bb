@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -31,10 +31,8 @@ namespace WebCore {
 
 const char* const errorDomainWebKitInternal = "WebKitInternal";
 
-ResourceError ResourceErrorBase::copy() const
+ResourceError ResourceError::copy() const
 {
-    lazyInit();
-
     ResourceError errorCopy;
     errorCopy.m_domain = m_domain.isolatedCopy();
     errorCopy.m_errorCode = m_errorCode;
@@ -43,16 +41,10 @@ ResourceError ResourceErrorBase::copy() const
     errorCopy.m_isNull = m_isNull;
     errorCopy.m_isCancellation = m_isCancellation;
     errorCopy.m_isTimeout = m_isTimeout;
-    platformCopy(errorCopy);
     return errorCopy;
 }
 
-void ResourceErrorBase::lazyInit() const
-{
-    const_cast<ResourceError*>(static_cast<const ResourceError*>(this))->platformLazyInit();
-}
-
-bool ResourceErrorBase::compare(const ResourceError& a, const ResourceError& b)
+bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
 {
     if (a.isNull() && b.isNull())
         return true;
@@ -78,7 +70,7 @@ bool ResourceErrorBase::compare(const ResourceError& a, const ResourceError& b)
     if (a.isTimeout() != b.isTimeout())
         return false;
 
-    return platformCompare(a, b);
+    return true;
 }
 
 } // namespace WebCore

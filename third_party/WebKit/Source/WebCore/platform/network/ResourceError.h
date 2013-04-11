@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,42 +21,21 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceErrorBase_h
-#define ResourceErrorBase_h
+#ifndef ResourceError_h
+#define ResourceError_h
 
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
-class ResourceError;
-
 extern const char* const errorDomainWebKitInternal; // Used for errors that won't be exposed to clients.
 
-class ResourceErrorBase {
+class ResourceError {
 public:
-    // Makes a deep copy. Useful for when you need to use a ResourceError on another thread.
-    ResourceError copy() const;
-
-    bool isNull() const { return m_isNull; }
-
-    const String& domain() const { lazyInit(); return m_domain; }
-    int errorCode() const { lazyInit(); return m_errorCode; }
-    const String& failingURL() const { lazyInit(); return m_failingURL; }
-    const String& localizedDescription() const { lazyInit(); return m_localizedDescription; }
-
-    void setIsCancellation(bool isCancellation) { m_isCancellation = isCancellation; }
-    bool isCancellation() const { return m_isCancellation; }
-
-    void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
-    bool isTimeout() const { return m_isTimeout; }
-
-    static bool compare(const ResourceError&, const ResourceError&);
-
-protected:
-    ResourceErrorBase()
+    ResourceError()
         : m_errorCode(0)
         , m_isNull(true)
         , m_isCancellation(false)
@@ -63,7 +43,7 @@ protected:
     {
     }
 
-    ResourceErrorBase(const String& domain, int errorCode, const String& failingURL, const String& localizedDescription)
+    ResourceError(const String& domain, int errorCode, const String& failingURL, const String& localizedDescription)
         : m_domain(domain)
         , m_errorCode(errorCode)
         , m_failingURL(failingURL)
@@ -74,17 +54,25 @@ protected:
     {
     }
 
-    void lazyInit() const;
+    // Makes a deep copy. Useful for when you need to use a ResourceError on another thread.
+    ResourceError copy() const;
 
-    // The ResourceError subclass may "shadow" this method to lazily initialize platform specific fields
-    void platformLazyInit() {}
+    bool isNull() const { return m_isNull; }
 
-    // The ResourceError subclass may "shadow" this method to copy platform specific fields
-    void platformCopy(ResourceError&) const {}
+    const String& domain() const { return m_domain; }
+    int errorCode() const { return m_errorCode; }
+    const String& failingURL() const { return m_failingURL; }
+    const String& localizedDescription() const { return m_localizedDescription; }
 
-    // The ResourceError subclass may "shadow" this method to compare platform specific fields
-    static bool platformCompare(const ResourceError&, const ResourceError&) { return true; }
+    void setIsCancellation(bool isCancellation) { m_isCancellation = isCancellation; }
+    bool isCancellation() const { return m_isCancellation; }
 
+    void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
+    bool isTimeout() const { return m_isTimeout; }
+
+    static bool compare(const ResourceError&, const ResourceError&);
+
+private:
     String m_domain;
     int m_errorCode;
     String m_failingURL;
@@ -94,9 +82,9 @@ protected:
     bool m_isTimeout;
 };
 
-inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceErrorBase::compare(a, b); }
+inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }
 inline bool operator!=(const ResourceError& a, const ResourceError& b) { return !(a == b); }
 
 } // namespace WebCore
 
-#endif // ResourceErrorBase_h
+#endif // ResourceError_h
