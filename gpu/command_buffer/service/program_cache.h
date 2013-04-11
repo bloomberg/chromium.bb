@@ -60,7 +60,8 @@ class GPU_EXPORT ProgramCache {
       GLuint program,
       Shader* shader_a,
       Shader* shader_b,
-      const LocationMap* bind_attrib_location_map) const = 0;
+      const LocationMap* bind_attrib_location_map,
+      const ShaderCacheCallback& shader_callback) const = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
   // call LinkedProgramCacheSuccess.

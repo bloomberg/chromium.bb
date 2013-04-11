@@ -237,7 +237,9 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 
   // apparently the hash_map implementation on android doesn't have the
   // equality operator
@@ -280,7 +282,9 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 
   // apparently the hash_map implementation on android doesn't have the
   // equality operator
@@ -312,7 +316,9 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnLinkFalse) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 }
 
 TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
@@ -338,7 +344,9 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 
   vertex_shader_->UpdateSource(vertex_orig_source.c_str());
   vertex_shader_->FlagSourceAsCompiled(true);
@@ -348,7 +356,9 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentSource) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 }
 
 TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentMap) {
@@ -376,12 +386,16 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentMap) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      &binding_map));
+      &binding_map,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 }
 
 TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
@@ -486,7 +500,9 @@ TEST_F(MemoryProgramCacheTest, LoadCorrectProgram) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 }
 
 TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
@@ -520,7 +536,9 @@ TEST_F(MemoryProgramCacheTest, OverwriteOnNewSave) {
       kProgramId,
       vertex_shader_,
       fragment_shader_,
-      NULL));
+      NULL,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
 }
 
 }  // namespace gles2

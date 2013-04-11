@@ -30,7 +30,8 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       GLuint program,
       Shader* shader_a,
       Shader* shader_b,
-      const LocationMap* bind_attrib_location_map) const OVERRIDE;
+      const LocationMap* bind_attrib_location_map,
+      const ShaderCacheCallback& shader_callback) const OVERRIDE;
   virtual void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,

@@ -1267,7 +1267,8 @@ class ProgramManagerWithCacheTest : public testing::Test {
                 LoadLinkedProgram(service_program_id,
                                   vertex_shader,
                                   fragment_shader,
-                                  &program->bind_attrib_location_map()))
+                                  &program->bind_attrib_location_map(),
+                                  _))
         .WillOnce(Return(result));
   }
 

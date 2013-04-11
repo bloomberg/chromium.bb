@@ -68,6 +68,24 @@ void RetrieveShaderInfo(const ShaderInfoProto& proto,
   (*map)[proto.key()] = info;
 }
 
+void FillShaderProto(ShaderProto* proto, const char* sha,
+                     const Shader* shader) {
+  proto->set_sha(sha, gpu::gles2::ProgramCache::kHashLength);
+  StoreShaderInfo(ATTRIB_MAP, proto, shader->attrib_map());
+  StoreShaderInfo(UNIFORM_MAP, proto, shader->uniform_map());
+}
+
+void RunShaderCallback(const ShaderCacheCallback& callback,
+                       GpuProgramProto* proto,
+                       std::string sha_string) {
+  std::string shader;
+  proto->SerializeToString(&shader);
+
+  std::string key;
+  base::Base64Encode(sha_string, &key);
+  callback.Run(key, shader);
+}
+
 }  // namespace
 
 MemoryProgramCache::MemoryProgramCache()
@@ -90,7 +108,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     GLuint program,
     Shader* shader_a,
     Shader* shader_b,
-    const LocationMap* bind_attrib_location_map) const {
+    const LocationMap* bind_attrib_location_map,
+    const ShaderCacheCallback& shader_callback) const {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
   ComputeShaderHash(*shader_a->deferred_compilation_source(), a_sha);
@@ -121,6 +140,20 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_a->set_uniform_map(value->uniform_map_0);
   shader_b->set_attrib_map(value->attrib_map_1);
   shader_b->set_uniform_map(value->uniform_map_1);
+
+  if (!shader_callback.is_null() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuShaderDiskCache)) {
+    GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+    proto->set_sha(sha, kHashLength);
+    proto->set_format(value->format);
+    proto->set_program(value->data.get(), value->length);
+
+    FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
+    FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
+    RunShaderCallback(shader_callback, proto, sha_string);
+  }
+
   return PROGRAM_LOAD_SUCCESS;
 }
 
@@ -181,28 +214,14 @@ void MemoryProgramCache::SaveLinkedProgram(
   if (!shader_callback.is_null() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuShaderDiskCache)) {
-    std::string key;
-    base::Base64Encode(sha_string, &key);
-
     GpuProgramProto* proto = GpuProgramProto::default_instance().New();
     proto->set_sha(sha, kHashLength);
     proto->set_format(format);
     proto->set_program(binary.get(), length);
 
-    ShaderProto* vertex_shader = proto->mutable_vertex_shader();
-    vertex_shader->set_sha(a_sha, kHashLength);
-    StoreShaderInfo(ATTRIB_MAP, vertex_shader, shader_a->attrib_map());
-    StoreShaderInfo(UNIFORM_MAP, vertex_shader, shader_a->uniform_map());
-
-    ShaderProto* fragment_shader = proto->mutable_fragment_shader();
-    fragment_shader->set_sha(b_sha, kHashLength);
-    StoreShaderInfo(ATTRIB_MAP, fragment_shader, shader_b->attrib_map());
-    StoreShaderInfo(UNIFORM_MAP, fragment_shader, shader_b->uniform_map());
-
-    std::string shader;
-    proto->SerializeToString(&shader);
-
-    shader_callback.Run(key, shader);
+    FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
+    FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
+    RunShaderCallback(shader_callback, proto, sha_string);
   }
 
   store_[sha_string] = new ProgramCacheValue(length,

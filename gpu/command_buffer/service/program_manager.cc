@@ -561,7 +561,8 @@ bool Program::Link(ShaderManager* manager,
                   service_id(),
                   attached_shaders_[0],
                   attached_shaders_[1],
-                  &bind_attrib_location_map_);
+                  &bind_attrib_location_map_,
+                  shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
       UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
     }

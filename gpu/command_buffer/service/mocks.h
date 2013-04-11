@@ -98,11 +98,12 @@ class MockProgramCache : public ProgramCache {
   MockProgramCache();
   virtual ~MockProgramCache();
 
-  MOCK_CONST_METHOD4(LoadLinkedProgram, ProgramLoadResult(
+  MOCK_CONST_METHOD5(LoadLinkedProgram, ProgramLoadResult(
       GLuint program,
       Shader* shader_a,
       Shader* shader_b,
-      const LocationMap* bind_attrib_location_map));
+      const LocationMap* bind_attrib_location_map,
+      const ShaderCacheCallback& callback));
 
   MOCK_METHOD5(SaveLinkedProgram, void(
       GLuint program,
