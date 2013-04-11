@@ -587,7 +587,7 @@
     'browser/loader/throttling_resource_handler.h',
     'browser/loader/transfer_navigation_resource_throttle.cc',
     'browser/loader/transfer_navigation_resource_throttle.h',
-    'browser/mach_broker_mac.mm',
+    'browser/mach_broker_mac.cc',
     'browser/mach_broker_mac.h',
     'browser/media_devices_monitor.cc',
     'browser/media/media_internals.cc',
@@ -1201,11 +1201,6 @@
       'dependencies': [
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
-      'link_settings': {
-        'libraries': [
-          '-lbsm',
-        ],
-      },
     }],
     ['chromeos==1', {
       'dependencies': [

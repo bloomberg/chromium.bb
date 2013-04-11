@@ -17,15 +17,11 @@ class MachBrokerTest : public testing::Test {
     broker_.AddPlaceholderForPid(pid);
   }
 
-  void InvalidatePid(base::ProcessHandle pid) {
-    broker_.InvalidatePid(pid);
-  }
-
   // Helper function to acquire/release locks and call |FinalizePid()|.
   void FinalizePid(base::ProcessHandle pid,
-                   mach_port_t task_port) {
+                   const MachBroker::MachInfo& mach_info) {
     base::AutoLock lock(broker_.GetLock());
-    broker_.FinalizePid(pid, task_port);
+    broker_.FinalizePid(pid, mach_info);
   }
 
  protected:
@@ -43,7 +39,7 @@ TEST_F(MachBrokerTest, AddPlaceholderAndFinalize) {
   EXPECT_EQ(0u, broker_.TaskForPid(1));
 
   // Finalize PID 1.
-  FinalizePid(1, 100u);
+  FinalizePid(1, MachBroker::MachInfo().SetTask(100u));
   EXPECT_EQ(100u, broker_.TaskForPid(1));
 
   // Should be no entry for PID 2.
@@ -52,16 +48,16 @@ TEST_F(MachBrokerTest, AddPlaceholderAndFinalize) {
 
 TEST_F(MachBrokerTest, Invalidate) {
   AddPlaceholderForPid(1);
-  FinalizePid(1, 100u);
+  FinalizePid(1, MachBroker::MachInfo().SetTask(100u));
 
   EXPECT_EQ(100u, broker_.TaskForPid(1));
-  InvalidatePid(1u);
+  broker_.InvalidatePid(1u);
   EXPECT_EQ(0u, broker_.TaskForPid(1));
 }
 
 TEST_F(MachBrokerTest, FinalizeUnknownPid) {
   // Finalizing an entry for an unknown pid should not add it to the map.
-  FinalizePid(1u, 100u);
+  FinalizePid(1u, MachBroker::MachInfo().SetTask(100u));
   EXPECT_EQ(0u, broker_.TaskForPid(1u));
 }
 
