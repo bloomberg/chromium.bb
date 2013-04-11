@@ -212,19 +212,21 @@ class COMPOSITOR_EXPORT CompositorLock
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
 
+// This is only to be used for test. It allows execution of other tasks on
+// the current message loop before the current task finishs (there is a
+// potential for re-entrancy).
 class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
  public:
-  // Waits at most |kDrawWaitTimeOutMs| milliseconds for a draw to be issued.
-  // If a draw is issued in that timeframe, it will complete. Returns true if
-  // a draw completed, false otherwise.
-  static bool Wait(Compositor* compositor);
+  // Waits for a draw to be issued by the compositor. If the test times out
+  // here, there may be a logic error in the compositor code causing it
+  // not to draw.
+  static void Wait(Compositor* compositor);
 
  private:
   DrawWaiterForTest();
   virtual ~DrawWaiterForTest();
 
-  bool WaitImpl(Compositor* compositor);
-  void TimedOutWhileWaiting();
+  void WaitImpl(Compositor* compositor);
 
   // CompositorObserver implementation.
   virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE;
@@ -237,10 +239,7 @@ class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
                                        base::TimeTicks timebase,
                                        base::TimeDelta interval) OVERRIDE;
 
-  const int kDrawWaitTimeOutMs;
-
   scoped_ptr<base::RunLoop> wait_run_loop_;
-  bool did_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawWaiterForTest);
 };

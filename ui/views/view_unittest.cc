@@ -3229,20 +3229,20 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   widget()->SetContentsView(content_view);
   content_view->SetPaintToLayer(true);
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   GetRootLayer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   content_view->set_painted(false);
   // content_view no longer has a dirty rect. Paint from the root and make sure
   // PaintTrackingView isn't painted.
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_FALSE(content_view->painted());
 
   // Make content_view have a dirty rect, paint the layers and make sure
   // PaintTrackingView is painted.
   content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   GetRootLayer()->GetCompositor()->ScheduleDraw();
-  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
   EXPECT_TRUE(content_view->painted());
 }
 
