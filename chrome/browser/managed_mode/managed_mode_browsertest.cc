@@ -11,6 +11,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -208,6 +209,12 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE {
+    // Set up the ManagedModeNavigationObserver manually since the profile was
+    // not managed when the browser was created.
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ManagedModeNavigationObserver::CreateForWebContents(web_contents);
+
     Profile* profile = browser()->profile();
     managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);

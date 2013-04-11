@@ -15,6 +15,8 @@ class ManagedUserSettingsTest : public WebUIBrowserTest {
   virtual ~ManagedUserSettingsTest();
 
  protected:
+  // WebUIBrowserTest implementation.
+  virtual void SetUpOnMainThread() OVERRIDE;
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
  private:

@@ -399,7 +399,7 @@ void ManagedModeNavigationObserver::NavigateToPendingEntry(
   int current_index = web_contents()->GetController().GetCurrentEntryIndex();
   // First check that the user didn't go back to a blocked page, then check
   // that the navigation is allowed.
-  if (last_allowed_page_ < 0 || current_index <= last_allowed_page_ ||
+  if (current_index <= last_allowed_page_ ||
       (behavior == ManagedModeURLFilter::BLOCK &&
        !CanTemporarilyNavigateHost(url))) {
     ClearObserverState();

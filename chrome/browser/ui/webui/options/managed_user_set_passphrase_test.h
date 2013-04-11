@@ -15,6 +15,8 @@ class ManagedUserSetPassphraseTest : public WebUIBrowserTest {
   virtual ~ManagedUserSetPassphraseTest();
 
  protected:
+  // WebUIBrowserTest implementation.
+  virtual void SetUpOnMainThread() OVERRIDE;
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
  private:
