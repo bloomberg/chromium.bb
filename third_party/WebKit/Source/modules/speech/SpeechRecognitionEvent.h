@@ -55,6 +55,9 @@ public:
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results.get(); }
+
+    // These two methods are here to satisfy the specification which requires these attrubutes to exist.
+    Document* interpretation() { return 0; }
     Document* emma() { return 0; }
 
     // Event

@@ -30,5 +30,6 @@
     [InitializedByEventConstructor] readonly attribute unsigned long resultIndex;
     [InitializedByEventConstructor] readonly attribute SpeechRecognitionResultList results;
 
+    readonly attribute Document interpretation;
     readonly attribute Document emma;
 };

@@ -29,6 +29,8 @@ function oneMatchTest() {
         debug('onresult');
         shouldBe('count', '4');
         ++count;
+        shouldBeNull('event.emma');
+        shouldBeNull('event.interpretation');
         shouldBe('event.results.length', '1');
         shouldBe('event.results[0].length', '1');
         shouldBe('event.results[0].isFinal', 'true');
