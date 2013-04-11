@@ -6,18 +6,20 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/common/chrome_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/zip/zip.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
@@ -210,22 +212,18 @@ void StateMachine::OnSuccess() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-BurnManager::BurnManager(
-    const base::FilePath& downloads_directory,
-    scoped_refptr<net::URLRequestContextGetter> context_getter)
+BurnManager::BurnManager()
     : device_handler_(disks::DiskMountManager::GetInstance()),
       unzipping_(false),
       cancelled_(false),
       burning_(false),
       block_burn_signals_(false),
-      image_dir_(downloads_directory.Append(kTempImageFolderName)),
       config_file_url_(kConfigFileUrl),
       config_file_fetched_(false),
       state_machine_(new StateMachine()),
-      url_request_context_getter_(context_getter),
       bytes_image_download_progress_last_reported_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  NetworkStateHandler::Get()->AddObserver(this);
+  ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(
       base::Bind(&BurnManager::NotifyDeviceAdded, weak_ptr),
@@ -241,19 +239,17 @@ BurnManager::~BurnManager() {
   if (!image_dir_.empty()) {
     file_util::Delete(image_dir_, true);
   }
-  NetworkStateHandler::Get()->RemoveObserver(this);
+  ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
   DBusThreadManager::Get()->GetImageBurnerClient()->ResetEventHandlers();
 }
 
 // static
-void BurnManager::Initialize(
-    const base::FilePath& downloads_directory,
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
+void BurnManager::Initialize() {
   if (g_burn_manager) {
     LOG(WARNING) << "BurnManager was already initialized";
     return;
   }
-  g_burn_manager = new BurnManager(downloads_directory, context_getter);
+  g_burn_manager = new BurnManager();
   VLOG(1) << "BurnManager initialized";
 }
 
@@ -283,6 +279,10 @@ void BurnManager::RemoveObserver(Observer* observer) {
 
 std::vector<disks::DiskMountManager::Disk> BurnManager::GetBurnableDevices() {
   return device_handler_.GetBurnableDevices();
+}
+
+bool BurnManager::IsNetworkConnected() const {
+  return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
 }
 
 void BurnManager::Cancel() {
@@ -320,6 +320,8 @@ void BurnManager::OnError(int message_id) {
 
 void BurnManager::CreateImageDir() {
   if (image_dir_.empty()) {
+    CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
+    image_dir_ = image_dir_.Append(kTempImageFolderName);
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
         base::Bind(CreateDirectory,
@@ -360,7 +362,8 @@ void BurnManager::FetchConfigFile() {
 
   config_fetcher_.reset(net::URLFetcher::Create(
       config_file_url_, net::URLFetcher::GET, this));
-  config_fetcher_->SetRequestContext(url_request_context_getter_);
+  config_fetcher_->SetRequestContext(
+      g_browser_process->system_request_context());
   config_fetcher_->Start();
 }
 
@@ -380,7 +383,8 @@ void BurnManager::FetchImage() {
   image_fetcher_.reset(net::URLFetcher::Create(image_download_url_,
                                                net::URLFetcher::GET,
                                                this));
-  image_fetcher_->SetRequestContext(url_request_context_getter_);
+  image_fetcher_->SetRequestContext(
+      g_browser_process->system_request_context());
   image_fetcher_->SaveResponseToFileAtPath(
       zip_image_file_path_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
@@ -487,12 +491,13 @@ void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
   }
 }
 
-void BurnManager::DefaultNetworkChanged(const NetworkState* network) {
+void BurnManager::NetworkManagerChanged() {
   // TODO(hidehiko): Split this into a class to write tests.
-  if (state_machine_->state() == StateMachine::INITIAL && network)
+  if (state_machine_->state() == StateMachine::INITIAL && IsNetworkConnected())
     FOR_EACH_OBSERVER(Observer, observers_, OnNetworkDetected());
 
-  if (state_machine_->state() == StateMachine::DOWNLOADING && !network)
+  if (state_machine_->state() == StateMachine::DOWNLOADING &&
+      !IsNetworkConnected())
     OnError(IDS_IMAGEBURN_NETWORK_ERROR);
 }
 
