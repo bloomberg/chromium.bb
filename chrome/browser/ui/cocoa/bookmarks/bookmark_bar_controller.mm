@@ -490,8 +490,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (void)updateAppsPageShortcutButtonVisibility {
   if (!appsPageShortcutButton_.get())
-    return  ;
+    return;
   [self setAppsPageShortcutButtonVisibility];
+  [self resetAllButtonPositionsWithAnimation:NO];
   [self reconfigureBookmarkBar];
 }
 
@@ -737,16 +738,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   int ignored = 0;
   NSRect frame = [self frameForBookmarkButtonFromCell:
-      [appsPageShortcutButton_ cell] xOffset:&ignored];
-  if (![appsPageShortcutButton_ isHidden]) {
-    right -= NSWidth(frame);
-    frame.origin.x = right;
-  } else {
-    frame.origin.x = maxX - NSWidth(frame);
-  }
-  [appsPageShortcutButton_ setFrame:frame];
-
-  frame = [self frameForBookmarkButtonFromCell:
       [otherBookmarksButton_ cell] xOffset:&ignored];
   if (![otherBookmarksButton_ isHidden]) {
     right -= NSWidth(frame);
@@ -1057,6 +1048,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset =
       bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
+
+  // Draw the apps bookmark if needed.
+  if (![appsPageShortcutButton_ isHidden]) {
+    NSRect frame =
+        [self frameForBookmarkButtonFromCell:[appsPageShortcutButton_ cell]
+                                     xOffset:&xOffset];
+    [appsPageShortcutButton_ setFrame:frame];
+  }
+
   for (int i = 0; i < node->child_count(); i++) {
     const BookmarkNode* child = node->GetChild(i);
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
@@ -1170,8 +1170,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BookmarkButton* button = [[BookmarkButton alloc] init];
   [[button draggableButton] setDraggable:NO];
   [[button draggableButton] setActsOnMouseDown:YES];
-  // Peg at right; keep same height as bar.
-  [button setAutoresizingMask:(NSViewMinXMargin)];
   [button setCell:cell];
   [button setDelegate:self];
   [button setTarget:self];
@@ -1192,6 +1190,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   NSCell* cell = [self cellForBookmarkNode:bookmarkModel_->other_node()];
   otherBookmarksButton_.reset([self customBookmarkButtonForCell:cell]);
+  // Peg at right; keep same height as bar.
+  [otherBookmarksButton_ setAutoresizingMask:(NSViewMinXMargin)];
   [otherBookmarksButton_ setAction:@selector(openBookmarkFolderFromButton:)];
   view_id_util::SetID(otherBookmarksButton_.get(), VIEW_ID_OTHER_BOOKMARKS);
   [buttonView_ addSubview:otherBookmarksButton_.get()];
@@ -1210,7 +1210,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSString* text = l10n_util::GetNSString(IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME);
-  NSImage* image = rb.GetNativeImageNamed(IDR_WEBSTORE_ICON_16).ToNSImage();
+  NSImage* image = rb.GetNativeImageNamed(
+      IDR_BOOKMARK_BAR_APPS_SHORTCUT).ToNSImage();
   NSCell* cell = [self cellForCustomButtonWithText:text
                                              image:image];
   appsPageShortcutButton_.reset([self customBookmarkButtonForCell:cell]);
@@ -1413,6 +1414,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   CGFloat left = bookmarks::kBookmarkLeftMargin;
   NSRect buttonFrame = NSZeroRect;
 
+  // Draw the apps bookmark if needed.
+  if (![appsPageShortcutButton_ isHidden]) {
+    left = NSMaxX([appsPageShortcutButton_ frame]) +
+        bookmarks::kBookmarkHorizontalPadding;
+  }
+
   for (NSButton* button in buttons_.get()) {
     // Hidden buttons get no space.
     if ([button isHidden])
@@ -1435,15 +1442,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (CGFloat)buttonViewMaxXWithOffTheSideButtonIsVisible:(BOOL)visible {
   CGFloat maxViewX = NSMaxX([buttonView_ bounds]);
-  // If necessary, pull in the width to account for the Other Bookmarks or Apps
-  // button.
-  const BOOL otherButtonVisible = [self setOtherBookmarksButtonVisibility];
-  const BOOL appsButtonVisible = [self setAppsPageShortcutButtonVisibility];
-  if (otherButtonVisible || appsButtonVisible) {
-    BookmarkButton* leftMostRightAlignedButton = otherButtonVisible ?
-        otherBookmarksButton_.get() : appsPageShortcutButton_.get();
-    maxViewX = [leftMostRightAlignedButton frame].origin.x -
-               bookmarks::kBookmarkRightMargin;
+  // If necessary, pull in the width to account for the Other Bookmarks button.
+  if ([self setOtherBookmarksButtonVisibility]) {
+    maxViewX = [otherBookmarksButton_ frame].origin.x -
+        bookmarks::kBookmarkRightMargin;
   }
 
   [self positionRightSideButtons];
@@ -1462,8 +1464,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   // Determine the current maximum extent of the visible buttons.
   [self positionRightSideButtons];
+  BOOL offTheSideButtonVisible = (barCount > displayedButtonCount_);
   CGFloat maxViewX = [self buttonViewMaxXWithOffTheSideButtonIsVisible:
-      (barCount > displayedButtonCount_)];
+      offTheSideButtonVisible];
 
   // As a result of pasting or dragging, the bar may now have more buttons
   // than will fit so remove any which overflow.  They will be shown in
@@ -1476,14 +1479,26 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [button setDelegate:nil];
     [button removeFromSuperview];
     --displayedButtonCount_;
+    // Account for the fact that the chevron might now be visible.
+    if (!offTheSideButtonVisible) {
+      offTheSideButtonVisible = YES;
+      maxViewX = [self buttonViewMaxXWithOffTheSideButtonIsVisible:YES];
+    }
   }
 
   // As a result of cutting, deleting and dragging, the bar may now have room
   // for more buttons.
-  int xOffset = displayedButtonCount_ > 0 ?
-      NSMaxX([self finalRectOfLastButton]) +
-      bookmarks::kBookmarkHorizontalPadding :
-      bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
+  int xOffset;
+  if (displayedButtonCount_ > 0) {
+    xOffset = NSMaxX([self finalRectOfLastButton]) +
+        bookmarks::kBookmarkHorizontalPadding;
+  } else if (![appsPageShortcutButton_ isHidden]) {
+    xOffset = NSMaxX([appsPageShortcutButton_ frame]) +
+        bookmarks::kBookmarkHorizontalPadding;
+  } else {
+    xOffset = bookmarks::kBookmarkLeftMargin -
+        bookmarks::kBookmarkHorizontalPadding;
+  }
   for (int i = displayedButtonCount_; i < barCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
@@ -1905,7 +1920,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (!hasInsertionPos_ || where != insertionPos_) {
     insertionPos_ = where;
     hasInsertionPos_ = YES;
-    CGFloat left = bookmarks::kBookmarkLeftMargin;
+    CGFloat left = [appsPageShortcutButton_ isHidden] ?
+        bookmarks::kBookmarkLeftMargin :
+        NSMaxX([appsPageShortcutButton_ frame]) +
+            bookmarks::kBookmarkHorizontalPadding;
     CGFloat paddingWidth = bookmarks::kDefaultBookmarkWidth;
     BookmarkButton* draggedButton = [BookmarkButton draggedButton];
     if (draggedButton) {
@@ -1937,7 +1955,18 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // or without animation according to the |animate| flag.
 // This is generally useful, so is called from various places internally.
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate {
+
+  // Position the apps bookmark if needed.
   CGFloat left = bookmarks::kBookmarkLeftMargin;
+  if (![appsPageShortcutButton_ isHidden]) {
+    int xOffset =
+        bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
+    NSRect frame =
+        [self frameForBookmarkButtonFromCell:[appsPageShortcutButton_ cell]
+                                     xOffset:&xOffset];
+    [appsPageShortcutButton_ setFrame:frame];
+    left = xOffset + bookmarks::kBookmarkHorizontalPadding;
+  }
   animate &= innerContentAnimationsEnabled_;
 
   for (NSButton* button in buttons_.get()) {
@@ -1983,9 +2012,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   savedFrameWidth_ = NSWidth([[self view] frame]);
   const BookmarkNode* node = model->bookmark_bar_node();
   [self clearBookmarkBar];
+  [self createAppsPageShortcutButton];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
-  [self createAppsPageShortcutButton];
   [self updateTheme:[[[self view] window] themeProvider]];
   [self positionRightSideButtons];
   [self addButtonsToView];
@@ -2383,21 +2412,26 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Return the x position for a drop indicator.
 - (CGFloat)indicatorPosForDragToPoint:(NSPoint)point {
   CGFloat x = 0;
+  CGFloat halfHorizontalPadding = 0.5 * bookmarks::kBookmarkHorizontalPadding;
   int destIndex = [self indexForDragToPoint:point];
   int numButtons = displayedButtonCount_;
 
-  // If it's a drop strictly between existing buttons ...
+  CGFloat leftmostX;
+  if ([appsPageShortcutButton_ isHidden])
+    leftmostX = bookmarks::kBookmarkLeftMargin - halfHorizontalPadding;
+  else
+    leftmostX = NSMaxX([appsPageShortcutButton_ frame]) + halfHorizontalPadding;
 
+  // If it's a drop strictly between existing buttons ...
   if (destIndex == 0) {
-    x = bookmarks::kBookmarkLeftMargin -
-        0.5 * bookmarks::kBookmarkHorizontalPadding;
+    x = leftmostX;
   } else if (destIndex > 0 && destIndex < numButtons) {
     // ... put the indicator right between the buttons.
     BookmarkButton* button =
         [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex-1)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    x = NSMaxX(buttonFrame) + 0.5 * bookmarks::kBookmarkHorizontalPadding;
+    x = NSMaxX(buttonFrame) + halfHorizontalPadding;
 
     // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {
@@ -2407,13 +2441,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       BookmarkButton* button =
           [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex - 1)];
       DCHECK(button);
-      NSRect buttonFrame = [button frame];
-      x = NSMaxX(buttonFrame) + 0.5 * bookmarks::kBookmarkHorizontalPadding;
+      x = NSMaxX([button frame]) + halfHorizontalPadding;
 
       // Otherwise, put it right at the beginning.
     } else {
-      x = bookmarks::kBookmarkLeftMargin -
-          0.5 * bookmarks::kBookmarkHorizontalPadding;
+      x = leftmostX;
     }
   } else {
     NOTREACHED();

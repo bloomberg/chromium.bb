@@ -1523,11 +1523,13 @@ TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
   model_test_utils::AddNodesFromModelString(model, root, model_string);
   [bar_ frameDidChange];
 
-  CGFloat viewWidths[] = { 123.0, 151.0, 152.0, 153.0, 154.0, 155.0, 200.0,
-                           155.0, 154.0, 153.0, 152.0, 151.0 };
-  BOOL offTheSideButtonIsHiddenResults[] = { NO, NO, NO, YES, YES, YES, YES,
-                                             YES, YES, YES, NO, NO, NO };
-  int displayedButtonCountResults[] = { 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 1 };
+  CGFloat viewWidths[] = { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0, 155.0,
+                           200.0, 155.0, 154.0, 153.0, 152.0, 151.0, 124.0,
+                           123.0 };
+  BOOL offTheSideButtonIsHiddenResults[] = { NO, NO, NO, NO, YES, YES, YES, YES,
+                                             YES, YES, YES, NO, NO, NO, NO};
+  int displayedButtonCountResults[] = { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2,
+                                        2, 1 };
 
   for (unsigned int i = 0; i < sizeof(viewWidths) / sizeof(viewWidths[0]);
        ++i) {
