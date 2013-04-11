@@ -2358,9 +2358,15 @@ DialogType.isModal = function(type) {
         this.directoryModel_.getCurrentRootPath(),
         this.directoryModel_.getCurrentDirPath());
 
-    this.scanUpdatedAtLeastOnce_ = false;
-    this.scanCompletedTimer_ = null;
-    this.scanUpdatedTimer_ = null;
+    this.scanUpdatedAtLeastOnceOrCompleted_ = false;
+    if (this.scanCompletedTimer_) {
+      clearTimeout(this.scanCompletedTimer_);
+      this.scanCompletedTimer_ = null;
+    }
+    if (this.scanUpdatedTimer_) {
+      clearTimeout(this.scanUpdatedTimer_);
+      this.scanUpdatedTimer_ = null;
+    }
 
     this.cancelSpinnerTimeout_();
     this.showSpinner_(false);
@@ -2379,14 +2385,10 @@ DialogType.isModal = function(type) {
     // There is a high chance, that metadata will be received within 50 ms.
     this.scanCompletedTimer_ = setTimeout(function() {
       // Check if batch updates are already finished by onScanUpdated_().
-      if (this.scanUpdatedAtLeastOnce_)
+      if (this.scanUpdatedAtLeastOnceOrCompleted_)
         return;
-      // Cancel scheduled ending of batch updates initiated by onScanUpdated_(),
-      // to avoid calling it twice.
-      if (this.scanUpdatedTimer_) {
-        clearTimeout(this.scanUpdatedTimer_);
-        this.scanUpdatedTimer_ = null;
-      }
+      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
+
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
     }.bind(this), 50);
@@ -2397,13 +2399,16 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.onScanUpdated_ = function() {
     // We need to hide the spinner only once.
-    if (this.scanUpdatedAtLeastOnce_ || this.scanUpdatedTimer_)
+    if (this.scanUpdatedAtLeastOnceOrCompleted_ || this.scanUpdatedTimer_)
       return;
 
     // Show contents incrementally by finishing batch updated, but only after
     // 200ms elapsed, to avoid flickering when it is not necessary.
     this.scanUpdatedTimer_ = setTimeout(function() {
-      this.scanUpdatedAtLeastOnce_ = true;
+      // We need to hide the spinner only once.
+      if (this.scanUpdatedAtLeastOnceOrCompleted_)
+        return;
+      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
       this.hideSpinnerLater_();
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
@@ -2424,7 +2429,8 @@ DialogType.isModal = function(type) {
       this.scanUpdatedTimer_ = null;
     }
     // Finish unfinished batch updates.
-    if (!this.scanUpdatedAtLeastOnce_) {
+    if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
+      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
     }
