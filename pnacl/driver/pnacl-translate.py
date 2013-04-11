@@ -304,29 +304,12 @@ def main(argv):
 
   # Get bitcode type and metadata
   if bcfile:
-    bctype = driver_tools.FileType(bcfile)
-    # sanity checking
-    if bctype == 'pso':
-      assert not env.getbool('STATIC')
-      assert env.getbool('SHARED')
-      assert env.getbool('PIC')
-      assert env.get('ARCH') != 'arm', "no glibc support for arm yet"
-    elif bctype == 'pexe':
-      if env.getbool('LIBMODE_GLIBC'):   # this is our proxy for dynamic images
-        assert not env.getbool('STATIC')
-        assert not env.getbool('SHARED')
-        assert env.get('ARCH') != 'arm', "no glibc support for arm yet"
-        # for the dynamic case we require non-pic because we do not
-        # have the necessary tls rewrites in gold
-        assert not env.getbool('PIC')
-      else:
-        assert env.getbool('LIBMODE_NEWLIB')
-        assert not env.getbool('SHARED')
-        # for static images we tolerate both PIC and non-PIC
-    else:
-      assert False
-
-    metadata = driver_tools.GetBitcodeMetadata(bcfile)
+    # Until we stabilize the ABI for shared libraries,
+    # assume that pnacl-translate only handles pexes
+    # to avoid a dependency on bitcode metadata.
+    assert not env.getbool('SHARED')
+    bctype = driver_tools.GetBitcodeType(bcfile, True)
+    metadata = driver_tools.GetBitcodeMetadata(bcfile, True)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)

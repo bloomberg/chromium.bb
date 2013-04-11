@@ -362,14 +362,14 @@ def UnrecognizedOption(*args):
 ######################################################################
 
 def SimpleCache(f):
-  """ Cache results of a one-argument function using a dictionary """
+  """ Cache results of a function using a dictionary """
   cache = dict()
-  def wrapper(arg):
-    if arg in cache:
-      return cache[arg]
+  def wrapper(*args):
+    if args in cache:
+      return cache[args]
     else:
-      result = f(arg)
-      cache[arg] = result
+      result = f(*args)
+      cache[args] = result
       return result
   wrapper.__name__ = f.__name__
   wrapper.__cache = cache
@@ -501,8 +501,14 @@ def DecodeLE(bytes):
 # to make sure this interface gets tested
 FORCED_METADATA = {}
 @SimpleCache
-def GetBitcodeMetadata(filename):
+def GetBitcodeMetadata(filename, assume_pexe):
   assert(IsBitcode(filename))
+  # The argument |assume_pexe| helps break a dependency on bitcode metadata,
+  # as the shared library metadata is not finalized yet.
+  if assume_pexe:
+    return { 'OutputFormat': 'executable',
+             'SOName'      : '',
+             'NeedsLibrary': [] }
   global FORCED_METADATA
   if filename in FORCED_METADATA:
     return FORCED_METADATA[filename]
@@ -611,7 +617,7 @@ def FileType(filename):
     return GetELFType(filename)
 
   if IsBitcode(filename):
-    return GetBitcodeType(filename)
+    return GetBitcodeType(filename, False)
 
   if (ext in ('o','so','a','po','pso','pa','x') and
       ldtools.IsLinkerScript(filename)):
@@ -637,10 +643,10 @@ def GetELFType(filename):
   return elf_type_map[elfheader.type]
 
 @SimpleCache
-def GetBitcodeType(filename):
+def GetBitcodeType(filename, assume_pexe):
   """ Bitcode type as determined by bitcode metadata """
   assert(IsBitcode(filename))
-  metadata = GetBitcodeMetadata(filename)
+  metadata = GetBitcodeMetadata(filename, assume_pexe)
   format_map = {
     'object': 'po',
     'shared': 'pso',
