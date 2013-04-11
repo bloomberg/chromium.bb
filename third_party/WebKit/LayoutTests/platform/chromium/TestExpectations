@@ -651,19 +651,6 @@ fast/forms/search-event-delay.html [ WontFix ]
 # Would have to be implemented much differently to work in v8.
 fast/dom/gc-10.html [ WontFix ]
 
-# We do not use Safari's private browsing mode.
-http/tests/security/cross-frame-access-private-browsing.html [ WontFix ]
-http/tests/security/storage-blocking-loosened-plugin.html [ WontFix ]
-http/tests/security/storage-blocking-loosened-private-browsing-plugin.html [ WontFix ]
-http/tests/security/storage-blocking-strengthened-plugin.html [ WontFix ]
-http/tests/security/storage-blocking-strengthened-private-browsing-plugin.html [ WontFix ]
-plugins/private-browsing-mode.html [ WontFix ]
-plugins/private-browsing-mode-2.html [ WontFix ]
-storage/domstorage/localstorage/private-browsing-affects-storage.html [ WontFix ]
-storage/domstorage/sessionstorage/private-browsing-affects-storage.html [ WontFix ]
-storage/websql/private-browsing-noread-nowrite.html [ WontFix ]
-inspector/console/clients-ignored-in-privatebrowsing.html [ WontFix ]
-
 # We don't let anyone set status in the browser.
 plugins/set-status.html [ WontFix ]
 
