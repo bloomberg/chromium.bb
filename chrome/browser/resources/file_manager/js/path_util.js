@@ -14,7 +14,8 @@ var RootType = {
   REMOVABLE: 'removable',
   DRIVE: 'drive',
   DRIVE_OFFLINE: 'drive_offline',  // A fake root. Not the actual filesystem.
-  DRIVE_SHARED_WITH_ME: 'drive_shared_with_me'  // A fake root.
+  DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',  // A fake root.
+  DRIVE_RECENT: 'drive_recent'  // A fake root.
 };
 
 /**
@@ -27,7 +28,8 @@ var RootDirectory = {
   REMOVABLE: '/removable',
   DRIVE: '/drive',
   DRIVE_OFFLINE: '/drive_offline',  // A fake root. Not the actual filesystem.
-  DRIVE_SHARED_WITH_ME: '/drive_shared_with_me'  // A fake root.
+  DRIVE_SHARED_WITH_ME: '/drive_shared_with_me',  // A fake root.
+  DRIVE_RECENT: '/drive_recent'  // A fake root.
 };
 
 /**
@@ -51,7 +53,8 @@ var PathUtil = {};
 PathUtil.isSpecialSearchRoot = function(path) {
   var type = PathUtil.getRootType(path);
   return type == RootType.DRIVE_OFFLINE ||
-      type == RootType.DRIVE_SHARED_WITH_ME;
+      type == RootType.DRIVE_SHARED_WITH_ME ||
+      type == RootType.DRIVE_RECENT;
 };
 
 /**
@@ -132,9 +135,8 @@ PathUtil.getRootType = function(path) {
 PathUtil.getRootPath = function(path) {
   var type = PathUtil.getRootType(path);
 
-  // TODO(haruki): Add support for "drive/root" and "drive/other".
   if (type == RootType.DOWNLOADS || type == RootType.DRIVE_OFFLINE ||
-      type == RootType.DRIVE_SHARED_WITH_ME)
+      type == RootType.DRIVE_SHARED_WITH_ME || type == RootType.DRIVE_RECENT)
     return PathUtil.getTopDirectory(path);
 
   if (type == RootType.DRIVE || type == RootType.ARCHIVE ||
@@ -221,6 +223,9 @@ PathUtil.getRootLabel = function(path) {
 
   if (path === RootDirectory.DRIVE_SHARED_WITH_ME)
     return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
+
+  if (path === RootDirectory.DRIVE_RECENT)
+    return str('DRIVE_RECENT_COLLECTION_LABEL');
 
   return path;
 };

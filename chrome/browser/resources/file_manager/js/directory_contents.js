@@ -712,12 +712,13 @@ DirectoryContentsLocalSearch.prototype.readNextChunk = function() {
  * implemented. Update this when it's done.
  * SEARCH_ALL uses no filtering.
  * SEARCH_SHARED_WITH_ME searches for the shared-with-me entries.
- *
+ * SEARCH_RECENT_FILES searches for recently accessed file entries.
  * @enum {number}
  */
 DirectoryContentsDriveSearchMetadata.SearchType = {
   SEARCH_ALL: 0,
-  SEARCH_SHARED_WITH_ME: 1
+  SEARCH_SHARED_WITH_ME: 1,
+  SEARCH_RECENT_FILES: 2
 };
 
 /**
@@ -827,20 +828,23 @@ DirectoryContentsDriveSearchMetadata.prototype.readNextChunk = function() {
     this.lastChunkReceived();
   }).bind(this);
 
-  var types;
+  var type;
   switch (this.searchType_) {
     case DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_ALL:
-      types = 'ALL';
+      type = 'ALL';
       break;
     case DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME:
-      types = 'SHARED_WITH_ME';
+      type = 'SHARED_WITH_ME';
+      break;
+    case DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_RECENT_FILES:
+      type = 'EXCLUDE_DIRECTORIES';
       break;
     default:
       throw Error('Unknown search type: ' + this.searchType_);
   }
   var searchParams = {
     'query': this.query_,
-    'types': types,
+    'types': type,
     'maxResults': 500
   };
   chrome.fileBrowserPrivate.searchDriveMetadata(searchParams, searchCallback);

@@ -91,6 +91,20 @@ DirectoryModel.fakeDriveSharedWithMeEntry_ = {
   isDirectory: true
 };
 
+/**
+ * Fake entry representing a psuedo directory, which contains Drive files
+ * accessed recently. This entry works as a trigger to start a metadata search
+ * implemented as DirectoryContentsDriveRecent.
+ * DirectoryModel is responsible to start the search when the UI tries to open
+ * this fake entry (e.g. changeDirectory()).
+ * @type {Object}
+ * @const
+ * @private
+ */
+DirectoryModel.fakeDriveRecentEntry_ = {
+  fullPath: RootDirectory.DRIVE_RECENT,
+  isDirectory: true
+};
 
 /**
  * List of fake entries for special searches.
@@ -102,6 +116,7 @@ DirectoryModel.fakeDriveSharedWithMeEntry_ = {
  */
 DirectoryModel.fakeDriveSpecialSearchEntries_ =
     [DirectoryModel.fakeDriveSharedWithMeEntry_,
+     DirectoryModel.fakeDriveRecentEntry_,
      DirectoryModel.fakeDriveOfflineEntry_];
 
 /**
@@ -1311,6 +1326,14 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
         query,
         DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME);
     dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
+  } else if (specialSearchType == RootType.DRIVE_RECENT) {
+    newDirContents = new DirectoryContentsDriveSearchMetadata(
+        this.currentFileListContext_,
+        driveRoot,
+        DirectoryModel.fakeDriveRecentEntry_,
+        query,
+        DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_RECENT_FILES);
+    dirEntry = DirectoryModel.fakeDriveRecentEntry_;
   } else {
     // Unknown path.
     this.changeDirectory(thid.getDefaultDirectory());
