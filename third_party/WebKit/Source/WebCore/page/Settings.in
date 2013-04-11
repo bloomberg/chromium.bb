@@ -51,7 +51,6 @@ showRepaintCounter initial=false, setNeedsStyleRecalcInAllFrames=1
 
 shrinksStandaloneImagesToFit initial=true
 pageCacheSupportsPlugins initial=false
-scriptMarkupEnabled initial=true
 needsSiteSpecificQuirks initial=false
 offlineWebApplicationCacheEnabled initial=false
 usesEncodingDetector initial=false
