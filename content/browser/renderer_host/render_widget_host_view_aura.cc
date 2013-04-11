@@ -1224,7 +1224,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  return current_surface_ != NULL;
+  return current_surface_ != NULL && host_->is_accelerated_compositing_active();
 }
 
 bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
