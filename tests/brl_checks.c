@@ -271,7 +271,7 @@ check_hyphenation(const char *tableList, const char *str, const char *expected)
       printf("Cannot parse input string.\n");
       return 1;
     }
-  hyphens = malloc(sizeof(char) * (inlen + 1));
+  hyphens = calloc(inlen+1, sizeof(char));
 
   if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0))
     {
