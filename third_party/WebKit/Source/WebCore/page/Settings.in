@@ -123,7 +123,6 @@ DOMPasteAllowed initial=false
 threadedHTMLParser initial=false, conditional=THREADED_HTML_PARSER
 useThreadedHTMLParserForDataURLs initial=false, conditional=THREADED_HTML_PARSER
 
-applyDeviceScaleFactorInCompositor initial=true
 applyPageScaleFactorInCompositor initial=false
 frameFlatteningEnabled initial=false
 
