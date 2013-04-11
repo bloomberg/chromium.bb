@@ -880,8 +880,8 @@ fast/js/reparsing-semicolon-insertion.html [ WontFix ]
 
 # These test rubber band overhang drawing, which is a Mac OS X Lion feature
 # that is not supported on other platforms.
-[ Win Linux ] platform/chromium/rubberbanding [ WontFix ]
-[ Win Linux ] platform/chromium/compositing/rubberbanding [ WontFix ]
+[ Win Linux ] rubberbanding [ WontFix ]
+[ Win Linux ] compositing/rubberbanding [ WontFix ]
 
 # This requires usp10.dll version 1.600 or greater on Windows and
 # it isn't installed on XP by default.
@@ -938,24 +938,24 @@ http/tests/security/view-source-no-refresh.html [ WontFix ]
 # INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
 webkit.org/b/109272 fast/forms/datetime [ Skip ]
 webkit.org/b/109272 fast/forms/datetime-multiple-fields [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-rtl.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-step-attribute.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-reset-value-after-reload.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-locale-hebrew.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-key-operations.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-min-max-attribute.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/calendar-picker/calendar-picker-datetime-with-step.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/calendar-picker/calendar-picker-datetime.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance.html [ Skip ]
-webkit.org/b/109272 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-mouse-operations.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-rtl.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-step-attribute.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-reset-value-after-reload.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-locale-hebrew.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-key-operations.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-min-max-attribute.html [ Skip ]
+webkit.org/b/109272 fast/forms/calendar-picker/calendar-picker-datetime-with-step.html [ Skip ]
+webkit.org/b/109272 fast/forms/calendar-picker/calendar-picker-datetime.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-appearance.html [ Skip ]
+webkit.org/b/109272 fast/forms/suggestion-picker/datetime-suggestion-picker-mouse-operations.html [ Skip ]
 
-webkit.org/b/112923 platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ Pass ImageOnlyFailure Failure ]
+webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ Pass ImageOnlyFailure Failure ]
 
 # Skip until 109528 is fixed.
-#webkit.org/b/109528 platform/chromium/fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
-#webkit.org/b/109528 platform/chromium/fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
-#webkit.org/b/109528 platform/chromium/fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
+#webkit.org/b/109528 fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
+#webkit.org/b/109528 fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
+#webkit.org/b/109528 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
 
 # -----------------------------------------------------------------
 # TESTS TO FIX
@@ -1865,7 +1865,7 @@ webkit.org/b/42598 http/tests/xmlhttprequest/failed-auth.html [ Failure Timeout 
 webkit.org/b/42769 http/tests/xmlhttprequest/remember-bad-password.html [ Failure ]
 
 # Flaky since at least chromium r52834, WebKit r63615.
-crbug.com/49970 platform/chromium/plugins/call-as-function.html [ Failure Pass ]
+crbug.com/49970 plugins/call-as-function.html [ Failure Pass ]
 
 # Application Cache Quotas are N/A to the chromium port.
 webkit.org/b/43459 http/tests/appcache/origin-quota.html [ WontFix ]
@@ -2131,8 +2131,8 @@ webkit.org/b/54306 virtual/softwarecompositing/reflections/nested-reflection-tra
 
 # These tests are too slow with our MESA backend.  We can re-enable when we have
 # bots running tests on real hardware.
-webkit.org/b/49629 platform/chromium/compositing/lots-of-img-layers.html
-webkit.org/b/49629 platform/chromium/compositing/lots-of-img-layers-with-opacity.html
+webkit.org/b/49629 compositing/lots-of-img-layers.html
+webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html
 webkit.org/b/49629 compositing/iframes/page-cache-layer-tree.html
 webkit.org/b/49629 virtual/softwarecompositing/iframes/page-cache-layer-tree.html
 
@@ -2308,7 +2308,7 @@ crbug.com/83504 [ Mac ] fast/css/custom-font-xheight.html [ Failure Pass ]
 webkit.org/b/61169 [ Linux Win ] css3/images/optimize-contrast-canvas.html [ ImageOnlyFailure ]
 webkit.org/b/61169 [ Linux Win ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 
-webkit.org/b/98906 platform/chromium/fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
+webkit.org/b/98906 fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
 
 crbug.com/84032 [ Win ] fast/dom/object-plugin-hides-properties.html [ Pass Timeout ]
 
@@ -2610,7 +2610,7 @@ code.google.com/p/v8/issues/detail?id=1973 fast/js/caller-property.html [ Failur
 
 webkit.org/b/80498 [ Linux Win ] fast/workers/worker-multi-startup.html [ Crash Pass ]
 
-webkit.org/b/91946 platform/chromium/fast/events/rtl-scrollbar.html [ Failure Pass ]
+webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
 
 webkit.org/b/80665 fast/js/string-match.html [ Failure ]
 webkit.org/b/80665 fast/js/string-replace-2.html [ Failure ]
@@ -2642,15 +2642,15 @@ webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Fa
 
 webkit.org/b/81732 fast/js/integer-division-neg2tothe32-by-neg1.html [ Crash Pass ]
 
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-n.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-ne.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-nw.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-s.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-se.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-size-change.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-sw.html [ ImageOnlyFailure Pass ]
-webkit.org/b/81803 [ Mac ] platform/chromium/compositing/rubberbanding/transform-overhang-w.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-n.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-ne.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-nw.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-s.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-se.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-size-change.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-sw.html [ ImageOnlyFailure Pass ]
+webkit.org/b/81803 [ Mac ] compositing/rubberbanding/transform-overhang-w.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/81931 [ Mac Win Debug ] fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 
@@ -2853,7 +2853,7 @@ webkit.org/b/84720 fast/repaint/fixed-table-overflow-zindex.html [ ImageOnlyFail
 webkit.org/b/84720 fast/repaint/fixed-tranformed.html [ ImageOnlyFailure Pass ]
 webkit.org/b/84720 fast/repaint/scroll-fixed-reflected-layer.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/84724 [ SnowLeopard ] platform/chromium/media/video-frame-size-change.html [ ImageOnlyFailure Pass ]
+webkit.org/b/84724 [ SnowLeopard ] media/video-frame-size-change.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Pass Timeout ]
 
@@ -3038,7 +3038,7 @@ webkit.org/b/89936 [ XP ] fast/css/text-rendering.html [ Failure ]
 # Started timeout between r121233:r121239.
 webkit.org/b/90003 [ Win Debug ] fast/js/repeat-cached-vm-reentry.html [ Pass Timeout ]
 
-crbug.com/135709 platform/chromium/compositing/scrollbars/custom-composited-different-track-parts.html [ ImageOnlyFailure Pass ]
+crbug.com/135709 compositing/scrollbars/custom-composited-different-track-parts.html [ ImageOnlyFailure Pass ]
 
 # webkitIsFullScreen does not have the correct value after an iframe exits fullscreen
 webkit.org/b/90704 fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
@@ -3246,9 +3246,9 @@ webkit.org/b/96550 http/tests/media/media-source/seek-to-end-after-duration-chan
 crbug.com/63921 virtual/gpu/fast/canvas/canvas-fillPath-shadow.html [ Failure ]
 webkit.org/b/77550 virtual/gpu/canvas/philip/tests/2d.gradient.interpolate.colouralpha.html [ Failure ]
 
-webkit.org/b/97816 [ Linux ] platform/chromium/compositing/plugins/webplugin-alpha.html [ Pass ImageOnlyFailure ]
-webkit.org/b/97816 [ Linux ] platform/chromium/compositing/plugins/webplugin-no-alpha.html [ Pass ImageOnlyFailure ]
-webkit.org/b/97816 [ Linux ] platform/chromium/compositing/plugins/webplugin-reflection.html [ Pass ImageOnlyFailure ]
+webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-alpha.html [ Pass ImageOnlyFailure ]
+webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-no-alpha.html [ Pass ImageOnlyFailure ]
+webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-reflection.html [ Pass ImageOnlyFailure ]
 
 # Started failing on r128793
 webkit.org/b/96953 http/tests/inspector/network/network-xhr-replay.html [ Timeout Crash Pass ]
@@ -3323,7 +3323,7 @@ webkit.org/b/98948 [ Linux Debug ] http/tests/media/media-source/video-media-sou
 
 webkit.org/b/99089 transforms/3d/general/perspective-units.html [ Pass ImageOnlyFailure ]
 
-webkit.org/b/99134 platform/chromium/compositing/tiny-layer-rotated.html [ Pass ImageOnlyFailure Failure ]
+webkit.org/b/99134 compositing/tiny-layer-rotated.html [ Pass ImageOnlyFailure Failure ]
 
 # Flaky crashing on debug
 webkit.org/b/99604 [ Mac Win ] http/tests/workers/text-encoding.html [ Pass Crash ]
@@ -3447,7 +3447,7 @@ webkit.org/b/90022 fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
 webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
 webkit.org/b/90022 fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
-webkit.org/b/101986 [ Linux Win ] platform/chromium/compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+webkit.org/b/101986 [ Linux Win ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
@@ -3629,7 +3629,7 @@ crbug.com/225184 fast/frames/frame-set-rotation-hit.html [ ImageOnlyFailure ]
 crbug.com/225184 fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure ]
 crbug.com/225184 fast/repaint/background-scaling.html [ ImageOnlyFailure ]
 crbug.com/225184 fast/repaint/scale-page-shrink.html [ ImageOnlyFailure ]
-crbug.com/225184 platform/chromium/fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 crbug.com/225184 fast/events/scale-and-scroll-body.html [ Failure ]
 crbug.com/225184 fast/events/scroll-in-scaled-page-with-overflow-hidden.html [ Failure ]
 crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure ]
@@ -3697,7 +3697,7 @@ webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [
 # CURSOR_VISIBILITY is not enabled in chromium
 webkit.org/b/107601 fullscreen/video-cursor-auto-hide.html [ Failure ]
 
-webkit.org/b/111649 [ Mac Win Linux ] platform/chromium/fast/events/intercept-postmessage.html [ Slow ]
+webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ Slow ]
 
 webkit.org/b/111667 [ Debug Win ] media/encrypted-media/encrypted-media-events.html [ Pass Timeout ]
 
@@ -3736,7 +3736,7 @@ webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-window-location-replace.html [ Failure Pass ]
 webkit.org/b/112980 [ Win Mac ] http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
-webkit.org/b/112980 [ XP Release ] platform/chromium/http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
+webkit.org/b/112980 [ XP Release ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/masking/maskRegions.svg [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
 webkit.org/b/112981 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]

@@ -7,8 +7,6 @@
 crbug.com/145338 compositing/plugins
 crbug.com/145338 plugins
 crbug.com/145338 http/tests/plugins
-crbug.com/145338 platform/chromium/compositing/plugins
-crbug.com/145338 platform/chromium/plugins
 
 crbug.com/145338 fast/dom/Window/Plug-ins.html
 crbug.com/145338 fast/frames/sandboxed-iframe-about-blank.html
@@ -29,16 +27,14 @@ crbug.com/145338 http/tests/security/contentSecurityPolicy/object-src-none-block
 crbug.com/145338 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html
 crbug.com/145338 http/tests/security/contentSecurityPolicy/object-src-url-blocked.html
 crbug.com/145338 http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html
-crbug.com/145338 platform/chromium/permissionclient/plugin-permission.html
+crbug.com/145338 permissionclient/plugin-permission.html
 crbug.com/145338 userscripts/user-script-plugin-document.html
 
 crbug.com/145338 http/tests/inspector
 crbug.com/145338 http/tests/inspector-enabled
 crbug.com/145338 inspector
-crbug.com/145338 platform/chromium/inspector
 
 crbug.com/145338 accessibility
-crbug.com/145338 platform/chromium/accessibility
 
 crbug.com/145338 fast/forms/color
 crbug.com/145338 fast/forms/datalist
@@ -48,8 +44,7 @@ crbug.com/145338 fast/events/constructors/media-stream-event-constructor.html
 crbug.com/145338 fast/notifications
 crbug.com/145338 fast/speech
 crbug.com/145338 http/tests/notifications
-crbug.com/145338 platform/chromium/fast/forms/color
-crbug.com/145338 platform/chromium/media/video-capture-preview.html # Uses mediastream
+crbug.com/145338 media/video-capture-preview.html # Uses mediastream
 crbug.com/145338 webaudio
 crbug.com/145338 inspector-protocol/nmi-webaudio.html
 crbug.com/145338 inspector-protocol/nmi-webaudio-leak-test.html
@@ -86,9 +81,9 @@ fast/forms/time-multiple-fields [ WontFix ]
 fast/forms/week-multiple-fields [ WontFix ]
 
 # Page popup UI is for desktop platforms
-platform/chromium/fast/forms/page-popup [ WontFix ]
-platform/chromium/fast/forms/calendar-picker [ WontFix ]
-platform/chromium/fast/forms/suggestion-picker [ WontFix ]
+fast/forms/page-popup [ WontFix ]
+fast/forms/calendar-picker [ WontFix ]
+fast/forms/suggestion-picker [ WontFix ]
 
 # A Linux-specific test about the selection color
 platform/chromium-linux/editing/selection/linux_selection_color.html [ WontFix ]
