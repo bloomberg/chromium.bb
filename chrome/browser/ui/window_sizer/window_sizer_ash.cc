@@ -23,7 +23,7 @@ namespace {
 
 // When a window gets opened in default mode and the screen is less then this
 // width, the window will get opened in maximized mode.
-const int kForceMaximizeWidthLimit = 640;
+const int kForceMaximizeWidthLimit = 1366;
 
 // Check if the given browser is 'valid': It is a tabbed, non minimized
 // window, which intersects with the |bounds_in_screen| area of a given screen.
@@ -171,6 +171,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     if (!count || !top_window) {
       // When using "small screens" we want to always open in full screen mode.
       if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
+          !browser_->is_session_restore() &&
           work_area.width() < kForceMaximizeWidthLimit &&
           (!browser_->window() || !browser_->window()->IsFullscreen()) &&
           (!browser_->fullscreen_controller() ||
