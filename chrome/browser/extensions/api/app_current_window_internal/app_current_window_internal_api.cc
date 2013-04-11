@@ -103,7 +103,7 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
     ShellWindow* window) {
   // Start with the current bounds, and change any values that are specified in
   // the incoming parameters.
-  gfx::Rect bounds = window->GetBaseWindow()->GetBounds();
+  gfx::Rect bounds = window->GetClientBounds();
   scoped_ptr<SetBounds::Params> params(SetBounds::Params::Create(*args_));
   CHECK(params.get());
   if (params->bounds.left)

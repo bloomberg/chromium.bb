@@ -181,6 +181,19 @@ chrome.app.runtime.onLaunched.addListener(function() {
      }));
    },
 
+   function testPartialSetBounds() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 512, height: 256 }
+     }, callbackPass(function(win) {
+       win.setBounds({ height: 348 });
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(348, win.getBounds().height);
+         win.close();
+       }));
+     }));
+   },
+
    /*function testMaximize() {
      chrome.app.window.create('test.html', {width: 200, height: 200},
          callbackPass(function(win) {
