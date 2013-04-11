@@ -369,8 +369,7 @@ NotificationView::NotificationView(const Notification& notification,
     message_view_ = new BoundedLabel(
         ui::TruncateString(notification.message(), kMessageCharacterLimit), 0);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
-    message_view_->SetColors(message_center::kRegularTextColor,
-                             kDimTextBackgroundColor);
+    message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(4, 1));
     top_view_->AddChildView(message_view_);
   }
