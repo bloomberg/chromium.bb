@@ -10,6 +10,10 @@
 
 {
   'WATCHLIST_DEFINITIONS': {
+    'accessibility': {
+      'filepath': 'Source/WebCore/accessibility' \
+                  '|LayoutTests/accessibility',
+    },
     'animations': {
       'filepath': 'Source/WebCore/page/animation' \
                   '|LayoutTests/fast/animation' \
@@ -85,6 +89,8 @@
   },
 
   'WATCHLISTS': {
+    'accessibility':['dmazzoni@chromium.org',
+                     'aboxhall@chromium.org'],
     'animations': ['dstockwell@chromium.org',
                    'steveblock@chromium.org',
                    'shans@chromium.org'],
