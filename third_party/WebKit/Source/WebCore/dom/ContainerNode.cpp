@@ -439,26 +439,6 @@ static void willRemoveChild(Node* child)
     ChildFrameDisconnector(child).disconnect();
 }
 
-static void willRemoveChildren(ContainerNode* container)
-{
-    NodeVector children;
-    getChildNodes(container, children);
-
-    container->document()->nodeChildrenWillBeRemoved(container);
-
-    ChildListMutationScope mutation(container);
-    for (NodeVector::const_iterator it = children.begin(); it != children.end(); it++) {
-        Node* child = it->get();
-        mutation.willRemoveChild(child);
-        child->notifyMutationObserversNodeWillDetach();
-
-        // fire removed from document mutation events.
-        dispatchChildRemovalEvents(child);
-    }
-
-    ChildFrameDisconnector(container).disconnect(ChildFrameDisconnector::DescendantsOnly);
-}
-
 void ContainerNode::disconnectDescendantFrames()
 {
     ChildFrameDisconnector(this).disconnect();
@@ -578,53 +558,42 @@ void ContainerNode::removeChildren()
     // The container node can be removed from event handlers.
     RefPtr<ContainerNode> protect(this);
 
-    // exclude this node when looking for removed focusedNode since only children will be removed
+    // Exclude this node when looking for the focused or full screen Node since
+    // only children will be removed.
+    // FIXME: We should call these inside the loop below. Right now you can focus
+    // a node with mutation events and it'll never get blured.
     document()->removeFocusedNodeOfSubtree(this, true);
-
     document()->removeFullScreenElementOfSubtree(this, true);
 
-    // Do any prep work needed before actually starting to detach
-    // and remove... e.g. stop loading frames, fire unload events.
-    willRemoveChildren(protect.get());
-
-    Vector<RefPtr<Node>, 10> removedChildren;
+    ChildListMutationScope mutation(this);
+    NodeVector removedChildren;
     {
         WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
-        {
-            NoEventDispatchAssertion assertNoEventDispatch;
-            removedChildren.reserveInitialCapacity(childNodeCount());
-            while (RefPtr<Node> n = m_firstChild) {
-                Node* next = n->nextSibling();
 
-                // Remove the node from the tree before calling detach or removedFromDocument (4427024, 4129744).
-                // removeChild() does this after calling detach(). There is no explanation for
-                // this discrepancy between removeChild() and its optimized version removeChildren().
-                n->setPreviousSibling(0);
-                n->setNextSibling(0);
-                n->setParentOrShadowHostNode(0);
-                document()->adoptIfNeeded(n.get());
+        while (RefPtr<Node> child = m_firstChild) {
+            // Dispatch synchronous events like mutation and unload events.
+            dispatchChildRemovalEvents(child.get());
+            ChildFrameDisconnector(child.get()).disconnect();
 
-                m_firstChild = next;
-                if (n == m_lastChild)
-                    m_lastChild = 0;
-                removedChildren.append(n.release());
-            }
+            // FIXME: In theory this can fire focus events when the selection
+            // changes, but there's no obvious way to test it.
+            document()->nodeWillBeRemoved(child.get());
 
-            // Detach the nodes only after properly removed from the tree because
-            // a. detaching requires a proper DOM tree (for counters and quotes for
-            // example) and during the previous loop the next sibling still points to
-            // the node being removed while the node being removed does not point back
-            // and does not point to the same parent as its next sibling.
-            // b. destroying Renderers of standalone nodes is sometimes faster.
-            for (size_t i = 0; i < removedChildren.size(); ++i) {
-                Node* removedChild = removedChildren[i].get();
-                if (removedChild->attached())
-                    removedChild->detach();
-            }
+            // If an event moved the child start over.
+            if (child != m_firstChild)
+                continue;
+
+            mutation.willRemoveChild(child.get());
+            child->notifyMutationObserversNodeWillDetach();
+            removeBetween(0, child->nextSibling(), child.get());
+            removedChildren.append(child.release());
         }
 
+        // FIXME: We could avoid walking all the children twice by calling
+        // notify inside the loop and childrenChanged after but that would mean
+        // calling childrenChanged in a different order than all other methods.
+        // Figure out if this is safe.
         childrenChanged(false, 0, 0, -static_cast<int>(removedChildren.size()));
-        
         for (size_t i = 0; i < removedChildren.size(); ++i)
             ChildNodeRemovalNotifier(this).notify(removedChildren[i].get());
     }
