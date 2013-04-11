@@ -25,7 +25,7 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
   std::wstring value;
 
   base::win::RegKey policy_key(hive,
-                               policy::kRegistryMandatorySubKey,
+                               policy::kRegistryChromePolicyKey,
                                KEY_READ);
   if (policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *user_data_dir =

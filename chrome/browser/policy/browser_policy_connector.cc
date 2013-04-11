@@ -567,7 +567,7 @@ scoped_ptr<PolicyService>
 ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
-  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(policy_list));
+  scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(policy_list));
   return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_MACOSX)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();

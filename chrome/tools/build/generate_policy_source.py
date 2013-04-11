@@ -17,10 +17,8 @@ import sys
 import textwrap
 
 
-CHROME_MANDATORY_SUBKEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
-CHROME_RECOMMENDED_SUBKEY = CHROME_MANDATORY_SUBKEY + '\\\\Recommended'
-CHROMIUM_MANDATORY_SUBKEY = 'SOFTWARE\\\\Policies\\\\Chromium'
-CHROMIUM_RECOMMENDED_SUBKEY = CHROMIUM_MANDATORY_SUBKEY + '\\\\Recommended'
+CHROME_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
+CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
 
 
 class PolicyDetails:
@@ -193,12 +191,9 @@ def _WritePolicyConstantHeader(policies, os, f):
           'namespace policy {\n\n')
 
   if os == 'win':
-    f.write('// The windows registry path where mandatory policy '
+    f.write('// The windows registry path where Chrome policy '
             'configuration resides.\n'
-            'extern const wchar_t kRegistryMandatorySubKey[];\n'
-            '// The windows registry path where recommended policy '
-            'configuration resides.\n'
-            'extern const wchar_t kRegistryRecommendedSubKey[];\n\n')
+            'extern const wchar_t kRegistryChromePolicyKey[];\n')
 
   f.write('// Lists policy types mapped to their names and expected types.\n'
           '// Used to initialize ConfigurationPolicyProviders.\n'
@@ -267,15 +262,11 @@ def _WritePolicyConstantSource(policies, os, f):
 
   if os == 'win':
     f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
-            'const wchar_t kRegistryMandatorySubKey[] = '
-            'L"' + CHROME_MANDATORY_SUBKEY + '";\n'
-            'const wchar_t kRegistryRecommendedSubKey[] = '
-            'L"' + CHROME_RECOMMENDED_SUBKEY + '";\n'
+            'const wchar_t kRegistryChromePolicyKey[] = '
+            'L"' + CHROME_POLICY_KEY + '";\n'
             '#else\n'
-            'const wchar_t kRegistryMandatorySubKey[] = '
-            'L"' + CHROMIUM_MANDATORY_SUBKEY + '";\n'
-            'const wchar_t kRegistryRecommendedSubKey[] = '
-            'L"' + CHROMIUM_RECOMMENDED_SUBKEY + '";\n'
+            'const wchar_t kRegistryChromePolicyKey[] = '
+            'L"' + CHROMIUM_POLICY_KEY + '";\n'
             '#endif\n\n')
 
   f.write('bool IsDeprecatedPolicy(const std::string& policy) {\n'
