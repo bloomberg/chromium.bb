@@ -4,15 +4,9 @@
 
 #include "chrome/browser/policy/policy_loader_win.h"
 
-#include <userenv.h>
 #include <windows.h>
 
-#include <cstring>
-
-#include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/path_service.h"
 #include "base/process.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -24,7 +18,6 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,17 +25,11 @@
 namespace schema = json_schema_constants;
 
 using base::win::RegKey;
+using namespace policy::registry_constants;
 
 namespace policy {
 
 namespace {
-
-// Constants for registry key names.
-const wchar_t kPathSep[] = L"\\";
-const wchar_t kThirdParty[] = L"3rdparty";
-const wchar_t kMandatory[] = L"policy";
-const wchar_t kRecommended[] = L"recommended";
-const wchar_t kSchema[] = L"schema";
 
 // Installs |value| in the given registry |path| and |hive|, under the key
 // |name|. Returns false on errors.
@@ -325,7 +312,7 @@ void TestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(policy_list));
+  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(policy_list));
   return new AsyncPolicyProvider(loader.Pass());
 }
 
@@ -333,7 +320,7 @@ void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   ASSERT_HRESULT_SUCCEEDED(key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                                           UTF8ToUTF16(policy_value).c_str()));
@@ -341,7 +328,7 @@ void TestHarness::InstallStringPolicy(const std::string& policy_name,
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
@@ -349,7 +336,7 @@ void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
@@ -358,7 +345,7 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   RegKey key(hive_,
-             (string16(kRegistryChromePolicyKey) + ASCIIToUTF16("\\") +
+             (string16(kRegistryMandatorySubKey) + ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
@@ -380,7 +367,7 @@ void TestHarness::InstallDictionaryPolicy(
     const base::DictionaryValue* policy_value) {
   std::string json;
   base::JSONWriter::Write(policy_value, &json);
-  RegKey key(hive_, kRegistryChromePolicyKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  UTF8ToUTF16(json).c_str());
@@ -389,7 +376,7 @@ void TestHarness::InstallDictionaryPolicy(
 void TestHarness::Install3rdPartyPolicy(const base::DictionaryValue* policies) {
   // The first level entries are domains, and the second level entries map
   // components to their policy.
-  const string16 kPathPrefix = string16(kRegistryChromePolicyKey) + kPathSep +
+  const string16 kPathPrefix = string16(kRegistryMandatorySubKey) + kPathSep +
                                kThirdParty + kPathSep;
   for (base::DictionaryValue::Iterator domain(*policies);
        domain.HasNext(); domain.Advance()) {
@@ -400,7 +387,7 @@ void TestHarness::Install3rdPartyPolicy(const base::DictionaryValue* policies) {
     }
     for (base::DictionaryValue::Iterator component(*components);
          component.HasNext(); component.Advance()) {
-      const string16 path = string16(kRegistryChromePolicyKey) + kPathSep +
+      const string16 path = string16(kRegistryMandatorySubKey) + kPathSep +
                             kThirdParty + kPathSep +
                             UTF8ToUTF16(domain.key()) + kPathSep +
                             UTF8ToUTF16(component.key());
@@ -435,104 +422,26 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(TestHarness::CreateHKCU, TestHarness::CreateHKLM));
 
 // Test cases for windows policy provider specific functionality.
-class PolicyLoaderWinTest : public PolicyTestBase,
-                            public AppliedGPOListProvider {
+class PolicyLoaderWinTest : public PolicyTestBase {
  protected:
-  // The policy key this tests places data under. This must match the data
-  // files in chrome/test/data/policy/gpo.
-  static const char16 kTestPolicyKey[];
-
-  PolicyLoaderWinTest()
-      : gpo_list_(NULL),
-        gpo_list_status_(ERROR_ACCESS_DENIED) {}
+  PolicyLoaderWinTest() {}
   virtual ~PolicyLoaderWinTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-    test_data_dir_ = test_data_dir_.AppendASCII("policy").AppendASCII("gpo");
-  }
-
-  // AppliedGPOListProvider:
-  virtual DWORD GetAppliedGPOList(DWORD flags,
-                                  LPCTSTR machine_name,
-                                  PSID sid_user,
-                                  GUID* extension_guid,
-                                  PGROUP_POLICY_OBJECT* gpo_list) OVERRIDE {
-    *gpo_list = gpo_list_;
-    return gpo_list_status_;
-  }
-  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) OVERRIDE {
-    return TRUE;
-  }
-
-  void InitGPO(GROUP_POLICY_OBJECT* gpo,
-               DWORD options,
-               const base::FilePath& path,
-               GROUP_POLICY_OBJECT* next,
-               GROUP_POLICY_OBJECT* prev) {
-    memset(gpo, 0, sizeof(GROUP_POLICY_OBJECT));
-    gpo->dwOptions = options;
-    gpo->lpFileSysPath = const_cast<wchar_t*>(path.value().c_str());
-    gpo->pNext = next;
-    gpo->pPrev = prev;
-  }
-
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(&test_policy_definitions::kList, kTestPolicyKey,
-                           this);
+    PolicyLoaderWin loader(&test_policy_definitions::kList);
     scoped_ptr<PolicyBundle> loaded(loader.Load());
     return loaded->Equals(expected);
   }
 
-  void InstallRegistrySentinel() {
-    RegKey hklm_key(HKEY_CURRENT_USER, kTestPolicyKey, KEY_ALL_ACCESS);
-    ASSERT_TRUE(hklm_key.Valid());
-    hklm_key.WriteValue(
-        UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
-        UTF8ToUTF16("registry").c_str());
-  }
-
-  bool MatchesRegistrySentinel() {
-    base::DictionaryValue expected_policy;
-    expected_policy.SetString(test_policy_definitions::kKeyString, "registry");
-    PolicyBundle expected;
-    expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-    return Matches(expected);
-  }
-
-  bool MatchesTestBundle() {
-    base::DictionaryValue expected_policy;
-    expected_policy.SetBoolean(test_policy_definitions::kKeyBoolean, true);
-    expected_policy.SetString(test_policy_definitions::kKeyString, "GPO");
-    expected_policy.SetInteger(test_policy_definitions::kKeyInteger, 42);
-    scoped_ptr<base::ListValue> list(new base::ListValue());
-    list->AppendString("GPO 1");
-    list->AppendString("GPO 2");
-    expected_policy.Set(test_policy_definitions::kKeyStringList,
-                        list.release());
-    PolicyBundle expected;
-    expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE);
-    return Matches(expected);
-  }
-
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
-  PGROUP_POLICY_OBJECT gpo_list_;
-  DWORD gpo_list_status_;
-  base::FilePath test_data_dir_;
 };
 
-const char16 PolicyLoaderWinTest::kTestPolicyKey[] =
-    L"SOFTWARE\\Policies\\Chromium";
-
 TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
-  RegKey hklm_key(HKEY_LOCAL_MACHINE, kTestPolicyKey, KEY_ALL_ACCESS);
+  RegKey hklm_key(HKEY_LOCAL_MACHINE, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(hklm_key.Valid());
   hklm_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hklm").c_str());
-  RegKey hkcu_key(HKEY_CURRENT_USER, kTestPolicyKey, KEY_ALL_ACCESS);
+  RegKey hkcu_key(HKEY_CURRENT_USER, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(hkcu_key.Valid());
   hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
@@ -560,7 +469,7 @@ TEST_F(PolicyLoaderWinTest, Load3rdPartyWithoutSchema) {
   policy_dict.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.policy",
                   dict.DeepCopy());
   EXPECT_TRUE(InstallValue(policy_dict, HKEY_LOCAL_MACHINE,
-                           kTestPolicyKey, kThirdParty));
+                           kRegistryMandatorySubKey, kThirdParty));
 
   PolicyBundle expected;
   expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
@@ -577,7 +486,7 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   // combinations, to verify that they overlap as expected.
 
   const string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
 
   const char kUserMandatory[] = "user-mandatory";
   const char kUserRecommended[] = "user-recommended";
@@ -649,7 +558,7 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   encoded_policy.SetString("dict", encoded_dict);
 
   const string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\string");
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\string");
   EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
@@ -672,7 +581,7 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
   encoded_policy.SetInteger("double", 456);
 
   const string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\int");
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\int");
   EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
@@ -698,7 +607,7 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   schema.Set(schema::kAdditionalProperties, default_schema.DeepCopy());
 
   const string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
   EXPECT_TRUE(WriteSchema(schema, HKEY_CURRENT_USER, kPathSuffix, kSchema));
 
   // Write some test values.
@@ -717,120 +626,10 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   expected_policy.SetInteger("special-int2", -456);
   expected_policy.SetDouble("double1", 789.0);
   expected_policy.SetDouble("double2", 123.456e7);
-  expected_policy.Set("invalid", base::Value::CreateNullValue());
   PolicyBundle expected;
   expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "test"))
       .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyNotPresent) {
-  InstallRegistrySentinel();
-  gpo_list_ = NULL;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  PolicyBundle empty;
-  EXPECT_TRUE(Matches(empty));
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyEmpty) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  PolicyBundle empty;
-  EXPECT_TRUE(Matches(empty));
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyNonExistingFile) {
-  InstallRegistrySentinel();
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, test_data_dir_, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyBadPath) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("bad"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyPresent) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("test1"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyMerged) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test2"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test1"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyDisabled) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test2"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, GPO_FLAG_DISABLE, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyForcedPolicy) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test2"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, GPO_FLAG_FORCE, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyUNCPath) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath unc_path(L"\\\\some_share\\GPO");
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, unc_path, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
 }
 
 }  // namespace policy

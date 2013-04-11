@@ -4,10 +4,10 @@
 
 #include "chrome/app/breakpad_win.h"
 
+#include <windows.h>
 #include <shellapi.h>
 #include <tchar.h>
 #include <userenv.h>
-#include <windows.h>
 
 #include <algorithm>
 #include <vector>
@@ -19,8 +19,8 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
@@ -57,9 +57,9 @@ bool g_deferred_crash_uploads = false;
 }   // namespace breakpad_win
 
 using breakpad_win::g_custom_entries;
-using breakpad_win::g_deferred_crash_uploads;
 using breakpad_win::g_experiment_chunks_offset;
 using breakpad_win::g_num_of_experiments_offset;
+using breakpad_win::g_deferred_crash_uploads;
 
 namespace {
 
@@ -288,14 +288,14 @@ static bool MetricsReportingControlledByPolicy(bool* result) {
   string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
   DWORD value = 0;
   base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
-                                    policy::kRegistryChromePolicyKey, KEY_READ);
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
   if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value != 0;
     return true;
   }
 
   base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
-                                    policy::kRegistryChromePolicyKey, KEY_READ);
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value != 0;
     return true;
