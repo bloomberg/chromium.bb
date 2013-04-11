@@ -330,4 +330,74 @@ TEST_F(SearchTest, StartMarginCGI) {
             GetInstantURL(profile(), 10));
 }
 
+TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
+  EnableInstantExtendedAPIForTesting();
+
+  // Enable Instant. Still no Instant URL because "strk" is missing.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
+
+  // No default search provider support yet.
+  EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
+
+  {
+    // Set an Instant URL with a valid search terms replacement key.
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+
+    TemplateURLData data;
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&strk";
+    data.search_terms_replacement_key = "strk";
+
+    TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
+  }
+
+  // Default search provider should now support instant.
+  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
+  // Enable suggest. No difference.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
+
+  // Disable Instant. No difference.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, false);
+  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
+
+  // Override the Instant URL on the commandline. Oops, forgot "strk".
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantURL,
+      "http://myserver.com:9000/dev?bar=bar#bar=bar");
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
+
+  // Check that command line overrides don't affect the default search provider.
+  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
+
+  // Disable suggest. No Instant URL.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
+  // Even with suggest disabled, the default search provider still supports
+  // instant.
+  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
+
+  {
+    // Set an Instant URL with no valid search terms replacement key.
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+
+    TemplateURLData data;
+    data.SetURL("http://bar.com/url?bar={searchTerms}");
+    data.instant_url = "http://bar.com/instant?foo=foo#foo=foo";
+    data.search_terms_replacement_key = "strk";
+
+    TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
+  }
+
+  EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
+}
+
 }  // namespace chrome

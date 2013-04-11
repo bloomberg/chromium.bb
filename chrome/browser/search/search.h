@@ -109,6 +109,9 @@ bool IsInstantEnabled(Profile* profile);
 // trials.
 bool IsAggressiveLocalNTPFallbackEnabled();
 
+// Returns whether the current default search provider supports instant.
+bool DefaultSearchProviderSupportsInstant(Profile* profile);
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

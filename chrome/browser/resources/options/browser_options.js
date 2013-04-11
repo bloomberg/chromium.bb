@@ -702,6 +702,10 @@ cr.define('options', function() {
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
     },
 
+    updateInstantState_: function(suggestEnabled) {
+      $('instant-enabled-control').disabled = !suggestEnabled;
+    },
+
     /**
      * Updates the sync section with the given state.
      * @param {Object} syncData A bunch of data records that describe the status
@@ -1427,6 +1431,7 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
+    'updateInstantState',
     'updateSearchEngines',
     'updateStartupPages',
     'updateSyncState',

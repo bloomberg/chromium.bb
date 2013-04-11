@@ -635,6 +635,21 @@ void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
   SendProfilesInfo();
 }
 
+void BrowserOptionsHandler::OnSearchSuggestPrefChange() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+
+  bool instant_checkbox_enabled = true;
+  if (!chrome::DefaultSearchProviderSupportsInstant(profile) ||
+      !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
+    instant_checkbox_enabled = false;
+  }
+
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.updateInstantState",
+      base::FundamentalValue(instant_checkbox_enabled));
+}
+
 void BrowserOptionsHandler::PageLoadStarted() {
   page_initialized_ = false;
 }
@@ -710,6 +725,11 @@ void BrowserOptionsHandler::InitializeHandler() {
       prefs::kSigninAllowed,
       base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
                  base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kSearchSuggestEnabled,
+      base::Bind(&BrowserOptionsHandler::OnSearchSuggestPrefChange,
+                 base::Unretained(this)));
+
 #if !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
       prefs::kProxy,
@@ -720,7 +740,10 @@ void BrowserOptionsHandler::InitializeHandler() {
 
 void BrowserOptionsHandler::InitializePage() {
   page_initialized_ = true;
+
+  // Note that OnTemplateURLServiceChanged calls OnSearchSuggestPrefChange.
   OnTemplateURLServiceChanged();
+
   ObserveThemeChanged();
   OnStateChanged();
   UpdateDefaultBrowserState();
@@ -912,6 +935,10 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       base::FundamentalValue(default_index),
       base::FundamentalValue(
           template_url_service_->is_default_search_managed()));
+
+  // Update the state of the instant checkbox as the new search engine may
+  // not support instant.
+  OnSearchSuggestPrefChange();
 }
 
 // static

@@ -425,14 +425,12 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
     return instant_url;
   }
 
+  if (!DefaultSearchProviderSupportsInstant(profile))
+    return GURL();
+
   GURL instant_url =
       TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
-
   if (extended_api_enabled) {
-    // Extended mode won't work if the search terms replacement key is absent.
-    if (!template_url->HasSearchTermsReplacementKey(instant_url))
-      return GURL();
-
     // Extended mode requires HTTPS. Force it if necessary.
     if (!instant_url.SchemeIsSecure()) {
       const std::string secure_scheme = chrome::kHttpsScheme;
@@ -464,6 +462,22 @@ bool IsAggressiveLocalNTPFallbackEnabled() {
           &flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kLocalNTPFlagName, false, flags);
   }
+
+  return false;
+}
+
+bool DefaultSearchProviderSupportsInstant(Profile* profile) {
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (template_url) {
+    GURL instant_url = TemplateURLRefToGURL(template_url->instant_url_ref(),
+                                            kDisableStartMargin);
+    if (instant_url.is_valid()) {
+      // Extended mode instant requires a search terms replacement key.
+      return !IsInstantExtendedAPIEnabled() ||
+             template_url->HasSearchTermsReplacementKey(instant_url);
+    }
+  }
+  // No template url or instant url, no instant.
   return false;
 }
 

@@ -59,6 +59,9 @@ class BrowserOptionsHandler
   // Will be called when the kSigninAllowed pref has changed.
   void OnSigninAllowedPrefChange();
 
+  // Will be called when the kSearchSuggestEnabled pref has changed.
+  void OnSearchSuggestPrefChange();
+
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
