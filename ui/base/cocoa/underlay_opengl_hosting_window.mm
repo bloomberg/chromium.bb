@@ -29,52 +29,59 @@
 @end
 
 @implementation OpaqueView
-
 - (void)drawRect:(NSRect)r {
   [[NSColor blackColor] set];
   NSRectFill(r);
 }
-
-- (void)resetCursorRects {
-  // When a view is moved relative to its peers, its cursor rects are reset.
-  // (This is an undocumented side-effect.) At that time, verify that any
-  // OpaqueViews are z-ordered in the front, and enforce it if need be.
-
-  NSView* rootView = [[[self window] contentView] superview];
-  NSArray* subviews = [rootView subviews];
-
-  // If a window has any opaques, it will have exactly two.
-  DCHECK_EQ(2U, [[subviews indexesOfObjectsPassingTest:
-      ^(id el, NSUInteger i, BOOL *stop) {
-        return [el isKindOfClass:[OpaqueView class]];
-      }] count]);
-
-  NSUInteger count = [subviews count];
-  if (count < 2)
-    return;
-
-  if (![[subviews objectAtIndex:count - 1] isKindOfClass:[OpaqueView class]] ||
-      ![[subviews objectAtIndex:count - 2] isKindOfClass:[OpaqueView class]]) {
-    NSComparator opaqueComparator = ^(id view1, id view2) {
-        BOOL view_1_is_opaque_view = [view1 isKindOfClass:[OpaqueView class]];
-        BOOL view_2_is_opaque_view = [view2 isKindOfClass:[OpaqueView class]];
-        if (view_1_is_opaque_view && view_2_is_opaque_view)
-          return (NSComparisonResult)NSOrderedSame;
-        if (view_1_is_opaque_view)
-          return (NSComparisonResult)NSOrderedDescending;
-        if (view_2_is_opaque_view)
-          return (NSComparisonResult)NSOrderedAscending;
-        return (NSComparisonResult)NSOrderedSame;
-    };
-    NSArray* sortedSubviews =
-        [subviews sortedArrayUsingComparator:opaqueComparator];
-    [rootView setSubviews:sortedSubviews];
-  }
-}
-
 @end
 
+namespace {
+
+NSComparisonResult OpaqueViewsOnTop(id view1, id view2, void* context) {
+  BOOL view_1_is_opaque_view = [view1 isKindOfClass:[OpaqueView class]];
+  BOOL view_2_is_opaque_view = [view2 isKindOfClass:[OpaqueView class]];
+  if (view_1_is_opaque_view && view_2_is_opaque_view)
+    return NSOrderedSame;
+  if (view_1_is_opaque_view)
+    return NSOrderedDescending;
+  if (view_2_is_opaque_view)
+    return NSOrderedAscending;
+  return NSOrderedSame;
+}
+
+void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
+  if (![[self window] isKindOfClass:[UnderlayOpenGLHostingWindow class]])
+    return;
+
+  // Make sure the opaques are on top.
+  [self sortSubviewsUsingFunction:OpaqueViewsOnTop context:NULL];
+}
+
+}  // namespace
+
 @implementation UnderlayOpenGLHostingWindow
+
++ (void)load {
+  base::mac::ScopedNSAutoreleasePool pool;
+
+  // On 10.8+ the background for textured windows are no longer drawn by
+  // NSGrayFrame, and NSThemeFrame is used instead <http://crbug.com/114745>.
+  Class borderViewClass = NSClassFromString(
+      base::mac::IsOSMountainLionOrLater() ? @"NSThemeFrame" : @"NSGrayFrame");
+  DCHECK(borderViewClass);
+  if (!borderViewClass) return;
+
+  // Install callback for added views.
+  Method m = class_getInstanceMethod([NSView class], @selector(didAddSubview:));
+  DCHECK(m);
+  if (m) {
+    BOOL didAdd = class_addMethod(borderViewClass,
+                                  @selector(didAddSubview:),
+                                  reinterpret_cast<IMP>(&RootDidAddSubview),
+                                  method_getTypeEncoding(m));
+    DCHECK(didAdd);
+  }
+}
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)windowStyle
