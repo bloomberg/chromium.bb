@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database.h"
+#include "components/webdata/common/webdata_export.h"
 
 class WebDataServiceBackend;
 class WebDataRequestManager;
@@ -41,7 +42,7 @@ class WebDataServiceConsumer;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class WebDatabaseService
+class WEBDATA_EXPORT WebDatabaseService
     : public base::RefCountedThreadSafe<
           WebDatabaseService,
           content::BrowserThread::DeleteOnUIThread> {
@@ -93,6 +94,9 @@ class WebDatabaseService
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDatabaseService>;
+  // We have to friend RCTS<> so WIN shared-lib build is happy (crbug/112250).
+  friend class base::RefCountedThreadSafe<WebDatabaseService,
+      content::BrowserThread::DeleteOnUIThread>;
 
   virtual ~WebDatabaseService();
 

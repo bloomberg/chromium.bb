@@ -6,7 +6,8 @@
 #define COMPONENTS_WEBDATA_COMMON_WEBDATA_CONSTANTS_H_
 
 #include "base/files/file_path.h"
+#include "components/webdata/common/webdata_export.h"
 
-extern const base::FilePath::CharType kWebDataFilename[];
+WEBDATA_EXPORT extern const base::FilePath::CharType kWebDataFilename[];
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEBDATA_CONSTANTS_H_

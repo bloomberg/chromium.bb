@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/webdata/common/web_database_table.h"
+#include "components/webdata/common/webdata_export.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
@@ -22,7 +23,7 @@ class NotificationService;
 }
 
 // This class manages a SQLite database that stores various web page meta data.
-class WebDatabase {
+class WEBDATA_EXPORT WebDatabase {
  public:
   enum State {
     COMMIT_NOT_NEEDED,

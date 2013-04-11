@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "components/webdata/common/webdata_export.h"
 
 class WDTypedResult;
 
@@ -38,7 +39,7 @@ typedef base::Callback<void(const WDTypedResult*)> DestroyCallback;
 //
 // The top level class for a result.
 //
-class WDTypedResult {
+class WEBDATA_EXPORT WDTypedResult {
  public:
   virtual ~WDTypedResult() {
   }

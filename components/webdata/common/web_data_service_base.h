@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
+#include "components/webdata/common/webdata_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "sql/init_status.h"
@@ -23,7 +24,7 @@ class Thread;
 }
 
 // Base for WebDataService class hierarchy.
-class WebDataServiceBase
+class WEBDATA_EXPORT WebDataServiceBase
     : public base::RefCountedThreadSafe<WebDataServiceBase,
           content::BrowserThread::DeleteOnUIThread> {
  public:
@@ -99,6 +100,9 @@ class WebDataServiceBase
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDataServiceBase>;
+  // We have to friend RCTS<> so WIN shared-lib build is happy (crbug/112250).
+  friend class base::RefCountedThreadSafe<WebDataServiceBase,
+      content::BrowserThread::DeleteOnUIThread>;
 
   ProfileErrorCallback profile_error_callback_;
 

@@ -104,12 +104,16 @@
             'autofill_common',
             'autofill_regexes',
             'autofill_risk_proto',
+            'encryptor',
+            'webdata_common',
             '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
             '../build/temp_gyp/googleurl.gyp:googleurl',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
+            '../sql/sql.gyp:sql',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -120,8 +124,6 @@
             # For grip/generated_resources.h and grit/chromium_strings.h
             # TODO(kaiwang): Remove this dependency on chrome.
             '../chrome/chrome_resources.gyp:chrome_strings',
-
-            # TODO(kaiwang): Add webdata after it's fully componentized.
           ],
           'sources': [
             'autofill/browser/address.cc',
