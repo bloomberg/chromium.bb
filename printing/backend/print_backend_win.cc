@@ -67,7 +67,7 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
                           kLevel, NULL, 0, &bytes_needed, &count_returned);
   if (!bytes_needed)
     return false;
-  scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+  scoped_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
   ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, kLevel,
                      printer_info_buffer.get(), bytes_needed, &bytes_needed,
                      &count_returned);
@@ -208,7 +208,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
           NULL, NULL, 0);
       if (devmode_size <= 0)
         return false;
-      scoped_array<BYTE> devmode_out_buffer(new BYTE[devmode_size]);
+      scoped_ptr<BYTE[]> devmode_out_buffer(new BYTE[devmode_size]);
       DEVMODE* devmode_out =
           reinterpret_cast<DEVMODE*>(devmode_out_buffer.get());
       DocumentProperties(

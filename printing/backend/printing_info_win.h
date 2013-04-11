@@ -33,7 +33,7 @@ class PrinterInfo {
   }
 
  private:
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
 };
 
 // This class is designed to work with DRIVER_INFO_X structures
@@ -51,7 +51,7 @@ class DriverInfo {
   }
 
  private:
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
 };
 
 }  // namespace internal

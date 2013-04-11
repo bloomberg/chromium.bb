@@ -50,7 +50,7 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   if (!OpenPrinter(const_cast<wchar_t*>(printer_name.c_str()), &printer, NULL))
     return E_FAIL;
 
-  scoped_array<uint8> buffer;
+  scoped_ptr<uint8[]> buffer;
   const DEVMODE* dev_mode = NULL;
   HRESULT result = S_OK;
   lppd->hDC = NULL;

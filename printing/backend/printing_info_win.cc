@@ -16,7 +16,7 @@ uint8* GetDriverInfo(HANDLE printer, int level) {
   if (size == 0) {
     return NULL;
   }
-  scoped_array<uint8> buffer(new uint8[size]);
+  scoped_ptr<uint8[]> buffer(new uint8[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinterDriver(printer, NULL, level, buffer.get(), size, &size)) {
     return NULL;
@@ -32,7 +32,7 @@ uint8* GetPrinterInfo(HANDLE printer, int level) {
                     ", error = " << GetLastError();
     return NULL;
   }
-  scoped_array<uint8> buffer(new uint8[size]);
+  scoped_ptr<uint8[]> buffer(new uint8[size]);
   memset(buffer.get(), 0, size);
   if (!::GetPrinter(printer, level, buffer.get(), size, &size)) {
     LOG(WARNING) << "Failed to get PRINTER_INFO_" << level <<
