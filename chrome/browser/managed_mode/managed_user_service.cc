@@ -152,7 +152,7 @@ void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kManagedModeManualURLs,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
-                                ManagedModeURLFilter::BLOCK,
+                                ManagedModeURLFilter::ALLOW,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kManagedModeLocalPassphrase,
                                std::string(),

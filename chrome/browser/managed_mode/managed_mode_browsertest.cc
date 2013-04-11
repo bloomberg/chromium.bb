@@ -59,6 +59,7 @@ class InterstitialObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
 };
 
+// Tests the filter mode in which all sites are blocked by default.
 // TODO(sergiu): Make the webkit error message disappear when navigating to an
 // interstitial page. The message states: "Not allowed to load local resource:
 // chrome://resources/css/widgets.css" followed by the compiled page.
@@ -218,6 +219,8 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+    profile->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
+                                    ManagedModeURLFilter::BLOCK);
     managed_user_service_->Init();
   }
 

@@ -195,6 +195,11 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
 
   GURL example_url("http://example.com");
   GURL moose_url("http://moose.org");
+  EXPECT_EQ(ManagedModeURLFilter::ALLOW,
+            url_filter->GetFilteringBehaviorForURL(example_url));
+
+  profile_->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
+                                   ManagedModeURLFilter::BLOCK);
   EXPECT_EQ(ManagedModeURLFilter::BLOCK,
             url_filter->GetFilteringBehaviorForURL(example_url));
 

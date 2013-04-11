@@ -43,9 +43,14 @@ void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
 
 // Tests that showing the blocking interstitial for a WebContents without a
 // ManagedModeNavigationObserver doesn't crash.
-IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest, NoNavigationObserver) {
+IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest,
+                       NoNavigationObserverBlock) {
+  Profile* profile = browser()->profile();
+  profile->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
+                                  ManagedModeURLFilter::BLOCK);
+
   scoped_ptr<WebContents> web_contents(
-      WebContents::Create(WebContents::CreateParams(browser()->profile())));
+      WebContents::Create(WebContents::CreateParams(profile)));
   NavigationController& controller = web_contents->GetController();
   content::TestNavigationObserver observer(
       content::Source<NavigationController>(&controller), 1);
