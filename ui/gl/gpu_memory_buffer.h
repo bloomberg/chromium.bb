@@ -23,7 +23,7 @@ class Size;
 // behavior and is not allowed.
 class GpuMemoryBuffer {
  public:
-  typedef base::Callback<scoped_ptr<gfx::GpuMemoryBuffer>(gfx::Size)> Create;
+  typedef base::Callback<scoped_ptr<gfx::GpuMemoryBuffer>(gfx::Size)> Creator;
   enum AccessMode {
     READ_ONLY,
     WRITE_ONLY,

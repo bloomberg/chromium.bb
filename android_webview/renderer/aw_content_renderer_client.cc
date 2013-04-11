@@ -5,7 +5,6 @@
 #include "android_webview/renderer/aw_content_renderer_client.h"
 
 #include "android_webview/common/aw_resource.h"
-#include "android_webview/common/gpu_memory_buffer_factory_proxy.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/view_renderer.h"
@@ -106,11 +105,6 @@ MessageLoop* AwContentRendererClient::OverrideCompositorMessageLoop() const {
 
 bool AwContentRendererClient::ShouldCreateCompositorInputHandler() const {
   return should_create_compositor_input_handler_;
-}
-
-gfx::GpuMemoryBuffer::Create
-AwContentRendererClient::GetGpuMemoryBufferFactory() const {
-  return GetGpuMemoryBufferFactoryProxy();
 }
 
 }  // namespace android_webview

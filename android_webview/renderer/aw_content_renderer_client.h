@@ -43,7 +43,6 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
   virtual MessageLoop* OverrideCompositorMessageLoop() const OVERRIDE;
   virtual bool ShouldCreateCompositorInputHandler() const OVERRIDE;
-  virtual gfx::GpuMemoryBuffer::Create GetGpuMemoryBufferFactory() const;
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;

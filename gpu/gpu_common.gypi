@@ -25,6 +25,8 @@
       'command_buffer/client/client_context_state.cc',
       'command_buffer/client/client_context_state_autogen.h',
       'command_buffer/client/client_context_state_impl_autogen.h',
+      'command_buffer/client/gpu_memory_buffer_factory.cc',
+      'command_buffer/client/gpu_memory_buffer_factory.h',
       'command_buffer/client/gles2_impl_export.h',
       'command_buffer/client/gles2_implementation_autogen.h',
       'command_buffer/client/gles2_implementation.cc',

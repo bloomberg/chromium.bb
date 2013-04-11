@@ -165,8 +165,6 @@
         'common/aw_resource.h',
         'common/aw_switches.cc',
         'common/aw_switches.h',
-        'common/gpu_memory_buffer_factory_proxy.cc',
-        'common/gpu_memory_buffer_factory_proxy.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
         'common/renderer_picture_map.cc',

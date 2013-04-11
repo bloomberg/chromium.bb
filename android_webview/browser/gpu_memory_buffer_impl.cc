@@ -5,10 +5,10 @@
 #include "android_webview/browser/gpu_memory_buffer_impl.h"
 
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
-#include "android_webview/common/gpu_memory_buffer_factory_proxy.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gpu_memory_buffer.h"
 
@@ -56,7 +56,8 @@ uint32 GpuMemoryBufferImpl::GetStride() {
 void GpuMemoryBufferImpl::SetAwDrawGLFunctionTable(
     AwDrawGLFunctionTable* table) {
   g_gl_draw_functions = table;
-  SetGpuMemoryBufferFactoryProxy(base::Bind(&CreateGpuMemoryBuffer));
+  gpu::SetProcessDefaultGpuMemoryBufferFactory(
+      base::Bind(&CreateGpuMemoryBuffer));
 }
 
 }  // namespace android_webview
