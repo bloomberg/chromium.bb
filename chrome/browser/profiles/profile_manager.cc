@@ -489,6 +489,11 @@ void ProfileManager::CreateProfileAsync(
                               is_managed);
     }
     info->callbacks.push_back(callback);
+
+    if (is_managed) {
+      content::RecordAction(
+          UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
+    }
   }
 }
 
