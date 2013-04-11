@@ -422,7 +422,8 @@ charset:
   CHARSET_SYM maybe_space STRING maybe_space ';' {
      if (parser->m_styleSheet)
          parser->m_styleSheet->parserSetEncodingFromCharsetRule($3);
-     parser->startEndUnknownRule();
+     if (parser->isExtractingSourceData() && parser->m_currentRuleDataStack->isEmpty() && parser->m_ruleSourceDataResult)
+         parser->addNewRuleToSourceTree(CSSRuleSourceData::createUnknown());
      $$ = 0;
   }
   | CHARSET_SYM error invalid_block {
@@ -527,14 +528,14 @@ block_rule:
 
 at_import_header_end_maybe_space:
     maybe_space {
-        parser->endRuleHeader();
-        parser->startRuleBody();
+        parser->markRuleHeaderEnd();
+        parser->markRuleBodyStart();
     }
     ;
 
 before_import_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::IMPORT_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::IMPORT_RULE);
     }
     ;
 
@@ -547,15 +548,15 @@ import:
     }
   | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list invalid_block {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
     }
   | before_import_rule IMPORT_SYM error ';' {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
     }
   | before_import_rule IMPORT_SYM error invalid_block {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
     }
   ;
 
@@ -683,19 +684,19 @@ media_list:
 
 at_rule_body_start:
     /* empty */ {
-        parser->startRuleBody();
+        parser->markRuleBodyStart();
     }
     ;
 
 before_media_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::MEDIA_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::MEDIA_RULE);
     }
     ;
 
 at_rule_header_end_maybe_space:
     maybe_space {
-        parser->endRuleHeader();
+        parser->markRuleHeaderEnd();
     }
     ;
 
@@ -708,7 +709,7 @@ media:
     }
     | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space ';' {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
     }
     ;
 
@@ -724,7 +725,7 @@ supports:
         $$ = parser->createSupportsRule($4, $9);
     }
     | before_supports_rule SUPPORTS_SYM supports_error {
-        parser->endRuleBody(true);
+        parser->popRuleData();
         parser->popSupportsRuleData();
     }
     ;
@@ -735,14 +736,14 @@ supports_error:
 
 before_supports_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::SUPPORTS_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::SUPPORTS_RULE);
         parser->markSupportsRuleHeaderStart();
     }
     ;
 
 at_supports_rule_header_end:
     /* empty */ {
-        parser->endRuleHeader();
+        parser->markRuleHeaderEnd();
         parser->markSupportsRuleHeaderEnd();
     }
     ;
@@ -799,14 +800,14 @@ supports_declaration_condition:
                 p->rollbackLastProperties(p->m_parsedProperties.size() - oldParsedProperties);
             p->m_valueList = nullptr;
         }
-        p->endProperty($7, false);
+        p->markPropertyEnd($7, false);
     }
     ;
 #endif
 
 before_keyframes_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::KEYFRAMES_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::KEYFRAMES_RULE);
     }
     ;
 
@@ -864,7 +865,7 @@ key:
 
 before_page_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::PAGE_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::PAGE_RULE);
     }
     ;
 
@@ -878,15 +879,15 @@ page:
             parser->clearProperties();
             // Also clear margin at-rules here once we fully implement margin at-rules parsing.
             $$ = 0;
-            parser->endRuleBody(true);
+            parser->popRuleData();
         }
     }
     | before_page_rule PAGE_SYM error invalid_block {
-      parser->endRuleBody(true);
+      parser->popRuleData();
       $$ = 0;
     }
     | before_page_rule PAGE_SYM error ';' {
-      parser->endRuleBody(true);
+      parser->popRuleData();
       $$ = 0;
     }
     ;
@@ -980,7 +981,7 @@ margin_sym :
 
 before_font_face_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::FONT_FACE_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::FONT_FACE_RULE);
     }
     ;
 
@@ -991,17 +992,17 @@ font_face:
     }
     | before_font_face_rule FONT_FACE_SYM error invalid_block {
       $$ = 0;
-      parser->endRuleBody(true);
+      parser->popRuleData();
     }
     | before_font_face_rule FONT_FACE_SYM error ';' {
       $$ = 0;
-      parser->endRuleBody(true);
+      parser->popRuleData();
     }
 ;
 
 before_host_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::HOST_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::HOST_RULE);
     }
     ;
 
@@ -1012,7 +1013,7 @@ host:
     }
     | before_host_rule HOST_SYM at_rule_header_end_maybe_space ';' {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
     }
     ;
 
@@ -1020,7 +1021,7 @@ host:
 before_viewport_rule:
     /* empty */ {
         parser->markViewportRuleBodyStart();
-        parser->startRuleHeader(CSSRuleSourceData::VIEWPORT_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::VIEWPORT_RULE);
     }
     ;
 
@@ -1032,12 +1033,12 @@ viewport:
     }
     | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM error invalid_block {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
         parser->markViewportRuleBodyEnd();
     }
     | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM error ';' {
         $$ = 0;
-        parser->endRuleBody(true);
+        parser->popRuleData();
         parser->markViewportRuleBodyEnd();
     }
 ;
@@ -1056,7 +1057,7 @@ region_selector:
 
 before_region_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::REGION_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::REGION_RULE);
     }
     ;
 
@@ -1066,14 +1067,14 @@ region:
             $$ = parser->createRegionRule($4, $9);
         else {
             $$ = 0;
-            parser->endRuleBody(true);
+            parser->popRuleData();
         }
     }
 ;
 
 before_filter_rule:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::FILTER_RULE);
+        parser->markRuleHeaderStart(CSSRuleSourceData::FILTER_RULE);
         parser->m_inFilterRule = true;
     }
     ;
@@ -1104,26 +1105,26 @@ unary_operator:
 
 maybe_space_before_declaration:
     maybe_space {
-        parser->startProperty();
+        parser->markPropertyStart();
     }
   ;
 
 before_selector_list:
     /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::STYLE_RULE);
-        parser->startSelector();
+        parser->markRuleHeaderStart(CSSRuleSourceData::STYLE_RULE);
+        parser->markSelectorStart();
     }
   ;
 
 at_rule_header_end:
     /* empty */ {
-        parser->endRuleHeader();
+        parser->markRuleHeaderEnd();
     }
   ;
 
 at_selector_end:
     /* empty */ {
-        parser->endSelector();
+        parser->markSelectorEnd();
     }
   ;
 
@@ -1135,7 +1136,7 @@ ruleset:
 
 before_selector_group_item:
     /* empty */ {
-        parser->startSelector();
+        parser->markSelectorStart();
     }
 
 selector_list:
@@ -1545,7 +1546,7 @@ declaration_list:
 
 decl_list:
     declaration ';' maybe_space {
-        parser->startProperty();
+        parser->markPropertyStart();
         $$ = $1;
     }
     | declaration error_location invalid_block_list maybe_space {
@@ -1558,7 +1559,7 @@ decl_list:
     }
     | errors ';' maybe_space {
         parser->syntaxError($1, CSSParser::PropertyDeclarationError);
-        parser->startProperty();
+        parser->markPropertyStart();
         $$ = false;
     }
     | errors invalid_block_list error ';' maybe_space {
@@ -1566,19 +1567,19 @@ decl_list:
         $$ = false;
     }
     | decl_list declaration ';' maybe_space {
-        parser->startProperty();
+        parser->markPropertyStart();
         $$ = $1;
         if ($2)
             $$ = $2;
     }
     | decl_list errors ';' maybe_space {
         parser->syntaxError($2, CSSParser::PropertyDeclarationError);
-        parser->startProperty();
+        parser->markPropertyStart();
         $$ = $1;
     }
     | decl_list errors invalid_block_list error ';' maybe_space {
         parser->syntaxError($2, CSSParser::PropertyDeclarationError);
-        parser->startProperty();
+        parser->markPropertyStart();
         $$ = $1;
     }
     ;
@@ -1587,7 +1588,7 @@ declaration:
     VAR_DEFINITION ':' maybe_space expr prio {
         parser->storeVariableDeclaration($1, parser->sinkFloatingValueList($4), $5);
         $$ = true;
-        parser->endProperty($5, true);
+        parser->markPropertyEnd($5, true);
     }
     |
     property ':' maybe_space expr prio {
@@ -1603,7 +1604,7 @@ declaration:
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
         }
-        parser->endProperty($5, isPropertyParsed);
+        parser->markPropertyEnd($5, isPropertyParsed);
     }
     |
     property errors {
@@ -1616,13 +1617,13 @@ declaration:
         error tokens at the start of an expr, recover the expr and then treat as an error, cleaning
         up and deleting the shifted expr.  */
         parser->syntaxError($4);
-        parser->endProperty(false, false);
+        parser->markPropertyEnd(false, false);
         $$ = false;
     }
     |
     property ':' maybe_space expr prio error {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
-        parser->endProperty(false, false);
+        parser->markPropertyEnd(false, false);
         $$ = false;
     }
     |
@@ -1635,14 +1636,14 @@ declaration:
     property ':' maybe_space error_location {
         /* div { font-family: } Just reduce away this property with no value. */
         parser->syntaxError($4);
-        parser->endProperty(false, false);
+        parser->markPropertyEnd(false, false);
         $$ = false;
     }
     |
     property ':' maybe_space errors {
         /* if we come across rules with invalid values like this case: p { weight: *; }, just discard the rule */
         parser->syntaxError($4);
-        parser->endProperty(false, false);
+        parser->markPropertyEnd(false, false);
         $$ = false;
     }
     |

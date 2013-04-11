@@ -144,286 +144,6 @@ PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsign
 
 namespace WebCore {
 
-namespace {
-
-class GenericSourceDataHandler : public CSSParser::SourceDataHandler {
-public:
-    GenericSourceDataHandler(const String& parsedText)
-        : m_parsedText(parsedText)
-        , m_propertyRangeStart(UINT_MAX)
-    {
-    }
-    virtual ~GenericSourceDataHandler() { }
-
-protected:
-    virtual void startParsing() OVERRIDE { }
-    virtual void endParsing() OVERRIDE { }
-    virtual void startProperty(unsigned) OVERRIDE;
-    virtual void endProperty(bool, bool, unsigned) OVERRIDE;
-
-    virtual bool canParseProperty() = 0;
-    virtual void addProperty(const CSSPropertySourceData&) = 0;
-    virtual unsigned styleDeclarationOffset() = 0;
-    void fixUnparsedPropertyRanges(CSSRuleSourceData*);
-    const String& m_parsedText;
-    unsigned m_propertyRangeStart;
-};
-
-template <typename CharacterType>
-static inline void fixUnparsedProperties(const CharacterType* characters, CSSRuleSourceData* ruleData)
-{
-    Vector<CSSPropertySourceData>& propertyData = ruleData->styleSourceData->propertyData;
-    unsigned size = propertyData.size();
-    if (!size)
-        return;
-
-    unsigned styleStart = ruleData->ruleBodyRange.start;
-    CSSPropertySourceData* nextData = &(propertyData.at(0));
-    for (unsigned i = 0; i < size; ++i) {
-        CSSPropertySourceData* currentData = nextData;
-        nextData = i < size - 1 ? &(propertyData.at(i + 1)) : 0;
-
-        if (currentData->parsedOk)
-            continue;
-        if (currentData->range.end > 0 && characters[styleStart + currentData->range.end - 1] == ';')
-            continue;
-
-        unsigned propertyEndInStyleSheet;
-        if (!nextData)
-            propertyEndInStyleSheet = ruleData->ruleBodyRange.end - 1;
-        else
-            propertyEndInStyleSheet = styleStart + nextData->range.start - 1;
-
-        while (isHTMLSpace(characters[propertyEndInStyleSheet]))
-            --propertyEndInStyleSheet;
-
-        // propertyEndInStyleSheet points at the last property text character.
-        unsigned newPropertyEnd = propertyEndInStyleSheet - styleStart + 1; // Exclusive of the last property text character.
-        if (currentData->range.end != newPropertyEnd) {
-            currentData->range.end = newPropertyEnd;
-            unsigned valueStartInStyleSheet = styleStart + currentData->range.start + currentData->name.length();
-            while (valueStartInStyleSheet < propertyEndInStyleSheet && characters[valueStartInStyleSheet] != ':')
-                ++valueStartInStyleSheet;
-            if (valueStartInStyleSheet < propertyEndInStyleSheet)
-                ++valueStartInStyleSheet; // Shift past the ':'.
-            while (valueStartInStyleSheet < propertyEndInStyleSheet && isHTMLSpace(characters[valueStartInStyleSheet]))
-                ++valueStartInStyleSheet;
-            // Need to exclude the trailing ';' from the property value.
-            currentData->value = String(characters + valueStartInStyleSheet, propertyEndInStyleSheet - valueStartInStyleSheet + (characters[propertyEndInStyleSheet] == ';' ? 0 : 1));
-        }
-    }
-}
-
-void GenericSourceDataHandler::fixUnparsedPropertyRanges(CSSRuleSourceData* ruleData)
-{
-    if (!ruleData->styleSourceData)
-        return;
-
-    if (m_parsedText.is8Bit()) {
-        fixUnparsedProperties<LChar>(m_parsedText.characters8(), ruleData);
-        return;
-    }
-
-    fixUnparsedProperties<UChar>(m_parsedText.characters16(), ruleData);
-}
-
-void GenericSourceDataHandler::startProperty(unsigned offset)
-{
-    m_propertyRangeStart = offset;
-}
-
-void GenericSourceDataHandler::endProperty(bool isImportant, bool isParsed, unsigned offset)
-{
-    if (m_propertyRangeStart == UINT_MAX || !canParseProperty()) {
-        m_propertyRangeStart = UINT_MAX;
-        return;
-    }
-
-    if (m_parsedText[offset] == ';') // Include semicolon into the property text.
-        ++offset;
-
-    const unsigned start = m_propertyRangeStart;
-    const unsigned end = offset;
-    ASSERT(start < end);
-    String propertyString = m_parsedText.substring(start, end - start).stripWhiteSpace();
-    if (propertyString.endsWith(';'))
-        propertyString = propertyString.left(propertyString.length() - 1);
-    size_t colonIndex = propertyString.find(':');
-    ASSERT(colonIndex != notFound);
-
-    String name = propertyString.left(colonIndex).stripWhiteSpace();
-    String value = propertyString.substring(colonIndex + 1, propertyString.length()).stripWhiteSpace();
-    // The property range is relative to the declaration start offset.
-    unsigned containerOffset = styleDeclarationOffset();
-    addProperty(CSSPropertySourceData(name, value, isImportant, isParsed, SourceRange(start - containerOffset, end - containerOffset)));
-    m_propertyRangeStart = UINT_MAX;
-}
-
-class StyleSheetHandler : public GenericSourceDataHandler {
-public:
-    StyleSheetHandler(const String& parsedText)
-        : GenericSourceDataHandler(parsedText)
-        , m_ruleSourceDataResult(adoptPtr(new RuleSourceDataList()))
-        , m_selectorRangeStart(UINT_MAX)
-    {
-    }
-
-    PassOwnPtr<RuleSourceDataList> releaseResult()
-    {
-        return m_ruleSourceDataResult.release();
-    }
-
-private:
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned) OVERRIDE;
-    virtual void endRuleHeader(unsigned) OVERRIDE;
-    virtual void startSelector(unsigned) OVERRIDE;
-    virtual void endSelector(unsigned) OVERRIDE;
-    virtual void startRuleBody(unsigned) OVERRIDE;
-    virtual void endRuleBody(unsigned, bool) OVERRIDE;
-    virtual void startEndUnknownRule() OVERRIDE { addNewRuleToSourceTree(CSSRuleSourceData::createUnknown()); }
-
-    virtual bool canParseProperty() OVERRIDE { return !m_currentRuleDataStack.isEmpty(); }
-    virtual void addProperty(const CSSPropertySourceData& data) OVERRIDE { m_currentRuleDataStack.last()->styleSourceData->propertyData.append(data); }
-    virtual unsigned styleDeclarationOffset() OVERRIDE { return m_currentRuleDataStack.last()->ruleBodyRange.start; }
-
-    void addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData>);
-    PassRefPtr<CSSRuleSourceData> popRuleData();
-    template <typename CharacterType> inline void setRuleHeaderEnd(const CharacterType*, unsigned);
-
-    OwnPtr<RuleSourceDataList> m_ruleSourceDataResult;
-    RuleSourceDataList m_currentRuleDataStack;
-    RefPtr<CSSRuleSourceData> m_currentRuleData;
-    unsigned m_selectorRangeStart;
-};
-
-void StyleSheetHandler::startRuleHeader(CSSRuleSourceData::Type type, unsigned offset)
-{
-    // Pop off data for a previous invalid rule.
-    if (m_currentRuleData)
-        m_currentRuleDataStack.removeLast();
-
-    RefPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(type);
-    data->ruleHeaderRange.start = offset;
-    m_currentRuleData = data;
-    m_currentRuleDataStack.append(data.release());
-}
-
-template <typename CharacterType>
-inline void StyleSheetHandler::setRuleHeaderEnd(const CharacterType* dataStart, unsigned listEndOffset)
-{
-    while (listEndOffset > 1) {
-        if (isHTMLSpace(*(dataStart + listEndOffset - 1)))
-            --listEndOffset;
-        else
-            break;
-    }
-
-    m_currentRuleDataStack.last()->ruleHeaderRange.end = listEndOffset;
-}
-
-void StyleSheetHandler::endRuleHeader(unsigned offset)
-{
-    ASSERT(!m_currentRuleDataStack.isEmpty());
-
-    if (m_parsedText.is8Bit())
-        setRuleHeaderEnd<LChar>(m_parsedText.characters8(), offset);
-    else
-        setRuleHeaderEnd<UChar>(m_parsedText.characters16(), offset);
-}
-
-void StyleSheetHandler::startSelector(unsigned offset)
-{
-    m_selectorRangeStart = offset;
-}
-
-void StyleSheetHandler::endSelector(unsigned offset)
-{
-    ASSERT(m_currentRuleDataStack.size());
-    m_currentRuleDataStack.last()->selectorRanges.append(SourceRange(m_selectorRangeStart, offset));
-    m_selectorRangeStart = UINT_MAX;
-}
-
-void StyleSheetHandler::startRuleBody(unsigned offset)
-{
-    m_currentRuleData.clear();
-    ASSERT(!m_currentRuleDataStack.isEmpty());
-    if (m_parsedText[offset] == '{')
-        ++offset; // Skip the rule body opening brace.
-    m_currentRuleDataStack.last()->ruleBodyRange.start = offset;
-}
-
-void StyleSheetHandler::endRuleBody(unsigned offset, bool error)
-{
-    ASSERT(!m_currentRuleDataStack.isEmpty());
-    m_currentRuleDataStack.last()->ruleBodyRange.end = offset;
-    RefPtr<CSSRuleSourceData> rule = popRuleData();
-    if (error)
-        return;
-
-    fixUnparsedPropertyRanges(rule.get());
-    addNewRuleToSourceTree(rule.release());
-}
-
-void StyleSheetHandler::addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData> rule)
-{
-    if (m_currentRuleDataStack.isEmpty())
-        m_ruleSourceDataResult->append(rule);
-    else
-        m_currentRuleDataStack.last()->childRules.append(rule);
-}
-
-PassRefPtr<CSSRuleSourceData> StyleSheetHandler::popRuleData()
-{
-    if (!m_ruleSourceDataResult)
-        return 0;
-
-    ASSERT(!m_currentRuleDataStack.isEmpty());
-    m_currentRuleData.clear();
-    RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.last();
-    m_currentRuleDataStack.removeLast();
-    return data.release();
-}
-
-class StyleDeclarationHandler : public GenericSourceDataHandler {
-public:
-    StyleDeclarationHandler(const String& parsedText, Vector<CSSPropertySourceData>& result)
-        : GenericSourceDataHandler(parsedText)
-        , m_ruleData(CSSRuleSourceData::create(CSSRuleSourceData::STYLE_RULE))
-        , m_propertyData(m_ruleData->styleSourceData->propertyData)
-        , m_result(result)
-    {
-    }
-
-    SourceRange declarationRange() { return SourceRange(0, m_parsedText.length()); }
-
-private:
-    virtual void endParsing() OVERRIDE;
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void endRuleHeader(unsigned) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void startSelector(unsigned) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void endSelector(unsigned) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void startRuleBody(unsigned) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void endRuleBody(unsigned, bool) OVERRIDE { ASSERT_NOT_REACHED(); }
-    virtual void startEndUnknownRule() OVERRIDE { ASSERT_NOT_REACHED(); }
-
-    virtual bool canParseProperty() OVERRIDE { return true; }
-    virtual void addProperty(const CSSPropertySourceData& data) OVERRIDE { m_propertyData.append(data); }
-    virtual unsigned styleDeclarationOffset() OVERRIDE { return 0; }
-
-    RefPtr<CSSRuleSourceData> m_ruleData;
-    Vector<CSSPropertySourceData>& m_propertyData;
-    Vector<CSSPropertySourceData>& m_result;
-};
-
-void StyleDeclarationHandler::endParsing()
-{
-    m_ruleData->ruleBodyRange = declarationRange();
-    fixUnparsedPropertyRanges(m_ruleData.get());
-    m_result.append(m_propertyData);
-}
-
-} // namespace
-
 enum MediaListSource {
     MediaListSourceLinkedSheet,
     MediaListSourceInlineSheet,
@@ -646,11 +366,10 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
 
     if (propertyText.stripWhiteSpace().length()) {
         RefPtr<StylePropertySet> tempMutableStyle = StylePropertySet::create();
+        RefPtr<CSSRuleSourceData> sourceData = CSSRuleSourceData::create(CSSRuleSourceData::STYLE_RULE);
         Document* ownerDocument = m_parentStyleSheet->pageStyleSheet() ? m_parentStyleSheet->pageStyleSheet()->ownerDocument() : 0;
-        String declarationText = propertyText + " " + bogusPropertyName + ": none";
-        Vector<CSSPropertySourceData> propertyData;
-        StyleDeclarationHandler handler(declarationText, propertyData);
-        createCSSParser(ownerDocument)->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, m_style->parentStyleSheet()->contents());
+        createCSSParser(ownerDocument)->parseDeclaration(tempMutableStyle.get(), propertyText + " " + bogusPropertyName + ": none", sourceData, m_style->parentStyleSheet()->contents());
+        Vector<CSSPropertySourceData>& propertyData = sourceData->styleSourceData->propertyData;
         unsigned propertyCount = propertyData.size();
 
         // At least one property + the bogus property added just above should be present.
@@ -1541,9 +1260,8 @@ bool InspectorStyleSheet::ensureSourceData()
 
     RefPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create();
     OwnPtr<RuleSourceDataList> ruleSourceDataResult = adoptPtr(new RuleSourceDataList());
-    StyleSheetHandler handler(m_parsedStyleSheet->text());
-    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), 0, &handler);
-    m_parsedStyleSheet->setSourceData(handler.releaseResult());
+    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), 0, ruleSourceDataResult.get());
+    m_parsedStyleSheet->setSourceData(ruleSourceDataResult.release());
     return m_parsedStyleSheet->hasSourceData();
 }
 
@@ -1810,9 +1528,7 @@ bool InspectorStyleSheetForInlineStyle::getStyleAttributeRanges(CSSRuleSourceDat
     }
 
     RefPtr<StylePropertySet> tempDeclaration = StylePropertySet::create();
-    StyleDeclarationHandler handler(m_styleText, result->styleSourceData->propertyData);
-    createCSSParser(m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document()->elementSheet()->contents());
-    result->ruleBodyRange = handler.declarationRange();
+    createCSSParser(m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, result, m_element->document()->elementSheet()->contents());
     return true;
 }
 
