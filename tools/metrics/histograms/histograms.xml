@@ -368,6 +368,87 @@ other types of suffix sets.
   <summary>The importer used for an import session.</summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.IOError." enum="PlatformFileError">
+  <summary>
+    PlatformFileErrors encountered by a single leveldb env method.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.IOError.NewLogger" enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in NewLogger.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.IOError.NewSequentialFile"
+    enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in NewSequentialFile.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.IOError.RandomAccessFile"
+    enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-04. As of m28 use
+    LevelDBEnv.IDB.IOError.NewRandomAccessFile.
+  </obsolete>
+  <summary>File errors in leveldb IDBEnv's NewRandomAccessFile method.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.IOError.WritableFileAppend"
+    enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in WritableFileAppend.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.IOError.WritableFileFlush"
+    enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in WritableFileFlush.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.TimeTo" units="milliseconds">
+  <summary>
+    Time IDB LevelDBEnv slept before successfully completing this operation. 0
+    means success on the first try.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError" enum="LevelDBIOErrorMethods">
+  <summary>Methods where leveldb's Chromium environment has IO errors.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError." enum="PlatformFileError">
+  <summary>PlatformFileErrors encountered by a single leveldb method.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError.NewLogger" enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in NewLogger.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError.NewSequentialFile" enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in NewSequentialFile.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError.RandomAccessFile" enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-04. As of m28 use LevelDBEnv.IOError.NewRandomAccessFile.
+  </obsolete>
+  <summary>
+    File errors in leveldb ChromiumEnv's NewRandomAccessFile method.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError.WritableFileAppend" enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in WritableFileAppend.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IOError.WritableFileFlush" enum="OSAgnosticErrno">
+  <summary>Errno of errors encountered in WritableFileFlush.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.TimeTo" units="milliseconds">
+  <summary>
+    Time Non-IDB LevelDBEnv slept before successfully completing this operation.
+    0 means success on the first try.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -2802,6 +2883,89 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.BackingStore.ConsistencyError"
+    enum="IDBLevelDBBackingStoreInternalErrorType">
+  <summary>
+    Methods that encountered consistency errors. Such errors probably point to a
+    bug in our code.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.BackingStore.InternalError"
+    enum="IDBLevelDBBackingStoreInternalErrorType">
+  <obsolete>
+    As of chrome 26, use {Consistency, Read, Write}Error instead.
+  </obsolete>
+  <summary>
+    Count of internal IndexedDB errors (data corruption, I/O errors, etc)
+    encountered.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.BackingStore.OpenStatus"
+    enum="IDBLevelDBBackingStoreOpenResult">
+  <summary>
+    Count of the different success and failure modes when opening an IndexedDB
+    backing store - clean open, successful open with recovery, failed recovery,
+    etc.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.BackingStore.ReadError"
+    enum="IDBLevelDBBackingStoreInternalErrorType">
+  <summary>
+    Methods that encountered leveldb errors while trying to read from disk.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.BackingStore.WriteError"
+    enum="IDBLevelDBBackingStoreInternalErrorType">
+  <summary>
+    Methods that encountered leveldb errors while trying to write to disk.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.FrontEndAPICalls"
+    enum="IndexedDatabaseMethods">
+  <summary>
+    Count total number of front end API calls of IndexedDB methods.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.FreeDiskSpaceFailure"
+    enum="LevelDBErrorCount">
+  <summary>
+    Count of how many times LevelDBDatabase got an error trying to check free
+    disk space.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.OpenFailureFreeDiskSpace" units="Kb">
+  <summary>
+    Amount of free disk space on the partition/volume/etc where LevelDB failed
+    to open.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.OpenSuccessFreeDiskSpace" units="Kb">
+  <summary>
+    Amount of free disk space on the partition/volume/etc where LevelDB was
+    successfully opened.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBOpenErrors" enum="LevelDBErrorTypes">
+  <summary>
+    Error classes returned by LevelDB when it failed to open a database.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBWriteErrors" enum="LevelDBErrorTypes">
+  <summary>
+    Error classes returned by LevelDB when it failed to write to a database.
+  </summary>
+</histogram>
+
 </histograms>
 
 <!-- Enum types -->
@@ -3990,6 +4154,84 @@ other types of suffix sets.
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
 </enum>
 
+<enum name="IDBLevelDBBackingStoreInternalErrorType" type="int">
+  <int value="0" label="IDBLevelDBBackingStoreReadError">
+    IndexedDB encountered an error attempting to read or decode a value from the
+    leveldb backing store, indicative of corruption or I/O error. Unused as of
+    M26.
+  </int>
+  <int value="1" label="IDBLevelDBBackingStoreWriteError">
+    IndexeDB encountered an error attempting to write or commit a value to the
+    leveldb backing store, indicative of I/O error. Unused as of M26.
+  </int>
+  <int value="2" label="IDBLevelDBBackingStoreConsistencyError">
+    IndexedDB encountered a consistency error in the leveldb backing store,
+    indicative of corruption or an coding error. Unused as of M26.
+  </int>
+  <int value="3" label="FindKeyInIndex"/>
+  <int value="4" label="GetIDBDatabaseMetaData"/>
+  <int value="5" label="GetIndexes"/>
+  <int value="6" label="GetKeyGeneratorCurrentNumber"/>
+  <int value="7" label="GetObjectStores"/>
+  <int value="8" label="GetRecord"/>
+  <int value="9" label="KeyExistsInObjectStore"/>
+  <int value="10" label="LoadCurrentRow"/>
+  <int value="11" label="SetupMetadata"/>
+  <int value="12" label="GetPrimaryKeyViaIndex"/>
+  <int value="13" label="KeyExistsInIndex"/>
+  <int value="14" label="VersionExists"/>
+  <int value="15" label="DeleteObjectStore"/>
+  <int value="16" label="SetMaxObjectStoreId"/>
+  <int value="17" label="SetMaxIndexId"/>
+  <int value="18" label="GetNewDatabaseId"/>
+  <int value="19" label="GetNewVersionNumber"/>
+  <int value="20" label="CreateIDBDatabaseMetaData"/>
+  <int value="21" label="DeleteDatabase"/>
+  <int value="22" label="TransactionCommit"/>
+</enum>
+
+<enum name="IDBLevelDBBackingStoreOpenResult" type="int">
+  <int value="0" label="OpenMemorySuccess">
+    An in-memory backing store was opened successfully.
+  </int>
+  <int value="1" label="OpenSuccess">
+    An on-disk backing store was opened successfully.
+  </int>
+  <int value="2" label="OpenFailedDirectory">
+    An on-disk backing store could not be opened or created because the
+    directory could not be opened or created. Cleanup will not be attempted.
+  </int>
+  <int value="3" label="OpenFailedUnknownSchema">
+    An on-disk backing store was opened but had an unknown schema version, due
+    to corruption or reverting to a previous version of Chrome. Cleanup will be
+    attempted.
+  </int>
+  <int value="4" label="OpenCleanupDestroyFailed">
+    An on-disk backing store failed to open; cleanup was attempted but the
+    database could not be destroyed.
+  </int>
+  <int value="5" label="OpenCleanupReopenFailed">
+    An on-disk backing store failed to open; cleanup was attempted but
+    re-opening the database failed.
+  </int>
+  <int value="6" label="OpenCleanupReopenSuccess">
+    An on-disk backing store failed to open; cleanup was attempted and the
+    database was then opened successfully.
+  </int>
+  <int value="7" label="OpenFailedIOErrCheckingSchema">
+    An on-disk backing store was opened but leveldb failed to read the schema
+    version.
+  </int>
+  <int value="8" label="OpenFailedUnknownErr"/>
+  <int value="9" label="OpenMemoryFailed">
+    An in-memory backing store failed to open.
+  </int>
+  <int value="10" label="OpenNonASCII">
+    A database with non-ascii characters in its path was opened (with either
+    success or failure).
+  </int>
+</enum>
+
 <enum name="ImporterType" type="int">
   <int value="0" label="Unknown"/>
   <int value="1" label="IMPORTER_METRICS_IE">IE (Windows-only)</int>
@@ -4002,6 +4244,14 @@ other types of suffix sets.
   </int>
 </enum>
 
+<enum name="IndexedDatabaseMethods" type="int">
+  <int value="0" label="CreateObjectStore()"/>
+  <int value="1" label="DeleteObjectStore()"/>
+  <int value="2" label="Transaction()"/>
+  <int value="3" label="DeleteDatabase()"/>
+  <int value="4" label="Open()"/>
+</enum>
+
 <enum name="IPV6ProbeResult" type="int">
   <int value="0" label="IPV6_CANNOT_CREATE_SOCKETS"/>
   <int value="1" label="IPV6_CAN_CREATE_SOCKETS"/>
@@ -4011,6 +4261,39 @@ other types of suffix sets.
   <int value="3" label="IPV6_GLOBAL_ADDRESS_MISSING"/>
   <int value="4" label="IPV6_GLOBAL_ADDRESS_PRESENT"/>
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
+</enum>
+
+<enum name="LevelDBErrorCount" type="int">
+  <int value="1" label="Failure"/>
+</enum>
+
+<enum name="LevelDBErrorTypes" type="int">
+  <int value="0" label="NotFound"/>
+  <int value="1" label="Corruption"/>
+  <int value="2" label="IOError"/>
+  <int value="3" label="Other"/>
+</enum>
+
+<enum name="LevelDBIOErrorMethods" type="int">
+  <int value="0" label="SequentialFileRead"/>
+  <int value="1" label="SequentialFileSkip"/>
+  <int value="2" label="RandomAccessFileRead"/>
+  <int value="3" label="WritableFileAppend"/>
+  <int value="4" label="WritableFileClose"/>
+  <int value="5" label="WritableFileFlush"/>
+  <int value="6" label="WritableFileSync"/>
+  <int value="7" label="NewSequentialFile"/>
+  <int value="8" label="NewRandomAccessFile"/>
+  <int value="9" label="NewWritableFile"/>
+  <int value="10" label="DeleteFile"/>
+  <int value="11" label="CreateDir"/>
+  <int value="12" label="DeleteDir"/>
+  <int value="13" label="GetFileSize"/>
+  <int value="14" label="Renamefile"/>
+  <int value="15" label="LockFile"/>
+  <int value="16" label="UnlockFile"/>
+  <int value="17" label="GetTestDirectory"/>
+  <int value="18" label="NewLogger"/>
 </enum>
 
 <enum name="LoadType" type="int">
@@ -4218,6 +4501,64 @@ other types of suffix sets.
   <int value="6" label="subresource never connected"/>
   <int value="7" label="subresource never used"/>
   <int value="8" label="subresource and used"/>
+</enum>
+
+<enum name="OSAgnosticErrno" type="int">
+  <summary>Errno values with the same meanings on Mac/Win/Linux.</summary>
+  <int value="0" label="0">No error</int>
+  <int value="1" label="EPERM">Operation not permitted</int>
+  <int value="2" label="ENOENT">No such file or directory</int>
+  <int value="3" label="ESRCH">No such process</int>
+  <int value="4" label="EINTR">Interrupted function call</int>
+  <int value="5" label="EIO">Input/output error</int>
+  <int value="6" label="ENXIO">No such device or address</int>
+  <int value="7" label="E2BIG">Arg list too long</int>
+  <int value="8" label="ENOEXEC">Exec format error</int>
+  <int value="9" label="EBADF">Bad file descriptor</int>
+  <int value="10" label="ECHILD">No child processes</int>
+  <int value="11" label="EDEADLK">Resource deadlock avoided</int>
+  <int value="12" label="ENOMEM">Cannot allocate memory</int>
+  <int value="13" label="EACCES">Permission denied</int>
+  <int value="14" label="EFAULT">Bad address</int>
+  <int value="15" label="ENOTBLK">Not a block device</int>
+  <int value="16" label="EBUSY">Resource busy</int>
+  <int value="17" label="EEXIST">File exists</int>
+  <int value="18" label="EXDEV">Improper link</int>
+  <int value="19" label="ENODEV">Operation not supported by device</int>
+  <int value="20" label="ENOTDIR">Not a directory</int>
+  <int value="21" label="EISDIR">Is a directory</int>
+  <int value="22" label="EINVAL">Invalid argument</int>
+  <int value="23" label="ENFILE">Too many open files in system</int>
+  <int value="24" label="EMFILE">Too many open files</int>
+  <int value="25" label="ENOTTY">Inappropriate ioctl for device</int>
+  <int value="26" label="ETXTBSY">Text file busy</int>
+  <int value="27" label="EFBIG">File too large</int>
+  <int value="28" label="ENOSPC">Device out of space</int>
+  <int value="29" label="ESPIPE">Illegal seek</int>
+  <int value="30" label="EROFS">Read-only file system</int>
+  <int value="31" label="EMLINK">Too many links</int>
+  <int value="32" label="EPIPE">Broken pipe</int>
+  <int value="33" label="EDOM">Numerical argument out of domain</int>
+  <int value="34" label="ERANGE">Numerical result out of range</int>
+</enum>
+
+<enum name="PlatformFileError" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="FAILED"/>
+  <int value="2" label="IN_USE"/>
+  <int value="3" label="EXISTS"/>
+  <int value="4" label="NOT_FOUND"/>
+  <int value="5" label="ACCESS_DENIED"/>
+  <int value="6" label="TOO_MANY_OPENED"/>
+  <int value="7" label="NO_MEMORY"/>
+  <int value="8" label="NO_SPACE"/>
+  <int value="9" label="NOT_A_DIRECTORY"/>
+  <int value="10" label="INVALID_OPERATION"/>
+  <int value="11" label="SECURITY"/>
+  <int value="12" label="ABORT"/>
+  <int value="13" label="NOT_A_FILE"/>
+  <int value="14" label="NOT_EMPTY"/>
+  <int value="15" label="INVALID_URL"/>
 </enum>
 
 <enum name="PreconnectMotivation" type="int">
@@ -4664,6 +5005,20 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.BeginToFinishDoc_NormalLoad"/>
   <affected-histogram name="Renderer4.RequestToFinish"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
+</fieldtrial>
+
+<fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
+  <group name="NewRandomAccessFile" label="NewRandomAccessFile"/>
+  <group name="LockFile" label="LockFile"/>
+  <affected-histogram name="LevelDBEnv.IDB.IOError."/>
+  <affected-histogram name="LevelDBEnv.IOError."/>
+</fieldtrial>
+
+<fieldtrial name="LevelDBEnvRetryTimes" separator="">
+  <group name="Rename" label="RenameFile"/>
+  <group name="LockFile" label="LockFile"/>
+  <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>
+  <affected-histogram name="LevelDBEnv.TimeTo"/>
 </fieldtrial>
 
 <fieldtrial name="OverlappedReadImpact">
