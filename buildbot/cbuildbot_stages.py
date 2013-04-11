@@ -4,7 +4,6 @@
 
 """Module containing the various stages that a builder runs."""
 
-import cPickle
 import contextlib
 import functools
 import glob
@@ -52,6 +51,7 @@ particulars, please refer to which test failed i.e. above see the
 individual test that failed -- or if an update failed, check the
 corresponding update directory.
 """
+
 
 class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
@@ -822,50 +822,35 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
   applying them into its out checkout.
   """
 
-  # Path relative to the buildroot of where to store the pickled validation
-  # pool.
-  PICKLED_POOL_FILE = 'validation_pool.dump'
-
-  pool = None
-
   def __init__(self, options, build_config):
     super(CommitQueueSyncStage, self).__init__(options, build_config)
-    CommitQueueSyncStage.pool = None
     # Figure out the builder's name from the buildbot waterfall.
     builder_name = build_config['paladin_builder_name']
     self.builder_name = builder_name if builder_name else build_config['name']
 
-  def SaveValidationPool(self):
-    """Serializes the validation pool.
-
-    Returns: returns a path to the serialized form of the validation pool.
-    """
-    path_to_file = os.path.join(self._build_root, self.PICKLED_POOL_FILE)
-    with open(path_to_file, 'wb') as p_file:
-      cPickle.dump(self.pool, p_file, protocol=cPickle.HIGHEST_PROTOCOL)
-
-    return path_to_file
-
-  def LoadValidationPool(self, path_to_file):
-    """Loads the validation pool from the file."""
-    with open(path_to_file, 'rb') as p_file:
-      CommitQueueSyncStage.pool = cPickle.load(p_file)
+    # The pool of patches to be picked up by the commit queue.
+    # - For the master commit queue, it's initialized in GetNextManifest.
+    # - For slave commit queues, it's initialized in SetPoolFromManifest.
+    #
+    # In all cases, the pool is saved to disk, and refreshed after bootstrapping
+    # by HandleSkip.
+    self.pool = None
 
   def HandleSkip(self):
     """Handles skip and initializes validation pool from manifest."""
     super(CommitQueueSyncStage, self).HandleSkip()
-    if self._options.validation_pool:
-      self.LoadValidationPool(self._options.validation_pool)
+    filename = self._options.validation_pool
+    if filename:
+      self.pool = validation_pool.ValidationPool.Load(filename)
     else:
       self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
   def SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
-    CommitQueueSyncStage.pool = \
-        validation_pool.ValidationPool.AcquirePoolFromManifest(
-            manifest, self._build_config['overlays'],
-            self._build_root, self._options.buildnumber, self.builder_name,
-            self._build_config['master'], self._options.debug)
+    self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
+        manifest, self._build_config['overlays'], self._build_root,
+        self._options.buildnumber, self.builder_name,
+        self._build_config['master'], self._options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -894,7 +879,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         except validation_pool.FailedToSubmitAllChangesException as e:
           cros_build_lib.Warning(str(e))
 
-        CommitQueueSyncStage.pool = pool
+        self.pool = pool
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
@@ -929,9 +914,10 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
 
   option_name = 'sync'
 
-  def __init__(self, options, build_config, success):
+  def __init__(self, options, build_config, sync_stage, success):
     super(ManifestVersionedSyncCompletionStage, self).__init__(
         options, build_config)
+    self.sync_stage = sync_stage
     self.success = success
     # Message that can be set that well be sent along with the status in
     # UpdateStatus.
@@ -940,7 +926,7 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   def _PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
-         success=self.success, message=self.message)
+          success=self.success, message=self.message)
 
 
 class ImportantBuilderFailedException(Exception):
@@ -1008,7 +994,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def _PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
-         success=self.success, message=self.message)
+          success=self.success, message=self.message)
 
       statuses = self._GetSlavesStatus()
       failing_build_dict, inflight_build_dict = {}, {}
@@ -1033,13 +1019,14 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
 class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
+
   def HandleSuccess(self):
     if self._build_config['master']:
-      CommitQueueSyncStage.pool.SubmitPool()
+      self.sync_stage.pool.SubmitPool()
       # After submitting the pool, update the commit hashes for uprevved
       # ebuilds.
       portage_utilities.EBuild.UpdateCommitHashesForChanges(
-          CommitQueueSyncStage.pool.changes, self._build_root)
+          self.sync_stage.pool.changes, self._build_root)
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
@@ -1050,20 +1037,70 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
 
     if self._build_config['master']:
       failing_messages = [x.message for x in failing_statuses.itervalues()]
-      CommitQueueSyncStage.pool.HandleValidationFailure(failing_messages)
+      self.sync_stage.pool.HandleValidationFailure(failing_messages)
 
   def HandleValidationTimeout(self, inflight_builders):
     super(CommitQueueCompletionStage, self).HandleValidationTimeout(
         inflight_builders)
-    CommitQueueSyncStage.pool.HandleValidationTimeout()
+    self.sync_stage.pool.HandleValidationTimeout()
 
   def _PerformStage(self):
     if not self.success and self._build_config['important']:
       # This message is sent along with the failed status to the master to
       # indicate a failure.
-      self.message = CommitQueueSyncStage.pool.GetValidationFailedMessage()
+      self.message = self.sync_stage.pool.GetValidationFailedMessage()
 
     super(CommitQueueCompletionStage, self)._PerformStage()
+
+    if ManifestVersionedSyncStage.manifest_manager:
+      ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
+          success=self.success, message=self.message)
+
+
+class PreCQSyncStage(SyncStage):
+  """Sync and apply patches to test if they compile."""
+
+  def __init__(self, options, build_config, patches):
+    super(PreCQSyncStage, self).__init__(options, build_config)
+
+    # The list of patches to test.
+    self.patches = patches
+
+    # The ValidationPool of patches to test. Initialized in _PerformStage, and
+    # refreshed after bootstrapping by HandleSkip.
+    self.pool = None
+
+  def HandleSkip(self):
+    """Handles skip and loads validation pool from disk."""
+    super(PreCQSyncStage, self).HandleSkip()
+    filename = self._options.validation_pool
+    if filename:
+      self.pool = validation_pool.ValidationPool.Load(filename)
+
+  def _PerformStage(self):
+    super(PreCQSyncStage, self)._PerformStage()
+    self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
+        self._build_config['overlays'], self._build_root,
+        self._options.buildnumber, self._build_config['name'],
+        dryrun=self._options.debug_forced, changes=self.patches)
+    self.pool.ApplyPoolIntoRepo()
+
+
+class PreCQCompletionStage(bs.BuilderStage):
+  """Reports the status of a trybot run to Google Storage and Gerrit."""
+
+  def __init__(self, options, build_config, sync_stage, success):
+    super(PreCQCompletionStage, self).__init__(options, build_config)
+    self.sync_stage = sync_stage
+    self.success = success
+
+  def _PerformStage(self):
+    # Update Gerrit and Google Storage with the Pre-CQ status.
+    if self.success:
+      self.sync_stage.pool.HandlePreCQSuccess()
+    else:
+      message = self.sync_stage.pool.GetValidationFailedMessage()
+      self.sync_stage.pool.HandleValidationFailure([message])
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):
@@ -2287,9 +2324,11 @@ class ReportStage(bs.BuilderStage):
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)
       if not os.path.exists(uploaded):
-        # UPLOADED doesn't exist.  Normal if buildboard failed.
-        logging.warning('board %s did not make it to the archive stage; '
-                        'skipping', board)
+        if (not self._build_config['compilecheck'] and
+            not self._options.compilecheck):
+          # UPLOADED doesn't exist.  Normal if buildboard failed.
+          logging.warning('board %s did not make it to the archive stage; '
+                          'skipping', board)
         continue
 
       files = osutils.ReadFile(uploaded).splitlines() + [

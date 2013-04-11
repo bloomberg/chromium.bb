@@ -54,7 +54,6 @@ class RemoteTryJob(object):
   # In version 4, cherry-picking is the norm, thus multiple patches are
   # generated.
   TRYJOB_FORMAT_VERSION = 4
-  TRYSERVER_URL = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
   TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
 
   NAME_LENGTH_LIMIT = 256
@@ -228,10 +227,12 @@ class RemoteTryJob(object):
 
   def GetTrybotConsoleLink(self):
     """Get link to the console for the user."""
-    return ('%s/console?name=%s' % (self.TRYSERVER_URL, self.user_email))
+    return ('%s/console?name=%s' % (constants.TRYBOT_DASHBOARD,
+                                    self.user_email))
 
   def GetTrybotWaterfallLink(self):
     """Get link to the waterfall for the user."""
     # Note that this will only show the jobs submitted by the user in the last
     # 24 hours.
-    return ('%s/waterfall?committer=%s' % (self.TRYSERVER_URL, self.user_email))
+    return ('%s/waterfall?committer=%s' % (constants.TRYBOT_DASHBOARD,
+                                           self.user_email))

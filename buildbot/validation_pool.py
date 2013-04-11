@@ -9,6 +9,7 @@ ready for the commit queue to try.
 """
 
 import contextlib
+import cPickle
 import logging
 import sys
 import time
@@ -18,14 +19,14 @@ from xml.dom import minidom
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
+from chromite.buildbot import manifest_version
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import patch as cros_patch
 
-_BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
-_BUILD_INT_DASHBOARD = 'http://uberchromegw.corp.google.com/i/chromeos'
 
 # We import mox so that w/in ApplyPoolIntoRepo, if a mox exception is
 # thrown, we don't cover it up.
@@ -802,7 +803,7 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, helper_pool=None):
+               conflicting_changes=None, pre_cq=False, helper_pool=None):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -821,6 +822,8 @@ class ValidationPool(object):
       changes_that_failed_to_apply_earlier: Changes that failed to apply but
         we're keeping around because they conflict with other changes in
         flight.
+      pre_cq: If set to True, this builder is verifying CLs before they go to
+        the commit queue.
       helper_pool: A HelperPool instance.  If not specified, a HelperPool
         instance is created with full access to external and internal gerrit
         instances; full access is used to allow cross gerrit dependencies
@@ -862,13 +865,15 @@ class ValidationPool(object):
           'cros_patch.PatchException derivative, got %r'
           % (conflicting_changes,))
 
-    build_dashboard = self.GetBuildDashboardForOverlays(overlays)
+    build_dashboard = self.GetBuildDashboardForOverlays(overlays, pre_cq)
 
     self.build_log = '%s/builders/%s/builds/%s' % (
         build_dashboard, builder_name, str(build_number))
 
     self.is_master = bool(is_master)
+    self.pre_cq = pre_cq
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
+    self.queue = 'The Pre-Commit Queue' if pre_cq else 'The Commit Queue'
 
     # See optional args for types of changes.
     self.changes = changes or []
@@ -886,11 +891,13 @@ class ValidationPool(object):
     self._patch_series = PatchSeries(self.build_root, helper_pool=helper_pool)
 
   @staticmethod
-  def GetBuildDashboardForOverlays(overlays):
+  def GetBuildDashboardForOverlays(overlays, pre_cq):
     """Discern the dashboard to use based on the given overlay."""
+    if pre_cq:
+      return constants.TRYBOT_DASHBOARD
     if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
-      return _BUILD_INT_DASHBOARD
-    return _BUILD_DASHBOARD
+      return constants.BUILD_INT_DASHBOARD
+    return constants.BUILD_DASHBOARD
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
@@ -914,7 +921,15 @@ class ValidationPool(object):
             self.build_root, self._build_number, self._builder_name,
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
-            self.changes_that_failed_to_apply_earlier))
+            self.changes_that_failed_to_apply_earlier,
+            self.pre_cq))
+
+  @classmethod
+  def AcquirePreCQPool(cls, *args, **kwargs):
+    """See ValidationPool.__init__ for arguments."""
+    kwargs.setdefault('pre_cq', True)
+    kwargs.setdefault('is_master', True)
+    return cls(*args, **kwargs)
 
   @classmethod
   def AcquirePool(cls, overlays, build_root, build_number, builder_name,
@@ -1152,6 +1167,17 @@ class ValidationPool(object):
 
     return bool(self.changes)
 
+  @staticmethod
+  def Load(filename):
+    """Loads the validation pool from the file."""
+    with open(filename, 'rb') as p_file:
+      return cPickle.load(p_file)
+
+  def Save(self, filename):
+    """Serializes the validation pool."""
+    with open(filename, 'wb') as p_file:
+      cPickle.dump(self, p_file, protocol=cPickle.HIGHEST_PROTOCOL)
+
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
@@ -1167,6 +1193,8 @@ class ValidationPool(object):
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
+    assert not self.pre_cq, 'Pre-Commit Queue calling SubmitPool'
+
     changes_that_failed_to_submit = []
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
@@ -1246,7 +1274,7 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    msg = 'The Commit Queue failed to apply your change in %(build_log)s .'
+    msg = '%(queue)s failed to apply your change in %(build_log)s .'
     msg += '  %(failure)s'
     self._SendNotification(failure.patch, msg, failure=failure)
     self._helper_pool.ForChange(failure.patch).RemoveCommitReady(
@@ -1258,7 +1286,7 @@ class ValidationPool(object):
     for change in self.changes:
       logging.info('Validation timed out for change %s.', change)
       self._SendNotification(change,
-          'The Commit Queue timed out while verifying your change in '
+          '%(queue)s timed out while verifying your change in '
           '%(build_log)s . This means that a supporting builder did not '
           'finish building your change within the specified timeout. If you '
           'believe this happened in error, just re-mark your commit as ready. '
@@ -1267,7 +1295,7 @@ class ValidationPool(object):
           change, dryrun=self.dryrun)
 
   def _SendNotification(self, change, msg, **kwargs):
-    d = dict(build_log=self.build_log, **kwargs)
+    d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
     try:
       msg %= d
     except (TypeError, ValueError), e:
@@ -1280,6 +1308,13 @@ class ValidationPool(object):
     PaladinMessage(msg, change, self._helper_pool.ForChange(change)).Send(
         self.dryrun)
 
+  def HandlePreCQSuccess(self):
+    """Handler that is called when the Pre-CQ successfully verifies a change."""
+    msg = '%(queue)s successfully verified your change in %(build_log)s .'
+    for change in self.changes:
+      self._SendNotification(change, msg)
+      self._UpdatePreCQStatus(change, success=True)
+
   def _HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
 
@@ -1291,7 +1326,7 @@ class ValidationPool(object):
       change: GerritPatch instance to operate upon.
     """
     self._SendNotification(change,
-        'The Commit Queue failed to submit your change in %(build_log)s . '
+        '%(queue)s failed to submit your change in %(build_log)s . '
         'This can happen if you submitted your change or someone else '
         'submitted a conflicting change while your change was being tested.')
     self._helper_pool.ForChange(change).RemoveCommitReady(
@@ -1396,7 +1431,7 @@ class ValidationPool(object):
         msg.append('One of the following changes is probably at fault: %s'
                    % other_suspects_str)
       msg.insert(
-          0, 'NOTE: The Commit Queue will retry your change automatically.')
+          0, 'NOTE: %(queue)s will retry your change automatically.')
 
     return '\n\n'.join(msg)
 
@@ -1421,6 +1456,8 @@ class ValidationPool(object):
       msg = self._CreateValidationFailureMessage(change, suspects, messages)
       self._SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
+        if self.pre_cq:
+          self._UpdatePreCQStatus(change, success=False)
         self._helper_pool.ForChange(change).RemoveCommitReady(
             change, dryrun=self.dryrun)
 
@@ -1442,7 +1479,7 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    msg = 'The Commit Queue failed to apply your change in %(build_log)s . '
+    msg = '%(queue)s failed to apply your change in %(build_log)s . '
     # This is written this way to protect against bugs in CQ itself.  We log
     # it both to the build output, and mark the change w/ it.
     extra_msg = getattr(change, 'apply_error_message', None)
@@ -1469,9 +1506,21 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    self._SendNotification(change,
-        'The Commit Queue has picked up your change. '
-        'You can follow along at %(build_log)s .')
+    msg = ('%(queue)s has picked up your change. '
+           'You can follow along at %(build_log)s .')
+    self._SendNotification(change, msg)
+
+  def _UpdatePreCQStatus(self, change, success):
+    # Update Google Storage with the Pre-CQ status.
+    status = manifest_version.BuilderStatus.GetCompletedStatus(success)
+    components = [manifest_version.MANIFEST_VERSIONS_URL, 'pre-cq',
+                  change.gerrit_number, change.patch_number,
+                  self._builder_name]
+    cmd = [gs.GSUTIL_BIN or 'gsutil', 'cp', '-', '/'.join(components)]
+    if self.dryrun:
+      logging.info('Would have run: %s', ' '.join(cmd))
+    else:
+      cros_build_lib.RunCommandWithRetries(3, cmd, input=status)
 
 
 class PaladinMessage():

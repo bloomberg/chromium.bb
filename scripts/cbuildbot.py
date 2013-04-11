@@ -230,9 +230,11 @@ class Builder(object):
       ver = stages.ManifestVersionedSyncStage.manifest_manager.current_version
       args += ['--version', ver]
 
-    if isinstance(sync_instance, stages.CommitQueueSyncStage):
-      vp_file = sync_instance.SaveValidationPool()
-      args += ['--validation_pool', vp_file]
+    pool = getattr(sync_instance, 'pool', None)
+    if pool:
+      filename = os.path.join(self.options.buildroot, 'validation_pool.dump')
+      pool.Save(filename)
+      args += ['--validation_pool', filename]
 
     # Reset the cache dir so that the child will calculate it automatically.
     if not self.options.cache_dir_specified:
@@ -474,6 +476,7 @@ class DistributedBuilder(SimpleBuilder):
     """
     super(DistributedBuilder, self).__init__(*args, **kwargs)
     self.completion_stage_class = None
+    self.sync_stage = None
 
   def GetSyncInstance(self):
     """Syncs the tree using one of the distributed sync logic paths.
@@ -482,7 +485,12 @@ class DistributedBuilder(SimpleBuilder):
     """
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
-    if cbuildbot_config.IsCQType(self.build_config['build_type']):
+    if self.build_config['pre_cq'] or self.options.pre_cq:
+      sync_stage = self._GetStageInstance(stages.PreCQSyncStage,
+                                          self.patch_pool.gerrit_patches)
+      self.completion_stage_class = stages.PreCQCompletionStage
+      self.patch_pool.gerrit_patches = []
+    elif cbuildbot_config.IsCQType(self.build_config['build_type']):
       sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
       self.completion_stage_class = stages.CommitQueueCompletionStage
     elif cbuildbot_config.IsPFQType(self.build_config['build_type']):
@@ -492,15 +500,18 @@ class DistributedBuilder(SimpleBuilder):
       sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
       self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage
 
-    return sync_stage
+    self.sync_stage = sync_stage
+    return self.sync_stage
 
   def Publish(self, was_build_successful):
     """Completes build by publishing any required information."""
     completion_stage = self._GetStageInstance(self.completion_stage_class,
+                                              self.sync_stage,
                                               was_build_successful)
     completion_stage.Run()
     name = completion_stage.name
-    if not results_lib.Results.WasStageSuccessful(name):
+    if (self.build_config['pre_cq'] or self.options.pre_cq or
+        not results_lib.Results.WasStageSuccessful(name)):
       should_publish_changes = False
     else:
       should_publish_changes = (self.build_config['master'] and
@@ -622,7 +633,9 @@ def _RunBuildStagesWrapper(options, build_config):
   """Helper function that wraps RunBuildStages()."""
   def IsDistributedBuilder():
     """Determines whether the build_config should be a DistributedBuilder."""
-    if not options.buildbot:
+    if build_config['pre_cq'] or options.pre_cq:
+      return True
+    elif not options.buildbot:
       return False
     elif build_config['build_type'] in _DISTRIBUTED_TYPES:
       # We don't do distributed logic to TOT Chrome PFQ's, nor local
@@ -992,6 +1005,8 @@ def _CreateParser():
       "in buildbot mode.")
   group.add_option('--pass-through', dest='pass_through_args', action='append',
                    type='string', default=[])
+  group.add_remote_option('--pre-cq', action='store_true', default=False,
+                          help='Mark CLs as tested by the PreCQ on success.')
   group.add_option('--reexec-api-version', dest='output_api_version',
                    action='store_true', default=False,
                    help='Used for handling forwards/backwards compatibility '

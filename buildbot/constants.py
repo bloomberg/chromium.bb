@@ -291,3 +291,8 @@ SLEEP_TIMEOUT = 30
 
 # Lab status url.
 LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
+
+# URLs to the various waterfalls.
+BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
+BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
+TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'

@@ -23,8 +23,8 @@ CONFIG_TYPE_FIRMWARE = 'firmware'
 
 CONFIG_TYPE_DUMP_ORDER = (
     'paladin',
-    'compilecheck-group',
-    'compilecheck',
+    'pre-cq-group',
+    'pre-cq',
     'incremental',
     CONFIG_TYPE_FULL,
     CONFIG_TYPE_RELEASE,
@@ -303,6 +303,9 @@ _settings = dict(
 
 # compilecheck -- Exit the builder right after checking compilation.
   compilecheck=False,
+
+# pre_cq -- Test CLs to verify they're ready for the commit queue.
+  pre_cq=False,
 
 # signer_tests -- Runs the tests that the signer would run.
   signer_tests=False,
@@ -977,17 +980,19 @@ internal_paladin = internal.derive(paladin,
   description=paladin['description'] + ' (internal)',
 )
 
-internal_compilecheck = internal_paladin.derive(
+internal_pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   compilecheck=True,
+  pre_cq=True,
   description='Verifies compilation and unit tests',
 )
 
-internal_compilecheck.add_group('compilecheck-group',
-  internal_compilecheck.add_config('parrot-compilecheck', boards=['parrot']),
-  internal_compilecheck.add_config('stout-compilecheck', boards=['stout']),
-  internal_compilecheck.add_config('daisy_spring-compilecheck',
-                                   boards=['daisy_spring']),
+internal_pre_cq.add_group('pre-cq-group',
+  internal_pre_cq.add_config('parrot-pre-cq',
+                             boards=['parrot']),
+  internal_pre_cq.add_config('stout-pre-cq', boards=['stout']),
+  internal_pre_cq.add_config('daisy_spring-pre-cq',
+                             boards=['daisy_spring']),
 )
 
 internal_incremental = internal.derive(

@@ -177,6 +177,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
       force=False, branch=self.branch, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
+    self.sync_stage = stages.ManifestVersionedSyncStage(
+        self.options, self.build_config)
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -195,8 +197,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     stages.SyncStage.ManifestCheckout(self.next_version)
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncStage(self.options, self.build_config)
-    stage.Run()
+    self.sync_stage.Run()
     self.mox.VerifyAll()
 
   def testManifestVersionedSyncCompletedSuccess(self):
@@ -211,6 +212,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
+                                                        self.sync_stage,
                                                         success=True)
     stage.Run()
     self.mox.VerifyAll()
@@ -228,6 +230,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
+                                                        self.sync_stage,
                                                         success=False)
     stage.Run()
     self.mox.VerifyAll()
@@ -240,6 +243,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
+                                                        self.sync_stage,
                                                         success=False)
     stage.Run()
     self.mox.VerifyAll()
@@ -274,8 +278,10 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     stages.LKGMCandidateSyncStage.sub_manager = self.manager
 
   def ConstructStage(self):
+    sync_stage = stages.LKGMCandidateSyncStage(self.options, self.build_config)
     return stages.LKGMCandidateSyncCompletionStage(self.options,
                                                    self.build_config,
+                                                   sync_stage,
                                                    success=True)
 
   def _GetTestConfig(self):
