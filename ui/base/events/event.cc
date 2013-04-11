@@ -153,6 +153,9 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
       time_stamp_(time_stamp),
       flags_(flags),
       dispatch_to_hidden_targets_(false),
+#if defined(USE_X11)
+      native_event_(NULL),
+#endif
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -194,11 +197,11 @@ Event::Event(const base::NativeEvent& native_event,
 }
 
 Event::Event(const Event& copy)
-    : native_event_(::CopyNativeEvent(copy.native_event_)),
-      type_(copy.type_),
+    : type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_),
       dispatch_to_hidden_targets_(false),
+      native_event_(::CopyNativeEvent(copy.native_event_)),
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -250,9 +253,7 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
             EventTypeFromNative(native_event),
             EventFlagsFromNative(native_event)),
       location_(EventLocationFromNative(native_event)),
-      root_location_(location_),
-      valid_system_location_(true),
-      system_location_(EventSystemLocationFromNative(native_event)) {
+      root_location_(location_) {
 }
 
 LocatedEvent::LocatedEvent(EventType type,
@@ -262,9 +263,7 @@ LocatedEvent::LocatedEvent(EventType type,
                            int flags)
     : Event(type, time_stamp, flags),
       location_(location),
-      root_location_(root_location),
-      valid_system_location_(false),
-      system_location_(0, 0) {
+      root_location_(root_location) {
 }
 
 void LocatedEvent::UpdateForRootTransform(

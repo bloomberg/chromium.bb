@@ -1149,8 +1149,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                        host_mouse_location,
                        host_mouse_location,
                        ui::EF_IS_SYNTHESIZED);
-  ConvertPointToNativeScreen(&root_mouse_location);
-  event.set_system_location(root_mouse_location);
   OnHostMouseEvent(&event);
 }
 

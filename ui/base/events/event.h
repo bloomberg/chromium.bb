@@ -214,12 +214,12 @@ class UI_EXPORT Event {
   void Init();
   void InitWithNativeEvent(const base::NativeEvent& native_event);
 
-  base::NativeEvent native_event_;
   EventType type_;
   std::string name_;
   base::TimeDelta time_stamp_;
   int flags_;
   bool dispatch_to_hidden_targets_;
+  base::NativeEvent native_event_;
   bool delete_native_event_;
   bool cancelable_;
   EventTarget* target_;
@@ -262,13 +262,6 @@ class UI_EXPORT LocatedEvent : public Event {
   }
   gfx::Point root_location() const { return root_location_; }
 
-  bool valid_system_location() const { return valid_system_location_; }
-  void set_system_location(const gfx::Point& loc) {
-    valid_system_location_ = true;
-    system_location_ = loc;
-  }
-  const gfx::Point& system_location() const { return system_location_; }
-
   // Transform the locations using |inverted_root_transform|.
   // This is applied to both |location_| and |root_location_|.
   virtual void UpdateForRootTransform(
@@ -289,11 +282,7 @@ class UI_EXPORT LocatedEvent : public Event {
   LocatedEvent(const LocatedEvent& model, T* source, T* target)
       : Event(model),
         location_(model.location_),
-        root_location_(model.root_location_),
-        valid_system_location_(model.valid_system_location_),
-        system_location_(model.system_location_) {
-    // TODO(erg): May need to create system_location_ by converting location to
-    // system coordinates here.
+        root_location_(model.root_location_) {
     ConvertLocationToTarget(source, target);
   }
 
@@ -309,11 +298,6 @@ class UI_EXPORT LocatedEvent : public Event {
   // |location_| multiplied by an optional transformation matrix for
   // rotations, animations and skews.
   gfx::Point root_location_;
-
-  // |location_| in underlying system screen coordinates. This can be invalid
-  // |during synthesized events if a location isn't explicitly set.
-  bool valid_system_location_;
-  gfx::Point system_location_;
 };
 
 class UI_EXPORT MouseEvent : public LocatedEvent {

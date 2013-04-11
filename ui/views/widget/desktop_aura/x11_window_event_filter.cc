@@ -13,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -102,9 +103,12 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   // Get the |x_root_window_| location out of the native event.
-  gfx::Point root_location = event->system_location();
-  if (DispatchHostWindowDragMovement(component, root_location))
-    event->StopPropagation();
+  if (event->native_event()) {
+    const gfx::Point x_root_location =
+        ui::EventSystemLocationFromNative(event->native_event());
+    if (DispatchHostWindowDragMovement(component, x_root_location))
+      event->StopPropagation();
+  }
 }
 
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(
@@ -170,4 +174,3 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
 }
 
 }  // namespace views
-
