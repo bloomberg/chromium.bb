@@ -4,8 +4,8 @@
 
 if (!window.WebInspector)
     window.WebInspector = {};
-InspectorTest.importScript("../../../../../Source/WebCore/inspector/front-end/HeapSnapshot.js");
-InspectorTest.importScript("../../../../../Source/WebCore/inspector/front-end/JSHeapSnapshot.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/HeapSnapshot.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/JSHeapSnapshot.js");
 
 InspectorTest.takeHeapSnapshot = function(callback)
 {

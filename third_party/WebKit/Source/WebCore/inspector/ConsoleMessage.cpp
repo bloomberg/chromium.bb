@@ -132,7 +132,6 @@ void ConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, ScriptState
     m_callStack.clear();
 }
 
-// Keep in sync with inspector/front-end/ConsoleView.js
 static TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(MessageSource source)
 {
     switch (source) {
