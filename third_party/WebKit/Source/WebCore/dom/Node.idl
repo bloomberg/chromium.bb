@@ -52,10 +52,10 @@
     [PerWorldBindings] readonly attribute Node             nextSibling;
     [PerWorldBindings] readonly attribute Document         ownerDocument;
 
-    [Custom, PerWorldBindings, RaisesException] Node insertBefore(Node newChild, Node refChild);
-    [Custom, RaisesException] Node replaceChild(Node newChild, Node oldChild);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node insertBefore(Node newChild, Node refChild);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node replaceChild(Node newChild, Node oldChild);
     [Custom, PerWorldBindings, RaisesException] Node removeChild(Node oldChild);
-    [Custom, PerWorldBindings, RaisesException] Node appendChild(Node newChild);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node appendChild(Node newChild);
 
     boolean            hasChildNodes();
     [DeliverCustomElementCallbacks, PerWorldBindings]

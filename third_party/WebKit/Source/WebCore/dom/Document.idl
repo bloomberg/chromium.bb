@@ -27,7 +27,7 @@
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString tagName);
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString tagName);
     DocumentFragment   createDocumentFragment();
     [ReturnNewObject, PerWorldBindings] Text createTextNode([Optional=DefaultIsUndefined] DOMString data);
     [ReturnNewObject] Comment createComment([Optional=DefaultIsUndefined] DOMString data);
@@ -40,9 +40,9 @@
 
     // Introduced in DOM Level 2:
 
-    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Node importNode([Optional=DefaultIsUndefined] Node importedNode,
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node importNode([Optional=DefaultIsUndefined] Node importedNode,
                     [Optional] boolean deep);
-    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                             [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName);
     [ReturnNewObject, RaisesException] Attr createAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                                           [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName);
@@ -141,7 +141,7 @@
     NodeList getItems([TreatNullAs=NullString, TreatUndefinedAs=NullString, Optional=DefaultIsUndefined] DOMString typeNames);
 #endif
 
-    [Custom] attribute Location location;
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] attribute Location location;
 
     // IE extensions
 
@@ -285,8 +285,8 @@
 
 #if defined(ENABLE_CUSTOM_ELEMENTS) && ENABLE_CUSTOM_ELEMENTS
     [EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, [Optional] Dictionary options);
-    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
-    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
 #endif
 
