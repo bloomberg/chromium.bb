@@ -134,12 +134,6 @@ class TestCompletionCallback {
   // TestCompletionCallback.
   pp::CompletionCallback GetCallback();
 
-  // TODO(dmichael): Remove run_count when all tests are updated. Most cases
-  //                 that use this can simply use CHECK_CALLBACK_BEHAVIOR.
-  unsigned run_count() const { return run_count_; }
-  // TODO(dmichael): Remove this; tests should use Reset() instead.
-  void reset_run_count() { run_count_ = 0; }
-
   bool failed() { return !errors_.empty(); }
   const std::string& errors() { return errors_; }
 
@@ -166,7 +160,6 @@ class TestCompletionCallback {
   CallbackType callback_type_;
   bool post_quit_task_;
   std::string errors_;
-  unsigned run_count_;
   PP_Instance instance_;
   Delegate* delegate_;
   pp::MessageLoop target_loop_;
@@ -198,16 +191,10 @@ class TestCompletionCallbackWithOutput {
   void SetDelegate(TestCompletionCallback::Delegate* delegate) {
     callback_.SetDelegate(delegate);
   }
-  int32_t WaitForResult() { return callback_.WaitForResult(); }
   void WaitForResult(int32_t result) { callback_.WaitForResult(result); }
   void WaitForAbortResult(int32_t result) {
     callback_.WaitForAbortResult(result);
   }
-  // TODO(dmichael): Remove run_count when all tests are updated. Most cases
-  //                 that use this can simply use CHECK_CALLBACK_BEHAVIOR.
-  unsigned run_count() const { return callback_.run_count(); }
-  // TODO(dmichael): Remove this; tests should use Reset() instead.
-  void reset_run_count() { callback_.reset_run_count(); }
   bool failed() { return callback_.failed(); }
   const std::string& errors() { return callback_.errors(); }
   int32_t result() const { return callback_.result(); }

@@ -270,38 +270,26 @@ std::string TestFileIO::TestOpen() {
 }
 
 std::string TestFileIO::TestOpenDirectory() {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  int32_t rv = file_system.Open(1024, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileSystem::Open", rv);
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   // Make a directory.
   pp::FileRef dir_ref(file_system, "/test_dir_open_directory");
-  rv = dir_ref.MakeDirectory(callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::MakeDirectory force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileSystem::MakeDirectory", rv);
+  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   // Open the directory. This is expected to fail since directories cannot be
   // opened.
   pp::FileIO file_io(instance_);
-  rv = file_io.Open(dir_ref, PP_FILEOPENFLAG_READ, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileIO::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  // Check for failing open operation for the directory.
-  if (rv != PP_ERROR_NOTAFILE)
-    return ReportError("FileIO::Open", rv);
+  callback.WaitForResult(file_io.Open(dir_ref, PP_FILEOPENFLAG_READ,
+                                      callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_NOTAFILE, callback.result());
 
   PASS();
 }
@@ -605,12 +593,8 @@ std::string TestFileIO::TestAbortCalls() {
     rv = pp::FileIO(instance_)
         .Open(file_ref, PP_FILEOPENFLAG_READ, callback.GetCallback());
   }
-  callback.WaitForResult(rv);
+  callback.WaitForAbortResult(rv);
   CHECK_CALLBACK_BEHAVIOR(callback);
-  if (callback_type() == PP_BLOCKING)
-    ASSERT_EQ(callback.result(), PP_OK);
-  else
-    ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
 
   // Abort |Query()|.
   {
@@ -650,12 +634,8 @@ std::string TestFileIO::TestAbortCalls() {
 
       rv = file_io.Touch(0, 0, callback.GetCallback());
     }  // Destroy |file_io|.
-    callback.WaitForResult(rv);
+    callback.WaitForAbortResult(rv);
     CHECK_CALLBACK_BEHAVIOR(callback);
-    if (callback_type() == PP_BLOCKING)
-      ASSERT_EQ(callback.result(), PP_OK);
-    else
-      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
   }
 
   // Abort |Read()|.
@@ -714,13 +694,8 @@ std::string TestFileIO::TestAbortCalls() {
 
       rv = file_io.SetLength(3, callback.GetCallback());
     }  // Destroy |file_io|.
-    callback.WaitForResult(rv);
+    callback.WaitForAbortResult(rv);
     CHECK_CALLBACK_BEHAVIOR(callback);
-    if (callback_type() == PP_BLOCKING) {
-      ASSERT_EQ(callback.result(), PP_OK);
-    } else {
-      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
-    }
   }
 
   // Abort |Flush|.
@@ -734,13 +709,8 @@ std::string TestFileIO::TestAbortCalls() {
 
       rv = file_io.Flush(callback.GetCallback());
     }  // Destroy |file_io|.
-    callback.WaitForResult(rv);
+    callback.WaitForAbortResult(rv);
     CHECK_CALLBACK_BEHAVIOR(callback);
-    if (callback_type() == PP_BLOCKING) {
-      ASSERT_EQ(callback.result(), PP_OK);
-    } else {
-      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
-    }
   }
 
   PASS();

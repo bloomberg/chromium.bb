@@ -105,7 +105,6 @@ TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
       //                 what the tests currently expect.
       callback_type_(PP_OPTIONAL),
       post_quit_task_(false),
-      run_count_(0),  // TODO(dmichael): Remove when all tests are updated.
       instance_(instance),
       delegate_(NULL) {
 }
@@ -211,7 +210,6 @@ void TestCompletionCallback::Reset() {
   result_ = PP_OK_COMPLETIONPENDING;
   have_result_ = false;
   post_quit_task_ = false;
-  run_count_ = 0;  // TODO(dmichael): Remove when all tests are updated.
   delegate_ = NULL;
   errors_.clear();
 }
@@ -225,7 +223,6 @@ void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   PP_DCHECK(!callback->have_result_);
   callback->result_ = result;
   callback->have_result_ = true;
-  callback->run_count_++;  // TODO(dmichael): Remove when all tests are updated.
   if (callback->delegate_)
     callback->delegate_->OnCallback(user_data, result);
   if (callback->post_quit_task_) {

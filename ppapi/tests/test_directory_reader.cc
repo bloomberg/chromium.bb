@@ -38,22 +38,21 @@ bool TestDirectoryReader::Init() {
 }
 
 void TestDirectoryReader::RunTests(const std::string& filter) {
-  RUN_TEST(ReadEntries, filter);
+  RUN_CALLBACK_TEST(TestDirectoryReader, ReadEntries, filter);
 }
 
 int32_t TestDirectoryReader::DeleteDirectoryRecursively(pp::FileRef* dir) {
   if (!dir)
     return PP_ERROR_BADARGUMENT;
 
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   TestCompletionCallbackWithOutput<Entries> output_callback(
-      instance_->pp_instance(), force_async_);
+      instance_->pp_instance(), callback_type());
 
-  int32_t rv = PP_OK;
   pp::DirectoryReader_Dev directory_reader(*dir);
-  rv = directory_reader.ReadEntries(output_callback.GetCallback());
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = output_callback.WaitForResult();
+  output_callback.WaitForResult(
+      directory_reader.ReadEntries(output_callback.GetCallback()));
+  int32_t rv = output_callback.result();
   if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
     return rv;
 
@@ -66,30 +65,23 @@ int32_t TestDirectoryReader::DeleteDirectoryRecursively(pp::FileRef* dir) {
       if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
         return rv;
     } else {
-      rv = file_ref.Delete(callback.GetCallback());
-      if (rv == PP_OK_COMPLETIONPENDING)
-        rv = callback.WaitForResult();
+      callback.WaitForResult(file_ref.Delete(callback.GetCallback()));
+      rv = callback.result();
       if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
         return rv;
     }
   }
-  rv = dir->Delete(callback.GetCallback());
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  return rv;
+  callback.WaitForResult(dir->Delete(callback.GetCallback()));
+  return callback.result();
 }
 
 std::string TestDirectoryReader::TestReadEntries() {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   pp::FileSystem file_system(
       instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  int32_t rv = file_system.Open(1024, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileSystem::Open", rv);
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   // Setup testing directories and files.
   const char* test_dir_name = "/test_get_next_file";
@@ -97,17 +89,13 @@ std::string TestDirectoryReader::TestReadEntries() {
   const char* dir_prefix = "dir_";
 
   pp::FileRef test_dir(file_system, test_dir_name);
-  rv = DeleteDirectoryRecursively(&test_dir);
+  int32_t rv = DeleteDirectoryRecursively(&test_dir);
   if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
     return ReportError("DeleteDirectoryRecursively", rv);
 
-  rv = test_dir.MakeDirectory(callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileRef::MakeDirectory force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileRef::MakeDirectory", rv);
+  callback.WaitForResult(test_dir.MakeDirectory(callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   std::set<std::string> expected_file_names;
   for (int i = 1; i < 4; ++i) {
@@ -116,13 +104,10 @@ std::string TestDirectoryReader::TestReadEntries() {
     pp::FileRef file_ref(file_system, buffer);
 
     pp::FileIO file_io(instance_);
-    rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("FileIO::Open force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv != PP_OK)
-      return ReportError("FileIO::Open", rv);
+    callback.WaitForResult(
+        file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
 
     expected_file_names.insert(buffer);
   }
@@ -133,13 +118,9 @@ std::string TestDirectoryReader::TestReadEntries() {
     sprintf(buffer, "%s/%s%d", test_dir_name, dir_prefix, i);
     pp::FileRef file_ref(file_system, buffer);
 
-    rv = file_ref.MakeDirectory(callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("FileRef::MakeDirectory force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv != PP_OK)
-      return ReportError("FileRef::MakeDirectory", rv);
+    callback.WaitForResult(file_ref.MakeDirectory(callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
 
     expected_dir_names.insert(buffer);
   }
@@ -148,16 +129,13 @@ std::string TestDirectoryReader::TestReadEntries() {
   // we created.
   {
     TestCompletionCallbackWithOutput<Entries> output_callback(
-        instance_->pp_instance(), force_async_);
+        instance_->pp_instance(), callback_type());
 
     pp::DirectoryReader_Dev directory_reader(test_dir);
-    rv = directory_reader.ReadEntries(output_callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("DirectoryReader::ReadEntries force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = output_callback.WaitForResult();
-    if (rv != PP_OK)
-      return ReportError("DirectoryReader::ReadEntries", rv);
+    output_callback.WaitForResult(
+        directory_reader.ReadEntries(output_callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(output_callback);
+    ASSERT_EQ(PP_OK, output_callback.result());
 
     Entries entries = output_callback.output();
     size_t sum = expected_file_names.size() + expected_dir_names.size();
@@ -189,29 +167,16 @@ std::string TestDirectoryReader::TestReadEntries() {
   }
 
   // Test cancellation of asynchronous |ReadEntries()|.
+  TestCompletionCallbackWithOutput<Entries> output_callback(
+      instance_->pp_instance(), callback_type());
   {
-    TestCompletionCallbackWithOutput<Entries> output_callback(
-        instance_->pp_instance(), force_async_);
 
     // Note that the directory reader will be deleted immediately.
     rv = pp::DirectoryReader_Dev(test_dir).ReadEntries(
         output_callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("DirectoryReader::ReadEntries force_async", rv);
-    if (output_callback.run_count() > 0)
-      return "DirectoryReader::ReadEntries ran callback synchronously.";
-
-    // If |ReadEntries()| is completing asynchronously, the callback should be
-    // aborted (i.e., called with |PP_ERROR_ABORTED| from the message loop)
-    // since the resource was destroyed.
-    if (rv == PP_OK_COMPLETIONPENDING) {
-      rv = output_callback.WaitForResult();
-      if (rv != PP_ERROR_ABORTED)
-        return "DirectoryReader::ReadEntries not aborted.";
-    } else if (rv != PP_OK) {
-      return ReportError("DirectoryReader::ReadEntries", rv);
-    }
   }
+  output_callback.WaitForAbortResult(rv);
+  CHECK_CALLBACK_BEHAVIOR(output_callback);
 
   PASS();
 }
