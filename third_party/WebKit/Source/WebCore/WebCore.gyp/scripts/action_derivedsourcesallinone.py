@@ -41,6 +41,8 @@
 #
 # Note that IDL_FILES_LIST is a text file containing the IDL file paths.
 
+# FIXME: Move to bindings/scripts
+
 import errno
 import os
 import os.path

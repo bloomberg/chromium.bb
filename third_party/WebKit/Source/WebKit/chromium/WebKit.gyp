@@ -48,6 +48,7 @@
             'dependencies': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
                 '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                '../../bindings/bindings.gyp:bindings',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -584,7 +585,7 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'dependencies': [
-                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_bindings',
+                        '../../bindings/bindings.gyp:bindings',
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
