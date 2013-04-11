@@ -11,7 +11,7 @@
 TEST(ParseCapabilities, WithAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.android_package", "abc");
+  caps.SetString("chromeOptions.androidPackage", "abc");
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsAndroid());
@@ -21,7 +21,7 @@ TEST(ParseCapabilities, WithAndroidPackage) {
 TEST(ParseCapabilities, EmptyAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.android_package", std::string());
+  caps.SetString("chromeOptions.androidPackage", std::string());
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -29,7 +29,7 @@ TEST(ParseCapabilities, EmptyAndroidPackage) {
 TEST(ParseCapabilities, IllegalAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetInteger("chromeOptions.android_package", 123);
+  caps.SetInteger("chromeOptions.androidPackage", 123);
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }

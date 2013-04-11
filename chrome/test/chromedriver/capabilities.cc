@@ -190,11 +190,11 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
       return Status(kUnknownError, "'chromeOptions' must be a dictionary");
 
     const base::Value* android_package_value;
-    if (chrome_options_dict->Get("android_package", &android_package_value)) {
+    if (chrome_options_dict->Get("androidPackage", &android_package_value)) {
       if (!android_package_value->GetAsString(&capabilities->android_package) ||
           capabilities->android_package.empty()) {
         return Status(kUnknownError,
-                      "'android_package' must be a non-empty string");
+                      "'androidPackage' must be a non-empty string");
       }
     }
   }

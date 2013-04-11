@@ -60,7 +60,8 @@ class TestResult(object):
 
 
 def _Run(java_tests_src_dir, test_filter,
-         chromedriver_path, chrome_path, android_package):
+         chromedriver_path, chrome_path, android_package,
+         verbose, debug):
   """Run the WebDriver Java tests and return the test results.
 
   Args:
@@ -70,11 +71,13 @@ def _Run(java_tests_src_dir, test_filter,
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
     android_package: name of Chrome's Android package.
+    verbose: whether the output should be verbose.
+    debug: whether the tests should wait until attached by a debugger.
 
   Returns:
     A list of |TestResult|s.
   """
-  test_dir = util.MakeTempDir()
+  test_dir = util.MakeTempDir() + '1'
   keystore_path = ('java', 'client', 'test', 'keystore')
   required_dirs = [keystore_path[:-1],
                    ('javascript',),
@@ -84,6 +87,7 @@ def _Run(java_tests_src_dir, test_filter,
     os.makedirs(os.path.join(test_dir, *required_dir))
 
   test_jar = 'test-standalone.jar'
+  class_path = test_jar
   shutil.copyfile(os.path.join(java_tests_src_dir, 'keystore'),
                   os.path.join(test_dir, *keystore_path))
   util.Unzip(os.path.join(java_tests_src_dir, 'common.zip'), test_dir)
@@ -101,38 +105,52 @@ def _Run(java_tests_src_dir, test_filter,
     test_filter = test_filter.replace('*', '.*')
     sys_props += ['filter=' + test_filter]
 
+  jvm_args = []
+  if debug:
+    jvm_args += ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,'
+                     'address=33081']
+    # Unpack the sources into the test directory and add to the class path
+    # for ease of debugging, particularly with jdb.
+    util.Unzip(os.path.join(java_tests_src_dir, 'test-nodeps-srcs.jar'),
+               test_dir)
+    class_path += ':' + test_dir
+
   return _RunAntTest(
       test_dir, 'org.openqa.selenium.chrome.ChromeDriverTests',
-      test_jar, sys_props)
+      class_path, sys_props, jvm_args, verbose)
 
 
-def _RunAntTest(test_dir, test_class, class_path, sys_props):
+def _RunAntTest(test_dir, test_class, class_path, sys_props, jvm_args, verbose):
   """Runs a single Ant JUnit test suite and returns the |TestResult|s.
 
   Args:
     test_dir: the directory to run the tests in.
     test_class: the name of the JUnit test suite class to run.
-    class_path: the Java class path used when running the tests.
+    class_path: the Java class path used when running the tests, colon delimited
     sys_props: Java system properties to set when running the tests.
+    jvm_args: Java VM command line args to use.
+    verbose: whether the output should be verbose.
 
   Returns:
     A list of |TestResult|s.
   """
-
   def _CreateBuildConfig(test_name, results_file, class_path, junit_props,
-                         sys_props):
+                         sys_props, jvm_args):
     def _SystemPropToXml(prop):
       key, value = prop.split('=')
       return '<sysproperty key="%s" value="%s"/>' % (key, value)
+    def _JvmArgToXml(arg):
+      return '<jvmarg value="%s"/>' % arg
     return '\n'.join([
         '<project>',
         '  <target name="test">',
         '    <junit %s>' % ' '.join(junit_props),
         '      <formatter type="xml"/>',
         '      <classpath>',
-        '        <pathelement location="%s"/>' % class_path,
+        '        <pathelement path="%s"/>' % class_path,
         '      </classpath>',
         '      ' + '\n      '.join(map(_SystemPropToXml, sys_props)),
+        '      ' + '\n      '.join(map(_JvmArgToXml, jvm_args)),
         '      <test name="%s" outfile="%s"/>' % (test_name, results_file),
         '    </junit>',
         '  </target>',
@@ -158,10 +176,12 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
                  'fork="yes"',
                  'haltonfailure="no"',
                  'haltonerror="no"']
+  if verbose:
+    junit_props += ['showoutput="yes"']
 
   ant_file = open(os.path.join(test_dir, 'build.xml'), 'w')
   ant_file.write(_CreateBuildConfig(
-      test_class, 'results', class_path, junit_props, sys_props))
+      test_class, 'results', class_path, junit_props, sys_props, jvm_args))
   ant_file.close()
 
   if util.IsWindows():
@@ -178,9 +198,11 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
 def PrintTestResults(results):
   """Prints the given results in a format recognized by the buildbot."""
   failures = []
+  failureNames = []
   for result in results:
     if not result.IsPass():
       failures += [result]
+      failureNames += ['.'.join(result.GetName().split('.')[-2:])]
 
   print 'Ran %s tests' % len(results)
   print 'Failed %s:' % len(failures)
@@ -190,11 +212,18 @@ def PrintTestResults(results):
     print result.GetFailureMessage()
   if failures:
     print '@@@STEP_TEXT@Failed %s tests@@@' % len(failures)
+  print 'Rerun failing tests with filter:', ':'.join(failureNames)
   return len(failures)
 
 
 def main():
   parser = optparse.OptionParser()
+  parser.add_option(
+      '', '--verbose', action="store_true", default=False,
+      help='Whether output should be verbose')
+  parser.add_option(
+      '', '--debug', action="store_true", default=False,
+      help='Whether to wait to be attached by a debugger')
   parser.add_option(
       '', '--chromedriver', type='string', default=None,
       help='Path to a build of the chromedriver library(REQUIRED!)')
@@ -203,7 +232,7 @@ def main():
       help='Path to a build of the chrome binary')
   parser.add_option(
       '', '--chrome-version', default='HEAD',
-      help='Version of chrome. Default is \'HEAD\'.')
+      help='Version of chrome. Default is \'HEAD\'')
   parser.add_option(
       '', '--android-package', type='string', default=None,
       help='Name of Chrome\'s Android package')
@@ -246,7 +275,9 @@ def main():
         test_filter=test_filter,
         chromedriver_path=options.chromedriver,
         chrome_path=options.chrome,
-        android_package=options.android_package))
+        android_package=options.android_package,
+        verbose=options.verbose,
+        debug=options.debug))
   finally:
     environment.GlobalTearDown()
 

@@ -66,7 +66,7 @@ class ChromeDriver(object):
 
     options = {}
     if android_package:
-      options['android_package'] = android_package
+      options['androidPackage'] = android_package
     elif chrome_binary:
       options['binary'] = chrome_binary
 
