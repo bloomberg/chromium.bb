@@ -636,6 +636,9 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
 
   // If not empty, which frame to navigate.
   IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
+
+  // The navigationStart time to expose to JS for this navigation.
+  IPC_STRUCT_MEMBER(base::TimeTicks, browser_navigation_start)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
@@ -1251,9 +1254,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
 // accordingly, etc.).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                     bool /* active */)
-
-IPC_MESSAGE_ROUTED1(ViewMsg_SetNavigationStartTime,
-                    base::TimeTicks /* browser_navigation_start */)
 
 // Response message to ViewHostMsg_CreateShared/DedicatedWorker.
 // Sent when the worker has started.

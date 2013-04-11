@@ -329,7 +329,8 @@ void TestRenderViewHost::SendNavigateWithParameters(
 }
 
 void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
-  OnShouldCloseACK(proceed, base::TimeTicks(), base::TimeTicks());
+  base::TimeTicks now = base::TimeTicks::Now();
+  OnShouldCloseACK(proceed, now, now);
 }
 
 void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {

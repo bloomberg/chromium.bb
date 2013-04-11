@@ -168,7 +168,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       enabled_bindings_(0),
       pending_request_id_(-1),
       navigations_suspended_(false),
-      suspended_nav_message_(NULL),
+      suspended_nav_params_(NULL),
       is_swapped_out_(swapped_out),
       is_subframe_(false),
       run_modal_reply_msg_(NULL),
@@ -311,8 +311,6 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
     }
   }
 
-  ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(GetRoutingID(), params);
-
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
   if (navigations_suspended_) {
@@ -320,14 +318,14 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
     // navigations will only be suspended during a cross-site request.  If a
     // second navigation occurs, WebContentsImpl will cancel this pending RVH
     // create a new pending RVH.
-    DCHECK(!suspended_nav_message_.get());
-    suspended_nav_message_.reset(nav_message);
+    DCHECK(!suspended_nav_params_.get());
+    suspended_nav_params_.reset(new ViewMsg_Navigate_Params(params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RVH swap or unload handler.
     SetSwappedOut(false);
 
-    Send(nav_message);
+    Send(new ViewMsg_Navigate(GetRoutingID(), params));
   }
 
   // Force the throbber to start. We do this because WebKit's "started
@@ -359,31 +357,31 @@ void RenderViewHostImpl::NavigateToURL(const GURL& url) {
   Navigate(params);
 }
 
-void RenderViewHostImpl::SetNavigationsSuspended(bool suspend) {
+void RenderViewHostImpl::SetNavigationsSuspended(
+    bool suspend,
+    const base::TimeTicks& proceed_time) {
   // This should only be called to toggle the state.
   DCHECK(navigations_suspended_ != suspend);
 
   navigations_suspended_ = suspend;
-  if (!suspend && suspended_nav_message_.get()) {
-    // There's a navigation message waiting to be sent.  Now that we're not
-    // suspended anymore, resume navigation by sending it.  If we were swapped
+  if (!suspend && suspended_nav_params_.get()) {
+    // There's navigation message params waiting to be sent.  Now that we're not
+    // suspended anymore, resume navigation by sending them.  If we were swapped
     // out, we should also stop filtering out the IPC messages now.
     SetSwappedOut(false);
 
-    Send(suspended_nav_message_.release());
+    DCHECK(!proceed_time.is_null());
+    suspended_nav_params_->browser_navigation_start = proceed_time;
+    Send(new ViewMsg_Navigate(GetRoutingID(), *suspended_nav_params_.get()));
+    suspended_nav_params_.reset();
   }
 }
 
 void RenderViewHostImpl::CancelSuspendedNavigations() {
   // Clear any state if a pending navigation is canceled or pre-empted.
-  if (suspended_nav_message_.get())
-    suspended_nav_message_.reset();
+  if (suspended_nav_params_.get())
+    suspended_nav_params_.reset();
   navigations_suspended_ = false;
-}
-
-void RenderViewHostImpl::SetNavigationStartTime(
-    const base::TimeTicks& navigation_start) {
-  Send(new ViewMsg_SetNavigationStartTime(GetRoutingID(), navigation_start));
 }
 
 void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {

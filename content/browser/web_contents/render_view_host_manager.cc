@@ -197,7 +197,8 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     // false (meaning the navigation should not proceed), but we'll ignore it
     // in this case because it took too long.
     if (pending_render_view_host_->are_navigations_suspended())
-      pending_render_view_host_->SetNavigationsSuspended(false);
+      pending_render_view_host_->SetNavigationsSuspended(
+          false, base::TimeTicks::Now());
   } else {
     // The request has been started and paused while we're waiting for the
     // unload handler to finish.  We'll pretend that it did, by notifying the
@@ -346,10 +347,7 @@ void RenderViewHostManager::ShouldClosePage(
       // is ok to do nothing here.
       if (pending_render_view_host_ &&
           pending_render_view_host_->are_navigations_suspended()) {
-        pending_render_view_host_->SetNavigationsSuspended(false);
-        if (!proceed_time.is_null()) {
-          pending_render_view_host_->SetNavigationStartTime(proceed_time);
-        }
+        pending_render_view_host_->SetNavigationsSuspended(false, proceed_time);
       }
     } else {
       // Current page says to cancel.
@@ -872,7 +870,7 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     // onbeforeunload handler.  If the handler returns false, we'll have to
     // cancel the request.
     DCHECK(!pending_render_view_host_->are_navigations_suspended());
-    pending_render_view_host_->SetNavigationsSuspended(true);
+    pending_render_view_host_->SetNavigationsSuspended(true, base::TimeTicks());
 
     // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
     // request, so that ResourceDispatcherHost will know to tell us to run the

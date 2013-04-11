@@ -260,16 +260,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   // method with |suspend| equal to true.  If |suspend| is false and there is
   // a suspended_nav_message_, this will send the message.  This function
   // should only be called to toggle the state; callers should check
-  // are_navigations_suspended() first.
-  void SetNavigationsSuspended(bool suspend);
+  // are_navigations_suspended() first. If |suspend| is false, the time that the
+  // user decided the navigation should proceed should be passed as
+  // |proceed_time|.
+  void SetNavigationsSuspended(bool suspend,
+                               const base::TimeTicks& proceed_time);
 
   // Clears any suspended navigation state after a cross-site navigation is
   // canceled or suspended.  This is important if we later return to this
   // RenderViewHost.
   void CancelSuspendedNavigations();
-
-  // Informs the renderer of when the current navigation was allowed to proceed.
-  void SetNavigationStartTime(const base::TimeTicks& navigation_start);
 
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
@@ -603,11 +603,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderViewHost.
   bool navigations_suspended_;
 
-  // We only buffer a suspended navigation message while we a pending RVH for a
-  // WebContentsImpl.  There will only ever be one suspended navigation, because
-  // WebContentsImpl will destroy the pending RVH and create a new one if a
-  // second navigation occurs.
-  scoped_ptr<ViewMsg_Navigate> suspended_nav_message_;
+  // We only buffer the params for a suspended navigation while we have a
+  // pending RVH for a WebContentsImpl.  There will only ever be one suspended
+  // navigation, because WebContentsImpl will destroy the pending RVH and create
+  // a new one if a second navigation occurs.
+  scoped_ptr<ViewMsg_Navigate_Params> suspended_nav_params_;
 
   // Whether this RenderViewHost is currently swapped out, such that the view is
   // being rendered by another process.

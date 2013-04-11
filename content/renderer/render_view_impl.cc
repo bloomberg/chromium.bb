@@ -1085,8 +1085,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnOrientationChangeEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetNavigationStartTime,
-                        OnSetNavigationStartTime)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
@@ -1284,6 +1282,21 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     }
 
     frame->loadRequest(request);
+
+    // If this is a cross-process navigation, the browser process will send
+    // along the proper navigation start value.
+    if (!params.browser_navigation_start.is_null() &&
+        frame->provisionalDataSource()) {
+      // browser_navigation_start is likely before this process existed, so we
+      // can't use InterProcessTimeTicksConverter. Instead, the best we can do
+      // is just ensure we don't report a bogus value in the future.
+      base::TimeTicks navigation_start = std::min(
+          base::TimeTicks::Now(), params.browser_navigation_start);
+      double navigation_start_seconds =
+          (navigation_start - base::TimeTicks()).InSecondsF();
+      frame->provisionalDataSource()->setNavigationStartTime(
+          navigation_start_seconds);
+    }
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.
@@ -5750,26 +5763,6 @@ void RenderViewImpl::OnSetActive(bool active) {
     (*plugin_it)->SetWindowFocus(active);
   }
 #endif
-}
-
-void RenderViewImpl::OnSetNavigationStartTime(
-    const base::TimeTicks& browser_navigation_start) {
-  // Only the initial navigation can be a cross-renderer navigation. If we've
-  // already navigated away from that page, we can ignore this message.
-  if (page_id_ != -1)
-    return;
-
-  if (!webview() || !webview()->mainFrame() ||
-      !webview()->mainFrame()->provisionalDataSource())
-    return;
-
-  // browser_navigation_start is likely before this process existed, so we can't
-  // use InterProcessTimeTicksConverter. Instead, the best we can do is just
-  // ensure we don't report a bogus value in the future.
-  base::TimeTicks navigation_start = std::min(base::TimeTicks::Now(),
-                                              browser_navigation_start);
-  webview()->mainFrame()->provisionalDataSource()->setNavigationStartTime(
-      (navigation_start - base::TimeTicks()).InSecondsF());
 }
 
 #if defined(OS_MACOSX)

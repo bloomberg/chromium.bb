@@ -998,8 +998,6 @@ class CONTENT_EXPORT RenderViewImpl
       int start, int end,
       const std::vector<WebKit::WebCompositionUnderline>& underlines);
   void OnSetEditableSelectionOffsets(int start, int end);
-  void OnSetNavigationStartTime(
-      const base::TimeTicks& browser_navigation_start);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
