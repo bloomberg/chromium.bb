@@ -244,6 +244,8 @@ NotifierSettingsView::NotifierSettingsView(
   DCHECK(delegate_);
 
   set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+  set_focusable(true);
+  set_focus_border(NULL);
 
   gfx::Font title_font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
@@ -289,6 +291,10 @@ NotifierSettingsView::~NotifierSettingsView() {
   settings_view_ = NULL;
 }
 
+views::View* NotifierSettingsView::GetInitiallyFocusedView() {
+  return this;
+}
+
 void NotifierSettingsView::WindowClosing() {
   if (delegate_)
     delegate_->OnNotifierSettingsClosing();
@@ -327,6 +333,14 @@ gfx::Size NotifierSettingsView::GetMinimumSize() {
 
 gfx::Size NotifierSettingsView::GetPreferredSize() {
   return GetMinimumSize();
+}
+
+void NotifierSettingsView::OnBlur() {
+  set_focusable(false);
+}
+
+bool NotifierSettingsView::OnKeyPressed(const ui::KeyEvent& event) {
+  return scroller_->OnKeyPressed(event);
 }
 
 void NotifierSettingsView::ButtonPressed(views::Button* sender,

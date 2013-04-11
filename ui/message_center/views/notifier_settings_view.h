@@ -52,6 +52,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   virtual ~NotifierSettingsView();
 
   // Overridden from views::WidgetDelegate:
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
@@ -60,6 +61,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
