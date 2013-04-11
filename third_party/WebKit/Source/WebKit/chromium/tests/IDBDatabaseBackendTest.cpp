@@ -174,6 +174,26 @@ private:
     WebIDBDatabaseImpl& m_webDatabase;
 };
 
+class MockIDBDatabaseCallbacks : public IDBDatabaseCallbacks {
+public:
+    static PassRefPtr<MockIDBDatabaseCallbacks> create() { return adoptRef(new MockIDBDatabaseCallbacks()); }
+    virtual ~MockIDBDatabaseCallbacks()
+    {
+        EXPECT_TRUE(m_wasAbortCalled);
+    }
+    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }
+    virtual void onForcedClose() OVERRIDE { }
+    virtual void onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error) OVERRIDE
+    {
+        m_wasAbortCalled = true;
+    }
+    virtual void onComplete(int64_t transactionId) OVERRIDE { }
+private:
+    MockIDBDatabaseCallbacks()
+        : m_wasAbortCalled(false) { }
+    bool m_wasAbortCalled;
+};
+
 TEST(IDBDatabaseBackendTest, ForcedClose)
 {
     RefPtr<IDBFakeBackingStore> backingStore = adoptRef(new IDBFakeBackingStore());
@@ -183,16 +203,21 @@ TEST(IDBDatabaseBackendTest, ForcedClose)
     RefPtr<IDBDatabaseBackendImpl> backend = IDBDatabaseBackendImpl::create("db", backingStore.get(), factory, "uniqueid");
     EXPECT_GT(backingStore->refCount(), 1);
 
-    RefPtr<FakeIDBDatabaseCallbacks> connection = FakeIDBDatabaseCallbacks::create();
+    RefPtr<MockIDBDatabaseCallbacks> connection = MockIDBDatabaseCallbacks::create();
     RefPtr<IDBDatabaseCallbacksProxy> connectionProxy = IDBDatabaseCallbacksProxy::create(adoptPtr(new WebIDBDatabaseCallbacksImpl(connection)));
     WebIDBDatabaseImpl webDatabase(backend, connectionProxy);
 
     RefPtr<MockIDBDatabaseBackendProxy> proxy = MockIDBDatabaseBackendProxy::create(webDatabase);
     RefPtr<MockIDBCallbacks> request = MockIDBCallbacks::create();
-    backend->openConnection(request, connectionProxy, 3, IDBDatabaseMetadata::DefaultIntVersion);
+    const int64_t upgradeTransactionId = 3;
+    backend->openConnection(request, connectionProxy, upgradeTransactionId, IDBDatabaseMetadata::DefaultIntVersion);
 
     ScriptExecutionContext* context = 0;
     RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(context, proxy, connection);
+
+    const int64_t transactionId = 123;
+    const Vector<int64_t> scope;
+    backend->createTransaction(transactionId, connectionProxy, scope, IndexedDB::TransactionReadOnly);
 
     webDatabase.forceClose();
 

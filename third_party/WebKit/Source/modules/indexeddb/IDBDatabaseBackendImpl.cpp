@@ -1319,6 +1319,18 @@ void IDBDatabaseBackendImpl::close(PassRefPtr<IDBDatabaseCallbacks> prpCallbacks
     RefPtr<IDBDatabaseCallbacks> callbacks = prpCallbacks;
     ASSERT(m_databaseCallbacksSet.contains(callbacks));
 
+    // Close outstanding transactions from the closing connection. This can not happen
+    // if the close is requested by the connection itself as the front-end defers
+    // the close until all transactions are complete, so something unusual has happened
+    // e.g. unexpected process termination.
+    {
+        TransactionMap transactions(m_transactions);
+        for (TransactionMap::const_iterator::Values it = transactions.values().begin(), end = transactions.values().end(); it != end; ++it) {
+            if ((*it)->connection() == callbacks)
+                (*it)->abort(IDBDatabaseError::create(IDBDatabaseException::UnknownError, "Connection is closing."));
+        }
+    }
+
     m_databaseCallbacksSet.remove(callbacks);
     if (m_pendingSecondHalfOpen && m_pendingSecondHalfOpen->databaseCallbacks() == callbacks) {
         m_pendingSecondHalfOpen->callbacks()->onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "The connection was closed."));
@@ -1340,11 +1352,6 @@ void IDBDatabaseBackendImpl::close(PassRefPtr<IDBDatabaseCallbacks> prpCallbacks
 
     // FIXME: Add a test for the m_pendingOpenCalls cases below.
     if (!connectionCount() && !m_pendingOpenCalls.size() && !m_pendingDeleteCalls.size()) {
-        TransactionMap transactions(m_transactions);
-        RefPtr<IDBDatabaseError> error = IDBDatabaseError::create(IDBDatabaseException::UnknownError, "Connection is closing.");
-        for (TransactionMap::const_iterator::Values it = transactions.values().begin(), end = transactions.values().end(); it != end; ++it)
-            (*it)->abort(error);
-
         ASSERT(m_transactions.isEmpty());
 
         m_backingStore.clear();

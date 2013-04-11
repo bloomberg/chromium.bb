@@ -68,6 +68,7 @@ public:
     int64_t id() const { return m_id; }
 
     IDBDatabaseBackendImpl* database() const { return m_database.get(); }
+    IDBDatabaseCallbacks* connection() const { return m_callbacks.get(); }
 
 private:
     IDBTransactionBackendImpl(int64_t id, PassRefPtr<IDBDatabaseCallbacks>, const HashSet<int64_t>& objectStoreIds, IndexedDB::TransactionMode, IDBDatabaseBackendImpl*);
