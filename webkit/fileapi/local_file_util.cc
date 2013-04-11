@@ -22,9 +22,8 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   LocalFileEnumerator(const base::FilePath& platform_root_path,
                       const base::FilePath& virtual_root_path,
-                      bool recursive,
                       int file_type)
-      : file_enum_(platform_root_path, recursive, file_type),
+      : file_enum_(platform_root_path, false /* recursive */, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {
 #if defined(OS_WIN)
@@ -139,8 +138,7 @@ PlatformFileError LocalFileUtil::GetFileInfo(
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
     CreateFileEnumerator(
         FileSystemOperationContext* context,
-        const FileSystemURL& root_url,
-        bool recursive) {
+        const FileSystemURL& root_url) {
   base::FilePath file_path;
   if (GetLocalFilePath(context, root_url, &file_path) !=
       base::PLATFORM_FILE_OK) {
@@ -148,7 +146,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
         .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
   }
   return make_scoped_ptr(new LocalFileEnumerator(
-      file_path, root_url.path(), recursive,
+      file_path, root_url.path(),
       file_util::FileEnumerator::FILES |
           file_util::FileEnumerator::DIRECTORIES))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();

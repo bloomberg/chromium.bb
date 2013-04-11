@@ -83,8 +83,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       base::FilePath* platform_file) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url,
-      bool recursive) OVERRIDE;
+      const FileSystemURL& root_url) OVERRIDE;
   virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
@@ -119,6 +118,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       base::PlatformFileInfo* file_info,
       base::FilePath* platform_path,
       SnapshotFilePolicy* policy) OVERRIDE;
+
+  // Same as the other CreateFileEnumerator, but with recursive support.
+  scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+      FileSystemOperationContext* context,
+      const FileSystemURL& root_url,
+      bool recursive);
 
   // Returns true if the directory |url| is empty.
   bool IsDirectoryEmpty(

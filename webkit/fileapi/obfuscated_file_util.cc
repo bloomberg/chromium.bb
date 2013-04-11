@@ -482,17 +482,8 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfo(
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
     ObfuscatedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemURL& root_url,
-    bool recursive) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      root_url.origin(), root_url.type(), false);
-  if (!db) {
-    return make_scoped_ptr(new FileSystemFileUtil::EmptyFileEnumerator())
-        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
-  }
-  return make_scoped_ptr(new ObfuscatedFileEnumerator(db, context, this,
-                                                      root_url, recursive))
-      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+    const FileSystemURL& root_url) {
+  return CreateFileEnumerator(context, root_url, false /* recursive */);
 }
 
 PlatformFileError ObfuscatedFileUtil::GetLocalFilePath(
@@ -882,6 +873,20 @@ base::PlatformFileError ObfuscatedFileUtil::CreateSnapshotFile(
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   }
   return error;
+}
+
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    ObfuscatedFileUtil::CreateFileEnumerator(
+    FileSystemOperationContext* context,
+    const FileSystemURL& root_url,
+    bool recursive) {
+  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+      root_url.origin(), root_url.type(), false);
+  if (!db) {
+    return scoped_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
+  }
+  return scoped_ptr<AbstractFileEnumerator>(
+      new ObfuscatedFileEnumerator(db, context, this, root_url, recursive));
 }
 
 bool ObfuscatedFileUtil::IsDirectoryEmpty(

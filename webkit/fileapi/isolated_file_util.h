@@ -41,8 +41,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DraggedFileUtil : public IsolatedFileUtil {
       base::FilePath* platform_path) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url,
-      bool recursive) OVERRIDE;
+      const FileSystemURL& root_url) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtil);

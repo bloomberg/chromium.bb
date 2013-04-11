@@ -110,16 +110,10 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
     DraggedFileUtil::CreateFileEnumerator(
         FileSystemOperationContext* context,
-        const FileSystemURL& root,
-        bool recursive) {
-  if (recursive) {
-    NOTREACHED() << "Recursive enumeration not supported.";
-    return scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>(
-        new EmptyFileEnumerator);
-  }
+        const FileSystemURL& root) {
   DCHECK(root.is_valid());
   if (!root.path().empty())
-    return LocalFileUtil::CreateFileEnumerator(context, root, recursive);
+    return LocalFileUtil::CreateFileEnumerator(context, root);
 
   // Root path case.
   std::vector<FileInfo> toplevels;

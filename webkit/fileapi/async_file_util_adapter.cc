@@ -104,7 +104,7 @@ class ReadDirectoryHelper {
     }
 
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-        file_util->CreateFileEnumerator(context, url, false /* recursive */));
+        file_util->CreateFileEnumerator(context, url));
 
     base::FilePath current;
     while (!(current = file_enum->Next()).empty()) {

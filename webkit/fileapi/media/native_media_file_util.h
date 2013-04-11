@@ -30,8 +30,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       const FileSystemURL& url, bool* created) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url,
-      bool recursive) OVERRIDE;
+      const FileSystemURL& root_url) OVERRIDE;
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,

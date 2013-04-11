@@ -41,11 +41,10 @@ PlatformFileError NativeMediaFileUtil::EnsureFileExists(
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 NativeMediaFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemURL& root_url,
-    bool recursive) {
+    const FileSystemURL& root_url) {
   DCHECK(context);
   return make_scoped_ptr(new FilteringFileEnumerator(
-      IsolatedFileUtil::CreateFileEnumerator(context, root_url, recursive),
+      IsolatedFileUtil::CreateFileEnumerator(context, root_url),
       context->media_path_filter()))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }

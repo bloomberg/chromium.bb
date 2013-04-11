@@ -246,9 +246,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 
         // Push files and directories in this directory into |dirty_files|.
         scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-            file_util->CreateFileEnumerator(context.get(),
-                                            url,
-                                            false /* recursive */));
+            file_util->CreateFileEnumerator(context.get(), url));
         base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
           dirty_files.push(CreateSyncableFileSystemURL(
