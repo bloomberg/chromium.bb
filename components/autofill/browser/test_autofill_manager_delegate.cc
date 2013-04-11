@@ -64,9 +64,9 @@ void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
 
 void TestAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers,
     AutofillPopupDelegate* delegate) {}
 

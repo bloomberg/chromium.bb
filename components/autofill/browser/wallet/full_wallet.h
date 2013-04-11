@@ -38,7 +38,7 @@ class FullWallet {
       CreateFullWallet(const base::DictionaryValue& dictionary);
 
   // Returns corresponding data for |type|.
-  string16 GetInfo(AutofillFieldType type);
+  base::string16 GetInfo(AutofillFieldType type);
 
   // Whether or not |action| is in |required_actions_|.
   bool HasRequiredAction(RequiredAction action) const;

@@ -17,9 +17,10 @@
 
 namespace {
 
-string16 SafeJavaStringToUTF16(const ScopedJavaLocalRef<jstring>& jstring) {
+base::string16 SafeJavaStringToUTF16(
+    const ScopedJavaLocalRef<jstring>& jstring) {
   if (jstring.is_null())
-    return string16();
+    return base::string16();
 
   return ConvertJavaStringToUTF16(jstring);
 }
@@ -27,7 +28,7 @@ string16 SafeJavaStringToUTF16(const ScopedJavaLocalRef<jstring>& jstring) {
 void SafeJavaStringArrayToStringVector(
     const ScopedJavaLocalRef<jobjectArray>& jarray,
     JNIEnv* env,
-    std::vector<string16>* string_vector) {
+    std::vector<base::string16>* string_vector) {
   if (!jarray.is_null()) {
     base::android::AppendJavaStringArrayToStringVector(env,
                                                        jarray.obj(),
@@ -57,54 +58,54 @@ bool AuxiliaryProfileLoaderAndroid::GetHasPermissions() const {
 }
 
 // Address info
-string16 AuxiliaryProfileLoaderAndroid::GetStreet() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetStreet() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getStreet));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetPostOfficeBox() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetPostOfficeBox() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getPobox));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetNeighborhood() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetNeighborhood() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getNeighborhood));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetRegion() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetRegion() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getRegion));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetCity() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetCity() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getCity));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetPostalCode() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetPostalCode() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getPostalCode));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetCountry() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetCountry() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getCountry));
 }
 
 // Name info
-string16 AuxiliaryProfileLoaderAndroid::GetFirstName() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetFirstName() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getFirstName));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetMiddleName() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetMiddleName() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getMiddleName));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetLastName() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetLastName() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getLastName));
 }
 
-string16 AuxiliaryProfileLoaderAndroid::GetSuffix() const {
+base::string16 AuxiliaryProfileLoaderAndroid::GetSuffix() const {
   return SafeJavaStringToUTF16(JAVA_METHOD(getSuffix));
 }
 
 // Email info
 void AuxiliaryProfileLoaderAndroid::GetEmailAddresses(
-    std::vector<string16>* email_addresses) const {
+    std::vector<base::string16>* email_addresses) const {
   SafeJavaStringArrayToStringVector(JAVA_METHOD(getEmailAddresses),
                                     env_,
                                     email_addresses);
@@ -112,7 +113,7 @@ void AuxiliaryProfileLoaderAndroid::GetEmailAddresses(
 
 // Phone info
 void AuxiliaryProfileLoaderAndroid::GetPhoneNumbers(
-    std::vector<string16>* phone_numbers) const {
+    std::vector<base::string16>* phone_numbers) const {
   SafeJavaStringArrayToStringVector(JAVA_METHOD(getPhoneNumbers),
                                     env_,
                                     phone_numbers);

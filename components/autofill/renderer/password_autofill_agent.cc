@@ -31,7 +31,7 @@ namespace {
 static const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 // Maps element names to the actual elements to simplify form filling.
-typedef std::map<string16, WebKit::WebInputElement>
+typedef std::map<base::string16, WebKit::WebInputElement>
     FormInputElementMap;
 
 // Utility struct for form lookup and autofill. When we parse the DOM to look up
@@ -155,7 +155,7 @@ void FillForm(FormElements* fe, const FormData& data) {
   if (!fe->form_element.autoComplete())
     return;
 
-  std::map<string16, string16> data_map;
+  std::map<base::string16, base::string16> data_map;
   for (size_t i = 0; i < data.fields.size(); i++)
     data_map[data.fields[i].name] = data.fields[i].value;
 
@@ -189,8 +189,8 @@ void SetElementAutofilled(WebKit::WebInputElement* element, bool autofilled) {
   element->dispatchFormControlChangeEvent();
 }
 
-bool DoUsernamesMatch(const string16& username1,
-                      const string16& username2,
+bool DoUsernamesMatch(const base::string16& username1,
+                      const base::string16& username2,
                       bool exact_match) {
   if (exact_match)
     return username1 == username2;
@@ -253,7 +253,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   WebKit::WebInputElement password = iter->second.password_field;
   SetElementAutofilled(&username, false);
   if (password.isAutofilled()) {
-    password.setValue(string16());
+    password.setValue(base::string16());
     SetElementAutofilled(&password, false);
   }
 
@@ -486,8 +486,8 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
 void PasswordAutofillAgent::GetSuggestions(
     const PasswordFormFillData& fill_data,
-    const string16& input,
-    std::vector<string16>* suggestions) {
+    const base::string16& input,
+    std::vector<base::string16>* suggestions) {
   if (StartsWith(fill_data.basic_data.fields[0].value, input, false))
     suggestions->push_back(fill_data.basic_data.fields[0].value);
 
@@ -510,7 +510,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   if (!webview)
     return false;
 
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
   GetSuggestions(fill_data, user_input.value(), &suggestions);
 
   if (disable_popup_) {
@@ -540,8 +540,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     return false;
   }
 
-  std::vector<string16> labels(suggestions.size());
-  std::vector<string16> icons(suggestions.size());
+  std::vector<base::string16> labels(suggestions.size());
+  std::vector<base::string16> icons(suggestions.size());
   std::vector<int> ids(suggestions.size(),
                        WebKit::WebAutofillClient::MenuItemIDPasswordEntry);
   webview->applyAutofillSuggestions(
@@ -555,10 +555,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     const PasswordFormFillData& fill_data,
     bool exact_username_match,
     bool set_selection) {
-  string16 current_username = username_element->value();
+  base::string16 current_username = username_element->value();
   // username and password will contain the match found if any.
-  string16 username;
-  string16 password;
+  base::string16 username;
+  base::string16 password;
 
   // Look for any suitable matches to current field text.
   if (DoUsernamesMatch(fill_data.basic_data.fields[0].value, current_username,

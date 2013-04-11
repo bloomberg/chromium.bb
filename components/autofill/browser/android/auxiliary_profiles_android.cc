@@ -33,9 +33,9 @@ namespace {
 
 // Takes misc. address information strings from Android API and collapses
 // into single string for "address line 2"
-string16 CollapseAddress(const string16& post_office_box,
-                         const string16& neighborhood) {
-  std::vector<string16> accumulator;
+base::string16 CollapseAddress(const base::string16& post_office_box,
+                         const base::string16& neighborhood) {
+  std::vector<base::string16> accumulator;
   if (!post_office_box.empty())
     accumulator.push_back(post_office_box);
   if (!neighborhood.empty())
@@ -74,15 +74,15 @@ scoped_ptr<AutofillProfile> AuxiliaryProfilesAndroid::LoadContactsProfile() {
 }
 
 void AuxiliaryProfilesAndroid::LoadAddress(AutofillProfile* profile) {
-  string16 street = profile_loader_.GetStreet();
-  string16 post_office_box = profile_loader_.GetPostOfficeBox();
-  string16 neighborhood = profile_loader_.GetNeighborhood();
-  string16 city = profile_loader_.GetCity();
-  string16 postal_code = profile_loader_.GetPostalCode();
-  string16 region = profile_loader_.GetRegion();
-  string16 country = profile_loader_.GetCountry();
+  base::string16 street = profile_loader_.GetStreet();
+  base::string16 post_office_box = profile_loader_.GetPostOfficeBox();
+  base::string16 neighborhood = profile_loader_.GetNeighborhood();
+  base::string16 city = profile_loader_.GetCity();
+  base::string16 postal_code = profile_loader_.GetPostalCode();
+  base::string16 region = profile_loader_.GetRegion();
+  base::string16 country = profile_loader_.GetCountry();
 
-  string16 street2 = CollapseAddress(post_office_box, neighborhood);
+  base::string16 street2 = CollapseAddress(post_office_box, neighborhood);
 
   profile->SetRawInfo(ADDRESS_HOME_LINE1, street);
   profile->SetRawInfo(ADDRESS_HOME_LINE2, street2);
@@ -93,9 +93,9 @@ void AuxiliaryProfilesAndroid::LoadAddress(AutofillProfile* profile) {
 }
 
 void AuxiliaryProfilesAndroid::LoadName(AutofillProfile* profile) {
-  string16 first_name = profile_loader_.GetFirstName();
-  string16 middle_name = profile_loader_.GetMiddleName();
-  string16 last_name = profile_loader_.GetLastName();
+  base::string16 first_name = profile_loader_.GetFirstName();
+  base::string16 middle_name = profile_loader_.GetMiddleName();
+  base::string16 last_name = profile_loader_.GetLastName();
 
   profile->SetRawInfo(NAME_FIRST, first_name);
   profile->SetRawInfo(NAME_MIDDLE, middle_name);
@@ -103,13 +103,13 @@ void AuxiliaryProfilesAndroid::LoadName(AutofillProfile* profile) {
 }
 
 void AuxiliaryProfilesAndroid::LoadEmailAddress(AutofillProfile* profile) {
-  std::vector<string16> emails;
+  std::vector<base::string16> emails;
   profile_loader_.GetEmailAddresses(&emails);
   profile->SetRawMultiInfo(EMAIL_ADDRESS, emails);
 }
 
 void AuxiliaryProfilesAndroid::LoadPhoneNumbers(AutofillProfile* profile) {
-  std::vector<string16> phone_numbers;
+  std::vector<base::string16> phone_numbers;
   profile_loader_.GetPhoneNumbers(&phone_numbers);
   profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, phone_numbers);
 }

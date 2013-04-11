@@ -38,11 +38,11 @@ class Instrument {
 
   // Convert the info in |card| to an Instrument using |profile| for address.
   Instrument(const CreditCard& card,
-             const string16& card_verification_number,
+             const base::string16& card_verification_number,
              const AutofillProfile& profile);
 
-  Instrument(const string16& primary_account_number,
-             const string16& card_verification_number,
+  Instrument(const base::string16& primary_account_number,
+             const base::string16& card_verification_number,
              int expiration_month,
              int expiration_year,
              FormOfPayment form_of_payment,
@@ -58,26 +58,26 @@ class Instrument {
   // in the constructor were valid for use with Google Wallet.
   bool IsValid() const;
 
-  const string16& primary_account_number() const {
+  const base::string16& primary_account_number() const {
     return primary_account_number_;
   }
-  const string16& card_verification_number() const {
+  const base::string16& card_verification_number() const {
     return card_verification_number_;
   }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
   const Address& address() const { return *address_; }
   FormOfPayment form_of_payment() const { return form_of_payment_; }
-  const string16& last_four_digits() { return last_four_digits_; }
+  const base::string16& last_four_digits() { return last_four_digits_; }
 
  private:
   void Init();
 
   // |primary_account_number_| is expected to be \d{12-19}.
-  string16 primary_account_number_;
+  base::string16 primary_account_number_;
 
   // |card_verification_number_| is expected to be \d{3-4}.
-  string16 card_verification_number_;
+  base::string16 card_verification_number_;
 
   // |expiration month_| should be 1-12.
   int expiration_month_;
@@ -92,7 +92,7 @@ class Instrument {
   scoped_ptr<Address> address_;
 
   // The last four digits of |primary_account_number_|.
-  string16 last_four_digits_;
+  base::string16 last_four_digits_;
 
   DISALLOW_ASSIGN(Instrument);
 };

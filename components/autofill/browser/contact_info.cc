@@ -50,7 +50,7 @@ void NameInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(NAME_FULL);
 }
 
-string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == NAME_FIRST)
     return first();
 
@@ -66,10 +66,10 @@ string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == NAME_FULL)
     return FullName();
 
-  return string16();
+  return base::string16();
 }
 
-void NameInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
+void NameInfo::SetRawInfo(AutofillFieldType type, const base::string16& value) {
   DCHECK_EQ(AutofillType::NAME, AutofillType(type).group());
   if (type == NAME_FIRST)
     first_ = value;
@@ -83,8 +83,8 @@ void NameInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
     NOTREACHED();
 }
 
-string16 NameInfo::FullName() const {
-  std::vector<string16> full_name;
+base::string16 NameInfo::FullName() const {
+  std::vector<base::string16> full_name;
   if (!first_.empty())
     full_name.push_back(first_);
 
@@ -97,23 +97,23 @@ string16 NameInfo::FullName() const {
   return JoinString(full_name, ' ');
 }
 
-string16 NameInfo::MiddleInitial() const {
+base::string16 NameInfo::MiddleInitial() const {
   if (middle_.empty())
-    return string16();
+    return base::string16();
 
-  string16 middle_name(middle());
-  string16 initial;
+  base::string16 middle_name(middle());
+  base::string16 initial;
   initial.push_back(middle_name[0]);
   return initial;
 }
 
-void NameInfo::SetFullName(const string16& full) {
+void NameInfo::SetFullName(const base::string16& full) {
   // Clear the names.
-  first_ = string16();
-  middle_ = string16();
-  last_ = string16();
+  first_ = base::string16();
+  middle_ = base::string16();
+  last_ = base::string16();
 
-  std::vector<string16> full_name_tokens;
+  std::vector<base::string16> full_name_tokens;
   Tokenize(full, ASCIIToUTF16(" "), &full_name_tokens);
 
   // There are four possibilities: empty; first name; first and last names;
@@ -151,14 +151,15 @@ void EmailInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(EMAIL_ADDRESS);
 }
 
-string16 EmailInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 EmailInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == EMAIL_ADDRESS)
     return email_;
 
-  return string16();
+  return base::string16();
 }
 
-void EmailInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
+void EmailInfo::SetRawInfo(AutofillFieldType type,
+                           const base::string16& value) {
   DCHECK_EQ(EMAIL_ADDRESS, type);
   email_ = value;
 }
@@ -183,14 +184,15 @@ void CompanyInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(COMPANY_NAME);
 }
 
-string16 CompanyInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 CompanyInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == COMPANY_NAME)
     return company_name_;
 
-  return string16();
+  return base::string16();
 }
 
-void CompanyInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
+void CompanyInfo::SetRawInfo(AutofillFieldType type,
+                             const base::string16& value) {
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;
 }

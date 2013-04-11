@@ -33,8 +33,8 @@ const int kMaxAutocompleteMenuItems = 6;
 // The separator characters for SSNs.
 const char16 kSSNSeparators[] = {' ', '-', 0};
 
-bool IsSSN(const string16& text) {
-  string16 number_string;
+bool IsSSN(const base::string16& text) {
+  base::string16 number_string;
   RemoveChars(text, kSSNSeparators, &number_string);
 
   // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
@@ -157,18 +157,18 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   }
 
   DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
-  const WDResult<std::vector<string16> >* autofill_result =
-      static_cast<const WDResult<std::vector<string16> >*>(result);
-  std::vector<string16> suggestions = autofill_result->GetValue();
+  const WDResult<std::vector<base::string16> >* autofill_result =
+      static_cast<const WDResult<std::vector<base::string16> >*>(result);
+  std::vector<base::string16> suggestions = autofill_result->GetValue();
   SendSuggestions(&suggestions);
 }
 
 void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     int query_id,
-    const string16& name,
-    const string16& prefix,
-    const std::vector<string16>& autofill_values,
-    const std::vector<string16>& autofill_labels,
+    const base::string16& name,
+    const base::string16& prefix,
+    const std::vector<base::string16>& autofill_values,
+    const std::vector<base::string16>& autofill_labels,
     const std::vector<string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
   CancelPendingQuery();
@@ -224,7 +224,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
-    const string16& name, const string16& value) {
+    const base::string16& name, const base::string16& value) {
   if (autofill_data_.get())
     autofill_data_->RemoveFormValueForElementName(name, value);
 }
@@ -243,7 +243,7 @@ void AutocompleteHistoryManager::CancelPendingQuery() {
 }
 
 void AutocompleteHistoryManager::SendSuggestions(
-    const std::vector<string16>* suggestions) {
+    const std::vector<base::string16>* suggestions) {
   if (suggestions) {
     // Combine Autofill and Autocomplete values into values and labels.
     for (size_t i = 0; i < suggestions->size(); ++i) {
@@ -258,8 +258,8 @@ void AutocompleteHistoryManager::SendSuggestions(
 
       if (unique) {
         autofill_values_.push_back((*suggestions)[i]);
-        autofill_labels_.push_back(string16());
-        autofill_icons_.push_back(string16());
+        autofill_labels_.push_back(base::string16());
+        autofill_icons_.push_back(base::string16());
         autofill_unique_ids_.push_back(0);  // 0 means no profile.
       }
     }

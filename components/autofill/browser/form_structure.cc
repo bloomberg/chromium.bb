@@ -299,7 +299,7 @@ FormStructure::FormStructure(const FormData& form,
       autocheckout_url_prefix_(autocheckout_url_prefix),
       filled_by_autocheckout_(false) {
   // Copy the form fields.
-  std::map<string16, size_t> unique_names;
+  std::map<base::string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
        field != form.fields.end(); field++) {
@@ -324,7 +324,7 @@ FormStructure::FormStructure(const FormData& form,
       unique_names[field->name] = 1;
     else
       ++unique_names[field->name];
-    string16 unique_name = field->name + ASCIIToUTF16("_") +
+    base::string16 unique_name = field->name + ASCIIToUTF16("_") +
         base::IntToString16(unique_names[field->name]);
     fields_.push_back(new AutofillField(*field, unique_name));
   }
@@ -736,7 +736,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
           field->value == cached_field->second->value) {
         // From the perspective of learning user data, text fields containing
         // default values are equivalent to empty fields.
-        field->value = string16();
+        field->value = base::string16();
       }
 
       field->set_heuristic_type(cached_field->second->heuristic_type());
@@ -1163,7 +1163,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 
   if (!has_author_specified_sections) {
     // Name sections after the first field in the section.
-    string16 current_section = fields_.front()->unique_name();
+    base::string16 current_section = fields_.front()->unique_name();
 
     // Keep track of the types we've seen in this section.
     std::set<AutofillFieldType> seen_types;

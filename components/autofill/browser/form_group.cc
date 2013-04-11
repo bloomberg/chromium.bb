@@ -27,8 +27,8 @@ class State {
 
   static const State all_states[];
 
-  static string16 Abbreviation(const string16& name);
-  static string16 FullName(const string16& abbreviation);
+  static base::string16 Abbreviation(const base::string16& name);
+  static base::string16 FullName(const base::string16& abbreviation);
 };
 
 const State State::all_states[] = {
@@ -87,20 +87,20 @@ const State State::all_states[] = {
   { NULL, NULL }
 };
 
-string16 State::Abbreviation(const string16& name) {
+base::string16 State::Abbreviation(const base::string16& name) {
   for (const State* state = all_states; state->name; ++state) {
     if (LowerCaseEqualsASCII(name, state->name))
       return ASCIIToUTF16(state->abbreviation);
   }
-  return string16();
+  return base::string16();
 }
 
-string16 State::FullName(const string16& abbreviation) {
+base::string16 State::FullName(const base::string16& abbreviation) {
   for (const State* state = all_states; state->name; ++state) {
     if (LowerCaseEqualsASCII(abbreviation, state->abbreviation))
       return ASCIIToUTF16(state->name);
   }
-  return string16();
+  return base::string16();
 }
 
 const char* const kMonthsAbbreviated[] = {
@@ -122,9 +122,9 @@ const char* const kMonthsNumeric[] = {
 
 // Returns true if the value was successfully set, meaning |value| was found in
 // the list of select options in |field|.
-bool SetSelectControlValue(const string16& value,
+bool SetSelectControlValue(const base::string16& value,
                            FormFieldData* field) {
-  string16 value_lowercase = StringToLowerASCII(value);
+  base::string16 value_lowercase = StringToLowerASCII(value);
 
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
   for (size_t i = 0; i < field->option_values.size(); ++i) {
@@ -138,9 +138,9 @@ bool SetSelectControlValue(const string16& value,
   return false;
 }
 
-bool FillStateSelectControl(const string16& value,
+bool FillStateSelectControl(const base::string16& value,
                             FormFieldData* field) {
-  string16 abbrev, full;
+  base::string16 abbrev, full;
   if (value.size() < 4U) {
     abbrev = value;
     full = State::FullName(value);
@@ -159,7 +159,7 @@ bool FillStateSelectControl(const string16& value,
   return SetSelectControlValue(full, field);
 }
 
-bool FillExpirationMonthSelectControl(const string16& value,
+bool FillExpirationMonthSelectControl(const base::string16& value,
                                       FormFieldData* field) {
   int index = 0;
   if (!base::StringToInt(value, &index) ||
@@ -176,17 +176,17 @@ bool FillExpirationMonthSelectControl(const string16& value,
 
 // Try to fill a credit card type |value| (Visa, MasterCard, etc.) into the
 // given |field|.
-bool FillCreditCardTypeSelectControl(const string16& value,
+bool FillCreditCardTypeSelectControl(const base::string16& value,
                                      FormFieldData* field) {
   // Try stripping off spaces.
-  string16 value_stripped;
+  base::string16 value_stripped;
   RemoveChars(StringToLowerASCII(value), kWhitespaceUTF16, &value_stripped);
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
-    string16 option_value_lowercase;
+    base::string16 option_value_lowercase;
     RemoveChars(StringToLowerASCII(field->option_values[i]), kWhitespaceUTF16,
                 &option_value_lowercase);
-    string16 option_contents_lowercase;
+    base::string16 option_contents_lowercase;
     RemoveChars(StringToLowerASCII(field->option_contents[i]), kWhitespaceUTF16,
                 &option_contents_lowercase);
 
@@ -213,7 +213,7 @@ std::string FormGroup::GetGUID() const {
   return std::string();
 }
 
-void FormGroup::GetMatchingTypes(const string16& text,
+void FormGroup::GetMatchingTypes(const base::string16& text,
                                  const std::string& app_locale,
                                  FieldTypeSet* matching_types) const {
   if (text.empty()) {
@@ -244,13 +244,13 @@ void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
   }
 }
 
-string16 FormGroup::GetInfo(AutofillFieldType type,
+base::string16 FormGroup::GetInfo(AutofillFieldType type,
                             const std::string& app_locale) const {
   return GetRawInfo(type);
 }
 
 bool FormGroup::SetInfo(AutofillFieldType type,
-                        const string16& value,
+                        const base::string16& value,
                         const std::string& app_locale) {
   SetRawInfo(type, value);
   return true;
@@ -270,12 +270,12 @@ void FormGroup::FillSelectControl(AutofillFieldType type,
   DCHECK_EQ("select-one", field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
-  string16 field_text = GetInfo(type, app_locale);
-  string16 field_text_lower = StringToLowerASCII(field_text);
+  base::string16 field_text = GetInfo(type, app_locale);
+  base::string16 field_text_lower = StringToLowerASCII(field_text);
   if (field_text.empty())
     return;
 
-  string16 value;
+  base::string16 value;
   for (size_t i = 0; i < field->option_values.size(); ++i) {
     if (field_text == field->option_values[i] ||
         field_text == field->option_contents[i]) {
@@ -319,6 +319,6 @@ bool FormGroup::FillCountrySelectControl(const std::string& app_locale,
 }
 
 // static
-bool FormGroup::IsValidState(const string16& value) {
+bool FormGroup::IsValidState(const base::string16& value) {
   return !State::Abbreviation(value).empty() || !State::FullName(value).empty();
 }

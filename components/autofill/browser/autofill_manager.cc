@@ -80,22 +80,23 @@ const size_t kMaxRecentFormSignaturesToRemember = 3;
 const size_t kMaxFormCacheSize = 100;
 
 // Removes duplicate suggestions whilst preserving their original order.
-void RemoveDuplicateSuggestions(std::vector<string16>* values,
-                                std::vector<string16>* labels,
-                                std::vector<string16>* icons,
+void RemoveDuplicateSuggestions(std::vector<base::string16>* values,
+                                std::vector<base::string16>* labels,
+                                std::vector<base::string16>* icons,
                                 std::vector<int>* unique_ids) {
   DCHECK_EQ(values->size(), labels->size());
   DCHECK_EQ(values->size(), icons->size());
   DCHECK_EQ(values->size(), unique_ids->size());
 
-  std::set<std::pair<string16, string16> > seen_suggestions;
-  std::vector<string16> values_copy;
-  std::vector<string16> labels_copy;
-  std::vector<string16> icons_copy;
+  std::set<std::pair<base::string16, base::string16> > seen_suggestions;
+  std::vector<base::string16> values_copy;
+  std::vector<base::string16> labels_copy;
+  std::vector<base::string16> icons_copy;
   std::vector<int> unique_ids_copy;
 
   for (size_t i = 0; i < values->size(); ++i) {
-    const std::pair<string16, string16> suggestion((*values)[i], (*labels)[i]);
+    const std::pair<base::string16, base::string16> suggestion(
+        (*values)[i], (*labels)[i]);
     if (seen_suggestions.insert(suggestion).second) {
       values_copy.push_back((*values)[i]);
       labels_copy.push_back((*labels)[i]);
@@ -147,7 +148,7 @@ void DeterminePossibleFieldTypesForUpload(
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     AutofillField* field = submitted_form->field(i);
-    string16 value = CollapseWhitespace(field->value, false);
+    base::string16 value = CollapseWhitespace(field->value, false);
 
     FieldTypeSet matching_types;
     for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
@@ -517,9 +518,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   if (autocheckout_manager_.is_autocheckout_bubble_showing())
     return;
 
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
 
   if (external_delegate_) {
@@ -563,8 +564,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
       if (warning) {
         values.assign(1, l10n_util::GetStringUTF16(warning));
-        labels.assign(1, string16());
-        icons.assign(1, string16());
+        labels.assign(1, base::string16());
+        icons.assign(1, base::string16());
         unique_ids.assign(1,
                           WebKit::WebAutofillClient::MenuItemIDWarningMessage);
       } else {
@@ -576,8 +577,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           // for suggestions, then the user is editing the value of a field.
           // In this case, mimic autocomplete: don't display labels or icons,
           // as that information is redundant.
-          labels.assign(labels.size(), string16());
-          icons.assign(icons.size(), string16());
+          labels.assign(labels.size(), base::string16());
+          icons.assign(icons.size(), base::string16());
         }
 
         // When filling credit card suggestions, the values and labels are
@@ -761,8 +762,8 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   personal_data_->RemoveByGUID(form_group->GetGUID());
 }
 
-void AutofillManager::RemoveAutocompleteEntry(const string16& name,
-                                              const string16& value) {
+void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
+                                              const base::string16& value) {
   autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
 }
 
@@ -799,14 +800,14 @@ void AutofillManager::OnAddPasswordFormMapping(
 void AutofillManager::OnShowPasswordSuggestions(
     const FormFieldData& field,
     const gfx::RectF& bounds,
-    const std::vector<string16>& suggestions) {
+    const std::vector<base::string16>& suggestions) {
   if (external_delegate_)
     external_delegate_->OnShowPasswordSuggestions(suggestions, field, bounds);
 }
 
-void AutofillManager::OnSetDataList(const std::vector<string16>& values,
-                                    const std::vector<string16>& labels,
-                                    const std::vector<string16>& icons,
+void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
+                                    const std::vector<base::string16>& labels,
+                                    const std::vector<base::string16>& icons,
                                     const std::vector<int>& unique_ids) {
   if (labels.size() != values.size() ||
       icons.size() != values.size() ||
@@ -1173,7 +1174,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 
   // If we have cached data, propagate it to the updated form.
   if (cached_form) {
-    std::map<string16, const AutofillField*> cached_fields;
+    std::map<base::string16, const AutofillField*> cached_fields;
     for (size_t i = 0; i < cached_form->field_count(); ++i) {
       const AutofillField* field = cached_form->field(i);
       cached_fields[field->unique_name()] = field;
@@ -1181,7 +1182,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 
     for (size_t i = 0; i < (*updated_form)->field_count(); ++i) {
       AutofillField* field = (*updated_form)->field(i);
-      std::map<string16, const AutofillField*>::iterator cached_field =
+      std::map<base::string16, const AutofillField*>::iterator cached_field =
           cached_fields.find(field->unique_name());
       if (cached_field != cached_fields.end()) {
         field->set_server_type(cached_field->second->server_type());
@@ -1205,9 +1206,9 @@ void AutofillManager::GetProfileSuggestions(
     FormStructure* form,
     const FormFieldData& field,
     AutofillFieldType type,
-    std::vector<string16>* values,
-    std::vector<string16>* labels,
-    std::vector<string16>* icons,
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
     std::vector<int>* unique_ids) const {
   std::vector<AutofillFieldType> field_types(form->field_count());
   for (size_t i = 0; i < form->field_count(); ++i) {
@@ -1228,9 +1229,9 @@ void AutofillManager::GetProfileSuggestions(
 void AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
     AutofillFieldType type,
-    std::vector<string16>* values,
-    std::vector<string16>* labels,
-    std::vector<string16>* icons,
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
     std::vector<int>* unique_ids) const {
   std::vector<GUIDPair> guid_pairs;
   personal_data_->GetCreditCardSuggestions(

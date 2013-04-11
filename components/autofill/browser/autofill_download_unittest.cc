@@ -174,7 +174,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -200,7 +200,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);

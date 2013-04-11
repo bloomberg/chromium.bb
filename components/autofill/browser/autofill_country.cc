@@ -843,7 +843,7 @@ class CountryNames {
 
   // Returns the country code corresponding to |country|, which should be a
   // country code or country name localized to |locale|.
-  const std::string GetCountryCode(const string16& country,
+  const std::string GetCountryCode(const base::string16& country,
                                    const std::string& locale);
 
  private:
@@ -858,8 +858,9 @@ class CountryNames {
   // Interprets |country_name| as a full country name localized to the given
   // |locale| and returns the corresponding country code stored in
   // |locales_to_localized_names_|, or an empty string if there is none.
-  const std::string GetCountryCodeForLocalizedName(const string16& country_name,
-                                                   const std::string& locale);
+  const std::string GetCountryCodeForLocalizedName(
+      const base::string16& country_name,
+      const std::string& locale);
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
   // given |locale|.
@@ -870,7 +871,7 @@ class CountryNames {
   // effect. |buffer_size| should specify the |buffer|'s size, and is updated if
   // the |buffer| is resized.
   const std::string GetSortKey(const icu::Collator& collator,
-                               const string16& str,
+                               const base::string16& str,
                                scoped_ptr<uint8_t[]>* buffer,
                                int32_t* buffer_size) const;
 
@@ -927,7 +928,7 @@ CountryNames::~CountryNames() {
                                        collators_.end());
 }
 
-const std::string CountryNames::GetCountryCode(const string16& country,
+const std::string CountryNames::GetCountryCode(const base::string16& country,
                                                const std::string& locale) {
   // First, check common country names, including 2- and 3-letter country codes.
   std::string country_utf8 = UTF16ToUTF8(StringToUpperASCII(country));
@@ -960,8 +961,8 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
        it != CountryDataMap::End();
        ++it) {
     const std::string& country_code = it->first;
-    string16 country_name = l10n_util::GetDisplayNameForCountry(country_code,
-                                                                locale);
+    base::string16 country_name = l10n_util::GetDisplayNameForCountry(
+        country_code, locale);
     std::string sort_key = GetSortKey(*collator,
                                       country_name,
                                       &buffer,
@@ -974,7 +975,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
 }
 
 const std::string CountryNames::GetCountryCodeForLocalizedName(
-    const string16& country_name,
+    const base::string16& country_name,
     const std::string& locale) {
   AddLocalizedNamesForLocale(locale);
 
@@ -1020,7 +1021,7 @@ icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
 }
 
 const std::string CountryNames::GetSortKey(const icu::Collator& collator,
-                                           const string16& str,
+                                           const base::string16& str,
                                            scoped_ptr<uint8_t[]>* buffer,
                                            int32_t* buffer_size) const {
   DCHECK(buffer);
@@ -1095,15 +1096,15 @@ const std::string AutofillCountry::CountryCodeForLocale(
 }
 
 // static
-const std::string AutofillCountry::GetCountryCode(const string16& country,
+const std::string AutofillCountry::GetCountryCode(const base::string16& country,
                                                   const std::string& locale) {
   return CountryNames::GetInstance()->GetCountryCode(country, locale);
 }
 
 AutofillCountry::AutofillCountry(const std::string& country_code,
-                                 const string16& name,
-                                 const string16& postal_code_label,
-                                 const string16& state_label)
+                                 const base::string16& name,
+                                 const base::string16& postal_code_label,
+                                 const base::string16& state_label)
     : country_code_(country_code),
       name_(name),
       postal_code_label_(postal_code_label),

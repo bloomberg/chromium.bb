@@ -18,8 +18,8 @@ void GenerateTestAutofillPopup(
   gfx::RectF bounds(100.f, 100.f);
   autofill_external_delegate->OnQuery(query_id, form, field, bounds, false);
 
-  std::vector<string16> autofill_item;
-  autofill_item.push_back(string16());
+  std::vector<base::string16> autofill_item;
+  autofill_item.push_back(base::string16());
   std::vector<int> autofill_id;
   autofill_id.push_back(0);
   autofill_external_delegate->OnSuggestionsReturned(

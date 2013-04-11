@@ -128,12 +128,12 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // form. Identifying info is loaded into the last four outparams.
   void GetProfileSuggestions(
       AutofillFieldType type,
-      const string16& field_contents,
+      const base::string16& field_contents,
       bool field_is_autofilled,
       std::vector<AutofillFieldType> other_field_types,
-      std::vector<string16>* values,
-      std::vector<string16>* labels,
-      std::vector<string16>* icons,
+      std::vector<base::string16>* values,
+      std::vector<base::string16>* labels,
+      std::vector<base::string16>* icons,
       std::vector<GUIDPair>* guid_pairs);
 
   // Gets credit cards that can suggest data for |type|. See
@@ -141,10 +141,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // GUID pair should be ignored.
   void GetCreditCardSuggestions(
       AutofillFieldType type,
-      const string16& field_contents,
-      std::vector<string16>* values,
-      std::vector<string16>* labels,
-      std::vector<string16>* icons,
+      const base::string16& field_contents,
+      std::vector<base::string16>* values,
+      std::vector<base::string16>* labels,
+      std::vector<base::string16>* icons,
       std::vector<GUIDPair>* guid_pairs);
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.

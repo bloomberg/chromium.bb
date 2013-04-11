@@ -40,7 +40,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // credit card field and haven't yet parsed the expiration date (which
     // usually appears at the end).
     if (credit_card_field->cardholder_ == NULL) {
-      string16 name_pattern;
+      base::string16 name_pattern;
       if (fields == 0 || credit_card_field->expiration_month_) {
         // at beginning or end
         name_pattern = UTF8ToUTF16(autofill::kNameOnCardRe);
@@ -67,7 +67,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     }
 
     // Check for a credit card type (Visa, MasterCard, etc.) field.
-    string16 type_pattern = UTF8ToUTF16(autofill::kCardTypeRe);
+    base::string16 type_pattern = UTF8ToUTF16(autofill::kCardTypeRe);
     if (!credit_card_field->type_ &&
         ParseFieldSpecifics(scanner, type_pattern,
                             MATCH_DEFAULT | MATCH_SELECT,
@@ -80,7 +80,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // has a plethora of names; we've seen "verification #",
     // "verification number", "card identification number" and others listed
     // in the |pattern| below.
-    string16 pattern = UTF8ToUTF16(autofill::kCardCvcRe);
+    base::string16 pattern = UTF8ToUTF16(autofill::kCardCvcRe);
     if (!credit_card_field->verification_ &&
         ParseField(scanner, pattern, &credit_card_field->verification_)) {
       continue;

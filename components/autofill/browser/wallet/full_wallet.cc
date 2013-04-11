@@ -124,7 +124,7 @@ scoped_ptr<FullWallet>
                                                required_actions));
 }
 
-string16 FullWallet::GetInfo(AutofillFieldType type) {
+base::string16 FullWallet::GetInfo(AutofillFieldType type) {
   switch (type) {
     case CREDIT_CARD_NUMBER:
       return UTF8ToUTF16(GetPan());
@@ -145,7 +145,7 @@ string16 FullWallet::GetInfo(AutofillFieldType type) {
       NOTREACHED();
   }
 
-  return string16();
+  return base::string16();
 }
 
 bool FullWallet::HasRequiredAction(RequiredAction action) const {

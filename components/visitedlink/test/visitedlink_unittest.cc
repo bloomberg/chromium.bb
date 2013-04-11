@@ -686,7 +686,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 }
 
 TEST_F(VisitedLinkEventsTest, Basics) {
-  RenderViewHostTester::For(rvh())->CreateRenderView(string16(),
+  RenderViewHostTester::For(rvh())->CreateRenderView(base::string16(),
                                  MSG_ROUTING_NONE,
                                  -1);
 
@@ -711,7 +711,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 }
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
-  RenderViewHostTester::For(rvh())->CreateRenderView(string16(),
+  RenderViewHostTester::For(rvh())->CreateRenderView(base::string16(),
                                  MSG_ROUTING_NONE,
                                  -1);
 

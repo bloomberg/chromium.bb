@@ -38,8 +38,8 @@ namespace {
 // fill rest of properties with default values.
 FormFieldData BuildField(const std::string& autocomplete_attribute) {
   FormFieldData field;
-  field.name = string16();
-  field.value = string16();
+  field.name = base::string16();
+  field.value = base::string16();
   field.autocomplete_attribute = autocomplete_attribute;
   field.form_control_type = "text";
   return field;
@@ -280,7 +280,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
 
   for (size_t i = 0; i < result->field_count(); ++i) {
     AutofillFieldType type = result->field(i)->type();
-    const string16& value = result->field(i)->value;
+    const base::string16& value = result->field(i)->value;
     if (type == CREDIT_CARD_VERIFICATION_CODE) {
       cvv_ = result->field(i)->value;
       continue;
@@ -333,7 +333,7 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
     //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
     // Note that, the field mapping is repeated twice to respond to both the
     // input elements with the same name/signature in the form.
-    string16 default_value = UTF8ToUTF16(field.default_value());
+    base::string16 default_value = UTF8ToUTF16(field.default_value());
     // Mark the field checked if server says the default value of the field
     // to be this field's value.
     field_to_fill->is_checked = (field.value == default_value);

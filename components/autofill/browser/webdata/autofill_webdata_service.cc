@@ -52,7 +52,7 @@ void AutofillWebDataService::AddFormFields(
 }
 
 WebDataServiceBase::Handle AutofillWebDataService::GetFormValuesForElementName(
-    const string16& name, const string16& prefix, int limit,
+    const base::string16& name, const base::string16& prefix, int limit,
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&AutofillWebDataService::GetFormValuesForElementNameImpl,
@@ -72,7 +72,7 @@ void AutofillWebDataService::RemoveExpiredFormElements() {
 }
 
 void AutofillWebDataService::RemoveFormValueForElementName(
-    const string16& name, const string16& value) {
+    const base::string16& name, const base::string16& value) {
   wdbs_->ScheduleDBTask(FROM_HERE,
       Bind(&AutofillWebDataService::RemoveFormValueForElementNameImpl,
            this, name, value));
@@ -199,13 +199,15 @@ WebDatabase::State AutofillWebDataService::AddFormElementsImpl(
 
 scoped_ptr<WDTypedResult>
 AutofillWebDataService::GetFormValuesForElementNameImpl(
-    const string16& name, const string16& prefix, int limit, WebDatabase* db) {
+    const base::string16& name, const base::string16& prefix, int limit,
+    WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  std::vector<string16> values;
+  std::vector<base::string16> values;
   AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
       name, prefix, &values, limit);
   return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT, values));
+      new WDResult<std::vector<base::string16> >(AUTOFILL_VALUE_RESULT,
+                                                 values));
 }
 
 WebDatabase::State AutofillWebDataService::RemoveFormElementsAddedBetweenImpl(
@@ -249,7 +251,7 @@ WebDatabase::State AutofillWebDataService::RemoveExpiredFormElementsImpl(
 }
 
 WebDatabase::State AutofillWebDataService::RemoveFormValueForElementNameImpl(
-    const string16& name, const string16& value, WebDatabase* db) {
+    const base::string16& name, const base::string16& value, WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElement(name, value)) {

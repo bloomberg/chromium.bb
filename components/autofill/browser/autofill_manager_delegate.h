@@ -132,9 +132,9 @@ class AutofillManagerDelegate {
   // |identifiers| for the element at |element_bounds|. |delegate| will be
   // notified of popup events.
   virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
-                                 const std::vector<string16>& values,
-                                 const std::vector<string16>& labels,
-                                 const std::vector<string16>& icons,
+                                 const std::vector<base::string16>& values,
+                                 const std::vector<base::string16>& labels,
+                                 const std::vector<base::string16>& icons,
                                  const std::vector<int>& identifiers,
                                  AutofillPopupDelegate* delegate) = 0;
 

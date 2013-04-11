@@ -24,7 +24,7 @@ const size_t kPhoneNumberLength = 7;
 // The number of digits in an area code.
 const size_t kPhoneCityCodeLength = 3;
 
-void StripPunctuation(string16* number) {
+void StripPunctuation(base::string16* number) {
   RemoveChars(*number, kPhoneNumberSeparators, number);
 }
 
@@ -34,7 +34,7 @@ void StripPunctuation(string16* number) {
 // code corresponding to the |app_locale|.
 std::string GetRegion(const AutofillProfile& profile,
                       const std::string& app_locale) {
-  string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
+  base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
   if (!country_code.empty())
     return UTF16ToASCII(country_code);
 
@@ -72,17 +72,18 @@ void PhoneNumber::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_COUNTRY_CODE);
 }
 
-string16 PhoneNumber::GetRawInfo(AutofillFieldType type) const {
+base::string16 PhoneNumber::GetRawInfo(AutofillFieldType type) const {
   if (type == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
   // Only the whole number is available as raw data.  All of the other types are
   // parsed from this raw info, and parsing requires knowledge of the phone
   // number's region, which is only available via GetInfo().
-  return string16();
+  return base::string16();
 }
 
-void PhoneNumber::SetRawInfo(AutofillFieldType type, const string16& value) {
+void PhoneNumber::SetRawInfo(AutofillFieldType type,
+                             const base::string16& value) {
   if (type != PHONE_HOME_CITY_AND_NUMBER &&
       type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
@@ -100,7 +101,7 @@ void PhoneNumber::SetRawInfo(AutofillFieldType type, const string16& value) {
 //   (650)2345678 -> 6502345678
 //   1-800-FLOWERS -> 18003569377
 // If the phone cannot be normalized, returns the stored value verbatim.
-string16 PhoneNumber::GetInfo(AutofillFieldType type,
+base::string16 PhoneNumber::GetInfo(AutofillFieldType type,
                               const std::string& app_locale) const {
   UpdateCacheIfNeeded(app_locale);
 
@@ -108,7 +109,7 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type,
   // normalization for the number fails.  All other field types require
   // normalization.
   if (type != PHONE_HOME_WHOLE_NUMBER && !cached_parsed_phone_.IsValidNumber())
-    return string16();
+    return base::string16();
 
   switch (type) {
     case PHONE_HOME_WHOLE_NUMBER:
@@ -129,12 +130,12 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type,
 
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
 bool PhoneNumber::SetInfo(AutofillFieldType type,
-                          const string16& value,
+                          const base::string16& value,
                           const std::string& app_locale) {
   SetRawInfo(type, value);
 
@@ -147,27 +148,27 @@ bool PhoneNumber::SetInfo(AutofillFieldType type,
   return !number_.empty();
 }
 
-void PhoneNumber::GetMatchingTypes(const string16& text,
+void PhoneNumber::GetMatchingTypes(const base::string16& text,
                                    const std::string& app_locale,
                                    FieldTypeSet* matching_types) const {
-  string16 stripped_text = text;
+  base::string16 stripped_text = text;
   StripPunctuation(&stripped_text);
   FormGroup::GetMatchingTypes(stripped_text, app_locale, matching_types);
 
   // For US numbers, also compare to the three-digit prefix and the four-digit
   // suffix, since web sites often split numbers into these two fields.
-  string16 number = GetInfo(PHONE_HOME_NUMBER, app_locale);
+  base::string16 number = GetInfo(PHONE_HOME_NUMBER, app_locale);
   if (GetRegion(*profile_, app_locale) == "US" &&
       number.size() == (kPrefixLength + kSuffixLength)) {
-    string16 prefix = number.substr(kPrefixOffset, kPrefixLength);
-    string16 suffix = number.substr(kSuffixOffset, kSuffixLength);
+    base::string16 prefix = number.substr(kPrefixOffset, kPrefixLength);
+    base::string16 suffix = number.substr(kSuffixOffset, kSuffixLength);
     if (text == prefix || text == suffix)
       matching_types->insert(PHONE_HOME_NUMBER);
   }
 
-  string16 whole_number = GetInfo(PHONE_HOME_WHOLE_NUMBER, app_locale);
+  base::string16 whole_number = GetInfo(PHONE_HOME_WHOLE_NUMBER, app_locale);
   if (!whole_number.empty()) {
-    string16 normalized_number =
+    base::string16 normalized_number =
         autofill_i18n::NormalizePhoneNumber(text,
                                             GetRegion(*profile_, app_locale));
     if (normalized_number == whole_number)
@@ -188,7 +189,7 @@ PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() {
 }
 
 bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
-                                              const string16& value) {
+                                              const base::string16& value) {
   if (field_type == PHONE_HOME_COUNTRY_CODE) {
     country_ = value;
     return true;
@@ -220,7 +221,7 @@ bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
 bool PhoneNumber::PhoneCombineHelper::ParseNumber(
     const AutofillProfile& profile,
     const std::string& app_locale,
-    string16* value) {
+    base::string16* value) {
   if (IsEmpty())
     return false;
 

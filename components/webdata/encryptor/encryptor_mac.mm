@@ -69,13 +69,13 @@ crypto::SymmetricKey* GetEncryptionKey() {
 
 }  // namespace
 
-bool Encryptor::EncryptString16(const string16& plaintext,
+bool Encryptor::EncryptString16(const base::string16& plaintext,
                                 std::string* ciphertext) {
   return EncryptString(UTF16ToUTF8(plaintext), ciphertext);
 }
 
 bool Encryptor::DecryptString16(const std::string& ciphertext,
-                                string16* plaintext) {
+                                base::string16* plaintext) {
   std::string utf8;
   if (!DecryptString(ciphertext, &utf8))
     return false;

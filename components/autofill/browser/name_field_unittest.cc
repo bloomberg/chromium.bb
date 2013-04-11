@@ -64,15 +64,15 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("firstName");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("middleName");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("lastName");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
@@ -95,11 +95,11 @@ TEST_F(NameFieldTest, FirstLast) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
@@ -178,7 +178,7 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-    field.label = string16();
+    field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
@@ -202,11 +202,11 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("middle_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
@@ -279,15 +279,15 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXfirst");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXmi");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXlast");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 

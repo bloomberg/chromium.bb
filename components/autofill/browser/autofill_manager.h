@@ -111,7 +111,8 @@ class AutofillManager : public content::WebContentsObserver,
   void RemoveAutofillProfileOrCreditCard(int unique_id);
 
   // Remove the specified Autocomplete entry.
-  void RemoveAutocompleteEntry(const string16& name, const string16& value);
+  void RemoveAutocompleteEntry(const base::string16& name,
+                               const base::string16& value);
 
   // Returns the present web_contents state.
   content::WebContents* GetWebContents() const;
@@ -260,12 +261,13 @@ class AutofillManager : public content::WebContentsObserver,
   void OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);
-  void OnShowPasswordSuggestions(const FormFieldData& field,
-                                 const gfx::RectF& bounds,
-                                 const std::vector<string16>& suggestions);
-  void OnSetDataList(const std::vector<string16>& values,
-                     const std::vector<string16>& labels,
-                     const std::vector<string16>& icons,
+  void OnShowPasswordSuggestions(
+      const FormFieldData& field,
+      const gfx::RectF& bounds,
+      const std::vector<base::string16>& suggestions);
+  void OnSetDataList(const std::vector<base::string16>& values,
+                     const std::vector<base::string16>& labels,
+                     const std::vector<base::string16>& icons,
                      const std::vector<int>& unique_ids);
 
   // Requests an interactive autocomplete UI be shown.
@@ -330,18 +332,18 @@ class AutofillManager : public content::WebContentsObserver,
   void GetProfileSuggestions(FormStructure* form,
                              const FormFieldData& field,
                              AutofillFieldType type,
-                             std::vector<string16>* values,
-                             std::vector<string16>* labels,
-                             std::vector<string16>* icons,
+                             std::vector<base::string16>* values,
+                             std::vector<base::string16>* labels,
+                             std::vector<base::string16>* icons,
                              std::vector<int>* unique_ids) const;
 
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
   void GetCreditCardSuggestions(const FormFieldData& field,
                                 AutofillFieldType type,
-                                std::vector<string16>* values,
-                                std::vector<string16>* labels,
-                                std::vector<string16>* icons,
+                                std::vector<base::string16>* values,
+                                std::vector<base::string16>* labels,
+                                std::vector<base::string16>* icons,
                                 std::vector<int>* unique_ids) const;
 
   // Parses the forms using heuristic matching and querying the Autofill server.

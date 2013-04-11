@@ -149,8 +149,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     WebDataServiceTest::TearDown();
   }
 
-  void AppendFormField(const string16& name,
-                       const string16& value,
+  void AppendFormField(const base::string16& name,
+                       const base::string16& value,
                        std::vector<FormFieldData>* form_fields) {
     FormFieldData field;
     field.name = name;
@@ -158,10 +158,10 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     form_fields->push_back(field);
   }
 
-  string16 name1_;
-  string16 name2_;
-  string16 value1_;
-  string16 value2_;
+  base::string16 name1_;
+  base::string16 name2_;
+  base::string16 value1_;
+  base::string16 value2_;
   int unique_id1_, unique_id2_;
   const TimeDelta test_timeout_;
   testing::NiceMock<MockAutofillWebDataServiceObserver> observer_;
@@ -215,11 +215,11 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
 
-  AutofillWebDataServiceConsumer<std::vector<string16> > consumer;
+  AutofillWebDataServiceConsumer<std::vector<base::string16> > consumer;
   WebDataService::Handle handle;
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
-      name1_, string16(), limit, &consumer);
+      name1_, base::string16(), limit, &consumer);
 
   // The message loop will exit when the consumer is called.
   MessageLoop::current()->Run();

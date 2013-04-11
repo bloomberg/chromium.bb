@@ -104,7 +104,7 @@ class AutocheckoutManager {
   AutofillManager* autofill_manager_;  // WEAK; owns us
 
   // Credit card verification code.
-  string16 cvv_;
+  base::string16 cvv_;
 
   // Profile built using the data supplied by requestAutocomplete dialog.
   scoped_ptr<AutofillProfile> profile_;

@@ -105,9 +105,9 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void setIgnoreTextChanges(bool ignore) OVERRIDE;
 
   void OnSuggestionsReturned(int query_id,
-                             const std::vector<string16>& values,
-                             const std::vector<string16>& labels,
-                             const std::vector<string16>& icons,
+                             const std::vector<base::string16>& values,
+                             const std::vector<base::string16>& labels,
+                             const std::vector<base::string16>& icons,
                              const std::vector<int>& unique_ids);
   void OnFormDataFilled(int query_id, const FormData& form);
   void OnFieldTypePredictionsAvailable(
@@ -118,9 +118,9 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnClearForm();
   void OnSetAutofillActionPreview();
   void OnClearPreviewedForm();
-  void OnSetNodeText(const string16& value);
-  void OnAcceptDataListSuggestion(const string16& value);
-  void OnAcceptPasswordAutofillSuggestion(const string16& value);
+  void OnSetNodeText(const base::string16& value);
+  void OnAcceptDataListSuggestion(const base::string16& value);
+  void OnAcceptPasswordAutofillSuggestion(const base::string16& value);
   void OnGetAllForms();
 
   // Called when interactive autocomplete finishes.
@@ -173,14 +173,14 @@ class AutofillAgent : public content::RenderViewObserver,
   // Combines DataList suggestion entries with the autofill ones and show them
   // to the user.
   void CombineDataListEntriesAndShow(const WebKit::WebInputElement& element,
-                                     const std::vector<string16>& values,
-                                     const std::vector<string16>& labels,
-                                     const std::vector<string16>& icons,
+                                     const std::vector<base::string16>& values,
+                                     const std::vector<base::string16>& labels,
+                                     const std::vector<base::string16>& icons,
                                      const std::vector<int>& item_ids,
                                      bool has_autofill_item);
 
   // Sets the element value to reflect the selected |suggested_value|.
-  void AcceptDataListSuggestion(const string16& suggested_value);
+  void AcceptDataListSuggestion(const base::string16& suggested_value);
 
   // Queries the AutofillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
@@ -198,7 +198,7 @@ class AutofillAgent : public content::RenderViewObserver,
       FormFieldData* field) WARN_UNUSED_RESULT;
 
   // Set |node| to display the given |value|.
-  void SetNodeText(const string16& value, WebKit::WebInputElement* node);
+  void SetNodeText(const base::string16& value, WebKit::WebInputElement* node);
 
   // Hides any currently showing Autofill UI in the renderer or browser.
   void HideAutofillUi();

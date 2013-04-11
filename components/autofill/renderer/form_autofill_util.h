@@ -64,7 +64,7 @@ bool IsAutofillableInputElement(const WebKit::WebInputElement* element);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
-const string16 GetFormIdentifier(const WebKit::WebFormElement& form);
+const base::string16 GetFormIdentifier(const WebKit::WebFormElement& form);
 
 // Returns true if the element specified by |click_element| was successfully
 // clicked.

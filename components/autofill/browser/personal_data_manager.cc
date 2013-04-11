@@ -32,7 +32,7 @@ using content::BrowserContext;
 
 namespace {
 
-const string16::value_type kCreditCardPrefix[] = {'*', 0};
+const base::string16::value_type kCreditCardPrefix[] = {'*', 0};
 
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
@@ -110,7 +110,7 @@ bool IsMinimumAddress(const AutofillProfile& profile,
 // of importing a form.
 bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
                               AutofillFieldType field_type,
-                              const string16& value) {
+                              const base::string16& value) {
   // Abandon the import if two fields of the same type are encountered.
   // This indicates ambiguous data or miscategorization of types.
   // Make an exception for PHONE_HOME_NUMBER however as both prefix and
@@ -241,7 +241,7 @@ bool PersonalDataManager::ImportFormData(
 
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
-    string16 value = CollapseWhitespace(field->value, false);
+    base::string16 value = CollapseWhitespace(field->value, false);
 
     // If we don't know the type of the field, or the user hasn't entered any
     // information into the field, then skip it.
@@ -300,7 +300,7 @@ bool PersonalDataManager::ImportFormData(
 
   // Construct the phone number. Reject the profile if the number is invalid.
   if (imported_profile.get() && !home.IsEmpty()) {
-    string16 constructed_number;
+    base::string16 constructed_number;
     if (!home.ParseNumber(*imported_profile, app_locale_,
                           &constructed_number) ||
         !imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number,
@@ -549,12 +549,12 @@ void PersonalDataManager::Refresh() {
 
 void PersonalDataManager::GetProfileSuggestions(
     AutofillFieldType type,
-    const string16& field_contents,
+    const base::string16& field_contents,
     bool field_is_autofilled,
     std::vector<AutofillFieldType> other_field_types,
-    std::vector<string16>* values,
-    std::vector<string16>* labels,
-    std::vector<string16>* icons,
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
   values->clear();
   labels->clear();
@@ -568,7 +568,7 @@ void PersonalDataManager::GetProfileSuggestions(
     AutofillProfile* profile = *iter;
 
     // The value of the stored data for this field type in the |profile|.
-    std::vector<string16> multi_values;
+    std::vector<base::string16> multi_values;
     profile->GetMultiInfo(type, app_locale_, &multi_values);
 
     for (size_t i = 0; i < multi_values.size(); ++i) {
@@ -584,15 +584,16 @@ void PersonalDataManager::GetProfileSuggestions(
         if (multi_values[i].empty())
           continue;
 
-        string16 profile_value_lower_case(
+        base::string16 profile_value_lower_case(
             StringToLowerASCII(multi_values[i]));
-        string16 field_value_lower_case(StringToLowerASCII(field_contents));
+        base::string16 field_value_lower_case(
+            StringToLowerASCII(field_contents));
         // Phone numbers could be split in US forms, so field value could be
         // either prefix or suffix of the phone.
         bool matched_phones = false;
         if (type == PHONE_HOME_NUMBER && !field_value_lower_case.empty() &&
             (profile_value_lower_case.find(field_value_lower_case) !=
-             string16::npos)) {
+             base::string16::npos)) {
           matched_phones = true;
         }
 
@@ -629,10 +630,10 @@ void PersonalDataManager::GetProfileSuggestions(
 
 void PersonalDataManager::GetCreditCardSuggestions(
     AutofillFieldType type,
-    const string16& field_contents,
-    std::vector<string16>* values,
-    std::vector<string16>* labels,
-    std::vector<string16>* icons,
+    const base::string16& field_contents,
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
   values->clear();
   labels->clear();
@@ -644,13 +645,14 @@ void PersonalDataManager::GetCreditCardSuggestions(
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale_);
+    base::string16 creditcard_field_value =
+        credit_card->GetInfo(type, app_locale_);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field_contents, false)) {
       if (type == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
-      string16 label;
+      base::string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
         label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale_);
@@ -679,19 +681,19 @@ bool PersonalDataManager::IsValidLearnableProfile(
   if (!IsMinimumAddress(profile, app_locale))
     return false;
 
-  string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
+  base::string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
   if (!email.empty() && !autofill::IsValidEmailAddress(email))
     return false;
 
   // Reject profiles with invalid US state information.
-  string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
+  base::string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
   if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
       !state.empty() && !FormGroup::IsValidState(state)) {
     return false;
   }
 
   // Reject profiles with invalid US zip information.
-  string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
+  base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
   if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
       !zip.empty() && !autofill::IsValidZip(zip))
     return false;

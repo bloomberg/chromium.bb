@@ -20,7 +20,7 @@ PasswordAutofillManager::~PasswordAutofillManager() {
 
 bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
     const FormFieldData& field,
-    const string16& value) {
+    const base::string16& value) {
   PasswordFormFillData password;
   if (!FindLoginInfo(field, &password))
     return false;
@@ -53,7 +53,7 @@ void PasswordAutofillManager::Reset() {
 // PasswordAutofillManager, private:
 
 bool PasswordAutofillManager::WillFillUserNameAndPassword(
-    const string16& current_username,
+    const base::string16& current_username,
     const PasswordFormFillData& fill_data) {
   // Look for any suitable matches to current field text.
   if (fill_data.basic_data.fields[0].value == current_username) {

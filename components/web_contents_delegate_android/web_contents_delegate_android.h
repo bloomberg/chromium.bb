@@ -74,9 +74,9 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                             const gfx::Rect& pos) OVERRIDE;
   virtual bool AddMessageToConsole(content::WebContents* source,
                                    int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) OVERRIDE;
   virtual void UpdateTargetURL(content::WebContents* source,
                                int32 page_id,
                                const GURL& url) OVERRIDE;

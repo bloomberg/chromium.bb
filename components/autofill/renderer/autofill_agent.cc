@@ -66,18 +66,18 @@ const size_t kMaximumDataListSizeForAutofill = 30;
 const int kAutocheckoutClickTimeout = 3;
 
 void AppendDataListSuggestions(const WebKit::WebInputElement& element,
-                               std::vector<string16>* values,
-                               std::vector<string16>* labels,
-                               std::vector<string16>* icons,
+                               std::vector<base::string16>* values,
+                               std::vector<base::string16>* labels,
+                               std::vector<base::string16>* icons,
                                std::vector<int>* item_ids) {
   WebNodeCollection options = element.dataListOptions();
   if (options.isNull())
     return;
 
-  string16 prefix = element.editingValue();
+  base::string16 prefix = element.editingValue();
   if (element.isMultiple() &&
       element.formControlType() == WebString::fromUTF8("email")) {
-    std::vector<string16> parts;
+    std::vector<base::string16> parts;
     base::SplitStringDontTrim(prefix, ',', &parts);
     if (parts.size() > 0)
       TrimWhitespace(parts[parts.size() - 1], TRIM_LEADING, &prefix);
@@ -93,17 +93,17 @@ void AppendDataListSuggestions(const WebKit::WebInputElement& element,
     if (option.value() != option.label())
       labels->push_back(option.label());
     else
-      labels->push_back(string16());
-    icons->push_back(string16());
+      labels->push_back(base::string16());
+    icons->push_back(base::string16());
     item_ids->push_back(WebAutofillClient::MenuItemIDDataListEntry);
   }
 }
 
 // Trim the vectors before sending them to the browser process to ensure we
 // don't send too much data through the IPC.
-void TrimDataListsForIPC(std::vector<string16>* values,
-                         std::vector<string16>* labels,
-                         std::vector<string16>* icons,
+void TrimDataListsForIPC(std::vector<base::string16>* values,
+                         std::vector<base::string16>* labels,
+                         std::vector<base::string16>* icons,
                          std::vector<int>* unique_ids) {
   // Limit the size of the vectors.
   if (values->size() > kMaximumDataListSizeForAutofill) {
@@ -495,27 +495,28 @@ void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
     ShowSuggestions(element, true, true, true);
 }
 
-void AutofillAgent::OnSuggestionsReturned(int query_id,
-                                          const std::vector<string16>& values,
-                                          const std::vector<string16>& labels,
-                                          const std::vector<string16>& icons,
-                                          const std::vector<int>& unique_ids) {
+void AutofillAgent::OnSuggestionsReturned(
+    int query_id,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
+    const std::vector<base::string16>& icons,
+    const std::vector<int>& unique_ids) {
   if (query_id != autofill_query_id_)
     return;
 
   if (element_.isNull() || !element_.isFocusable())
     return;
 
-  std::vector<string16> v(values);
-  std::vector<string16> l(labels);
-  std::vector<string16> i(icons);
+  std::vector<base::string16> v(values);
+  std::vector<base::string16> l(labels);
+  std::vector<base::string16> i(icons);
   std::vector<int> ids(unique_ids);
 
   if (!element_.autoComplete() && !v.empty()) {
     // If autofill is disabled and we had suggestions, show a warning instead.
     v.assign(1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-    l.assign(1, string16());
-    i.assign(1, string16());
+    l.assign(1, base::string16());
+    i.assign(1, base::string16());
     ids.assign(1, WebAutofillClient::MenuItemIDWarningMessage);
   } else if (ids.size() > 1 &&
              ids[0] == WebAutofillClient::MenuItemIDWarningMessage) {
@@ -547,24 +548,24 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
   }
 
   if (has_autofill_item) {
-    v.push_back(string16());
-    l.push_back(string16());
-    i.push_back(string16());
+    v.push_back(base::string16());
+    l.push_back(base::string16());
+    i.push_back(base::string16());
     ids.push_back(WebAutofillClient::MenuItemIDSeparator);
 
     if (FormWithElementIsAutofilled(element_)) {
       // The form has been auto-filled, so give the user the chance to clear the
       // form.  Append the 'Clear form' menu item.
       v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-      l.push_back(string16());
-      i.push_back(string16());
+      l.push_back(base::string16());
+      i.push_back(base::string16());
       ids.push_back(WebAutofillClient::MenuItemIDClearForm);
     }
 
     // Append the 'Chrome Autofill options' menu item;
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
-    l.push_back(string16());
-    i.push_back(string16());
+    l.push_back(base::string16());
+    i.push_back(base::string16());
     ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
   }
 
@@ -573,14 +574,14 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
 
 void AutofillAgent::CombineDataListEntriesAndShow(
     const WebKit::WebInputElement& element,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels,
+    const std::vector<base::string16>& icons,
     const std::vector<int>& item_ids,
     bool has_autofill_item) {
-  std::vector<string16> v;
-  std::vector<string16> l;
-  std::vector<string16> i;
+  std::vector<base::string16> v;
+  std::vector<base::string16> l;
+  std::vector<base::string16> i;
   std::vector<int> ids;
 
   AppendDataListSuggestions(element, &v, &l, &i, &ids);
@@ -588,9 +589,9 @@ void AutofillAgent::CombineDataListEntriesAndShow(
   // If there are both <datalist> items and Autofill suggestions, add a
   // separator between them.
   if (!v.empty() && !values.empty()) {
-    v.push_back(string16());
-    l.push_back(string16());
-    i.push_back(string16());
+    v.push_back(base::string16());
+    l.push_back(base::string16());
+    i.push_back(base::string16());
     ids.push_back(WebAutofillClient::MenuItemIDSeparator);
   }
 
@@ -619,19 +620,20 @@ void AutofillAgent::CombineDataListEntriesAndShow(
   has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
 
-void AutofillAgent::AcceptDataListSuggestion(const string16& suggested_value) {
-  string16 new_value = suggested_value;
+void AutofillAgent::AcceptDataListSuggestion(
+    const base::string16& suggested_value) {
+  base::string16 new_value = suggested_value;
   // If this element takes multiple values then replace the last part with
   // the suggestion.
   if (element_.isMultiple() &&
       element_.formControlType() == WebString::fromUTF8("email")) {
-    std::vector<string16> parts;
+    std::vector<base::string16> parts;
 
     base::SplitStringDontTrim(element_.editingValue(), ',', &parts);
     if (parts.size() == 0)
-      parts.push_back(string16());
+      parts.push_back(base::string16());
 
-    string16 last_part = parts.back();
+    base::string16 last_part = parts.back();
     // We want to keep just the leading whitespace.
     for (size_t i = 0; i < last_part.size(); ++i) {
       if (!IsWhitespace(last_part[i])) {
@@ -693,15 +695,16 @@ void AutofillAgent::OnClearPreviewedForm() {
   didClearAutofillSelection(element_);
 }
 
-void AutofillAgent::OnSetNodeText(const string16& value) {
+void AutofillAgent::OnSetNodeText(const base::string16& value) {
   SetNodeText(value, &element_);
 }
 
-void AutofillAgent::OnAcceptDataListSuggestion(const string16& value) {
+void AutofillAgent::OnAcceptDataListSuggestion(const base::string16& value) {
   AcceptDataListSuggestion(value);
 }
 
-void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
+void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
+    const base::string16& value) {
   // We need to make sure this is handled here because the browser process
   // skipped it handling because it believed it would be handled here. If it
   // isn't handled here then the browser logic needs to be updated.
@@ -813,12 +816,13 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   // as it does not allow us to distinguish the case where autocomplete is
   // disabled for *both* the element and for the form.
   // Also, if the field has no name, then we won't have values.
-  const string16 autocomplete_attribute = element.getAttribute("autocomplete");
+  const base::string16 autocomplete_attribute =
+      element.getAttribute("autocomplete");
   if (LowerCaseEqualsASCII(autocomplete_attribute, "off") ||
       element.nameForAutofill().isEmpty()) {
-    CombineDataListEntriesAndShow(element, std::vector<string16>(),
-                                  std::vector<string16>(),
-                                  std::vector<string16>(),
+    CombineDataListEntriesAndShow(element, std::vector<base::string16>(),
+                                  std::vector<base::string16>(),
+                                  std::vector<base::string16>(),
                                   std::vector<int>(), false);
     return;
   }
@@ -858,9 +862,9 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
       GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_);
 
   // Find the datalist values and send them to the browser process.
-  std::vector<string16> data_list_values;
-  std::vector<string16> data_list_labels;
-  std::vector<string16> data_list_icons;
+  std::vector<base::string16> data_list_values;
+  std::vector<base::string16> data_list_labels;
+  std::vector<base::string16> data_list_icons;
   std::vector<int> data_list_unique_ids;
   AppendDataListSuggestions(element_,
                             &data_list_values,
@@ -911,10 +915,10 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
       routing_id(), autofill_query_id_, form, field, unique_id));
 }
 
-void AutofillAgent::SetNodeText(const string16& value,
+void AutofillAgent::SetNodeText(const base::string16& value,
                                 WebKit::WebInputElement* node) {
   did_set_node_text_ = true;
-  string16 substring = value;
+  base::string16 substring = value;
   substring = substring.substr(0, node->maxLength());
 
   node->setEditingValue(substring);

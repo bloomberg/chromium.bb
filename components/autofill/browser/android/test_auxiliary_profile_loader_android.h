@@ -17,54 +17,54 @@ class TestAuxiliaryProfileLoader
 
   virtual bool GetHasPermissions() const OVERRIDE;
 
-  virtual string16 GetFirstName() const OVERRIDE;
-  virtual string16 GetMiddleName() const OVERRIDE;
-  virtual string16 GetLastName() const OVERRIDE;
-  virtual string16 GetSuffix() const OVERRIDE;
+  virtual base::string16 GetFirstName() const OVERRIDE;
+  virtual base::string16 GetMiddleName() const OVERRIDE;
+  virtual base::string16 GetLastName() const OVERRIDE;
+  virtual base::string16 GetSuffix() const OVERRIDE;
 
-  virtual string16 GetStreet() const OVERRIDE;
-  virtual string16 GetCity() const OVERRIDE;
-  virtual string16 GetNeighborhood() const OVERRIDE;
-  virtual string16 GetPostalCode() const OVERRIDE;
-  virtual string16 GetRegion() const OVERRIDE;
-  virtual string16 GetPostOfficeBox() const OVERRIDE;
-  virtual string16 GetCountry() const OVERRIDE;
+  virtual base::string16 GetStreet() const OVERRIDE;
+  virtual base::string16 GetCity() const OVERRIDE;
+  virtual base::string16 GetNeighborhood() const OVERRIDE;
+  virtual base::string16 GetPostalCode() const OVERRIDE;
+  virtual base::string16 GetRegion() const OVERRIDE;
+  virtual base::string16 GetPostOfficeBox() const OVERRIDE;
+  virtual base::string16 GetCountry() const OVERRIDE;
 
   virtual void GetEmailAddresses(
-      std::vector<string16>* email_addresses) const OVERRIDE;
+      std::vector<base::string16>* email_addresses) const OVERRIDE;
   virtual void GetPhoneNumbers(
-      std::vector<string16>* phone_numbers) const OVERRIDE;
+      std::vector<base::string16>* phone_numbers) const OVERRIDE;
 
-  void SetFirstName(const string16& first_name);
-  void SetMiddleName(const string16& middle_name);
-  void SetLastName(const string16& last_name);
-  void SetSuffix(const string16& suffix);
+  void SetFirstName(const base::string16& first_name);
+  void SetMiddleName(const base::string16& middle_name);
+  void SetLastName(const base::string16& last_name);
+  void SetSuffix(const base::string16& suffix);
 
-  void SetStreet(const string16& street);
-  void SetPostOfficeBox(const string16& post_office_box);
-  void SetNeighborhood(const string16& neighborhood);
-  void SetRegion(const string16& region);
-  void SetCity(const string16& city);
-  void SetPostalCode(const string16& postal_code);
-  void SetCountry(const string16& country);
+  void SetStreet(const base::string16& street);
+  void SetPostOfficeBox(const base::string16& post_office_box);
+  void SetNeighborhood(const base::string16& neighborhood);
+  void SetRegion(const base::string16& region);
+  void SetCity(const base::string16& city);
+  void SetPostalCode(const base::string16& postal_code);
+  void SetCountry(const base::string16& country);
 
-  void SetEmailAddresses(const std::vector<string16>& email_addresses);
-  void SetPhoneNumbers(const std::vector<string16>& phone_numbers);
+  void SetEmailAddresses(const std::vector<base::string16>& email_addresses);
+  void SetPhoneNumbers(const std::vector<base::string16>& phone_numbers);
 
  private:
-  string16 street_;
-  string16 post_office_box_;
-  string16 neighborhood_;
-  string16 region_;
-  string16 city_;
-  string16 postal_code_;
-  string16 country_;
-  string16 first_name_;
-  string16 middle_name_;
-  string16 last_name_;
-  string16 suffix_;
-  std::vector<string16> email_addresses_;
-  std::vector<string16> phone_numbers_;
+  base::string16 street_;
+  base::string16 post_office_box_;
+  base::string16 neighborhood_;
+  base::string16 region_;
+  base::string16 city_;
+  base::string16 postal_code_;
+  base::string16 country_;
+  base::string16 first_name_;
+  base::string16 middle_name_;
+  base::string16 last_name_;
+  base::string16 suffix_;
+  std::vector<base::string16> email_addresses_;
+  std::vector<base::string16> phone_numbers_;
 };
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_ANDROID_TEST_AUXILIARY_PROFILE_LOADER_ANDROID_H_

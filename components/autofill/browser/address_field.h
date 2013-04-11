@@ -62,7 +62,7 @@ class AddressField : public FormField {
 
   // Looks for an address type in the given text, which the caller must
   // convert to lowercase.
-  static AddressType AddressTypeFromText(const string16& text);
+  static AddressType AddressTypeFromText(const base::string16& text);
 
   // Tries to determine the billing/shipping type of this address.
   AddressType FindType() const;

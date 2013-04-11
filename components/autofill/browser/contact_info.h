@@ -22,9 +22,9 @@ class NameInfo : public FormGroup {
   NameInfo& operator=(const NameInfo& info);
 
   // FormGroup:
-  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
-                          const string16& value) OVERRIDE;
+                          const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
@@ -32,23 +32,23 @@ class NameInfo : public FormGroup {
 
   // Returns the full name, which can include up to the first, middle, and last
   // name.
-  string16 FullName() const;
+  base::string16 FullName() const;
 
   // Returns the middle initial if |middle_| is non-empty.  Returns an empty
   // string otherwise.
-  string16 MiddleInitial() const;
+  base::string16 MiddleInitial() const;
 
-  const string16& first() const { return first_; }
-  const string16& middle() const { return middle_; }
-  const string16& last() const { return last_; }
+  const base::string16& first() const { return first_; }
+  const base::string16& middle() const { return middle_; }
+  const base::string16& last() const { return last_; }
 
   // Sets |first_|, |middle_|, and |last_| to the tokenized |full|.
   // It is tokenized on a space only.
-  void SetFullName(const string16& full);
+  void SetFullName(const base::string16& full);
 
-  string16 first_;
-  string16 middle_;
-  string16 last_;
+  base::string16 first_;
+  base::string16 middle_;
+  base::string16 last_;
 };
 
 class EmailInfo : public FormGroup {
@@ -60,15 +60,15 @@ class EmailInfo : public FormGroup {
   EmailInfo& operator=(const EmailInfo& info);
 
   // FormGroup:
-  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
-                          const string16& value) OVERRIDE;
+                          const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
-  string16 email_;
+  base::string16 email_;
 };
 
 class CompanyInfo : public FormGroup {
@@ -80,15 +80,15 @@ class CompanyInfo : public FormGroup {
   CompanyInfo& operator=(const CompanyInfo& info);
 
   // FormGroup:
-  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
-                          const string16& value) OVERRIDE;
+                          const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
-  string16 company_name_;
+  base::string16 company_name_;
 };
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_CONTACT_INFO_H_

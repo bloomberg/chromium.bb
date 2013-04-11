@@ -240,17 +240,17 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
     NSString* phoneLabelRaw = [phoneNumbers labelAtIndex:reverseK];
     if ([addressLabelRaw isEqualToString:kABAddressHomeLabel] &&
         [phoneLabelRaw isEqualToString:kABPhoneHomeLabel]) {
-      string16 homePhone = base::SysNSStringToUTF16(
+      base::string16 homePhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
-      string16 workPhone = base::SysNSStringToUTF16(
+      base::string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
     } else if ([phoneLabelRaw isEqualToString:kABPhoneMobileLabel] ||
                [phoneLabelRaw isEqualToString:kABPhoneMainLabel]) {
-      string16 phone = base::SysNSStringToUTF16(
+      base::string16 phone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, phone);
     }

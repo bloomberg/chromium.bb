@@ -23,9 +23,9 @@ struct FormFieldData {
   // Comparison operator exposed for STL map. Uses label, then name to sort.
   bool operator<(const FormFieldData& field) const;
 
-  string16 label;
-  string16 name;
-  string16 value;
+  base::string16 label;
+  base::string16 name;
+  base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
   size_t max_length;
@@ -37,8 +37,8 @@ struct FormFieldData {
 
   // For the HTML snippet |<option value="US">United States</option>|, the
   // value is "US" and the contents are "United States".
-  std::vector<string16> option_values;
-  std::vector<string16> option_contents;
+  std::vector<base::string16> option_values;
+  std::vector<base::string16> option_contents;
 };
 
 // So we can compare FormFieldDatas with EXPECT_EQ().

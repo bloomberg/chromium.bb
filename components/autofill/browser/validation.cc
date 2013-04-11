@@ -13,10 +13,10 @@
 
 namespace autofill {
 
-bool IsValidCreditCardExpirationDate(const string16& year,
-                                     const string16& month,
+bool IsValidCreditCardExpirationDate(const base::string16& year,
+                                     const base::string16& month,
                                      const base::Time& now) {
-  string16 year_cleaned, month_cleaned;
+  base::string16 year_cleaned, month_cleaned;
   TrimWhitespace(year, TRIM_ALL, &year_cleaned);
   TrimWhitespace(month, TRIM_ALL, &month_cleaned);
   if (year_cleaned.length() != 4)
@@ -42,8 +42,8 @@ bool IsValidCreditCardExpirationDate(const string16& year,
   return true;
 }
 
-bool IsValidCreditCardNumber(const string16& text) {
-  string16 number = CreditCard::StripSeparators(text);
+bool IsValidCreditCardNumber(const base::string16& text) {
+  base::string16 number = CreditCard::StripSeparators(text);
 
   // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
   // be a fairly safe lower-bound [2].
@@ -59,7 +59,7 @@ bool IsValidCreditCardNumber(const string16& text) {
   // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
   int sum = 0;
   bool odd = false;
-  for (string16::reverse_iterator iter = number.rbegin();
+  for (base::string16::reverse_iterator iter = number.rbegin();
        iter != number.rend();
        ++iter) {
     if (!IsAsciiDigit(*iter))
@@ -78,11 +78,11 @@ bool IsValidCreditCardNumber(const string16& text) {
   return (sum % 10) == 0;
 }
 
-bool IsValidCreditCardSecurityCode(const string16& text) {
+bool IsValidCreditCardSecurityCode(const base::string16& text) {
   if (text.size() < 3U || text.size() > 4U)
     return false;
 
-  for (string16::const_iterator iter = text.begin();
+  for (base::string16::const_iterator iter = text.begin();
        iter != text.end();
        ++iter) {
     if (!IsAsciiDigit(*iter))
@@ -91,8 +91,8 @@ bool IsValidCreditCardSecurityCode(const string16& text) {
   return true;
 }
 
-bool IsValidCreditCardSecurityCode(const string16& code,
-                                   const string16& number) {
+bool IsValidCreditCardSecurityCode(const base::string16& code,
+                                   const base::string16& number) {
   CreditCard card;
   card.SetRawInfo(CREDIT_CARD_NUMBER, number);
   size_t required_length = 3;
@@ -102,16 +102,16 @@ bool IsValidCreditCardSecurityCode(const string16& code,
   return code.length() == required_length;
 }
 
-bool IsValidEmailAddress(const string16& text) {
+bool IsValidEmailAddress(const base::string16& text) {
   // E-Mail pattern as defined by the WhatWG. (4.10.7.1.5 E-Mail state)
-  const string16 kEmailPattern = ASCIIToUTF16(
+  const base::string16 kEmailPattern = ASCIIToUTF16(
       "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@"
       "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$");
   return MatchesPattern(text, kEmailPattern);
 }
 
-bool IsValidZip(const string16& value) {
-  const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
+bool IsValidZip(const base::string16& value) {
+  const base::string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
   return MatchesPattern(value, kZipPattern);
 }
 

@@ -105,8 +105,8 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   field.name = ASCIIToUTF16("address");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
 
-  field.label = string16();
-  field.name = string16();
+  field.label = base::string16();
+  field.name = base::string16();
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
 
   AutofillScanner scanner(list_.get());
@@ -258,7 +258,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   field.name = ASCIIToUTF16("address");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("bogus");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
 

@@ -27,8 +27,8 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Add a preferred login and an additional login to the FillData.
-    string16 username1 = ASCIIToUTF16(kAliceUsername);
-    string16 password1 = ASCIIToUTF16(kAlicePassword);
+    base::string16 username1 = ASCIIToUTF16(kAliceUsername);
+    base::string16 password1 = ASCIIToUTF16(kAlicePassword);
 
     username_field_.name = ASCIIToUTF16(kUsernameName);
     username_field_.value = username1;

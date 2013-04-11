@@ -33,8 +33,8 @@ class AutofillWebData {
   // |consumer| gets called back when the request is finished, with the vector
   // included in the argument |result|.
   virtual WebDataServiceBase::Handle GetFormValuesForElementName(
-      const string16& name,
-      const string16& prefix,
+      const base::string16& name,
+      const base::string16& prefix,
       int limit,
       WebDataServiceConsumer* consumer) = 0;
 
@@ -43,8 +43,8 @@ class AutofillWebData {
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
 
   virtual void RemoveExpiredFormElements() = 0;
-  virtual void RemoveFormValueForElementName(const string16& name,
-                                             const string16& value) = 0;
+  virtual void RemoveFormValueForElementName(const base::string16& name,
+                                             const base::string16& value) = 0;
 
   // Schedules a task to add an Autofill profile to the web database.
   virtual void AddAutofillProfile(const AutofillProfile& profile) = 0;

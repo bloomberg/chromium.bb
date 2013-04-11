@@ -22,7 +22,7 @@ class AutofillRegexes {
   static AutofillRegexes* GetInstance();
 
   // Returns the compiled regex matcher corresponding to |pattern|.
-  icu::RegexMatcher* GetMatcher(const string16& pattern);
+  icu::RegexMatcher* GetMatcher(const base::string16& pattern);
 
  private:
   AutofillRegexes();
@@ -30,7 +30,7 @@ class AutofillRegexes {
   friend struct DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
-  std::map<string16, icu::RegexMatcher*> matchers_;
+  std::map<base::string16, icu::RegexMatcher*> matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };
@@ -48,7 +48,7 @@ AutofillRegexes::~AutofillRegexes() {
                                        matchers_.end());
 }
 
-icu::RegexMatcher* AutofillRegexes::GetMatcher(const string16& pattern) {
+icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
   if (!matchers_.count(pattern)) {
     const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
 
@@ -68,7 +68,8 @@ icu::RegexMatcher* AutofillRegexes::GetMatcher(const string16& pattern) {
 
 namespace autofill {
 
-bool MatchesPattern(const string16& input, const string16& pattern) {
+bool MatchesPattern(const base::string16& input,
+                    const base::string16& pattern) {
   icu::RegexMatcher* matcher =
       AutofillRegexes::GetInstance()->GetMatcher(pattern);
   icu::UnicodeString icu_input(input.data(), input.length());

@@ -53,15 +53,16 @@ class AutofillWebDataService : public AutofillWebData,
   virtual void AddFormFields(
       const std::vector<FormFieldData>& fields) OVERRIDE;
   virtual WebDataServiceBase::Handle GetFormValuesForElementName(
-      const string16& name,
-      const string16& prefix,
+      const base::string16& name,
+      const base::string16& prefix,
       int limit,
       WebDataServiceConsumer* consumer) OVERRIDE;
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void RemoveExpiredFormElements() OVERRIDE;
-  virtual void RemoveFormValueForElementName(const string16& name,
-                                             const string16& value) OVERRIDE;
+  virtual void RemoveFormValueForElementName(
+      const base::string16& name,
+      const base::string16& value) OVERRIDE;
   virtual void AddAutofillProfile(const AutofillProfile& profile) OVERRIDE;
   virtual void UpdateAutofillProfile(const AutofillProfile& profile) OVERRIDE;
   virtual void RemoveAutofillProfile(const std::string& guid) OVERRIDE;
@@ -91,13 +92,14 @@ class AutofillWebDataService : public AutofillWebData,
   WebDatabase::State AddFormElementsImpl(
       const std::vector<FormFieldData>& fields, WebDatabase* db);
   scoped_ptr<WDTypedResult> GetFormValuesForElementNameImpl(
-      const string16& name, const string16& prefix, int limit, WebDatabase* db);
+      const base::string16& name, const base::string16& prefix, int limit,
+      WebDatabase* db);
   WebDatabase::State RemoveFormElementsAddedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end,
       WebDatabase* db);
   WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
   WebDatabase::State RemoveFormValueForElementNameImpl(
-      const string16& name, const string16& value, WebDatabase* db);
+      const base::string16& name, const base::string16& value, WebDatabase* db);
   WebDatabase::State AddAutofillProfileImpl(
       const AutofillProfile& profile, WebDatabase* db);
   WebDatabase::State UpdateAutofillProfileImpl(

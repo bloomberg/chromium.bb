@@ -77,22 +77,22 @@ void AutofillExternalDelegate::OnQuery(int query_id,
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
     int query_id,
-    const std::vector<string16>& autofill_values,
-    const std::vector<string16>& autofill_labels,
-    const std::vector<string16>& autofill_icons,
+    const std::vector<base::string16>& autofill_values,
+    const std::vector<base::string16>& autofill_labels,
+    const std::vector<base::string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
   if (query_id != autofill_query_id_)
     return;
 
-  std::vector<string16> values(autofill_values);
-  std::vector<string16> labels(autofill_labels);
-  std::vector<string16> icons(autofill_icons);
+  std::vector<base::string16> values(autofill_values);
+  std::vector<base::string16> labels(autofill_labels);
+  std::vector<base::string16> icons(autofill_icons);
   std::vector<int> ids(autofill_unique_ids);
 
   // Add a separator to go between the values and menu items.
-  values.push_back(string16());
-  labels.push_back(string16());
-  icons.push_back(string16());
+  values.push_back(base::string16());
+  labels.push_back(base::string16());
+  icons.push_back(base::string16());
   ids.push_back(WebAutofillClient::MenuItemIDSeparator);
 
   ApplyAutofillWarnings(&values, &labels, &icons, &ids);
@@ -137,7 +137,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 }
 
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
-    const std::vector<string16>& suggestions,
+    const std::vector<base::string16>& suggestions,
     const FormFieldData& field,
     const gfx::RectF& element_bounds) {
   autofill_query_field_ = field;
@@ -148,7 +148,7 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
     return;
   }
 
-  std::vector<string16> empty(suggestions.size());
+  std::vector<base::string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
   autofill_manager_->delegate()->ShowAutofillPopup(
@@ -156,9 +156,9 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
-    const std::vector<string16>& data_list_values,
-    const std::vector<string16>& data_list_labels,
-    const std::vector<string16>& data_list_icons,
+    const std::vector<base::string16>& data_list_values,
+    const std::vector<base::string16>& data_list_labels,
+    const std::vector<base::string16>& data_list_icons,
     const std::vector<int>& data_list_unique_ids) {
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
@@ -194,7 +194,7 @@ void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
     FillAutofillFormData(identifier, true);
 }
 
-void AutofillExternalDelegate::DidAcceptSuggestion(const string16& value,
+void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int identifier) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
 
@@ -222,7 +222,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const string16& value,
   autofill_manager_->delegate()->HideAutofillPopup();
 }
 
-void AutofillExternalDelegate::RemoveSuggestion(const string16& value,
+void AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
                                                 int identifier) {
   if (identifier > 0) {
     autofill_manager_->RemoveAutofillProfileOrCreditCard(identifier);
@@ -280,16 +280,16 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
 }
 
 void AutofillExternalDelegate::ApplyAutofillWarnings(
-    std::vector<string16>* autofill_values,
-    std::vector<string16>* autofill_labels,
-    std::vector<string16>* autofill_icons,
+    std::vector<base::string16>* autofill_values,
+    std::vector<base::string16>* autofill_labels,
+    std::vector<base::string16>* autofill_icons,
     std::vector<int>* autofill_unique_ids) {
   if (!autofill_query_field_.should_autocomplete) {
     // If autofill is disabled and we had suggestions, show a warning instead.
     autofill_values->assign(
         1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-    autofill_labels->assign(1, string16());
-    autofill_icons->assign(1, string16());
+    autofill_labels->assign(1, base::string16());
+    autofill_icons->assign(1, base::string16());
     autofill_unique_ids->assign(1, WebAutofillClient::MenuItemIDWarningMessage);
   } else if (autofill_unique_ids->size() > 1 &&
              (*autofill_unique_ids)[0] ==
@@ -315,32 +315,32 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
 }
 
 void AutofillExternalDelegate::ApplyAutofillOptions(
-    std::vector<string16>* autofill_values,
-    std::vector<string16>* autofill_labels,
-    std::vector<string16>* autofill_icons,
+    std::vector<base::string16>* autofill_values,
+    std::vector<base::string16>* autofill_labels,
+    std::vector<base::string16>* autofill_icons,
     std::vector<int>* autofill_unique_ids) {
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (autofill_query_field_.is_autofilled) {
     autofill_values->push_back(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-    autofill_labels->push_back(string16());
-    autofill_icons->push_back(string16());
+    autofill_labels->push_back(base::string16());
+    autofill_icons->push_back(base::string16());
     autofill_unique_ids->push_back(WebAutofillClient::MenuItemIDClearForm);
   }
 
   // Append the 'Chrome Autofill options' menu item;
   autofill_values->push_back(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
-  autofill_labels->push_back(string16());
-  autofill_icons->push_back(string16());
+  autofill_labels->push_back(base::string16());
+  autofill_icons->push_back(base::string16());
   autofill_unique_ids->push_back(WebAutofillClient::MenuItemIDAutofillOptions);
 }
 
 void AutofillExternalDelegate::InsertDataListValues(
-    std::vector<string16>* autofill_values,
-    std::vector<string16>* autofill_labels,
-    std::vector<string16>* autofill_icons,
+    std::vector<base::string16>* autofill_values,
+    std::vector<base::string16>* autofill_labels,
+    std::vector<base::string16>* autofill_icons,
     std::vector<int>* autofill_unique_ids) {
   if (data_list_values_.empty())
     return;
@@ -348,9 +348,9 @@ void AutofillExternalDelegate::InsertDataListValues(
   // Insert the separator between the datalist and Autofill values (if there
   // are any).
   if (!autofill_values->empty()) {
-    autofill_values->insert(autofill_values->begin(), string16());
-    autofill_labels->insert(autofill_labels->begin(), string16());
-    autofill_icons->insert(autofill_icons->begin(), string16());
+    autofill_values->insert(autofill_values->begin(), base::string16());
+    autofill_labels->insert(autofill_labels->begin(), base::string16());
+    autofill_icons->insert(autofill_icons->begin(), base::string16());
     autofill_unique_ids->insert(autofill_unique_ids->begin(),
                                 WebAutofillClient::MenuItemIDSeparator);
   }

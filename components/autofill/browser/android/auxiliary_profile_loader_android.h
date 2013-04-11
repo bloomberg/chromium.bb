@@ -30,35 +30,37 @@ class AuxiliaryProfileLoaderAndroid {
   // contact information.
   virtual bool GetHasPermissions() const;
   // Returns address street.
-  virtual string16 GetStreet() const;
+  virtual base::string16 GetStreet() const;
   // Returns address post office box.
-  virtual string16 GetPostOfficeBox() const;
+  virtual base::string16 GetPostOfficeBox() const;
   // Returns address neighborhood (e.g. Noe Valley, Nob Hill, Twin Peaks, ...).
-  virtual string16 GetNeighborhood() const;
+  virtual base::string16 GetNeighborhood() const;
   // Returns address region such as state or province information
   // (e.g. Ontario, California, Hubei).
-  virtual string16 GetRegion() const;
+  virtual base::string16 GetRegion() const;
   // Returns address city.
-  virtual string16 GetCity() const;
+  virtual base::string16 GetCity() const;
   // Returns address postal code or zip code.
-  virtual string16 GetPostalCode() const;
+  virtual base::string16 GetPostalCode() const;
   // Returns address country.
-  virtual string16 GetCountry() const;
+  virtual base::string16 GetCountry() const;
 
   // Returns contact's first name.
-  virtual string16 GetFirstName() const;
+  virtual base::string16 GetFirstName() const;
   // Returns contact's middle name.
-  virtual string16 GetMiddleName() const;
+  virtual base::string16 GetMiddleName() const;
   // Returns contact's last name.
-  virtual string16 GetLastName() const;
+  virtual base::string16 GetLastName() const;
   // Returns contact's suffix (e.g. Ph.D, M.D., ...).
-  virtual string16 GetSuffix() const;
+  virtual base::string16 GetSuffix() const;
 
   // Populates string vector parameter with contact's email addresses.
-  virtual void GetEmailAddresses(std::vector<string16>* email_addresses) const;
+  virtual void GetEmailAddresses(
+      std::vector<base::string16>* email_addresses) const;
 
   // Populates string vector parameter with contact's phones numbers.
-  virtual void GetPhoneNumbers(std::vector<string16>* phone_numbers) const;
+  virtual void GetPhoneNumbers(
+      std::vector<base::string16>* phone_numbers) const;
 
  private:
   JNIEnv* env_;

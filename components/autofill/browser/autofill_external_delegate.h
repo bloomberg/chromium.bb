@@ -50,9 +50,10 @@ class AutofillExternalDelegate
   virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE;
   virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
-  virtual void DidAcceptSuggestion(const string16& value,
+  virtual void DidAcceptSuggestion(const base::string16& value,
                                    int identifier) OVERRIDE;
-  virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE;
+  virtual void RemoveSuggestion(const base::string16& value,
+                                int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
 
   // Records and associates a query_id with web form data.  Called
@@ -72,21 +73,22 @@ class AutofillExternalDelegate
   // to be displayed.  Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(
       int query_id,
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
+      const std::vector<base::string16>& autofill_values,
+      const std::vector<base::string16>& autofill_labels,
+      const std::vector<base::string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids);
 
   // Show password suggestions in the popup.
-  void OnShowPasswordSuggestions(const std::vector<string16>& suggestions,
+  void OnShowPasswordSuggestions(const std::vector<base::string16>& suggestions,
                                  const FormFieldData& field,
                                  const gfx::RectF& bounds);
 
   // Set the data list value associated with the current field.
-  void SetCurrentDataListValues(const std::vector<string16>& autofill_values,
-                                const std::vector<string16>& autofill_labels,
-                                const std::vector<string16>& autofill_icons,
-                                const std::vector<int>& autofill_unique_ids);
+  void SetCurrentDataListValues(
+      const std::vector<base::string16>& autofill_values,
+      const std::vector<base::string16>& autofill_labels,
+      const std::vector<base::string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids);
 
   // Inform the delegate that the text field editing has ended. This is
   // used to help record the metrics of when a new popup is shown.
@@ -117,24 +119,24 @@ class AutofillExternalDelegate
   void FillAutofillFormData(int unique_id, bool is_preview);
 
   // Handle applying any Autofill warnings to the Autofill popup.
-  void ApplyAutofillWarnings(std::vector<string16>* autofill_values,
-                             std::vector<string16>* autofill_labels,
-                             std::vector<string16>* autofill_icons,
+  void ApplyAutofillWarnings(std::vector<base::string16>* autofill_values,
+                             std::vector<base::string16>* autofill_labels,
+                             std::vector<base::string16>* autofill_icons,
                              std::vector<int>* autofill_unique_ids);
 
   // Handle applying any Autofill option listings to the Autofill popup.
   // This function should only get called when there is at least one
   // multi-field suggestion in the list of suggestions.
-  void ApplyAutofillOptions(std::vector<string16>* autofill_values,
-                            std::vector<string16>* autofill_labels,
-                            std::vector<string16>* autofill_icons,
+  void ApplyAutofillOptions(std::vector<base::string16>* autofill_values,
+                            std::vector<base::string16>* autofill_labels,
+                            std::vector<base::string16>* autofill_icons,
                             std::vector<int>* autofill_unique_ids);
 
   // Insert the data list values at the start of the given list, including
   // any required separators.
-  void InsertDataListValues(std::vector<string16>* autofill_values,
-                            std::vector<string16>* autofill_labels,
-                            std::vector<string16>* autofill_icons,
+  void InsertDataListValues(std::vector<base::string16>* autofill_values,
+                            std::vector<base::string16>* autofill_labels,
+                            std::vector<base::string16>* autofill_icons,
                             std::vector<int>* autofill_unique_ids);
 
   // content::NotificationObserver method override.
@@ -178,9 +180,9 @@ class AutofillExternalDelegate
   content::RenderViewHost* registered_keyboard_listener_with_;
 
   // The current data list values.
-  std::vector<string16> data_list_values_;
-  std::vector<string16> data_list_labels_;
-  std::vector<string16> data_list_icons_;
+  std::vector<base::string16> data_list_values_;
+  std::vector<base::string16> data_list_labels_;
+  std::vector<base::string16> data_list_icons_;
   std::vector<int> data_list_unique_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);

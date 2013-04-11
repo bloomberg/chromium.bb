@@ -31,9 +31,9 @@ class AuxiliaryProfileAndroidTest : public testing::Test {
 };
 
 TEST_F(AuxiliaryProfileAndroidTest, SetNameInfo) {
-  string16 first_name = ASCIIToUTF16("John");
-  string16 middle_name = ASCIIToUTF16("H.");
-  string16 last_name = ASCIIToUTF16("Waston");
+  base::string16 first_name = ASCIIToUTF16("John");
+  base::string16 middle_name = ASCIIToUTF16("H.");
+  base::string16 last_name = ASCIIToUTF16("Waston");
 
   profile_loader().SetFirstName(first_name);
   profile_loader().SetMiddleName(middle_name);
@@ -49,48 +49,48 @@ TEST_F(AuxiliaryProfileAndroidTest, SetNameInfo) {
 TEST_F(AuxiliaryProfileAndroidTest, SetNameInfoEmpty) {
   AutofillProfile* profile = GetAndLoadProfile();
 
-  EXPECT_EQ(profile->GetRawInfo(NAME_FIRST), string16());
-  EXPECT_EQ(profile->GetRawInfo(NAME_MIDDLE), string16());
-  EXPECT_EQ(profile->GetRawInfo(NAME_LAST), string16());
+  EXPECT_EQ(profile->GetRawInfo(NAME_FIRST), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(NAME_LAST), base::string16());
 }
 
 TEST_F(AuxiliaryProfileAndroidTest, SetEmailInfo) {
-  std::vector<string16> email_addresses;
+  std::vector<base::string16> email_addresses;
   email_addresses.push_back(ASCIIToUTF16("sherlock@holmes.com"));
   email_addresses.push_back(ASCIIToUTF16("watson@holmes.com"));
   profile_loader().SetEmailAddresses(email_addresses);
 
   AutofillProfile* profile = GetAndLoadProfile();
-  std::vector<string16> loaded_email_addresses;
+  std::vector<base::string16> loaded_email_addresses;
   profile->GetRawMultiInfo(EMAIL_ADDRESS, &loaded_email_addresses);
   EXPECT_EQ(loaded_email_addresses, email_addresses);
 }
 
 TEST_F(AuxiliaryProfileAndroidTest, SetEmailInfoEmpty) {
-  std::vector<string16> expected_email_addresses;
-  expected_email_addresses.push_back(string16());
-  std::vector<string16> loaded_email_addresses;
+  std::vector<base::string16> expected_email_addresses;
+  expected_email_addresses.push_back(base::string16());
+  std::vector<base::string16> loaded_email_addresses;
   AutofillProfile* profile = GetAndLoadProfile();
   profile->GetRawMultiInfo(EMAIL_ADDRESS, &loaded_email_addresses);
   EXPECT_EQ(loaded_email_addresses, expected_email_addresses);
 }
 
 TEST_F(AuxiliaryProfileAndroidTest, SetPhoneInfo) {
-  std::vector<string16> phone_numbers;
+  std::vector<base::string16> phone_numbers;
   phone_numbers.push_back(ASCIIToUTF16("6502530000"));
   profile_loader().SetPhoneNumbers(phone_numbers);
 
-  std::vector<string16> loaded_phone_numbers;
+  std::vector<base::string16> loaded_phone_numbers;
   AutofillProfile* profile = GetAndLoadProfile();
   profile->GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &loaded_phone_numbers);
   EXPECT_EQ(loaded_phone_numbers, phone_numbers);
 }
 
 TEST_F(AuxiliaryProfileAndroidTest, SetPhoneInfoEmpty) {
-  std::vector<string16> expected_phone_numbers;
-  expected_phone_numbers.push_back(string16());
+  std::vector<base::string16> expected_phone_numbers;
+  expected_phone_numbers.push_back(base::string16());
 
-  std::vector<string16> loaded_phone_numbers;
+  std::vector<base::string16> loaded_phone_numbers;
   AutofillProfile* profile = GetAndLoadProfile();
   profile->GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &loaded_phone_numbers);
   EXPECT_EQ(loaded_phone_numbers, expected_phone_numbers);
@@ -105,11 +105,11 @@ TEST_F(AuxiliaryProfileAndroidTest, SetPhoneInfoEmpty) {
 
 #if 0
 TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfo) {
-  string16 street = ASCIIToUTF16("221 B Baker Street");
-  string16 city = ASCIIToUTF16("London");
-  string16 postal_code = ASCIIToUTF16("123456");
-  string16 region = ASCIIToUTF16("Georgian Terrace");
-  string16 country = ASCIIToUTF16("England");
+  base::string16 street = ASCIIToUTF16("221 B Baker Street");
+  base::string16 city = ASCIIToUTF16("London");
+  base::string16 postal_code = ASCIIToUTF16("123456");
+  base::string16 region = ASCIIToUTF16("Georgian Terrace");
+  base::string16 country = ASCIIToUTF16("England");
 
   profile_loader().SetStreet(street);
   profile_loader().SetCity(city);
@@ -125,12 +125,12 @@ TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfo) {
   EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_COUNTRY), country);
 }
 
-string16 post_office_box= ASCIIToUTF16("222");
-string16 neighborhood = ASCIIToUTF16("Doyle");
+base::string16 post_office_box= ASCIIToUTF16("222");
+base::string16 neighborhood = ASCIIToUTF16("Doyle");
 TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfoCompoundFields1) {
   profile_loader().SetPostOfficeBox(post_office_box);
   profile_loader().SetNeighborhood(neighborhood);
-  string16 expectedLine2= ASCIIToUTF16("222, Doyle");
+  base::string16 expectedLine2= ASCIIToUTF16("222, Doyle");
   AutofillProfile* profile = GetAndLoadProfile();
   EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_LINE2), expectedLine2);
 }
@@ -149,11 +149,11 @@ TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfoCompoundFields3) {
 
 TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfoEmpty) {
   AutofillProfile* profile = GetAndLoadProfile();
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_LINE1), string16());
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_LINE2), string16());
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_CITY), string16());
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_ZIP), string16());
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_STATE), string16());
-  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_COUNTRY), string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_LINE1), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_LINE2), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_CITY), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_ZIP), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_STATE), base::string16());
+  EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_COUNTRY), base::string16());
 }
 #endif

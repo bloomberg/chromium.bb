@@ -34,7 +34,8 @@ using base::Time;
 
 namespace {
 
-typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
+typedef std::vector<Tuple3<int64, base::string16, base::string16> >
+    AutofillElementList;
 
 // TODO(dhollowa): Find a common place for this.  It is duplicated in
 // personal_data_manager.cc.
@@ -43,7 +44,7 @@ T* address_of(T& v) {
   return &v;
 }
 
-string16 LimitDataSize(const string16& data) {
+base::string16 LimitDataSize(const base::string16& data) {
   if (data.size() > AutofillTable::kMaxDataLength)
     return data.substr(0, AutofillTable::kMaxDataLength);
 
@@ -56,7 +57,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   DCHECK(base::IsValidGUID(profile.guid()));
   s->BindString(0, profile.guid());
 
-  string16 text = profile.GetRawInfo(COMPANY_NAME);
+  base::string16 text = profile.GetRawInfo(COMPANY_NAME);
   s->BindString16(1, LimitDataSize(text));
   text = profile.GetRawInfo(ADDRESS_HOME_LINE1);
   s->BindString16(2, LimitDataSize(text));
@@ -99,7 +100,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   DCHECK(base::IsValidGUID(credit_card.guid()));
   s->BindString(0, credit_card.guid());
 
-  string16 text = credit_card.GetRawInfo(CREDIT_CARD_NAME);
+  base::string16 text = credit_card.GetRawInfo(CREDIT_CARD_NAME);
   s->BindString16(1, LimitDataSize(text));
   text = credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH);
   s->BindString16(2, LimitDataSize(text));
@@ -123,7 +124,7 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
   credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
-  string16 credit_card_number;
+  base::string16 credit_card_number;
   if (encrypted_number_len) {
     std::string encrypted_number;
     encrypted_number.resize(encrypted_number_len);
@@ -147,9 +148,9 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
   if (!s.is_valid())
     return false;
 
-  std::vector<string16> first_names;
-  std::vector<string16> middle_names;
-  std::vector<string16> last_names;
+  std::vector<base::string16> first_names;
+  std::vector<base::string16> middle_names;
+  std::vector<base::string16> last_names;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
     first_names.push_back(s.ColumnString16(1));
@@ -176,7 +177,7 @@ bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
   if (!s.is_valid())
     return false;
 
-  std::vector<string16> emails;
+  std::vector<base::string16> emails;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
     emails.push_back(s.ColumnString16(1));
@@ -202,7 +203,7 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
   if (!s.is_valid())
     return false;
 
-  std::vector<string16> numbers;
+  std::vector<base::string16> numbers;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
     numbers.push_back(s.ColumnString16(2));
@@ -216,11 +217,11 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
 
 bool AddAutofillProfileNames(const AutofillProfile& profile,
                              sql::Connection* db) {
-  std::vector<string16> first_names;
+  std::vector<base::string16> first_names;
   profile.GetRawMultiInfo(NAME_FIRST, &first_names);
-  std::vector<string16> middle_names;
+  std::vector<base::string16> middle_names;
   profile.GetRawMultiInfo(NAME_MIDDLE, &middle_names);
-  std::vector<string16> last_names;
+  std::vector<base::string16> last_names;
   profile.GetRawMultiInfo(NAME_LAST, &last_names);
   DCHECK_EQ(first_names.size(), middle_names.size());
   DCHECK_EQ(middle_names.size(), last_names.size());
@@ -244,7 +245,7 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
 
 bool AddAutofillProfileEmails(const AutofillProfile& profile,
                               sql::Connection* db) {
-  std::vector<string16> emails;
+  std::vector<base::string16> emails;
   profile.GetRawMultiInfo(EMAIL_ADDRESS, &emails);
 
   for (size_t i = 0; i < emails.size(); ++i) {
@@ -265,7 +266,7 @@ bool AddAutofillProfileEmails(const AutofillProfile& profile,
 
 bool AddAutofillProfilePhones(const AutofillProfile& profile,
                               sql::Connection* db) {
-  std::vector<string16> numbers;
+  std::vector<base::string16> numbers;
   profile.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &numbers);
 
   for (size_t i = 0; i < numbers.size(); ++i) {
@@ -417,10 +418,11 @@ bool AutofillTable::AddFormFieldValue(const FormFieldData& element,
   return AddFormFieldValueTime(element, changes, Time::Now());
 }
 
-bool AutofillTable::GetFormValuesForElementName(const string16& name,
-                                                const string16& prefix,
-                                                std::vector<string16>* values,
-                                                int limit) {
+bool AutofillTable::GetFormValuesForElementName(
+    const base::string16& name,
+    const base::string16& prefix,
+    std::vector<base::string16>* values,
+    int limit) {
   DCHECK(values);
   sql::Statement s;
 
@@ -433,8 +435,8 @@ bool AutofillTable::GetFormValuesForElementName(const string16& name,
     s.BindString16(0, name);
     s.BindInt(1, limit);
   } else {
-    string16 prefix_lower = base::i18n::ToLower(prefix);
-    string16 next_prefix = prefix_lower;
+    base::string16 prefix_lower = base::i18n::ToLower(prefix);
+    base::string16 next_prefix = prefix_lower;
     next_prefix[next_prefix.length() - 1]++;
 
     s.Assign(db_->GetUniqueStatement(
@@ -725,7 +727,7 @@ bool AutofillTable::AddFormFieldValuesTime(
   // Only add one new entry for each unique element name.  Use |seen_names| to
   // track this.  Add up to |kMaximumUniqueNames| unique entries per form.
   const size_t kMaximumUniqueNames = 256;
-  std::set<string16> seen_names;
+  std::set<base::string16> seen_names;
   bool result = true;
   for (std::vector<FormFieldData>::const_iterator itr = elements.begin();
        itr != elements.end(); ++itr) {
@@ -770,7 +772,7 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   bool first_entry = true;
   AutofillKey* current_key_ptr = NULL;
   std::vector<Time>* timestamps_ptr = NULL;
-  string16 name, value;
+  base::string16 name, value;
   Time time;
   while (s.Step()) {
     name = s.ColumnString16(0);
@@ -813,8 +815,8 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   return s.Succeeded();
 }
 
-bool AutofillTable::GetAutofillTimestamps(const string16& name,
-                                          const string16& value,
+bool AutofillTable::GetAutofillTimestamps(const base::string16& name,
+                                          const base::string16& value,
                                           std::vector<Time>* timestamps) {
   DCHECK(timestamps);
   sql::Statement s(db_->GetUniqueStatement(
@@ -914,8 +916,8 @@ bool AutofillTable::AddFormFieldValueTime(const FormFieldData& element,
 }
 
 
-bool AutofillTable::RemoveFormElement(const string16& name,
-                                      const string16& value) {
+bool AutofillTable::RemoveFormElement(const base::string16& name,
+                                      const base::string16& value) {
   // Find the id for that pair.
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT pair_id FROM autofill WHERE  name = ? AND value= ?"));
@@ -1011,7 +1013,7 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
     return true;
 
   AutofillProfile new_profile(profile);
-  std::vector<string16> values;
+  std::vector<base::string16> values;
 
   old_profile->GetRawMultiInfo(NAME_FULL, &values);
   values[0] = new_profile.GetRawInfo(NAME_FULL);
@@ -1946,7 +1948,7 @@ bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode() {
           db_->GetUniqueStatement("UPDATE autofill_profiles "
                                   "SET country_code=? WHERE guid=?"));
 
-      string16 country = s.ColumnString16(1);
+      base::string16 country = s.ColumnString16(1);
       update_s.BindString(0, AutofillCountry::GetCountryCode(country,
                                                              app_locale_));
       update_s.BindString(1, s.ColumnString(0));

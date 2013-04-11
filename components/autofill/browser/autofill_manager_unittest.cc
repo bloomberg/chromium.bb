@@ -64,9 +64,9 @@ namespace {
 const int kDefaultPageID = 137;
 
 typedef Tuple5<int,
-               std::vector<string16>,
-               std::vector<string16>,
-               std::vector<string16>,
+               std::vector<base::string16>,
+               std::vector<base::string16>,
+               std::vector<base::string16>,
                std::vector<int> > AutofillParam;
 
 class TestPersonalDataManager : public PersonalDataManager {
@@ -329,15 +329,15 @@ void CreateTestCreditCardFormData(FormData* form,
 }
 
 void ExpectSuggestions(int page_id,
-                       const std::vector<string16>& values,
-                       const std::vector<string16>& labels,
-                       const std::vector<string16>& icons,
+                       const std::vector<base::string16>& values,
+                       const std::vector<base::string16>& labels,
+                       const std::vector<base::string16>& icons,
                        const std::vector<int>& unique_ids,
                        int expected_page_id,
                        size_t expected_num_suggestions,
-                       const string16 expected_values[],
-                       const string16 expected_labels[],
-                       const string16 expected_icons[],
+                       const base::string16 expected_values[],
+                       const base::string16 expected_labels[],
+                       const base::string16 expected_icons[],
                        const int expected_unique_ids[]) {
   EXPECT_EQ(expected_page_id, page_id);
   ASSERT_EQ(expected_num_suggestions, values.size());
@@ -735,7 +735,8 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     GetAutofillSuggestions(kDefaultPageID, form, field);
   }
 
-  void AutocompleteSuggestionsReturned(const std::vector<string16>& result) {
+  void AutocompleteSuggestionsReturned(
+      const std::vector<base::string16>& result) {
     autofill_manager_->autocomplete_history_manager_.SendSuggestions(&result);
   }
 
@@ -764,9 +765,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool GetAutofillSuggestionsMessage(int* page_id,
-                                     std::vector<string16>* values,
-                                     std::vector<string16>* labels,
-                                     std::vector<string16>* icons,
+                                     std::vector<base::string16>* values,
+                                     std::vector<base::string16>* labels,
+                                     std::vector<base::string16>* icons,
                                      std::vector<int>* unique_ids) {
     const uint32 kMsgID = AutofillMsg_SuggestionsReturned::ID;
     const IPC::Message* message =
@@ -898,28 +899,28 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   GetAutofillSuggestionsMessage(
       &page_id, &values, &labels, &icons, &unique_ids);
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
   };
   // Inferred labels include full first relevant field, which in this case is
   // the address line 1.
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("3734 Elvis Presley Blvd."),
     ASCIIToUTF16("123 Apple St.")
   };
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -979,20 +980,20 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMatchCharacter) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {ASCIIToUTF16("Elvis")};
-  string16 expected_labels[] = {ASCIIToUTF16("3734 Elvis Presley Blvd.")};
-  string16 expected_icons[] = {string16()};
+  base::string16 expected_values[] = {ASCIIToUTF16("Elvis")};
+  base::string16 expected_labels[] = {ASCIIToUTF16("3734 Elvis Presley Blvd.")};
+  base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] = {1};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1048,26 +1049,26 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
   };
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("3734 Elvis Presley Blvd."),
     ASCIIToUTF16("123 Apple St.")
   };
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1105,22 +1106,22 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED)
   };
-  string16 expected_labels[] = {string16()};
-  string16 expected_icons[] = {string16()};
+  base::string16 expected_labels[] = {base::string16()};
+  base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] =
       {WebKit::WebAutofillClient::MenuItemIDWarningMessage};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
@@ -1132,7 +1133,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
 
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("Jay"));
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
@@ -1140,13 +1141,15 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values2[] = {
+  base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
     ASCIIToUTF16("Jay"),
     ASCIIToUTF16("Jason")
   };
-  string16 expected_labels2[] = {string16(), string16(), string16()};
-  string16 expected_icons2[] = {string16(), string16(), string16()};
+  base::string16 expected_labels2[] = { base::string16(), base::string16(),
+                                        base::string16()};
+  base::string16 expected_icons2[] = { base::string16(), base::string16(),
+                                       base::string16()};
   int expected_unique_ids2[] = {-1, 0, 0};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kPageID2, arraysize(expected_values2), expected_values2,
@@ -1172,23 +1175,24 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
   };
-  string16 expected_labels[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
-  string16 expected_icons[] = {
+  base::string16 expected_labels[] = { ASCIIToUTF16("*3456"),
+                                       ASCIIToUTF16("*8765")};
+  base::string16 expected_icons[] = {
     ASCIIToUTF16("visaCC"),
     ASCIIToUTF16("genericCC")
   };
@@ -1217,20 +1221,20 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {ASCIIToUTF16("************3456")};
-  string16 expected_labels[] = {ASCIIToUTF16("*3456")};
-  string16 expected_icons[] = {ASCIIToUTF16("visaCC")};
+  base::string16 expected_values[] = {ASCIIToUTF16("************3456")};
+  base::string16 expected_labels[] = {ASCIIToUTF16("*3456")};
+  base::string16 expected_icons[] = {ASCIIToUTF16("visaCC")};
   int expected_unique_ids[] = {autofill_manager_->GetPackedCreditCardID(4)};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1251,23 +1255,24 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis Presley"),
     ASCIIToUTF16("Buddy Holly")
   };
-  string16 expected_labels[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
-  string16 expected_icons[] = {
+  base::string16 expected_labels[] = { ASCIIToUTF16("*3456"),
+                                       ASCIIToUTF16("*8765") };
+  base::string16 expected_icons[] = {
     ASCIIToUTF16("visaCC"),
     ASCIIToUTF16("genericCC")
   };
@@ -1294,22 +1299,22 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION)
   };
-  string16 expected_labels[] = {string16()};
-  string16 expected_icons[] = {string16()};
+  base::string16 expected_labels[] = {base::string16()};
+  base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] = {-1};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1320,20 +1325,22 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
 
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("Jay"));
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
 
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
-  string16 expected_values2[] = {
+  base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
     ASCIIToUTF16("Jay"),
     ASCIIToUTF16("Jason")
   };
-  string16 expected_labels2[] = {string16(), string16(), string16()};
-  string16 expected_icons2[] = {string16(), string16(), string16()};
+  base::string16 expected_labels2[] = { base::string16(), base::string16(),
+                                        base::string16() };
+  base::string16 expected_icons2[] = { base::string16(), base::string16(),
+                                       base::string16() };
   int expected_unique_ids2[] = {-1, 0, 0};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kPageID2, arraysize(expected_values2), expected_values2,
@@ -1368,28 +1375,28 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765"),
     ASCIIToUTF16("************3456")
   };
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("*3456"),
     ASCIIToUTF16("*8765"),
     ASCIIToUTF16("*3456"),
   };
-  string16 expected_icons[] = {
+  base::string16 expected_icons[] = {
     ASCIIToUTF16("visaCC"),
     ASCIIToUTF16("genericCC"),
     ASCIIToUTF16("masterCardCC")
@@ -1418,26 +1425,26 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right address suggestions to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
   };
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("3734 Elvis Presley Blvd."),
     ASCIIToUTF16("123 Apple St.")
   };
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1450,19 +1457,20 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the credit card suggestions to the renderer.
   page_id = 0;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values2[] = {
+  base::string16 expected_values2[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
   };
-  string16 expected_labels2[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
-  string16 expected_icons2[] = {
+  base::string16 expected_labels2[] = { ASCIIToUTF16("*3456"),
+                                        ASCIIToUTF16("*8765")};
+  base::string16 expected_icons2[] = {
     ASCIIToUTF16("visaCC"),
     ASCIIToUTF16("genericCC")
   };
@@ -1492,26 +1500,26 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right address suggestions to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
   };
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("3734 Elvis Presley Blvd."),
     ASCIIToUTF16("123 Apple St.")
   };
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1524,17 +1532,17 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values2[] = {
+  base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION)
   };
-  string16 expected_labels2[] = {string16()};
-  string16 expected_icons2[] = {string16()};
+  base::string16 expected_labels2[] = {base::string16()};
+  base::string16 expected_icons2[] = {base::string16()};
   int expected_unique_ids2[] = {-1};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kPageID2, arraysize(expected_values2), expected_values2,
@@ -1559,7 +1567,7 @@ TEST_F(AutofillManagerTest, GetCombinedAutofillAndAutocompleteSuggestions) {
 
   // Add some Autocomplete suggestions.
   // This triggers the combined message send.
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("Jay"));
   // This suggestion is a duplicate, and should be trimmed.
   suggestions.push_back(ASCIIToUTF16("Elvis"));
@@ -1568,26 +1576,27 @@ TEST_F(AutofillManagerTest, GetCombinedAutofillAndAutocompleteSuggestions) {
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles"),
     ASCIIToUTF16("Jay"),
     ASCIIToUTF16("Jason")
   };
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("3734 Elvis Presley Blvd."),
     ASCIIToUTF16("123 Apple St."),
-    string16(),
-    string16()
+    base::string16(),
+    base::string16()
   };
-  string16 expected_icons[] = {string16(), string16(), string16(), string16()};
+  base::string16 expected_icons[] = { base::string16(), base::string16(),
+                                      base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2, 0, 0};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1610,22 +1619,22 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
   };
-  string16 expected_labels[] = {string16(), string16()};
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_labels[] = {base::string16(), base::string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1649,26 +1658,26 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
 
   // Add some Autocomplete suggestions.
   // This triggers the combined message send.
-  std::vector<string16> suggestions;
+  std::vector<base::string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("one"));
   suggestions.push_back(ASCIIToUTF16("two"));
   AutocompleteSuggestionsReturned(suggestions);
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("one"),
     ASCIIToUTF16("two")
   };
-  string16 expected_labels[] = {string16(), string16()};
-  string16 expected_icons[] = {string16(), string16()};
+  base::string16 expected_labels[] = {base::string16(), base::string16()};
+  base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {0, 0};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1698,20 +1707,20 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = { ASCIIToUTF16("Elvis") };
-  string16 expected_labels[] = { string16() };
-  string16 expected_icons[] = { string16() };
+  base::string16 expected_values[] = { ASCIIToUTF16("Elvis") };
+  base::string16 expected_labels[] = { base::string16() };
+  base::string16 expected_icons[] = { base::string16() };
   int expected_unique_ids[] = { 1 };
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1732,7 +1741,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
   autofill_test::SetProfileInfo(profile, "Elvis", "", "Presley", "me@x.com", "",
                                 "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
-  std::vector<string16> multi_values(2);
+  std::vector<base::string16> multi_values(2);
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
   multi_values[1] = ASCIIToUTF16("Elena Love");
   profile->SetRawMultiInfo(NAME_FULL, multi_values);
@@ -1748,25 +1757,25 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
     GetAutofillSuggestions(form, field);
 
     // Trigger the |Send|.
-    AutocompleteSuggestionsReturned(std::vector<string16>());
+    AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
     // Test that we sent the right message to the renderer.
     int page_id = 0;
-    std::vector<string16> values;
-    std::vector<string16> labels;
-    std::vector<string16> icons;
+    std::vector<base::string16> values;
+    std::vector<base::string16> labels;
+    std::vector<base::string16> icons;
     std::vector<int> unique_ids;
     EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
                                               &icons, &unique_ids));
-    string16 expected_values[] = {
+    base::string16 expected_values[] = {
       ASCIIToUTF16("Elvis"),
       ASCIIToUTF16("Elena")
     };
-    string16 expected_labels[] = {
+    base::string16 expected_labels[] = {
       ASCIIToUTF16("me@x.com"),
       ASCIIToUTF16("me@x.com")
     };
-    string16 expected_icons[] = { string16(), string16() };
+    base::string16 expected_icons[] = { base::string16(), base::string16() };
     int expected_unique_ids[] = { 1, 2 };
     ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                       kDefaultPageID, arraysize(expected_values),
@@ -1783,20 +1792,20 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
     GetAutofillSuggestions(form, field);
 
     // Trigger the |Send|.
-    AutocompleteSuggestionsReturned(std::vector<string16>());
+    AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
     // Test that we sent the right message to the renderer.
     int page_id = 0;
-    std::vector<string16> values;
-    std::vector<string16> labels;
-    std::vector<string16> icons;
+    std::vector<base::string16> values;
+    std::vector<base::string16> labels;
+    std::vector<base::string16> icons;
     std::vector<int> unique_ids;
     EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
                                               &icons, &unique_ids));
 
-    string16 expected_values[] = { ASCIIToUTF16("Elena") };
-    string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
-    string16 expected_icons[] = { string16() };
+    base::string16 expected_values[] = { ASCIIToUTF16("Elena") };
+    base::string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
+    base::string16 expected_icons[] = { base::string16() };
     int expected_unique_ids[] = { 2 };
     ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                       kDefaultPageID, arraysize(expected_values),
@@ -1817,7 +1826,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid("00000000-0000-0000-0000-000000000102");
-  std::vector<string16> multi_values(3);
+  std::vector<base::string16> multi_values(3);
   multi_values[0] = ASCIIToUTF16("Travis Smith");
   multi_values[1] = ASCIIToUTF16("Cynthia Love");
   multi_values[2] = ASCIIToUTF16("Zac Mango");
@@ -1832,24 +1841,26 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   GetAutofillSuggestions(form, field);
 
   // Trigger the |Send|.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
                                             &unique_ids));
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("Travis"),
     ASCIIToUTF16("Cynthia"),
     ASCIIToUTF16("Zac")
   };
-  string16 expected_labels[] = { string16(), string16(), string16() };
-  string16 expected_icons[] = { string16(), string16(), string16() };
+  base::string16 expected_labels[] = { base::string16(), base::string16(),
+                                       base::string16() };
+  base::string16 expected_icons[] = { base::string16(), base::string16(),
+                                      base::string16() };
   int expected_unique_ids[] = { 1, 2, 3 };
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1865,7 +1876,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
 
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid("00000000-0000-0000-0000-000000000103");
-  std::vector<string16> multi_values(1);
+  std::vector<base::string16> multi_values(1);
   multi_values[0] = ASCIIToUTF16("Natty Bumppo");
   profile->SetRawMultiInfo(NAME_FULL, multi_values);
   multi_values[0] = ASCIIToUTF16("1800PRAIRIE");
@@ -1877,30 +1888,31 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
   std::vector<int> unique_ids;
   GetAutofillSuggestionsMessage(
       &page_id, &values, &labels, &icons, &unique_ids);
 
-  string16 expected_values[] = {
+  base::string16 expected_values[] = {
     ASCIIToUTF16("12345678901"),
     ASCIIToUTF16("23456789012"),
     ASCIIToUTF16("18007724743"),  // 1800PRAIRIE
   };
   // Inferred labels include full first relevant field, which in this case is
   // the address line 1.
-  string16 expected_labels[] = {
+  base::string16 expected_labels[] = {
     ASCIIToUTF16("Elvis Aaron Presley"),
     ASCIIToUTF16("Charles Hardin Holley"),
     ASCIIToUTF16("Natty Bumppo"),
   };
-  string16 expected_icons[] = {string16(), string16(), string16()};
+  base::string16 expected_icons[] = { base::string16(), base::string16(),
+                                      base::string16()};
   int expected_unique_ids[] = {1, 2, 3};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -2134,7 +2146,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
     // The second address section should be empty.
     ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
     for (size_t i = kAddressFormSize; i < form.fields.size(); ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value);
+      EXPECT_EQ(base::string16(), results.fields[i].value);
     }
 
     // The first address section should be filled with Elvis's data.
@@ -2159,7 +2171,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
     // The first address section should be empty.
     ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
     for (size_t i = 0; i < kAddressFormSize; ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value);
+      EXPECT_EQ(base::string16(), results.fields[i].value);
     }
 
     // The second address section should be filled with Elvis's data.
@@ -2168,8 +2180,8 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
                                secondSection.fields.begin() + kAddressFormSize);
     for (size_t i = 0; i < kAddressFormSize; ++i) {
       // Restore the expected field names.
-      string16 name = secondSection.fields[i].name;
-      string16 original_name = name.substr(0, name.size() - 1);
+      base::string16 name = secondSection.fields[i].name;
+      base::string16 original_name = name.substr(0, name.size() - 1);
       secondSection.fields[i].name = original_name;
     }
     ExpectFilledAddressFormElvis(page_id, secondSection, kPageID2, false);
@@ -2442,9 +2454,9 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
   // Add a name variant to the Elvis profile.
   AutofillProfile* profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000001");
-  const string16 elvis_name = profile->GetRawInfo(NAME_FULL);
+  const base::string16 elvis_name = profile->GetRawInfo(NAME_FULL);
 
-  std::vector<string16> name_variants;
+  std::vector<base::string16> name_variants;
   name_variants.push_back(ASCIIToUTF16("Some Other Guy"));
   name_variants.push_back(elvis_name);
   profile->SetRawMultiInfo(NAME_FULL, name_variants);
@@ -2550,7 +2562,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("650"), results1.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("555"), results1.fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("4567"), results1.fields[3].value);
-  EXPECT_EQ(string16(), results1.fields[4].value);
+  EXPECT_EQ(base::string16(), results1.fields[4].value);
 
   page_id = 2;
   FillAutofillFormData(page_id, form_with_autocompletetype,
@@ -2566,7 +2578,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("650"), results2.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("555"), results2.fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("4567"), results2.fields[3].value);
-  EXPECT_EQ(string16(), results2.fields[4].value);
+  EXPECT_EQ(base::string16(), results2.fields[4].value);
 
   // We should not be able to fill prefix and suffix fields for international
   // numbers.
@@ -2587,7 +2599,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("7700"), results3.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("954321"), results3.fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("954321"), results3.fields[3].value);
-  EXPECT_EQ(string16(), results3.fields[4].value);
+  EXPECT_EQ(base::string16(), results3.fields[4].value);
 
   page_id = 4;
   FillAutofillFormData(page_id, form_with_autocompletetype,
@@ -2603,10 +2615,10 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("7700"), results4.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("954321"), results4.fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("954321"), results4.fields[3].value);
-  EXPECT_EQ(string16(), results4.fields[4].value);
+  EXPECT_EQ(base::string16(), results4.fields[4].value);
 
   // We should fill all phone fields with the same phone number variant.
-  std::vector<string16> phone_variants;
+  std::vector<base::string16> phone_variants;
   phone_variants.push_back(ASCIIToUTF16("16505554567"));
   phone_variants.push_back(ASCIIToUTF16("18887771234"));
   work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
@@ -2627,7 +2639,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("888"), results5.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("777"), results5.fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("1234"), results5.fields[3].value);
-  EXPECT_EQ(string16(), results5.fields[4].value);
+  EXPECT_EQ(base::string16(), results5.fields[4].value);
 }
 
 // Test that we can still fill a form when a field has been removed from it.

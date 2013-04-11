@@ -51,7 +51,7 @@ void Address::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
-string16 Address::GetRawInfo(AutofillFieldType type) const {
+base::string16 Address::GetRawInfo(AutofillFieldType type) const {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
@@ -71,10 +71,10 @@ string16 Address::GetRawInfo(AutofillFieldType type) const {
   if (type == ADDRESS_HOME_COUNTRY)
     return country_code_;
 
-  return string16();
+  return base::string16();
 }
 
-void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
+void Address::SetRawInfo(AutofillFieldType type, const base::string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1) {
     line1_ = value;
@@ -94,8 +94,8 @@ void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
   }
 }
 
-string16 Address::GetInfo(AutofillFieldType type,
-                          const std::string& app_locale) const {
+base::string16 Address::GetInfo(AutofillFieldType type,
+                                const std::string& app_locale) const {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
     return AutofillCountry(UTF16ToASCII(country_code_), app_locale).name();
@@ -104,7 +104,7 @@ string16 Address::GetInfo(AutofillFieldType type,
 }
 
 bool Address::SetInfo(AutofillFieldType type,
-                      const string16& value,
+                      const base::string16& value,
                       const std::string& app_locale) {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_COUNTRY && !value.empty()) {
@@ -117,7 +117,7 @@ bool Address::SetInfo(AutofillFieldType type,
   return true;
 }
 
-void Address::GetMatchingTypes(const string16& text,
+void Address::GetMatchingTypes(const base::string16& text,
                                const std::string& app_locale,
                                FieldTypeSet* matching_types) const {
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);

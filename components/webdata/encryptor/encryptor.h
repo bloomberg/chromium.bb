@@ -17,7 +17,7 @@ class Encryptor {
   // Encrypt a string16. The output (second argument) is
   // really an array of bytes, but we're passing it back
   // as a std::string
-  static bool EncryptString16(const string16& plaintext,
+  static bool EncryptString16(const base::string16& plaintext,
                               std::string* ciphertext);
 
   // Decrypt an array of bytes obtained with EncryptString16
@@ -25,7 +25,7 @@ class Encryptor {
   // is a std::string, so you need to first get your (binary)
   // data into a string.
   static bool DecryptString16(const std::string& ciphertext,
-                              string16* plaintext);
+                              base::string16* plaintext);
 
   // Encrypt a string.
   static bool EncryptString(const std::string& plaintext,

@@ -23,9 +23,9 @@ struct FormData {
   bool operator!=(const FormData& form) const;
 
   // The name of the form.
-  string16 name;
+  base::string16 name;
   // GET or POST.
-  string16 method;
+  base::string16 method;
   // The URL (minus query parameters) containing the form.
   GURL origin;
   // The action target of the form.

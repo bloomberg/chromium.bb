@@ -213,7 +213,7 @@ class TestAutofillManager : public AutofillManager {
                    const std::string& experiment_id) {
     FormData empty_form = form;
     for (size_t i = 0; i < empty_form.fields.size(); ++i) {
-      empty_form.fields[i].value = string16();
+      empty_form.fields[i].value = base::string16();
     }
 
     // |form_structure| will be owned by |form_structures()|.
@@ -1345,7 +1345,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   }
 
   // Clear out the third field's value.
-  form.fields[2].value = string16();
+  form.fields[2].value = base::string16();
   forms.front() = form;
 
   // Expect notifications when the form is submitted.

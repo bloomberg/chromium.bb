@@ -33,7 +33,7 @@ TEST(AutofillFieldTest, Type) {
 
 TEST(AutofillFieldTest, IsEmpty) {
   AutofillField field;
-  ASSERT_EQ(string16(), field.value);
+  ASSERT_EQ(base::string16(), field.value);
 
   // Field value is empty.
   EXPECT_TRUE(field.IsEmpty());
@@ -45,7 +45,7 @@ TEST(AutofillFieldTest, IsEmpty) {
 
 TEST(AutofillFieldTest, FieldSignature) {
   AutofillField field;
-  ASSERT_EQ(string16(), field.name);
+  ASSERT_EQ(base::string16(), field.name);
   ASSERT_EQ(std::string(), field.form_control_type);
 
   // Signature is empty.

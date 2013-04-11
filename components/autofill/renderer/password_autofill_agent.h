@@ -86,8 +86,8 @@ class PasswordAutofillAgent : public content::RenderViewObserver,
   void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
 
   void GetSuggestions(const PasswordFormFillData& fill_data,
-                      const string16& input,
-                      std::vector<string16>* suggestions);
+                      const base::string16& input,
+                      std::vector<base::string16>* suggestions);
 
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
                            const WebKit::WebInputElement& user_input);

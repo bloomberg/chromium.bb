@@ -25,8 +25,8 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
   const AutofillField* const initial_field = scanner->Cursor();
   size_t saved_cursor = scanner->SaveCursor();
 
-  string16 attention_ignored = UTF8ToUTF16(autofill::kAttentionIgnoredRe);
-  string16 region_ignored = UTF8ToUTF16(autofill::kRegionIgnoredRe);
+  base::string16 attention_ignored = UTF8ToUTF16(autofill::kAttentionIgnoredRe);
+  base::string16 region_ignored = UTF8ToUTF16(autofill::kRegionIgnoredRe);
 
   // Allow address fields to appear in any order.
   size_t begin_trailing_non_labeled_fields = 0;
@@ -91,31 +91,31 @@ AddressField::AddressType AddressField::FindType() const {
   // First look at the field name, which itself will sometimes contain
   // "bill" or "ship".
   if (company_) {
-    string16 name = StringToLowerASCII(company_->name);
+    base::string16 name = StringToLowerASCII(company_->name);
     return AddressTypeFromText(name);
   }
   if (address1_) {
-    string16 name = StringToLowerASCII(address1_->name);
+    base::string16 name = StringToLowerASCII(address1_->name);
     return AddressTypeFromText(name);
   }
   if (address2_) {
-    string16 name = StringToLowerASCII(address2_->name);
+    base::string16 name = StringToLowerASCII(address2_->name);
     return AddressTypeFromText(name);
   }
   if (city_) {
-    string16 name = StringToLowerASCII(city_->name);
+    base::string16 name = StringToLowerASCII(city_->name);
     return AddressTypeFromText(name);
   }
   if (zip_) {
-    string16 name = StringToLowerASCII(zip_->name);
+    base::string16 name = StringToLowerASCII(zip_->name);
     return AddressTypeFromText(name);
   }
   if (state_) {
-    string16 name = StringToLowerASCII(state_->name);
+    base::string16 name = StringToLowerASCII(state_->name);
     return AddressTypeFromText(name);
   }
   if (country_) {
-    string16 name = StringToLowerASCII(country_->name);
+    base::string16 name = StringToLowerASCII(country_->name);
     return AddressTypeFromText(name);
   }
 
@@ -205,8 +205,8 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
   if (address_field->address1_)
     return false;
 
-  string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
-  string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
+  base::string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
+  base::string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
 
   if (!ParseField(scanner, pattern, &address_field->address1_) &&
       !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
@@ -261,7 +261,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner,
   if (address_field->zip_)
     return false;
 
-  string16 pattern = UTF8ToUTF16(autofill::kZipCodeRe);
+  base::string16 pattern = UTF8ToUTF16(autofill::kZipCodeRe);
   if (!ParseField(scanner, pattern, &address_field->zip_))
     return false;
 
@@ -303,10 +303,10 @@ bool AddressField::ParseState(AutofillScanner* scanner,
 }
 
 AddressField::AddressType AddressField::AddressTypeFromText(
-    const string16 &text) {
+    const base::string16 &text) {
   size_t same_as = text.find(UTF8ToUTF16(autofill::kAddressTypeSameAsRe));
   size_t use_shipping = text.find(UTF8ToUTF16(autofill::kAddressTypeUseMyRe));
-  if (same_as != string16::npos || use_shipping != string16::npos)
+  if (same_as != base::string16::npos || use_shipping != base::string16::npos)
     // This text could be a checkbox label such as "same as my billing
     // address" or "use my shipping address".
     // ++ It would help if we generally skipped all text that appears
@@ -319,13 +319,13 @@ AddressField::AddressType AddressField::AddressTypeFromText(
   size_t bill = text.rfind(UTF8ToUTF16(autofill::kBillingDesignatorRe));
   size_t ship = text.rfind(UTF8ToUTF16(autofill::kShippingDesignatorRe));
 
-  if (bill == string16::npos && ship == string16::npos)
+  if (bill == base::string16::npos && ship == base::string16::npos)
     return kGenericAddress;
 
-  if (bill != string16::npos && ship == string16::npos)
+  if (bill != base::string16::npos && ship == base::string16::npos)
     return kBillingAddress;
 
-  if (bill == string16::npos && ship != string16::npos)
+  if (bill == base::string16::npos && ship != base::string16::npos)
     return kShippingAddress;
 
   if (bill > ship)

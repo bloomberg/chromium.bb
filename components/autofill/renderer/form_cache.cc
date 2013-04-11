@@ -191,7 +191,7 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
       if (!input_element->isEnabled())
         continue;
 
-      input_element->setValue(string16(), true);
+      input_element->setValue(base::string16(), true);
       input_element->setAutofilled(false);
 
       // Clearing the value in the focused node (above) can cause selection
@@ -203,7 +203,7 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
     } else if (IsSelectElement(control_element)) {
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 
-      std::map<const WebSelectElement, string16>::const_iterator
+      std::map<const WebSelectElement, base::string16>::const_iterator
           initial_value_iter = initial_select_values_.find(select_element);
       if (initial_value_iter != initial_select_values_.end() &&
           select_element.value() != initial_value_iter->second) {
@@ -247,7 +247,7 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
       // to |true| -- WebKit distinguishes between a "null" string (lhs) and an
       // "empty" string (rhs).  We don't want that distinction, so forcing to
       // string16.
-      string16 element_name = GetFormIdentifier(form_element);
+      base::string16 element_name = GetFormIdentifier(form_element);
       GURL action(form_element.document().completeURL(form_element.action()));
       if (element_name == form.data.name && action == form.data.action) {
         found_form = true;
@@ -271,14 +271,15 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement* element = &control_elements[i];
 
-    if (string16(element->nameForAutofill()) != form.data.fields[i].name) {
+    if (base::string16(element->nameForAutofill()) !=
+        form.data.fields[i].name) {
       // Keep things simple.  Don't show predictions for elements whose names
       // were modified between page load and the server's response to our query.
       continue;
     }
 
     std::string placeholder = form.fields[i].overall_type;
-    string16 title = l10n_util::GetStringFUTF16(
+    base::string16 title = l10n_util::GetStringFUTF16(
         IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
         UTF8ToUTF16(form.fields[i].heuristic_type),
         UTF8ToUTF16(form.fields[i].server_type),

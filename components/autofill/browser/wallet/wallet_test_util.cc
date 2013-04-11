@@ -49,7 +49,7 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
   return scoped_ptr<WalletItems::MaskedInstrument>(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         WalletItems::MaskedInstrument::UNKNOWN,
-                                        std::vector<string16>(),
+                                        std::vector<base::string16>(),
                                         ASCIIToUTF16("last_four_digits"),
                                         12,
                                         2012,

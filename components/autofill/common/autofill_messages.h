@@ -91,9 +91,9 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_GetAllForms)
 // Autofill suggestions.
 IPC_MESSAGE_ROUTED5(AutofillMsg_SuggestionsReturned,
                     int /* id of the request message */,
-                    std::vector<string16> /* names */,
-                    std::vector<string16> /* labels */,
-                    std::vector<string16> /* icons */,
+                    std::vector<base::string16> /* names */,
+                    std::vector<base::string16> /* labels */,
+                    std::vector<base::string16> /* icons */,
                     std::vector<int> /* unique_ids */)
 
 // Reply to the AutofillHostMsg_FillAutofillFormData message with the
@@ -128,16 +128,16 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_ClearPreviewedForm)
 
 // Sets the currently selected node's value.
 IPC_MESSAGE_ROUTED1(AutofillMsg_SetNodeText,
-                    string16 /* new node text */)
+                    base::string16 /* new node text */)
 
 // Sets the currently selected node's value to be the given data list value.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
-                    string16 /* accepted data list value */)
+                    base::string16 /* accepted data list value */)
 
 // Tells the renderer to populate the correct password fields with this
 // generated password.
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
-                    string16 /* generated_password */)
+                    base::string16 /* generated_password */)
 
 // Tells the renderer whether password generation is enabled.
 IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
@@ -145,7 +145,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
 
 // Tells the renderer that the password field has accept the suggestion.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
-                    string16 /* username value*/)
+                    base::string16 /* username value*/)
 
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".
@@ -242,8 +242,8 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
 // Instructs the browser to remove the specified Autocomplete entry from the
 // database.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_RemoveAutocompleteEntry,
-                    string16 /* field name */,
-                    string16 /* value */)
+                    base::string16 /* field name */,
+                    base::string16 /* value */)
 
 // Instructs the browser to show the Autofill dialog.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_ShowAutofillDialog)
@@ -278,11 +278,11 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
                     FormFieldData /* the form field */,
                     gfx::RectF /* input field bounds, window-relative */,
-                    std::vector<string16> /* suggestions */)
+                    std::vector<base::string16> /* suggestions */)
 
 // Inform browser of data list values for the curent field.
 IPC_MESSAGE_ROUTED4(AutofillHostMsg_SetDataList,
-                    std::vector<string16> /* values */,
-                    std::vector<string16> /* labels */,
-                    std::vector<string16> /* icons */,
+                    std::vector<base::string16> /* values */,
+                    std::vector<base::string16> /* labels */,
+                    std::vector<base::string16> /* icons */,
                     std::vector<int> /* unique ids */)

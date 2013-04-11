@@ -82,22 +82,22 @@ class WalletItems {
 
     // Returns a pair of strings that summarizes this CC,
     // suitable for display to the user.
-    string16 DisplayName() const;
-    string16 DisplayNameDetail() const;
+    base::string16 DisplayName() const;
+    base::string16 DisplayNameDetail() const;
 
     // Gets info that corresponds with |type|.
-    string16 GetInfo(AutofillFieldType type,
+    base::string16 GetInfo(AutofillFieldType type,
                      const std::string& app_locale) const;
 
     // Returns the display type of the and last four digits (e.g. Visa - 4444).
-    string16 TypeAndLastFourDigits() const;
+    base::string16 TypeAndLastFourDigits() const;
 
-    const string16& descriptive_name() const { return descriptive_name_; }
+    const base::string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
-    const std::vector<string16>& supported_currencies() const {
+    const std::vector<base::string16>& supported_currencies() const {
       return supported_currencies_;
     }
-    const string16& last_four_digits() const { return last_four_digits_; }
+    const base::string16& last_four_digits() const { return last_four_digits_; }
     int expiration_month() const { return expiration_month_; }
     int expiration_year() const { return expiration_year_; }
     const Address& address() const { return *address_; }
@@ -112,10 +112,10 @@ class WalletItems {
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateMaskedInstrument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
 
-    MaskedInstrument(const string16& descriptve_name,
+    MaskedInstrument(const base::string16& descriptve_name,
                      const Type& type,
-                     const std::vector<string16>& supported_currencies,
-                     const string16& last_four_digits,
+                     const std::vector<base::string16>& supported_currencies,
+                     const base::string16& last_four_digits,
                      int expiration_month,
                      int expiration_year,
                      scoped_ptr<Address> address,
@@ -124,16 +124,16 @@ class WalletItems {
 
     // A user-provided description of the instrument. For example, "Google Visa
     // Card".
-    string16 descriptive_name_;
+    base::string16 descriptive_name_;
 
     // The payment network of the instrument. For example, Visa.
     Type type_;
 
     // |supported_currencies_| are ISO 4217 currency codes, e.g. USD.
-    std::vector<string16> supported_currencies_;
+    std::vector<base::string16> supported_currencies_;
 
     // The last four digits of the primary account number of the instrument.
-    string16 last_four_digits_;
+    base::string16 last_four_digits_;
 
     // |expiration month_| should be 1-12.
     int expiration_month_;
@@ -172,7 +172,7 @@ class WalletItems {
 
     const std::string& id() { return id_; }
     const GURL& url() const { return url_; }
-    const string16& display_name() const { return display_name_; }
+    const base::string16& display_name() const { return display_name_; }
 
    private:
     friend class WalletItemsTest;
@@ -181,9 +181,9 @@ class WalletItems {
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentUrl);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentEmptyId);
     LegalDocument(const std::string& id,
-                  const string16& display_name);
+                  const base::string16& display_name);
     LegalDocument(const GURL& url,
-                  const string16& display_name);
+                  const base::string16& display_name);
 
     // Externalized Online Wallet id for the document, or an empty string for
     // documents not tracked by the server (such as the privacy policy).
@@ -191,7 +191,7 @@ class WalletItems {
     // The human-visitable URL that displays the document.
     GURL url_;
     // User displayable name for the document.
-    string16 display_name_;
+    base::string16 display_name_;
     DISALLOW_COPY_AND_ASSIGN(LegalDocument);
   };
 

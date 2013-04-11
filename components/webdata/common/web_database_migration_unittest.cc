@@ -39,7 +39,7 @@ namespace {
 
 void AutofillProfile31FromStatement(const sql::Statement& s,
                                     AutofillProfile* profile,
-                                    string16* label,
+                                    base::string16* label,
                                     int* unique_id,
                                     int64* date_modified) {
   DCHECK(profile);
@@ -84,7 +84,7 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
 
 void CreditCard31FromStatement(const sql::Statement& s,
                               CreditCard* credit_card,
-                              string16* label,
+                              base::string16* label,
                               int* unique_id,
                               std::string* encrypted_number,
                               int64* date_modified) {
@@ -715,11 +715,11 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
   // Verify pre-conditions. These are expectations for version 30 of the
   // database.
   AutofillProfile profile;
-  string16 profile_label;
+  base::string16 profile_label;
   int profile_unique_id = 0;
   int64 profile_date_modified = 0;
   CreditCard credit_card;
-  string16 cc_label;
+  base::string16 cc_label;
   int cc_unique_id = 0;
   std::string cc_number_encrypted;
   int64 cc_date_modified = 0;
@@ -835,7 +835,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
     ASSERT_TRUE(s2.Step());
 
     CreditCard credit_card_a;
-    string16 cc_label_a;
+    base::string16 cc_label_a;
     std::string cc_number_encrypted_a;
     int64 cc_date_modified_a = 0;
     EXPECT_NO_FATAL_FAILURE(CreditCard32FromStatement(s2,
@@ -970,9 +970,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // Dave Smith.
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s1.ColumnString(0));
-    EXPECT_EQ(string16(), s1.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("2 Main Street"), s1.ColumnString16(2));
-    EXPECT_EQ(string16(), s1.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
@@ -982,9 +982,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // Dave Smith (Part 2).
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s1.ColumnString(0));
-    EXPECT_EQ(string16(), s1.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("2 Main St"), s1.ColumnString16(2));
-    EXPECT_EQ(string16(), s1.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
@@ -997,9 +997,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 3 Main St.
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s1.ColumnString(0));
-    EXPECT_EQ(string16(), s1.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("3 Main St"), s1.ColumnString16(2));
-    EXPECT_EQ(string16(), s1.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
@@ -1018,7 +1018,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     ASSERT_TRUE(s2.Step());
     EXPECT_EQ("00580526-FF81-EE2A-0546-1AC593A32E2F", s2.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("John"), s2.ColumnString16(1));
-    EXPECT_EQ(string16(), s2.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(2));
     EXPECT_EQ(ASCIIToUTF16("Doe"), s2.ColumnString16(3));
 
     // John P. Doe.  Note same guid as above due to merging of multi-valued
@@ -1033,14 +1033,14 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     ASSERT_TRUE(s2.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s2.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("Dave"), s2.ColumnString16(1));
-    EXPECT_EQ(string16(), s2.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(2));
     EXPECT_EQ(ASCIIToUTF16("Smith"), s2.ColumnString16(3));
 
     // Dave Smith (Part 2).
     ASSERT_TRUE(s2.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s2.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("Dave"), s2.ColumnString16(1));
-    EXPECT_EQ(string16(), s2.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(2));
     EXPECT_EQ(ASCIIToUTF16("Smith"), s2.ColumnString16(3));
 
     // Alfred E Newman.
@@ -1049,9 +1049,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 3 Main St.
     ASSERT_TRUE(s2.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s2.ColumnString(0));
-    EXPECT_EQ(string16(), s2.ColumnString16(1));
-    EXPECT_EQ(string16(), s2.ColumnString16(2));
-    EXPECT_EQ(string16(), s2.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s2.ColumnString16(3));
 
     // Should be all.
     EXPECT_FALSE(s2.Step());
@@ -1073,12 +1073,12 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 2 Main Street.
     ASSERT_TRUE(s3.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s3.ColumnString(0));
-    EXPECT_EQ(string16(), s3.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s3.ColumnString16(1));
 
     // 2 Main St.
     ASSERT_TRUE(s3.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s3.ColumnString(0));
-    EXPECT_EQ(string16(), s3.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s3.ColumnString16(1));
 
     // Alfred E Newman.
     // Gets culled during migration from 35 to 36 due to incomplete address.
@@ -1086,7 +1086,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 3 Main St.
     ASSERT_TRUE(s3.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s3.ColumnString(0));
-    EXPECT_EQ(string16(), s3.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s3.ColumnString16(1));
 
     // Should be all.
     EXPECT_FALSE(s3.Step());
@@ -1117,7 +1117,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
     EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(string16(), s4.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s4.ColumnString16(2));
 
     // 2 Main Street fax.
     // Gets culled after fax type removed.
@@ -1126,7 +1126,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s4.ColumnString(0));
     EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(string16(), s4.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s4.ColumnString16(2));
 
     // 2 Main St fax.
     // Gets culled after fax type removed.
@@ -1137,7 +1137,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
     EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(string16(), s4.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s4.ColumnString16(2));
 
     // 2 Main St fax.
     // Gets culled after fax type removed.

@@ -77,7 +77,7 @@ TEST(FormStructureTest, FieldCount) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -119,7 +119,7 @@ TEST(FormStructureTest, AutofillCount) {
   field.form_control_type = "select-one";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -183,7 +183,7 @@ TEST(FormStructureTest, IsAutofillable) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -376,7 +376,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   field.name = ASCIIToUTF16("zipcode");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -417,17 +417,17 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field1");
   field.autocomplete_attribute = "given-name";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field2");
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field3");
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
@@ -455,17 +455,17 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field1");
   field.autocomplete_attribute = "tel-local";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field2");
   field.autocomplete_attribute = "tel-local-prefix";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("field3");
   field.autocomplete_attribute = "tel-local-suffix";
   form.fields.push_back(field);
@@ -702,10 +702,10 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   field.name = ASCIIToUTF16("one");
   field.autocomplete_attribute = "street-address";
   form.fields.push_back(field);
-  field.name = string16();
+  field.name = base::string16();
   field.autocomplete_attribute = "section-foo email";
   form.fields.push_back(field);
-  field.name = string16();
+  field.name = base::string16();
   field.autocomplete_attribute = "name";
   form.fields.push_back(field);
   field.name = ASCIIToUTF16("two");
@@ -772,7 +772,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   field.name = ASCIIToUTF16("BillTo.Phone");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -839,7 +839,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
   field.name = ASCIIToUTF16("Home.PostalCode");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.value = ASCIIToUTF16("continue");
   field.form_control_type = "submit";
@@ -879,34 +879,34 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("First Name");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Last Name");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Email");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Phone");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Address");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Address");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Zip code");
-  field.name = string16();
+  field.name = base::string16();
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -964,7 +964,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   field.name = ASCIIToUTF16("verification");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -1025,7 +1025,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   field.name = ASCIIToUTF16("verification");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
@@ -1448,7 +1448,7 @@ TEST(FormStructureTest, CVCCodeClash) {
   field.name = ASCIIToUTF16("ccexpiresmonth");
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("ccexpiresyear");
   form.fields.push_back(field);
 
@@ -2208,7 +2208,7 @@ TEST(FormStructureTest, ToFormData) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);

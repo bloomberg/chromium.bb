@@ -50,7 +50,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
     result += "\n";
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
       AutofillFieldType type = kProfileFieldTypes[j];
-      std::vector<string16> values;
+      std::vector<base::string16> values;
       profiles[i]->GetRawMultiInfo(type, &values);
       for (size_t k = 0; k < values.size(); ++k) {
         result += AutofillType::FieldTypeToString(type);
@@ -173,8 +173,9 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       // Add a field to the current profile.
       size_t separator_pos = line.find(kFieldSeparator);
       ASSERT_NE(std::string::npos, separator_pos);
-      string16 field_type = UTF8ToUTF16(line.substr(0, separator_pos));
-      string16 value = UTF8ToUTF16(line.substr(separator_pos + kFieldOffset));
+      base::string16 field_type = UTF8ToUTF16(line.substr(0, separator_pos));
+      base::string16 value =
+          UTF8ToUTF16(line.substr(separator_pos + kFieldOffset));
 
       FormFieldData field;
       field.label = field_type;

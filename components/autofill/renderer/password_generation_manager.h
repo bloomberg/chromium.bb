@@ -60,7 +60,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
 
   // Message handlers.
   void OnFormNotBlacklisted(const content::PasswordForm& form);
-  void OnPasswordAccepted(const string16& password);
+  void OnPasswordAccepted(const base::string16& password);
   void OnPasswordGenerationEnabled(bool enabled);
 
   // Helper function to decide whether we should show password generation icon.

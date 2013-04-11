@@ -138,7 +138,7 @@ TEST_F(AutofillTableTest, Autofill) {
   base::Time now = base::Time::Now();
   base::TimeDelta two_seconds = base::TimeDelta::FromSeconds(2);
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
-  std::vector<string16> v;
+  std::vector<base::string16> v;
   for (int i = 0; i < 5; i++) {
     field.value = ASCIIToUTF16("Clark Kent");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
@@ -183,7 +183,7 @@ TEST_F(AutofillTableTest, Autofill) {
   // no matter what they start with.  The order that the names occur in the list
   // should be decreasing order by count.
   EXPECT_TRUE(table_->GetFormValuesForElementName(
-      ASCIIToUTF16("Name"), string16(), &v, 6));
+      ASCIIToUTF16("Name"), base::string16(), &v, 6));
   EXPECT_EQ(3U, v.size());
   if (v.size() == 3) {
     EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0]);
@@ -194,7 +194,7 @@ TEST_F(AutofillTableTest, Autofill) {
   // If we query again limiting the list size to 1, we should only get the most
   // frequent entry.
   EXPECT_TRUE(table_->GetFormValuesForElementName(
-      ASCIIToUTF16("Name"), string16(), &v, 1));
+      ASCIIToUTF16("Name"), base::string16(), &v, 1));
   EXPECT_EQ(1U, v.size());
   if (v.size() == 1) {
     EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0]);
@@ -240,13 +240,13 @@ TEST_F(AutofillTableTest, Autofill) {
   EXPECT_EQ(0, count);
 
   EXPECT_TRUE(table_->GetFormValuesForElementName(
-      ASCIIToUTF16("Name"), string16(), &v, 6));
+      ASCIIToUTF16("Name"), base::string16(), &v, 6));
   EXPECT_EQ(0U, v.size());
 
   // Now add some values with empty strings.
-  const string16 kValue = ASCIIToUTF16("  toto   ");
+  const base::string16 kValue = ASCIIToUTF16("  toto   ");
   field.name = ASCIIToUTF16("blank");
-  field.value = string16();
+  field.value = base::string16();
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
   field.name = ASCIIToUTF16("blank");
   field.value = ASCIIToUTF16(" ");
@@ -262,7 +262,7 @@ TEST_F(AutofillTableTest, Autofill) {
   // values.
   v.clear();
   EXPECT_TRUE(table_->GetFormValuesForElementName(
-      ASCIIToUTF16("blank"), string16(), &v, 10));
+      ASCIIToUTF16("blank"), base::string16(), &v, 10));
   EXPECT_EQ(4U, v.size());
 
   // Now we'll check that ClearAutofillEmptyValueElements() works as expected.
@@ -270,7 +270,7 @@ TEST_F(AutofillTableTest, Autofill) {
 
   v.clear();
   EXPECT_TRUE(table_->GetFormValuesForElementName(
-      ASCIIToUTF16("blank"), string16(), &v, 10));
+      ASCIIToUTF16("blank"), base::string16(), &v, 10));
   ASSERT_EQ(1U, v.size());
 
   EXPECT_EQ(kValue, v[0]);
@@ -616,9 +616,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
-  const string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
-  std::vector<string16> set_values;
+  const base::string16 kJohnDoe(ASCIIToUTF16("John Doe"));
+  const base::string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
+  std::vector<base::string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
   p.SetRawMultiInfo(NAME_FULL, set_values);
@@ -632,7 +632,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   delete db_profile;
 
   // Update the values.
-  const string16 kNoOne(ASCIIToUTF16("No One"));
+  const base::string16 kNoOne(ASCIIToUTF16("No One"));
   set_values[1] = kNoOne;
   p.SetRawMultiInfo(NAME_FULL, set_values);
   EXPECT_TRUE(table_->UpdateAutofillProfileMulti(p));
@@ -648,15 +648,15 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   ASSERT_TRUE(table_->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetRawInfo(NAME_FULL));
+  EXPECT_EQ(base::string16(), db_profile->GetRawInfo(NAME_FULL));
   delete db_profile;
 }
 
 TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
-  const string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
-  std::vector<string16> set_values;
+  const base::string16 kJohnDoe(ASCIIToUTF16("John Doe"));
+  const base::string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
+  std::vector<base::string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
   p.SetRawMultiInfo(NAME_FULL, set_values);
@@ -669,7 +669,7 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
-  const string16 kNoOne(ASCIIToUTF16("No One"));
+  const base::string16 kNoOne(ASCIIToUTF16("No One"));
   set_values.resize(1);
   set_values[0] = kNoOne;
   p.SetRawMultiInfo(NAME_FULL, set_values);
@@ -687,9 +687,9 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
-  const string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
-  std::vector<string16> set_values;
+  const base::string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
+  const base::string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
+  std::vector<base::string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
   p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
@@ -703,7 +703,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   delete db_profile;
 
   // Update the values.
-  const string16 kNoOne(ASCIIToUTF16("no@one.com"));
+  const base::string16 kNoOne(ASCIIToUTF16("no@one.com"));
   set_values[1] = kNoOne;
   p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
   EXPECT_TRUE(table_->UpdateAutofillProfileMulti(p));
@@ -719,15 +719,15 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   ASSERT_TRUE(table_->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(base::string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   AutofillProfile p;
-  const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
-  const string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
-  std::vector<string16> set_values;
+  const base::string16 kJohnDoe(ASCIIToUTF16("4151112222"));
+  const base::string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
+  std::vector<base::string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
   p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
@@ -741,7 +741,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   delete db_profile;
 
   // Update the values.
-  const string16 kNoOne(ASCIIToUTF16("4151110000"));
+  const base::string16 kNoOne(ASCIIToUTF16("4151110000"));
   set_values[1] = kNoOne;
   p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
   EXPECT_TRUE(table_->UpdateAutofillProfileMulti(p));
@@ -757,7 +757,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   ASSERT_TRUE(table_->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(base::string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
 

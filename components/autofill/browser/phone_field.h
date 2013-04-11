@@ -77,7 +77,7 @@ class PhoneField : public FormField {
   PhoneField();
 
   // Returns the regular expression string correspoding to |regex_id|
-  static string16 GetRegExp(RegexType regex_id);
+  static base::string16 GetRegExp(RegexType regex_id);
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.

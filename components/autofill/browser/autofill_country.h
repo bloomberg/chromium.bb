@@ -56,13 +56,13 @@ class AutofillCountry {
   // Returns the country code corresponding to |country|, which should be a
   // country code or country name localized to |locale|.  This function can
   // be expensive so use judiciously.
-  static const std::string GetCountryCode(const string16& country,
+  static const std::string GetCountryCode(const base::string16& country,
                                           const std::string& locale);
 
   const std::string country_code() const { return country_code_; }
-  const string16 name() const { return name_; }
-  const string16 postal_code_label() const { return postal_code_label_; }
-  const string16 state_label() const { return state_label_; }
+  const base::string16 name() const { return name_; }
+  const base::string16 postal_code_label() const { return postal_code_label_; }
+  const base::string16 state_label() const { return state_label_; }
 
   // City is expected in a complete address for this country.
   bool requires_city() const {
@@ -81,21 +81,21 @@ class AutofillCountry {
 
  private:
   AutofillCountry(const std::string& country_code,
-                  const string16& name,
-                  const string16& postal_code_label,
-                  const string16& state_label);
+                  const base::string16& name,
+                  const base::string16& postal_code_label,
+                  const base::string16& state_label);
 
   // The two-letter ISO-3166 country code.
   std::string country_code_;
 
   // The country's name, localized to the app locale.
-  string16 name_;
+  base::string16 name_;
 
   // The localized label for the postal code (or zip code) field.
-  string16 postal_code_label_;
+  base::string16 postal_code_label_;
 
   // The localized label for the state (or province, district, etc.) field.
-  string16 state_label_;
+  base::string16 state_label_;
 
   // Address requirement field codes for the country.
   AddressRequiredFields address_required_fields_;

@@ -207,7 +207,7 @@ class FormStructure {
   size_t active_field_count() const;
 
   // The name of the form.
-  string16 form_name_;
+  base::string16 form_name_;
 
   // The source URL.
   GURL source_url_;

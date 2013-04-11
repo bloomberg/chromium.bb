@@ -19,7 +19,8 @@ const int64 kExpirationPeriodInDays = 60;
 
 AutofillKey::AutofillKey() {}
 
-AutofillKey::AutofillKey(const string16& name, const string16& value)
+AutofillKey::AutofillKey(const base::string16& name,
+                         const base::string16& value)
     : name_(name),
       value_(value) {
 }

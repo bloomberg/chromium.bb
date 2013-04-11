@@ -215,7 +215,8 @@ void PasswordGenerationManager::OnFormNotBlacklisted(
   MaybeShowIcon();
 }
 
-void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
+void PasswordGenerationManager::OnPasswordAccepted(
+    const base::string16& password) {
   for (std::vector<WebKit::WebInputElement>::iterator it = passwords_.begin();
        it != passwords_.end(); ++it) {
     it->setValue(password);

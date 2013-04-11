@@ -21,7 +21,7 @@
 // associated with this form. This can happen, for example, if action URI's
 // of the observed form and our saved representation don't match up.
 struct PasswordFormFillData {
-  typedef std::map<string16, string16> LoginCollection;
+  typedef std::map<base::string16, base::string16> LoginCollection;
 
   FormData basic_data;
   LoginCollection additional_logins;

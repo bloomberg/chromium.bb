@@ -49,6 +49,6 @@ class AutofillType {
 
 typedef AutofillType::FieldTypeGroup FieldTypeGroup;
 typedef std::set<AutofillFieldType> FieldTypeSet;
-typedef std::map<string16, AutofillFieldType> FieldTypeMap;
+typedef std::map<base::string16, AutofillFieldType> FieldTypeMap;
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_TYPE_H_

@@ -33,7 +33,7 @@ TEST(Instrument, LastFourDigits) {
 }
 
 TEST(Instrument, NoPrimaryAccountNumberIsInvalid) {
-  Instrument instrument(string16(),
+  Instrument instrument(base::string16(),
                         ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
@@ -78,7 +78,7 @@ TEST(Instrument, PrimaryAccountNumberNotPassingLuhnIsInvalid) {
 
 TEST(Instrument, NoCardVerificationNumberIsInvalid) {
   Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
-                        string16(),
+                        base::string16(),
                         12,
                         2015,
                         Instrument::VISA,

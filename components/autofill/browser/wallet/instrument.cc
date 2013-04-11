@@ -5,8 +5,8 @@
 #include "components/autofill/browser/wallet/instrument.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_country.h"
@@ -57,7 +57,7 @@ std::string FormOfPaymentToString(Instrument::FormOfPayment form_of_payment) {
 }  // namespace
 
 Instrument::Instrument(const CreditCard& card,
-                       const string16& card_verification_number,
+                       const base::string16& card_verification_number,
                        const AutofillProfile& profile)
     : primary_account_number_(card.GetRawInfo(CREDIT_CARD_NUMBER)),
       card_verification_number_(card_verification_number),
@@ -68,8 +68,8 @@ Instrument::Instrument(const CreditCard& card,
   Init();
 }
 
-Instrument::Instrument(const string16& primary_account_number,
-                       const string16& card_verification_number,
+Instrument::Instrument(const base::string16& primary_account_number,
+                       const base::string16& card_verification_number,
                        int expiration_month,
                        int expiration_year,
                        FormOfPayment form_of_payment,

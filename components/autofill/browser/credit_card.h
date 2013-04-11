@@ -26,23 +26,23 @@ class CreditCard : public FormGroup {
   virtual ~CreditCard();
 
   // Returns a version of |number| that has any separator characters removed.
-  static const string16 StripSeparators(const string16& number);
+  static const base::string16 StripSeparators(const base::string16& number);
 
   // The user-visible type of the card, e.g. 'Mastercard'.
-  static string16 TypeForDisplay(const std::string& type);
+  static base::string16 TypeForDisplay(const std::string& type);
 
   // FormGroup implementation:
   virtual std::string GetGUID() const OVERRIDE;
-  virtual void GetMatchingTypes(const string16& text,
+  virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
-  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
-                          const string16& value) OVERRIDE;
-  virtual string16 GetInfo(AutofillFieldType type,
-                           const std::string& app_locale) const OVERRIDE;
+                          const base::string16& value) OVERRIDE;
+  virtual base::string16 GetInfo(AutofillFieldType type,
+                                 const std::string& app_locale) const OVERRIDE;
   virtual bool SetInfo(AutofillFieldType type,
-                       const string16& value,
+                       const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
@@ -50,19 +50,19 @@ class CreditCard : public FormGroup {
                              FormFieldData* field_data) const OVERRIDE;
 
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
-  const string16 Label() const;
+  const base::string16 Label() const;
 
   // Special method to set value for HTML5 month input type.
-  void SetInfoForMonthInputType(const string16& value);
+  void SetInfoForMonthInputType(const base::string16& value);
 
   // The number altered for display, for example: ******1234
-  string16 ObfuscatedNumber() const;
+  base::string16 ObfuscatedNumber() const;
   // The last four digits of the credit card number.
-  string16 LastFourDigits() const;
+  base::string16 LastFourDigits() const;
   // The user-visible type of the card, e.g. 'Mastercard'.
-  string16 TypeForDisplay() const;
+  base::string16 TypeForDisplay() const;
   // A label for this credit card formatted as 'Cardname - 2345'.
-  string16 TypeAndLastFourDigits() const;
+  base::string16 TypeAndLastFourDigits() const;
   // The ResourceBundle ID for the appropriate credit card image.
   int IconResourceId() const;
 
@@ -104,7 +104,7 @@ class CreditCard : public FormGroup {
   bool IsComplete() const;
 
   // Returns the credit card number.
-  const string16& number() const { return number_; }
+  const base::string16& number() const { return number_; }
 
  private:
   // FormGroup:
@@ -113,27 +113,27 @@ class CreditCard : public FormGroup {
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
   int Expiration2DigitYear() const { return expiration_year_ % 100; }
-  string16 ExpirationMonthAsString() const;
-  string16 Expiration4DigitYearAsString() const;
-  string16 Expiration2DigitYearAsString() const;
+  base::string16 ExpirationMonthAsString() const;
+  base::string16 Expiration4DigitYearAsString() const;
+  base::string16 Expiration2DigitYearAsString() const;
 
   // Sets |expiration_month_| to the integer conversion of |text|.
-  void SetExpirationMonthFromString(const string16& text,
+  void SetExpirationMonthFromString(const base::string16& text,
                                     const std::string& app_locale);
 
   // Sets |expiration_year_| to the integer conversion of |text|.
-  void SetExpirationYearFromString(const string16& text);
+  void SetExpirationYearFromString(const base::string16& text);
 
   // Sets |number_| to |number| and computes the appropriate card |type_|.
-  void SetNumber(const string16& number);
+  void SetNumber(const base::string16& number);
 
   // These setters verify that the month and year are within appropriate
   // ranges.
   void SetExpirationMonth(int expiration_month);
   void SetExpirationYear(int expiration_year);
 
-  string16 number_;  // The credit card number.
-  string16 name_on_card_;  // The cardholder's name.
+  base::string16 number_;  // The credit card number.
+  base::string16 name_on_card_;  // The cardholder's name.
   std::string type_;  // The type of the card.
 
   // These members are zero if not present.

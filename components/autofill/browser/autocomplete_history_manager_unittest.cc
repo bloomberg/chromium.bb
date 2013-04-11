@@ -215,9 +215,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,
-                    const std::vector<string16>& autofill_values,
-                    const std::vector<string16>& autofill_labels,
-                    const std::vector<string16>& autofill_icons,
+                    const std::vector<base::string16>& autofill_values,
+                    const std::vector<base::string16>& autofill_labels,
+                    const std::vector<base::string16>& autofill_icons,
                     const std::vector<int>& autofill_unique_ids));
 
  private:
@@ -230,7 +230,7 @@ class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
       : AutocompleteHistoryManager(web_contents) {}
 
   // Increase visibility for testing.
-  void SendSuggestions(const std::vector<string16>* suggestions) {
+  void SendSuggestions(const std::vector<base::string16>* suggestions) {
     AutocompleteHistoryManager::SendSuggestions(suggestions);
   }
 

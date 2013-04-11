@@ -5,7 +5,7 @@
 #include "components/autofill/browser/wallet/wallet_items.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -83,10 +83,10 @@ WalletItems::MaskedInstrument::Status
 }  // anonymous namespace
 
 WalletItems::MaskedInstrument::MaskedInstrument(
-    const string16& descriptive_name,
+    const base::string16& descriptive_name,
     const WalletItems::MaskedInstrument::Type& type,
-    const std::vector<string16>& supported_currencies,
-    const string16& last_four_digits,
+    const std::vector<base::string16>& supported_currencies,
+    const base::string16& last_four_digits,
     int expiration_month,
     int expiration_year,
     scoped_ptr<Address> address,
@@ -118,7 +118,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  string16 last_four_digits;
+  base::string16 last_four_digits;
   if (!dictionary.GetString("last_four_digits", &last_four_digits)) {
     DLOG(ERROR) << "Response from Google Wallet missing last four digits";
     return scoped_ptr<MaskedInstrument>();
@@ -151,11 +151,11 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  std::vector<string16> supported_currencies;
+  std::vector<base::string16> supported_currencies;
   const ListValue* supported_currency_list;
   if (dictionary.GetList("supported_currency", &supported_currency_list)) {
     for (size_t i = 0; i < supported_currency_list->GetSize(); ++i) {
-      string16 currency;
+      base::string16 currency;
       if (supported_currency_list->GetString(i, &currency))
         supported_currencies.push_back(currency);
     }
@@ -171,7 +171,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
   if (!dictionary.GetInteger("expiration_year", &expiration_year))
     DVLOG(1) << "Response from Google Wallet missing expiration year";
 
-  string16 descriptive_name;
+  base::string16 descriptive_name;
   if (!dictionary.GetString("descriptive_name", &descriptive_name))
     DVLOG(1) << "Response from Google Wallet missing descriptive name";
 
@@ -242,7 +242,7 @@ const WalletItems::MaskedInstrument* WalletItems::GetInstrumentById(
   return NULL;
 }
 
-string16 WalletItems::MaskedInstrument::DisplayName() const {
+base::string16 WalletItems::MaskedInstrument::DisplayName() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
   return descriptive_name();
@@ -251,17 +251,17 @@ string16 WalletItems::MaskedInstrument::DisplayName() const {
 #endif
 }
 
-string16 WalletItems::MaskedInstrument::DisplayNameDetail() const {
+base::string16 WalletItems::MaskedInstrument::DisplayNameDetail() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
   return address().DisplayName();
 #else
-  return string16();
+  return base::string16();
 #endif
 }
 
-string16 WalletItems::MaskedInstrument::TypeAndLastFourDigits() const {
-  string16 display_type;
+base::string16 WalletItems::MaskedInstrument::TypeAndLastFourDigits() const {
+  base::string16 display_type;
 
   if (type_ == AMEX)
     display_type = CreditCard::TypeForDisplay(kAmericanExpressCard);
@@ -313,7 +313,7 @@ const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
   return ResourceBundle::GetSharedInstance().GetImageNamed(idr);
 }
 
-string16 WalletItems::MaskedInstrument::GetInfo(
+base::string16 WalletItems::MaskedInstrument::GetInfo(
     AutofillFieldType type,
     const std::string& app_locale) const {
   if (AutofillType(type).group() != AutofillType::CREDIT_CARD)
@@ -337,7 +337,7 @@ string16 WalletItems::MaskedInstrument::GetInfo(
       NOTREACHED();
   }
 
-  return string16();
+  return base::string16();
 }
 
 WalletItems::LegalDocument::~LegalDocument() {}
@@ -351,7 +351,7 @@ scoped_ptr<WalletItems::LegalDocument>
     return scoped_ptr<LegalDocument>();
   }
 
-  string16 display_name;
+  base::string16 display_name;
   if (!dictionary.GetString("display_name", &display_name)) {
     DLOG(ERROR) << "Response from Google Wallet missing display name";
     return scoped_ptr<LegalDocument>();
@@ -378,13 +378,13 @@ bool WalletItems::LegalDocument::operator!=(const LegalDocument& other) const {
 }
 
 WalletItems::LegalDocument::LegalDocument(const std::string& id,
-                                          const string16& display_name)
+                                          const base::string16& display_name)
     : id_(id),
       url_(kLegalDocumentUrl + id),
       display_name_(display_name) {}
 
 WalletItems::LegalDocument::LegalDocument(const GURL& url,
-                                          const string16& display_name)
+                                          const base::string16& display_name)
     : url_(url),
       display_name_(display_name) {}
 

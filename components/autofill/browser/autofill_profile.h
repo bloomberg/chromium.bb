@@ -39,16 +39,16 @@ class AutofillProfile : public FormGroup {
 
   // FormGroup:
   virtual std::string GetGUID() const OVERRIDE;
-  virtual void GetMatchingTypes(const string16& text,
+  virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
-  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
-                          const string16& value) OVERRIDE;
-  virtual string16 GetInfo(AutofillFieldType type,
+                          const base::string16& value) OVERRIDE;
+  virtual base::string16 GetInfo(AutofillFieldType type,
                            const std::string& app_locale) const OVERRIDE;
   virtual bool SetInfo(AutofillFieldType type,
-                       const string16& value,
+                       const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
@@ -57,12 +57,12 @@ class AutofillProfile : public FormGroup {
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetRawMultiInfo(AutofillFieldType type,
-                       const std::vector<string16>& values);
+                       const std::vector<base::string16>& values);
   void GetRawMultiInfo(AutofillFieldType type,
-                       std::vector<string16>* values) const;
+                       std::vector<base::string16>* values) const;
   void GetMultiInfo(AutofillFieldType type,
                     const std::string& app_locale,
-                    std::vector<string16>* values) const;
+                    std::vector<base::string16>* values) const;
 
   // Set |field_data|'s value for phone number based on contents of |this|.
   // The |field| specifies the type of the phone and whether this is a
@@ -76,7 +76,7 @@ class AutofillProfile : public FormGroup {
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
-  const string16 Label() const;
+  const base::string16 Label() const;
 
   // This guid is the primary identifier for |AutofillProfile| objects.
   // TODO(estade): remove this and just use GetGUID(). |guid_| can probably
@@ -102,7 +102,7 @@ class AutofillProfile : public FormGroup {
   // Returns concatenation of full name and address line 1.  This acts as the
   // basis of comparison for new values that are submitted through forms to
   // aid with correct aggregation of new data.
-  const string16 PrimaryValue() const;
+  const base::string16 PrimaryValue() const;
 
   // Returns true if the data in this AutofillProfile is a subset of the data in
   // |profile|.
@@ -143,7 +143,7 @@ class AutofillProfile : public FormGroup {
       const std::vector<AutofillFieldType>* suggested_fields,
       AutofillFieldType excluded_field,
       size_t minimal_fields_shown,
-      std::vector<string16>* created_labels);
+      std::vector<base::string16>* created_labels);
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
@@ -158,20 +158,20 @@ class AutofillProfile : public FormGroup {
   // canonicalized according to the given |app_locale|, if appropriate.
   void GetMultiInfoImpl(AutofillFieldType type,
                         const std::string& app_locale,
-                        std::vector<string16>* values) const;
+                        std::vector<base::string16>* values) const;
 
   // Checks if the |phone| is in the |existing_phones| using fuzzy matching:
   // for example, "1-800-FLOWERS", "18003569377", "(800)356-9377" and "356-9377"
   // are considered the same.
   // Adds the |phone| to the |existing_phones| if not already there.
-  void AddPhoneIfUnique(const string16& phone,
+  void AddPhoneIfUnique(const base::string16& phone,
                         const std::string& app_locale,
-                        std::vector<string16>* existing_phones);
+                        std::vector<base::string16>* existing_phones);
 
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
-  string16 ConstructInferredLabel(
+  base::string16 ConstructInferredLabel(
       const std::vector<AutofillFieldType>& label_fields,
       size_t num_fields_to_include) const;
 
@@ -185,7 +185,7 @@ class AutofillProfile : public FormGroup {
       const std::list<size_t>& indices,
       const std::vector<AutofillFieldType>& fields,
       size_t num_fields_to_include,
-      std::vector<string16>* created_labels);
+      std::vector<base::string16>* created_labels);
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
@@ -194,7 +194,7 @@ class AutofillProfile : public FormGroup {
   FormGroup* MutableFormGroupForType(AutofillFieldType type);
 
   // The label presented to the user when selecting a profile.
-  string16 label_;
+  base::string16 label_;
 
   // The guid of this profile.
   std::string guid_;

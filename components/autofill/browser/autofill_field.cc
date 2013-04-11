@@ -32,7 +32,7 @@ AutofillField::AutofillField()
 }
 
 AutofillField::AutofillField(const FormFieldData& field,
-                             const string16& unique_name)
+                             const base::string16& unique_name)
     : FormFieldData(field),
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),

@@ -15,20 +15,20 @@
 class AutofillKey {
  public:
   AutofillKey();
-  AutofillKey(const string16& name, const string16& value);
+  AutofillKey(const base::string16& name, const base::string16& value);
   AutofillKey(const char* name, const char* value);
   AutofillKey(const AutofillKey& key);
   virtual ~AutofillKey();
 
-  const string16& name() const { return name_; }
-  const string16& value() const { return value_; }
+  const base::string16& name() const { return name_; }
+  const base::string16& value() const { return value_; }
 
   bool operator==(const AutofillKey& key) const;
   bool operator<(const AutofillKey& key) const;
 
  private:
-  string16 name_;
-  string16 value_;
+  base::string16 name_;
+  base::string16 value_;
 };
 
 class AutofillEntry {

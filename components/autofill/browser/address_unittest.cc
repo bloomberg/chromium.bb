@@ -30,11 +30,11 @@ class AddressTest : public testing::Test {
 // Test that country codes are properly decoded as country names.
 TEST_F(AddressTest, GetCountry) {
   Address address;
-  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   // Make sure that nothing breaks when the country code is missing.
-  string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ(string16(), country);
+  base::string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
+  EXPECT_EQ(base::string16(), country);
 
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
@@ -48,11 +48,11 @@ TEST_F(AddressTest, GetCountry) {
 // Test that we properly detect country codes appropriate for each country.
 TEST_F(AddressTest, SetCountry) {
   Address address;
-  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   // Test basic conversion.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"), "en-US");
-  string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
+  base::string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
   EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
@@ -77,8 +77,8 @@ TEST_F(AddressTest, SetCountry) {
   // Test that we ignore unknown countries.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Unknown"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
-  EXPECT_EQ(string16(), country);
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::string16(), country);
 }
 
 // Test that we properly match typed values to stored country data.
@@ -114,8 +114,8 @@ TEST_F(AddressTest, IsCountry) {
   }
 
   // Make sure that garbage values don't match when the country code is empty.
-  address.SetRawInfo(ADDRESS_HOME_COUNTRY, string16());
-  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, base::string16());
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   FieldTypeSet matching_types;
   address.GetMatchingTypes(ASCIIToUTF16("Garbage"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());

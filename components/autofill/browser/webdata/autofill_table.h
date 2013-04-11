@@ -142,9 +142,9 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves a vector of all values which have been recorded in the autofill
   // table as the value in a form element with name |name| and which start with
   // |prefix|.  The comparison of the prefix is case insensitive.
-  bool GetFormValuesForElementName(const string16& name,
-                                   const string16& prefix,
-                                   std::vector<string16>* values,
+  bool GetFormValuesForElementName(const base::string16& name,
+                                   const base::string16& prefix,
+                                   std::vector<base::string16>* values,
                                    int limit);
 
   // Removes rows from autofill_dates if they were created on or after
@@ -206,14 +206,15 @@ class AutofillTable : public WebDatabaseTable {
   bool RemoveFormElementForID(int64 pair_id);
 
   // Removes row from the autofill tables for the given |name| |value| pair.
-  virtual bool RemoveFormElement(const string16& name, const string16& value);
+  virtual bool RemoveFormElement(const base::string16& name,
+                                 const base::string16& value);
 
   // Retrieves all of the entries in the autofill table.
   virtual bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
 
   // Retrieves a single entry from the autofill table.
-  virtual bool GetAutofillTimestamps(const string16& name,
-                                     const string16& value,
+  virtual bool GetAutofillTimestamps(const base::string16& name,
+                                     const base::string16& value,
                                      std::vector<base::Time>* timestamps);
 
   // Replaces existing autofill entries with the entries supplied in

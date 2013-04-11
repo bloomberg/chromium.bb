@@ -104,15 +104,16 @@ bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
 //  * CombineAndCollapseWhitespace("foo   ", "   bar", false) -> "foo bar"
 //  * CombineAndCollapseWhitespace(" foo", "bar ", false)     -> " foobar "
 //  * CombineAndCollapseWhitespace(" foo", "bar ", true)      -> " foo bar "
-const string16 CombineAndCollapseWhitespace(const string16& prefix,
-                                            const string16& suffix,
-                                            bool force_whitespace) {
-  string16 prefix_trimmed;
+const base::string16 CombineAndCollapseWhitespace(
+    const base::string16& prefix,
+    const base::string16& suffix,
+    bool force_whitespace) {
+  base::string16 prefix_trimmed;
   TrimPositions prefix_trailing_whitespace =
       TrimWhitespace(prefix, TRIM_TRAILING, &prefix_trimmed);
 
   // Recursively compute the children's text.
-  string16 suffix_trimmed;
+  base::string16 suffix_trimmed;
   TrimPositions suffix_leading_whitespace =
       TrimWhitespace(suffix, TRIM_LEADING, &suffix_trimmed);
 
@@ -126,9 +127,9 @@ const string16 CombineAndCollapseWhitespace(const string16& prefix,
 
 // This is a helper function for the FindChildText() function (see below).
 // Search depth is limited with the |depth| parameter.
-string16 FindChildTextInner(const WebNode& node, int depth) {
+base::string16 FindChildTextInner(const WebNode& node, int depth) {
   if (depth <= 0 || node.isNull())
-    return string16();
+    return base::string16();
 
   // Skip over comments.
   if (node.nodeType() == WebNode::CommentNode)
@@ -136,7 +137,7 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
 
   if (node.nodeType() != WebNode::ElementNode &&
       node.nodeType() != WebNode::TextNode)
-    return string16();
+    return base::string16();
 
   // Ignore elements known not to contain inferable labels.
   if (node.isElementNode()) {
@@ -146,22 +147,23 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
         IsNoScriptElement(element) ||
         (element.isFormControlElement() &&
          IsAutofillableElement(element.toConst<WebFormControlElement>()))) {
-      return string16();
+      return base::string16();
     }
   }
 
   // Extract the text exactly at this node.
-  string16 node_text = node.nodeValue();
+  base::string16 node_text = node.nodeValue();
 
   // Recursively compute the children's text.
   // Preserve inter-element whitespace separation.
-  string16 child_text = FindChildTextInner(node.firstChild(), depth - 1);
+  base::string16 child_text = FindChildTextInner(node.firstChild(), depth - 1);
   bool add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
   node_text = CombineAndCollapseWhitespace(node_text, child_text, add_space);
 
   // Recursively compute the siblings' text.
   // Again, preserve inter-element whitespace separation.
-  string16 sibling_text = FindChildTextInner(node.nextSibling(), depth - 1);
+  base::string16 sibling_text =
+      FindChildTextInner(node.nextSibling(), depth - 1);
   add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
   node_text = CombineAndCollapseWhitespace(node_text, sibling_text, add_space);
 
@@ -174,14 +176,14 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
 // used when the structure is not directly known.  However, unlike with
 // |innerText()|, the search depth and breadth are limited to a fixed threshold.
 // Whitespace is trimmed from text accumulated at descendant nodes.
-string16 FindChildText(const WebNode& node) {
+base::string16 FindChildText(const WebNode& node) {
   if (node.isTextNode())
     return node.nodeValue();
 
   WebNode child = node.firstChild();
 
   const int kChildSearchDepth = 10;
-  string16 node_text = FindChildTextInner(child, kChildSearchDepth);
+  base::string16 node_text = FindChildTextInner(child, kChildSearchDepth);
   TrimWhitespace(node_text, TRIM_ALL, &node_text);
   return node_text;
 }
@@ -194,8 +196,8 @@ string16 FindChildText(const WebNode& node) {
 // or   <label>Some Text</label> <input ...>
 // or   Some Text <img><input ...>
 // or   <b>Some Text</b><br/> <input ...>.
-string16 InferLabelFromPrevious(const WebFormControlElement& element) {
-  string16 inferred_label;
+base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
+  base::string16 inferred_label;
   WebNode previous = element;
   while (true) {
     previous = previous.previousSibling();
@@ -223,7 +225,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
     if (previous.isTextNode() ||
         HasTagName(previous, kBold) || HasTagName(previous, kStrong) ||
         HasTagName(previous, kSpan) || HasTagName(previous, kFont)) {
-      string16 value = FindChildText(previous);
+      base::string16 value = FindChildText(previous);
       // A text node's value will be empty if it is for a line break.
       bool add_space = previous.isTextNode() && value.empty();
       inferred_label =
@@ -233,7 +235,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 
     // If we have identified a partial label and have reached a non-lightweight
     // element, consider the label to be complete.
-    string16 trimmed_label;
+    base::string16 trimmed_label;
     TrimWhitespace(inferred_label, TRIM_ALL, &trimmed_label);
     if (!trimmed_label.empty())
       break;
@@ -261,7 +263,7 @@ string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // enclosing list item,
 // e.g. <li>Some Text<input ...><input ...><input ...></tr>
-string16 InferLabelFromListItem(const WebFormControlElement& element) {
+base::string16 InferLabelFromListItem(const WebFormControlElement& element) {
   WebNode parent = element.parentNode();
   CR_DEFINE_STATIC_LOCAL(WebString, kListItem, ("li"));
   while (!parent.isNull() && parent.isElementNode() &&
@@ -272,7 +274,7 @@ string16 InferLabelFromListItem(const WebFormControlElement& element) {
   if (!parent.isNull() && HasTagName(parent, kListItem))
     return FindChildText(parent);
 
-  return string16();
+  return base::string16();
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -281,7 +283,7 @@ string16 InferLabelFromListItem(const WebFormControlElement& element) {
 // or   <tr><th>Some Text</th><td><input ...></td></tr>
 // or   <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
 // or   <tr><th><b>Some Text</b></th><td><b><input ...></b></td></tr>
-string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
+base::string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kTableCell, ("td"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
@@ -290,11 +292,11 @@ string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
   }
 
   if (parent.isNull())
-    return string16();
+    return base::string16();
 
   // Check all previous siblings, skipping non-element nodes, until we find a
   // non-empty text block.
-  string16 inferred_label;
+  base::string16 inferred_label;
   WebNode previous = parent.previousSibling();
   CR_DEFINE_STATIC_LOCAL(WebString, kTableHeader, ("th"));
   while (inferred_label.empty() && !previous.isNull()) {
@@ -310,7 +312,7 @@ string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // surrounding table structure,
 // e.g. <tr><td>Some Text</td></tr><tr><td><input ...></td></tr>
-string16 InferLabelFromTableRow(const WebFormControlElement& element) {
+base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kTableRow, ("tr"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
@@ -319,11 +321,11 @@ string16 InferLabelFromTableRow(const WebFormControlElement& element) {
   }
 
   if (parent.isNull())
-    return string16();
+    return base::string16();
 
   // Check all previous siblings, skipping non-element nodes, until we find a
   // non-empty text block.
-  string16 inferred_label;
+  base::string16 inferred_label;
   WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, kTableRow))
@@ -339,12 +341,12 @@ string16 InferLabelFromTableRow(const WebFormControlElement& element) {
 // a surrounding div table,
 // e.g. <div>Some Text<span><input ...></span></div>
 // e.g. <div>Some Text</div><div><input ...></div>
-string16 InferLabelFromDivTable(const WebFormControlElement& element) {
+base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   WebNode node = element.parentNode();
   bool looking_for_parent = true;
 
   // Search the sibling and parent <div>s until we find a candidate label.
-  string16 inferred_label;
+  base::string16 inferred_label;
   CR_DEFINE_STATIC_LOCAL(WebString, kDiv, ("div"));
   CR_DEFINE_STATIC_LOCAL(WebString, kTable, ("table"));
   CR_DEFINE_STATIC_LOCAL(WebString, kFieldSet, ("fieldset"));
@@ -376,7 +378,8 @@ string16 InferLabelFromDivTable(const WebFormControlElement& element) {
 // a surrounding definition list,
 // e.g. <dl><dt>Some Text</dt><dd><input ...></dd></dl>
 // e.g. <dl><dt><b>Some Text</b></dt><dd><b><input ...></b></dd></dl>
-string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
+base::string16 InferLabelFromDefinitionList(
+    const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kDefinitionData, ("dd"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
@@ -384,7 +387,7 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
     parent = parent.parentNode();
 
   if (parent.isNull() || !HasTagName(parent, kDefinitionData))
-    return string16();
+    return base::string16();
 
   // Skip by any intervening text nodes.
   WebNode previous = parent.previousSibling();
@@ -393,15 +396,15 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
 
   CR_DEFINE_STATIC_LOCAL(WebString, kDefinitionTag, ("dt"));
   if (previous.isNull() || !HasTagName(previous, kDefinitionTag))
-    return string16();
+    return base::string16();
 
   return FindChildText(previous);
 }
 
 // Infers corresponding label for |element| from surrounding context in the DOM,
 // e.g. the contents of the preceding <p> tag or text element.
-string16 InferLabelForElement(const WebFormControlElement& element) {
-  string16 inferred_label = InferLabelFromPrevious(element);
+base::string16 InferLabelForElement(const WebFormControlElement& element) {
+  base::string16 inferred_label = InferLabelFromPrevious(element);
   if (!inferred_label.empty())
     return inferred_label;
 
@@ -432,8 +435,8 @@ string16 InferLabelForElement(const WebFormControlElement& element) {
 // Fills |option_strings| with the values of the <option> elements present in
 // |select_element|.
 void GetOptionStringsFromElement(const WebSelectElement& select_element,
-                                 std::vector<string16>* option_values,
-                                 std::vector<string16>* option_contents) {
+                                 std::vector<base::string16>* option_values,
+                                 std::vector<base::string16>* option_contents) {
   DCHECK(!select_element.isNull());
 
   option_values->clear();
@@ -482,7 +485,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement* element = &control_elements[i];
 
-    if (string16(element->nameForAutofill()) != data.fields[i].name) {
+    if (base::string16(element->nameForAutofill()) != data.fields[i].name) {
       // This case should be reachable only for pathological websites, which
       // rename form fields while the user is interacting with the Autofill
       // popup.  I (isherman) am not aware of any such websites, and so am
@@ -612,8 +615,8 @@ bool IsAutofillableInputElement(const WebInputElement* element) {
   return IsTextInput(element) || IsCheckableElement(element);
 }
 
-const string16 GetFormIdentifier(const WebFormElement& form) {
-  string16 identifier = form.name();
+const base::string16 GetFormIdentifier(const WebFormElement& form) {
+  base::string16 identifier = form.name();
   CR_DEFINE_STATIC_LOCAL(WebString, kId, ("id"));
   if (identifier.empty())
     identifier = form.getAttribute(kId);
@@ -727,7 +730,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   if (!(extract_mask & EXTRACT_VALUE))
     return;
 
-  string16 value;
+  base::string16 value;
   if (IsAutofillableInputElement(input_element)) {
     value = input_element->value();
   } else {
@@ -789,7 +792,7 @@ bool WebFormElementToFormData(
     form->action = GURL(form_element.action());
 
   // A map from a FormFieldData's name to the FormFieldData itself.
-  std::map<string16, FormFieldData*> name_map;
+  std::map<base::string16, FormFieldData*> name_map;
 
   // The extracted FormFields.  We use pointers so we can store them in
   // |name_map|.
@@ -841,7 +844,7 @@ bool WebFormElementToFormData(
     WebFormControlElement field_element =
         label.correspondingControl().to<WebFormControlElement>();
 
-    string16 element_name;
+    base::string16 element_name;
     if (field_element.isNull()) {
       // Sometimes site authors will incorrectly specify the corresponding
       // field element's name rather than its id, so we compensate here.
@@ -854,10 +857,10 @@ bool WebFormElementToFormData(
       element_name = field_element.nameForAutofill();
     }
 
-    std::map<string16, FormFieldData*>::iterator iter =
+    std::map<base::string16, FormFieldData*>::iterator iter =
         name_map.find(element_name);
     if (iter != name_map.end()) {
-      string16 label_text = FindChildText(label);
+      base::string16 label_text = FindChildText(label);
 
       // Concatenate labels because some sites might have multiple label
       // candidates.

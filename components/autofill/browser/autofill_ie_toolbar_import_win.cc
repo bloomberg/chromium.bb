@@ -67,12 +67,13 @@ bool IsEmptySalt(std::wstring const& salt) {
   return true;
 }
 
-string16 ReadAndDecryptValue(const RegKey& key, const wchar_t* value_name) {
+base::string16 ReadAndDecryptValue(const RegKey& key,
+                                   const wchar_t* value_name) {
   DWORD data_type = REG_BINARY;
   DWORD data_size = 0;
   LONG result = key.ReadValue(value_name, NULL, &data_size, &data_type);
   if ((result != ERROR_SUCCESS) || !data_size || data_type != REG_BINARY)
-    return string16();
+    return base::string16();
   std::vector<uint8> data;
   data.resize(data_size);
   result = key.ReadValue(value_name, &(data[0]), &data_size, &data_type);
@@ -82,12 +83,12 @@ string16 ReadAndDecryptValue(const RegKey& key, const wchar_t* value_name) {
       // The actual data is in UTF16 already.
       if (!(out_data.size() & 1) && (out_data.size() > 2) &&
           !out_data[out_data.size() - 1] && !out_data[out_data.size() - 2]) {
-        return string16(
+        return base::string16(
             reinterpret_cast<const wchar_t *>(out_data.c_str()));
       }
     }
   }
-  return string16();
+  return base::string16();
 }
 
 struct {
@@ -148,7 +149,7 @@ bool ImportSingleFormGroup(const RegKey& key,
     if (it == reg_to_field.end())
       continue;  // This field is not imported.
 
-    string16 field_value = ReadAndDecryptValue(key, value_name.c_str());
+    base::string16 field_value = ReadAndDecryptValue(key, value_name.c_str());
     if (!field_value.empty()) {
       if (it->second == CREDIT_CARD_NUMBER)
         field_value = DecryptCCNumber(field_value);
@@ -177,7 +178,7 @@ bool ImportSingleProfile(const std::string& app_locale,
       ImportSingleFormGroup(key, reg_to_field, app_locale, profile, &phone);
 
   // Now re-construct the phones if needed.
-  string16 constructed_number;
+  base::string16 constructed_number;
   if (phone.ParseNumber(*profile, app_locale, &constructed_number)) {
     has_non_empty_fields = true;
     profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
@@ -261,8 +262,8 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
       profiles->push_back(profile);
     }
   }
-  string16 password_hash;
-  string16 salt;
+  base::string16 password_hash;
+  base::string16 salt;
   RegKey cc_key(HKEY_CURRENT_USER, kCreditCardKey, KEY_READ);
   if (cc_key.Valid()) {
     password_hash = ReadAndDecryptValue(cc_key, kPasswordHashValue);
@@ -281,7 +282,7 @@ bool ImportCurrentUserProfiles(const std::string& app_locale,
       CreditCard credit_card;
       if (ImportSingleFormGroup(
               key, reg_to_field, app_locale, &credit_card, NULL)) {
-        string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
+        base::string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
       }
