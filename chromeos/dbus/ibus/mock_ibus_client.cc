@@ -7,7 +7,8 @@
 namespace chromeos {
 
 MockIBusClient::MockIBusClient()
-    : create_input_context_call_count_(0) {
+    : create_input_context_call_count_(0),
+      register_component_call_count_(0) {
 }
 
 MockIBusClient::~MockIBusClient() {}

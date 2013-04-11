@@ -1175,6 +1175,7 @@
         'browser/chromeos/extensions/input_method_apitest_chromeos.cc',
         'browser/chromeos/extensions/networking_private_apitest.cc',
         'browser/chromeos/extensions/wallpaper_private_apitest.cc',
+        'browser/chromeos/input_method/input_method_engine_ibus_browserttests.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',

@@ -1,0 +1,17 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChrRrvYxe938GqNtcvN9Y910JLccbU+1Q6yCcOrtDAmAgdR4rtEGfF/j0FtqhBD7DG3Y7/v9hy/VJ9lk2TTbeT+OhNXAEG1LL2AbD4KX9U8J8o1k2iqt3CM0YUN/7Hzv2UkWq4pxa89IzV0oENzZS63/iz4asD+PakyU8t+BSX4wIDAQAB",
+  "name": "Sample Input Method For Testing",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Sample Input Method For Testing",
+  "permissions": [ "input" ],
+  "input_components": [{
+    "name": "test ime",
+    "type": "ime",
+    "id": "test-ime",
+    "description": "A input method for testing.",
+    "language": "en",
+    "layouts": ["us::eng"]
+  }]
+}
+
