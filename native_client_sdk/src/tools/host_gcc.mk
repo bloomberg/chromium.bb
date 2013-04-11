@@ -19,6 +19,7 @@ HOST_CC?=gcc
 HOST_CXX?=g++
 HOST_LINK?=g++
 HOST_LIB?=ar r
+HOST_STRIP?=strip
 
 ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
 $(warning To skip the host build use:)
@@ -125,3 +126,18 @@ $(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(call SRC_TO_OB
 endef
 
 all : $(LIB_LIST) $(DEPS_LIST)
+
+
+#
+# Strip Macro
+# The host build makes shared libraries, so the best we can do is strip-debug.
+# We cannot strip the symbol names.
+#
+# $1 = Target Name
+# $2 = Input Name
+#
+define STRIP_RULE
+all: $(OUTDIR)/$(1)$(HOST_EXT)
+$(OUTDIR)/$(1)$(HOST_EXT): $(OUTDIR)/$(2)$(HOST_EXT)
+	$(call LOG,STRIP,$$@,$(HOST_STRIP) --strip-debug -o $$@ $$^)
+endef

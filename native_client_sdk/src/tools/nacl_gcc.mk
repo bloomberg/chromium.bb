@@ -28,16 +28,19 @@ X86_32_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-gcc
 X86_32_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
 X86_32_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
 X86_32_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-ar
+X86_32_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-strip
 
 X86_64_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-gcc
 X86_64_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
 X86_64_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
 X86_64_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-ar
+X86_64_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-strip
 
 ARM_CC?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-gcc
 ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
+ARM_STRIP?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-strip
 
 
 # Architecture-specific flags
@@ -204,6 +207,35 @@ endef
 
 
 #
+# Strip Macro for each arch (e.g., each arch supported by LINKER_RULE).
+#
+# $1 = Target Name
+# $2 = Source Name
+#
+define STRIP_ALL_RULE
+$(OUTDIR)/$(1)_x86_32.nexe : $(OUTDIR)/$(2)_x86_32.nexe
+	$(call LOG,STRIP,$$@,$(X86_32_STRIP) -o $$@ $$^)
+
+$(OUTDIR)/$(1)_x86_64.nexe : $(OUTDIR)/$(2)_x86_64.nexe
+	$(call LOG,STRIP,$$@,$(X86_64_STRIP) -o $$@ $$^)
+
+$(OUTDIR)/$(1)_arm.nexe : $(OUTDIR)/$(2)_arm.nexe
+	$(call LOG,STRIP,$$@,$(ARM_STRIP) -o $$@ $$^)
+endef
+
+
+#
+# Top-level Strip Macro
+#
+# $1 = Target Basename
+# $2 = Source Basename
+#
+define STRIP_RULE
+$(call STRIP_ALL_RULE,$(1),$(2))
+endef
+
+
+#
 # Determine which architectures to build for.  The user can set NACL_ARCH or
 # ARCHES in the environment to control this.
 #
@@ -220,6 +252,7 @@ ARCHES=${NACL_ARCH}
 else
 ARCHES?=${VALID_ARCHES}
 endif
+
 
 #
 # Generate NMF_TARGETS

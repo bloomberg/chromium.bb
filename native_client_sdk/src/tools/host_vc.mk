@@ -115,4 +115,19 @@ define LINK_RULE
 $(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o),$(3),$(4),$(LIB_PATHS),$(6))
 endef
 
+
+#
+# Strip Macro
+# This is a nop (copy) since visual studio already keeps debug info
+# separate from the binaries
+#
+# $1 = Target Name
+# $2 = Input Name
+#
+define STRIP_RULE
+all: $(OUTDIR)/$(1)$(HOST_EXT)
+$(OUTDIR)/$(1)$(HOST_EXT): $(OUTDIR)/$(2)$(HOST_EXT)
+	$(call LOG,COPY,$$@,$(CP) $$^ $$@)
+endef
+
 all : $(LIB_LIST) $(DEPS_LIST)

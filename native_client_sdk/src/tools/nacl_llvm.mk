@@ -16,7 +16,7 @@ PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang -c
 PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
 PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
-
+PNACL_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-finalize
 
 #
 # Compile Macro
@@ -112,6 +112,18 @@ define LINK_RULE
 $(call LINKER_RULE,$(OUTDIR)/$(1).pexe,$(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl)),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
 
+
+#
+# Strip Macro
+#
+# $1 = Target Name
+# $2 = Input Name
+#
+define STRIP_RULE
+all: $(OUTDIR)/$(1).pexe
+$(OUTDIR)/$(1).pexe: $(OUTDIR)/$(2).pexe
+	$(call LOG,STRIP,$$@,$(PNACL_STRIP) -o $$@ $$^)
+endef
 
 
 #

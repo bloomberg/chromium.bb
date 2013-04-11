@@ -94,7 +94,12 @@ $(eval $(call SO_RULE,{{name}},$({{name}}_SOURCES)))
 [[  elif target['TYPE'] == 'so-standalone':]]
 $(eval $(call SO_RULE,{{name}},$({{name}}_SOURCES),,,1))
 [[  else:]]
+ifeq ($(CONFIG),Release)
+$(eval $(call LINK_RULE,{{name}}_unstripped,$({{name}}_SOURCES),$(LIBS),$(DEPS)))
+$(eval $(call STRIP_RULE,{{name}},{{name}}_unstripped))
+else
 $(eval $(call LINK_RULE,{{name}},$({{name}}_SOURCES),$(LIBS),$(DEPS)))
+endif
 [[]]
 
 #
