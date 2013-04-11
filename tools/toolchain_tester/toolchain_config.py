@@ -318,7 +318,7 @@ COMMANDS_llvm_pnacl_x86 = [
   ]
 
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     attributes=['x86-32', 'O0'],
     commands=COMMANDS_llvm_pnacl_x86,
@@ -331,7 +331,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     IRT = IRT_X32,
     CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     attributes=['x86-32', 'O3'],
     commands=COMMANDS_llvm_pnacl_x86,
@@ -349,7 +349,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
 # PNACL + SEL_LDR [X8664]
 ######################################################################
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     attributes=['x86-64', 'O0'],
     commands=COMMANDS_llvm_pnacl_x86,
@@ -362,7 +362,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     IRT = IRT_X64,
     CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     attributes=['x86-64', 'O3'],
     commands=COMMANDS_llvm_pnacl_x86,

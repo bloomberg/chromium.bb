@@ -409,7 +409,7 @@ tc-test-bot() {
   # for both test sets
   for arch in ${archset}; do
     echo "@@@BUILD_STEP torture_tests $arch @@@"
-    ${TORTURE_TEST} trybot-pnacl-${arch}-torture \
+    ${TORTURE_TEST} trybot-pnacl-torture ${arch} \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 

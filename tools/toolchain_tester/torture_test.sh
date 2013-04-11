@@ -111,7 +111,6 @@ prereq() {
     -j4
 }
 
-#@
 #@ prereq-pnacl
 prereq-pnacl() {
   pnacl/build.sh sdk newlib
@@ -147,46 +146,19 @@ eh_tests() {
       ${TEST_PATH_CPP}/eh/*.C || handle-error
 }
 
-#@
-#@ pnacl-x86-32-torture
-#@
-pnacl-x86-32-torture() {
-  prereq "x86-32"
+#@ pnacl-torture <arch> [<args for toolchain_tester.py>]
+pnacl-torture() {
+  local arch=$1
+  shift
+  prereq ${arch}
   prereq-pnacl
-  eh_tests llvm_pnacl_x8632_O0 known_eh_failures_pnacl.txt "$@"
-  eh_tests llvm_pnacl_x8632_O3 known_eh_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_x8632_O0 known_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_x8632_O3 known_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_${arch}_O0 known_eh_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_${arch}_O3 known_eh_failures_pnacl.txt "$@"
+  standard_tests llvm_pnacl_${arch}_O0 known_failures_pnacl.txt "$@"
+  standard_tests llvm_pnacl_${arch}_O3 known_failures_pnacl.txt "$@"
 }
 
-#@
-#@ pnacl-x86-64-torture
-#@
-pnacl-x86-64-torture() {
-  prereq "x86-64"
-
-  prereq-pnacl
-  eh_tests llvm_pnacl_x8664_O0 known_eh_failures_pnacl.txt "$@"
-  eh_tests llvm_pnacl_x8664_O3 known_eh_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_x8664_O0 known_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_x8664_O3 known_failures_pnacl.txt "$@"
-}
-
-#@
-#@ pnacl-arm-torture
-#@
-pnacl-arm-torture() {
-  prereq "arm"
-  prereq-pnacl
-  eh_tests llvm_pnacl_arm_O0 known_eh_failures_pnacl.txt "$@"
-  eh_tests llvm_pnacl_arm_O3 known_eh_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_arm_O0 known_failures_pnacl.txt "$@"
-  standard_tests llvm_pnacl_arm_O3 known_failures_pnacl.txt "$@"
-}
-
-#@
 #@ naclgcc-x86-32-torture
-#@
 naclgcc-x86-32-torture() {
   prereq "x86-32"
   eh_tests nacl_gcc_x8632_O0 known_eh_failures_naclgcc.txt "$@"
@@ -195,9 +167,7 @@ naclgcc-x86-32-torture() {
   standard_tests nacl_gcc_x8632_O3 known_failures_naclgcc.txt "$@"
 }
 
-#@
 #@ naclgcc-x86-64-torture
-#@
 naclgcc-x86-64-torture() {
   prereq "x86-64"
   eh_tests nacl_gcc_x8664_O0 known_eh_failures_naclgcc.txt "$@"
@@ -206,9 +176,7 @@ naclgcc-x86-64-torture() {
   standard_tests nacl_gcc_x8664_O3 known_failures_naclgcc.txt "$@"
 }
 
-#@
 #@ localgcc-x86-32-torture
-#@
 localgcc-x86-32-torture() {
   eh_tests local_gcc_x8632_O0 known_eh_failures_localgcc.txt "$@"
   eh_tests local_gcc_x8632_O3 known_eh_failures_localgcc.txt "$@"
@@ -216,9 +184,7 @@ localgcc-x86-32-torture() {
   standard_tests local_gcc_x8632_O3 known_failures_localgcc.txt "$@"
 }
 
-#@
 #@ localgcc-x86-64-torture
-#@
 localgcc-x86-64-torture() {
   eh_tests local_gcc_x8664_O0 known_eh_failures_localgcc.txt "$@"
   eh_tests local_gcc_x8664_O3 known_eh_failures_localgcc.txt "$@"
@@ -226,41 +192,19 @@ localgcc-x86-64-torture() {
   standard_tests local_gcc_x8664_O3 known_failures_localgcc.txt "$@"
 }
 
-#@
-#@ trybot-pnacl-arm-torture
-#@
-trybot-pnacl-arm-torture() {
+#@ trybot-pnacl-torture <arch> [<args for toolchain_tester.py>]
+trybot-pnacl-torture() {
   install-tests
-  pnacl-arm-torture --verbose "$@"
+  pnacl-torture "$@" --verbose
 }
 
-#@
-#@ trybot-pnacl-x86-32-torture
-#@
-trybot-pnacl-x86-32-torture() {
-  install-tests
-  pnacl-x86-32-torture --verbose "$@"
-}
-
-#@
-#@ trybot-pnacl-x8664-torture
-#@
-trybot-pnacl-x86-64-torture() {
-  install-tests
-  pnacl-x86-64-torture --verbose "$@"
-}
-
-#@
 #@ trybot-naclgcc-x86-32-torture
-#@
 trybot-naclgcc-x86-32-torture() {
   install-tests
   naclgcc-x86-32-torture --verbose "$@"
 }
 
-#@
 #@ trybot-naclgcc-x86-64-torture
-#@
 trybot-naclgcc-x86-64-torture() {
   install-tests
   naclgcc-x86-64-torture --verbose "$@"
