@@ -131,10 +131,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenDismissed())
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
-                GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(MockUpdateEngineClient::Status()));
     // Expectations for the status are on the screen lock window.
     cros_mock_->SetStatusAreaMocksExpectations();
     MockNetworkLibrary* mock_network_library =

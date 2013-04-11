@@ -175,10 +175,6 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
                 RetrieveUserPolicy(_))
         .WillRepeatedly(RetrieveUserPolicy(&session_manager_user_policy_));
-    EXPECT_CALL(*mock_dbus_thread_manager_->mock_update_engine_client(),
-                GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
 #endif  // OS_CHROMEOS
 
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();

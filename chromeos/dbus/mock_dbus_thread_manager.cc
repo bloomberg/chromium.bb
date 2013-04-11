@@ -273,6 +273,12 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_shill_manager_client_.get(),
               RemovePropertyChangedObserver(_))
       .Times(AnyNumber());
+
+  // For CrOS browsertests, ChromeBrowserMainPartsChromeos::PostProfileInit()
+  // creates an AutomaticRebootManager which calls the following function.
+  // For unittests, this function won't get called.
+  EXPECT_CALL(*mock_update_engine_client_, GetLastStatus())
+      .WillRepeatedly(Return(MockUpdateEngineClient::Status()));
 }
 
 MockDBusThreadManager::~MockDBusThreadManager() {

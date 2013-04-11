@@ -178,10 +178,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
                 RemovePropertyChangedObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_update_engine_client(),
-                GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(MockUpdateEngineClient::Status()));
 
     SetUpSessionManager(mock_dbus_thread_manager);
 

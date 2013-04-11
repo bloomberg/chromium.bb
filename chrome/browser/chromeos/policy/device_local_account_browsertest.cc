@@ -421,12 +421,6 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     // Mock out cryptohome mount calls to succeed immediately.
     EXPECT_CALL(*dbus_thread_manager, GetCryptohomeClient())
         .WillRepeatedly(Return(&cryptohome_client_));
-
-    // Set up the MockUpdateEngineClient.
-    EXPECT_CALL(*dbus_thread_manager->mock_update_engine_client(),
-                GetLastStatus())
-        .Times(1)
-        .WillOnce(Return(chromeos::MockUpdateEngineClient::Status()));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
