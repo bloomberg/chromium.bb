@@ -88,9 +88,6 @@ static void internalAddMessage(Page* page, MessageType type, MessageLevel level,
     bool gotMessage = arguments->getFirstArgumentAsString(message);
     InspectorInstrumentation::addMessageToConsole(page, ConsoleAPIMessageSource, type, level, message, state, arguments);
 
-    if (page->settings()->privateBrowsingEnabled())
-        return;
-
     if (gotMessage)
         page->chrome()->client()->addMessageToConsole(ConsoleAPIMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }

@@ -286,7 +286,6 @@ MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     , m_volume(1.0f)
     , m_muted(false)
     , m_preservesPitch(true)
-    , m_privateBrowsing(false)
     , m_shouldPrepareToRender(false)
     , m_contentMIMETypeWasInferredFromExtension(false)
 {
@@ -361,7 +360,6 @@ void MediaPlayer::loadWithNextMediaEngine(MediaPlayerFactory* current)
         m_private = engine->constructor(this);
         if (m_mediaPlayerClient)
             m_mediaPlayerClient->mediaPlayerEngineUpdated(this);
-        m_private->setPrivateBrowsingMode(m_privateBrowsing);
         m_private->setPreload(m_preload);
         m_private->setPreservesPitch(preservesPitch());
         if (m_shouldPrepareToRender)
@@ -811,12 +809,6 @@ void MediaPlayer::clearMediaCacheForSite(const String& site)
         if (engines[i]->clearMediaCacheForSite)
             engines[i]->clearMediaCacheForSite(site);
     }
-}
-
-void MediaPlayer::setPrivateBrowsingMode(bool privateBrowsingMode)
-{
-    m_privateBrowsing = privateBrowsingMode;
-    m_private->setPrivateBrowsingMode(m_privateBrowsing);
 }
 
 // Client callbacks.

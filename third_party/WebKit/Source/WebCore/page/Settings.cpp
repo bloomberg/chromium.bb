@@ -148,7 +148,6 @@ Settings::Settings(Page* page)
     SETTINGS_INITIALIZER_LIST
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
-    , m_privateBrowsingEnabled(false)
     , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
@@ -362,15 +361,6 @@ void Settings::setImagesEnabled(bool areImagesEnabled)
 void Settings::setPluginsEnabled(bool arePluginsEnabled)
 {
     m_arePluginsEnabled = arePluginsEnabled;
-}
-
-void Settings::setPrivateBrowsingEnabled(bool privateBrowsingEnabled)
-{
-    if (m_privateBrowsingEnabled == privateBrowsingEnabled)
-        return;
-
-    m_privateBrowsingEnabled = privateBrowsingEnabled;
-    m_page->privateBrowsingStateChanged();
 }
 
 void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)

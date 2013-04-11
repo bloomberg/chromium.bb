@@ -4031,23 +4031,6 @@ void Document::storageBlockingStateDidChange()
         securityOrigin()->setStorageBlockingPolicy(settings->storageBlockingPolicy());
 }
 
-void Document::privateBrowsingStateDidChange() 
-{
-    HashSet<Element*>::iterator end = m_privateBrowsingStateChangedElements.end();
-    for (HashSet<Element*>::iterator it = m_privateBrowsingStateChangedElements.begin(); it != end; ++it)
-        (*it)->privateBrowsingStateDidChange();
-}
-
-void Document::registerForPrivateBrowsingStateChangedCallbacks(Element* e)
-{
-    m_privateBrowsingStateChangedElements.add(e);
-}
-
-void Document::unregisterForPrivateBrowsingStateChangedCallbacks(Element* e)
-{
-    m_privateBrowsingStateChangedElements.remove(e);
-}
-
 #if ENABLE(VIDEO_TRACK)
 void Document::registerForCaptionPreferencesChangedCallbacks(Element* e)
 {
@@ -5840,7 +5823,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_iconURLs, "iconURLs");
     info.addMember(m_documentSuspensionCallbackElements, "documentSuspensionCallbackElements");
     info.addMember(m_mediaVolumeCallbackElements, "mediaVolumeCallbackElements");
-    info.addMember(m_privateBrowsingStateChangedElements, "privateBrowsingStateChangedElements");
     info.addMember(m_elementsByAccessKey, "elementsByAccessKey");
     info.addMember(m_eventQueue, "eventQueue");
     info.addMember(m_mediaCanStartListeners, "mediaCanStartListeners");

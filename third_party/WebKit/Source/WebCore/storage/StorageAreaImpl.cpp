@@ -109,15 +109,6 @@ bool StorageAreaImpl::canAccessStorage(Frame* frame)
     return frame && frame->page();
 }
 
-bool StorageAreaImpl::disabledByPrivateBrowsingInFrame(const Frame* frame) const
-{
-    if (!frame->page()->settings()->privateBrowsingEnabled())
-        return false;
-    if (m_storageType != LocalStorage)
-        return true;
-    return !SchemeRegistry::allowsLocalStorageAccessInPrivateBrowsing(frame->document()->securityOrigin()->protocol());
-}
-
 unsigned StorageAreaImpl::length(ExceptionCode& ec, Frame* frame)
 {
     ec = 0;
@@ -125,8 +116,6 @@ unsigned StorageAreaImpl::length(ExceptionCode& ec, Frame* frame)
         ec = SECURITY_ERR;
         return 0;
     }
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return 0;
 
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
@@ -141,8 +130,6 @@ String StorageAreaImpl::key(unsigned index, ExceptionCode& ec, Frame* frame)
         ec = SECURITY_ERR;
         return String();
     }
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return String();
 
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
@@ -157,8 +144,6 @@ String StorageAreaImpl::getItem(const String& key, ExceptionCode& ec, Frame* fra
         ec = SECURITY_ERR;
         return String();
     }
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return String();
 
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
@@ -177,11 +162,6 @@ void StorageAreaImpl::setItem(const String& key, const String& value, ExceptionC
     ASSERT(!m_isShutdown);
     ASSERT(!value.isNull());
     blockUntilImportComplete();
-
-    if (disabledByPrivateBrowsingInFrame(frame)) {
-        ec = QUOTA_EXCEEDED_ERR;
-        return;
-    }
 
     String oldValue;
     bool quotaException;
@@ -214,9 +194,6 @@ void StorageAreaImpl::removeItem(const String& key, ExceptionCode& ec, Frame* fr
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
 
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return;
-
     String oldValue;
     RefPtr<StorageMap> newMap = m_storageMap->removeItem(key, oldValue);
     if (newMap)
@@ -241,9 +218,6 @@ void StorageAreaImpl::clear(ExceptionCode& ec, Frame* frame)
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
 
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return;
-
     if (!m_storageMap->length())
         return;
 
@@ -262,8 +236,6 @@ bool StorageAreaImpl::contains(const String& key, ExceptionCode& ec, Frame* fram
         ec = SECURITY_ERR;
         return false;
     }
-    if (disabledByPrivateBrowsingInFrame(frame))
-        return false;
 
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();

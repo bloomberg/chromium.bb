@@ -72,13 +72,6 @@ public:
     static void registerURLSchemeAsNotAllowingJavascriptURLs(const String& scheme);
     static bool shouldTreatURLSchemeAsNotAllowingJavascriptURLs(const String& scheme);
 
-    // Let some schemes opt-out of Private Browsing's default behavior of prohibiting read/write
-    // access to Local Storage and Databases.
-    static void registerURLSchemeAsAllowingLocalStorageAccessInPrivateBrowsing(const String& scheme);
-    static bool allowsLocalStorageAccessInPrivateBrowsing(const String& scheme);
-    static void registerURLSchemeAsAllowingDatabaseAccessInPrivateBrowsing(const String& scheme);
-    static bool allowsDatabaseAccessInPrivateBrowsing(const String& scheme);
-
     // Allow non-HTTP schemes to be registered to allow CORS requests.
     static void registerURLSchemeAsCORSEnabled(const String& scheme);
     static bool shouldTreatURLSchemeAsCORSEnabled(const String& scheme);

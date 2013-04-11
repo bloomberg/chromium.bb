@@ -125,18 +125,6 @@ const URLSchemesMap& SchemeRegistry::localSchemes()
     return localURLSchemes();
 }
 
-static URLSchemesMap& schemesAllowingLocalStorageAccessInPrivateBrowsing()
-{
-    DEFINE_STATIC_LOCAL(URLSchemesMap, schemesAllowingLocalStorageAccessInPrivateBrowsing, ());
-    return schemesAllowingLocalStorageAccessInPrivateBrowsing;
-}
-
-static URLSchemesMap& schemesAllowingDatabaseAccessInPrivateBrowsing()
-{
-    DEFINE_STATIC_LOCAL(URLSchemesMap, schemesAllowingDatabaseAccessInPrivateBrowsing, ());
-    return schemesAllowingDatabaseAccessInPrivateBrowsing;
-}
-
 static URLSchemesMap& CORSEnabledSchemes()
 {
     // FIXME: http://bugs.webkit.org/show_bug.cgi?id=77160
@@ -251,30 +239,6 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(const Strin
     if (scheme.isEmpty())
         return false;
     return notAllowingJavascriptURLsSchemes().contains(scheme);
-}
-
-void SchemeRegistry::registerURLSchemeAsAllowingLocalStorageAccessInPrivateBrowsing(const String& scheme)
-{
-    schemesAllowingLocalStorageAccessInPrivateBrowsing().add(scheme);
-}
-
-bool SchemeRegistry::allowsLocalStorageAccessInPrivateBrowsing(const String& scheme)
-{
-    if (scheme.isEmpty())
-        return false;
-    return schemesAllowingLocalStorageAccessInPrivateBrowsing().contains(scheme);
-}
-
-void SchemeRegistry::registerURLSchemeAsAllowingDatabaseAccessInPrivateBrowsing(const String& scheme)
-{
-    schemesAllowingDatabaseAccessInPrivateBrowsing().add(scheme);
-}
-
-bool SchemeRegistry::allowsDatabaseAccessInPrivateBrowsing(const String& scheme)
-{
-    if (scheme.isEmpty())
-        return false;
-    return schemesAllowingDatabaseAccessInPrivateBrowsing().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme)

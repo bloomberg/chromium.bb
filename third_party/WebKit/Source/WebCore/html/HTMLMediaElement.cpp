@@ -280,7 +280,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 {
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     document->registerForMediaVolumeCallbacks(this);
-    document->registerForPrivateBrowsingStateChangedCallbacks(this);
 
     if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture()) {
         addBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
@@ -302,7 +301,6 @@ HTMLMediaElement::~HTMLMediaElement()
         document()->removeMediaCanStartListener(this);
     setShouldDelayLoadEvent(false);
     document()->unregisterForMediaVolumeCallbacks(this);
-    document()->unregisterForPrivateBrowsingStateChangedCallbacks(this);
 #if ENABLE(VIDEO_TRACK)
     document()->unregisterForCaptionPreferencesChangedCallbacks(this);
     if (m_textTracks)
@@ -897,10 +895,6 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     if (m_sendProgressEvents) 
         startProgressEventTimer();
-
-    Settings* settings = document()->settings();
-    bool privateMode = !settings || settings->privateBrowsingEnabled();
-    m_player->setPrivateBrowsingMode(privateMode);
 
     // Reset display mode to force a recalculation of what to show because we are resetting the player.
     setDisplayMode(Unknown);
@@ -4053,17 +4047,6 @@ void HTMLMediaElement::clearMediaCacheForSite(const String& site)
 void HTMLMediaElement::resetMediaEngines()
 {
     MediaPlayer::resetMediaEngines();
-}
-
-void HTMLMediaElement::privateBrowsingStateDidChange()
-{
-    if (!m_player)
-        return;
-
-    Settings* settings = document()->settings();
-    bool privateMode = !settings || settings->privateBrowsingEnabled();
-    LOG(Media, "HTMLMediaElement::privateBrowsingStateDidChange(%s)", boolString(privateMode));
-    m_player->setPrivateBrowsingMode(privateMode);
 }
 
 MediaControls* HTMLMediaElement::mediaControls() const

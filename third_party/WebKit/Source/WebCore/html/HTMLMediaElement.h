@@ -297,8 +297,6 @@ public:
     void sourceWasRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
-    void privateBrowsingStateDidChange();
-
     // Media cache management.
     static void getSitesInMediaCache(Vector<String>&);
     static void clearMediaCache();

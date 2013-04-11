@@ -942,10 +942,7 @@ public:
     void unregisterForMediaVolumeCallbacks(Element*);
     void mediaVolumeDidChange();
 
-    void registerForPrivateBrowsingStateChangedCallbacks(Element*);
-    void unregisterForPrivateBrowsingStateChangedCallbacks(Element*);
     void storageBlockingStateDidChange();
-    void privateBrowsingStateDidChange();
 
 #if ENABLE(VIDEO_TRACK)
     void registerForCaptionPreferencesChangedCallbacks(Element*);
@@ -1428,7 +1425,6 @@ private:
 
     HashSet<Element*> m_documentSuspensionCallbackElements;
     HashSet<Element*> m_mediaVolumeCallbackElements;
-    HashSet<Element*> m_privateBrowsingStateChangedElements;
 #if ENABLE(VIDEO_TRACK)
     HashSet<Element*> m_captionPreferencesChangedElements;
 #endif

@@ -268,7 +268,6 @@ public:
 
     void dnsPrefetchingStateChanged();
     void storageBlockingStateChanged();
-    void privateBrowsingStateChanged();
 
     static void removeAllVisitedLinks();
 

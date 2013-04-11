@@ -105,9 +105,6 @@ public:
     virtual void setEnabled(bool);
     virtual bool isEnabled() const;
     
-    virtual void setPrivateBrowsingEnabled(bool flag);
-    bool isPrivateBrowsingEnabled() const;
-    
     static void delayDatabaseCleanup();
     static void allowDatabaseCleanup();
     static void checkIntegrityBeforeOpening();
@@ -153,7 +150,6 @@ private:
     PageURLRecord* getOrCreatePageURLRecord(const String& pageURL);
     
     bool m_isEnabled;
-    bool m_privateBrowsingEnabled;
 
     mutable Mutex m_syncLock;
     ThreadCondition m_syncCondition;

@@ -97,9 +97,6 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (source == CSSMessageSource)
         return;
 
-    if (page->settings()->privateBrowsingEnabled())
-        return;
-
     page->chrome()->client()->addMessageToConsole(source, level, message, lineNumber, url);
 }
 

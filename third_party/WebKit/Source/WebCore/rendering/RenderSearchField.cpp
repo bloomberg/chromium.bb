@@ -91,10 +91,6 @@ void RenderSearchField::addSearchResult()
     if (value.isEmpty())
         return;
 
-    Settings* settings = document()->settings();
-    if (!settings || settings->privateBrowsingEnabled())
-        return;
-
     int size = static_cast<int>(m_recentSearches.size());
     for (int i = size - 1; i >= 0; --i) {
         if (m_recentSearches[i] == value)

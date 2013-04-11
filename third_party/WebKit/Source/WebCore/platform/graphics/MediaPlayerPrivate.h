@@ -154,8 +154,6 @@ public:
     void clearMediaCache() { }
     void clearMediaCacheForSite(const String&) { }
 
-    virtual void setPrivateBrowsingMode(bool) { }
-
     virtual String engineDescription() const { return emptyString(); }
 
 #if ENABLE(WEB_AUDIO)

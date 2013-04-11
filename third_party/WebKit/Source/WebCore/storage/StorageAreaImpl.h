@@ -78,7 +78,6 @@ private:
 
     void blockUntilImportComplete() const;
     void closeDatabaseTimerFired(Timer<StorageAreaImpl>*);
-    bool disabledByPrivateBrowsingInFrame(const Frame* sourceFrame) const;
 
     void dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
 

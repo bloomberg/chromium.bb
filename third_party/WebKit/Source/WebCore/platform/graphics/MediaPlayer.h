@@ -389,8 +389,6 @@ public:
     unsigned audioDecodedByteCount() const;
     unsigned videoDecodedByteCount() const;
 
-    void setPrivateBrowsingMode(bool);
-
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider();
 #endif
@@ -455,7 +453,6 @@ private:
     double m_volume;
     bool m_muted;
     bool m_preservesPitch;
-    bool m_privateBrowsing;
     bool m_shouldPrepareToRender;
     bool m_contentMIMETypeWasInferredFromExtension;
 

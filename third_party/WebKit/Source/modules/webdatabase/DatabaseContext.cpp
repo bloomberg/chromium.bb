@@ -204,9 +204,7 @@ bool DatabaseContext::allowDatabaseAccess() const
 {
     if (m_scriptExecutionContext->isDocument()) {
         Document* document = toDocument(m_scriptExecutionContext);
-        if (!document->page() || (document->page()->settings()->privateBrowsingEnabled() && !SchemeRegistry::allowsDatabaseAccessInPrivateBrowsing(document->securityOrigin()->protocol())))
-            return false;
-        return true;
+        return document->page();
     }
     ASSERT(m_scriptExecutionContext->isWorkerContext());
     // allowDatabaseAccess is not yet implemented for workers.

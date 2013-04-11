@@ -313,7 +313,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setApplicationCacheOriginQuota", &TestRunner::notImplemented);
     bindMethod("setCallCloseOnWebViews", &TestRunner::notImplemented);
     bindMethod("setMainFrameIsFirstResponder", &TestRunner::notImplemented);
-    bindMethod("setPrivateBrowsingEnabled", &TestRunner::notImplemented);
     bindMethod("setUseDashboardCompatibilityMode", &TestRunner::notImplemented);
     bindMethod("deleteAllLocalStorage", &TestRunner::notImplemented);
     bindMethod("localStorageDiskUsageForOrigin", &TestRunner::notImplemented);

@@ -203,7 +203,6 @@ public:
     virtual void close() { }
     virtual void removeAllIcons() { }
 
-    virtual void setPrivateBrowsingEnabled(bool) { }
     virtual void setClient(IconDatabaseClient*) { }
     
     virtual bool isOpen() const { return false; }

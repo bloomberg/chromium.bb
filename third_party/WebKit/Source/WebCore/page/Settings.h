@@ -134,22 +134,6 @@ namespace WebCore {
         void setPluginsEnabled(bool);
         bool arePluginsEnabled() const { return m_arePluginsEnabled; }
 
-        // When this option is set, WebCore will avoid storing any record of browsing activity
-        // that may persist on disk or remain displayed when the option is reset.
-        // This option does not affect the storage of such information in RAM.
-        // The following functions respect this setting:
-        //  - HTML5/DOM Storage
-        //  - Icon Database
-        //  - Console Messages
-        //  - MemoryCache
-        //  - Application Cache
-        //  - Back/Forward Page History
-        //  - Page Search Results
-        //  - HTTP Cookies
-        //  - Plug-ins (that support NPNVprivateModeBool)
-        void setPrivateBrowsingEnabled(bool);
-        bool privateBrowsingEnabled() const { return m_privateBrowsingEnabled; }
-
         void setDNSPrefetchingEnabled(bool);
         bool dnsPrefetchingEnabled() const { return m_dnsPrefetchingEnabled; }
 
@@ -243,7 +227,6 @@ namespace WebCore {
 
         bool m_isJavaEnabled : 1;
         bool m_loadsImagesAutomatically : 1;
-        bool m_privateBrowsingEnabled : 1;
         bool m_areImagesEnabled : 1;
         bool m_arePluginsEnabled : 1;
         bool m_isScriptEnabled : 1;
