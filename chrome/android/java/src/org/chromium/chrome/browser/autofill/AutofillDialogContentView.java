@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -114,7 +115,7 @@ public class AutofillDialogContentView extends LinearLayout {
                         new ArrayList<AutofillDialogMenuItem>());
             }
             mAdapters[i] = adapter;
-            if (mSpinners[i] != null) mSpinners[i].setAdapter(adapter);
+            mSpinners[i].setAdapter(adapter);
         }
 
         initializeSpinner(SECTION_SHIPPING, AutofillDialogConstants.ADDRESS_HOME_COUNTRY);
@@ -146,12 +147,12 @@ public class AutofillDialogContentView extends LinearLayout {
     @Override
     protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Spinner ccSpinner = mSpinners[SECTION_CC_BILLING];
-        Spinner addressSpinner = mSpinners[SECTION_SHIPPING];
-        ccSpinner.setDropDownWidth(ccSpinner.getMeasuredWidth());
-        ccSpinner.setDropDownVerticalOffset(-ccSpinner.getMeasuredHeight());
-        addressSpinner.setDropDownWidth(addressSpinner.getMeasuredWidth());
-        addressSpinner.setDropDownVerticalOffset(-addressSpinner.getMeasuredHeight());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            for (int i = 0; i < NUM_SECTIONS; i++) {
+                mSpinners[i].setDropDownWidth(mSpinners[i].getMeasuredWidth());
+                mSpinners[i].setDropDownVerticalOffset(-mSpinners[i].getMeasuredHeight());
+            }
+        }
     }
 
     /**
@@ -159,9 +160,7 @@ public class AutofillDialogContentView extends LinearLayout {
      * @param listener The listener object to attach to the dropdowns.
      */
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
-        for (int i = 0; i < NUM_SECTIONS; i++) {
-            if (mSpinners[i] != null) mSpinners[i].setOnItemSelectedListener(listener);
-        }
+        for (int i = 0; i < NUM_SECTIONS; i++) mSpinners[i].setOnItemSelectedListener(listener);
     }
 
     /**

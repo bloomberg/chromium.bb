@@ -28,8 +28,9 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/email_spinner"
-        android:visibility="gone"
+        android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:layout_columnSpan="4"/>
     <TextView
         android:id="@+id/cc_billing_label"
@@ -43,7 +44,9 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/cc_billing_spinner"
+        android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:layout_columnSpan="4"/>
     <TextView
         android:id="@+id/cc_label"
@@ -57,7 +60,9 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/cc_spinner"
+        android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:layout_columnSpan="4"/>
     <TextView
         android:id="@+id/billing_label"
@@ -71,7 +76,9 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/billing_spinner"
+        android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:visibility="gone"
         android:layout_columnSpan="4"/>
     <TextView
@@ -92,7 +99,9 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/address_spinner"
+        android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:layout_columnSpan="4"/>
     <LinearLayout
         android:id="@+id/bottom_notifications"
