@@ -196,8 +196,8 @@ list > .folder > .label,
 .tree-row[may-have-children] > .tree-label,
 .tree-item[expanded] > .tree-row > .tree-label {
   background-image: -webkit-image-set(
-      url('../../../../app/theme/default_100_percent/bookmark_bar_folder_mac.png') 1x,
-      url('../../../../app/theme/default_200_percent/bookmark_bar_folder_mac.png') 2x);
+      url('../../../../app/theme/default_100_percent/mac/bookmark_bar_folder.png') 1x,
+      url('../../../../app/theme/default_200_percent/mac/bookmark_bar_folder.png') 2x);
 }
 </if>
 
