@@ -841,6 +841,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableNewDialogStyle,
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,
+    switches::kDisablePepper3d,
 #endif
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,
