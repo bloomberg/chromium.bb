@@ -319,25 +319,6 @@ StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
   return new StringValue(headers ? headers->GetStatusLine() : std::string());
 }
 
-void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
-
-  if (profile->GetExtensionService()->HasUsedWebRequest(extension))
-    return;
-  profile->GetExtensionService()->SetHasUsedWebRequest(extension, true);
-
-  content::BrowserContext* browser_context = profile;
-  for (content::RenderProcessHost::iterator it =
-          content::RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    content::RenderProcessHost* host = it.GetCurrentValue();
-    if (host->GetBrowserContext() == browser_context)
-      SendExtensionWebRequestStatusToHost(host);
-  }
-}
-
 // Sends an event to subscribers of chrome.declarativeWebRequest.onMessage.
 // |extension_id| identifies the extension that sends and receives the event.
 // |event_argument| is passed to the event listener.
@@ -1866,7 +1847,7 @@ bool WebRequestAddEventListener::RunImpl() {
   helpers::ClearCacheOnNavigation();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &NotifyWebRequestAPIUsed,
+      &helpers::NotifyWebRequestAPIUsed,
       profile_id(), make_scoped_refptr(GetExtension())));
 
   return true;

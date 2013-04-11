@@ -147,6 +147,7 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
 
   URLMatcher url_matcher_;
 
+  void* profile_id_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRulesRegistry);

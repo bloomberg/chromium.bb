@@ -12,11 +12,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/base/net_log.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -1174,6 +1178,28 @@ void ClearCacheOnNavigation() {
   } else {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(&ClearCacheOnNavigationOnUI));
+  }
+}
+
+void NotifyWebRequestAPIUsed(
+    void* profile_id,
+    scoped_refptr<const extensions::Extension> extension) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
+  if (profile->GetExtensionService()->HasUsedWebRequest(extension))
+    return;
+  profile->GetExtensionService()->SetHasUsedWebRequest(extension, true);
+
+  content::BrowserContext* browser_context = profile;
+  for (content::RenderProcessHost::iterator it =
+           content::RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    content::RenderProcessHost* host = it.GetCurrentValue();
+    if (host->GetBrowserContext() == browser_context)
+      SendExtensionWebRequestStatusToHost(host);
   }
 }
 

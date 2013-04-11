@@ -293,6 +293,13 @@ bool ParseResourceType(const std::string& type_str,
 // Triggers clearing each renderer's in-memory cache the next time it navigates.
 void ClearCacheOnNavigation();
 
+// Tells renderer processes that the web request or declarative web request
+// API has been used by |extension| in profile |profile_id| to collect
+// UMA statistics on Page Load Times. Needs to be called on the UI thread.
+void NotifyWebRequestAPIUsed(
+    void* profile_id,
+    scoped_refptr<const extensions::Extension> extension);
+
 }  // namespace extension_web_request_api_helpers
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_

@@ -25,7 +25,8 @@ namespace extensions {
 
 WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
                                                  Delegate* delegate)
-    : RulesRegistryWithCache(delegate) {
+    : RulesRegistryWithCache(delegate),
+      profile_id_(profile) {
   if (profile)
     extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
 }
@@ -197,6 +198,16 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   url_matcher_.AddConditionSets(all_new_condition_sets);
 
   ClearCacheOnNavigation();
+
+  if (profile_id_ && !webrequest_rules_.empty()) {
+    const Extension* extension =
+        extension_info_map_->extensions().GetByID(extension_id);
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
+                   profile_id_, make_scoped_refptr(extension)));
+  }
 
   return std::string();
 }
