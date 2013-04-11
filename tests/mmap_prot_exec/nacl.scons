@@ -69,6 +69,8 @@ node = env.CommandSelLdrTestNacl(
     nexe,
     nexe_command_line,
     sel_ldr_flags=['-a'],
-    osenv=['NACL_FAULT_INJECTION=MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F100'])
+    osenv=['NACL_FAULT_INJECTION=' +
+           'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
+           'MMAP_STUBOUT_EMULATION=GF'])
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test')

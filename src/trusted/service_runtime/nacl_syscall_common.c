@@ -1518,7 +1518,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                              NaClDescEffectorTrustedMem(),
                              (void *) NULL,
                              length,
-                             PROT_READ,
+                             PROT_READ | PROT_WRITE,
                              MAP_PRIVATE,
                              offset);
       if (NaClPtrIsNegErrno(&image_sys_addr)) {
@@ -1529,6 +1529,12 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       if (holding_app_lock) {
         NaClVmHoleClosingMu(nap);
         NaClXMutexUnlock(&nap->mu);
+      }
+
+      if (NACL_FI("MMAP_STUBOUT_EMULATION", 0, 1)) {
+        NaClLog(3, "NaClSysMmap: emulating stubout mode by touching memory\n");
+        *(volatile uint8_t *) image_sys_addr =
+            *(volatile uint8_t *) image_sys_addr;
       }
 
       sys_ret = NaClTextDyncodeCreate(nap,
