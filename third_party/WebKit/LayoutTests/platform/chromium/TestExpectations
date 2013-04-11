@@ -840,10 +840,6 @@ http/tests/media/video-cross-site.html [ WontFix ]
 compositing/video/video-background-color.html [ WontFix ]
 virtual/softwarecompositing/video/video-background-color.html [ WontFix ]
 
-# Pre-HTML5 parser quirks only apply to the mac port; we're not interested in
-# supporting that option.
-fast/parser/pre-html5-parser-quirks.html [ WontFix ]
-
 # We're taking a different approach on this test than Webkit does, related to
 # whether we create a window via a plugin when target is _blank.
 plugins/get-url-with-blank-target.html [ WontFix ]
