@@ -42,8 +42,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 }
 
 // Gets arrow location based on shelf alignment.
-views::BubbleBorder::ArrowLocation GetBubbleArrowLocation(
-    aura::Window* window) {
+views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
   return ShelfLayoutManager::ForLauncher(window)->
       SelectValueForShelfAlignment(
@@ -126,7 +125,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         pagination_model_.get(),
         Launcher::ForWindow(container)->GetAppListButtonView(),
         gfx::Point(),
-        GetBubbleArrowLocation(container),
+        GetBubbleArrow(container),
         true /* border_accepts_events */);
     SetView(view);
   }
@@ -288,10 +287,8 @@ void AppListController::OnWidgetDestroying(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, ShellObserver implementation:
 void AppListController::OnShelfAlignmentChanged(aura::RootWindow* root_window) {
-  if (view_) {
-    view_->SetBubbleArrowLocation(GetBubbleArrowLocation(
-        view_->GetWidget()->GetNativeView()));
-  }
+  if (view_)
+    view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

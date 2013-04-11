@@ -18,7 +18,7 @@ class GlobalErrorBubbleView : public views::ButtonListener,
                               public GlobalErrorBubbleViewBase {
  public:
   GlobalErrorBubbleView(views::View* anchor_view,
-                        views::BubbleBorder::ArrowLocation location,
+                        views::BubbleBorder::Arrow arrow,
                         Browser* browser,
                         const base::WeakPtr<GlobalError>& error);
   virtual ~GlobalErrorBubbleView();

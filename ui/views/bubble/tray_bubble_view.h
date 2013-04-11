@@ -98,7 +98,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     bool can_activate;
     bool close_on_deactivate;
     SkColor arrow_color;
-    views::BubbleBorder::ArrowLocation arrow_location;
+    views::BubbleBorder::Arrow arrow;
     int arrow_offset;
     views::BubbleBorder::ArrowPaintType arrow_paint_type;
     views::BubbleBorder::Shadow shadow;

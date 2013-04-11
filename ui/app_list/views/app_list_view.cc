@@ -58,13 +58,12 @@ AppListView::~AppListView() {
   RemoveAllChildViews(true);
 }
 
-void AppListView::InitAsBubble(
-    gfx::NativeView parent,
-    PaginationModel* pagination_model,
-    views::View* anchor,
-    const gfx::Point& anchor_point,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    bool border_accepts_events) {
+void AppListView::InitAsBubble(gfx::NativeView parent,
+                               PaginationModel* pagination_model,
+                               views::View* anchor,
+                               const gfx::Point& anchor_point,
+                               views::BubbleBorder::Arrow arrow,
+                               bool border_accepts_events) {
   app_list_main_view_ = new AppListMainView(delegate_.get(),
                                             model_.get(),
                                             pagination_model,
@@ -96,7 +95,7 @@ void AppListView::InitAsBubble(
   set_border_accepts_events(border_accepts_events);
   set_shadow(views::BubbleBorder::BIG_SHADOW);
   views::BubbleDelegateView::CreateBubble(this);
-  SetBubbleArrowLocation(arrow_location);
+  SetBubbleArrow(arrow);
 
 #if defined(USE_AURA)
   GetWidget()->GetNativeWindow()->layer()->SetMasksToBounds(true);
@@ -111,9 +110,8 @@ void AppListView::InitAsBubble(
 #endif
 }
 
-void AppListView::SetBubbleArrowLocation(
-    views::BubbleBorder::ArrowLocation arrow_location) {
-  GetBubbleFrameView()->bubble_border()->set_arrow_location(arrow_location);
+void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
+  GetBubbleFrameView()->bubble_border()->set_arrow(arrow);
   SizeToContents();  // Recalcuates with new border.
   GetBubbleFrameView()->SchedulePaint();
 }

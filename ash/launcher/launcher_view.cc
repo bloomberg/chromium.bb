@@ -439,7 +439,7 @@ void LauncherView::OnShelfAlignmentChanged() {
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
-  tooltip_->UpdateArrowLocation();
+  tooltip_->UpdateArrow();
   if (overflow_bubble_.get())
     overflow_bubble_->Hide();
 }

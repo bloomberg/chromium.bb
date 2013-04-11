@@ -271,10 +271,10 @@ void PageActionImageView::ShowPopupWithURL(
   if (popup_showing)
     return;
 
-  views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+  views::BubbleBorder::Arrow arrow = base::i18n::IsRTL() ?
       views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
 
-  popup_ = ExtensionPopup::ShowPopup(popup_url, browser_, this, arrow_location,
+  popup_ = ExtensionPopup::ShowPopup(popup_url, browser_, this, arrow,
                                      show_action);
   popup_->GetWidget()->AddObserver(this);
 }

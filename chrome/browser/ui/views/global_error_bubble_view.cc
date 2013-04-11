@@ -59,10 +59,10 @@ GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
 
 GlobalErrorBubbleView::GlobalErrorBubbleView(
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation location,
+    views::BubbleBorder::Arrow arrow,
     Browser* browser,
     const base::WeakPtr<GlobalError>& error)
-    : BubbleDelegateView(anchor_view, location),
+    : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       error_(error) {
   // Compensate for built-in vertical padding in the anchor view's image.

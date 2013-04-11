@@ -56,7 +56,7 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
       ContentSettingBubbleModel* content_setting_bubble_model,
       content::WebContents* web_contents,
       views::View* anchor_view,
-      views::BubbleBorder::ArrowLocation arrow_location);
+      views::BubbleBorder::Arrow arrow);
   virtual ~ContentSettingBubbleContents();
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;

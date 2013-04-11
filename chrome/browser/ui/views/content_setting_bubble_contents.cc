@@ -142,8 +142,8 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
     WebContents* web_contents,
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location)
-    : BubbleDelegateView(anchor_view, arrow_location),
+    views::BubbleBorder::Arrow arrow)
+    : BubbleDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
       web_contents_(web_contents),
       custom_link_(NULL),

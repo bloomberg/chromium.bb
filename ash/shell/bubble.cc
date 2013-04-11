@@ -15,7 +15,7 @@ namespace shell {
 struct BubbleConfig {
   base::string16 label;
   views::View* anchor_view;
-  views::BubbleBorder::ArrowLocation arrow;
+  views::BubbleBorder::Arrow arrow;
 };
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {

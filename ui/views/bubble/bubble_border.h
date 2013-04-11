@@ -25,14 +25,14 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // 1 bit specifies top or bottom.
   // 2 bit specifies horizontal or vertical.
   // 3 bit specifies whether the arrow at the center of its residing edge.
-  enum ArrowLocationMask {
+  enum ArrowMask {
     RIGHT    = 0x01,
     BOTTOM   = 0x02,
     VERTICAL = 0x04,
     CENTER   = 0x08,
   };
 
-  enum ArrowLocation {
+  enum Arrow {
     TOP_LEFT      = 0,
     TOP_RIGHT     = RIGHT,
     BOTTOM_LEFT   = BOTTOM,
@@ -75,7 +75,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     PAINT_NONE,
   };
 
-  BubbleBorder(ArrowLocation arrow, Shadow shadow, SkColor color);
+  BubbleBorder(Arrow arrow, Shadow shadow, SkColor color);
+  virtual ~BubbleBorder();
 
   // Returns the radius of the corner of the border.
   // TODO(xiyuan): Get rid of this since it's part of BorderImages now?
@@ -87,48 +88,44 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     return 4;
   }
 
-  // Sets the location for the arrow.
-  void set_arrow_location(ArrowLocation loc) { arrow_location_ = loc; }
-  ArrowLocation arrow_location() const { return arrow_location_; }
+  // Sets the arrow type.
+  void set_arrow(Arrow arrow) { arrow_ = arrow; }
+  Arrow arrow() const { return arrow_; }
 
   // Sets the alignment.
   void set_alignment(BubbleAlignment alignment) { alignment_ = alignment; }
   BubbleAlignment alignment() const { return alignment_; }
 
-  static ArrowLocation horizontal_mirror(ArrowLocation loc) {
-    return (loc == TOP_CENTER || loc == BOTTOM_CENTER || loc >= NONE) ?
-        loc : static_cast<ArrowLocation>(loc ^ RIGHT);
+  static Arrow horizontal_mirror(Arrow a) {
+    return (a == TOP_CENTER || a == BOTTOM_CENTER || a >= NONE) ?
+        a : static_cast<Arrow>(a ^ RIGHT);
   }
 
-  static ArrowLocation vertical_mirror(ArrowLocation loc) {
-    return (loc == LEFT_CENTER || loc == RIGHT_CENTER || loc >= NONE) ?
-        loc : static_cast<ArrowLocation>(loc ^ BOTTOM);
+  static Arrow vertical_mirror(Arrow a) {
+    return (a == LEFT_CENTER || a == RIGHT_CENTER || a >= NONE) ?
+        a : static_cast<Arrow>(a ^ BOTTOM);
   }
 
-  static bool has_arrow(ArrowLocation loc) {
-    return loc < NONE;
+  static bool has_arrow(Arrow a) { return a < NONE; }
+
+  static bool is_arrow_on_left(Arrow a) {
+    return has_arrow(a) && (a == LEFT_CENTER || !(a & (RIGHT | CENTER)));
   }
 
-  static bool is_arrow_on_left(ArrowLocation loc) {
-    return (loc == TOP_CENTER || loc == BOTTOM_CENTER || loc >= NONE) ?
-        false : !(loc & RIGHT);
+  static bool is_arrow_on_top(Arrow a) {
+    return has_arrow(a) && (a == TOP_CENTER || !(a & (BOTTOM | CENTER)));
   }
 
-  static bool is_arrow_on_top(ArrowLocation loc) {
-    return (loc == LEFT_CENTER || loc == RIGHT_CENTER || loc >= NONE) ?
-        false : !(loc & BOTTOM);
+  static bool is_arrow_on_horizontal(Arrow a) {
+    return a >= NONE ? false : !(a & VERTICAL);
   }
 
-  static bool is_arrow_on_horizontal(ArrowLocation loc) {
-    return loc >= NONE ? false : !(loc & VERTICAL);
-  }
-
-  static bool is_arrow_at_center(ArrowLocation loc) {
-    return has_arrow(loc) && !!(loc & CENTER);
+  static bool is_arrow_at_center(Arrow a) {
+    return has_arrow(a) && !!(a & CENTER);
   }
 
   // Sets the background color for the arrow body.  This is irrelevant if you do
-  // not also set the arrow location to something other than NONE.
+  // not also set the arrow type to something other than NONE.
   void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
 
@@ -145,7 +142,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 
   // For borders with an arrow, gives the desired bounds (in screen coordinates)
   // given the rect to point to and the size of the contained contents.  This
-  // depends on the arrow location, so if you change that, you should call this
+  // depends on the arrow type, so if you change that, you should call this
   // again to find out the new coordinates.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const;
@@ -161,14 +158,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 
   // How many pixels the bubble border is from the edge of the images.
   virtual int GetBorderThickness() const;
-
- protected:
-  virtual ~BubbleBorder();
-
-  // Calculates the insets for a specific arrow location. Normally called from
-  // GetInsets(arrow_location()), but may be called by specialized BubbleBorder
-  // implementations.
-  virtual gfx::Insets GetInsetsForArrowLocation(ArrowLocation arrow_loc) const;
 
  private:
   struct BorderImages;
@@ -205,7 +194,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // If specified, overrides the pre-calculated |arrow_offset_| of the arrow.
   int override_arrow_offset_;
 
-  ArrowLocation arrow_location_;
+  Arrow arrow_;
   ArrowPaintType arrow_paint_type_;
   BubbleAlignment alignment_;
   SkColor background_color_;

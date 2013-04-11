@@ -19,7 +19,7 @@ struct BubbleConfig {
   string16 label;
   SkColor color;
   View* anchor_view;
-  BubbleBorder::ArrowLocation arrow;
+  BubbleBorder::Arrow arrow;
   bool fade_in;
   bool fade_out;
 };

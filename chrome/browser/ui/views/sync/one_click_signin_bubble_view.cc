@@ -77,7 +77,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       web_content_(web_content),
       learn_more_link_(NULL),
       close_button_(NULL) {
-  set_arrow_location(views::BubbleBorder::NONE);
+  set_arrow(views::BubbleBorder::NONE);
   set_anchor_view_insets(gfx::Insets(0, 0, anchor_view->height() / 2, 0));
   set_close_on_deactivate(false);
   set_margins(gfx::Insets(kDialogMargin, kDialogMargin, kDialogMargin,

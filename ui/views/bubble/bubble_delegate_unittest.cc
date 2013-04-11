@@ -59,9 +59,8 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
-  BubbleBorder* border =
-      bubble_delegate->GetBubbleFrameView()->bubble_border();
-  EXPECT_EQ(bubble_delegate->arrow_location(), border->arrow_location());
+  BubbleBorder* border = bubble_delegate->GetBubbleFrameView()->bubble_border();
+  EXPECT_EQ(bubble_delegate->arrow(), border->arrow());
   EXPECT_EQ(bubble_delegate->color(), border->background_color());
 
   bubble_widget->CloseNow();

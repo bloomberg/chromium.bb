@@ -42,7 +42,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   // is already showing and do nothing. This means that (1) will do nothing
   // and (2) will correctly hide the old bubble instance.
   static void ShowBubble(views::View* anchor_view,
-                         views::BubbleBorder::ArrowLocation arrow_location,
+                         views::BubbleBorder::Arrow arrow,
                          views::BubbleBorder::BubbleAlignment border_alignment,
                          const gfx::Rect& anchor_rect,
                          Browser* browser);
@@ -74,7 +74,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
 
  private:
   AvatarMenuBubbleView(views::View* anchor_view,
-                       views::BubbleBorder::ArrowLocation arrow_location,
+                       views::BubbleBorder::Arrow arrow,
                        const gfx::Rect& anchor_rect,
                        Browser* browser);
 

@@ -32,8 +32,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public WidgetObserver {
  public:
   BubbleDelegateView();
-  BubbleDelegateView(View* anchor_view,
-                     BubbleBorder::ArrowLocation arrow_location);
+  BubbleDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
   virtual ~BubbleDelegateView();
 
   // Create and initialize the bubble Widget(s) with proper bounds.
@@ -66,10 +65,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The anchor rect is used in the absence of an anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  BubbleBorder::ArrowLocation arrow_location() const { return arrow_location_; }
-  void set_arrow_location(BubbleBorder::ArrowLocation arrow_location) {
-    arrow_location_ = arrow_location;
-  }
+  BubbleBorder::Arrow arrow() const { return arrow_; }
+  void set_arrow(BubbleBorder::Arrow arrow) { arrow_ = arrow; }
 
   BubbleBorder::Shadow shadow() const { return shadow_; }
   void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }
@@ -185,7 +182,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool move_with_anchor_;
 
   // The arrow's location on the bubble.
-  BubbleBorder::ArrowLocation arrow_location_;
+  BubbleBorder::Arrow arrow_;
 
   // Bubble border shadow to use.
   BubbleBorder::Shadow shadow_;

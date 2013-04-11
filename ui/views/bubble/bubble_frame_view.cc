@@ -181,7 +181,7 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
   gfx::Insets insets(GetInsets());
   client_size.Enlarge(insets.width(), insets.height());
 
-  const BubbleBorder::ArrowLocation arrow = bubble_border_->arrow_location();
+  const BubbleBorder::Arrow arrow = bubble_border_->arrow();
   if (adjust_if_offscreen && BubbleBorder::has_arrow(arrow)) {
     if (!bubble_border_->is_arrow_at_center(arrow)) {
       // Try to mirror the anchoring if the bubble does not fit on the screen.
@@ -215,9 +215,9 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
   gfx::Rect monitor_rect(GetMonitorBounds(anchor_rect));
   gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
   if (GetOffScreenLength(monitor_rect, window_bounds, vertical) > 0) {
-    BubbleBorder::ArrowLocation arrow = bubble_border()->arrow_location();
+    BubbleBorder::Arrow arrow = bubble_border()->arrow();
     // Mirror the arrow and get the new bounds.
-    bubble_border_->set_arrow_location(
+    bubble_border_->set_arrow(
         vertical ? BubbleBorder::vertical_mirror(arrow) :
                    BubbleBorder::horizontal_mirror(arrow));
     gfx::Rect mirror_bounds =
@@ -225,7 +225,7 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
     // Restore the original arrow if mirroring doesn't show more of the bubble.
     if (GetOffScreenLength(monitor_rect, mirror_bounds, vertical) >=
         GetOffScreenLength(monitor_rect, window_bounds, vertical))
-      bubble_border_->set_arrow_location(arrow);
+      bubble_border_->set_arrow(arrow);
     else
       SchedulePaint();
   }
@@ -233,7 +233,7 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
 
 void BubbleFrameView::OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
                                              const gfx::Size& client_size) {
-  BubbleBorder::ArrowLocation arrow = bubble_border()->arrow_location();
+  BubbleBorder::Arrow arrow = bubble_border()->arrow();
   DCHECK(BubbleBorder::is_arrow_at_center(arrow));
 
   // Get the desired bubble bounds without adjustment.

@@ -47,7 +47,7 @@ class MenuScrollViewContainer : public View {
   // Create the bubble border.
   void CreateBubbleBorder();
 
-  BubbleBorder::ArrowLocation BubbleBorderTypeFromAnchor(
+  BubbleBorder::Arrow BubbleBorderTypeFromAnchor(
       MenuItemView::AnchorPosition anchor);
 
   class MenuScrollView;
@@ -63,7 +63,7 @@ class MenuScrollViewContainer : public View {
   SubmenuView* content_view_;
 
   // If set the currently set border is a bubble border.
-  BubbleBorder::ArrowLocation arrow_location_;
+  BubbleBorder::Arrow arrow_;
 
   // The currently set border.
   BubbleBorder* bubble_border_;

@@ -59,13 +59,12 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-ExtensionPopup::ExtensionPopup(
-    Browser* browser,
-    extensions::ExtensionHost* host,
-    views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    ShowAction show_action)
-    : BubbleDelegateView(anchor_view, arrow_location),
+ExtensionPopup::ExtensionPopup(Browser* browser,
+                               extensions::ExtensionHost* host,
+                               views::View* anchor_view,
+                               views::BubbleBorder::Arrow arrow,
+                               ShowAction show_action)
+    : BubbleDelegateView(anchor_view, arrow),
       extension_host_(host) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   // Adjust the margin so that contents fit better.
@@ -166,17 +165,16 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 // static
-ExtensionPopup* ExtensionPopup::ShowPopup(
-    const GURL& url,
-    Browser* browser,
-    views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    ShowAction show_action) {
+ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
+                                          Browser* browser,
+                                          views::View* anchor_view,
+                                          views::BubbleBorder::Arrow arrow,
+                                          ShowAction show_action) {
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
-      arrow_location, show_action);
+      arrow, show_action);
   views::BubbleDelegateView::CreateBubble(popup);
 
 #if defined(USE_AURA)

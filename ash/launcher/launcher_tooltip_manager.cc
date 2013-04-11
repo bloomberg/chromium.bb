@@ -50,7 +50,7 @@ class LauncherTooltipManager::LauncherTooltipBubble
     : public views::BubbleDelegateView {
  public:
   LauncherTooltipBubble(views::View* anchor,
-                        views::BubbleBorder::ArrowLocation arrow_location,
+                        views::BubbleBorder::Arrow arrow,
                         LauncherTooltipManager* host);
 
   void SetText(const base::string16& text);
@@ -71,9 +71,9 @@ class LauncherTooltipManager::LauncherTooltipBubble
 
 LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     views::View* anchor,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::Arrow arrow,
     LauncherTooltipManager* host)
-    : views::BubbleDelegateView(anchor, arrow_location),
+    : views::BubbleDelegateView(anchor, arrow),
       host_(host) {
   gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
                                    kArrowOffsetLeftRight,
@@ -209,7 +209,7 @@ void LauncherTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
   }
 }
 
-void LauncherTooltipManager::UpdateArrowLocation() {
+void LauncherTooltipManager::UpdateArrow() {
   if (view_) {
     CancelHidingAnimation();
     Close();
@@ -350,14 +350,14 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
 
   anchor_ = anchor;
   text_ = text;
-  views::BubbleBorder::ArrowLocation arrow_location =
+  views::BubbleBorder::Arrow arrow =
       shelf_layout_manager_->SelectValueForShelfAlignment(
           views::BubbleBorder::BOTTOM_CENTER,
           views::BubbleBorder::LEFT_CENTER,
           views::BubbleBorder::RIGHT_CENTER,
           views::BubbleBorder::TOP_CENTER);
 
-  view_ = new LauncherTooltipBubble(anchor, arrow_location, this);
+  view_ = new LauncherTooltipBubble(anchor, arrow, this);
   widget_ = view_->GetWidget();
   view_->SetText(text_);
 

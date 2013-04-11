@@ -171,7 +171,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
 
 MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
     : content_view_(content_view),
-      arrow_location_(BubbleBorder::NONE),
+      arrow_(BubbleBorder::NONE),
       bubble_border_(NULL) {
   scroll_up_button_ = new MenuScrollButton(content_view, true);
   scroll_down_button_ = new MenuScrollButton(content_view, false);
@@ -181,17 +181,17 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   scroll_view_ = new MenuScrollView(content_view);
   AddChildView(scroll_view_);
 
-  arrow_location_ = BubbleBorderTypeFromAnchor(
+  arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  if (arrow_location_ != BubbleBorder::NONE)
+  if (arrow_ != BubbleBorder::NONE)
     CreateBubbleBorder();
   else
     CreateDefaultBorder();
 }
 
 bool MenuScrollViewContainer::HasBubbleBorder() {
-  return arrow_location_ != BubbleBorder::NONE;
+  return arrow_ != BubbleBorder::NONE;
 }
 
 void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
@@ -268,7 +268,7 @@ void MenuScrollViewContainer::OnBoundsChanged(
 }
 
 void MenuScrollViewContainer::CreateDefaultBorder() {
-  arrow_location_ = BubbleBorder::NONE;
+  arrow_ = BubbleBorder::NONE;
   bubble_border_ = NULL;
 
   const MenuConfig& menu_config =
@@ -304,14 +304,14 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 }
 
 void MenuScrollViewContainer::CreateBubbleBorder() {
-  bubble_border_ = new BubbleBorder(arrow_location_,
+  bubble_border_ = new BubbleBorder(arrow_,
                                     BubbleBorder::SMALL_SHADOW,
                                     SK_ColorWHITE);
   set_border(bubble_border_);
   set_background(new BubbleBackground(bubble_border_));
 }
 
-BubbleBorder::ArrowLocation
+BubbleBorder::Arrow
 MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
     MenuItemView::AnchorPosition anchor) {
   switch (anchor) {

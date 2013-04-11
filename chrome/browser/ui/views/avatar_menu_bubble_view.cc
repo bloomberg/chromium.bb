@@ -394,7 +394,7 @@ AvatarMenuBubbleView* AvatarMenuBubbleView::avatar_bubble_ = NULL;
 // static
 void AvatarMenuBubbleView::ShowBubble(
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
     const gfx::Rect& anchor_rect,
     Browser* browser) {
@@ -403,7 +403,7 @@ void AvatarMenuBubbleView::ShowBubble(
 
   DCHECK(chrome::IsCommandEnabled(browser, IDC_SHOW_AVATAR_MENU));
   avatar_bubble_ = new AvatarMenuBubbleView(
-      anchor_view, arrow_location, anchor_rect, browser);
+      anchor_view, arrow, anchor_rect, browser);
   views::BubbleDelegateView::CreateBubble(avatar_bubble_);
   avatar_bubble_->SetBackgroundColors();
   avatar_bubble_->SetAlignment(border_alignment);
@@ -423,10 +423,10 @@ void AvatarMenuBubbleView::Hide() {
 
 AvatarMenuBubbleView::AvatarMenuBubbleView(
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::Arrow arrow,
     const gfx::Rect& anchor_rect,
     Browser* browser)
-    : BubbleDelegateView(anchor_view, arrow_location),
+    : BubbleDelegateView(anchor_view, arrow),
       anchor_rect_(anchor_rect),
       browser_(browser),
       separator_(NULL),

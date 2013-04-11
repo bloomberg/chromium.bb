@@ -37,8 +37,8 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
  public:
   BundleInstalledBubble(const BundleInstaller* bundle,
                         View* anchor_view,
-                        views::BubbleBorder::ArrowLocation arrow_location)
-      : views::BubbleDelegateView(anchor_view, arrow_location) {
+                        views::BubbleBorder::Arrow arrow)
+      : views::BubbleDelegateView(anchor_view, arrow) {
     GridLayout* layout = GridLayout::CreatePanel(this);
     SetLayoutManager(layout);
     views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);

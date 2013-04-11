@@ -60,7 +60,7 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
 
   // Changes the arrow location of the tooltip in case that the launcher
   // arrangement has changed.
-  void UpdateArrowLocation();
+  void UpdateArrow();
 
   // Resets the timer for the delayed showing |view_|.  If the timer isn't
   // running, it starts a new timer.
