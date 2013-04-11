@@ -37,12 +37,8 @@ class Document;
 class KURL;
 struct Cookie;
 
-// Functions in this file take a Document pointer to determine which cookie storage to use. We should merge that into call sites, and use PlatformCookieJar directly.
-
-// These two functions implement document.cookie API, with special rules for HttpOnly cookies.
 String cookies(const Document*, const KURL&);
 void setCookies(Document*, const KURL&, const String& cookieString);
-
 bool cookiesEnabled(const Document*);
 String cookieRequestHeaderFieldValue(const Document*, const KURL&);
 bool getRawCookies(const Document*, const KURL&, Vector<Cookie>&);
