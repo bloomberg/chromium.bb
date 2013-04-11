@@ -35,6 +35,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #endif
@@ -847,7 +851,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
 
     // Mouse wasn't pressed over any menu, or the active menu, cancel.
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the
     // event.
@@ -868,7 +872,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     }
     Cancel(exit_type);
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_WIN)
     // We're going to exit the menu and want to repost the event so that is
     // is handled normally after the context menu has exited. We call
     // RepostEvent after Cancel so that mouse capture has been released so
@@ -2049,7 +2053,7 @@ bool MenuController::SelectByChar(char16 character) {
   return false;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const ui::LocatedEvent& event) {
   if (!state_.item) {
@@ -2069,8 +2073,9 @@ void MenuController::RepostEvent(SubmenuView* source,
     submenu->ReleaseCapture();
 
     if (submenu->GetWidget()->GetNativeView() &&
-        GetWindowThreadProcessId(submenu->GetWidget()->GetNativeView(), NULL) !=
-        GetWindowThreadProcessId(window, NULL)) {
+        GetWindowThreadProcessId(
+            views::HWNDForNativeView(submenu->GetWidget()->GetNativeView()),
+            NULL) != GetWindowThreadProcessId(window, NULL)) {
       // Even though we have mouse capture, windows generates a mouse event
       // if the other window is in a separate thread. Don't generate an event in
       // this case else the target window can get double events leading to bad
