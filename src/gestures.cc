@@ -348,13 +348,17 @@ class GestureInterpreterConsumer : public GestureConsumer {
   GestureInterpreterConsumer(GestureReadyFunction callback,
                              void* callback_data)
       : callback_(callback),
-        callback_data_(callback_data) {
-    AssertWithReturn(callback_);
+        callback_data_(callback_data) {}
+
+  void SetCallback(GestureReadyFunction callback, void* callback_data) {
+    callback_ = callback;
+    callback_data_ = callback_data;
   }
 
   void ConsumeGesture(const Gesture& gesture) {
     AssertWithReturn(gesture.type != kGestureTypeNull);
-    callback_(callback_data_, &gesture);
+    if (callback_)
+      callback_(callback_data_, &gesture);
   }
 
  private:
@@ -459,11 +463,8 @@ void GestureInterpreter::set_callback(GestureReadyFunction callback,
   callback_ = callback;
   callback_data_ = client_data;
 
-  if (interpreter_) {
-    consumer_.reset(new GestureInterpreterConsumer(callback_,
-                                                   callback_data_));
-    interpreter_->SetGestureConsumer(consumer_.get());
-  }
+  if (consumer_)
+    consumer_->SetCallback(callback, client_data);
 }
 
 void GestureInterpreter::InitializeTouchpad(void) {
@@ -543,9 +544,11 @@ void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
   else
     Err("Couldn't recognize device class: %d", cls);
 
-  // 'set' again so the consumer can get initialized.
-  if (callback_)
-    set_callback(callback_, callback_data_);
+  if (interpreter_) {
+    consumer_.reset(new GestureInterpreterConsumer(callback_,
+                                                   callback_data_));
+    interpreter_->SetGestureConsumer(consumer_.get());
+  }
 }
 
 std::string GestureInterpreter::EncodeActivityLog() {
