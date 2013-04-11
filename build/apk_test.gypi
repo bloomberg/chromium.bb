@@ -33,6 +33,8 @@
          'java_in_dir': '<(DEPTH)/testing/android/java',
          'android_manifest_path': '<(DEPTH)/testing/android/AndroidManifest.xml',
          'native_lib_target': 'lib<(test_suite_name)',
+         # TODO(yfriedman, cjhopman): Support managed installs for gtests.
+         'gyp_managed_install': 0,
        },
        'includes': [ 'java_apk.gypi' ],
      }],  # 'OS == "android" and gtest_target_type == "shared_library"
