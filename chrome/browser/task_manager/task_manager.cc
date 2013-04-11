@@ -1522,7 +1522,7 @@ TaskManager* TaskManager::GetInstance() {
 
 void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(), desktop_type);
+      ProfileManager::GetLastUsedProfile(), desktop_type);
   chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
                                 content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
