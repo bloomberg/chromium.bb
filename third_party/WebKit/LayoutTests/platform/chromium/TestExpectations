@@ -3781,3 +3781,5 @@ crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailur
 crbug.com/230339 virtual/gpu/compositedscrolling/scrollbars/short-scrollbar.html [ Pass ImageOnlyFailure ]
 
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
+
+crbug.com/230644 [ Debug ] inspector/debugger/live-edit-breakpoints.html [ Timeout ]
