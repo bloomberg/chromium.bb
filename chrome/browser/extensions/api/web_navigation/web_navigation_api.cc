@@ -252,6 +252,9 @@ WebNavigationTabObserver::WebNavigationTabObserver(
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                  content::Source<content::WebContents>(web_contents));
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+                 content::NotificationService::AllSources());
 }
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
@@ -308,6 +311,14 @@ void WebNavigationTabObserver::Observe(
             resource_redirect_details->frame_id, render_view_host);
         navigation_state_.SetIsServerRedirected(frame_id);
       }
+      break;
+    }
+
+    case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
+      // The RenderView is technically not yet deleted, but the RenderViewHost
+      // already starts to filter out some IPCs. In order to not get confused,
+      // we consider the RenderView dead already now.
+      RenderViewDeleted(content::Source<content::RenderViewHost>(source).ptr());
       break;
     }
 
