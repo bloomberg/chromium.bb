@@ -156,7 +156,6 @@ Settings::Settings(Page* page)
     , m_isCSSCustomFilterEnabled(false)
     , m_cssStickyPositionEnabled(true)
     , m_cssVariablesEnabled(false)
-    , m_tiledBackingStoreEnabled(false)
     , m_dnsPrefetchingEnabled(false)
 #if ENABLE(TOUCH_EVENTS)
     , m_touchEventEmulationEnabled(false)
@@ -463,11 +462,6 @@ void Settings::setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy en
 
     m_storageBlockingPolicy = enabled;
     m_page->storageBlockingStateChanged();
-}
-
-void Settings::setTiledBackingStoreEnabled(bool enabled)
-{
-    m_tiledBackingStoreEnabled = enabled;
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)

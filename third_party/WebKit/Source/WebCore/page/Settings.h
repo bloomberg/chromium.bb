@@ -175,9 +175,6 @@ namespace WebCore {
         void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
         bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
 
-        void setTiledBackingStoreEnabled(bool);
-        bool tiledBackingStoreEnabled() const { return m_tiledBackingStoreEnabled; }
-
 #if USE(SAFARI_THEME)
         // Windows debugging pref (global) for switching between the Aqua look and a native windows look.
         static void setShouldPaintNativeControls(bool);
