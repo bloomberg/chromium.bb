@@ -749,35 +749,25 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
         new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NOT_FOUND));
   }
 
-  // Reject incompatible input.
-  if (entry->file_info().is_directory() !=
+  if (entry->parent_resource_id().empty() ||  // Rejct root.
+      entry->file_info().is_directory() !=  // Reject incompatible input.
       entry_proto.file_info().is_directory()) {
     return make_scoped_ptr(
         new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_INVALID_OPERATION));
   }
 
   // Update data.
-  if (!util::IsSpecialResourceId(entry->resource_id())) {
-    scoped_ptr<DriveEntryProto> new_parent =
-        GetDirectory(entry_proto.parent_resource_id());
+  scoped_ptr<DriveEntryProto> new_parent =
+      GetDirectory(entry_proto.parent_resource_id());
 
-    if (!new_parent) {
-      return make_scoped_ptr(
-          new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NOT_FOUND));
-    }
-
-    // Remove from the old parent, update the entry, and add it to the new
-    // parent.
-    DetachEntryFromDirectory(entry->resource_id());
-    AddEntryToDirectory(CreateEntryWithProperBaseName(entry_proto));
-  } else {
-    // root has no parent.
-    if (!entry_proto.parent_resource_id().empty()) {
-      return make_scoped_ptr(new GetEntryInfoWithFilePathResult(
-          DRIVE_FILE_ERROR_INVALID_OPERATION));
-    }
-    storage_->PutEntry(CreateEntryWithProperBaseName(entry_proto));
+  if (!new_parent) {
+    return make_scoped_ptr(
+        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NOT_FOUND));
   }
+
+  // Remove from the old parent and add it to the new parent with the new data.
+  DetachEntryFromDirectory(entry->resource_id());
+  AddEntryToDirectory(CreateEntryWithProperBaseName(entry_proto));
 
   // Note that base_name is not the same for the new entry and entry_proto.
   scoped_ptr<DriveEntryProto> result_entry_proto =

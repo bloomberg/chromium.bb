@@ -847,51 +847,15 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   entry_proto = GetEntryInfoByPathSync(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2"));
   EXPECT_FALSE(entry_proto.get());
-}
 
-// Test the special logic for RefreshEntry of root.
-TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  base::FilePath drive_file_path;
-  scoped_ptr<DriveEntryProto> entry_proto;
-
-  // Get root.
-  entry_proto = GetEntryInfoByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive"));
-  ASSERT_TRUE(entry_proto.get());
-  EXPECT_EQ("drive", entry_proto->base_name());
-  ASSERT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry_proto->resource_id());
-
-  // Set upload url and call RefreshEntry on root.
-  DriveEntryProto dir_entry_proto(*entry_proto);
+  // Cannot refresh root.
+  dir_entry_proto.Clear();
+  dir_entry_proto.set_resource_id(util::kDriveGrandRootSpecialResourceId);
+  dir_entry_proto.set_title("new-root-name");
+  dir_entry_proto.set_parent_resource_id("resource_id:dir1");
   entry_proto.reset();
   resource_metadata_->RefreshEntry(
       dir_entry_proto,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"), drive_file_path);
-  ASSERT_TRUE(entry_proto.get());
-  EXPECT_EQ("drive", entry_proto->base_name());
-  EXPECT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry_proto->resource_id());
-
-  // Make sure the children have moved over. Test file9.
-  entry_proto.reset();
-  entry_proto = GetEntryInfoByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file9"));
-  ASSERT_TRUE(entry_proto.get());
-  EXPECT_EQ("file9", entry_proto->base_name());
-
-  // Refreshing root with a proto which has parent_resource_id should fail.
-  entry_proto = GetEntryInfoByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive"));
-  ASSERT_TRUE(entry_proto.get());
-  entry_proto->set_parent_resource_id("foo");
-  resource_metadata_->RefreshEntry(
-      *entry_proto,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
