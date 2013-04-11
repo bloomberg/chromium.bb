@@ -47,6 +47,7 @@ class BindingsTests:
                '--include', '.',
                '--outputDir', output_directory,
                '--supplementalDependencyFile', supplemental_dependency_file,
+               '--idlAttributesFile', 'bindings/scripts/IDLAttributes.txt',
                idl_file]
 
         exit_code = 0
