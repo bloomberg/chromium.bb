@@ -35,11 +35,12 @@ import sys
 import tempfile
 
 scripts_path = os.path.dirname(os.path.abspath(__file__))
-inspector_path = os.path.dirname(scripts_path)
-inspector_frontend_path = os.path.dirname(scripts_path) + "/front-end"
-protocol_externs_path = inspector_frontend_path + "/protocol-externs.js"
+devtools_path = os.path.dirname(scripts_path)
+inspector_path = os.path.dirname(devtools_path) + "/WebCore/inspector"
+devtools_frontend_path = devtools_path + "/front_end"
+protocol_externs_path = devtools_frontend_path + "/protocol_externs.js"
 
-generate_protocol_externs.generate_protocol_externs(protocol_externs_path, inspector_path + "/Inspector.json")
+generate_protocol_externs.generate_protocol_externs(protocol_externs_path, devtools_path + "/protocol.json")
 
 jsmodule_name_prefix = "jsmodule_"
 modules = [
@@ -116,7 +117,7 @@ modules = [
             "UISourceCode.js",
             "UserAgentSupport.js",
             "Workspace.js",
-            "protocol-externs.js",
+            "protocol_externs.js",
         ]
     },
     {
@@ -396,11 +397,12 @@ def dump_module(name, recursively, processed_modules):
         firstDependency = False
         command += jsmodule_name_prefix + dependency
     for script in module["sources"]:
-        command += " \\\n        --js " + inspector_frontend_path + "/" + script
+        command += " \\\n        --js " + devtools_frontend_path + "/" + script
     return command
 
 modules_dir = tempfile.mkdtemp()
-compiler_command = "java -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
+compiler_command = "java -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS \
+    --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
 
 process_recursively = len(sys.argv) > 1
 if process_recursively:
@@ -411,13 +413,13 @@ if process_recursively:
             modules.append(modules_by_name[sys.argv[i]])
     for module in modules:
         command = compiler_command
-        command += "    --externs " + inspector_frontend_path + "/externs.js"
+        command += "    --externs " + devtools_frontend_path + "/externs.js"
         command += dump_module(module["name"], True, {})
         print "Compiling \"" + module["name"] + "\""
         os.system(command)
 else:
     command = compiler_command
-    command += "    --externs " + inspector_frontend_path + "/externs.js"
+    command += "    --externs " + devtools_frontend_path + "/externs.js"
     for module in modules:
         command += dump_module(module["name"], False, {})
     os.system(command)
