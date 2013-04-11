@@ -96,6 +96,8 @@ public class ContentSettings {
     private boolean mMediaPlaybackRequiresUserGesture = true;
     private String mDefaultVideoPosterURL;
 
+    private boolean mSupportDeprecatedTargetDensityDPI = false;
+
     // Not accessed by the native side.
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
@@ -229,6 +231,7 @@ public class ContentSettings {
         if (mCanModifySettings) {
             // PERSONALITY_VIEW
             mUserAgent = LazyDefaultUserAgent.sInstance;
+            mSupportDeprecatedTargetDensityDPI = true;
             syncToNativeOnUiThread();
         } else {
             // PERSONALITY_CHROME

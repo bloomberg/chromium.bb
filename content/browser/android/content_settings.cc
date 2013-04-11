@@ -90,6 +90,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mMediaPlaybackRequiresUserGesture", "Z");
     default_video_poster_url =
         GetFieldID(env, clazz, "mDefaultVideoPosterURL", kStringClassName);
+    support_deprecated_target_density_dpi =
+        GetFieldID(env, clazz, "mSupportDeprecatedTargetDensityDPI", "Z");
   }
 
   // Field ids
@@ -119,6 +121,7 @@ struct ContentSettings::FieldIds {
   jfieldID load_with_overview_mode;
   jfieldID media_playback_requires_user_gesture;
   jfieldID default_video_poster_url;
+  jfieldID support_deprecated_target_density_dpi;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
@@ -427,6 +430,9 @@ void ContentSettings::SyncToNativeImpl() {
           env->GetObjectField(obj, field_ids_->default_video_poster_url)));
   prefs.default_video_poster_url = str.obj() ?
       GURL(ConvertJavaStringToUTF8(str)) : GURL();
+
+  prefs.support_deprecated_target_density_dpi = env->GetBooleanField(
+      obj, field_ids_->support_deprecated_target_density_dpi);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }

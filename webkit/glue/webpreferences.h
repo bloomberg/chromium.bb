@@ -163,6 +163,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
   GURL default_video_poster_url;
+  bool support_deprecated_target_density_dpi;
 #endif
 
   // We try to keep the default values the same as the default values in
