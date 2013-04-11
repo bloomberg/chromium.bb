@@ -285,6 +285,12 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
       .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetString(GL_VENDOR))
+      .WillOnce(Return(reinterpret_cast<const uint8*>("")))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetString(GL_RENDERER))
+      .WillOnce(Return(reinterpret_cast<const uint8*>("")))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetString(GL_VERSION))
       .WillOnce(Return(reinterpret_cast<const uint8*>(version)))
       .RetiresOnSaturation();
