@@ -1054,6 +1054,7 @@ namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 const char kBluetoothInputServiceName[] = "org.bluez";
 const char kBluetoothInputInterface[] = "org.bluez.Input";
+const char kExperimentalBluetoothInputInterface[] = "org.bluez.Input1";
 
 // Bluetooth Input methods.
 const char kConnect[] = "Connect";
@@ -1065,6 +1066,13 @@ const char kPropertyChangedSignal[] = "PropertyChanged";
 
 // Bluetooth Input properties.
 const char kConnectedProperty[] = "Connected";
+const char kReconnectModeProperty[] = "ReconnectMode";
+
+// Bluetooth Input property values.
+const char kNoneReconnectModeProperty[] = "none";
+const char kHostReconnectModeProperty[] = "host";
+const char kDeviceReconnectModeProperty[] = "device";
+const char kAnyReconnectModeProperty[] = "any";
 
 // Bluetooth Input errors.
 const char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
