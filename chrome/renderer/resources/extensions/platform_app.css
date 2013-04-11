@@ -26,3 +26,8 @@ html, body {
 img, a {
   -webkit-user-drag: none;
 }
+
+[contenteditable], input {
+  -webkit-user-select: auto;
+}
+
