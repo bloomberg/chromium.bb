@@ -2593,6 +2593,13 @@
               '-g',
             ],
             'conditions' : [
+              ['OS=="android"', {
+                # Only link with needed input sections. This is to avoid getting
+                # undefined reference to __cxa_bad_typeid in the CDU library.
+                'ldflags': [
+                  '-Wl,--gc-sections',
+                ],
+              }],
               ['OS=="android" and android_full_debug==0', {
                 # Some configurations are copied from Release_Base to reduce
                 # the binary size.
@@ -2607,7 +2614,6 @@
                 'ldflags': [
                   '-Wl,-O1',
                   '-Wl,--as-needed',
-                  '-Wl,--gc-sections',
                 ],
               }],
               ['OS=="linux" and target_arch=="ia32"', {
