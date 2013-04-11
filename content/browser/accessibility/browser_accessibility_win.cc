@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/accessibility_messages.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
+#include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
 namespace content {
@@ -33,7 +34,8 @@ const GUID GUID_IAccessibleContentDocument = {
 const char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
 
 // static
-LONG BrowserAccessibilityWin::next_unique_id_win_ = -1;
+LONG BrowserAccessibilityWin::next_unique_id_win_ =
+    base::win::kFirstBrowserAccessibilityManagerAccessibilityId;
 
 //
 // BrowserAccessibilityRelation
@@ -195,9 +197,12 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
   // uses positive IDs to enumerate children, so we use negative IDs to
   // clearly distinguish between indices and unique IDs.
   unique_id_win_ = next_unique_id_win_;
+  if (next_unique_id_win_ ==
+          base::win::kLastBrowserAccessibilityManagerAccessibilityId) {
+    next_unique_id_win_ =
+        base::win::kFirstBrowserAccessibilityManagerAccessibilityId;
+  }
   next_unique_id_win_--;
-  if (next_unique_id_win_ > 0)
-    next_unique_id_win_ = -1;
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {

@@ -293,6 +293,7 @@
         'base/ui_export.h',
         'base/view_prop.cc',
         'base/view_prop.h',
+        'base/win/accessibility_ids_win.h',
         'base/win/accessibility_misc_utils.cc',
         'base/win/accessibility_misc_utils.h',
         'base/win/atl_module.h',

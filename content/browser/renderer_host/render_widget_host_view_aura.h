@@ -115,6 +115,8 @@ class RenderWidgetHostViewAura
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
+      OVERRIDE;
 #endif
 
   // Overridden from RenderWidgetHostViewPort:

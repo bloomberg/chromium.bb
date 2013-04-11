@@ -11,7 +11,7 @@
 
 #include <UIAutomationCore.h>
 
-#include <vector>
+#include <set>
 
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -387,6 +387,8 @@ NativeViewAccessibilityWin
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
+
+  IAccessible* GetAccessibleFromWebView(long child_id);
 
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;

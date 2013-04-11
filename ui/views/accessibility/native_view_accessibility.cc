@@ -27,4 +27,14 @@ void NativeViewAccessibility::Destroy() {
   delete this;
 }
 
+#if !defined(OS_WIN)
+// static
+void NativeViewAccessibility::RegisterWebView(AccessibleWebView* web_view) {
+}
+
+// static
+void NativeViewAccessibility::UnregisterWebView(AccessibleWebView* web_view) {
+}
+#endif
+
 }  // namespace views

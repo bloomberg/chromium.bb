@@ -964,7 +964,17 @@ void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
         set_parent_iaccessible(accessible_parent);
   }
 }
-#endif
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewAura::AccessibleObjectFromChildId(long child_id) {
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (!manager)
+    return NULL;
+
+  return manager->ToBrowserAccessibilityManagerWin()->GetFromUniqueIdWin(
+      child_id);
+}
+#endif  // defined(OS_WIN)
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;

@@ -7,12 +7,20 @@
 
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 class View;
 
-class NativeViewAccessibility {
+class AccessibleWebView {
+ public:
+  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
+      = 0;
+  virtual View* AsView() = 0;
+};
+
+class VIEWS_EXPORT NativeViewAccessibility {
  public:
   static NativeViewAccessibility* Create(View* view);
 
@@ -24,6 +32,10 @@ class NativeViewAccessibility {
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
   virtual void Destroy();
+
+  static void RegisterWebView(AccessibleWebView* web_view);
+
+  static void UnregisterWebView(AccessibleWebView* web_view);
 
  protected:
   NativeViewAccessibility();

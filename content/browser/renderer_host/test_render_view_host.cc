@@ -216,6 +216,12 @@ void TestRenderWidgetHostView::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
   NOTIMPLEMENTED();
 }
+
+gfx::NativeViewAccessible
+TestRenderWidgetHostView::AccessibleObjectFromChildId(long child_id) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
 #endif
 
 bool TestRenderWidgetHostView::LockMouse() {

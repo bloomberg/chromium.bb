@@ -18,6 +18,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
+#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
@@ -37,9 +38,11 @@ WebView::WebView(content::BrowserContext* browser_context)
       browser_context_(browser_context),
       allow_accelerators_(false) {
   AddChildView(wcv_holder_);
+  NativeViewAccessibility::RegisterWebView(this);
 }
 
 WebView::~WebView() {
+  NativeViewAccessibility::UnregisterWebView(this);
 }
 
 content::WebContents* WebView::GetWebContents() {
@@ -180,6 +183,26 @@ void WebView::WebContentsFocused(content::WebContents* web_contents) {
   DCHECK(wc_owner_.get());
   // The WebView is only the delegate of WebContentses it creates itself.
   OnWebContentsFocused(web_contents_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebView, AccessibleWebView implementation:
+
+gfx::NativeViewAccessible WebView::AccessibleObjectFromChildId(long child_id) {
+#if defined(OS_WIN) && defined(USE_AURA)
+  content::RenderWidgetHostView* host_view =
+      web_contents_->GetRenderWidgetHostView();
+  if (host_view)
+    return host_view->AccessibleObjectFromChildId(child_id);
+  return NULL;
+#else
+  NOTIMPLEMENTED();
+  return NULL;
+#endif
+}
+
+View* WebView::AsView() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

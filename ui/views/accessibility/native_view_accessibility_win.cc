@@ -7,15 +7,19 @@
 #include <UIAutomationClient.h>
 #include <oleacc.h>
 
+#include <set>
 #include <vector>
 
+#include "base/memory/singleton.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/win/hwnd_util.h"
@@ -23,6 +27,96 @@
 using ui::AccessibilityTypes;
 
 namespace views {
+namespace {
+
+class AccessibleWebViewRegistry {
+ public:
+  static AccessibleWebViewRegistry* GetInstance();
+
+  void RegisterWebView(AccessibleWebView* web_view);
+
+  void UnregisterWebView(AccessibleWebView* web_view);
+
+  // Given the view that received the request for the accessible
+  // id in |top_view|, and the child id requested, return the native
+  // accessible object with that child id from one of the WebViews in
+  // |top_view|'s view hierarchy, if any.
+  IAccessible* GetAccessibleFromWebView(View* top_view, long child_id);
+
+ private:
+  friend struct DefaultSingletonTraits<AccessibleWebViewRegistry>;
+  AccessibleWebViewRegistry();
+  ~AccessibleWebViewRegistry() {}
+
+  // Set of all web views. We check whether each one is contained in a
+  // top view dynamically rather than keeping track of a map.
+  std::set<AccessibleWebView*> web_views_;
+
+  // The most recent top view used in a call to GetAccessibleFromWebView.
+  View* last_top_view_;
+
+  // The most recent web view where an accessible object was found,
+  // corresponding to |last_top_view_|.
+  AccessibleWebView* last_web_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibleWebViewRegistry);
+};
+
+AccessibleWebViewRegistry::AccessibleWebViewRegistry()
+    : last_top_view_(NULL),
+      last_web_view_(NULL) {
+}
+
+AccessibleWebViewRegistry* AccessibleWebViewRegistry::GetInstance() {
+  return Singleton<AccessibleWebViewRegistry>::get();
+}
+
+void AccessibleWebViewRegistry::RegisterWebView(AccessibleWebView* web_view) {
+  DCHECK(web_views_.find(web_view) == web_views_.end());
+  web_views_.insert(web_view);
+}
+
+void AccessibleWebViewRegistry::UnregisterWebView(AccessibleWebView* web_view) {
+  DCHECK(web_views_.find(web_view) != web_views_.end());
+  web_views_.erase(web_view);
+  if (last_web_view_ == web_view) {
+    last_top_view_ = NULL;
+    last_web_view_ = NULL;
+  }
+}
+
+IAccessible* AccessibleWebViewRegistry::GetAccessibleFromWebView(
+    View* top_view, long child_id) {
+  // This function gets called frequently, so try to avoid searching all
+  // of the web views if the notification is on the same web view that
+  // sent the last one.
+  if (last_top_view_ == top_view) {
+    IAccessible* accessible =
+        last_web_view_->AccessibleObjectFromChildId(child_id);
+    if (accessible)
+      return accessible;
+  }
+
+  // Search all web views. For each one, first ensure it's a descendant
+  // of this view where the event was posted - and if so, see if it owns
+  // an accessible object with that child id. If so, save the view to speed
+  // up the next notification.
+  for (std::set<AccessibleWebView*>::iterator iter = web_views_.begin();
+       iter != web_views_.end(); ++iter) {
+    AccessibleWebView* web_view = *iter;
+    if (!top_view->Contains(web_view->AsView()))
+      continue;
+    IAccessible* accessible = web_view->AccessibleObjectFromChildId(child_id);
+    if (accessible) {
+      last_top_view_ = top_view;
+      last_web_view_ = web_view;
+      return accessible;
+    }
+  }
+  return NULL;
+}
+
+}  // anonymous namespace
 
 // static
 long NativeViewAccessibilityWin::next_unique_id_ = 1;
@@ -70,7 +164,8 @@ void NativeViewAccessibilityWin::NotifyAccessibilityEvent(
   // Positive child ids are used for enumerating direct children,
   // negative child ids can be used as unique ids to refer to a specific
   // descendants.  Make index into view_storage_ids_ into a negative child id.
-  int child_id = -1 - next_view_storage_id_index_;
+  int child_id =
+      base::win::kFirstViewsAccessibilityId - next_view_storage_id_index_;
   ::NotifyWinEvent(MSAAEvent(event_type), hwnd, OBJID_CLIENT, child_id);
   next_view_storage_id_index_ =
       (next_view_storage_id_index_ + 1) % kMaxViewStorageIds;
@@ -274,12 +369,20 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
     // Negative child ids can be used to map to any descendant;
     // we map child ids to a view storage id that can refer to a
     // specific view (if that view still exists).
-    int view_storage_id_index = -(child_id + 1);
+    int view_storage_id_index =
+        base::win::kFirstViewsAccessibilityId - child_id;
     if (view_storage_id_index >= 0 &&
         view_storage_id_index < kMaxViewStorageIds) {
       int view_storage_id = view_storage_ids_[view_storage_id_index];
       ViewStorage* view_storage = ViewStorage::GetInstance();
       child_view = view_storage->RetrieveView(view_storage_id);
+    }
+
+    *disp_child = AccessibleWebViewRegistry::GetInstance()->
+        GetAccessibleFromWebView(view_, child_id);
+    if (*disp_child) {
+      (*disp_child)->AddRef();
+      return S_OK;
     }
   }
 
@@ -881,6 +984,14 @@ STDMETHODIMP NativeViewAccessibilityWin::GetPropertyValue(PROPERTYID id,
 //
 // Static methods.
 //
+
+void NativeViewAccessibility::RegisterWebView(AccessibleWebView* web_view) {
+  AccessibleWebViewRegistry::GetInstance()->RegisterWebView(web_view);
+}
+
+void NativeViewAccessibility::UnregisterWebView(AccessibleWebView* web_view) {
+  AccessibleWebViewRegistry::GetInstance()->UnregisterWebView(web_view);
+}
 
 int32 NativeViewAccessibilityWin::MSAAEvent(AccessibilityTypes::Event event) {
   switch (event) {

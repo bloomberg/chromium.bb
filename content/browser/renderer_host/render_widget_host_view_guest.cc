@@ -323,6 +323,12 @@ void RenderWidgetHostViewGuest::SetClickthroughRegion(SkRegion* region) {
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewGuest::AccessibleObjectFromChildId(long child_id) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
 #endif
 
 void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
