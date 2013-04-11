@@ -6,6 +6,8 @@ include_rules = [
   # Temporarily needed, see http://crbug.com/146989
   "!chrome/browser/chromeos/login/user_manager.h",
   "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/profiles/profile_keyed_service.h",
+  "!chrome/browser/profiles/profile_keyed_service_factory.h",
   "!chrome/browser/signin/token_service_factory.h",
   "!chrome/browser/signin/token_service.h",
   "!chrome/common/chrome_notification_types.h",

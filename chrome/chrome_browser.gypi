@@ -593,6 +593,8 @@
         'browser/google_apis/drive_api_util.cc',
         'browser/google_apis/drive_api_util.h',
         'browser/google_apis/drive_entry_kinds.h',
+        'browser/google_apis/drive_notification_manager.cc',
+        'browser/google_apis/drive_notification_manager.h',
         'browser/google_apis/drive_notification_observer.h',
         'browser/google_apis/drive_service_interface.h',
         'browser/google_apis/drive_switches.cc',
