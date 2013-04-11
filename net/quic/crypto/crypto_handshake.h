@@ -353,6 +353,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       base::StringPiece source_address_token_secret);
   ~QuicCryptoServerConfig();
 
+  // TESTING is a magic parameter for passing to the constructor in tests.
+  static const char TESTING[];
+
   // ConfigForTesting generates a QuicServerConfigProtobuf protobuf suitable
   // for using in tests. |extra_tags| contains additional key/value pairs that
   // will be inserted into the config.

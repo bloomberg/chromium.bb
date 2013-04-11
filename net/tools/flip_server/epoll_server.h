@@ -486,11 +486,7 @@ class EpollServer {
   //   is non-zero).
   void CallReadyListCallbacks();
 
-  // Granularity at which time moves when considering what alarms are on.
-  // See function: DoRoundingOnNow() on exact usage.
-  static const int kMinimumEffectiveAlarmQuantum;
  protected:
-
   virtual int GetFlags(int fd);
   inline int SetFlags(int fd, int flags) {
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
@@ -712,11 +708,6 @@ class EpollServer {
   // TODO(alyssar): make this into something that scales up.
   static const int events_size_ = 256;
   struct epoll_event events_[256];
-
-  // These controls the granularity for alarms
-  // See function CallAndReregisterAlarmEvents()
-  // TODO(sushantj): Add test for this.
-  int64 DoRoundingOnNow(int64 now_in_us) const;
 
 #ifdef EPOLL_SERVER_EVENT_TRACING
   struct EventRecorder {

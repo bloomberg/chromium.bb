@@ -28,6 +28,8 @@ class QuicSpdyClientStream : public QuicReliableClientStream {
   // data for us.
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
 
+  virtual void TerminateFromPeer(bool half_close) OVERRIDE;
+
   virtual ssize_t SendRequest(const BalsaHeaders& headers,
                               base::StringPiece body,
                               bool fin) OVERRIDE;

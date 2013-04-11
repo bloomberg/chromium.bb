@@ -61,6 +61,8 @@ class QuicInMemoryCache {
                    const BalsaHeaders& response_headers,
                    base::StringPiece response_body);
 
+  void ResetForTests();
+
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
 

@@ -97,6 +97,10 @@ void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
   responses_[GetKey(request_headers)] = new_response;
 }
 
+void QuicInMemoryCache::ResetForTests() {
+  STLDeleteValues(&responses_);
+}
+
 QuicInMemoryCache::QuicInMemoryCache() {
   // If there's no defined cache dir, we have no initialization to do.
   if (FLAGS_quic_in_memory_cache_dir.empty()) {

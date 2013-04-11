@@ -731,20 +731,9 @@ void EpollServer::CallReadyListCallbacks() {
   DCHECK(tmp_list_.lh_first == NULL);
 }
 
-const int EpollServer::kMinimumEffectiveAlarmQuantum = 1000;
-
-// Alarms may be up to kMinimumEffectiveAlarmQuantum -1 us late.
-inline int64 EpollServer::DoRoundingOnNow(int64 now_in_us) const {
-  now_in_us /= kMinimumEffectiveAlarmQuantum;
-  now_in_us *= kMinimumEffectiveAlarmQuantum;
-  now_in_us += (2 * kMinimumEffectiveAlarmQuantum - 1);
-  return now_in_us;
-}
-
 void EpollServer::CallAndReregisterAlarmEvents() {
   int64 now_in_us = recorded_now_in_us_;
   DCHECK_NE(0, recorded_now_in_us_);
-  now_in_us = DoRoundingOnNow(now_in_us);
 
   TimeToAlarmCBMap::iterator erase_it;
 

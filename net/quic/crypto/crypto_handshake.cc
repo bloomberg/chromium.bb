@@ -651,6 +651,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   return QUIC_NO_ERROR;
 }
 
+// static
+const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret)

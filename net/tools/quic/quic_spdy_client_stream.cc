@@ -45,6 +45,17 @@ uint32 QuicSpdyClientStream::ProcessData(const char* data, uint32 length) {
   return length;
 }
 
+void QuicSpdyClientStream::TerminateFromPeer(bool half_close) {
+  ReliableQuicStream::TerminateFromPeer(half_close);
+  if (!response_headers_received_) {
+    Close(QUIC_BAD_APPLICATION_PAYLOAD);
+  } else if ((headers().content_length_status() ==
+             BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
+             mutable_data()->size() != headers().content_length()) {
+    Close(QUIC_BAD_APPLICATION_PAYLOAD);
+  }
+}
+
 ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
                                           StringPiece body,
                                           bool fin) {

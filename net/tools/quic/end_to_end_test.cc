@@ -117,6 +117,10 @@ class EndToEndTest : public ::testing::Test {
                "HTTP/1.1", "200", "OK", kBarResponseBody);
   }
 
+  static void SetUpTestCase() {
+    QuicInMemoryCache::GetInstance()->ResetForTests();
+  }
+
   virtual QuicTestClient* CreateQuicClient() {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_);

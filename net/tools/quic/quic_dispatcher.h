@@ -41,6 +41,10 @@ class QuicSession;
 namespace net {
 namespace tools {
 
+namespace test {
+class QuicDispatcherPeer;
+}  // namespace test
+
 class DeleteSessionsAlarm;
 
 class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
@@ -95,6 +99,8 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
 
  private:
+  friend class net::tools::test::QuicDispatcherPeer;
+
   // Removes the session from the session map and write blocked list, and
   // adds the GUID to the time-wait list.
   void CleanUpSession(SessionMap::iterator it);
