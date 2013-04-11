@@ -56,6 +56,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
+#include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
@@ -634,6 +635,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   chromeos::accessibility::Initialize();
 
+  peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
+
   storage_monitor_->Init();
 
   // Initialize the network portal detector for Chrome OS. The network
@@ -738,6 +741,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   resume_observer_.reset();
   brightness_observer_.reset();
   retail_mode_power_save_blocker_.reset();
+  peripheral_battery_observer_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

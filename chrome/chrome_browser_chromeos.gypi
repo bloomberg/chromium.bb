@@ -605,6 +605,8 @@
         'browser/chromeos/power/idle_action_warning_dialog_view.h',
         'browser/chromeos/power/idle_action_warning_observer.cc',
         'browser/chromeos/power/idle_action_warning_observer.h',
+        'browser/chromeos/power/peripheral_battery_observer.cc',
+        'browser/chromeos/power/peripheral_battery_observer.h',
         'browser/chromeos/power/power_button_observer.cc',
         'browser/chromeos/power/power_button_observer.h',
         'browser/chromeos/power/resume_observer.cc',

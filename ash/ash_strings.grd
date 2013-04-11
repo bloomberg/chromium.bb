@@ -457,6 +457,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name of the internal display which is shown in the display settings.">
 	Internal Display
       </message>
+      <message name="IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT" desc="The text of the notification when a peripheral device is in low battery condition.">
+        Battery low (<ph name="percentage">$1<ex>56</ex></ph>%)
+      </message>
       <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
         Screenshot taken
       </message>

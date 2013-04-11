@@ -510,6 +510,9 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="common/ntp_welcome_thumb.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
+      </if>
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DIM" file="win/notification_tray_dim.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_LIT" file="win/notification_tray_lit.png" />
