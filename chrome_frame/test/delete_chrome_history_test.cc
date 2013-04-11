@@ -8,7 +8,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
-#include "components/webdata/autofill/autofill_table.h"
+#include "components/autofill/browser/webdata/autofill_table.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/webdata_constants.h"
 

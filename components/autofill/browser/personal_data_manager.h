@@ -16,7 +16,7 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/webdata/autofill/autofill_webdata_service_observer.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 class AutofillMetrics;

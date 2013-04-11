@@ -45,7 +45,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/browser/personal_data_manager.h"
-#include "components/webdata/autofill/autofill_webdata_service.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/download_manager.h"

@@ -10,7 +10,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
-#include "components/webdata/autofill/autofill_webdata_service_observer.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 
 class AutofillWebDataService;
 class PersonalDataManager;

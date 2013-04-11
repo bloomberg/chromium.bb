@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
-#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
+#ifndef COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
+#define COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
 
-#include "components/webdata/autofill/autofill_change.h"
+#include "components/autofill/browser/webdata/autofill_change.h"
 
 class AutofillWebDataServiceObserverOnDBThread {
  public:
@@ -34,4 +34,4 @@ class AutofillWebDataServiceObserverOnUIThread {
   virtual ~AutofillWebDataServiceObserverOnUIThread() {}
 };
 
-#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
+#endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_

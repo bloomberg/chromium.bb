@@ -2126,16 +2126,6 @@
 
         # TODO(joi): Move to //components/components.gypi once
         # remaining dependencies back to //chrome are eliminated.
-        '../components/webdata/autofill/autofill_change.cc',
-        '../components/webdata/autofill/autofill_change.h',
-        '../components/webdata/autofill/autofill_entry.cc',
-        '../components/webdata/autofill/autofill_entry.h',
-        '../components/webdata/autofill/autofill_table.cc',
-        '../components/webdata/autofill/autofill_table.h',
-        '../components/webdata/autofill/autofill_webdata.h',
-        '../components/webdata/autofill/autofill_webdata_service.cc',
-        '../components/webdata/autofill/autofill_webdata_service.h',
-        '../components/webdata/autofill/autofill_webdata_service_observer.h',
         '../components/webdata/common/web_database.cc',
         '../components/webdata/common/web_database.h',
         '../components/webdata/common/web_database_service.cc',

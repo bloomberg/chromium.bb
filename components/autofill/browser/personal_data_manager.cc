@@ -13,8 +13,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill-inl.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/form_group.h"
@@ -23,9 +23,9 @@
 #include "components/autofill/browser/phone_number.h"
 #include "components/autofill/browser/phone_number_i18n.h"
 #include "components/autofill/browser/validation.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
-#include "components/webdata/autofill/autofill_webdata_service.h"
 #include "content/public/browser/browser_context.h"
 
 using content::BrowserContext;

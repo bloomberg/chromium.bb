@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
-#include "components/webdata/autofill/autofill_webdata_service.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 
 
 class CommandLine;

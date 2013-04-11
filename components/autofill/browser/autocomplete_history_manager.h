@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/pref_member.h"
-#include "components/webdata/autofill/autofill_webdata_service.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 

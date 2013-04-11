@@ -16,10 +16,10 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
+#include "components/autofill/browser/webdata/autofill_entry.h"
+#include "components/autofill/browser/webdata/autofill_table.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/common/form_field_data.h"
-#include "components/webdata/autofill/autofill_entry.h"
-#include "components/webdata/autofill/autofill_table.h"
-#include "components/webdata/autofill/autofill_webdata_service.h"
 #include "components/webdata/common/web_database.h"
 
 using base::WaitableEvent;

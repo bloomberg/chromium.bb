@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webdata/autofill/autofill_table.h"
+#include "components/autofill/browser/webdata/autofill_table.h"
 
 #include <algorithm>
 #include <limits>
@@ -22,9 +22,9 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/browser/webdata/autofill_change.h"
+#include "components/autofill/browser/webdata/autofill_entry.h"
 #include "components/autofill/common/form_field_data.h"
-#include "components/webdata/autofill/autofill_change.h"
-#include "components/webdata/autofill/autofill_entry.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "sql/statement.h"

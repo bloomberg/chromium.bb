@@ -6,7 +6,7 @@
 
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "components/webdata/autofill/autofill_entry.h"
+#include "components/autofill/browser/webdata/autofill_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const unsigned int kMaxAutofillTimeStamps = 2;

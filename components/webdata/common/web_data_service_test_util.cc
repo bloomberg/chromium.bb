@@ -4,7 +4,7 @@
 
 #include "components/webdata/common/web_data_service_test_util.h"
 
-#include "components/webdata/autofill/autofill_webdata_service.h"
+#include "components/autofill/browser/webdata/autofill_webdata_service.h"
 
 MockWebDataServiceWrapperBase::MockWebDataServiceWrapperBase() {
 }

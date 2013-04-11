@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_H_
-#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_H_
+#ifndef COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
+#define COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "components/autofill/browser/webdata/autofill_webdata.h"
 #include "components/autofill/common/form_field_data.h"
-#include "components/webdata/autofill/autofill_webdata.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -129,4 +129,4 @@ class AutofillWebDataService : public AutofillWebData,
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };
 
-#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_H_
+#endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
