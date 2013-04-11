@@ -71,15 +71,6 @@ void EntryMetadata::DeSerialize(const char* in_buffer,
   memcpy(out_entry_metadata, in_buffer, kEntryMetadataSize);
 }
 
-// static
-void EntryMetadata::Merge(const EntryMetadata& from,
-                          EntryMetadata* to) {
-  if (to->last_used_time == 0)
-    to->last_used_time = from.last_used_time;
-  if (to->entry_size == 0)
-    to->entry_size = from.entry_size;
-}
-
 }  // namespace SimpleIndexFile
 
 }  // namespace disk_cache

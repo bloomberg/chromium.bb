@@ -59,9 +59,6 @@ namespace SimpleIndexFile {
     uint64 cache_size;  // Total cache storage size in bytes.
   };
 
-  // TODO(felipeg): At some point we should consider using a protobuffer.  See
-  // that we are re-implementing most of protobuffer's functionality such as
-  // Serialize and Merge.
   // We must keep this struct a POD.
   struct EntryMetadata {
     EntryMetadata();
@@ -73,19 +70,11 @@ namespace SimpleIndexFile {
     std::string GetHashKey() const;
     void SetLastUsedTime(const base::Time& last_used_time_p);
 
-    // Serialize the data from |in_entry_metadata| and appends the bytes in
-    // |out_buffer|. The serialization is platform dependent since it simply
-    // writes the whole struct from memory into the given buffer.
     static void Serialize(const EntryMetadata& in_entry_metadata,
                           std::string* out_buffer);
 
     static void DeSerialize(const char* in_buffer,
                             EntryMetadata* out_entry_metadata);
-
-    // Merge two EntryMetadata instances.
-    // The existing valid data in |out_entry_metadata| will prevail.
-    static void Merge(const EntryMetadata& entry_metadata,
-                      EntryMetadata* out_entry_metadata);
 
     char hash_key[kEntryHashKeySize];  // Not a c_string, not null terminated.
 

@@ -29,12 +29,12 @@ class SimpleIndex
  public:
   SimpleIndex(
       const scoped_refptr<base::TaskRunner>& cache_thread,
-      const scoped_refptr<base::TaskRunner>& io_thread,
       const base::FilePath& path);
 
   virtual ~SimpleIndex();
 
-  void Initialize();
+  // Should be called on CacheThread.
+  bool Initialize();
 
   void Insert(const std::string& key);
   void Remove(const std::string& key);
@@ -45,7 +45,7 @@ class SimpleIndex
   // iff the entry exist in the index.
   bool UseIfExists(const std::string& key);
 
-  void WriteToDisk();
+  void Cleanup();
 
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the
@@ -59,26 +59,10 @@ class SimpleIndex
   // EntryMetadata itself.
   typedef base::hash_map<std::string, SimpleIndexFile::EntryMetadata> EntrySet;
 
-  typedef base::Callback<void(scoped_ptr<EntrySet>)> MergeCallback;
-
-  static void InsertInternal(
-      EntrySet* entry_set,
-      const SimpleIndexFile::EntryMetadata& entry_metadata);
-
-  // Load index from disk. If it is corrupted, call RestoreFromDisk().
-  static void LoadFromDisk(
-      const base::FilePath& index_filename,
-      const scoped_refptr<base::TaskRunner>& io_thread,
-      const MergeCallback& merge_callback);
+  void InsertInternal(const SimpleIndexFile::EntryMetadata& entry_metadata);
 
   // Enumerates all entries' files on disk and regenerates the index.
-  static void RestoreFromDisk(
-      const base::FilePath& index_filename,
-      const scoped_refptr<base::TaskRunner>& io_thread,
-      const MergeCallback& merge_callback);
-
-  // Must run on IO Thread.
-  void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries);
+  bool RestoreFromDisk();
 
   // |out_buffer| needs to be pre-allocated. The serialized index is stored in
   // |out_buffer|.
@@ -91,22 +75,18 @@ class SimpleIndex
                          const base::FilePath& temp_filename,
                          scoped_ptr<std::string> buffer);
 
+  const base::FilePath path_;
+
   EntrySet entries_set_;
   uint64 cache_size_;  // Total cache storage size in bytes.
 
-  // This stores all the hash_key of entries that are removed during
-  // initialization.
-  base::hash_set<std::string> removed_entries_;
-  bool initialized_;
-
   base::FilePath index_filename_;
+  base::PlatformFile index_file_;
 
+  // We keep the thread from where Initialize() method has been called so that
+  // we run the Cleanup method in the same thread. Usually that should be the
+  // CacheThread.
   scoped_refptr<base::TaskRunner> cache_thread_;
-  scoped_refptr<base::TaskRunner> io_thread_;
-
-  // All nonstatic SimpleEntryImpl methods should always be called on the IO
-  // thread, in all cases. |io_thread_checker_| documents and enforces this.
-  base::ThreadChecker io_thread_checker_;
 };
 
 }  // namespace disk_cache
