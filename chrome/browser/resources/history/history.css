@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-html[dir=rtl] body.uber-frame > .page {
+html[dir='rtl'] body.uber-frame > .page {
   -webkit-margin-end: 0;
 }
 
@@ -36,7 +36,7 @@ html[dir=rtl] body.uber-frame > .page {
   padding-top: 5px;
 }
 
-html[dir=rtl] #notification-bar {
+html[dir='rtl'] #notification-bar {
   float: left;
 }
 
@@ -45,7 +45,7 @@ html[dir=rtl] #notification-bar {
   margin-top: 12px;
 }
 
-html[dir=rtl] #notification-bar.alone {
+html[dir='rtl'] #notification-bar.alone {
   float: right;
 }
 
@@ -65,7 +65,7 @@ html[dir=rtl] #notification-bar.alone {
   float: left;
 }
 
-html[dir=rtl] #editing-controls {
+html[dir='rtl'] #editing-controls {
   float: right;
 }
 
@@ -77,9 +77,9 @@ html[dir=rtl] #editing-controls {
   -webkit-margin-end: 0;
 }
 
-html[dir=rtl] #range-today,
-html[dir=rtl] #range-previous,
-html[dir=rtl] #range-next {
+html[dir='rtl'] #range-today,
+html[dir='rtl'] #range-previous,
+html[dir='rtl'] #range-next {
   float: left;
 }
 
@@ -253,7 +253,7 @@ html[dir='rtl'] .site-domain {
   width: 110px;
 }
 
-.entry input[type=checkbox] {
+.entry input[type='checkbox'] {
   -webkit-margin-end: 6px;
   -webkit-margin-start: 4px;
   line-height: 1em;
@@ -263,19 +263,19 @@ html[dir='rtl'] .site-domain {
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
  * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
 .site-domain-wrapper input[type=checkbox]:not(:checked),
-.entry input[type=checkbox]:not(:checked) {
+.entry input[type='checkbox']:not(:checked) {
   opacity: 0;
 }
 
-.site-domain-wrapper:hover input[type=checkbox],
-.site-domain-wrapper input[type=checkbox]:focus,
-.entry-box:hover input[type=checkbox],
-.entry-box input[type=checkbox]:focus {
+.site-domain-wrapper:hover input[type='checkbox'],
+.site-domain-wrapper input[type='checkbox']:focus,
+.entry-box:hover input[type='checkbox'],
+.entry-box input[type='checkbox']:focus {
   opacity: 1;
 }
 
-.site-domain-wrapper input[type=checkbox]:focus,
-.entry-box input[type=checkbox]:focus {
+.site-domain-wrapper input[type='checkbox']:focus,
+.entry-box input[type='checkbox']:focus {
   -webkit-transition: opacity 150ms;
 }
 
@@ -366,8 +366,8 @@ html[dir='rtl'] .site-domain {
   background-size: 16px;
 }
 
-html[dir=rtl] .entry .title-and-domain,
-html[dir=rtl] .site-domain {
+html[dir='rtl'] .entry .title-and-domain,
+html[dir='rtl'] .site-domain {
   background-position-x: right;
 }
 
@@ -381,7 +381,7 @@ html[dir=rtl] .site-domain {
 
 .site-domain-arrow {
   -webkit-transition: -webkit-transform 300ms linear;
-  background: url('../disclosure_triangle_small.png') no-repeat;
+  background: url(../disclosure_triangle_small.png) no-repeat;
   background-position: 5px 5px;
   color: rgb(143, 143, 143);
   height: 21px;
@@ -409,7 +409,8 @@ html[dir='rtl'] .site-domain-arrow.expand {
 
 .entry .starred {
   -webkit-margin-start: 4px;
-  background: url('../../../../ui/webui/resources/images/star_small.png') no-repeat;
+  background:
+      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
   display: inline-block;
   height: 11px;
   width: 11px;
@@ -452,28 +453,28 @@ body:not(.has-results) #results-pagination {
 }
 
 
-html[dir=rtl] #older-button {
+html[dir='rtl'] #older-button {
   float: left;
 }
 
-html[dir=ltr] #newest-button::before {
+html[dir='ltr'] #newest-button::before {
   -webkit-padding-end: 0.3em;
   content: '\00AB';  /* Left-pointing double angle quotation mark. */
 }
 
-html[dir=rtl] #newest-button::after {
+html[dir='rtl'] #newest-button::after {
   -webkit-padding-start: 0.3em;
   content: '\00BB';  /* Right-pointing double angle quotation mark. */
 }
 
-html[dir=ltr] #newer-button::before,
-html[dir=rtl] #older-button::before {
+html[dir='ltr'] #newer-button::before,
+html[dir='rtl'] #older-button::before {
   -webkit-padding-end: 0.3em;
   content: '\2039';  /* Single left-pointing angle quotation mark. */
 }
 
-html[dir=ltr] #older-button::after,
-html[dir=rtl] #newer-button::after {
+html[dir='ltr'] #older-button::after,
+html[dir='rtl'] #newer-button::after {
   -webkit-padding-start: 0.3em;
   content: '\203A';  /* Single right-pointing angle quotation mark. */
 }
