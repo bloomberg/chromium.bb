@@ -92,7 +92,6 @@ class Settings;
 class StaticCSSRuleList;
 class StyleCustomFilterProgramCache;
 class StyleBuilder;
-class StyleScopeResolver;
 class StyleImage;
 class StyleKeyframe;
 class StylePendingImage;
@@ -210,11 +209,7 @@ public:
 
     StyleScopeResolver* ensureScopeResolver()
     {
-#if ENABLE(STYLE_SCOPED)
         ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled() || RuntimeEnabledFeatures::styleScopedEnabled());
-#else
-        ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled());
-#endif
         if (!m_scopeResolver)
             m_scopeResolver = adoptPtr(new StyleScopeResolver());
         return m_scopeResolver.get();

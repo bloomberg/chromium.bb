@@ -64,14 +64,9 @@ bool ContextFeatures::dialogElementEnabled(Document* document)
 
 bool ContextFeatures::styleScopedEnabled(Document* document)
 {
-#if ENABLE(STYLE_SCOPED)
     if (!document)
         return RuntimeEnabledFeatures::styleScopedEnabled();
     return document->contextFeatures()->isEnabled(document, StyleScoped, RuntimeEnabledFeatures::styleScopedEnabled());
-#else
-    UNUSED_PARAM(document);
-    return false;
-#endif
 }
 
 bool ContextFeatures::pagePopupEnabled(Document* document)

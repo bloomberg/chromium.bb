@@ -70,9 +70,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
     , m_originalShadowDOMEnabled(RuntimeEnabledFeatures::shadowDOMEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
-#if ENABLE(STYLE_SCOPED)
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
-#endif
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
@@ -103,9 +101,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
     RuntimeEnabledFeatures::setShadowDOMEnabled(m_originalShadowDOMEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
-#if ENABLE(STYLE_SCOPED)
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
-#endif
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
@@ -218,11 +214,7 @@ void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 
 void InternalSettings::setStyleScopedEnabled(bool enabled)
 {
-#if ENABLE(STYLE_SCOPED)
     RuntimeEnabledFeatures::setStyleScopedEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionCode& ec)

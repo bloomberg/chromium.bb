@@ -54,9 +54,7 @@ public:
         bool m_originalCSSVariablesEnabled;
         bool m_originalShadowDOMEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
-#if ENABLE(STYLE_SCOPED)
         bool m_originalStyleScoped;
-#endif
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
         IntSize m_originalTextAutosizingWindowSizeOverride;

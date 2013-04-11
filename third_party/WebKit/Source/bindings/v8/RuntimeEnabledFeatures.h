@@ -223,10 +223,8 @@ public:
     static void setCustomDOMElements(bool isEnabled) { isCustomDOMElementsEnabled = isEnabled; }
 #endif
 
-#if ENABLE(STYLE_SCOPED)
     static bool styleScopedEnabled() { return isStyleScopedEnabled; }
     static void setStyleScopedEnabled(bool isEnabled) { isStyleScopedEnabled = isEnabled; }
-#endif
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     static bool inputTypeDateTimeEnabled() { return isInputTypeDateTimeEnabled; }
@@ -319,9 +317,7 @@ private:
     static bool isCustomDOMElementsEnabled;
 #endif
 
-#if ENABLE(STYLE_SCOPED)
     static bool isStyleScopedEnabled;
-#endif
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     static bool isInputTypeDateTimeEnabled;

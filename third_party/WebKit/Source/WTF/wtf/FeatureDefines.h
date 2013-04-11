@@ -370,10 +370,6 @@
 #define ENABLE_SPELLCHECK 0
 #endif
 
-#if !defined(ENABLE_STYLE_SCOPED)
-#define ENABLE_STYLE_SCOPED 0
-#endif
-
 #if !defined(ENABLE_SVG)
 #define ENABLE_SVG 1
 #endif

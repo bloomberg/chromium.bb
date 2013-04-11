@@ -430,20 +430,12 @@ bool WebRuntimeFeatures::isCustomDOMElementsEnabled()
 
 void WebRuntimeFeatures::enableStyleScoped(bool enable)
 {
-#if ENABLE(STYLE_SCOPED)
     RuntimeEnabledFeatures::setStyleScopedEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isStyleScopedEnabled()
 {
-#if ENABLE(STYLE_SCOPED)
     return RuntimeEnabledFeatures::styleScopedEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableInputTypeDateTime(bool enable)

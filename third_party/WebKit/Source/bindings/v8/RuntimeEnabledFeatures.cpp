@@ -173,9 +173,7 @@ bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
 bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
 #endif
 
-#if ENABLE(STYLE_SCOPED)
 bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
-#endif
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
