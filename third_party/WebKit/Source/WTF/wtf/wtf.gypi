@@ -221,8 +221,6 @@
             'text/TextPosition.h',
             'text/WTFString.cpp',
             'text/WTFString.h',
-            'threads/BinarySemaphore.cpp',
-            'threads/BinarySemaphore.h',
             'unicode/CharacterNames.h',
             'unicode/Collator.h',
             'unicode/CollatorDefault.cpp',
