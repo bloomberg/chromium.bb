@@ -57,7 +57,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
                      pki.exponent2()->size() +
                      pki.coefficient()->size() +
                      pki.private_exponent()->size();
-  scoped_array<BYTE> blob(new BYTE[blob_size]);
+  scoped_ptr<BYTE[]> blob(new BYTE[blob_size]);
 
   uint8* dest = blob.get();
   PUBLICKEYSTRUC* public_key_struc = reinterpret_cast<PUBLICKEYSTRUC*>(dest);
@@ -151,7 +151,7 @@ bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) const {
     return false;
   }
 
-  scoped_array<uint8> blob(new uint8[blob_length]);
+  scoped_ptr<uint8[]> blob(new uint8[blob_length]);
   if (!CryptExportKey(key_, 0, PRIVATEKEYBLOB, 0, blob.get(), &blob_length)) {
     NOTREACHED();
     return false;
@@ -205,7 +205,7 @@ bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) const {
     return false;
   }
 
-  scoped_array<uint8> key_info(new uint8[key_info_len]);
+  scoped_ptr<uint8[]> key_info(new uint8[key_info_len]);
   if (!CryptExportPublicKeyInfo(
       provider_, AT_SIGNATURE, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
       reinterpret_cast<CERT_PUBLIC_KEY_INFO*>(key_info.get()), &key_info_len)) {
@@ -222,7 +222,7 @@ bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) const {
     return false;
   }
 
-  scoped_array<BYTE> encoded(new BYTE[encoded_length]);
+  scoped_ptr<BYTE[]> encoded(new BYTE[encoded_length]);
   if (!CryptEncodeObject(
       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, X509_PUBLIC_KEY_INFO,
       reinterpret_cast<CERT_PUBLIC_KEY_INFO*>(key_info.get()), encoded.get(),

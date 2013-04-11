@@ -168,7 +168,7 @@ bool GenerateHMACKey(size_t key_size_in_bits,
                      ALG_ID alg,
                      ScopedHCRYPTPROV* provider,
                      ScopedHCRYPTKEY* key,
-                     scoped_array<BYTE>* raw_key) {
+                     scoped_ptr<BYTE[]>* raw_key) {
   DCHECK(provider);
   DCHECK(key);
   DCHECK(raw_key);
@@ -185,7 +185,7 @@ bool GenerateHMACKey(size_t key_size_in_bits,
     return false;
 
   DWORD key_size_in_bytes = static_cast<DWORD>(key_size_in_bits / 8);
-  scoped_array<BYTE> random(new BYTE[key_size_in_bytes]);
+  scoped_ptr<BYTE[]> random(new BYTE[key_size_in_bytes]);
   ok = CryptGenRandom(safe_provider, key_size_in_bytes, random.get());
   if (!ok)
     return false;
@@ -320,7 +320,7 @@ SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
   ScopedHCRYPTKEY key;
 
   bool ok = false;
-  scoped_array<BYTE> raw_key;
+  scoped_ptr<BYTE[]> raw_key;
 
   switch (algorithm) {
     case AES:
