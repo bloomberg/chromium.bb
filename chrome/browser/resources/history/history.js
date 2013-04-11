@@ -457,10 +457,12 @@ HistoryModel.prototype.addResults = function(info, results) {
     lastDay = thisDay;
   }
 
-  if (loadTimeData.getBoolean('isFullHistorySyncEnabled')) {
+  if (loadTimeData.getBoolean('isUserSignedIn')) {
     if (info.hasSyncedResults) {
       this.view_.showNotification(loadTimeData.getString('hasSyncedResults'));
     } else {
+      // TODO(dubroy): This resource should be renamed, since it's not just used
+      // when there are no results from the server.
       this.view_.showNotification(
           loadTimeData.getString('noResponseFromServer'));
     }
