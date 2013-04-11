@@ -530,6 +530,8 @@
             'accessibility/AccessibilityTableHeaderContainer.h',
             'accessibility/AccessibilityTableRow.cpp',
             'accessibility/AccessibilityTableRow.h',
+            'accessibility/chromium/AXObjectCacheChromium.cpp',
+            'accessibility/chromium/AccessibilityObjectChromium.cpp',
             'config.h',
             'css/BasicShapeFunctions.cpp',
             'css/CSSAspectRatioValue.cpp',

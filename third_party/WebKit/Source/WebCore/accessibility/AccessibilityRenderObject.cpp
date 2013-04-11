@@ -1071,6 +1071,10 @@ bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
     if (!isAllowedChildOfTree())
         return true;
 
+    // Allow the platform to decide if the attachment is ignored or not.
+    if (isAttachment())
+        return accessibilityIgnoreAttachment();
+    
     // ignore popup menu items because AppKit does
     for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->isBoxModelObject() && toRenderBoxModelObject(parent)->isMenuList())
