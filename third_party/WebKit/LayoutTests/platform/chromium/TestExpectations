@@ -3777,6 +3777,8 @@ webkit.org/b/113673 [ Win ] fast/exclusions/shape-outside-floats/shape-outside-f
 crbug.com/224428 [ Linux ] fast/text/international/khmer-selection.html [ Failure ]
 crbug.com/224428 webkit.org/b/113169 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 
+Bug(ojan) [ Mac Win ] fast/text/whitespace/select-new-line-with-line-break-normal.html [ ImageOnlyFailure ]
+
 crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 crbug.com/227354 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 crbug.com/227357 svg/canvas/canvas-pattern-svg.html [ Missing ]

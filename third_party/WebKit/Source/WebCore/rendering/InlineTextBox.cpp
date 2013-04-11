@@ -126,8 +126,10 @@ LayoutUnit InlineTextBox::selectionHeight()
 
 bool InlineTextBox::isSelected(int startPos, int endPos) const
 {
-    LayoutUnit sPos = max<LayoutUnit>(startPos - m_start, 0);
-    LayoutUnit ePos = min<LayoutUnit>(endPos - m_start, m_len);
+    int sPos = max(startPos - m_start, 0);
+    // The position after a hard line break is considered to be past its end.
+    // See the corresponding code in InlineTextBox::selectionState.
+    int ePos = min(endPos - m_start, int(m_len) + (isLineBreak() ? 0 : 1));
     return (sPos < ePos);
 }
 
@@ -138,9 +140,12 @@ RenderObject::SelectionState InlineTextBox::selectionState()
         int startPos, endPos;
         renderer()->selectionStartEnd(startPos, endPos);
         // The position after a hard line break is considered to be past its end.
+        // See the corresponding code in InlineTextBox::isSelected.
         int lastSelectable = start() + len() - (isLineBreak() ? 1 : 0);
 
-        bool start = (state != RenderObject::SelectionEnd && startPos >= m_start && startPos < m_start + m_len);
+        // FIXME: Remove -webkit-line-break: LineBreakAfterWhiteSpace.
+        int endOfLineAdjustmentForCSSLineBreak = renderer()->style()->lineBreak() == LineBreakAfterWhiteSpace ? -1 : 0;
+        bool start = (state != RenderObject::SelectionEnd && startPos >= m_start && startPos <= m_start + m_len + endOfLineAdjustmentForCSSLineBreak);
         bool end = (state != RenderObject::SelectionStart && endPos > m_start && endPos <= lastSelectable);
         if (start && end)
             state = RenderObject::SelectionBoth;
