@@ -226,8 +226,9 @@ for tag, env_to_try in ENVIRONMENTS_TO_TRY:
     # C++ exceptions are not currently supported in PNaCl's ABI.
     # TODO(mseaborn): Pass "--pnacl-allow-exceptions" here after the
     # PNaCl toolchain revision is rolled.
-    exc_env.Append(LINKFLAGS=['--pnacl-disable-pass=-lowerinvoke',
-                              '--pnacl-disable-abi-check'])
+    if exc_env.Bit('bitcode'):
+      exc_env.Append(LINKFLAGS=['--pnacl-disable-pass=-lowerinvoke',
+                                '--pnacl-disable-abi-check'])
     name = src.split('.')[0] + '_' + tag
     nobj = exc_env.ComponentObject(name + '.o', src)
     nexe = exc_env.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
