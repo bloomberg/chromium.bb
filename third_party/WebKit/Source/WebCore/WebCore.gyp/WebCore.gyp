@@ -134,8 +134,6 @@
       '../xml/parser',
     ],
 
-    'check_objc_rename_file': 'mac/check_objc_rename.sh',
-
     'conditions': [
       ['OS=="mac"', {
         'webcore_include_dirs': [
@@ -1263,7 +1261,7 @@
                       'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
                 },
                 'action': [
-                  '<(check_objc_rename_file)',
+                  'mac/check_objc_rename.sh',
                   '<(class_whitelist_regex)',
                   '<(category_whitelist_regex)',
                 ],
