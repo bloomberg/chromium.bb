@@ -55,7 +55,7 @@ namespace rlz_lib {
 
 template<class T>
 class typed_buffer_ptr {
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
 
  public:
   typed_buffer_ptr() {

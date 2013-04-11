@@ -524,7 +524,7 @@ TEST_F(RlzLibTest, ClearProductState) {
 #if defined(OS_WIN)
 template<class T>
 class typed_buffer_ptr {
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
 
  public:
   typed_buffer_ptr() {

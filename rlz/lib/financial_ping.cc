@@ -252,7 +252,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
     return false;
 
   // Get the response text.
-  scoped_array<char> buffer(new char[kMaxPingResponseLength]);
+  scoped_ptr<char[]> buffer(new char[kMaxPingResponseLength]);
   if (buffer.get() == NULL)
     return false;
 
