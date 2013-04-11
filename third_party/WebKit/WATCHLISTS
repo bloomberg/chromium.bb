@@ -49,7 +49,7 @@
       'filepath': 'Source/WebCore/svg|Source/WebCore/rendering/svg',
     },
     'indexed_db': {
-      'filepath': 'Source/WebCore/Modules/indexeddb/' \
+      'filepath': 'Source/modules/indexeddb/' \
                   '|Source/bindings/.*IDB' \
                   '|Source/bindings/.*SerializedScriptValue' \
                   '|Source/WebKit/chromium/.*IDB' \
@@ -83,7 +83,7 @@
                   '|Source/WebCore/html/.*(Audio|Media|Video).*' \
                   '|Source/WebCore/html/shadow/MediaControl.*' \
                   '|Source/WebCore/rendering/RenderMedia.*' \
-                  '|Source/WebCore/Modules/(encryptedmedia|mediasource)' \
+                  '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/WebKit/chromium/.*Media.*' \
     },
   },
