@@ -1811,13 +1811,7 @@
    fun:extensions::SettingsFrontend::Create
    fun:ExtensionService::ExtensionService
    fun:extensions::TestExtensionSystem::CreateExtensionService
-   fun:ProfileSigninConfirmationDialogTest::SetUp
-}
-{
-   bug_189194_b
-   Heapcheck:Leak
-   ...
-   fun:ProfileSigninConfirmationDialogTest_*_Test::TestBody
+   fun:ProfileSigninConfirmationHelperTest::SetUp
 }
 {
   bug_225596
