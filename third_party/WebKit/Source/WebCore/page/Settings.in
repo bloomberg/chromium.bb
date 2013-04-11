@@ -144,4 +144,3 @@ smartInsertDeleteEnabled initial=defaultSmartInsertDeleteEnabled
 selectTrailingWhitespaceEnabled initial=defaultSelectTrailingWhitespaceEnabled
 
 selectionIncludesAltImageText initial=false
-useLegacyBackgroundSizeShorthandBehavior initial=false

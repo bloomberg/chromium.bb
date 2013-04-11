@@ -57,5 +57,4 @@
     [RaisesException] void setMinimumTimerInterval(double intervalInSeconds);
     [RaisesException] void setDefaultVideoPosterURL(DOMString poster);
     [RaisesException] void setTimeWithoutMouseMovementBeforeHidingControls(double time);
-    [RaisesException] void setUseLegacyBackgroundSizeShorthandBehavior(boolean enabled);
 };

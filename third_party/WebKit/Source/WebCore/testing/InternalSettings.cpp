@@ -91,7 +91,6 @@ InternalSettings::Backup::Backup(Settings* settings)
 #endif
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalTimeWithoutMouseMovementBeforeHidingControls(settings->timeWithoutMouseMovementBeforeHidingControls())
-    , m_useLegacyBackgroundSizeShorthandBehavior(settings->useLegacyBackgroundSizeShorthandBehavior())
 {
 }
 
@@ -122,7 +121,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 #endif
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setTimeWithoutMouseMovementBeforeHidingControls(m_originalTimeWithoutMouseMovementBeforeHidingControls);
-    settings->setUseLegacyBackgroundSizeShorthandBehavior(m_useLegacyBackgroundSizeShorthandBehavior);
 }
 
 // We can't use RefCountedSupplement because that would try to make InternalSettings RefCounted
@@ -446,12 +444,6 @@ void InternalSettings::setTimeWithoutMouseMovementBeforeHidingControls(double ti
 {
     InternalSettingsGuardForSettings();
     settings()->setTimeWithoutMouseMovementBeforeHidingControls(time);
-}
-
-void InternalSettings::setUseLegacyBackgroundSizeShorthandBehavior(bool enabled, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setUseLegacyBackgroundSizeShorthandBehavior(enabled);
 }
 
 }

@@ -71,7 +71,6 @@ public:
     bool isCSSGridLayoutEnabled;
     bool isCSSVariablesEnabled;
     bool needsSiteSpecificQuirks;
-    bool useLegacyBackgroundSizeShorthandBehavior;
 };
 
 bool operator==(const CSSParserContext&, const CSSParserContext&);
