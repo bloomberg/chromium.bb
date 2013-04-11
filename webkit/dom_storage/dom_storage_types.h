@@ -32,6 +32,9 @@ const int64 kLocalStorageNamespaceId = 0;
 
 const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
 
+// Start purging memory if the number of in-memory areas exceeds this.
+const int64 kMaxInMemoryAreas = 100;
+
 // Value to indicate an area that not be opened.
 const int kInvalidAreaId = -1;
 

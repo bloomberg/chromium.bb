@@ -80,6 +80,9 @@ class WEBKIT_STORAGE_EXPORT DomStorageArea
   // no longer do anything.
   void Shutdown();
 
+  // Returns true if the data is loaded in memory.
+  bool IsLoadedInMemory() const { return is_initial_import_done_; }
+
  private:
   friend class DomStorageAreaTest;
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DomStorageAreaBasics);

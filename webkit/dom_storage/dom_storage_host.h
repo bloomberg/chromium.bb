@@ -60,6 +60,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageHost {
   typedef std::map<int, NamespaceAndArea > AreaMap;
 
   DomStorageArea* GetOpenArea(int connection_id);
+  DomStorageNamespace* GetNamespace(int connection_id);
 
   scoped_refptr<DomStorageContext> context_;
   AreaMap connections_;

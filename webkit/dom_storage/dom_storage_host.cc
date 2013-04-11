@@ -61,6 +61,15 @@ bool DomStorageHost::ExtractAreaValues(
     // for sending a bad message.
     return true;
   }
+  if (!area->IsLoadedInMemory()) {
+    DomStorageNamespace* ns = GetNamespace(connection_id);
+    DCHECK(ns);
+    if (ns->CountInMemoryAreas() > kMaxInMemoryAreas) {
+      ns->PurgeMemory(DomStorageNamespace::PURGE_UNOPENED);
+      if (ns->CountInMemoryAreas() > kMaxInMemoryAreas)
+        ns->PurgeMemory(DomStorageNamespace::PURGE_AGGRESSIVE);
+    }
+  }
   area->ExtractValues(map);
   return true;
 }
@@ -144,6 +153,13 @@ DomStorageArea* DomStorageHost::GetOpenArea(int connection_id) {
   if (found == connections_.end())
     return NULL;
   return found->second.area_;
+}
+
+DomStorageNamespace* DomStorageHost::GetNamespace(int connection_id) {
+  AreaMap::iterator found = connections_.find(connection_id);
+  if (found == connections_.end())
+    return NULL;
+  return found->second.namespace_;
 }
 
 // NamespaceAndArea

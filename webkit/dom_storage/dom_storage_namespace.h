@@ -25,6 +25,16 @@ class SessionStorageDatabase;
 class WEBKIT_STORAGE_EXPORT DomStorageNamespace
     : public base::RefCountedThreadSafe<DomStorageNamespace> {
  public:
+  // Option for PurgeMemory.
+  enum PurgeOption {
+    // Purge unopened areas only.
+    PURGE_UNOPENED,
+
+    // Purge aggressively, i.e. discard cache even for areas that have
+    // non-zero open count.
+    PURGE_AGGRESSIVE,
+  };
+
   // Constructor for a LocalStorage namespace with id of 0
   // and an optional backing directory on disk.
   DomStorageNamespace(const base::FilePath& directory,  // may be empty
@@ -59,8 +69,10 @@ class WEBKIT_STORAGE_EXPORT DomStorageNamespace
 
   void DeleteLocalStorageOrigin(const GURL& origin);
   void DeleteSessionStorageOrigin(const GURL& origin);
-  void PurgeMemory();
+  void PurgeMemory(PurgeOption purge);
   void Shutdown();
+
+  unsigned int CountInMemoryAreas() const;
 
  private:
   friend class base::RefCountedThreadSafe<DomStorageNamespace>;

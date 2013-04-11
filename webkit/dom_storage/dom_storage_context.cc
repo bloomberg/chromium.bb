@@ -167,7 +167,7 @@ void DomStorageContext::PurgeMemory() {
   StorageNamespaceMap::iterator found =
       namespaces_.find(kLocalStorageNamespaceId);
   if (found != namespaces_.end())
-    found->second->PurgeMemory();
+    found->second->PurgeMemory(DomStorageNamespace::PURGE_AGGRESSIVE);
 }
 
 void DomStorageContext::Shutdown() {
