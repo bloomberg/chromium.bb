@@ -97,8 +97,9 @@ const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
       return MAKEINTRESOURCE(IDC_COPYCUR);
     case kCursorAlias:
       return MAKEINTRESOURCE(IDC_ALIAS);
-    case kCursorContextMenu:
     case kCursorNone:
+      return MAKEINTRESOURCE(IDC_CURSOR_NONE);
+    case kCursorContextMenu:
     case kCursorCustom:
       NOTIMPLEMENTED();
       return IDC_ARROW;

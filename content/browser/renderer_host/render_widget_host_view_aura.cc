@@ -2321,7 +2321,11 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
   // Needed to propagate mouse event to native_tab_contents_view_aura.
   // TODO(pkotwicz): Find a better way of doing this.
-  if (window_->parent()->delegate() && !(event->flags() & ui::EF_FROM_TOUCH))
+  // In fullscreen mode which is typically used by flash, don't forward
+  // the mouse events to the parent. The renderer and the plugin process
+  // handle these events.
+  if (!is_fullscreen_ && window_->parent()->delegate() &&
+      !(event->flags() & ui::EF_FROM_TOUCH))
     window_->parent()->delegate()->OnMouseEvent(event);
 
   if (!IsXButtonUpEvent(event))
