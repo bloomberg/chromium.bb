@@ -59,12 +59,13 @@ class TrayNetwork : public SystemTrayItem,
 
   // NetworkObserver
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
-  virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
-                                 MessageType message_type,
-                                 NetworkType network_type,
-                                 const string16& title,
-                                 const string16& message,
-                                 const std::vector<string16>& links) OVERRIDE;
+  virtual void SetNetworkMessage(
+      NetworkTrayDelegate* delegate,
+      MessageType message_type,
+      NetworkType network_type,
+      const base::string16& title,
+      const base::string16& message,
+      const std::vector<base::string16>& links) OVERRIDE;
   virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void OnWillToggleWifi() OVERRIDE;
 
@@ -76,7 +77,7 @@ class TrayNetwork : public SystemTrayItem,
   // Gets the correct icon and label for |icon_type|.
   void GetNetworkStateHandlerImageAndLabel(network_icon::IconType icon_type,
                                            gfx::ImageSkia* image,
-                                           string16* label);
+                                           base::string16* label);
 
 private:
   friend class tray::NetworkMessageView;

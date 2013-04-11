@@ -30,18 +30,19 @@ class HoverHighlightView : public ActionableView {
   // Convenience function for adding an icon and a label.  This also sets the
   // accessible name.
   void AddIconAndLabel(const gfx::ImageSkia& image,
-                       const string16& text,
+                       const base::string16& text,
                        gfx::Font::FontStyle style);
 
   // Convenience function for adding a label with padding on the left for a
   // blank icon.  This also sets the accessible name.
   // Returns label after parenting it.
-  views::Label* AddLabel(const string16& text, gfx::Font::FontStyle style);
+  views::Label* AddLabel(const base::string16& text,
+                         gfx::Font::FontStyle style);
 
   // Convenience function for adding an optional check and a label.  In the
   // absence of a check, padding is added to align with checked items.
   // Returns label after parenting it.
-  views::Label* AddCheckableLabel(const string16& text,
+  views::Label* AddCheckableLabel(const base::string16& text,
                                   gfx::Font::FontStyle style,
                                   bool checked);
 

@@ -37,7 +37,7 @@ class PanelWindow : public views::WidgetDelegateView {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;

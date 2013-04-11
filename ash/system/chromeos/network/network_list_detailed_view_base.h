@@ -50,7 +50,7 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   user::LoginStatus login() const { return login_; }
   bool IsNetworkListEmpty() const;
   bool CreateOrUpdateInfoLabel(
-      int index, const string16& text, views::Label** label);
+      int index, const base::string16& text, views::Label** label);
   bool UpdateNetworkChild(int index, const NetworkIconInfo* info);
 
   const std::vector<NetworkIconInfo>& network_list() const {

@@ -48,7 +48,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
 
   // Overridden from views::ButtonListener:

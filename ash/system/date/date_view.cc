@@ -34,16 +34,16 @@ const int kTimerSlopSeconds = 1;
 // Top number text color of vertical clock.
 const SkColor kVerticalClockHourColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
 
-string16 FormatDate(const base::Time& time) {
+base::string16 FormatDate(const base::Time& time) {
   icu::UnicodeString date_string;
   scoped_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-  return string16(date_string.getBuffer(),
+  return base::string16(date_string.getBuffer(),
                   static_cast<size_t>(date_string.length()));
 }
 
-string16 FormatDayOfWeek(const base::Time& time) {
+base::string16 FormatDayOfWeek(const base::Time& time) {
   UErrorCode status = U_ZERO_ERROR;
   scoped_ptr<icu::DateTimePatternGenerator> generator(
       icu::DateTimePatternGenerator::createInstance(status));
@@ -58,7 +58,7 @@ string16 FormatDayOfWeek(const base::Time& time) {
   simple_formatter.format(
       static_cast<UDate>(time.ToDoubleT() * 1000), date_string, status);
   DCHECK(U_SUCCESS(status));
-  return string16(
+  return base::string16(
       date_string.getBuffer(), static_cast<size_t>(date_string.length()));
 }
 
@@ -196,15 +196,15 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
     return;
   }
 
-  string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
+  base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
       now, hour_type_, base::kDropAmPm);
   label_->SetText(current_time);
   label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
 
   // Calculate vertical clock layout labels.
   size_t colon_pos = current_time.find(ASCIIToUTF16(":"));
-  string16 hour = current_time.substr(0, colon_pos);
-  string16 minute = current_time.substr(colon_pos + 1);
+  base::string16 hour = current_time.substr(0, colon_pos);
+  base::string16 minute = current_time.substr(colon_pos + 1);
   label_hour_left_->SetText(hour.substr(0, 1));
   label_hour_right_->SetText(hour.length() == 2 ?
       hour.substr(1,1) : ASCIIToUTF16(":"));

@@ -54,7 +54,7 @@ class ASH_EXPORT LauncherButtonHost {
   virtual void MouseExitedButton(views::View* view) = 0;
 
   // Invoked to get the accessible name of the item.
-  virtual string16 GetAccessibleName(const views::View* view) = 0;
+  virtual base::string16 GetAccessibleName(const views::View* view) = 0;
 
  protected:
   virtual ~LauncherButtonHost() {}

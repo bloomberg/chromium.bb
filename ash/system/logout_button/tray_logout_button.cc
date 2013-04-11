@@ -79,7 +79,7 @@ class LogoutButton : public views::View,
     set_border(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0, 0));
 
-    button_ = new views::LabelButton(this, string16());
+    button_ = new views::LabelButton(this, base::string16());
     for (size_t state = 0; state < views::Button::STATE_COUNT; ++state) {
       button_->SetTextColor(
           static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
@@ -100,8 +100,8 @@ class LogoutButton : public views::View,
 
   void OnLoginStatusChanged(user::LoginStatus status) {
     login_status_ = status;
-    const string16 title = GetLocalizedSignOutStringForStatus(login_status_,
-                                                              false);
+    const base::string16 title = GetLocalizedSignOutStringForStatus(
+        login_status_, false);
     button_->SetText(title);
     button_->SetAccessibleName(title);
     UpdateVisibility();

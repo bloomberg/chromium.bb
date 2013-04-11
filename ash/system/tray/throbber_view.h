@@ -18,15 +18,15 @@ class SystemTrayThrobber : public views::SmoothedThrobber {
   SystemTrayThrobber(int frame_delay_ms);
   virtual ~SystemTrayThrobber();
 
-  void SetTooltipText(const string16& tooltip_text);
+  void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
   virtual bool GetTooltipText(
-        const gfx::Point& p, string16* tooltip) const OVERRIDE;
+        const gfx::Point& p, base::string16* tooltip) const OVERRIDE;
 
  private:
   // The current tooltip text.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayThrobber);
 };
@@ -39,13 +39,13 @@ class ThrobberView : public views::View {
 
   void Start();
   void Stop();
-  void SetTooltipText(const string16& tooltip_text);
+  void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool GetTooltipText(
-      const gfx::Point& p, string16* tooltip) const OVERRIDE;
+      const gfx::Point& p, base::string16* tooltip) const OVERRIDE;
 
  private:
   // Schedules animation for starting/stopping throbber.
@@ -54,7 +54,7 @@ class ThrobberView : public views::View {
   SystemTrayThrobber* throbber_;
 
   // The current tooltip text.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };

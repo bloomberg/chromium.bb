@@ -99,7 +99,7 @@ class TooltipControllerTest : public AshTestBase {
 TEST_F(TooltipControllerTest, NonNullTooltipClient) {
   EXPECT_TRUE(aura::client::GetTooltipClient(Shell::GetPrimaryRootWindow())
               != NULL);
-  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
   EXPECT_FALSE(helper_->IsTooltipVisible());
 }
@@ -109,13 +109,13 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   TooltipTestView* view = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
-  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 view->bounds().CenterPoint());
-  string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+  base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
 
   // Fire tooltip timer so tooltip becomes visible.
   helper_->FireTooltipTimer();

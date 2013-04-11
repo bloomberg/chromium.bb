@@ -17,7 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -54,7 +54,7 @@ views::Label* CreateAndSetupLabel() {
   return label;
 }
 
-string16 IntToTwoDigitString(int value) {
+base::string16 IntToTwoDigitString(int value) {
   DCHECK_GE(value, 0);
   DCHECK_LE(value, 99);
   if (value < 10)
@@ -62,7 +62,7 @@ string16 IntToTwoDigitString(int value) {
   return base::IntToString16(value);
 }
 
-string16 FormatRemainingSessionTimeNotification(
+base::string16 FormatRemainingSessionTimeNotification(
     const base::TimeDelta& remaining_session_time) {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME_NOTIFICATION,
@@ -234,9 +234,9 @@ void RemainingSessionTimeTrayView::Update() {
   const int hours = minutes / 60;
   minutes %= 60;
 
-  const string16 hours_str = IntToTwoDigitString(hours);
-  const string16 minutes_str = IntToTwoDigitString(minutes);
-  const string16 seconds_str = IntToTwoDigitString(seconds);
+  const base::string16 hours_str = IntToTwoDigitString(hours);
+  const base::string16 minutes_str = IntToTwoDigitString(minutes);
+  const base::string16 seconds_str = IntToTwoDigitString(seconds);
   const SkColor color =
       limit_state == TraySessionLengthLimit::LIMIT_EXPIRING_SOON ?
           kRemainingTimeExpiringSoonColor : kRemainingTimeColor;

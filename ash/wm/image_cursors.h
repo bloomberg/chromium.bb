@@ -41,7 +41,7 @@ class ASH_EXPORT ImageCursors {
   void SetPlatformCursor(gfx::NativeCursor* cursor);
 
   // Sets the cursor resource module name for non system cursors.
-  void SetCursorResourceModule(const string16& module_name);
+  void SetCursorResourceModule(const base::string16& module_name);
 
  private:
   scoped_ptr<ui::CursorLoader> cursor_loader_;

@@ -49,7 +49,8 @@ class ASH_EXPORT AshNativeCursorManager
   virtual void SetMouseEventsEnabled(
       bool enabled,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
-  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE;
+  virtual void SetCursorResourceModule(
+      const base::string16& module_name) OVERRIDE;
 
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;

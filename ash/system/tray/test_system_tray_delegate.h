@@ -26,14 +26,14 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
 
   // Overridden from SystemTrayDelegate:
-  virtual const string16 GetUserDisplayName() const OVERRIDE;
+  virtual const base::string16 GetUserDisplayName() const OVERRIDE;
   virtual const std::string GetUserEmail() const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
   virtual bool IsOobeCompleted() const OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
-  virtual const string16 GetEnterpriseMessage() const OVERRIDE;
+  virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
   virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE;
@@ -108,7 +108,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetSessionLengthLimit(
       base::TimeDelta* session_length_limit) OVERRIDE;
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
-  virtual string16 FormatTimeDuration(
+  virtual base::string16 FormatTimeDuration(
       const base::TimeDelta& delta) const OVERRIDE;
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 

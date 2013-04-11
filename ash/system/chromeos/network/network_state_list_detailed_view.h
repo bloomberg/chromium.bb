@@ -91,7 +91,7 @@ class NetworkStateListDetailedView
   void UpdateNetworks(const NetworkStateList& networks);
   void UpdateNetworkList();
   bool CreateOrUpdateInfoLabel(
-      int index, const string16& text, views::Label** label);
+      int index, const base::string16& text, views::Label** label);
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
   bool OrderChild(views::View* view, int index);
   bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);

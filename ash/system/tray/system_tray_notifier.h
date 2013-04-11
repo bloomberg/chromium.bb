@@ -128,16 +128,16 @@ public:
   void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
                                NetworkObserver::MessageType message_type,
                                NetworkObserver::NetworkType network_type,
-                               const string16& title,
-                               const string16& message,
-                               const std::vector<string16>& links);
+                               const base::string16& title,
+                               const base::string16& message,
+                               const std::vector<base::string16>& links);
   void NotifyClearNetworkMessage(NetworkObserver::MessageType message_type);
   void NotifyVpnRefreshNetwork(const NetworkIconInfo &info);
   void NotifyWillToggleWifi();
   void NotifyAddSmsMessage(const base::DictionaryValue& message);
   void NotifyEnterpriseDomainChanged();
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
-                                const string16& sharing_app_name);
+                                const base::string16& sharing_app_name);
   void NotifyScreenCaptureStop();
 #endif
 

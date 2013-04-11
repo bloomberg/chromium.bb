@@ -22,7 +22,7 @@ namespace ash {
 // Delegate to handle showing the keyboard overlay drawing. Exported for test.
 class ASH_EXPORT KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
-  KeyboardOverlayDelegate(const string16& title, const GURL& url);
+  KeyboardOverlayDelegate(const base::string16& title, const GURL& url);
 
   // Shows the keyboard overlay widget. Returns the widget for testing.
   views::Widget* Show(views::WebDialogView* view);
@@ -37,7 +37,7 @@ class ASH_EXPORT KeyboardOverlayDelegate : public ui::WebDialogDelegate {
 
   // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual base::string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -50,7 +50,7 @@ class ASH_EXPORT KeyboardOverlayDelegate : public ui::WebDialogDelegate {
       const content::ContextMenuParams& params) OVERRIDE;
 
   // The dialog title.
-  string16 title_;
+  base::string16 title_;
 
   // The URL of the keyboard overlay.
   GURL url_;

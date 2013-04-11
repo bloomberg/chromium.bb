@@ -643,8 +643,8 @@ gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
   return GetDisconnectedImage(network_type, icon_type);
 }
 
-string16 GetLabelForNetwork(const chromeos::NetworkState* network,
-                            IconType icon_type) {
+base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
+                                  IconType icon_type) {
   DCHECK(network);
   std::string activation_state = network->activation_state();
   if (icon_type == ICON_TYPE_LIST) {

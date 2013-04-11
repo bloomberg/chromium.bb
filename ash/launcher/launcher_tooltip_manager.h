@@ -50,10 +50,10 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
   void OnBubbleClosed(views::BubbleDelegateView* view);
 
   // Shows the tooltip after a delay.  It also has the appearing animation.
-  void ShowDelayed(views::View* anchor, const string16& text);
+  void ShowDelayed(views::View* anchor, const base::string16& text);
 
   // Shows the tooltip immediately.  It omits the appearing animation.
-  void ShowImmediately(views::View* anchor, const string16& text);
+  void ShowImmediately(views::View* anchor, const base::string16& text);
 
   // Closes the tooltip.
   void Close();
@@ -93,12 +93,12 @@ protected:
   void CancelHidingAnimation();
   void CloseSoon();
   void ShowInternal();
-  void CreateBubble(views::View* anchor, const string16& text);
+  void CreateBubble(views::View* anchor, const base::string16& text);
 
   LauncherTooltipBubble* view_;
   views::Widget* widget_;
   views::View* anchor_;
-  string16 text_;
+  base::string16 text_;
   scoped_ptr<base::Timer> timer_;
 
   ShelfLayoutManager* shelf_layout_manager_;

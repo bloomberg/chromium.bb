@@ -53,7 +53,7 @@ class LauncherTooltipManager::LauncherTooltipBubble
                         views::BubbleBorder::ArrowLocation arrow_location,
                         LauncherTooltipManager* host);
 
-  void SetText(const string16& text);
+  void SetText(const base::string16& text);
   void Close();
 
  private:
@@ -109,7 +109,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::SetText(
-    const string16& text) {
+    const base::string16& text) {
   label_->SetText(text);
   SizeToContents();
 }
@@ -160,7 +160,7 @@ LauncherTooltipManager::~LauncherTooltipManager() {
 }
 
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
-                                         const string16& text) {
+                                         const base::string16& text) {
   if (view_) {
     if (timer_.get() && timer_->IsRunning()) {
       return;
@@ -178,7 +178,7 @@ void LauncherTooltipManager::ShowDelayed(views::View* anchor,
 }
 
 void LauncherTooltipManager::ShowImmediately(views::View* anchor,
-                                             const string16& text) {
+                                             const base::string16& text) {
   if (view_) {
     if (timer_.get() && timer_->IsRunning())
       StopTimer();
@@ -345,7 +345,7 @@ void LauncherTooltipManager::ShowInternal() {
 }
 
 void LauncherTooltipManager::CreateBubble(views::View* anchor,
-                                          const string16& text) {
+                                          const base::string16& text) {
   DCHECK(!view_);
 
   anchor_ = anchor;

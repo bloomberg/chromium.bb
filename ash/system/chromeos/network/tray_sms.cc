@@ -16,7 +16,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -65,7 +65,7 @@ class TraySms::SmsDefaultView : public TrayItemMore {
 
   void Update() {
     int message_count = static_cast<TraySms*>(owner())->messages().GetSize();
-    string16 label = l10n_util::GetStringFUTF16(
+    base::string16 label = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_SMS_MESSAGES, base::IntToString16(message_count));
     SetLabel(label);
     SetAccessibleName(label);

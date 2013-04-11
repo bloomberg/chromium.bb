@@ -13,7 +13,7 @@ namespace ash {
 namespace shell {
 
 struct BubbleConfig {
-  string16 label;
+  base::string16 label;
   views::View* anchor_view;
   views::BubbleBorder::ArrowLocation arrow;
 };
@@ -31,7 +31,7 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   }
 
  private:
-  string16 label_;
+  base::string16 label_;
 };
 
 void CreatePointyBubble(views::View* anchor_view) {

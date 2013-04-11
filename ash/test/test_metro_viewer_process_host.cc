@@ -62,7 +62,7 @@ void TestMetroViewerProcessHost::NotifyChannelConnected() {
 }
 
 bool TestMetroViewerProcessHost::LaunchViewerAndWaitForConnection(
-    const string16& app_user_model_id) {
+    const base::string16& app_user_model_id) {
   // Activate the viewer process. NOTE: This assumes that the viewer process is
   // registered as the default browser using the provided |app_user_model_id|.
 

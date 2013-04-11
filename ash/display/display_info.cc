@@ -8,9 +8,9 @@
 
 #include "ash/display/display_info.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/size_f.h"

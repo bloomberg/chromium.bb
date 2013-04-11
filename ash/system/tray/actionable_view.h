@@ -25,8 +25,8 @@ class ASH_EXPORT ActionableView : public views::View {
 
   virtual ~ActionableView();
 
-  void SetAccessibleName(const string16& name);
-  const string16& accessible_name() const { return accessible_name_; }
+  void SetAccessibleName(const base::string16& name);
+  const base::string16& accessible_name() const { return accessible_name_; }
 
  protected:
   void DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds);
@@ -48,7 +48,7 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  string16 accessible_name_;
+  base::string16 accessible_name_;
   bool has_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionableView);

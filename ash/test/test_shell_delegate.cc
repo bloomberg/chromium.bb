@@ -200,12 +200,14 @@ void TestShellDelegate::HandleMediaPlayPause() {
 void TestShellDelegate::HandleMediaPrevTrack() {
 }
 
-string16 TestShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
-  return string16();
+base::string16 TestShellDelegate::GetTimeRemainingString(
+    base::TimeDelta delta) {
+  return base::string16();
 }
 
-string16 TestShellDelegate::GetTimeDurationLongString(base::TimeDelta delta) {
-  return string16();
+base::string16 TestShellDelegate::GetTimeDurationLongString(
+    base::TimeDelta delta) {
+  return base::string16();
 }
 
 void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
@@ -239,8 +241,8 @@ void TestShellDelegate::SetCanLockScreen(bool can_lock_screen) {
   can_lock_screen_ = can_lock_screen;
 }
 
-string16 TestShellDelegate::GetProductName() const {
-  return string16();
+base::string16 TestShellDelegate::GetProductName() const {
+  return base::string16();
 }
 
 

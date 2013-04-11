@@ -65,7 +65,7 @@ class DefaultAccessibilityView : public TrayItemMore {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK).
                     ToImageSkia());
-    string16 label = bundle.GetLocalizedString(
+    base::string16 label = bundle.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);
     SetAccessibleName(label);
@@ -179,7 +179,7 @@ void AccessibilityDetailedView::AppendHelpEntries() {
 }
 
 HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
-    const string16& text,
+    const base::string16& text,
     gfx::Font::FontStyle style,
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);

@@ -29,9 +29,9 @@ class TrayItemMore : public ActionableView {
 
   SystemTrayItem* owner() const { return owner_; }
 
-  void SetLabel(const string16& label);
+  void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia* image_skia);
-  void SetAccessibleName(const string16& name);
+  void SetAccessibleName(const base::string16& name);
 
  protected:
   // Replaces the default icon (on the left of the label), and allows a custom
@@ -53,7 +53,7 @@ class TrayItemMore : public ActionableView {
   views::ImageView* icon_;
   views::Label* label_;
   views::ImageView* more_;
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayItemMore);
 };

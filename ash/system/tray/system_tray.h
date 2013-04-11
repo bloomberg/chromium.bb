@@ -136,7 +136,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Overridden from TrayBackgroundView.
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
-  virtual string16 GetAccessibleNameForTray() OVERRIDE;
+  virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
   virtual void HideBubbleWithView(
       const views::TrayBubbleView* bubble_view) OVERRIDE;
   virtual bool ClickedOutsideBubble() OVERRIDE;
@@ -145,7 +145,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   virtual void BubbleViewDestroyed() OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
-  virtual string16 GetAccessibleNameForBubble() OVERRIDE;
+  virtual base::string16 GetAccessibleNameForBubble() OVERRIDE;
   virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
                                   AnchorType anchor_type,
                                   AnchorAlignment anchor_alignment) OVERRIDE;

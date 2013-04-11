@@ -23,12 +23,12 @@ class EnterpriseDefaultView : public views::View {
  public:
   explicit EnterpriseDefaultView(ViewClickListener* click_listener);
   virtual ~EnterpriseDefaultView();
-  void SetMessage(const string16& message);
+  void SetMessage(const base::string16& message);
  private:
-  views::View* CreateChildView(const string16& message) const;
+  views::View* CreateChildView(const base::string16& message) const;
 
   ViewClickListener* click_listener_;
-  string16 message_;
+  base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseDefaultView);
 };
@@ -43,7 +43,7 @@ EnterpriseDefaultView::EnterpriseDefaultView(
 EnterpriseDefaultView::~EnterpriseDefaultView() {
 }
 
-void EnterpriseDefaultView::SetMessage(const string16& message) {
+void EnterpriseDefaultView::SetMessage(const base::string16& message) {
   if (message_ == message)
     return;
 
@@ -58,7 +58,7 @@ void EnterpriseDefaultView::SetMessage(const string16& message) {
 }
 
 views::View* EnterpriseDefaultView::CreateChildView(
-    const string16& message) const {
+    const base::string16& message) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* icon =
       rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_ENTERPRISE_DARK);
@@ -86,7 +86,7 @@ TrayEnterprise::~TrayEnterprise() {
 }
 
 void TrayEnterprise::UpdateEnterpriseMessage() {
-  string16 message = Shell::GetInstance()->system_tray_delegate()->
+  base::string16 message = Shell::GetInstance()->system_tray_delegate()->
       GetEnterpriseMessage();
   if (default_view_)
     default_view_->SetMessage(message);

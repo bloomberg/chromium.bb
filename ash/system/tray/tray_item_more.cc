@@ -47,7 +47,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
 TrayItemMore::~TrayItemMore() {
 }
 
-void TrayItemMore::SetLabel(const string16& label) {
+void TrayItemMore::SetLabel(const base::string16& label) {
   label_->SetText(label);
   Layout();
   SchedulePaint();
@@ -58,7 +58,7 @@ void TrayItemMore::SetImage(const gfx::ImageSkia* image_skia) {
   SchedulePaint();
 }
 
-void TrayItemMore::SetAccessibleName(const string16& name) {
+void TrayItemMore::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 

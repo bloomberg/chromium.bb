@@ -47,7 +47,7 @@ void AuraShellTestSuite::Initialize() {
 
     ui::win::CreateATLModuleIfNeeded();
 
-    std::vector<string16> choices;
+    std::vector<base::string16> choices;
     win8::OpenWithDialogController controller;
     controller.RunSynchronously(NULL, L"http", win8::test::kDefaultTestExeName,
                                 &choices);

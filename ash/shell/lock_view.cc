@@ -41,7 +41,7 @@ class LockView : public views::WidgetDelegateView,
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
-    string16 text = ASCIIToUTF16("LOCKED!");
+    base::string16 text = ASCIIToUTF16("LOCKED!");
     int string_width = font_.GetStringWidth(text);
     canvas->DrawStringInt(text, font_, SK_ColorRED, (width() - string_width)/ 2,
                           (height() - font_.GetHeight()) / 2,

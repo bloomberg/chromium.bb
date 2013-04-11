@@ -73,7 +73,7 @@ class VpnDefaultView : public TrayItemMore,
   void Update() {
     if (UseNewNetworkHandlers()) {
       gfx::ImageSkia image;
-      string16 label;
+      base::string16 label;
       GetNetworkStateHandlerImageAndLabel(&image, &label);
       SetImage(&image);
       SetLabel(label);
@@ -95,7 +95,7 @@ class VpnDefaultView : public TrayItemMore,
 
  private:
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
-                                           string16* label) {
+                                           base::string16* label) {
     NetworkStateHandler* handler = NetworkStateHandler::Get();
     const NetworkState* vpn = handler->FirstNetworkByType(
         flimflam::kTypeVPN);
@@ -304,9 +304,9 @@ void TrayVPN::OnNetworkRefresh(const NetworkIconInfo& info) {
 void TrayVPN::SetNetworkMessage(NetworkTrayDelegate* delegate,
                                    MessageType message_type,
                                    NetworkType network_type,
-                                   const string16& title,
-                                   const string16& message,
-                                   const std::vector<string16>& links) {
+                                   const base::string16& title,
+                                   const base::string16& message,
+                                   const std::vector<base::string16>& links) {
 }
 
 void TrayVPN::ClearNetworkMessage(MessageType message_type) {

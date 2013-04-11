@@ -61,7 +61,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
   // Add help entries.
   void AppendHelpEntries();
 
-  HoverHighlightView* AddScrollListItem(const string16& text,
+  HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         gfx::Font::FontStyle style,
                                         bool checked);
   // Overridden from ViewClickListener.

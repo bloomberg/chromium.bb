@@ -30,12 +30,12 @@ SystemTrayThrobber::SystemTrayThrobber(int frame_delay_ms)
 SystemTrayThrobber::~SystemTrayThrobber() {
 }
 
-void SystemTrayThrobber::SetTooltipText(const string16& tooltip_text) {
+void SystemTrayThrobber::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
 }
 
 bool SystemTrayThrobber::GetTooltipText(const gfx::Point& p,
-                                        string16* tooltip) const {
+                                        base::string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 
@@ -72,7 +72,7 @@ void ThrobberView::Layout() {
 }
 
 bool ThrobberView::GetTooltipText(const gfx::Point& p,
-                                  string16* tooltip) const {
+                                  base::string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 
@@ -90,7 +90,7 @@ void ThrobberView::Stop() {
   throbber_->Stop();
 }
 
-void ThrobberView::SetTooltipText(const string16& tooltip_text) {
+void ThrobberView::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
   throbber_->SetTooltipText(tooltip_text);
 }

@@ -58,7 +58,7 @@ class ASH_EXPORT LauncherDelegate {
   virtual int GetBrowserShortcutResourceId() = 0;
 
   // Returns the title to display for the specified launcher item.
-  virtual string16 GetTitle(const LauncherItem& item) = 0;
+  virtual base::string16 GetTitle(const LauncherItem& item) = 0;
 
   // Returns the context menumodel for the specified item on
   // |root_window|.  Return NULL if there should be no context

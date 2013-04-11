@@ -36,7 +36,7 @@ class WidgetsWindow : public views::WidgetDelegateView {
 
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
 
  private:
@@ -119,7 +119,7 @@ views::View* WidgetsWindow::GetContentsView() {
   return this;
 }
 
-string16 WidgetsWindow::GetWindowTitle() const {
+base::string16 WidgetsWindow::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Widgets");
 }
 

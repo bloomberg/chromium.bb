@@ -49,7 +49,7 @@ class BluetoothDefaultView : public TrayItemMore {
         ash::Shell::GetInstance()->system_tray_delegate();
     if (delegate->GetBluetoothAvailable()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      const string16 label =
+      const base::string16 label =
           rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
               IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED :
               IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED);
@@ -232,7 +232,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     }
   }
 
-  HoverHighlightView* AddScrollListItem(const string16& text,
+  HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         gfx::Font::FontStyle style,
                                         bool checked,
                                         bool enabled) {
@@ -267,7 +267,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   // and the display_name of the device will be returned in |display_name|.
   bool FoundDevice(const std::string& device_id,
                    const BluetoothDeviceList& device_list,
-                   string16* display_name) {
+                   base::string16* display_name) {
     for (size_t i = 0; i < device_list.size(); ++i) {
       if (device_list[i].address == device_id) {
         *display_name = device_list[i].display_name;
@@ -280,7 +280,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   // Updates UI of the clicked bluetooth device to show it is being connected
   // or disconnected if such an operation is going to be performed underway.
   void UpdateClickedDevice(std::string device_id, views::View* item_container) {
-    string16 display_name;
+    base::string16 display_name;
     if (FoundDevice(device_id, connected_devices_, &display_name)) {
       display_name = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING, display_name);

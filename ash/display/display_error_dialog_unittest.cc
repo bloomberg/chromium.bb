@@ -42,7 +42,7 @@ class DisplayErrorDialogTest : public test::AshTestBase {
 
   DisplayErrorObserver* observer() { return observer_.get(); }
 
-  const string16& GetMessageContents(const DisplayErrorDialog* dialog) {
+  const base::string16& GetMessageContents(const DisplayErrorDialog* dialog) {
     const views::Label* label = static_cast<const views::Label*>(
         static_cast<const views::View*>(dialog)->child_at(0));
     return label->text();

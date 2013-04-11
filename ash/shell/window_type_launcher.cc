@@ -92,7 +92,7 @@ class ModalWindow : public views::WidgetDelegateView,
   virtual bool CanResize() const OVERRIDE {
     return true;
   }
-  virtual string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Modal Window");
   }
   virtual ui::ModalType GetModalType() const OVERRIDE {
@@ -157,7 +157,7 @@ class NonModalTransient : public views::WidgetDelegateView {
   virtual bool CanResize() const OVERRIDE {
     return true;
   }
-  virtual string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Non-Modal Transient");
   }
   virtual void DeleteDelegate() OVERRIDE {
@@ -307,7 +307,7 @@ bool WindowTypeLauncher::CanResize() const {
   return true;
 }
 
-string16 WindowTypeLauncher::GetWindowTitle() const {
+base::string16 WindowTypeLauncher::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Window Builder");
 }
 

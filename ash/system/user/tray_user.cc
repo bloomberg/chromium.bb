@@ -154,7 +154,7 @@ class PublicAccountUserDetails : public views::View,
   // if possible.
   void CalculatePreferredSize(SystemTrayItem* owner, int used_width);
 
-  string16 text_;
+  base::string16 text_;
   views::Link* learn_more_;
   gfx::Size preferred_size_;
   ScopedVector<gfx::RenderText> lines_;
@@ -252,11 +252,11 @@ PublicAccountUserDetails::PublicAccountUserDetails(SystemTrayItem* owner,
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   // Retrieve the user's display name and wrap it with markers.
-  string16 display_name = delegate->GetUserDisplayName();
+  base::string16 display_name = delegate->GetUserDisplayName();
   RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
-  string16 domain = UTF8ToUTF16(delegate->GetEnterpriseDomain());
+  base::string16 domain = UTF8ToUTF16(delegate->GetEnterpriseDomain());
   RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
@@ -281,13 +281,13 @@ void PublicAccountUserDetails::Layout() {
 
   // Word-wrap the label text.
   const gfx::Font font;
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   ui::ElideRectangleText(text_, font, contents_area.width(),
                          contents_area.height(), ui::ELIDE_LONG_WORDS, &lines);
   // Loop through the lines, creating a renderer for each.
   gfx::Point position = contents_area.origin();
   ui::Range display_name(ui::Range::InvalidRange());
-  for (std::vector<string16>::const_iterator it = lines.begin();
+  for (std::vector<base::string16>::const_iterator it = lines.begin();
        it != lines.end(); ++it) {
     gfx::RenderText* line = gfx::RenderText::CreateInstance();
     line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
@@ -376,7 +376,7 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
   // width and the width of the link (as no wrapping is permitted inside the
   // link). The upper bound is the maximum of the largest allowed bubble width
   // and the sum of the label text and link widths when put on a single line.
-  std::vector<string16> lines;
+  std::vector<base::string16> lines;
   while (min_width < max_width) {
     lines.clear();
     const int width = (min_width + max_width) / 2;
@@ -479,8 +479,8 @@ void UserView::AddLogoutButton(ash::user::LoginStatus login) {
   if (login == ash::user::LOGGED_IN_LOCKED)
     return;
 
-  const string16 title = ash::user::GetLocalizedSignOutStringForStatus(login,
-                                                                       true);
+  const base::string16 title = ash::user::GetLocalizedSignOutStringForStatus(
+      login, true);
   TrayPopupLabelButton* logout_button = new TrayPopupLabelButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;

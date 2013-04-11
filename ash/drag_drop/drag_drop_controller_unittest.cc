@@ -207,7 +207,7 @@ class TestDragDropController : public internal::DragDropController {
   int num_drag_updates_;
   bool drop_received_;
   bool drag_canceled_;
-  string16 drag_string_;
+  base::string16 drag_string_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDragDropController);

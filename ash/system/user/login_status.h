@@ -22,7 +22,8 @@ enum LoginStatus {
   LOGGED_IN_NONE,             // Not logged in.
 };
 
-string16 GetLocalizedSignOutStringForStatus(LoginStatus status, bool multiline);
+base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
+                                                  bool multiline);
 
 }  // namespace user
 }  // namespace ash

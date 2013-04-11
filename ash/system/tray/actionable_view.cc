@@ -48,7 +48,7 @@ void ActionableView::OnMouseCaptureLost() {
   has_capture_ = false;
 }
 
-void ActionableView::SetAccessibleName(const string16& name) {
+void ActionableView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 

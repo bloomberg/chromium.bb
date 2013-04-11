@@ -71,7 +71,7 @@ TrayBarButtonWithTitle::TrayBarButtonWithTitle(views::ButtonListener* listener,
   if (title_id != -1) {
     title_ = new views::Label;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    string16 text = rb.GetLocalizedString(title_id);
+    base::string16 text = rb.GetLocalizedString(title_id);
     title_->SetText(text);
     AddChildView(title_);
   }

@@ -65,7 +65,7 @@ void PanelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorGREEN);
 }
 
-string16 PanelWindow::GetWindowTitle() const {
+base::string16 PanelWindow::GetWindowTitle() const {
   return ASCIIToUTF16(name_);
 }
 

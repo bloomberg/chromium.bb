@@ -493,7 +493,7 @@ void SystemTray::AnchorUpdated() {
   }
 }
 
-string16 SystemTray::GetAccessibleNameForTray() {
+base::string16 SystemTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
 }
 
@@ -532,7 +532,7 @@ void SystemTray::OnMouseExitedView() {
     system_bubble_->bubble()->RestartAutoCloseTimer();
 }
 
-string16 SystemTray::GetAccessibleNameForBubble() {
+base::string16 SystemTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }
 

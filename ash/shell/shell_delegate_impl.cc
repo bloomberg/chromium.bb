@@ -213,12 +213,14 @@ void ShellDelegateImpl::HandleMediaPlayPause() {
 void ShellDelegateImpl::HandleMediaPrevTrack() {
 }
 
-string16 ShellDelegateImpl::GetTimeRemainingString(base::TimeDelta delta) {
-  return string16();
+base::string16 ShellDelegateImpl::GetTimeRemainingString(
+    base::TimeDelta delta) {
+  return base::string16();
 }
 
-string16 ShellDelegateImpl::GetTimeDurationLongString(base::TimeDelta delta) {
-  return string16();
+base::string16 ShellDelegateImpl::GetTimeDurationLongString(
+    base::TimeDelta delta) {
+  return base::string16();
 }
 
 void ShellDelegateImpl::SaveScreenMagnifierScale(double scale) {
@@ -236,8 +238,8 @@ RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {
   return RootWindowHostFactory::Create();
 }
 
-string16 ShellDelegateImpl::GetProductName() const {
-  return string16();
+base::string16 ShellDelegateImpl::GetProductName() const {
+  return base::string16();
 }
 
 }  // namespace shell

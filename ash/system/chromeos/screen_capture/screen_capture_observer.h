@@ -13,8 +13,9 @@ namespace ash {
 class ScreenCaptureObserver {
  public:
   // Called when screen capture is started.
-  virtual void OnScreenCaptureStart(const base::Closure& stop_callback,
-                                    const string16& screen_capture_status) = 0;
+  virtual void OnScreenCaptureStart(
+      const base::Closure& stop_callback,
+      const base::string16& screen_capture_status) = 0;
   // Called when screen capture is stopped.
   virtual void OnScreenCaptureStop() = 0;
 

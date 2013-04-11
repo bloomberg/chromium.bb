@@ -250,7 +250,7 @@ void TrayScreenCapture::DestroyNotificationView() {
 
 void TrayScreenCapture::OnScreenCaptureStart(
     const base::Closure& stop_callback,
-    const string16& screen_capture_status) {
+    const base::string16& screen_capture_status) {
   stop_callback_ = stop_callback;
   screen_capture_status_ = screen_capture_status;
   set_screen_capture_on(true);

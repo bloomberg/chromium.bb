@@ -54,12 +54,12 @@ class LauncherTooltipManagerTest : public AshTestBase {
 
   void ShowDelayed() {
     CreateWidget();
-    tooltip_manager_->ShowDelayed(dummy_anchor_.get(), string16());
+    tooltip_manager_->ShowDelayed(dummy_anchor_.get(), base::string16());
   }
 
   void ShowImmediately() {
     CreateWidget();
-    tooltip_manager_->ShowImmediately(dummy_anchor_.get(), string16());
+    tooltip_manager_->ShowImmediately(dummy_anchor_.get(), base::string16());
   }
 
   bool TooltipIsVisible() {

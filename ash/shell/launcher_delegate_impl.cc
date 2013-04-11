@@ -42,7 +42,7 @@ int LauncherDelegateImpl::GetBrowserShortcutResourceId() {
   return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
 }
 
-string16 LauncherDelegateImpl::GetTitle(const ash::LauncherItem& item) {
+base::string16 LauncherDelegateImpl::GetTitle(const ash::LauncherItem& item) {
   return watcher_->GetWindowByID(item.id)->title();
 }
 

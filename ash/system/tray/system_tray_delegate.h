@@ -34,8 +34,8 @@ struct ASH_EXPORT NetworkIconInfo {
   bool connected;
   bool tray_icon_visible;
   gfx::ImageSkia image;
-  string16 name;
-  string16 description;
+  base::string16 name;
+  base::string16 description;
   std::string service_path;
   bool is_cellular;
 };
@@ -45,7 +45,7 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   ~BluetoothDeviceInfo();
 
   std::string address;
-  string16 display_name;
+  base::string16 display_name;
   bool connected;
   bool paired;
 };
@@ -89,7 +89,7 @@ struct ASH_EXPORT IMEPropertyInfo {
 
   bool selected;
   std::string key;
-  string16 name;
+  base::string16 name;
 };
 
 typedef std::vector<IMEPropertyInfo> IMEPropertyInfoList;
@@ -101,9 +101,9 @@ struct ASH_EXPORT IMEInfo {
   bool selected;
   bool third_party;
   std::string id;
-  string16 name;
-  string16 medium_name;
-  string16 short_name;
+  base::string16 name;
+  base::string16 medium_name;
+  base::string16 short_name;
 };
 
 typedef std::vector<IMEInfo> IMEInfoList;
@@ -124,7 +124,7 @@ class SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup() = 0;
 
   // Gets information about the logged in user.
-  virtual const string16 GetUserDisplayName() const = 0;
+  virtual const base::string16 GetUserDisplayName() const = 0;
   virtual const std::string GetUserEmail() const = 0;
   virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
@@ -137,7 +137,7 @@ class SystemTrayDelegate {
   virtual const std::string GetEnterpriseDomain() const = 0;
 
   // Returns notification for enterprise enrolled devices.
-  virtual const string16 GetEnterpriseMessage() const = 0;
+  virtual const base::string16 GetEnterpriseMessage() const = 0;
 
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
@@ -345,7 +345,8 @@ class SystemTrayDelegate {
   // Returns the duration formatted as a localized string.
   // TODO(stevenjb): Move TimeFormat from src/chrome to src/ui so that it can be
   // accessed without going through the delegate. crbug.com/222697
-  virtual string16 FormatTimeDuration(const base::TimeDelta& delta) const = 0;
+  virtual base::string16 FormatTimeDuration(
+      const base::TimeDelta& delta) const = 0;
 
   // Speaks the given text if spoken feedback is enabled.
   virtual void MaybeSpeak(const std::string& utterance) const = 0;

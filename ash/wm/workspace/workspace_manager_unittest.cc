@@ -23,7 +23,7 @@
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"

@@ -313,7 +313,7 @@ void WebNotificationTray::AnchorUpdated() {
   }
 }
 
-string16 WebNotificationTray::GetAccessibleNameForTray() {
+base::string16 WebNotificationTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
 }
@@ -359,7 +359,7 @@ void WebNotificationTray::OnMouseExitedView() {
     popup_bubble()->bubble()->OnMouseExitedView();
 }
 
-string16 WebNotificationTray::GetAccessibleNameForBubble() {
+base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }
 

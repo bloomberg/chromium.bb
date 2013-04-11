@@ -32,7 +32,8 @@ class TestMetroViewerProcessHost : public IPC::Listener,
   // and blocks until that viewer process connects or until a timeout is
   // reached. Returns true if the viewer process connects before the timeout is
   // reached.
-  bool LaunchViewerAndWaitForConnection(const string16& app_user_model_id);
+  bool LaunchViewerAndWaitForConnection(
+      const base::string16& app_user_model_id);
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;

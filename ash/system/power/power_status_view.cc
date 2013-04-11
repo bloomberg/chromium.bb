@@ -10,7 +10,7 @@
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,8 +112,8 @@ void PowerStatusView::UpdateText() {
 
 void PowerStatusView::UpdateTextForDefaultView() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  string16 battery_percentage = string16();
-  string16 battery_time_status = string16();
+  base::string16 battery_percentage = base::string16();
+  base::string16 battery_time_status = base::string16();
   if (supply_status_.line_power_on && supply_status_.battery_is_full) {
     battery_time_status =
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
@@ -128,12 +128,12 @@ void PowerStatusView::UpdateTextForDefaultView() {
     battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
         base::IntToString16(GetRoundedBatteryPercentage()));
-    string16 battery_percentage_accessbile = l10n_util::GetStringFUTF16(
+    base::string16 battery_percentage_accessbile = l10n_util::GetStringFUTF16(
         supply_status_.line_power_on ?
             IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE:
             IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE ,
         base::IntToString16(GetRoundedBatteryPercentage()));
-    string16 battery_time_accessible = string16();
+    base::string16 battery_time_accessible = base::string16();
     int hour = 0;
     int min = 0;
     if (supply_status_.is_calculating_battery_time) {
@@ -149,7 +149,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
       hour = time.InHours();
       min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
       if (hour || min) {
-        string16 minute = min < 10 ?
+        base::string16 minute = min < 10 ?
             ASCIIToUTF16("0") + base::IntToString16(min) :
             base::IntToString16(min);
         battery_time_status =
@@ -229,11 +229,11 @@ void PowerStatusView::UpdateTextForNotificationView() {
         time_label_->SetText(delegate->GetTimeRemainingString(
             base::TimeDelta::FromMinutes(min)));
       } else {
-        time_label_->SetText(string16());
+        time_label_->SetText(base::string16());
       }
     }
   } else {
-    time_label_->SetText(string16());
+    time_label_->SetText(base::string16());
   }
 }
 
@@ -243,7 +243,7 @@ int PowerStatusView::GetRoundedBatteryPercentage() const {
       static_cast<int>(supply_status_.battery_percentage));
 }
 
-string16 PowerStatusView::GetBatteryTimeAccessibilityString(
+base::string16 PowerStatusView::GetBatteryTimeAccessibilityString(
     int hour, int min) {
   DCHECK(hour || min);
   if (hour && !min) {

@@ -55,7 +55,7 @@ const int kNetworkListHeight = 203;
 const int kRequestScanDelaySeconds = 10;
 
 // Create a label with the font size and color used in the network info bubble.
-views::Label* CreateInfoBubbleLabel(const string16& text) {
+views::Label* CreateInfoBubbleLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   label->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
@@ -64,7 +64,7 @@ views::Label* CreateInfoBubbleLabel(const string16& text) {
 }
 
 // Create a label formatted for info items in the menu
-views::Label* CreateMenuInfoLabel(const string16& text) {
+views::Label* CreateMenuInfoLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
   label->set_border(views::Border::CreateEmptyBorder(
       ash::kTrayPopupPaddingBetweenItems,
@@ -76,7 +76,7 @@ views::Label* CreateMenuInfoLabel(const string16& text) {
 }
 
 // Create a row of labels for the network info bubble.
-views::View* CreateInfoBubbleLine(const string16& text_label,
+views::View* CreateInfoBubbleLine(const base::string16& text_label,
                                   const std::string& text_string) {
   views::View* view = new views::View;
   view->SetLayoutManager(
@@ -121,7 +121,7 @@ struct NetworkInfo {
   }
 
   std::string service_path;
-  string16 label;
+  base::string16 label;
   gfx::ImageSkia image;
   bool disable;
   bool highlight;
@@ -492,7 +492,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
 }
 
 bool NetworkStateListDetailedView::CreateOrUpdateInfoLabel(
-    int index, const string16& text, views::Label** label) {
+    int index, const base::string16& text, views::Label** label) {
   if (*label == NULL) {
     *label = CreateMenuInfoLabel(text);
     scroll_content()->AddChildViewAt(*label, index);
@@ -569,7 +569,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
       status_message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
     }
     if (status_message_id) {
-      string16 text = rb.GetLocalizedString(status_message_id);
+      base::string16 text = rb.GetLocalizedString(status_message_id);
       if (CreateOrUpdateInfoLabel(index++, text, &no_cellular_networks_view_))
         needs_relayout = true;
     } else if (no_cellular_networks_view_) {
@@ -583,7 +583,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
       int message_id = handler->TechnologyEnabled(flimflam::kTypeWifi) ?
           IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
           IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-      string16 text = rb.GetLocalizedString(message_id);
+      base::string16 text = rb.GetLocalizedString(message_id);
       if (CreateOrUpdateInfoLabel(index++, text, &no_wifi_networks_view_))
         needs_relayout = true;
     } else if (no_wifi_networks_view_) {
@@ -594,7 +594,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
 
     // "Wifi Scanning"
     if (handler->GetScanningByType(flimflam::kTypeWifi)) {
-      string16 text =
+      base::string16 text =
           rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
       if (CreateOrUpdateInfoLabel(index++, text, &scanning_view_))
         needs_relayout = true;
@@ -617,7 +617,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
 
   // No networks or other messages (fallback)
   if (index == 0) {
-    string16 text;
+    base::string16 text;
     if (list_type_ == LIST_TYPE_VPN)
       text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN);
     else

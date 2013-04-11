@@ -30,7 +30,7 @@ class TrayScreenCapture : public SystemTrayItem,
   void Update();
   bool screen_capture_on() const { return screen_capture_on_; }
   void set_screen_capture_on(bool value) { screen_capture_on_ = value; }
-  const string16& screen_capture_status() const {
+  const base::string16& screen_capture_status() const {
     return screen_capture_status_;
   }
   void StopScreenCapture();
@@ -48,13 +48,13 @@ class TrayScreenCapture : public SystemTrayItem,
   // Overridden from ScreenCaptureObserver.
   virtual void OnScreenCaptureStart(
       const base::Closure& stop_callback,
-      const string16& screen_capture_status) OVERRIDE;
+      const base::string16& screen_capture_status) OVERRIDE;
   virtual void OnScreenCaptureStop() OVERRIDE;
 
   tray::ScreenCaptureTrayView* tray_;
   tray::ScreenCaptureStatusView* default_;
   tray::ScreenCaptureNotificationView* notification_;
-  string16 screen_capture_status_;
+  base::string16 screen_capture_status_;
   bool screen_capture_on_;
   base::Closure stop_callback_;
 

@@ -113,7 +113,7 @@ void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {
   cursor_loader_->SetPlatformCursor(cursor);
 }
 
-void ImageCursors::SetCursorResourceModule(const string16& module_name) {
+void ImageCursors::SetCursorResourceModule(const base::string16& module_name) {
   cursor_loader_->SetCursorResourceModule(module_name);
 }
 

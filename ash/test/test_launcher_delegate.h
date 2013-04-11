@@ -39,7 +39,7 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual void ItemClicked(const LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
-  virtual string16 GetTitle(const LauncherItem& item) OVERRIDE;
+  virtual base::string16 GetTitle(const LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item,
                                            aura::RootWindow* root) OVERRIDE;
   virtual ash::LauncherMenuModel* CreateApplicationMenu(

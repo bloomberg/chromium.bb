@@ -16,7 +16,8 @@ namespace internal {
 // A label button with custom alignment, border and focus border.
 class TrayPopupLabelButton : public views::LabelButton {
  public:
-  TrayPopupLabelButton(views::ButtonListener* listener, const string16& text);
+  TrayPopupLabelButton(views::ButtonListener* listener,
+                       const base::string16& text);
   virtual ~TrayPopupLabelButton();
 
  private:

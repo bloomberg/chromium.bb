@@ -55,7 +55,7 @@ void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorDKGRAY);
 }
 
-string16 ToplevelWindow::GetWindowTitle() const {
+base::string16 ToplevelWindow::GetWindowTitle() const {
   return params_.persist_across_all_workspaces ?
       ASCIIToUTF16("Examples: Toplevel Window (P)") :
       ASCIIToUTF16("Examples: Toplevel Window");

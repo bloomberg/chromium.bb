@@ -146,11 +146,11 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
 class ExampleSearchResult : public app_list::SearchResult {
  public:
   ExampleSearchResult(WindowTypeLauncherItem::Type type,
-                      const string16& query)
+                      const base::string16& query)
       : type_(type) {
     SetIcon(WindowTypeLauncherItem::GetIcon(type_));
 
-    string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
+    base::string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
     set_title(title);
 
     Tags title_tags;
@@ -160,7 +160,7 @@ class ExampleSearchResult : public app_list::SearchResult {
     // Note the following is not a proper way to handle i18n string.
     title = base::i18n::ToLower(title);
     size_t match_start = title.find(query);
-    while (match_start != string16::npos) {
+    while (match_start != base::string16::npos) {
       title_tags.push_back(Tag(Tag::MATCH,
                                match_start,
                                match_start + match_len));
@@ -168,7 +168,8 @@ class ExampleSearchResult : public app_list::SearchResult {
     }
     set_title_tags(title_tags);
 
-    string16 details = UTF8ToUTF16(WindowTypeLauncherItem::GetDetails(type_));
+    base::string16 details =
+        UTF8ToUTF16(WindowTypeLauncherItem::GetDetails(type_));
     set_details(details);
     Tags details_tags;
     details_tags.push_back(Tag(Tag::DIM, 0, details.length()));
@@ -199,7 +200,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   gfx::ImageSkia CreateSearchBoxIcon() {
-    const string16 icon_text = ASCIIToUTF16("ash");
+    const base::string16 icon_text = ASCIIToUTF16("ash");
     const gfx::Size icon_size(32, 32);
 
     gfx::Canvas canvas(icon_size, ui::SCALE_FACTOR_100P,
@@ -249,7 +250,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   virtual void StartSearch() OVERRIDE {
-    string16 query;
+    base::string16 query;
     TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);
     query = base::i18n::ToLower(query);
 
@@ -263,7 +264,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       WindowTypeLauncherItem::Type type =
           static_cast<WindowTypeLauncherItem::Type>(i);
 
-      string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
+      base::string16 title =
+          UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
       if (base::i18n::StringSearchIgnoringCaseAndAccents(
               query, title, NULL, NULL)) {
         model_->results()->Add(new ExampleSearchResult(type, query));
@@ -293,12 +295,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return gfx::ImageSkia();
   }
 
-  virtual string16 GetCurrentUserName() {
-    return string16();
+  virtual base::string16 GetCurrentUserName() {
+    return base::string16();
   }
 
-  virtual string16 GetCurrentUserEmail() {
-    return string16();
+  virtual base::string16 GetCurrentUserEmail() {
+    return base::string16();
   }
 
   virtual void OpenSettings() {

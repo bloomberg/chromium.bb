@@ -42,7 +42,7 @@ HoverHighlightView::~HoverHighlightView() {
 }
 
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
-                                         const string16& text,
+                                         const base::string16& text,
                                          gfx::Font::FontStyle style) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems));
@@ -61,7 +61,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
   SetAccessibleName(text);
 }
 
-views::Label* HoverHighlightView::AddLabel(const string16& text,
+views::Label* HoverHighlightView::AddLabel(const base::string16& text,
                                            gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
@@ -87,7 +87,7 @@ views::Label* HoverHighlightView::AddLabel(const string16& text,
   return text_label_;
 }
 
-views::Label* HoverHighlightView::AddCheckableLabel(const string16& text,
+views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
                                                     gfx::Font::FontStyle style,
                                                     bool checked) {
   if (checked) {

@@ -44,12 +44,13 @@ class TrayVPN : public SystemTrayItem,
 
   // NetworkObserver
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
-  virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
-                                 MessageType message_type,
-                                 NetworkType network_type,
-                                 const string16& title,
-                                 const string16& message,
-                                 const std::vector<string16>& links) OVERRIDE;
+  virtual void SetNetworkMessage(
+      NetworkTrayDelegate* delegate,
+      MessageType message_type,
+      NetworkType network_type,
+      const base::string16& title,
+      const base::string16& message,
+      const std::vector<base::string16>& links) OVERRIDE;
   virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void OnWillToggleWifi() OVERRIDE;
 

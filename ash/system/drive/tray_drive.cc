@@ -18,7 +18,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -49,7 +49,7 @@ const int kProgressBarWidth = 100;
 const int kProgressBarHeight = 11;
 const int64 kHideDelayInMs = 1000;
 
-string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
+base::string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DRIVE_SYNCING,
       base::IntToString16(static_cast<int>(list.size())));
 }
@@ -81,7 +81,7 @@ class DriveDefaultView : public TrayItemMore {
 
   void Update(const DriveOperationStatusList* list) {
     DCHECK(list);
-    string16 label = GetTrayLabel(*list);
+    base::string16 label = GetTrayLabel(*list);
     SetLabel(label);
     SetAccessibleName(label);
   }
@@ -159,11 +159,9 @@ class DriveDetailedView : public TrayDetailsView,
       label_container_->SetLayoutManager(new views::BoxLayout(
           views::BoxLayout::kVertical, 0, 0, kVerticalPadding));
 #if defined(OS_POSIX)
-      string16 file_label =
-          UTF8ToUTF16(file_path.BaseName().value());
+      base::string16 file_label = UTF8ToUTF16(file_path.BaseName().value());
 #elif defined(OS_WIN)
-      string16 file_label =
-          WideToUTF16(file_path.BaseName().value());
+      base::string16 file_label = WideToUTF16(file_path.BaseName().value());
 #endif
       views::Label* label = new views::Label(file_label);
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

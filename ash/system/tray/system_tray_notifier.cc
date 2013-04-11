@@ -317,9 +317,9 @@ void SystemTrayNotifier::NotifySetNetworkMessage(
     NetworkTrayDelegate* delegate,
     NetworkObserver::MessageType message_type,
     NetworkObserver::NetworkType network_type,
-    const string16& title,
-    const string16& message,
-    const std::vector<string16>& links) {
+    const base::string16& title,
+    const base::string16& message,
+    const std::vector<base::string16>& links) {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,
                     SetNetworkMessage(
@@ -362,7 +362,7 @@ void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
 
 void SystemTrayNotifier::NotifyScreenCaptureStart(
     const base::Closure& stop_callback,
-    const string16& sharing_app_name) {
+    const base::string16& sharing_app_name) {
   FOR_EACH_OBSERVER(ScreenCaptureObserver, screen_capture_observers_,
                     OnScreenCaptureStart(stop_callback, sharing_app_name));
 }

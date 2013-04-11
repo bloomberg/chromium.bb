@@ -84,7 +84,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void AnchorUpdated() {}
 
   // Called from GetAccessibleState, must return a valid accessible name.
-  virtual string16 GetAccessibleNameForTray() = 0;
+  virtual base::string16 GetAccessibleNameForTray() = 0;
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.

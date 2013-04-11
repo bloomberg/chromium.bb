@@ -27,7 +27,7 @@ class PowerStatusView : public views::View {
   virtual ~PowerStatusView() {}
 
   void UpdatePowerStatus(const PowerSupplyStatus& status);
-  const string16& accessible_name() const { return accessible_name_; }
+  const base::string16& accessible_name() const { return accessible_name_; }
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -42,7 +42,7 @@ class PowerStatusView : public views::View {
   void UpdateTextForDefaultView();
   void UpdateTextForNotificationView();
   int GetRoundedBatteryPercentage() const;
-  string16 GetBatteryTimeAccessibilityString(int hour, int min);
+  base::string16 GetBatteryTimeAccessibilityString(int hour, int min);
 
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
@@ -69,7 +69,7 @@ class PowerStatusView : public views::View {
 
   PowerSupplyStatus supply_status_;
 
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatusView);
 };

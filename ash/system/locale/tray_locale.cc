@@ -36,9 +36,9 @@ class LocaleMessageView : public views::View,
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
-    string16 from = l10n_util::GetDisplayNameForLocale(
+    base::string16 from = l10n_util::GetDisplayNameForLocale(
         from_locale, cur_locale, true);
-    string16 to = l10n_util::GetDisplayNameForLocale(
+    base::string16 to = l10n_util::GetDisplayNameForLocale(
         to_locale, cur_locale, true);
 
     views::Label* message = new views::Label(

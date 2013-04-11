@@ -75,7 +75,7 @@ bool TestSystemTrayDelegate::GetTrayVisibilityOnStartup() {
 }
 
 // Overridden from SystemTrayDelegate:
-const string16 TestSystemTrayDelegate::GetUserDisplayName() const {
+const base::string16 TestSystemTrayDelegate::GetUserDisplayName() const {
   return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
 }
 
@@ -110,7 +110,7 @@ const std::string TestSystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
 
-const string16 TestSystemTrayDelegate::GetEnterpriseMessage() const {
+const base::string16 TestSystemTrayDelegate::GetEnterpriseMessage() const {
   return string16();
 }
 
@@ -351,9 +351,9 @@ int TestSystemTrayDelegate::GetSystemTrayMenuWidth() {
   return 300;
 }
 
-string16 TestSystemTrayDelegate::FormatTimeDuration(
+base::string16 TestSystemTrayDelegate::FormatTimeDuration(
     const base::TimeDelta& delta) const {
-  return string16();
+  return base::string16();
 }
 
 void TestSystemTrayDelegate::MaybeSpeak(const std::string& utterance) const {

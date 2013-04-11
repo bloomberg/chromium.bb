@@ -63,11 +63,11 @@ void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {
   base::SystemMemoryInfoKB mem_info;
   base::GetSystemMemoryInfo(&mem_info);
   std::string output;
-  string16 free_bytes =
+  base::string16 free_bytes =
       ui::FormatBytes(static_cast<int64>(mem_info.free) * 1024);
   output = base::StringPrintf("free: %s", UTF16ToUTF8(free_bytes).c_str());
   if (mem_info.gem_size != -1) {
-    string16 gem_size = ui::FormatBytes(mem_info.gem_size);
+    base::string16 gem_size = ui::FormatBytes(mem_info.gem_size);
     output += base::StringPrintf("  gmem: %s", UTF16ToUTF8(gem_size).c_str());
     if (mem_info.gem_objects != -1)
       output += base::StringPrintf("  gobjects: %d", mem_info.gem_objects);
@@ -82,8 +82,8 @@ void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {
     total_shared_bytes += shared_bytes;
     delete pm;
   }
-  string16 private_size = ui::FormatBytes(total_private_bytes);
-  string16 shared_size = ui::FormatBytes(total_shared_bytes);
+  base::string16 private_size = ui::FormatBytes(total_private_bytes);
+  base::string16 shared_size = ui::FormatBytes(total_shared_bytes);
 
   output += base::StringPrintf("\nGPU private: %s  shared: %s",
                                UTF16ToUTF8(private_size).c_str(),

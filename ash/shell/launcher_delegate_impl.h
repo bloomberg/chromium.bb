@@ -29,7 +29,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual void ItemClicked(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
-  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
+  virtual base::string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item,
       aura::RootWindow* root) OVERRIDE;

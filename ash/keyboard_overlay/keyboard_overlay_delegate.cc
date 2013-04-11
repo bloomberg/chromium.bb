@@ -62,7 +62,7 @@ void PaintMessageHandler::DidPaint(const ListValue* args) {
 
 namespace ash {
 
-KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title,
+KeyboardOverlayDelegate::KeyboardOverlayDelegate(const base::string16& title,
                                                  const GURL& url)
     : title_(title),
       url_(url),
@@ -99,7 +99,7 @@ ui::ModalType KeyboardOverlayDelegate::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 KeyboardOverlayDelegate::GetDialogTitle() const {
+base::string16 KeyboardOverlayDelegate::GetDialogTitle() const {
   return title_;
 }
 

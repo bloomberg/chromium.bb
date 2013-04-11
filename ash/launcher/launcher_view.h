@@ -205,7 +205,7 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void MouseMovedOverButton(views::View* view) OVERRIDE;
   virtual void MouseEnteredButton(views::View* view) OVERRIDE;
   virtual void MouseExitedButton(views::View* view) OVERRIDE;
-  virtual string16 GetAccessibleName(const views::View* view) OVERRIDE;
+  virtual base::string16 GetAccessibleName(const views::View* view) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

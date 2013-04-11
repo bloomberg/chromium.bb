@@ -50,7 +50,7 @@ class SettingsDefaultView : public ActionableView {
           rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
       AddChildView(icon);
 
-      string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_SETTINGS);
+      base::string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_SETTINGS);
       label_ = new views::Label(text);
       AddChildView(label_);
       SetAccessibleName(text);
@@ -74,7 +74,7 @@ class SettingsDefaultView : public ActionableView {
     if (!power_status_view_)
       return;
     power_status_view_->UpdatePowerStatus(status);
-    string16 accessible_name = label_ ?
+    base::string16 accessible_name = label_ ?
         label_->text() + ASCIIToUTF16(", ") +
             power_status_view_->accessible_name() :
         power_status_view_->accessible_name();

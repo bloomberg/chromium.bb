@@ -108,7 +108,7 @@ void AshNativeCursorManager::SetMouseEventsEnabled(
 }
 
 void AshNativeCursorManager::SetCursorResourceModule(
-    const string16& module_name) {
+    const base::string16& module_name) {
   image_cursors_->SetCursorResourceModule(module_name);
 }
 

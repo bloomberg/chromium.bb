@@ -1284,11 +1284,11 @@ void LauncherView::MouseExitedButton(views::View* view) {
     tooltip_->StopTimer();
 }
 
-string16 LauncherView::GetAccessibleName(const views::View* view) {
+base::string16 LauncherView::GetAccessibleName(const views::View* view) {
   int view_index = view_model_->GetIndexOfView(view);
   // May be -1 while in the process of animating closed.
   if (view_index == -1)
-    return string16();
+    return base::string16();
 
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
@@ -1306,7 +1306,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
     case TYPE_BROWSER_SHORTCUT:
       return Shell::GetInstance()->delegate()->GetProductName();
   }
-  return string16();
+  return base::string16();
 }
 
 void LauncherView::ButtonPressed(views::Button* sender,

@@ -13,7 +13,7 @@ namespace ash {
 namespace internal {
 
 TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
-                                           const string16& text)
+                                           const base::string16& text)
     : views::LabelButton(listener, text) {
   set_border(new TrayPopupLabelButtonBorder);
   set_focusable(true);
