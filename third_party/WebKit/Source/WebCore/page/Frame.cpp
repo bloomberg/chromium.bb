@@ -554,44 +554,6 @@ FloatSize Frame::resizePageRectsKeepingRatio(const FloatSize& originalSize, cons
     return resultSize;
 }
 
-void Frame::injectUserScripts(UserScriptInjectionTime injectionTime)
-{
-    if (!m_page)
-        return;
-
-    if (loader()->stateMachine()->creatingInitialEmptyDocument())
-        return;
-
-    // Walk the hashtable. Inject by world.
-    const UserScriptMap* userScripts = m_page->group().userScripts();
-    if (!userScripts)
-        return;
-    UserScriptMap::const_iterator end = userScripts->end();
-    for (UserScriptMap::const_iterator it = userScripts->begin(); it != end; ++it)
-        injectUserScriptsForWorld(it->key.get(), *it->value, injectionTime);
-}
-
-void Frame::injectUserScriptsForWorld(DOMWrapperWorld* world, const UserScriptVector& userScripts, UserScriptInjectionTime injectionTime)
-{
-    if (userScripts.isEmpty())
-        return;
-
-    Document* doc = document();
-    if (!doc)
-        return;
-
-    Vector<ScriptSourceCode> sourceCode;
-    unsigned count = userScripts.size();
-    for (unsigned i = 0; i < count; ++i) {
-        UserScript* script = userScripts[i].get();
-        if (script->injectedFrames() == InjectInTopFrameOnly && ownerElement())
-            continue;
-
-        if (script->injectionTime() == injectionTime && UserContentURLPattern::matchesPatterns(doc->url(), script->whitelist(), script->blacklist()))
-            m_script.evaluateInWorld(ScriptSourceCode(script->source(), script->url()), world);
-    }
-}
-
 RenderView* Frame::contentRenderer() const
 {
     return document() ? document()->renderView() : 0;

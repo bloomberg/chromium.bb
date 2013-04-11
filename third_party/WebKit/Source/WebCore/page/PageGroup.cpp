@@ -256,21 +256,6 @@ StorageNamespace* PageGroup::localStorage()
     return m_localStorage.get();
 }
 
-void PageGroup::addUserScriptToWorld(DOMWrapperWorld* world, const String& source, const KURL& url,
-                                     const Vector<String>& whitelist, const Vector<String>& blacklist,
-                                     UserScriptInjectionTime injectionTime, UserContentInjectedFrames injectedFrames)
-{
-    ASSERT_ARG(world, world);
-
-    OwnPtr<UserScript> userScript = adoptPtr(new UserScript(source, url, whitelist, blacklist, injectionTime, injectedFrames));
-    if (!m_userScripts)
-        m_userScripts = adoptPtr(new UserScriptMap);
-    OwnPtr<UserScriptVector>& scriptsInWorld = m_userScripts->add(world, nullptr).iterator->value;
-    if (!scriptsInWorld)
-        scriptsInWorld = adoptPtr(new UserScriptVector);
-    scriptsInWorld->append(userScript.release());
-}
-
 void PageGroup::addUserStyleSheetToWorld(DOMWrapperWorld* world, const String& source, const KURL& url,
                                          const Vector<String>& whitelist, const Vector<String>& blacklist,
                                          UserContentInjectedFrames injectedFrames,
@@ -291,90 +276,8 @@ void PageGroup::addUserStyleSheetToWorld(DOMWrapperWorld* world, const String& s
         invalidatedInjectedStyleSheetCacheInAllFrames();
 }
 
-void PageGroup::removeUserScriptFromWorld(DOMWrapperWorld* world, const KURL& url)
-{
-    ASSERT_ARG(world, world);
-
-    if (!m_userScripts)
-        return;
-
-    UserScriptMap::iterator it = m_userScripts->find(world);
-    if (it == m_userScripts->end())
-        return;
-    
-    UserScriptVector* scripts = it->value.get();
-    for (int i = scripts->size() - 1; i >= 0; --i) {
-        if (scripts->at(i)->url() == url)
-            scripts->remove(i);
-    }
-    
-    if (scripts->isEmpty())
-        m_userScripts->remove(it);
-}
-
-void PageGroup::removeUserStyleSheetFromWorld(DOMWrapperWorld* world, const KURL& url)
-{
-    ASSERT_ARG(world, world);
-
-    if (!m_userStyleSheets)
-        return;
-
-    UserStyleSheetMap::iterator it = m_userStyleSheets->find(world);
-    bool sheetsChanged = false;
-    if (it == m_userStyleSheets->end())
-        return;
-    
-    UserStyleSheetVector* stylesheets = it->value.get();
-    for (int i = stylesheets->size() - 1; i >= 0; --i) {
-        if (stylesheets->at(i)->url() == url) {
-            stylesheets->remove(i);
-            sheetsChanged = true;
-        }
-    }
-        
-    if (!sheetsChanged)
-        return;
-
-    if (stylesheets->isEmpty())
-        m_userStyleSheets->remove(it);
-
-    invalidatedInjectedStyleSheetCacheInAllFrames();
-}
-
-void PageGroup::removeUserScriptsFromWorld(DOMWrapperWorld* world)
-{
-    ASSERT_ARG(world, world);
-
-    if (!m_userScripts)
-        return;
-
-    UserScriptMap::iterator it = m_userScripts->find(world);
-    if (it == m_userScripts->end())
-        return;
-       
-    m_userScripts->remove(it);
-}
-
-void PageGroup::removeUserStyleSheetsFromWorld(DOMWrapperWorld* world)
-{
-    ASSERT_ARG(world, world);
-
-    if (!m_userStyleSheets)
-        return;
-    
-    UserStyleSheetMap::iterator it = m_userStyleSheets->find(world);
-    if (it == m_userStyleSheets->end())
-        return;
-    
-    m_userStyleSheets->remove(it);
-
-    invalidatedInjectedStyleSheetCacheInAllFrames();
-}
-
 void PageGroup::removeAllUserContent()
 {
-    m_userScripts.clear();
-
     if (m_userStyleSheets) {
         m_userStyleSheets.clear();
         invalidatedInjectedStyleSheetCacheInAllFrames();

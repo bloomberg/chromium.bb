@@ -192,7 +192,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("removeOriginAccessWhitelistEntry", &TestRunner::removeOriginAccessWhitelistEntry);
     bindMethod("hasCustomPageSizeStyle", &TestRunner::hasCustomPageSizeStyle);
     bindMethod("forceRedSelectionColors", &TestRunner::forceRedSelectionColors);
-    bindMethod("addUserScript", &TestRunner::addUserScript);
     bindMethod("addUserStyleSheet", &TestRunner::addUserStyleSheet);
     bindMethod("startSpeechInput", &TestRunner::startSpeechInput);
     bindMethod("findString", &TestRunner::findString);
@@ -1262,17 +1261,6 @@ void TestRunner::forceRedSelectionColors(const CppArgumentList& arguments, CppVa
 {
     result->setNull();
     m_webView->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
-}
-
-void TestRunner::addUserScript(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() < 3 || !arguments[0].isString() || !arguments[1].isBool() || !arguments[2].isBool())
-        return;
-    WebView::addUserScript(
-        cppVariantToWebString(arguments[0]), WebVector<WebString>(),
-        arguments[1].toBoolean() ? WebView::UserScriptInjectAtDocumentStart : WebView::UserScriptInjectAtDocumentEnd,
-        arguments[2].toBoolean() ? WebView::UserContentInjectInAllFrames : WebView::UserContentInjectInTopFrameOnly);
 }
 
 void TestRunner::addUserStyleSheet(const CppArgumentList& arguments, CppVariant* result)

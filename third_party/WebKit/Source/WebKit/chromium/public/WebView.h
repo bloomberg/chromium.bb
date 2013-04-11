@@ -73,12 +73,6 @@ public:
     WEBKIT_EXPORT static const float minPageScaleFactor;
     WEBKIT_EXPORT static const float maxPageScaleFactor;
 
-    // Controls the time that user scripts injected into the document run.
-    enum UserScriptInjectAt {
-        UserScriptInjectAtDocumentStart,
-        UserScriptInjectAtDocumentEnd
-    };
-
     // Controls which frames user content is injected into.
     enum UserContentInjectIn {
         UserContentInjectInAllFrames,
@@ -444,10 +438,6 @@ public:
                                     unsigned inactiveForegroundColor) = 0;
 
     // User scripts --------------------------------------------------------
-    WEBKIT_EXPORT static void addUserScript(const WebString& sourceCode,
-                                            const WebVector<WebString>& patterns,
-                                            UserScriptInjectAt injectAt,
-                                            UserContentInjectIn injectIn);
     WEBKIT_EXPORT static void addUserStyleSheet(const WebString& sourceCode,
                                                 const WebVector<WebString>& patterns,
                                                 UserContentInjectIn injectIn,

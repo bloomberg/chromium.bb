@@ -30,7 +30,6 @@
 #include <wtf/Noncopyable.h>
 #include "LinkHash.h"
 #include "Supplementable.h"
-#include "UserScript.h"
 #include "UserStyleSheet.h"
 #include <wtf/text/StringHash.h>
 
@@ -87,23 +86,14 @@ namespace WebCore {
         StorageNamespace* localStorage();
         bool hasLocalStorage() { return m_localStorage; }
 
-        void addUserScriptToWorld(DOMWrapperWorld*, const String& source, const KURL&,
-                                  const Vector<String>& whitelist, const Vector<String>& blacklist,
-                                  UserScriptInjectionTime, UserContentInjectedFrames);
         void addUserStyleSheetToWorld(DOMWrapperWorld*, const String& source, const KURL&,
                                       const Vector<String>& whitelist, const Vector<String>& blacklist,
                                       UserContentInjectedFrames,
                                       UserStyleLevel level = UserStyleUserLevel,
                                       UserStyleInjectionTime injectionTime = InjectInExistingDocuments);
-        void removeUserScriptFromWorld(DOMWrapperWorld*, const KURL&);
-        void removeUserStyleSheetFromWorld(DOMWrapperWorld*, const KURL&);
-
-        void removeUserScriptsFromWorld(DOMWrapperWorld*);
-        void removeUserStyleSheetsFromWorld(DOMWrapperWorld*);
 
         void removeAllUserContent();
 
-        const UserScriptMap* userScripts() const { return m_userScripts.get(); }
         const UserStyleSheetMap* userStyleSheets() const { return m_userStyleSheets.get(); }
 
         GroupSettings* groupSettings() const { return m_groupSettings.get(); }
@@ -129,7 +119,6 @@ namespace WebCore {
         unsigned m_identifier;
         RefPtr<StorageNamespace> m_localStorage;
 
-        OwnPtr<UserScriptMap> m_userScripts;
         OwnPtr<UserStyleSheetMap> m_userStyleSheets;
 
         OwnPtr<GroupSettings> m_groupSettings;

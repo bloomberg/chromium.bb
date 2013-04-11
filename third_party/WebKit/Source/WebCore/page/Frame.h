@@ -38,7 +38,6 @@
 #include "FrameTree.h"
 #include "NavigationScheduler.h"
 #include "ScriptController.h"
-#include "UserScriptTypes.h"
 
 namespace WebCore {
 
@@ -108,8 +107,6 @@ namespace WebCore {
 
         bool inScope(TreeScope*) const;
 
-        void injectUserScripts(UserScriptInjectionTime);
-        
         String layerTreeAsText(LayerTreeFlags = 0) const;
         String trackedRepaintRectsAsText() const;
 
@@ -173,8 +170,6 @@ namespace WebCore {
 
     private:
         Frame(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
-
-        void injectUserScriptsForWorld(DOMWrapperWorld*, const UserScriptVector&, UserScriptInjectionTime);
 
         HashSet<FrameDestructionObserver*> m_destructionObservers;
 

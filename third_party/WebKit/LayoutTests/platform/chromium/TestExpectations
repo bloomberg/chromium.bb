@@ -1879,12 +1879,6 @@ webkit.org/b/96977 [ Mac Release ] perf/nested-combined-selectors.html [ Failure
 # new or failing since WebKit rev. 65740:65800
 crbug.com/53073 [ Debug ] storage/websql/change-version.html
 
-# r66144 added tests to test user scripts on special documents, and Linux can't
-# pass them because they rely on QuickTime being installed. We wontfix these
-# tests and let the Mac/Win coverage ensure that the (cross-platform)
-# special-document machinery still works.
-crbug.com/53546 [ Linux ] userscripts/user-script-video-document.html [ WontFix ]
-
 # Requires page cache.
 webkit.org/b/45652 fast/viewport/viewport-128.html [ Timeout ]
 
@@ -2994,7 +2988,6 @@ webkit.org/b/89702 compositing/scaling/tiled-layer-recursion.html [ ImageOnlyFai
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/89789 [ Mac ] plugins/embed-attributes-style.html [ ImageOnlyFailure Pass ]
-webkit.org/b/89789 [ XP ] userscripts/user-script-video-document.html [ Pass Timeout ]
 
 # Flaky
 webkit.org/b/89794 [ Mac ] fast/regions/get-regions-by-content2.html [ Crash Pass ]

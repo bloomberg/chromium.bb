@@ -677,8 +677,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
 
 void FrameLoader::finishedParsing()
 {
-    m_frame->injectUserScripts(InjectAtDocumentEnd);
-
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
@@ -3073,7 +3071,6 @@ String FrameLoader::referrer() const
 
 void FrameLoader::dispatchDocumentElementAvailable()
 {
-    m_frame->injectUserScripts(InjectAtDocumentStart);
     m_client->documentElementAvailable();
 }
 

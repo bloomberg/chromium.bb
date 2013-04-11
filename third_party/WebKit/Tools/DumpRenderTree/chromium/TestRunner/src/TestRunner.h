@@ -231,8 +231,7 @@ private:
     // Forces the selection colors for testing under Linux.
     void forceRedSelectionColors(const CppArgumentList&, CppVariant*);
 
-    // Adds a user script or user style sheet to be injected into new documents.
-    void addUserScript(const CppArgumentList&, CppVariant*);
+    // Adds a user style sheet to be injected into new documents.
     void addUserStyleSheet(const CppArgumentList&, CppVariant*);
 
     void startSpeechInput(const CppArgumentList&, CppVariant*);

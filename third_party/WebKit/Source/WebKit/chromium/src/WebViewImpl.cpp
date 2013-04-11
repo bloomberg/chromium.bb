@@ -3592,22 +3592,6 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
 #endif
 }
 
-void WebView::addUserScript(const WebString& sourceCode,
-                            const WebVector<WebString>& patternsIn,
-                            WebView::UserScriptInjectAt injectAt,
-                            WebView::UserContentInjectIn injectIn)
-{
-    Vector<String> patterns;
-    for (size_t i = 0; i < patternsIn.size(); ++i)
-        patterns.append(patternsIn[i]);
-
-    PageGroup* pageGroup = PageGroup::pageGroup(pageGroupName);
-    RefPtr<DOMWrapperWorld> world(DOMWrapperWorld::createUninitializedWorld());
-    pageGroup->addUserScriptToWorld(world.get(), sourceCode, WebURL(), patterns, Vector<String>(),
-                                    static_cast<UserScriptInjectionTime>(injectAt),
-                                    static_cast<UserContentInjectedFrames>(injectIn));
-}
-
 void WebView::addUserStyleSheet(const WebString& sourceCode,
                                 const WebVector<WebString>& patternsIn,
                                 WebView::UserContentInjectIn injectIn,

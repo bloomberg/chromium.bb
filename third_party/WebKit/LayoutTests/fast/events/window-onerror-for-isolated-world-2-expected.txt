@@ -1,0 +1,12 @@
+Test that window.onerror and "error" event listeners from isolated world are invoked for uncaught exceptions in scripts running in isolate worlds as well as for exceptions in the main world.Bug 8519.
+
+isolated world window.onerror: Uncaught Error: Error in isolated world inline script. at :33
+isolated world error event listener: Uncaught Error: Error in isolated world inline script. at :33
+isolated world window.onerror: Uncaught Error: Error in main world inline script. at window-onerror-for-isolated-world-2.html:30
+isolated world error event listener: Uncaught Error: Error in main world inline script. at window-onerror-for-isolated-world-2.html:30
+isolated world window.onerror: Uncaught Error: Error in isolated world load handler. at :30
+isolated world error event listener: Uncaught Error: Error in isolated world load handler. at :30
+isolated world window.onerror: Uncaught Error: Error in main world load handler. at window-onerror-for-isolated-world-2.html:27
+isolated world error event listener: Uncaught Error: Error in main world load handler. at window-onerror-for-isolated-world-2.html:27
+isolated world window.onerror: Uncaught Error: Error in isolated world setTimeout callback. at :28
+isolated world error event listener: Uncaught Error: Error in isolated world setTimeout callback. at :28

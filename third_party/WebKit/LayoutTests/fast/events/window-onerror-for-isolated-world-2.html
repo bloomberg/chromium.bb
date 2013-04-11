@@ -4,7 +4,7 @@
 </head>
 <body>
 <p>Test that window.onerror and "error" event listeners from isolated world are
-invoked for uncaught exceptions in user scripts running in isolate worlds as
+invoked for uncaught exceptions in scripts running in isolate worlds as
 well as for exceptions in the main world.<a href="https://bugs.webkit.org/show_bug.cgi?id=8519">Bug 8519.</a>
 </p>
 <div id="console"></div>
@@ -57,7 +57,7 @@ var errorHandlers = function(isolatedWorld)
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-    testRunner.addUserScript("(" + errorHandlers + ")('user script'); (" + throwExceptions + ")('user script')", false, true);
+    testRunner.evaluateScriptInIsolatedWorld(1, "(" + errorHandlers + ")('isolated world'); (" + throwExceptions + ")('isolated world')");
 }
 
 throwExceptions("main world");
