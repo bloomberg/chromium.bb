@@ -875,6 +875,26 @@ scoped_ptr<ResourceList> ResourceList::CreateFromChangeList(
   return feed.Pass();
 }
 
+// static
+scoped_ptr<ResourceList> ResourceList::CreateFromFileList(
+    const FileList& file_list) {
+  scoped_ptr<ResourceList> feed(new ResourceList);
+  const ScopedVector<FileResource>& items = file_list.items();
+  for (size_t i = 0; i < items.size(); ++i) {
+    feed->entries_.push_back(
+        ResourceEntry::CreateFromFileResource(*items[i]).release());
+  }
+
+  if (!file_list.next_link().is_empty()) {
+    Link* link = new Link();
+    link->set_type(Link::LINK_NEXT);
+    link->set_href(file_list.next_link());
+    feed->links_.push_back(link);
+  }
+
+  return feed.Pass();
+}
+
 bool ResourceList::GetNextFeedURL(GURL* url) const {
   DCHECK(url);
   for (size_t i = 0; i < links_.size(); ++i) {

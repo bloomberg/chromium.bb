@@ -617,9 +617,13 @@ class ResourceList : public CommonMetadata {
   // class for the details.
   static scoped_ptr<ResourceList> CreateFrom(const base::Value& value);
   // Variant of CreateFrom() above, creates feed from parsed ChangeList.
-  // TODO(kochi): This should go away soon. http://crbug.com/142293
+  // TODO(hidehiko): This should go away soon. http://crbug.com/142293
   static scoped_ptr<ResourceList> CreateFromChangeList(
       const ChangeList& changelist);
+  // Variant of CreateFrom() above, creates feed from parsed FileList.
+  // TODO(hidehiko): This should go away soon. http://crbug.com/142293
+  static scoped_ptr<ResourceList> CreateFromFileList(
+      const FileList& file_list);
 
   // Registers the mapping between JSON field names and the members in
   // this class.
