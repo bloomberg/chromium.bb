@@ -29,7 +29,7 @@ interface ShadowRoot : DocumentFragment {
     attribute boolean applyAuthorStyles;
     attribute boolean resetStyleInheritance;
 
-    [TreatNullAs=NullString, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString innerHTML;
 
     [RaisesException] Node cloneNode([Optional=DefaultIsUndefined] boolean deep);
     DOMSelection getSelection();
