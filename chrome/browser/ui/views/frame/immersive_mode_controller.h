@@ -46,13 +46,6 @@ class ImmersiveModeController {
   // the reveal view's layer is on top and hence visible over web contents.
   virtual void MaybeStackViewAtTop() = 0;
 
-  // Shows the reveal view if immersive mode is enabled. Used when focus is
-  // placed in the location bar, tools menu, etc.
-  virtual void MaybeStartReveal() = 0;
-
-  // Immediately hides the reveal view, without animating.
-  virtual void CancelReveal() = 0;
-
   // Returns a lock which will keep the top-of-window views revealed for its
   // lifetime. Several locks can be obtained. When all of the locks are
   // destroyed, if immersive mode is enabled and there is nothing else keeping

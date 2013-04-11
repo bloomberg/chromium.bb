@@ -998,9 +998,12 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   if (!force_location_bar_focus_ && !IsActive())
     return;
 
-  // The location bar view must be visible for it to be considered focusable,
-  // so always reveal it before testing for focusable.
-  immersive_mode_controller_->MaybeStartReveal();
+  // Temporarily reveal the top-of-window views (if not already revealed) so
+  // that the location bar view is visible and is considered focusable. If the
+  // location bar view gains focus, |immersive_mode_controller_| will keep the
+  // top-of-window views revealed.
+  scoped_ptr<ImmersiveModeController::RevealedLock> focus_reveal_lock(
+      immersive_mode_controller_->GetRevealedLock());
 
   LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->IsLocationEntryFocusableInRootView()) {
@@ -1012,8 +1015,6 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);
     focus_manager->ClearFocus();
-    // The view doesn't need to be revealed after all.
-    immersive_mode_controller_->CancelReveal();
   }
 }
 
@@ -1028,19 +1029,23 @@ void BrowserView::UpdateToolbar(content::WebContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  immersive_mode_controller_->MaybeStartReveal();
+  // Temporarily reveal the top-of-window views (if not already revealed) so
+  // that the toolbar is visible and is considered focusable. If the
+  // toolbar gains focus, |immersive_mode_controller_| will keep the
+  // top-of-window views revealed.
+  scoped_ptr<ImmersiveModeController::RevealedLock> focus_reveal_lock(
+      immersive_mode_controller_->GetRevealedLock());
+
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
   toolbar_->SetPaneFocus(NULL);
 }
 
 void BrowserView::FocusBookmarksToolbar() {
-  // Don't use IsBookmarkBarVisible() because that might return false in
-  // immersive fullscreen and shifting focus should cause a reveal.
+  DCHECK(!immersive_mode_controller_->IsEnabled());
   if (bookmark_bar_view_.get() &&
       bookmark_bar_view_->visible() &&
       bookmark_bar_view_->GetPreferredSize().height() != 0) {
-    immersive_mode_controller_->MaybeStartReveal();
     bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
   }
 }
@@ -1056,7 +1061,7 @@ void BrowserView::FocusAppMenu() {
   if (toolbar_->IsAppMenuFocused()) {
     RestoreFocus();
   } else {
-    immersive_mode_controller_->MaybeStartReveal();
+    DCHECK(!immersive_mode_controller_->IsEnabled());
     toolbar_->SetPaneFocusAndFocusAppMenu();
   }
 }

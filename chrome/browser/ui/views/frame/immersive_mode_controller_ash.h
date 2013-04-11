@@ -42,8 +42,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual bool ShouldHideTopViews() const OVERRIDE;
   virtual bool IsRevealed() const OVERRIDE;
   virtual void MaybeStackViewAtTop() OVERRIDE;
-  virtual void MaybeStartReveal() OVERRIDE;
-  virtual void CancelReveal() OVERRIDE;
   virtual ImmersiveModeController::RevealedLock*
       GetRevealedLock() OVERRIDE WARN_UNUSED_RESULT;
 
@@ -96,6 +94,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // Returns the animation duration given |animate|.
   int GetAnimationDuration(Animate animate) const;
+
+  // Reveals the top-of-window views if immersive mode is enabled.
+  void MaybeStartReveal();
 
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|

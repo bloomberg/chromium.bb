@@ -290,22 +290,6 @@ void ImmersiveModeControllerAsh::MaybeStackViewAtTop() {
   }
 }
 
-void ImmersiveModeControllerAsh::MaybeStartReveal() {
-  if (enabled_ && reveal_state_ != REVEALED)
-    StartReveal(ANIMATE_FAST);
-}
-
-void ImmersiveModeControllerAsh::CancelReveal() {
-  // Reset the mouse revealed lock so that it does not affect whether
-  // the top-of-window views are hidden. Reaquire the lock if ending the reveal
-  // is unsuccessful.
-  bool had_mouse_revealed_lock = (mouse_revealed_lock_.get() != NULL);
-  mouse_revealed_lock_.reset();
-  MaybeEndReveal(ANIMATE_NO);
-  if (IsRevealed() && had_mouse_revealed_lock)
-    mouse_revealed_lock_.reset(GetRevealedLock());
-}
-
 ImmersiveModeControllerAsh::RevealedLock*
     ImmersiveModeControllerAsh::GetRevealedLock() {
   return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr());
@@ -405,7 +389,7 @@ void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
   views::View::ConvertPointToScreen(top_container, &cursor_pos);
   aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
 
-  UpdateMouseRevealedLock(true);
+  UpdateMouseRevealedLock(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -520,6 +504,11 @@ int ImmersiveModeControllerAsh::GetAnimationDuration(Animate animate) const {
   }
   NOTREACHED();
   return 0;
+}
+
+void ImmersiveModeControllerAsh::MaybeStartReveal() {
+  if (enabled_ && reveal_state_ != REVEALED)
+    StartReveal(ANIMATE_FAST);
 }
 
 void ImmersiveModeControllerAsh::StartReveal(Animate animate) {

@@ -38,12 +38,6 @@ bool ImmersiveModeControllerStub::IsRevealed() const {
 void ImmersiveModeControllerStub::MaybeStackViewAtTop() {
 }
 
-void ImmersiveModeControllerStub::MaybeStartReveal() {
-}
-
-void ImmersiveModeControllerStub::CancelReveal() {
-}
-
 ImmersiveModeController::RevealedLock*
     ImmersiveModeControllerStub::GetRevealedLock() {
   return NULL;

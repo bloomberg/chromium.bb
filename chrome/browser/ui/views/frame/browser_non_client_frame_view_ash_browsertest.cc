@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 
@@ -78,6 +79,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   if (!chrome::UseImmersiveFullscreen())
     return;
+
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
   // We know we're using Views, so static cast.
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   Widget* widget = browser_view->GetWidget();
@@ -102,20 +107,20 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   EXPECT_TRUE(immersive_mode_controller->IsEnabled());
 
   // TODO(jamescook): When adding back the slide-out animation for immersive
-  // mode, this is a good place to test the button visibility. CancelReveal()
-  // can short-circuit the animation if it has to wait on painting.
+  // mode, this is a good place to test the button visibility.
 
   // Frame abuts top of window.
   EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
 
   // An immersive reveal shows the buttons and the top of the frame.
-  immersive_mode_controller->StartRevealForTest(false);
+  immersive_mode_controller->StartRevealForTest(true);
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
   EXPECT_TRUE(frame_view->ShouldPaint());
 
   // Ending reveal hides them again.
-  immersive_mode_controller->CancelReveal();
+  immersive_mode_controller->SetMouseHoveredForTest(false);
+  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->size_button_->visible());
   EXPECT_FALSE(frame_view->close_button_->visible());
   EXPECT_FALSE(frame_view->ShouldPaint());

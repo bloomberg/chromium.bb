@@ -122,8 +122,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
   EXPECT_EQ(GetRectInWidget(browser_view).y() + Tab::GetImmersiveHeight(),
             GetRectInWidget(contents_view).y());
 
-  // Ending a reveal keeps us in immersive mode, but toolbar goes invisible.
-  controller->CancelReveal();
+  // End reveal by moving the mouse off the top-of-window views. We
+  // should stay in immersive mode, but the toolbar should go invisible.
+  controller->SetMouseHoveredForTest(false);
   EXPECT_TRUE(controller->IsEnabled());
   EXPECT_TRUE(controller->ShouldHideTopViews());
   EXPECT_FALSE(controller->IsRevealed());
@@ -389,7 +390,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
 
   // 2) Test that acquiring a revealed state lock reveals the top-of-window
   // views if they are hidden.
-  controller->CancelReveal();
   EXPECT_FALSE(controller->IsRevealed());
   lock1.reset(controller->GetRevealedLock());
   EXPECT_TRUE(controller->IsRevealed());
