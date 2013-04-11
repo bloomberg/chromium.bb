@@ -19,6 +19,7 @@
 #
 
 ActiveDOMObject
+ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds|GetterForIsolatedWorlds
 CachedAttribute
 CacheAttributeForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments
