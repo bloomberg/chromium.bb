@@ -37,6 +37,7 @@
 #include "InstrumentingAgents.h"
 #include "ScriptProfiler.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include <wtf/MemoryInstrumentationHashMap.h>
 
 namespace WebCore {
 

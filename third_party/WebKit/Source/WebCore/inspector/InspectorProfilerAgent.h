@@ -49,7 +49,6 @@ class InspectorObject;
 class InspectorState;
 class InstrumentingAgents;
 class Page;
-class ScriptHeapSnapshot;
 class ScriptProfile;
 class WorkerContext;
 
@@ -65,7 +64,6 @@ public:
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-    virtual void collectGarbage(ErrorString*);
     virtual void clearProfiles(ErrorString*);
 
     virtual void enable(ErrorString*);
@@ -79,18 +77,13 @@ public:
     String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
     virtual void getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >&);
     virtual void getCPUProfile(ErrorString*, int uid, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
-    virtual void getHeapSnapshot(ErrorString*, int uid);
     virtual void removeProfile(ErrorString*, const String& type, int uid);
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
     virtual void restore();
 
-    virtual void takeHeapSnapshot(ErrorString*, const bool* reportProgress);
     void toggleRecordButton(bool isProfiling);
-
-    virtual void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result);
-    virtual void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId);
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
@@ -104,14 +97,12 @@ protected:
 
 private:
     typedef HashMap<unsigned int, RefPtr<ScriptProfile> > ProfilesMap;
-    typedef HashMap<unsigned int, RefPtr<ScriptHeapSnapshot> > HeapSnapshotsMap;
 
     void resetFrontendProfiles();
     void restoreEnablement();
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);
 
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createProfileHeader(const ScriptProfile&);
-    PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createSnapshotHeader(const ScriptHeapSnapshot&);
 
     InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;
@@ -120,9 +111,7 @@ private:
     bool m_recordingCPUProfile;
     int m_currentUserInitiatedProfileNumber;
     unsigned m_nextUserInitiatedProfileNumber;
-    unsigned m_nextUserInitiatedHeapSnapshotNumber;
     ProfilesMap m_profiles;
-    HeapSnapshotsMap m_snapshots;
 
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;
