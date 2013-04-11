@@ -173,6 +173,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   bool initialized_gl_context = false;
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
+    // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
+    // purpose. However, on Mac we don't actually use them. As documented in
+    // crbug.com/222934, due to some driver issues, glGetString could take
+    // multiple seconds to finish, which in turn cause the GPU process to crash.
+    // By skipping the following code on Mac, we don't really lose anything,
+    // because the basic GPU information is passed down from browser process
+    // and we already registered them through SetGpuInfo() above.
+#if !defined(OS_MACOSX)
     if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info))
       VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
     GetContentClient()->SetGpuInfo(gpu_info);
@@ -191,6 +199,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       }
     }
 #endif  // OS_CHROMEOS
+#endif  // OS_MACOSX
   } else {
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
     gpu_info.gpu_accessible = false;

@@ -9,7 +9,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -167,6 +169,12 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Get number of features being blacklisted.
   size_t GetBlacklistedFeatureCount() const;
 
+  typedef base::Callback<void()> GpuSwitchCallback;
+
+  // Add and remove gpu switch callback.
+  void AddGpuSwitchCallback(const GpuSwitchCallback& callback);
+  void RemoveGpuSwitchCallback(const GpuSwitchCallback& callback);
+
  private:
   struct DomainBlockEntry {
     DomainGuilt last_guilt;
@@ -283,6 +291,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   DomainBlockMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
   bool domain_blocking_enabled_;
+
+  std::vector<GpuSwitchCallback> gpu_switch_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

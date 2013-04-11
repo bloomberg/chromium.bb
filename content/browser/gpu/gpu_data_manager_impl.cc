@@ -138,6 +138,21 @@ size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
   return blacklisted_features_.size();
 }
 
+void GpuDataManagerImpl::AddGpuSwitchCallback(
+    const GpuSwitchCallback& callback) {
+  gpu_switch_callbacks_.push_back(callback);
+}
+
+void GpuDataManagerImpl::RemoveGpuSwitchCallback(
+    const GpuSwitchCallback& callback) {
+  for (size_t i = 0; i < gpu_switch_callbacks_.size(); i++) {
+    if (gpu_switch_callbacks_[i].Equals(callback)) {
+      gpu_switch_callbacks_.erase(gpu_switch_callbacks_.begin() + i);
+      return;
+    }
+  }
+}
+
 GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   GPUInfo gpu_info;
   {
@@ -618,11 +633,10 @@ base::ListValue* GpuDataManagerImpl::GetLogMessages() const {
 }
 
 void GpuDataManagerImpl::HandleGpuSwitch() {
-  if (complete_gpu_info_already_requested_) {
-    complete_gpu_info_already_requested_ = false;
-    gpu_info_.finalized = false;
-    RequestCompleteGpuInfoIfNeeded();
-  }
+  complete_gpu_info_already_requested_ = false;
+  gpu_info_.finalized = false;
+  for (size_t i = 0; i < gpu_switch_callbacks_.size(); ++i)
+    gpu_switch_callbacks_[i].Run();
 }
 
 #if defined(OS_WIN)

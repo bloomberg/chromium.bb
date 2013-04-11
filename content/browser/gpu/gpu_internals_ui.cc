@@ -479,6 +479,9 @@ class GpuMessageHandler
   // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
 
+  // Gpu switch handler.
+  void OnGpuSwitch();
+
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);
   void OnCallAsync(const base::ListValue* list);
@@ -492,6 +495,8 @@ class GpuMessageHandler
   // DCHECK).
   bool observing_;
 
+  GpuDataManagerImpl::GpuSwitchCallback gpu_switch_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 };
 
@@ -502,11 +507,15 @@ class GpuMessageHandler
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler()
-    : observing_(false) {
+    : observing_(false),
+      gpu_switch_callback_(base::Bind(&GpuMessageHandler::OnGpuSwitch,
+                                      base::Unretained(this))) {
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
   GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
+  GpuDataManagerImpl::GetInstance()->RemoveGpuSwitchCallback(
+      gpu_switch_callback_);
 }
 
 /* BrowserBridge.callAsync prepends a requestID to these messages. */
@@ -573,8 +582,11 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  if (!observing_)
+  if (!observing_) {
     GpuDataManagerImpl::GetInstance()->AddObserver(this);
+    GpuDataManagerImpl::GetInstance()->AddGpuSwitchCallback(
+        gpu_switch_callback_);
+  }
   observing_ = true;
 
   // Tell GpuDataManager it should have full GpuInfo. If the
@@ -624,6 +636,10 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
       *(gpu_info_val.get()));
+}
+
+void GpuMessageHandler::OnGpuSwitch() {
+  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 }
 
 }  // namespace
