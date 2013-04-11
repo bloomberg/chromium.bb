@@ -31,7 +31,6 @@ void FakeTextCheckingCompletion::didCancelCheckingText() {
 
 TestingSpellCheckProvider::TestingSpellCheckProvider()
       : SpellCheckProvider(NULL, new MockSpellcheck),
-        offset_(-1),
         spelling_service_call_count_(0) {
 }
 
@@ -61,7 +60,6 @@ bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
 
 void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
                            int identifier,
-                           int offset,
                            const string16& text) {
 #if defined (OS_MACOSX)
   NOTREACHED();
@@ -73,7 +71,6 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
     ResetResult();
     return;
   }
-  offset_ = offset;
   text_.assign(text);
   text_check_completions_.Remove(identifier);
   std::vector<WebKit::WebTextCheckingResult> results;
@@ -87,7 +84,6 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
 }
 
 void TestingSpellCheckProvider::ResetResult() {
-  offset_ = -1;
   text_.clear();
 }
 

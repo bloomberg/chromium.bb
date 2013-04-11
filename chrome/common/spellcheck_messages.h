@@ -50,9 +50,8 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
 // checking text received by a SpellCheckHostMsg_CallSpellingService message.
 // If the service is not available, the 4th parameter should be false and the
 // 5th parameter should contain the requested sentence.
-IPC_MESSAGE_ROUTED5(SpellCheckMsg_RespondSpellingService,
+IPC_MESSAGE_ROUTED4(SpellCheckMsg_RespondSpellingService,
                     int         /* request identifier given by WebKit */,
-                    int         /* offset */,
                     bool        /* succeeded calling service */,
                     string16    /* sentence */,
                     std::vector<SpellCheckResult>)
@@ -89,10 +88,9 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
 // Asks the Spelling service to check text. When the service finishes checking
 // the input text, it sends a SpellingCheckMsg_RespondSpellingService with
 // text-check results.
-IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
+IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_CallSpellingService,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     int /* offset */,
                      string16 /* sentence */)
 #endif
 

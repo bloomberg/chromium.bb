@@ -92,7 +92,6 @@ class SpellCheck : public content::RenderProcessObserver,
   // posts a background task and calls SpellCheckParagraph() in the task.
 #if !defined (OS_MACOSX)
   void RequestTextChecking(const string16& text,
-                           int offset,
                            WebKit::WebTextCheckingCompletion* completion);
 #endif
 

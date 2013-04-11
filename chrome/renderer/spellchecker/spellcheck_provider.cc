@@ -93,7 +93,6 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
-      0,
       string16(text)));
 #endif  // !OS_MACOSX
 }
@@ -210,7 +209,6 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
 #if !defined(OS_MACOSX)
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
-    int offset,
     bool succeeded,
     const string16& line,
     const std::vector<SpellCheckResult>& results) {
@@ -222,7 +220,7 @@ void SpellCheckProvider::OnRespondSpellingService(
 
   // If |succeeded| is false, we use local spellcheck as a fallback.
   if (!succeeded) {
-    spellcheck_->RequestTextChecking(line, offset, completion);
+    spellcheck_->RequestTextChecking(line, completion);
     return;
   }
 
@@ -230,7 +228,7 @@ void SpellCheckProvider::OnRespondSpellingService(
   // visualize the differences between ours and the on-line spellchecker.
   WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
-                                         offset,
+                                         0,
                                          line,
                                          results,
                                          &textcheck_results);

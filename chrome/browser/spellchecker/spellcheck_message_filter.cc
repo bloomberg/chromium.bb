@@ -94,15 +94,13 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
 void SpellCheckMessageFilter::OnCallSpellingService(
     int route_id,
     int identifier,
-    int document_tag,
     const string16& text) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  CallSpellingService(document_tag, text, route_id, identifier);
+  CallSpellingService(text, route_id, identifier);
 }
 
 void SpellCheckMessageFilter::OnTextCheckComplete(
-    int tag,
     int route_id,
     int identifier,
     bool success,
@@ -110,7 +108,6 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
     const std::vector<SpellCheckResult>& results) {
   Send(new SpellCheckMsg_RespondSpellingService(route_id,
                                                 identifier,
-                                                tag,
                                                 success,
                                                 text,
                                                 results));
@@ -118,8 +115,7 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
 
 // CallSpellingService always executes the callback OnTextCheckComplete.
 // (Which, in turn, sends a SpellCheckMsg_RespondSpellingService)
-void SpellCheckMessageFilter::CallSpellingService(int document_tag,
-                                                  const string16& text,
+void SpellCheckMessageFilter::CallSpellingService(const string16& text,
                                                   int route_id,
                                                   int identifier) {
   Profile* profile = NULL;
@@ -134,8 +130,7 @@ void SpellCheckMessageFilter::CallSpellingService(int document_tag,
     text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
                base::Unretained(this),
-               document_tag,
                route_id,
-               identifier));
+               0));
 }
 #endif

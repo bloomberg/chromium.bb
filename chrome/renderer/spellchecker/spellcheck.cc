@@ -46,20 +46,17 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderView* render_view) {
 class SpellCheck::SpellcheckRequest {
  public:
   SpellcheckRequest(const string16& text,
-                    int offset,
                     WebKit::WebTextCheckingCompletion* completion)
-      : text_(text), offset_(offset), completion_(completion) {
+      : text_(text), completion_(completion) {
     DCHECK(completion);
   }
   ~SpellcheckRequest() {}
 
   string16 text() { return text_; }
-  int offset() { return offset_; }
   WebKit::WebTextCheckingCompletion* completion() { return completion_; }
 
  private:
   string16 text_;  // Text to be checked in this task.
-  int offset_;   // The text offset from the beginning.
 
   // The interface to send the misspelled ranges to WebKit.
   WebKit::WebTextCheckingCompletion* completion_;
@@ -267,14 +264,13 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
 #if !defined(OS_MACOSX)  // OSX uses its own spell checker
 void SpellCheck::RequestTextChecking(
     const string16& text,
-    int offset,
     WebKit::WebTextCheckingCompletion* completion) {
   // Clean up the previous request before starting a new request.
   if (pending_request_param_.get())
     pending_request_param_->completion()->didCancelCheckingText();
 
   pending_request_param_.reset(new SpellcheckRequest(
-      text, offset, completion));
+      text, completion));
   // We will check this text after we finish loading the hunspell dictionary.
   if (InitializeIfNeeded())
     return;

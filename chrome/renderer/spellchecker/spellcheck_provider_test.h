@@ -43,11 +43,9 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   virtual bool Send(IPC::Message* message) OVERRIDE;
   void OnCallSpellingService(int route_id,
                              int identifier,
-                             int offset,
                              const string16& text);
   void ResetResult();
 
-  int offset_;
   string16 text_;
   ScopedVector<IPC::Message> messages_;
   size_t spelling_service_call_count_;

@@ -88,7 +88,6 @@ class SpellCheckProvider
 #if !defined(OS_MACOSX)
   void OnRespondSpellingService(
       int identifier,
-      int offset,
       bool succeeded,
       const string16& text,
       const std::vector<SpellCheckResult>& results);

@@ -33,21 +33,18 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   // Verify that the SpellCheckProvider class does not spellcheck empty text.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString(), &completion);
-  EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class does not spellcheck text while we
   // are typing a word.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First"), &completion);
-  EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class spellcheck the first word when we
   // type a space key, i.e. when we finish typing a word.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First "), &completion);
-  EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First "), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the first line when we
@@ -55,7 +52,6 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\n"),
                                 &completion);
-  EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\n"), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we
@@ -63,7 +59,6 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\nThird "),
                                 &completion);
-  EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird "), provider_.text_);
 
   // Verify that the SpellCheckProvider class does not send a spellcheck request
@@ -71,7 +66,6 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\nThird   "),
                                 &completion);
-  EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we type
@@ -79,7 +73,6 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.ResetResult();
   provider_.RequestTextChecking(
       WebKit::WebString("First Second\nThird   Fourth."), &completion);
-  EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
 }
 

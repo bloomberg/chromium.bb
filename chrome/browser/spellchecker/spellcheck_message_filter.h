@@ -33,13 +33,11 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
 #if !defined(OS_MACOSX)
   void OnCallSpellingService(int route_id,
                              int identifier,
-                             int document_tag,
                              const string16& text);
 
   // A callback function called when the Spelling service finishes checking
-  // text. We send the given results to a renderer.
+  // text. Sends the given results to a renderer.
   void OnTextCheckComplete(
-      int tag,
       int route_id,
       int identifier,
       bool success,
@@ -53,7 +51,6 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   // response for the previous request, this function cancels the previous
   // request and sends a new one.
   void CallSpellingService(
-      int document_tag,
       const string16& text,
       int route_id,
       int identifier);
