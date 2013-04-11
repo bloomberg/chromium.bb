@@ -421,19 +421,19 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
   // redirect to a different domain as that will not have a temporary
   // exception. See about that in the future.
   finished_redirects_ = true;
-  content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
 
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(params.url);
+
+  content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
+  UMA_HISTOGRAM_ENUMERATION("ManagedMode.FilteringBehavior",
+                            behavior,
+                            ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
 
   if (behavior == ManagedModeURLFilter::ALLOW) {
     // Update the last allowed page so that we can go back to it.
     last_allowed_page_ = web_contents()->GetController().GetCurrentEntryIndex();
   }
-
-  UMA_HISTOGRAM_ENUMERATION("ManagedMode.FilteringBehavior",
-                            behavior,
-                            ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
 
   // Record all the URLs this navigation went through.
   if ((behavior == ManagedModeURLFilter::ALLOW &&
