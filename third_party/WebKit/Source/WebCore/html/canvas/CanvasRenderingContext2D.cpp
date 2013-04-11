@@ -1303,18 +1303,26 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 
     checkOrigin(image);
 
+    Image* imageForRendering = cachedImage->imageForRenderer(image->renderer());
+
+    // For images that depend on an unavailable container size, we need to fall back to the intrinsic
+    // object size. http://www.w3.org/TR/2dcontext2/#dom-context-2d-drawimage
+    // FIXME: Without a specified image size this should resolve against the canvas element's size, see: crbug.com/230163.
+    if (!image->renderer() && imageForRendering->usesContainerSize())
+        imageForRendering->setContainerSize(imageForRendering->size());
+
     if (rectContainsCanvas(normalizedDstRect)) {
-        c->drawImage(cachedImage->imageForRenderer(image->renderer()), ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
+        c->drawImage(imageForRendering, ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
         didDrawEntireCanvas();
     } else if (isFullCanvasCompositeMode(op)) {
-        fullCanvasCompositedDrawImage(cachedImage->imageForRenderer(image->renderer()), ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op);
+        fullCanvasCompositedDrawImage(imageForRendering, ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op);
         didDrawEntireCanvas();
     } else if (op == CompositeCopy) {
         clearCanvas();
-        c->drawImage(cachedImage->imageForRenderer(image->renderer()), ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
+        c->drawImage(imageForRendering, ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
         didDrawEntireCanvas();
     } else {
-        c->drawImage(cachedImage->imageForRenderer(image->renderer()), ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
+        c->drawImage(imageForRendering, ColorSpaceDeviceRGB, normalizedDstRect, normalizedSrcRect, op, blendMode);
         didDraw(normalizedDstRect);
     }
 }
@@ -1680,11 +1688,16 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
         return 0;
 
     CachedImage* cachedImage = image->cachedImage();
-    if (!cachedImage || !image->cachedImage()->imageForRenderer(image->renderer()))
+    Image* imageForRendering = cachedImage ? cachedImage->imageForRenderer(image->renderer()) : 0;
+    if (!imageForRendering)
         return CanvasPattern::create(Image::nullImage(), repeatX, repeatY, true);
 
+    // We need to synthesize a container size if a renderer is not available to provide one.
+    if (!image->renderer() && imageForRendering->usesContainerSize())
+        imageForRendering->setContainerSize(imageForRendering->size());
+
     bool originClean = isOriginClean(cachedImage, canvas()->securityOrigin());
-    return CanvasPattern::create(cachedImage->imageForRenderer(image->renderer()), repeatX, repeatY, originClean);
+    return CanvasPattern::create(imageForRendering, repeatX, repeatY, originClean);
 }
 
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElement* canvas,
