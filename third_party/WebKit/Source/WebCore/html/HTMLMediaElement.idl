@@ -90,8 +90,8 @@ readonly attribute boolean webkitHasClosedCaptions;
 attribute boolean webkitClosedCaptionsVisible;
 
 // The number of bytes consumed by the media decoder.
-[Conditional=MEDIA_STATISTICS] readonly attribute unsigned long webkitAudioDecodedByteCount;
-[Conditional=MEDIA_STATISTICS] readonly attribute unsigned long webkitVideoDecodedByteCount;
+readonly attribute unsigned long webkitAudioDecodedByteCount;
+readonly attribute unsigned long webkitVideoDecodedByteCount;
 
 #if defined(ENABLE_ENCRYPTED_MEDIA) && ENABLE_ENCRYPTED_MEDIA
 [EnabledAtRuntime=encryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Optional] Uint8Array initData);

@@ -288,7 +288,6 @@ void HTMLVideoElement::didMoveToNewDocument(Document* oldDocument)
     HTMLMediaElement::didMoveToNewDocument(oldDocument);
 }
 
-#if ENABLE(MEDIA_STATISTICS)
 unsigned HTMLVideoElement::webkitDecodedFrameCount() const
 {
     if (!player())
@@ -304,7 +303,6 @@ unsigned HTMLVideoElement::webkitDroppedFrameCount() const
 
     return player()->droppedFrameCount();
 }
-#endif
 
 KURL HTMLVideoElement::posterImageURL() const
 {

@@ -160,11 +160,9 @@ public:
     bool webkitClosedCaptionsVisible() const;
     void setWebkitClosedCaptionsVisible(bool);
 
-#if ENABLE(MEDIA_STATISTICS)
 // Statistics
     unsigned webkitAudioDecodedByteCount() const;
     unsigned webkitVideoDecodedByteCount() const;
-#endif
 
 //  Media Source.
     void setSourceState(const String&);

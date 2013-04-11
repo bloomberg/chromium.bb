@@ -3984,7 +3984,6 @@ bool HTMLMediaElement::webkitHasClosedCaptions() const
     return hasClosedCaptions();
 }
 
-#if ENABLE(MEDIA_STATISTICS)
 unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 {
     if (!m_player)
@@ -3998,7 +3997,6 @@ unsigned HTMLMediaElement::webkitVideoDecodedByteCount() const
         return 0;
     return m_player->videoDecodedByteCount();
 }
-#endif
 
 void HTMLMediaElement::mediaCanStart()
 {

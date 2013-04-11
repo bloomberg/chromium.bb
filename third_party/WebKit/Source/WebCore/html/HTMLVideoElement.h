@@ -54,11 +54,9 @@ public:
     void webkitEnterFullScreen(ExceptionCode& ec) { webkitEnterFullscreen(ec); }
     void webkitExitFullScreen() { webkitExitFullscreen(); }
 
-#if ENABLE(MEDIA_STATISTICS)
     // Statistics
     unsigned webkitDecodedFrameCount() const;
     unsigned webkitDroppedFrameCount() const;
-#endif
 
     // Used by canvas to gain raw pixel access
     void paintCurrentFrameInContext(GraphicsContext*, const IntRect&);
