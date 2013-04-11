@@ -27,6 +27,7 @@
 
 namespace {
 
+const SkColor kTrayBackgroundAlpha = 100;
 const SkColor kTrayBackgroundHoverAlpha = 150;
 
 // Adjust the size of TrayContainer with additional padding.
@@ -70,7 +71,7 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 
 class TrayBackground : public views::Background {
  public:
-  TrayBackground() : alpha_(0) {}
+  TrayBackground() : alpha_(kTrayBackgroundAlpha) {}
   virtual ~TrayBackground() {}
 
   void set_alpha(int alpha) { alpha_ = alpha; }
@@ -165,13 +166,16 @@ TrayBackgroundView::TrayBackgroundView(
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
+          this, 0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
-          this, 0, kTrayBackgroundHoverAlpha)),
+          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(widget_observer_(
           new TrayWidgetObserver(this))) {
   set_notify_enter_exit_on_child(true);
 
   // Initially we want to paint the background, but without the hover effect.
+  SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 
@@ -230,7 +234,8 @@ bool TrayBackgroundView::PerformAction(const ui::Event& event) {
 
 void TrayBackgroundView::UpdateBackground(int alpha) {
   if (background_) {
-    background_->set_alpha(hover_background_animator_.alpha());
+    background_->set_alpha(hide_background_animator_.alpha() +
+                           hover_background_animator_.alpha());
   }
   SchedulePaint();
 }
@@ -238,6 +243,12 @@ void TrayBackgroundView::UpdateBackground(int alpha) {
 void TrayBackgroundView::SetContents(views::View* contents) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
+}
+
+void TrayBackgroundView::SetPaintsBackground(
+    bool value,
+    internal::BackgroundAnimator::ChangeType change_type) {
+  hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
 void TrayBackgroundView::SetContentsBackground() {
