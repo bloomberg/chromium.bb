@@ -916,7 +916,7 @@ void DOMWindow::focus(ScriptExecutionContext* context)
     if (!page)
         return;
 
-    bool allowFocus = WindowFocusAllowedIndicator::windowFocusAllowed() || !m_frame->settings()->windowFocusRestricted();
+    bool allowFocus = WindowFocusAllowedIndicator::windowFocusAllowed();
     if (context) {
         ASSERT(isMainThread());
         Document* activeDocument = toDocument(context);
@@ -941,21 +941,6 @@ void DOMWindow::focus(ScriptExecutionContext* context)
 
 void DOMWindow::blur()
 {
-
-    if (!m_frame)
-        return;
-
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-
-    if (m_frame->settings()->windowFocusRestricted())
-        return;
-
-    if (m_frame != page->mainFrame())
-        return;
-
-    page->chrome()->unfocus();
 }
 
 void DOMWindow::close(ScriptExecutionContext* context)
