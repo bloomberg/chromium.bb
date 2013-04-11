@@ -692,25 +692,6 @@ void RootWindow::ClearMouseHandlers() {
 void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
                                                     ui::LocatedEvent* event) {
   event->UpdateForRootTransform(GetInverseRootTransform());
-#if defined(OS_CHROMEOS)
-  const gfx::Rect& root_bounds = bounds();
-  if (keep_inside_root &
-      host_->GetBounds().Contains(event->system_location()) &&
-      !root_bounds.Contains(event->root_location())) {
-    // Make sure that the mouse location inside the host window gets
-    // translated inside root window.
-    // TODO(oshima): This is (hopefully) short term bandaid to deal
-    // with calculation error due to the fact that we rotate in dip
-    // coordinates instead of pixels. crbug.com/222483.
-    int x = event->location().x();
-    int y = event->location().y();
-    x = std::min(std::max(x, root_bounds.x()), root_bounds.right());
-    y = std::min(std::max(y, root_bounds.y()), root_bounds.bottom());
-    const gfx::Point new_location(x, y);
-    event->set_location(new_location);
-    event->set_root_location(new_location);
-  }
-#endif  // defined(OS_CHROMEOS)
 }
 
 void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {

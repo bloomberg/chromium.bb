@@ -143,30 +143,32 @@ void RotateRootWindow(aura::RootWindow* root_window,
   // case handling for rotate+translate case. crbug.com/222483.
   gfx::Transform reverse_rotate;
 
-  // The origin is (0, 0), so the translate width/height must be reduced by 1.
+  // The origin is (0, 0), so the translate width/height must be reduced by
+  // 1 pixel.
+  float one_pixel = 1.0f / display.device_scale_factor();
   switch (info.rotation()) {
     case gfx::Display::ROTATE_0:
       break;
     case gfx::Display::ROTATE_90:
-      rotate.Translate(display.bounds().height() - 1, 0);
+      rotate.Translate(display.bounds().height() - one_pixel, 0);
       rotate.Rotate(90);
       // Rotate 270 instead of 90 as it will cause calcuration error.
       reverse_rotate.Rotate(270);
-      reverse_rotate.Translate(-(display.bounds().height() - 1), 0);
+      reverse_rotate.Translate(-(display.bounds().height() - one_pixel), 0);
       break;
     case gfx::Display::ROTATE_270:
-      rotate.Translate(0, display.bounds().width() - 1);
+      rotate.Translate(0, display.bounds().width() - one_pixel);
       rotate.Rotate(270);
       reverse_rotate.Rotate(90);
-      reverse_rotate.Translate(0, -(display.bounds().width() - 1));
+      reverse_rotate.Translate(0, -(display.bounds().width() - one_pixel));
       break;
     case gfx::Display::ROTATE_180:
-      rotate.Translate(display.bounds().width() - 1,
-                       display.bounds().height() - 1);
+      rotate.Translate(display.bounds().width() - one_pixel,
+                       display.bounds().height() - one_pixel);
       rotate.Rotate(180);
       reverse_rotate.Rotate(180);
-      reverse_rotate.Translate(-(display.bounds().width() - 1),
-                               -(display.bounds().height() - 1));
+      reverse_rotate.Translate(-(display.bounds().width() - one_pixel),
+                               -(display.bounds().height() - one_pixel));
       break;
   }
   scoped_ptr<aura::RootWindowTransformer> transformer(
