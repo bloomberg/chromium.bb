@@ -331,8 +331,8 @@ static int doCompbrl ();
 static int
 hyphenate (const widechar * word, int wordSize, char *hyphens)
 {
-  widechar prepWord[MAXSTRING];
-  int i, j, k;
+  widechar *prepWord;
+  int i, k;
   int stateNum;
   widechar ch;
   HyphenationState *statesArray = (HyphenationState *)
@@ -343,17 +343,20 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
   int patternOffset;
   if (!table->hyphenStatesArray || (wordSize + 3) > MAXSTRING)
     return 0;
-  j = 0;
-  prepWord[j++] = '.';
+  prepWord = (widechar *) calloc(wordSize+3, sizeof(widechar));
+  /* prepWord is of the format ".hello."
+  * hyphens is the length of the word "hello" "00000" */
+  prepWord[0] = '.';
   for (i = 0; i < wordSize; i++)
-    prepWord[j++] = (findCharOrDots (word[i], 0))->lowercase;
-  prepWord[j++] = '.';
-  prepWord[j] = 0;
-  for (i = 0; i < wordSize; i++)
-    hyphens[i] = '0';
+    {
+      prepWord[i+1] = (findCharOrDots (word[i], 0))->lowercase;
+      hyphens[i] = '0';
+    }
+  prepWord[wordSize+1] = '.';
+
   /* now, run the finite state machine */
   stateNum = 0;
-  for (i = 0; i < j; i++)
+  for (i = 0; i < wordSize+3; i++)
     {
       ch = prepWord[i];
       while (1)
@@ -391,6 +394,7 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
     nextLetter:;
     }
   hyphens[wordSize] = 0;
+  free(prepWord);
   return 1;
 }
 
