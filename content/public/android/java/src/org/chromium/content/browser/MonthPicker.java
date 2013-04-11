@@ -15,10 +15,10 @@ import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.DatePicker;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.OnValueChangeListener;
 
+import java.text.DateFormatSymbols;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
@@ -35,8 +35,6 @@ public class MonthPicker extends FrameLayout {
 
     private static final boolean DEFAULT_ENABLED_STATE = true;
 
-    private final LinearLayout mSpinners;
-
     private final NumberPicker mMonthSpinner;
 
     private final NumberPicker mYearSpinner;
@@ -48,8 +46,6 @@ public class MonthPicker extends FrameLayout {
     private String[] mShortMonths;
 
     private int mNumberOfMonths;
-
-    private Calendar mTempDate;
 
     private Calendar mMinDate;
 
@@ -97,30 +93,32 @@ public class MonthPicker extends FrameLayout {
         inflater.inflate(R.layout.month_picker, this, true);
 
         OnValueChangeListener onChangeListener = new OnValueChangeListener() {
+            @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                mTempDate.setTimeInMillis(mCurrentDate.getTimeInMillis());
+                Calendar tempDate = getCalendarForLocale(null, mCurrentLocale);
+                tempDate.setTimeInMillis(mCurrentDate.getTimeInMillis());
+
                 // take care of wrapping of days and months to update greater fields
                 if (picker == mMonthSpinner) {
                     if (oldVal == 11 && newVal == 0) {
-                        mTempDate.add(Calendar.MONTH, 1);
+                        tempDate.add(Calendar.MONTH, 1);
                     } else if (oldVal == 0 && newVal == 11) {
-                        mTempDate.add(Calendar.MONTH, -1);
+                        tempDate.add(Calendar.MONTH, -1);
                     } else {
-                        mTempDate.add(Calendar.MONTH, newVal - oldVal);
+                        tempDate.add(Calendar.MONTH, newVal - oldVal);
                     }
                 } else if (picker == mYearSpinner) {
-                    mTempDate.set(Calendar.YEAR, newVal);
+                    tempDate.set(Calendar.YEAR, newVal);
                 } else {
                     throw new IllegalArgumentException();
                 }
+
                 // now set the date to the adjusted one
-                setDate(mTempDate.get(Calendar.YEAR), mTempDate.get(Calendar.MONTH));
+                setDate(tempDate.get(Calendar.YEAR), tempDate.get(Calendar.MONTH));
                 updateSpinners();
                 notifyDateChanged();
             }
         };
-
-        mSpinners = (LinearLayout) findViewById(R.id.pickers);
 
         // month
         mMonthSpinner = (NumberPicker) findViewById(R.id.month);
@@ -135,14 +133,12 @@ public class MonthPicker extends FrameLayout {
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
 
-        mTempDate.clear();
-        mTempDate.set(startYear, 0, 1);
+        Calendar tempDate = getCalendarForLocale(null, mCurrentLocale);
+        tempDate.set(startYear, 0, 1);
 
-        setMinDate(mTempDate.getTimeInMillis());
-
-        mTempDate.clear();
-        mTempDate.set(endYear, 11, 31);
-        setMaxDate(mTempDate.getTimeInMillis());
+        setMinDate(tempDate.getTimeInMillis());
+        tempDate.set(endYear, 11, 31);
+        setMaxDate(tempDate.getTimeInMillis());
 
         // initialize to current date
         mCurrentDate.setTimeInMillis(System.currentTimeMillis());
@@ -171,9 +167,10 @@ public class MonthPicker extends FrameLayout {
      * @param minDate The minimal supported date.
      */
     public void setMinDate(long minDate) {
-        mTempDate.setTimeInMillis(minDate);
-        if (mTempDate.get(Calendar.YEAR) == mMinDate.get(Calendar.YEAR)
-                && mTempDate.get(Calendar.DAY_OF_YEAR) != mMinDate.get(Calendar.DAY_OF_YEAR)) {
+        Calendar tempDate = getCalendarForLocale(null, mCurrentLocale);
+        tempDate.setTimeInMillis(minDate);
+        if (tempDate.get(Calendar.YEAR) == mMinDate.get(Calendar.YEAR)
+                && tempDate.get(Calendar.DAY_OF_YEAR) != mMinDate.get(Calendar.DAY_OF_YEAR)) {
             return;
         }
         mMinDate.setTimeInMillis(minDate);
@@ -205,9 +202,10 @@ public class MonthPicker extends FrameLayout {
      * @param maxDate The maximal supported date.
      */
     public void setMaxDate(long maxDate) {
-        mTempDate.setTimeInMillis(maxDate);
-        if (mTempDate.get(Calendar.YEAR) == mMaxDate.get(Calendar.YEAR)
-                && mTempDate.get(Calendar.DAY_OF_YEAR) != mMaxDate.get(Calendar.DAY_OF_YEAR)) {
+        Calendar tempDate = getCalendarForLocale(null, mCurrentLocale);
+        tempDate.setTimeInMillis(maxDate);
+        if (tempDate.get(Calendar.YEAR) == mMaxDate.get(Calendar.YEAR)
+                && tempDate.get(Calendar.DAY_OF_YEAR) != mMaxDate.get(Calendar.DAY_OF_YEAR)) {
             return;
         }
         mMaxDate.setTimeInMillis(maxDate);
@@ -266,18 +264,13 @@ public class MonthPicker extends FrameLayout {
         }
 
         mCurrentLocale = locale;
-
-        mTempDate = getCalendarForLocale(mTempDate, locale);
         mMinDate = getCalendarForLocale(mMinDate, locale);
         mMaxDate = getCalendarForLocale(mMaxDate, locale);
         mCurrentDate = getCalendarForLocale(mCurrentDate, locale);
 
-        mNumberOfMonths = mTempDate.getActualMaximum(Calendar.MONTH) + 1;
-        mShortMonths = new String[mNumberOfMonths];
-        for (int i = 0; i < mNumberOfMonths; i++) {
-            mShortMonths[i] = DateUtils.getMonthString(Calendar.JANUARY + i,
-                    DateUtils.LENGTH_MEDIUM);
-        }
+        mShortMonths =
+                DateFormatSymbols.getInstance(mCurrentLocale).getShortMonths();
+        mNumberOfMonths = mShortMonths.length;
     }
 
     /**
