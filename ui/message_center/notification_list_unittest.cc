@@ -13,7 +13,7 @@
 #include "ui/message_center/notification_types.h"
 
 namespace message_center {
-namespace {
+namespace test {
 
 class MockNotificationListDelegate : public NotificationList::Delegate {
  public:
@@ -83,6 +83,14 @@ class NotificationListTest : public testing::Test {
     return notification_list()->GetPopupNotifications().size();
   }
 
+  Notification* GetNotification(const std::string& id) {
+    NotificationList::Notifications::iterator iter =
+        notification_list()->GetNotification(id);
+    if (iter == notification_list()->GetNotifications().end())
+      return NULL;
+    return *iter;
+  }
+
   MockNotificationListDelegate* delegate() { return delegate_.get(); }
   NotificationList* notification_list() { return notification_list_.get(); }
 
@@ -105,8 +113,6 @@ const char NotificationListTest::kTitleFormat[] = "id%ld";
 const char NotificationListTest::kMessageFormat[] = "message%ld";
 const char NotificationListTest::kDisplaySource[] = "source";
 const char NotificationListTest::kExtensionId[] = "ext";
-
-}  // namespace
 
 TEST_F(NotificationListTest, Basic) {
   ASSERT_EQ(0u, notification_list()->NotificationCount());
@@ -396,6 +402,32 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
   EXPECT_EQ(id1, (*iter)->id());
 }
 
+TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
+  std::string id1 = AddNotification(NULL);
+  std::string id2 = AddNotification(NULL);
+
+  EXPECT_EQ(2u, GetPopupCounts());
+
+  const Notification* n1 = GetNotification(id1);
+  EXPECT_FALSE(n1->shown_as_popup());
+  EXPECT_FALSE(n1->is_read());
+
+  notification_list()->MarkSinglePopupAsShown(id1, true);
+
+  n1 = GetNotification(id1);
+  EXPECT_TRUE(n1->shown_as_popup());
+  EXPECT_TRUE(n1->is_read());
+
+  const std::string replaced("test-replaced-id");
+  notification_list()->UpdateNotificationMessage(
+      id1, replaced, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"), NULL);
+  n1 = GetNotification(id1);
+  EXPECT_TRUE(n1 == NULL);
+  const Notification* nr = GetNotification(replaced);
+  EXPECT_TRUE(nr->shown_as_popup());
+  EXPECT_TRUE(nr->is_read());
+}
+
 TEST_F(NotificationListTest, QuietMode) {
   notification_list()->SetQuietMode(true);
   AddNotification(NULL);
@@ -415,4 +447,5 @@ TEST_F(NotificationListTest, QuietMode) {
   // TODO(mukai): Add test of quiet mode with expiration.
 }
 
+}  // namespace test
 }  // namespace message_center

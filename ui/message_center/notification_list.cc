@@ -105,8 +105,11 @@ void NotificationList::UpdateNotificationMessage(
                        (*iter)->display_source(),
                        (*iter)->extension_id(),
                        optional_fields));
-  EraseNotification(iter);
-  PushNotification(notification.Pass());
+  notification->CopyState(*iter);
+  // Do not use EraseNotification and PushNotification, since we don't want to
+  // change unread counts nor to update is_read/shown_as_popup states.
+  notifications_.erase(iter);
+  notifications_.insert(notification.release());
 }
 
 void NotificationList::RemoveNotification(const std::string& id) {
@@ -319,10 +322,14 @@ void NotificationList::PushNotification(scoped_ptr<Notification> notification) {
   // Ensure that notification.id is unique by erasing any existing
   // notification with the same id (shouldn't normally happen).
   Notifications::iterator iter = GetNotification(notification->id());
-  if (iter != notifications_.end())
+  bool state_inherited = false;
+  if (iter != notifications_.end()) {
+    notification->CopyState(*iter);
+    state_inherited = true;
     EraseNotification(iter);
+  }
   // Add the notification to the the list and mark it unread and unshown.
-  if (!message_center_visible_) {
+  if (!message_center_visible_ && !state_inherited) {
     // TODO(mukai): needs to distinguish if a notification is dismissed by
     // the quiet mode or user operation.
     notification->set_is_read(quiet_mode_);

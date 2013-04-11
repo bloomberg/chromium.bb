@@ -22,6 +22,9 @@ class DictionaryValue;
 }
 
 namespace message_center {
+namespace test {
+class NotificationListTest;
+}
 
 // Comparers used to auto-sort the lists of Notifications.
 struct MESSAGE_CENTER_EXPORT ComparePriorityTimestampSerial {
@@ -139,6 +142,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   static const size_t kMaxVisibleMessageCenterNotifications;
 
  private:
+  friend class test::NotificationListTest;
+
   // Iterates through the list and returns the first notification matching |id|.
   Notifications::iterator GetNotification(const std::string& id);
 

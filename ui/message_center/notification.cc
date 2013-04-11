@@ -50,6 +50,13 @@ Notification::Notification(NotificationType type,
 Notification::~Notification() {
 }
 
+void Notification::CopyState(Notification* base) {
+  shown_as_popup_ = base->shown_as_popup();
+  is_read_ = base->is_read();
+  is_expanded_ = base->is_expanded();
+  never_timeout_ = base->never_timeout();
+}
+
 bool Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {
   if (index >= buttons_.size())
     return false;

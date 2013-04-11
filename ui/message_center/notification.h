@@ -42,6 +42,10 @@ class MESSAGE_CENTER_EXPORT Notification {
                const DictionaryValue* optional_fields);  // May be NULL.
   virtual ~Notification();
 
+  // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
+  // is_read, is_expanded, and never_timeout.
+  void CopyState(Notification* base);
+
   NotificationType type() const { return type_; }
   const std::string& id() const { return id_; }
   const string16& title() const { return title_; }
