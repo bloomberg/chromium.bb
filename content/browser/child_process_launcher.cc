@@ -266,30 +266,30 @@ class ChildProcessLauncher::Context
       options.fds_to_remap = &fds_to_map;
 
 #if defined(OS_MACOSX)
-      // Use synchronization to make sure that the MachBroker is ready to
-      // receive a check-in from the new process before the new process
-      // actually tries to check in.
-      base::LaunchSynchronizationHandle synchronization_handle;
-      options.synchronize = &synchronization_handle;
+      // Hold the MachBroker lock for the duration of LaunchProcess. The child
+      // will send its task port to the parent almost immediately after startup.
+      // The Mach message will be delivered to the parent, but updating the
+      // record of the launch will wait until after the placeholder PID is
+      // inserted below. This ensures that while the child process may send its
+      // port to the parent prior to the parent leaving LaunchProcess, the
+      // order in which the record in MachBroker is updated is correct.
+      MachBroker* broker = MachBroker::GetInstance();
+      broker->GetLock().Acquire();
+
+      // Make sure the MachBroker is running, and inform it to expect a
+      // check-in from the new process.
+      broker->EnsureRunning();
 #endif  // defined(OS_MACOSX)
 
       bool launched = base::LaunchProcess(*cmd_line, options, &handle);
 
 #if defined(OS_MACOSX)
-      if (launched) {
-        MachBroker* broker = MachBroker::GetInstance();
-        {
-          base::AutoLock lock(broker->GetLock());
+      if (launched)
+        broker->AddPlaceholderForPid(handle);
 
-          // Make sure the MachBroker is running, and inform it to expect a
-          // check-in from the new process.
-          broker->EnsureRunning();
-          broker->AddPlaceholderForPid(handle);
-        }
-
-        // Now that the MachBroker is ready, the child may continue.
-        base::LaunchSynchronize(synchronization_handle);
-      }
+      // After updating the broker, release the lock and let the child's
+      // messasge be processed on the broker's thread.
+      broker->GetLock().Release();
 #endif  // defined(OS_MACOSX)
 
       if (!launched)

@@ -180,32 +180,6 @@ base::LazyInstance<ContentUtilityClient>
 
 static CAppModule _Module;
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-
-// Completes the Mach IPC handshake by sending this process' task port to the
-// parent process.  The parent is listening on the Mach port given by
-// |GetMachPortName()|.  The task port is used by the parent to get CPU/memory
-// stats to display in the task manager.
-void SendTaskPortToParentProcess() {
-  const mach_msg_timeout_t kTimeoutMs = 100;
-  const int32_t kMessageId = 0;
-  std::string mach_port_name = MachBroker::GetMachPortName();
-
-  base::MachSendMessage child_message(kMessageId);
-  if (!child_message.AddDescriptor(mach_task_self())) {
-    LOG(ERROR) << "child AddDescriptor(mach_task_self()) failed.";
-    return;
-  }
-
-  base::MachPortSender child_sender(mach_port_name.c_str());
-  kern_return_t err = child_sender.SendMessage(child_message, kTimeoutMs);
-  if (err != KERN_SUCCESS) {
-    LOG(ERROR) <<
-        base::StringPrintf("child SendMessage() failed: 0x%x %s", err,
-                           mach_error_string(err));
-  }
-}
-
 #endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX) && !defined(OS_IOS)
@@ -666,7 +640,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     if (!process_type.empty() &&
         (!delegate || delegate->ShouldSendMachPort(process_type))) {
-      SendTaskPortToParentProcess();
+      MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
     // This must be done early enough since some helper functions like
