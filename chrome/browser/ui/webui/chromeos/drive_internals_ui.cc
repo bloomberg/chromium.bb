@@ -213,8 +213,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateInFlightOperationsSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateGCacheContentsSection();
-  void UpdateFileSystemContentsSection(
-      google_apis::DriveServiceInterface* drive_service);
+  void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
   void UpdateCacheContentsSection(drive::DriveCache* cache);
   void UpdateEventLogSection(drive::EventLogger* event_logger);
@@ -487,19 +486,22 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
 }
 
 void DriveInternalsWebUIHandler::ClearAccessToken(const base::ListValue* args) {
-  drive::DriveSystemService* system_service = GetSystemService();
+  drive::DriveSystemService* const system_service = GetSystemService();
+  if (!system_service)
+    return;
   system_service->drive_service()->ClearAccessToken();
 }
 
 void DriveInternalsWebUIHandler::ClearRefreshToken(
     const base::ListValue* args) {
-  drive::DriveSystemService* system_service = GetSystemService();
+  drive::DriveSystemService* const system_service = GetSystemService();
+  if (!system_service)
+    return;
   system_service->drive_service()->ClearRefreshToken();
 }
 
 void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
-  drive::DriveSystemService* system_service = GetSystemService();
-  UpdateFileSystemContentsSection(system_service->drive_service());
+  UpdateFileSystemContentsSection();
 }
 
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
@@ -582,12 +584,11 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
 
 }
 
-void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
-    google_apis::DriveServiceInterface* drive_service) {
-  DCHECK(drive_service);
-
+void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
+  drive::DriveSystemService* const system_service = GetSystemService();
+  if (!system_service)
+    return;
   // Start updating the file system tree section, if we have access token.
-  drive::DriveSystemService* system_service = GetSystemService();
   if (!system_service->drive_service()->HasAccessToken())
     return;
 
