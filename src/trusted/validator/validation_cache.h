@@ -58,6 +58,8 @@ struct NaClValidationCache {
   void (*DestroyQuery)(void *query);
 };
 
+extern int CachingIsInexpensive(const struct NaClValidationMetadata *metadata);
+
 /* Helper function for identifying the code being validated. */
 extern void AddCodeIdentity(uint8_t *data,
                             size_t size,

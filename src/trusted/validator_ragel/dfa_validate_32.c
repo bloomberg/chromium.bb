@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator_ragel/bitmap.h"
 #include "native_client/src/trusted/validator_ragel/dfa_validate_common.h"
 #include "native_client/src/trusted/validator_ragel/validator.h"
@@ -35,9 +36,9 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
   /* TODO(jfb) Use a safe cast here. */
   NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   enum NaClValidationStatus status = NaClValidationFailed;
+  int did_stubout = 0;
+  void *query = NULL;
   UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(metadata);
-  UNREFERENCED_PARAMETER(cache);
 
   if (stubout_mode)
     return NaClValidationFailedNotImplemented;
@@ -45,14 +46,45 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
     return NaClValidationFailedCpuNotSupported;
   if (size & kBundleMask)
     return NaClValidationFailed;
-  if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
-                        readonly_text ?
-                          NaClDfaProcessValidationError :
+
+  /*
+   * If the validation caching interface is available and it would be
+   * inexpensive to do so, perform a query.
+   */
+  if (cache != NULL && CachingIsInexpensive(metadata))
+    query = cache->CreateQuery(cache->handle);
+  if (query != NULL) {
+    const char validator_id[] = "x86-32 dfa";
+    cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
+    cache->AddData(query, (uint8_t *) cpu_features, sizeof(*cpu_features));
+    AddCodeIdentity(data, size, metadata, cache, query);
+    if (cache->QueryKnownToValidate(query)) {
+      cache->DestroyQuery(query);
+      return NaClValidationSucceeded;
+    }
+  }
+
+  if (readonly_text) {
+    if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
+                          NaClDfaProcessValidationError,
+                          NULL))
+      status = NaClValidationSucceeded;
+  } else {
+    if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
                           NaClDfaStubOutCPUUnsupportedInstruction,
-                        &status))
-    return NaClValidationSucceeded;
-  if (errno == ENOMEM)
-    return NaClValidationFailedOutOfMemory;
+                          &did_stubout))
+      status = NaClValidationSucceeded;
+  }
+  if (status != NaClValidationSucceeded && errno == ENOMEM)
+    status = NaClValidationFailedOutOfMemory;
+
+  /* Cache the result if validation succeeded and the code was not modified. */
+  if (query != NULL) {
+    if (status == NaClValidationSucceeded && did_stubout == 0)
+      cache->SetKnownToValidate(query);
+    cache->DestroyQuery(query);
+  }
+
   return status;
 }
 

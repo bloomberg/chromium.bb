@@ -12,6 +12,10 @@
 #define ADD_LITERAL(cache, query, data) \
   ((cache)->AddData((query), (uint8_t*)&(data), sizeof(data)))
 
+int CachingIsInexpensive(const struct NaClValidationMetadata *metadata) {
+  return NULL != metadata && metadata->identity_type == NaClCodeIdentityFile;
+}
+
 void AddCodeIdentity(uint8_t *data,
                      size_t size,
                      const struct NaClValidationMetadata *metadata,

@@ -28,12 +28,8 @@ Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
   UNREFERENCED_PARAMETER(begin);
   UNREFERENCED_PARAMETER(end);
   UNREFERENCED_PARAMETER(info);
+  UNREFERENCED_PARAMETER(callback_data);
 
-  /* Instruction is unsupported by CPU, but otherwise valid.  */
-  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
-    *((enum NaClValidationStatus*)callback_data) =
-        NaClValidationFailedCpuNotSupported;
-  }
   return FALSE;
 }
 
@@ -41,10 +37,10 @@ Bool NaClDfaStubOutCPUUnsupportedInstruction(const uint8_t *begin,
                                              const uint8_t *end,
                                              uint32_t info,
                                              void *callback_data) {
-  UNREFERENCED_PARAMETER(callback_data);
-
   /* Stub-out instructions unsupported on this CPU, but valid on other CPUs.  */
   if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
+    int *did_stubout = callback_data;
+    *did_stubout = 1;
     memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin);
     return TRUE;
   } else {
