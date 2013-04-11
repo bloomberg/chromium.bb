@@ -216,7 +216,7 @@ void GrantFilePermissionsToHost(content::RenderViewHost* host,
       host->GetProcess()->GetID(), path, permissions);
 }
 
-void AddDriveMountPoint(
+void SetDriveMountPointPermissions(
     Profile* profile,
     const std::string& extension_id,
     content::RenderViewHost* render_view_host) {
@@ -238,28 +238,6 @@ void AddDriveMountPoint(
   GrantFilePermissionsToHost(render_view_host,
                              mount_point,
                              file_handler_util::GetReadWritePermissions());
-
-  // Grant R/W permission for tmp and pinned cache folder.
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::GetForProfile(profile);
-  drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
-  // |system_service| is NULL if Drive is disabled.
-  if (!cache)
-    return;
-
-  // We check permissions for raw cache file paths only for read-only
-  // operations (when fileEntry.file() is called), so read only permissions
-  // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for drive/ paths.
-  GrantFilePermissionsToHost(render_view_host,
-                             cache->GetCacheDirectoryPath(
-                                 drive::DriveCache::CACHE_TYPE_TMP),
-                             file_handler_util::GetReadOnlyPermissions());
-  GrantFilePermissionsToHost(
-      render_view_host,
-      cache->GetCacheDirectoryPath(
-          drive::DriveCache::CACHE_TYPE_PERSISTENT),
-      file_handler_util::GetReadOnlyPermissions());
 
   base::FilePath mount_point_virtual;
   if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
@@ -671,7 +649,7 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   if (system_service)
-    AddDriveMountPoint(profile_, extension_id(), render_view_host());
+    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
   dict->SetString("name", name);
@@ -2885,7 +2863,7 @@ bool GetPreferencesFunction::RunImpl() {
   bool drive_enabled = (system_service != NULL);
 
   if (drive_enabled)
-    AddDriveMountPoint(profile_, extension_id(), render_view_host());
+    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
 
   value->SetBoolean("driveEnabled", drive_enabled);
 
