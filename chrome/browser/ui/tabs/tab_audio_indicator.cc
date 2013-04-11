@@ -20,18 +20,18 @@ const size_t kEqualizerColumnCount = 3;
 // The equalizer cycles between these frames. An equalizer frame is 2 columns
 // where each column ranges from 0 to 4.
 const size_t kEqualizerFrames[][kEqualizerColumnCount] = {
-  { 1, 2, 3 },
-  { 2, 3, 4 },
-  { 3, 4, 3 },
-  { 4, 3, 2 },
-  { 3, 2, 1 },
-  { 2, 1, 2 },
-  { 1, 2, 3 },
   { 0, 1, 2 },
-  { 1, 0, 1 },
-  { 2, 1, 0 },
+  { 1, 2, 3 },
+  { 2, 3, 2 },
   { 3, 2, 1 },
-  { 2, 1, 2 },
+  { 2, 1, 0 },
+  { 1, 0, 1 },
+  { 0, 1, 2 },
+  { 0, 0, 2 },
+  { 0, 0, 1 },
+  { 1, 0, 0 },
+  { 2, 1, 0 },
+  { 1, 0, 1 },
 };
 
 // The space between equalizer levels.
