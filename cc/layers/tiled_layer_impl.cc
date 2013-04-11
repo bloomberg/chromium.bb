@@ -189,32 +189,23 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
         continue;
 
       if (!tile || !tile->resource_id()) {
-        if (DrawCheckerboardForMissingTiles()) {
-          SkColor checker_color;
-          if (ShowDebugBorders()) {
-            checker_color =
-                tile ? DebugColors::InvalidatedTileCheckerboardColor()
-                     : DebugColors::EvictedTileCheckerboardColor();
-          } else {
-            checker_color = DebugColors::DefaultCheckerboardColor();
-          }
-
-          scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
-              CheckerboardDrawQuad::Create();
-          checkerboard_quad->SetNew(
-              shared_quad_state, tile_rect, checker_color);
-          if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>(),
-                                append_quads_data))
-            append_quads_data->num_missing_tiles++;
+        SkColor checker_color;
+        if (ShowDebugBorders()) {
+          checker_color =
+              tile ? DebugColors::InvalidatedTileCheckerboardColor()
+                   : DebugColors::EvictedTileCheckerboardColor();
         } else {
-          scoped_ptr<SolidColorDrawQuad> solid_color_quad =
-              SolidColorDrawQuad::Create();
-          solid_color_quad->SetNew(
-              shared_quad_state, tile_rect, background_color());
-          if (quad_sink->Append(solid_color_quad.PassAs<DrawQuad>(),
-                                append_quads_data))
-            append_quads_data->num_missing_tiles++;
+          checker_color = DebugColors::DefaultCheckerboardColor();
         }
+
+        scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
+            CheckerboardDrawQuad::Create();
+        checkerboard_quad->SetNew(
+            shared_quad_state, tile_rect, checker_color);
+        if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>(),
+                              append_quads_data))
+          append_quads_data->num_missing_tiles++;
+
         continue;
       }
 

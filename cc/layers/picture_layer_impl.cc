@@ -166,8 +166,25 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
           append_quads_data->num_missing_tiles++;
       } else {
+        SkColor color = background_color();
+        // TODO(wangxianzhu): Change the next |if| condition once we support
+        // finer-grain opaqueness. Ensure with the following DCHECK.
+        DCHECK(contents_opaque() || VisibleContentOpaqueRegion().IsEmpty());
+        if (SkColorGetA(color) != 255 && contents_opaque()) {
+          // If content is opaque, the occlusion tracker expects this layer to
+          // cover the background, so needs an opaque color.
+          for (const LayerImpl* layer = parent(); layer;
+               layer = layer->parent()) {
+            color = layer->background_color();
+            if (SkColorGetA(color) == 255)
+              break;
+          }
+          if (SkColorGetA(color) != 255)
+            color = layer_tree_impl()->background_color();
+          DCHECK_EQ(SkColorGetA(color), 255u);
+        }
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(shared_quad_state, geometry_rect, background_color());
+        quad->SetNew(shared_quad_state, geometry_rect, color);
         if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
           append_quads_data->num_missing_tiles++;
       }
