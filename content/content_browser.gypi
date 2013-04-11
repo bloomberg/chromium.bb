@@ -1201,8 +1201,8 @@
       'dependencies': [
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
-      'xcode_settings': {
-        'LDFLAGS': [
+      'link_settings': {
+        'libraries': [
           '-lbsm',
         ],
       },
