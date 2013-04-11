@@ -63,9 +63,6 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The prefs to use.
   PrefService* prefs_;
 
-  // Whether the user clicked one of the buttons.
-  bool action_taken_;
-
   // Whether the info-bar should be dismissed on the next navigation.
   bool should_expire_;
 
@@ -92,12 +89,9 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
     Profile* profile)
     : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
-      action_taken_(false),
       should_expire_(false),
       profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  auto_launch_trial::UpdateInfobarShownMetric();
-
   int count = prefs_->GetInteger(prefs::kShownAutoLaunchInfobar);
   prefs_->SetInteger(prefs::kShownAutoLaunchInfobar, count + 1);
 
@@ -111,10 +105,6 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
 }
 
 AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
-  if (!action_taken_) {
-    auto_launch_trial::UpdateInfobarResponseMetric(
-        auto_launch_trial::INFOBAR_IGNORE);
-  }
 }
 
 gfx::Image* AutolaunchInfoBarDelegate::GetIcon() const {
@@ -133,21 +123,10 @@ string16 AutolaunchInfoBarDelegate::GetButtonLabel(
 }
 
 bool AutolaunchInfoBarDelegate::Accept() {
-  action_taken_ = true;
-  auto_launch_trial::UpdateInfobarResponseMetric(
-      auto_launch_trial::INFOBAR_OK);
   return true;
 }
 
 bool AutolaunchInfoBarDelegate::Cancel() {
-  action_taken_ = true;
-
-  // Track infobar reponse.
-  auto_launch_trial::UpdateInfobarResponseMetric(
-      auto_launch_trial::INFOBAR_CUT_IT_OUT);
-  // Also make sure we keep track of how many disable and how many enable.
-  auto_launch_trial::UpdateToggleAutoLaunchMetric(false);
-
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,

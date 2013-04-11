@@ -997,8 +997,6 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
   CHECK(args->GetBoolean(0, &enable));
 
-  // Make sure we keep track of how many disable and how many enable.
-  auto_launch_trial::UpdateToggleAutoLaunchMetric(enable);
   Profile* profile = Profile::FromWebUI(web_ui());
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
