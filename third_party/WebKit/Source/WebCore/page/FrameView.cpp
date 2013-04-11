@@ -187,6 +187,7 @@ FrameView::FrameView(Frame* frame)
 #if ENABLE(CSS_FILTERS)
     , m_hasSoftwareFilters(false)
 #endif
+    , m_visibleContentScaleFactor(1)
 {
     init();
 
@@ -2639,15 +2640,13 @@ IntRect FrameView::windowResizerRect() const
     return page->chrome()->windowResizerRect();
 }
 
-float FrameView::visibleContentScaleFactor() const
+void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
 {
-    if (!m_frame || !m_frame->page())
-        return 1;
+    if (m_visibleContentScaleFactor == visibleContentScaleFactor)
+        return;
 
-    if (m_frame != m_frame->page()->mainFrame())
-        return 1;
-
-    return m_frame->page()->pageScaleFactor();
+    m_visibleContentScaleFactor = visibleContentScaleFactor;
+    updateScrollbars(scrollOffset());
 }
 
 void FrameView::setVisibleScrollerThumbRect(const IntRect& scrollerThumb)

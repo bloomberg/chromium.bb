@@ -27,6 +27,7 @@
 #include "ScrollbarThemeMock.h"
 
 #include "Scrollbar.h"
+#include "Settings.h"
 
 namespace WebCore {
 
@@ -40,6 +41,11 @@ IntRect ScrollbarThemeMock::trackRect(ScrollbarThemeClient* scrollbar, bool)
 int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     return cScrollbarThickness[controlSize];
+}
+
+bool ScrollbarThemeMock::usesOverlayScrollbars() const
+{
+    return Settings::usesOverlayScrollbars();
 }
 
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)
