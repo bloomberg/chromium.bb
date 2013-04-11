@@ -1071,6 +1071,11 @@ bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
     if (!isAllowedChildOfTree())
         return true;
 
+    // TODO: we should refactor this - but right now this is necessary to make
+    // sure scroll areas stay in the tree.
+    if (isAttachment())
+        return false;
+
     // ignore popup menu items because AppKit does
     for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->isBoxModelObject() && toRenderBoxModelObject(parent)->isMenuList())
