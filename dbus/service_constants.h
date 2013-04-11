@@ -1357,6 +1357,14 @@ const char kGetNodes[] = "GetNodes";
 const char kSetActiveOutputNode[] = "SetActiveOutputNode";
 const char kSetActiveInputNode[] = "SetActiveInputNode";
 
+// Names of properties returned by GetNodes()
+const char kIsInputProperty[] = "IsInput";
+const char kIdProperty[] = "Id";
+const char kTypeProperty[] = "Type";
+const char kNameProperty[] = "Name";
+const char kDeviceNameProperty[] = "DeviceName";
+const char kActiveProperty[] = "Active";
+
 // Signals.
 const char kOutputVolumeChanged[] = "OutputVolumeChanged";
 const char kOutputMuteChanged[] = "OutputMuteChanged";
