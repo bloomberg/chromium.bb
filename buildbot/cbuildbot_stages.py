@@ -18,7 +18,6 @@ import sys
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import configure_repo
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lab_status
@@ -604,12 +603,6 @@ class SyncStage(bs.BuilderStage):
         cros_build_lib.PrintBuildbotStepText('(From scratch)')
       elif self._options.buildbot:
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
-
-  def HandleSkip(self):
-    super(SyncStage, self).HandleSkip()
-    # Ensure the gerrit remote is present for backwards compatibility.
-    # TODO(davidjames): Remove this.
-    configure_repo.SetupGerritRemote(self._build_root)
 
 
 class LKGMSyncStage(SyncStage):
