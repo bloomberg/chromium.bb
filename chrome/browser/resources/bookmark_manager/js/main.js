@@ -308,13 +308,26 @@ function handleLoadForTree(e) {
 }
 
 /**
+ * Returns the bookmark nodes that should be opened through the open context
+ * menu commands.
+ * @param {HTMLElement} target The target list or tree.
+ * @return {!Array.<!BookmarkTreeNode>} .
+ */
+function getBookmarkNodesForOpenCommands(target) {
+  if (target == tree)
+    return tree.selectedFolders;
+  var listItems = list.selectedItems;
+  return listItems.length ? listItems : list.dataModel.slice();
+}
+
+/**
  * Helper function that updates the canExecute and labels for the open-like
  * commands.
  * @param {!cr.ui.CanExecuteEvent} e The event fired by the command system.
  * @param {!cr.ui.Command} command The command we are currently processing.
  */
 function updateOpenCommands(e, command) {
-  var selectedItems = getSelectedBookmarkNodes(e.target);
+  var selectedItems = getBookmarkNodesForOpenCommands(e.target);
   var isFolder = selectedItems.length == 1 && bmm.isFolder(selectedItems[0]);
   var multiple = selectedItems.length != 1 || isFolder;
 
@@ -729,8 +742,9 @@ function getSelectedBookmarkIds() {
 /**
  * Opens the selected bookmarks.
  * @param {LinkKind} kind The kind of link we want to open.
+ * @param {HTMLElement} opt_eventTarget The target of the user initiated event.
  */
-function openBookmarks(kind) {
+function openBookmarks(kind, opt_eventTarget) {
   // If we have selected any folders, we need to find all items recursively.
   // We use multiple async calls to getSubtree instead of getting the whole
   // tree since we would like to minimize the amount of data sent.
@@ -749,7 +763,7 @@ function openBookmarks(kind) {
     }
   }
 
-  var nodes = getSelectedBookmarkNodes();
+  var nodes = getBookmarkNodesForOpenCommands(opt_eventTarget);
 
   // Get a future promise for every selected item.
   var promises = nodes.map(function(node) {
@@ -1076,15 +1090,15 @@ function handleCommand(e) {
     case 'open-in-new-tab-command':
     case 'open-in-background-tab-command':
       recordUserAction('OpenInNewTab');
-      openBookmarks(LinkKind.BACKGROUND_TAB);
+      openBookmarks(LinkKind.BACKGROUND_TAB, e.target);
       break;
     case 'open-in-new-window-command':
       recordUserAction('OpenInNewWindow');
-      openBookmarks(LinkKind.WINDOW);
+      openBookmarks(LinkKind.WINDOW, e.target);
       break;
     case 'open-incognito-window-command':
       recordUserAction('OpenIncognito');
-      openBookmarks(LinkKind.INCOGNITO);
+      openBookmarks(LinkKind.INCOGNITO, e.target);
       break;
     case 'delete-command':
       recordUserAction('Delete');
