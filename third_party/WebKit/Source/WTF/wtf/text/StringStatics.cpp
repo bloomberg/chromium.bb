@@ -24,6 +24,7 @@
  */
 
 #include "config.h"
+#include "StringStatics.h"
 
 #ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
 #define ATOMICSTRING_HIDE_GLOBALS 1
@@ -73,22 +74,32 @@ NEVER_INLINE unsigned StringImpl::hashSlowCase() const
 void AtomicString::init()
 {
     static bool initialized;
-    if (!initialized) {
-        // Initialization is not thread safe, so this function must be called from the main thread first.
-        ASSERT(isMainThread());
+    if (initialized)
+        return;
+    initialized = true;
 
-        // Use placement new to initialize the globals.
-        new (NotNull, (void*)&nullAtom) AtomicString;
-        new (NotNull, (void*)&emptyAtom) AtomicString("");
-        new (NotNull, (void*)&textAtom) AtomicString("#text", AtomicString::ConstructFromLiteral);
-        new (NotNull, (void*)&commentAtom) AtomicString("#comment", AtomicString::ConstructFromLiteral);
-        new (NotNull, (void*)&starAtom) AtomicString("*", AtomicString::ConstructFromLiteral);
-        new (NotNull, (void*)&xmlAtom) AtomicString("xml", AtomicString::ConstructFromLiteral);
-        new (NotNull, (void*)&xmlnsAtom) AtomicString("xmlns", AtomicString::ConstructFromLiteral);
-        new (NotNull, (void*)&xlinkAtom) AtomicString("xlink", AtomicString::ConstructFromLiteral);
+    ASSERT(isMainThread());
 
-        initialized = true;
-    }
+    new (NotNull, (void*)&nullAtom) AtomicString;
+    new (NotNull, (void*)&emptyAtom) AtomicString("");
+}
+
+void StringStatics::init()
+{
+    static bool initialized;
+    if (initialized)
+        return;
+    initialized = true;
+
+    ASSERT(isMainThread());
+
+    // FIXME: These should be allocated at compile time.
+    new (NotNull, (void*)&textAtom) AtomicString("#text", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&commentAtom) AtomicString("#comment", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&starAtom) AtomicString("*", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&xmlAtom) AtomicString("xml", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&xmlnsAtom) AtomicString("xmlns", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&xlinkAtom) AtomicString("xlink", AtomicString::ConstructFromLiteral);
 }
 
 }

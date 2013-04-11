@@ -433,6 +433,7 @@ PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* r)
     StringImpl* result = *stringTable().add(r).iterator;
     if (result == r)
         r->setIsAtomic(true);
+    ASSERT(!r->isStatic() || result->isStatic());
     return result;
 }
 

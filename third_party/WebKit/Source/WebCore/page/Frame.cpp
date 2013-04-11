@@ -96,6 +96,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
+#include <wtf/text/StringStatics.h>
 
 #include "MathMLNames.h"
 #include "SVGNames.h"
@@ -137,6 +138,21 @@ static inline float parentTextZoomFactor(Frame* frame)
     return parent->textZoomFactor();
 }
 
+void init()
+{
+    AtomicString::init();
+    HTMLNames::init();
+    SVGNames::init();
+    XLinkNames::init();
+    MathMLNames::init();
+    XMLNSNames::init();
+    XMLNames::init();
+    WebKitFontFamilyNames::init();
+    MediaFeatureNames::init();
+    WTF::StringStatics::init();
+    QualifiedName::init();
+}
+
 inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* frameLoaderClient)
     : m_page(page)
     , m_treeNode(this, parentFromOwnerElement(ownerElement))
@@ -157,16 +173,7 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_activeDOMObjectsAndAnimationsSuspendedCount(0)
 {
     ASSERT(page);
-    AtomicString::init();
-    HTMLNames::init();
-    QualifiedName::init();
-    MediaFeatureNames::init();
-    SVGNames::init();
-    XLinkNames::init();
-    MathMLNames::init();
-    XMLNSNames::init();
-    XMLNames::init();
-    WebKitFontFamilyNames::init();
+    WebCore::init();
 
     if (ownerElement) {
         page->incrementSubframeCount();

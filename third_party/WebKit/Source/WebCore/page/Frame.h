@@ -60,6 +60,8 @@ namespace WebCore {
     };
     typedef unsigned LayerTreeFlags;
 
+    void init();
+
     class Frame : public RefCounted<Frame> {
     public:
         static PassRefPtr<Frame> create(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);

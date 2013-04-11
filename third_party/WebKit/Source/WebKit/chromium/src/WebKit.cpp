@@ -33,6 +33,7 @@
 
 #include "CustomElementRegistry.h"
 #include "EventTracer.h"
+#include "Frame.h"
 #include "IDBFactoryBackendProxy.h"
 #include "ImageDecodingStore.h"
 #include "LayoutTestSupport.h"
@@ -141,11 +142,11 @@ void initializeWithoutV8(Platform* webKitPlatformSupport)
     ASSERT(!s_webKitPlatformSupport);
     s_webKitPlatformSupport = webKitPlatformSupport;
     Platform::initialize(s_webKitPlatformSupport);
-    WebCore::ImageDecodingStore::initializeOnce();
 
     WTF::initializeThreading();
     WTF::initializeMainThread();
-    WTF::AtomicString::init();
+    WebCore::init();
+    WebCore::ImageDecodingStore::initializeOnce();
 
     // There are some code paths (for example, running WebKit in the browser
     // process and calling into LocalStorage before anything else) where the

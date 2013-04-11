@@ -34,6 +34,13 @@ sub GenerateStrings($)
     my @result = ();
 
     while ( my ($name, $value) = each %strings ) {
+        my $characterList = join("', '", split("", $value));
+        push(@result, "static const UChar ${name}String16[] = { '$characterList', 0 };\n");
+    }
+
+    push(@result, "\n");
+
+    while ( my ($name, $value) = each %strings ) {
         push(@result, "static const LChar ${name}String8[] = \"${value}\";\n");
     }
 
@@ -47,7 +54,7 @@ static StringImpl::StaticASCIILiteral ${name}Data = {
     StringImpl::StaticASCIILiteral::s_initialRefCount,
     $length,
     ${name}String8,
-    0,
+    ${name}String16,
     StringImpl::StaticASCIILiteral::s_initialFlags | (${hash} << StringImpl::StaticASCIILiteral::s_hashShift)
 };
 END

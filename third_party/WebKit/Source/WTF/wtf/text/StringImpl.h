@@ -463,12 +463,13 @@ public:
     bool isAtomic() const { return m_hashAndFlags & s_hashFlagIsAtomic; }
     void setIsAtomic(bool isAtomic)
     {
-        ASSERT(!isStatic());
         if (isAtomic)
             m_hashAndFlags |= s_hashFlagIsAtomic;
         else
             m_hashAndFlags &= ~s_hashFlagIsAtomic;
     }
+
+    bool isStatic() const { return m_refCount & s_refCountFlagIsStaticString; }
 
 #ifdef STRING_STATS
     bool isSubString() const { return  bufferOwnership() == BufferSubstring; }
@@ -686,7 +687,6 @@ private:
     static const unsigned s_copyCharsInlineCutOff = 20;
 
     BufferOwnership bufferOwnership() const { return static_cast<BufferOwnership>(m_hashAndFlags & s_hashMaskBufferOwnership); }
-    bool isStatic() const { return m_refCount & s_refCountFlagIsStaticString; }
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate);
     WTF_EXPORT_STRING_API NEVER_INLINE const UChar* getData16SlowCase() const;
@@ -719,12 +719,11 @@ public:
         unsigned m_refCount;
         unsigned m_length;
         const LChar* m_data8;
-        void* m_buffer;
+        const UChar* m_copyData16;
         unsigned m_hashAndFlags;
 
-        // These values mimic ConstructFromLiteral.
-        static const unsigned s_initialRefCount = s_refCountIncrement;
-        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | BufferInternal | s_hashFlagHasTerminatingNullCharacter;
+        static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
+        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | s_hashFlagHas16BitShadow | BufferInternal | s_hashFlagHasTerminatingNullCharacter;
         static const unsigned s_hashShift = s_flagCount;
     };
 

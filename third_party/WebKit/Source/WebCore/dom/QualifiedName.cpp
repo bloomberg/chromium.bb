@@ -128,13 +128,12 @@ DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom)
 void QualifiedName::init()
 {
     static bool initialized;
-    if (!initialized) {
-        // Use placement new to initialize the globals.
-        
-        AtomicString::init();
-        new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom);
-        initialized = true;
-    }
+    if (initialized)
+        return;
+    initialized = true;
+
+    ASSERT(starAtom.impl());
+    new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom);
 }
 
 const QualifiedName& nullQName()
