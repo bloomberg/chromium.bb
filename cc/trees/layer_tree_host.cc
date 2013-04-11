@@ -567,31 +567,33 @@ bool LayerTreeHost::CommitRequested() const {
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                                        base::Time wall_clock_time) {
   DCHECK(proxy_->IsMainThread());
-  for (size_t event_index = 0; event_index < events->size(); ++event_index) {
-    int event_layer_id = (*events)[event_index].layer_id;
+  AnimationRegistrar::AnimationControllerMap copy =
+      animation_registrar_->active_animation_controllers();
+  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
+       iter != copy.end();
+       ++iter) {
+    for (size_t event_index = 0; event_index < events->size(); ++event_index) {
+      if ((*iter).second->id() == (*events)[event_index].layer_id) {
+        switch ((*events)[event_index].type) {
+          case AnimationEvent::Started:
+            (*iter).second->NotifyAnimationStarted((*events)[event_index],
+                                                   wall_clock_time.ToDoubleT());
+            break;
 
-    // Use the map of all controllers, not just active ones, since non-active
-    // controllers may still receive events for impl-only animations.
-    AnimationRegistrar::AnimationControllerMap::const_iterator iter =
-      animation_registrar_->all_animation_controllers().find(event_layer_id);
-    if (iter != animation_registrar_->active_animation_controllers().end()) {
-      switch ((*events)[event_index].type) {
-        case AnimationEvent::Started:
-          (*iter).second->NotifyAnimationStarted((*events)[event_index],
-                                                 wall_clock_time.ToDoubleT());
-          break;
+          case AnimationEvent::Finished:
+            (*iter).second->NotifyAnimationFinished(
+                (*events)[event_index],
+                wall_clock_time.ToDoubleT());
+            break;
 
-        case AnimationEvent::Finished:
-          (*iter).second->NotifyAnimationFinished((*events)[event_index],
-                                                  wall_clock_time.ToDoubleT());
-          break;
+          case AnimationEvent::PropertyUpdate:
+            (*iter).second->NotifyAnimationPropertyUpdate(
+                (*events)[event_index]);
+            break;
 
-        case AnimationEvent::PropertyUpdate:
-          (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
-          break;
-
-        default:
-          NOTREACHED();
+          default:
+            NOTREACHED();
+        }
       }
     }
   }
