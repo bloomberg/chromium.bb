@@ -250,6 +250,42 @@ class GLHelper::CopyTextureToImpl :
     GLuint buffer;
   };
 
+  class ShaderProgram {
+   public:
+    ShaderProgram(WebGraphicsContext3D* context,
+                  GLHelper* helper) :
+        context_(context),
+        helper_(helper),
+        program_(context, context->createProgram()) {
+    }
+
+    void Setup(const WebKit::WGC3Dchar* vertex_shader_text,
+               const WebKit::WGC3Dchar* fragment_shader_text);
+    void UseProgram(const gfx::Size& src_size,
+                    const gfx::Rect& src_subrect,
+                    const gfx::Size& dst_size);
+
+   private:
+    WebGraphicsContext3D* context_;
+    GLHelper* helper_;
+
+    // A program for copying a source texture into a destination texture.
+    ScopedProgram program_;
+
+    // The location of the position in the program.
+    WebKit::WGC3Dint position_location_;
+    // The location of the texture coordinate in the program.
+    WebKit::WGC3Dint texcoord_location_;
+    // The location of the source texture in the program.
+    WebKit::WGC3Dint texture_location_;
+    // The location of the texture coordinate of
+    // the sub-rectangle in the program.
+    WebKit::WGC3Dint src_subrect_location_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
+  };
+
   // Copies the block of pixels specified with |src_subrect| from |src_texture|,
   // scales it to |dst_size|, writes it into a texture, and returns its ID.
   // |src_size| is the size of |src_texture|.
@@ -257,7 +293,8 @@ class GLHelper::CopyTextureToImpl :
                        const gfx::Size& src_size,
                        const gfx::Rect& src_subrect,
                        const gfx::Size& dst_size,
-                       bool vertically_flip_texture);
+                       bool vertically_flip_texture,
+                       bool swizzle);
 
   void ReadbackDone(Request* request);
   void FinishRequest(Request* request, bool result);
@@ -273,6 +310,7 @@ class GLHelper::CopyTextureToImpl :
   // GLHelper::ReadbackTextureSync
   static const WebKit::WGC3Dchar kCopyVertexShader[];
   static const WebKit::WGC3Dchar kCopyFragmentShader[];
+  static const WebKit::WGC3Dchar kCopyAndSwizzleShader[];
 
   WebGraphicsContext3DCommandBufferImpl* context_;
   GLHelper* helper_;
@@ -287,14 +325,9 @@ class GLHelper::CopyTextureToImpl :
   ScopedBuffer vertex_attributes_buffer_;
   ScopedBuffer flipped_vertex_attributes_buffer_;
 
-  // The location of the position in the program.
-  WebKit::WGC3Dint position_location_;
-  // The location of the texture coordinate in the program.
-  WebKit::WGC3Dint texcoord_location_;
-  // The location of the source texture in the program.
-  WebKit::WGC3Dint texture_location_;
-  // The location of the texture coordinate of the sub-rectangle in the program.
-  WebKit::WGC3Dint src_subrect_location_;
+  scoped_ptr<ShaderProgram> no_swizzle_program_;
+  scoped_ptr<ShaderProgram> swizzle_program_;
+
   std::queue<Request*> request_queue_;
 };
 
@@ -324,15 +357,6 @@ const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyVertexShader[] =
     "}";
 
 
-#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
-const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
-    "precision mediump float;"
-    "varying vec2 v_texcoord;"
-    "uniform sampler2D s_texture;"
-    "void main() {"
-    "  gl_FragColor = texture2D(s_texture, v_texcoord).bgra;"
-    "}";
-#else
 const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
     "precision mediump float;"
     "varying vec2 v_texcoord;"
@@ -340,7 +364,14 @@ const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyFragmentShader[] =
     "void main() {"
     "  gl_FragColor = texture2D(s_texture, v_texcoord);"
     "}";
-#endif
+
+const WebKit::WGC3Dchar GLHelper::CopyTextureToImpl::kCopyAndSwizzleShader[] =
+    "precision mediump float;"
+    "varying vec2 v_texcoord;"
+    "uniform sampler2D s_texture;"
+    "void main() {"
+    "  gl_FragColor = texture2D(s_texture, v_texcoord).bgra;"
+    "}";
 
 
 void GLHelper::CopyTextureToImpl::InitBuffer() {
@@ -359,14 +390,23 @@ void GLHelper::CopyTextureToImpl::InitBuffer() {
 }
 
 void GLHelper::CopyTextureToImpl::InitProgram() {
+  no_swizzle_program_.reset(new ShaderProgram(context_, helper_));
+  no_swizzle_program_->Setup(kCopyVertexShader, kCopyFragmentShader);
+  swizzle_program_.reset(new ShaderProgram(context_, helper_));
+  swizzle_program_->Setup(kCopyVertexShader, kCopyAndSwizzleShader);
+}
+
+void GLHelper::CopyTextureToImpl::ShaderProgram::Setup(
+    const WebKit::WGC3Dchar* vertex_shader_text,
+    const WebKit::WGC3Dchar* fragment_shader_text) {
   // Shaders to map the source texture to |dst_texture_|.
   ScopedShader vertex_shader(context_, helper_->CompileShaderFromSource(
-      kCopyVertexShader, GL_VERTEX_SHADER));
-  DCHECK_NE(0U, vertex_shader.id());
+      vertex_shader_text, GL_VERTEX_SHADER));
+  DCHECK(vertex_shader.id());
   context_->attachShader(program_, vertex_shader);
   ScopedShader fragment_shader(context_, helper_->CompileShaderFromSource(
-      kCopyFragmentShader, GL_FRAGMENT_SHADER));
-  DCHECK_NE(0U, fragment_shader.id());
+      fragment_shader_text, GL_FRAGMENT_SHADER));
+  DCHECK(fragment_shader.id());
   context_->attachShader(program_, fragment_shader);
   context_->linkProgram(program_);
 
@@ -383,12 +423,50 @@ void GLHelper::CopyTextureToImpl::InitProgram() {
   src_subrect_location_ = context_->getUniformLocation(program_, "src_subrect");
 }
 
+
+void GLHelper::CopyTextureToImpl::ShaderProgram::UseProgram(
+    const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size) {
+  context_->useProgram(program_);
+
+  WebKit::WGC3Dintptr offset = 0;
+  context_->vertexAttribPointer(position_location_,
+                                2,
+                                GL_FLOAT,
+                                GL_FALSE,
+                                4 * sizeof(WebKit::WGC3Dfloat),
+                                offset);
+  context_->enableVertexAttribArray(position_location_);
+
+  offset += 2 * sizeof(WebKit::WGC3Dfloat);
+  context_->vertexAttribPointer(texcoord_location_,
+                                2,
+                                GL_FLOAT,
+                                GL_FALSE,
+                                4 * sizeof(WebKit::WGC3Dfloat),
+                                offset);
+  context_->enableVertexAttribArray(texcoord_location_);
+
+  context_->uniform1i(texture_location_, 0);
+
+  // Convert |src_subrect| to texture coordinates.
+  GLfloat src_subrect_texcoord[] = {
+    static_cast<float>(src_subrect.x()) / src_size.width(),
+    static_cast<float>(src_subrect.y()) / src_size.height(),
+    static_cast<float>(src_subrect.width()) / src_size.width(),
+    static_cast<float>(src_subrect.height()) / src_size.height(),
+  };
+  context_->uniform4fv(src_subrect_location_, 1, src_subrect_texcoord);
+}
+
 WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
     WebGLId src_texture,
     const gfx::Size& src_size,
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    bool vertically_flip_texture) {
+    bool vertically_flip_texture,
+    bool swizzle) {
   WebGLId dst_texture = context_->createTexture();
   {
     ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
@@ -419,37 +497,13 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
                                                       vertex_attributes_buffer);
 
     context_->viewport(0, 0, dst_size.width(), dst_size.height());
-    context_->useProgram(program_);
-
-    WebKit::WGC3Dintptr offset = 0;
-    context_->vertexAttribPointer(position_location_,
-                                  2,
-                                  GL_FLOAT,
-                                  GL_FALSE,
-                                  4 * sizeof(WebKit::WGC3Dfloat),
-                                  offset);
-    context_->enableVertexAttribArray(position_location_);
-
-    offset += 2 * sizeof(WebKit::WGC3Dfloat);
-    context_->vertexAttribPointer(texcoord_location_,
-                                  2,
-                                  GL_FLOAT,
-                                  GL_FALSE,
-                                  4 * sizeof(WebKit::WGC3Dfloat),
-                                  offset);
-    context_->enableVertexAttribArray(texcoord_location_);
-
-    context_->uniform1i(texture_location_, 0);
-
-    // Convert |src_subrect| to texture coordinates.
-    GLfloat src_subrect_texcoord[] = {
-      static_cast<float>(src_subrect.x()) / src_size.width(),
-      static_cast<float>(src_subrect.y()) / src_size.height(),
-      static_cast<float>(src_subrect.width()) / src_size.width(),
-      static_cast<float>(src_subrect.height()) / src_size.height(),
-    };
-
-    context_->uniform4fv(src_subrect_location_, 1, src_subrect_texcoord);
+    ShaderProgram* program;
+    if (swizzle) {
+      program = swizzle_program_.get();
+    } else {
+      program = no_swizzle_program_.get();
+    }
+    program->UseProgram(src_size, src_subrect, dst_size);
 
     // Conduct texture mapping by drawing a quad composed of two triangles.
     context_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -468,7 +522,13 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                                  src_size,
                                  src_subrect,
                                  dst_size,
-                                 true);
+                                 true,
+#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
+                                 true
+#else
+                                 false
+#endif
+                                 );
   context_->flush();
   Request* request = new Request(texture, dst_size, out, callback);
   request_queue_.push(request);
@@ -532,7 +592,8 @@ WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
                       src_size,
                       gfx::Rect(src_size),
                       dst_size,
-                      vertically_flip_texture);
+                      vertically_flip_texture,
+                      false);
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* request) {
