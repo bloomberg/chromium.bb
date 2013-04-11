@@ -34,7 +34,7 @@ namespace {
 
 class StartupTest : public UIPerfTest {
  public:
-  StartupTest() : tracing_enabled_(false) {
+  StartupTest() {
     show_window_ = true;
   }
   virtual void SetUp() {
@@ -72,30 +72,18 @@ class StartupTest : public UIPerfTest {
     collect_profiling_stats_ = true;
   }
 
-  // Set the command line arguments to enable tracing.
-  void SetUpWithTracing(std::string trace_file_prefix) {
-    tracing_enabled_ = true;
-    trace_file_prefix_ = trace_file_prefix;
-    launch_arguments_.AppendSwitch(switches::kTraceStartup);
-    launch_arguments_.AppendSwitchASCII(switches::kTraceStartupDuration,
-                                        "1");
-  }
-
-  // Pause after running a test with tracing, to wait for the trace to
-  // be written.
-  void PauseForTracing() {
-    if (tracing_enabled_) {
+  // Set the command line arguments to enable or disable FCM.
+  // http://crbug.com/178497
+  void SetUpWithCompositingEnabledOnMac() {
 #if defined(OS_MACOSX)
-      sleep(1);
-#else
-      NOTREACHED();
+    launch_arguments_.AppendSwitch(switches::kForceCompositingMode);
 #endif
-    }
   }
 
-  // Set the command line arguments to use force-compositing-mode.
-  void SetUpWithForceCompositingMode() {
-    launch_arguments_.AppendSwitch(switches::kForceCompositingMode);
+  void SetUpWithCompositingDisabledOnMac() {
+#if defined(OS_MACOSX)
+    launch_arguments_.AppendSwitch(switches::kDisableForceCompositingMode);
+#endif
   }
 
   // Load a complex html file on startup represented by |which_tab|.
@@ -220,13 +208,6 @@ class StartupTest : public UIPerfTest {
 
     CommandLine launch_arguments_without_trace_file(launch_arguments_);
     for (int i = 0; i < numCycles; ++i) {
-      if (tracing_enabled_) {
-        std::stringstream tracing_enabled_file;
-        tracing_enabled_file << trace_file_prefix_ << i;
-        launch_arguments_ = launch_arguments_without_trace_file;
-        launch_arguments_.AppendSwitchASCII(switches::kTraceStartupFile,
-                                            tracing_enabled_file.str());
-      }
       if (test_cold == COLD) {
         base::FilePath dir_app;
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
@@ -270,7 +251,6 @@ class StartupTest : public UIPerfTest {
         }
       }
       timings[i].end_to_end = end_time - browser_launch_time();
-      PauseForTracing();
       UITest::TearDown();
 
       if (i == 0) {
@@ -334,14 +314,22 @@ class StartupTest : public UIPerfTest {
 
   base::FilePath profiling_file_;
   bool collect_profiling_stats_;
-  bool tracing_enabled_;
   std::string trace_file_prefix_;
 };
 
 TEST_F(StartupTest, PerfWarm) {
+  SetUpWithCompositingDisabledOnMac();
   RunStartupTest("warm", "t", WARM, IMPORTANT,
                  UITestBase::DEFAULT_THEME, 0, 0);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfWarmFCM) {
+  SetUpWithCompositingEnabledOnMac();
+  RunStartupTest("warm", "t_fcm", WARM, IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 0, 0);
+}
+#endif
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
@@ -359,9 +347,18 @@ TEST_F(StartupTest, PerfReferenceWarm) {
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfCold) {
+  SetUpWithCompositingDisabledOnMac();
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 0, 0);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfColdFCM) {
+  SetUpWithCompositingEnabledOnMac();
+  RunStartupTest("cold", "t_fcm", COLD, NOT_IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 0, 0);
+}
+#endif
 
 void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
                                           int tab_count, int nth_timed_tab,
@@ -407,8 +404,16 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfFewTabs) {
+  SetUpWithCompositingDisabledOnMac();
   RunPerfTestWithManyTabs("few_tabs", "cmdline", 5, 2, false);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfFewTabsFCM) {
+  SetUpWithCompositingEnabledOnMac();
+  RunPerfTestWithManyTabs("few_tabs", "cmdline_fcm", 5, 2, false);
+}
+#endif
 
 TEST_F(StartupTest, PerfFewTabsReference) {
   UseReferenceBuild();
@@ -416,8 +421,16 @@ TEST_F(StartupTest, PerfFewTabsReference) {
 }
 
 TEST_F(StartupTest, PerfRestoreFewTabs) {
+  SetUpWithCompositingDisabledOnMac();
   RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfRestoreFewTabsFCM) {
+  SetUpWithCompositingEnabledOnMac();
+  RunPerfTestWithManyTabs("few_tabs", "restore_fcm", 5, 2, true);
+}
+#endif
 
 TEST_F(StartupTest, PerfRestoreFewTabsReference) {
   UseReferenceBuild();
@@ -476,18 +489,40 @@ TEST_F(StartupTest, PerfRestoreSeveralTabsReference) {
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {
+  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
 
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfExtensionEmptyFCM) {
+  SetUpWithCompositingEnabledOnMac();
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("empty");
+  RunStartupTest("warm", "extension_empty_fcm", WARM, NOT_IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 1, 0);
+}
+#endif
+
 TEST_F(StartupTest, PerfExtensionContentScript1) {
+  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
   RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(StartupTest, PerfExtensionContentScript1FCM) {
+  SetUpWithCompositingEnabledOnMac();
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("content_scripts1");
+  RunStartupTest("warm", "extension_content_scripts1_fcm", WARM, NOT_IMPORTANT,
+                 UITestBase::DEFAULT_THEME, 1, 0);
+}
+#endif
 
 TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
@@ -502,6 +537,7 @@ TEST_F(StartupTest, MAYBE_PerfComplexTheme) {
 }
 
 TEST_F(StartupTest, ProfilingScript1) {
+  SetUpWithCompositingDisabledOnMac();
   SetUpWithFileURL();
   SetUpWithProfiling();
   RunStartupTest("warm", "profiling_scripts1", WARM, NOT_IMPORTANT,
@@ -509,20 +545,11 @@ TEST_F(StartupTest, ProfilingScript1) {
 }
 
 #if defined(OS_MACOSX)
-TEST_F(StartupTest, TracedProfilingScript1) {
+TEST_F(StartupTest, ProfilingScript1FCM) {
+  SetUpWithCompositingEnabledOnMac();
   SetUpWithFileURL();
   SetUpWithProfiling();
-  SetUpWithTracing("startup_trace_sw_");
-  RunStartupTest("warm", "traced_profiling_scripts1", WARM, NOT_IMPORTANT,
-                 UITestBase::DEFAULT_THEME, 1, 0);
-}
-
-TEST_F(StartupTest, TracedProfilingScript1FCM) {
-  SetUpWithFileURL();
-  SetUpWithProfiling();
-  SetUpWithForceCompositingMode();
-  SetUpWithTracing("startup_trace_fcm_");
-  RunStartupTest("warm", "traced_profiling_scripts1_fcm", WARM, NOT_IMPORTANT,
+  RunStartupTest("warm", "profiling_scripts1_fcm", WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
 #endif
