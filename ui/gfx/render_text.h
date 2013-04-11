@@ -275,6 +275,9 @@ class UI_EXPORT RenderText {
 
   void Draw(Canvas* canvas);
 
+  // Draws a cursor at |position|.
+  void DrawCursor(Canvas* canvas, const SelectionModel& position);
+
   // Draw the selected text without a cursor or selection highlight.
   void DrawSelectedText(Canvas* canvas);
 
@@ -449,9 +452,8 @@ class UI_EXPORT RenderText {
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
 
-  // Draw the selection and cursor.
+  // Draw the selection.
   void DrawSelection(Canvas* canvas);
-  void DrawCursor(Canvas* canvas);
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;
