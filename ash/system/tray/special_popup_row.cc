@@ -103,6 +103,10 @@ gfx::Size SpecialPopupRow::GetPreferredSize() {
   return size;
 }
 
+int SpecialPopupRow::GetHeightForWidth(int width) {
+  return kSpecialPopupRowHeight;
+}
+
 void SpecialPopupRow::Layout() {
   views::View::Layout();
   gfx::Rect content_bounds = GetContentsBounds();

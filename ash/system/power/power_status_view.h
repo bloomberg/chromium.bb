@@ -31,6 +31,7 @@ class PowerStatusView : public views::View {
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:

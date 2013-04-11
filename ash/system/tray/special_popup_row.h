@@ -38,6 +38,7 @@ class SpecialPopupRow : public views::View {
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   views::View* content_;

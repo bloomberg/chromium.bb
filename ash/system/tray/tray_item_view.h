@@ -43,6 +43,7 @@ class TrayItemView : public views::View,
   // Overridden from views::View.
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
 
  protected:
   // Makes sure the widget relayouts after the size/visibility of the view

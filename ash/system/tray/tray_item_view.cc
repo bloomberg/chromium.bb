@@ -90,6 +90,10 @@ gfx::Size TrayItemView::GetPreferredSize() {
   return size;
 }
 
+int TrayItemView::GetHeightForWidth(int width) {
+  return GetPreferredSize().height();
+}
+
 void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }

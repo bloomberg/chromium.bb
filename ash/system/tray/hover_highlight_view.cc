@@ -138,6 +138,10 @@ gfx::Size HoverHighlightView::GetPreferredSize() {
   return size;
 }
 
+int HoverHighlightView::GetHeightForWidth(int width) {
+  return GetPreferredSize().height();
+}
+
 void HoverHighlightView::OnMouseEntered(const ui::MouseEvent& event) {
   hover_ = true;
   if (text_highlight_color_ && text_label_)

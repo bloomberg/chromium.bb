@@ -171,6 +171,7 @@ class UserView : public views::View,
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::ButtonListener.
@@ -440,6 +441,10 @@ gfx::Size UserView::GetPreferredSize() {
                              kTrayPopupItemHeight + GetInsets().height()));
   }
   return size;
+}
+
+int UserView::GetHeightForWidth(int width) {
+  return GetPreferredSize().height();
 }
 
 void UserView::Layout() {

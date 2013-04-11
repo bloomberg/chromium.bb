@@ -290,6 +290,10 @@ gfx::Size PowerStatusView::GetPreferredSize() {
   return gfx::Size(size.width(), kTrayPopupItemHeight);
 }
 
+int PowerStatusView::GetHeightForWidth(int width) {
+  return kTrayPopupItemHeight;
+}
+
 void PowerStatusView::Layout() {
   views::View::Layout();
 
