@@ -128,6 +128,7 @@ def GetBotStepMap():
 
   # These bots have identical configuration to ones defined earlier.
   copy_map = [
+      ('lkgr-clobber', 'main-clobber'),
       ('try-builder-dbg', 'main-builder-dbg'),
       ('try-builder-rel', 'main-builder-rel'),
       ('try-clang-builder', 'main-clang-builder'),
