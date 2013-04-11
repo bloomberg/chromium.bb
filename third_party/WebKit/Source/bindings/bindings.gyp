@@ -312,17 +312,17 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
       ],
-      'xcode_settings': {
-        # Some Mac-specific parts of WebKit won't compile without having this
-        # prefix header injected.
-        # FIXME: make this a first-class setting.
-        'GCC_PREFIX_HEADER': '../WebCore/WebCorePrefix.h',
-      },
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         ],
+      },
+      'xcode_settings': {
+        # Some Mac-specific parts of WebKit won't compile without having this
+        # prefix header injected.
+        # FIXME: make this a first-class setting.
+        'GCC_PREFIX_HEADER': '<(webcore_prefix_file)',
       },
       'sources': [
         '<@(derived_sources_aggregate_files)',

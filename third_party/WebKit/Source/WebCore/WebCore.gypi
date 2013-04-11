@@ -4257,6 +4257,8 @@
             'platform/chromium/support/WrappedResourceResponse.h',
         ],
 
+        'webcore_prefix_file': 'WebCorePrefix.h',
+
         'conditions': [
             ['OS=="win"', {
               # Using native perl rather than cygwin perl cuts execution time of idl
