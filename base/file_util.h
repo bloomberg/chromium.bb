@@ -78,7 +78,8 @@ BASE_EXPORT int64 ComputeDirectorySize(const base::FilePath& root_path);
 // If it's a directory, it's perfectly happy to delete all of the
 // directory's contents.  Passing true to recursive deletes
 // subdirectories and their contents as well.
-// Returns true if successful, false otherwise.
+// Returns true if successful, false otherwise. It is considered successful
+// to attempt to delete a file that does not exist.
 //
 // In posix environment and if |path| is a symbolic link, this deletes only
 // the symlink. (even if the symlink points to a non-existent file)
