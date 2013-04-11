@@ -54,20 +54,6 @@ bool IsEligibleEntry(const DriveEntryProto& entry, int options) {
   return true;
 }
 
-// Returns true if this search needs to traverse the tree under |entry|.
-bool ShouldReadDirectory(const DriveEntryProto& entry, int options) {
-  // Cannot read non-directory.
-  if (!entry.file_info().is_directory())
-    return false;
-
-  // This is a directory.
-  // Shared-with-me search do not go into a share-with-me directory.
-  if (options & SEARCH_METADATA_SHARED_WITH_ME)
-    return !entry.shared_with_me();
-
-  return true;
-}
-
 }  // namespace
 
 // Helper class for searching the local resource metadata.
@@ -84,75 +70,79 @@ class SearchMetadataHelper {
       at_most_num_matches_(at_most_num_matches),
       callback_(callback),
       results_(new MetadataSearchResultVector),
-      num_pending_reads_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   }
 
   // Starts searching the local resource metadata by reading the root
   // directory.
   void Start() {
-    ++num_pending_reads_;
-    resource_metadata_->ReadDirectoryByPath(
-        util::GetDriveMyDriveRootPath(),
-        base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   util::GetDriveMyDriveRootPath()));
+    resource_metadata_->IterateEntries(
+        base::Bind(&SearchMetadataHelper::MaybeAddEntryToResult,
+                   base::Unretained(this)),
+        base::Bind(&SearchMetadataHelper::SortResult,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
 
  private:
-  // Called when a directory is read. Continues searching the local resource
-  // metadata by recursively reading sub directories.
-  void DidReadDirectoryByPath(const base::FilePath& parent_path,
-                              DriveFileError error,
-                              scoped_ptr<DriveEntryProtoVector> entries) {
-    if (error != DRIVE_FILE_OK) {
-      callback_.Run(error, scoped_ptr<MetadataSearchResultVector>());
-      // There could be some in-flight ReadDirectoryByPath() requests, but
-      // deleting |this| is safe thanks to the weak pointer.
-      delete this;
+  // Adds entry to the result when appropriate.
+  void MaybeAddEntryToResult(const DriveEntryProto& entry) {
+    // Add it to the search result if the entry is eligible for the given
+    // |options| and matches the query. The base name of the entry must
+    // contains |query| to match the query.
+    std::string highlighted;
+    if (IsEligibleEntry(entry, options_) &&
+        FindAndHighlight(entry.base_name(), query_, &highlighted)) {
+      results_->push_back(
+          MetadataSearchResult(base::FilePath(), entry, highlighted));
+    }
+  }
+
+  // Sorts the result by time stamps.
+  void SortResult() {
+    std::sort(results_->begin(), results_->end(), &CompareByTimestamp);
+    if (results_->size() > static_cast<size_t>(at_most_num_matches_)) {
+      // Don't use resize() as it requires a default constructor.
+      results_->erase(results_->begin() + at_most_num_matches_,
+                      results_->end());
+    }
+
+    FillFilePaths(0);
+  }
+
+  // Fills file paths of results.
+  void FillFilePaths(size_t index) {
+    if (index == results_->size()) {
+      Finish(DRIVE_FILE_OK);
       return;
     }
-    DCHECK(entries);
+    resource_metadata_->GetEntryInfoByResourceId(
+        results_->at(index).entry_proto.resource_id(),
+        base::Bind(&SearchMetadataHelper::ContinueFillFilePaths,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   index));
+  }
 
-    --num_pending_reads_;
-    for (size_t i = 0; i < entries->size(); ++i) {
-      const DriveEntryProto& entry = entries->at(i);
-      const base::FilePath current_path = parent_path.Append(
-          base::FilePath::FromUTF8Unsafe(entry.base_name()));
-
-      // Recursively reading the sub directory.
-      if (ShouldReadDirectory(entry, options_)) {
-        ++num_pending_reads_;
-        resource_metadata_->ReadDirectoryByPath(
-            current_path,
-            base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       current_path));
-      }
-
-      // Add it to the search result if the entry is eligible for the given
-      // |options| and matches the query. The base name of the entry must
-      // contains |query| to match the query.
-      std::string highlighted;
-      if (IsEligibleEntry(entry, options_) &&
-          FindAndHighlight(entry.base_name(), query_, &highlighted)) {
-        results_->push_back(
-            MetadataSearchResult(current_path, entry, highlighted));
-      }
+  // Implements FillFilePaths().
+  void ContinueFillFilePaths(size_t index,
+                             DriveFileError error,
+                             const base::FilePath& path,
+                             scoped_ptr<DriveEntryProto> unused_entry) {
+    if (error != DRIVE_FILE_OK) {
+      Finish(error);
+      return;
     }
+    MetadataSearchResult* result = &(*results_)[index];
+    result->path = path;
+    FillFilePaths(index + 1);
+  }
 
-    if (num_pending_reads_ == 0) {
-      // Search is complete. Send the result to the callback.
-      std::sort(results_->begin(), results_->end(), &CompareByTimestamp);
-      if (results_->size() > static_cast<size_t>(at_most_num_matches_)) {
-        // Don't use resize() as it requires a default constructor.
-        results_->erase(results_->begin() + at_most_num_matches_,
-                        results_->end());
-      }
-      callback_.Run(DRIVE_FILE_OK, results_.Pass());
-      delete this;
-    }
+  // Sends the result to the callback and deletes this instance.
+  void Finish(DriveFileError error) {
+    if (error != DRIVE_FILE_OK)
+      results_.reset();
+    callback_.Run(error, results_.Pass());
+    delete this;
   }
 
   DriveResourceMetadata* resource_metadata_;
@@ -161,7 +151,6 @@ class SearchMetadataHelper {
   const int at_most_num_matches_;
   const SearchMetadataCallback callback_;
   scoped_ptr<MetadataSearchResultVector> results_;
-  int num_pending_reads_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
