@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_WEEK)
 #include "WeekInputType.h"
 
 #include "DateComponents.h"
@@ -128,5 +127,3 @@ bool WeekInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 #endif
 
 } // namespace WebCore
-
-#endif

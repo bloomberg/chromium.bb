@@ -231,10 +231,8 @@ public:
     static void setInputTypeDateTimeEnabled(bool isEnabled) { isInputTypeDateTimeEnabled = isEnabled; }
 #endif
 
-#if ENABLE(INPUT_TYPE_WEEK)
     static bool inputTypeWeekEnabled() { return isInputTypeWeekEnabled; }
     static void setInputTypeWeekEnabled(bool isEnabled) { isInputTypeWeekEnabled = isEnabled; }
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
     static bool dialogElementEnabled() { return isDialogElementEnabled; }
@@ -323,9 +321,7 @@ private:
     static bool isInputTypeDateTimeEnabled;
 #endif
 
-#if ENABLE(INPUT_TYPE_WEEK)
     static bool isInputTypeWeekEnabled;
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
     static bool isDialogElementEnabled;

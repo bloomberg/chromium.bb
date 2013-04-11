@@ -276,7 +276,6 @@ String placeholderForYearField()
 }
 #endif
 
-#if ENABLE(INPUT_TYPE_WEEK)
 String weekFormatInLDML()
 {
     String templ = query(WebLocalizedString::WeekFormatTemplate);
@@ -297,8 +296,6 @@ String weekFormatInLDML()
         DateTimeFormat::quoteAndAppendLiteral(templ.substring(literalStart, length - literalStart), builder);
     return builder.toString();
 }
-
-#endif
 
 String missingPluginText()
 {

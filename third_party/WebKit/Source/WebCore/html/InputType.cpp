@@ -118,10 +118,8 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::telephone(), TelephoneInputType::create);
     map->add(InputTypeNames::time(), TimeInputType::create);
     map->add(InputTypeNames::url(), URLInputType::create);
-#if ENABLE(INPUT_TYPE_WEEK)
     if (RuntimeEnabledFeatures::inputTypeWeekEnabled())
         map->add(InputTypeNames::week(), WeekInputType::create);
-#endif
     // No need to register "text" because it is the default type.
     return map.release();
 }

@@ -334,10 +334,6 @@ String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
 {
     if (date.type() == DateComponents::Invalid)
         return String();
-#if !ENABLE(INPUT_TYPE_WEEK)
-    if (date.type() == DateComponents::Week)
-        return String();
-#endif
 
     DateTimeStringBuilder builder(*this, date);
     switch (date.type()) {
@@ -351,10 +347,8 @@ String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
         builder.build(formatType == FormatTypeShort ? shortMonthFormat() : monthFormat());
         break;
     case DateComponents::Week:    
-#if ENABLE(INPUT_TYPE_WEEK)
         builder.build(weekFormatInLDML());
         break;
-#endif
     case DateComponents::DateTime:
     case DateComponents::DateTimeLocal:
         builder.build(formatType == FormatTypeShort ? dateTimeFormatWithoutSeconds() : dateTimeFormatWithSeconds());

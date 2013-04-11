@@ -544,7 +544,6 @@ input[type="time"] {
     -webkit-padding-start: 1px;
 }
 
-#if defined(ENABLE_INPUT_TYPE_WEEK) && ENABLE_INPUT_TYPE_WEEK
 input[type="week"] {
     -webkit-align-items: center;
     display: -webkit-inline-flex;
@@ -553,7 +552,6 @@ input[type="week"] {
     padding: 0;
     -webkit-padding-start: 1px;
 }
-#endif
 
 input::-webkit-datetime-edit {
     -webkit-flex: 1;
@@ -676,7 +674,6 @@ input[type="time"] {
     width: 10em;
 }
 
-#if defined(ENABLE_INPUT_TYPE_WEEK) && ENABLE_INPUT_TYPE_WEEK
 input[type="week"] {
     -webkit-align-items: center;
     -webkit-appearance: menulist-button;
@@ -684,7 +681,6 @@ input[type="week"] {
     overflow: hidden;
     width: 10em;
 }
-#endif
 
 input::-webkit-date-and-time-value {
     margin: 1px 24px 1px 4px;

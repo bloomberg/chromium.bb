@@ -458,20 +458,12 @@ bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
 
 void WebRuntimeFeatures::enableInputTypeWeek(bool enable)
 {
-#if ENABLE(INPUT_TYPE_WEEK)
     RuntimeEnabledFeatures::setInputTypeWeekEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isInputTypeWeekEnabled()
 {
-#if ENABLE(INPUT_TYPE_WEEK)
     return RuntimeEnabledFeatures::inputTypeWeekEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableDialogElement(bool enable)

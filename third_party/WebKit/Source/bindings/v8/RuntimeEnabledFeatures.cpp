@@ -179,9 +179,7 @@ bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
 #endif
 
-#if ENABLE(INPUT_TYPE_WEEK)
 bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
 bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
