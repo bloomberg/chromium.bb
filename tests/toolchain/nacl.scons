@@ -178,7 +178,7 @@ ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),
                         ('opt_noframe', MakeEnv(True, False)),
                         ]
 
-for tag, e in ENVIRONMENTS_TO_TRY:
+for tag, env_to_try in ENVIRONMENTS_TO_TRY:
   for src in ['unwind_trace.cc',
               'stack_frame.cc',
               'eh_return.c',
@@ -222,14 +222,20 @@ for tag, e in ENVIRONMENTS_TO_TRY:
         src in ['eh_return.c']):
       is_broken = True
 
+    exc_env = env_to_try.Clone()
+    # C++ exceptions are not currently supported in PNaCl's ABI.
+    # TODO(mseaborn): Pass "--pnacl-allow-exceptions" here after the
+    # PNaCl toolchain revision is rolled.
+    exc_env.Append(LINKFLAGS=['--pnacl-disable-pass=-lowerinvoke',
+                              '--pnacl-disable-abi-check'])
     name = src.split('.')[0] + '_' + tag
-    nobj = e.ComponentObject(name + '.o', src)
-    nexe = e.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = e.CommandSelLdrTestNacl(name + '.out',
-                                   nexe,
-                                   exit_status='55')
-    e.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_' + name  +'_test', is_broken=is_broken)
+    nobj = exc_env.ComponentObject(name + '.o', src)
+    nexe = exc_env.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = exc_env.CommandSelLdrTestNacl(name + '.out',
+                                         nexe,
+                                         exit_status='55')
+    exc_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                               'run_' + name  +'_test', is_broken=is_broken)
 
 
 abi_types_nexe = env.ComponentProgram('abi_types',

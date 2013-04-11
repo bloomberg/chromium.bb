@@ -152,8 +152,10 @@ pnacl-torture() {
   shift
   prereq ${arch}
   prereq-pnacl
-  eh_tests llvm_pnacl_${arch}_O0 known_eh_failures_pnacl.txt "$@"
-  eh_tests llvm_pnacl_${arch}_O3 known_eh_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_${arch}_O0 known_eh_failures_pnacl.txt \
+      --append="CFLAGS:--pnacl-allow-exceptions" "$@"
+  eh_tests llvm_pnacl_${arch}_O3 known_eh_failures_pnacl.txt \
+      --append="CFLAGS:--pnacl-allow-exceptions" "$@"
   standard_tests llvm_pnacl_${arch}_O0 known_failures_pnacl.txt "$@"
   standard_tests llvm_pnacl_${arch}_O3 known_failures_pnacl.txt "$@"
 }

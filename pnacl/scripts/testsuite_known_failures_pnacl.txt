@@ -47,3 +47,14 @@ SingleSource/UnitTests/Vector/sumarray-dbl
 
 # The following test uses computed gotos, which PNaCl's ABI checker rejects.
 SingleSource/Regression/C/2004-03-15-IndirectGoto
+
+# The following tests use C++ exception handling, which is not yet
+# supported for PNaCl's stable ABI.
+SingleSource/Benchmarks/Shootout-C++/except
+SingleSource/Regression/C++/EH/ctor_dtor_count
+SingleSource/Regression/C++/EH/ctor_dtor_count-2
+SingleSource/Regression/C++/EH/exception_spec_test
+SingleSource/Regression/C++/EH/function_try_block
+SingleSource/Regression/C++/EH/simple_rethrow
+SingleSource/Regression/C++/EH/simple_throw
+SingleSource/Regression/C++/EH/throw_rethrow_test
