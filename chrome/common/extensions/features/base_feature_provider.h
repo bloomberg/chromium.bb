@@ -26,23 +26,14 @@ class BaseFeatureProvider : public FeatureProvider {
   BaseFeatureProvider(const DictionaryValue& root, FeatureFactory factory);
   virtual ~BaseFeatureProvider();
 
-  // Gets an instance for the _api_features.json file that is baked into
-  // Chrome as a resource.
-  static BaseFeatureProvider* GetAPIFeatures();
+  // Gets a feature provider for a specific feature type, like "permission".
+  static FeatureProvider* GetByName(const std::string& name);
 
-  // Gets an instance for the _manifest_features.json file that is baked into
-  // Chrome as a resource.
-  static BaseFeatureProvider* GetManifestFeatures();
-
-  // Gets an instance for the _permission_features.json file that is baked into
-  // Chrome as a resource.
-  static BaseFeatureProvider* GetPermissionFeatures();
-
-  // Returns all features described by this instance.
-  std::set<std::string> GetAllFeatureNames() const;
 
   // Gets the feature |feature_name|, if it exists.
   virtual Feature* GetFeature(const std::string& feature_name) OVERRIDE;
+
+  virtual std::set<std::string> GetAllFeatureNames() OVERRIDE;
 
  private:
   typedef std::map<std::string, linked_ptr<Feature> > FeatureMap;

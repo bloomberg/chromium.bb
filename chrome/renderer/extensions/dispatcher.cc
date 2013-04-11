@@ -682,7 +682,7 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
     const std::string& api_name = *it;
 
     Feature* feature =
-        BaseFeatureProvider::GetAPIFeatures()->GetFeature(api_name);
+        BaseFeatureProvider::GetByName("api")->GetFeature(api_name);
     if (feature && feature->IsInternal())
       continue;
 

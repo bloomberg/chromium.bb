@@ -17,8 +17,7 @@ class BaseFeatureProviderTest : public ExtensionTest {
 };
 
 TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
-  BaseFeatureProvider* provider =
-      BaseFeatureProvider::GetManifestFeatures();
+  FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("description"));
   ASSERT_TRUE(feature);
@@ -59,8 +58,7 @@ TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
 }
 
 TEST_F(BaseFeatureProviderTest, PermissionFeatures) {
-  BaseFeatureProvider* provider =
-      BaseFeatureProvider::GetPermissionFeatures();
+  FeatureProvider* provider = BaseFeatureProvider::GetByName("permission");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("contextMenus"));
   ASSERT_TRUE(feature);

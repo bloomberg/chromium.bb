@@ -334,11 +334,11 @@ ExtensionAPI::~ExtensionAPI() {
 
 void ExtensionAPI::InitDefaultConfiguration() {
   RegisterDependencyProvider(
-      "api", BaseFeatureProvider::GetAPIFeatures());
+      "api", BaseFeatureProvider::GetByName("api"));
   RegisterDependencyProvider(
-      "manifest", BaseFeatureProvider::GetManifestFeatures());
+      "manifest", BaseFeatureProvider::GetByName("manifest"));
   RegisterDependencyProvider(
-      "permission", BaseFeatureProvider::GetPermissionFeatures());
+      "permission", BaseFeatureProvider::GetByName("permission"));
 
   // Schemas to be loaded from resources.
   CHECK(unloaded_schemas_.empty());

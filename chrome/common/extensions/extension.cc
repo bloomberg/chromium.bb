@@ -454,7 +454,7 @@ bool Extension::ParsePermissions(const char* key,
     // Verify feature availability of permissions.
     std::vector<APIPermission::ID> to_remove;
     FeatureProvider* permission_features =
-        BaseFeatureProvider::GetPermissionFeatures();
+        BaseFeatureProvider::GetByName("permission");
     for (APIPermissionSet::const_iterator it = api_permissions->begin();
          it != api_permissions->end(); ++it) {
       extensions::Feature* feature =
