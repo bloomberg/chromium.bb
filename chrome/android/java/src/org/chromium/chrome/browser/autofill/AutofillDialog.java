@@ -155,7 +155,7 @@ public class AutofillDialog extends AlertDialog
     }
 
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate,
-            String useBillingForShippingText) {
+            String useBillingForShippingText, String saveLocallyText) {
         super(context);
         mDelegate = delegate;
 
@@ -167,9 +167,12 @@ public class AutofillDialog extends AlertDialog
         mContentView = (AutofillDialogContentView) getLayoutInflater().
                 inflate(R.layout.autofill_dialog_content, null);
         mContentView.setAutofillDialog(this);
+
         CheckBox useBillingCheck = getUseBillingForShippingCheckBox();
         useBillingCheck.setText(useBillingForShippingText);
         useBillingCheck.setChecked(true);
+        getSaveLocallyCheckBox().setText(saveLocallyText);
+
         String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             labels[i] = mDelegate.getLabelForSection(i);
@@ -503,6 +506,19 @@ public class AutofillDialog extends AlertDialog
         }
     }
 
+    private CheckBox getSaveLocallyCheckBox() {
+        return (CheckBox) mContentView.findViewById(R.id.save_locally_checkbox);
+    }
+
+    /**
+     * Update the visibility for the save locally checkbox.
+     * @param shouldShow Whether the checkbox should be shown or hidden.
+     */
+    public void updateSaveLocallyCheckBox(boolean shouldShow) {
+        getSaveLocallyCheckBox().setVisibility(
+                shouldShow ? View.VISIBLE : View.GONE);
+    }
+
     /**
      * Return the array that holds all the data about the fields in the given section.
      * @param section The section to return the data for.
@@ -544,7 +560,8 @@ public class AutofillDialog extends AlertDialog
      * @return Whether the details entered should be saved locally on the device.
      */
     public boolean shouldSaveDetailsLocally() {
-        return false;
+        CheckBox saveLocallyCheckBox = getSaveLocallyCheckBox();
+        return saveLocallyCheckBox.isShown() && saveLocallyCheckBox.isChecked();
     }
 
     /**

@@ -40,12 +40,16 @@ void AutofillDialogViewAndroid::Show() {
   ScopedJavaLocalRef<jstring> use_billing_for_shipping_text =
       base::android::ConvertUTF16ToJavaString(
           env, controller_->UseBillingForShippingText());
+  ScopedJavaLocalRef<jstring> save_locally_text =
+        base::android::ConvertUTF16ToJavaString(
+            env, controller_->SaveLocallyText());
   java_object_.Reset(Java_AutofillDialogGlue_create(
       env,
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
           GetWindowAndroid()->GetJavaObject().obj(),
-      use_billing_for_shipping_text.obj()));
+      use_billing_for_shipping_text.obj(),
+      save_locally_text.obj()));
 }
 
 void AutofillDialogViewAndroid::Hide() {
@@ -201,6 +205,13 @@ void AutofillDialogViewAndroid::GetUserInput(DialogSection section,
   }
 }
 
+void AutofillDialogViewAndroid::UpdateSaveLocallyCheckBox() {
+  // TODO(aruslan) : Call this when at least one section is being edited.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutofillDialogGlue_updateSaveLocallyCheckBox(
+      env, java_object_.obj(), controller_->ShouldOfferToSaveInChrome());
+}
+
 string16 AutofillDialogViewAndroid::GetCvc() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> cvc =
@@ -252,6 +263,7 @@ void AutofillDialogViewAndroid::ModelChanged() {
   Java_AutofillDialogGlue_modelChanged(
       env, java_object_.obj(),
       controller_->ShouldShowSpinner());
+  UpdateSaveLocallyCheckBox();
   UpdateSection(SECTION_EMAIL, CLEAR_USER_INPUT);
   UpdateSection(SECTION_CC, CLEAR_USER_INPUT);
   UpdateSection(SECTION_BILLING, CLEAR_USER_INPUT);

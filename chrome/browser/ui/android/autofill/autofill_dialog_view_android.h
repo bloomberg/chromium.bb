@@ -83,6 +83,10 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // Starts an automatic sign-in attempt for a given account.
   bool StartAutomaticSignIn(const std::string& username);
 
+  // Updates the visibility of the checkbox to save the edited information
+  // locally.
+  void UpdateSaveLocallyCheckBox();
+
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 

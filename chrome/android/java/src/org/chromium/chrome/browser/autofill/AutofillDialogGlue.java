@@ -23,21 +23,21 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialogAccountHelper mAccountHelper;
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, NativeWindow nativeWindow,
-            String useBillingForShippingText) {
+            String useBillingForShippingText, String saveLocallyText) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
         mAccountHelper = new AutofillDialogAccountHelper(this, nativeWindow.getContext());
 
         mAutofillDialog = new AutofillDialog(
-                nativeWindow.getContext(), this, useBillingForShippingText);
+                nativeWindow.getContext(), this, useBillingForShippingText, saveLocallyText);
         mAutofillDialog.show();
     }
 
     @CalledByNative
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
             NativeWindow nativeWindow,
-            String useBillingForShippingText) {
+            String useBillingForShippingText, String saveLocallyText) {
         return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, nativeWindow,
-                useBillingForShippingText);
+                useBillingForShippingText, saveLocallyText);
     }
 
     /**
@@ -137,6 +137,14 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     @CalledByNative
     private String[] getUserAccountNames() {
         return mAccountHelper.getAccountNames();
+    }
+
+    /**
+     * @see AutofillDialog#offerToSaveLocally()
+     */
+    @CalledByNative
+    private void updateSaveLocallyCheckBox(boolean shouldShow) {
+        mAutofillDialog.updateSaveLocallyCheckBox(shouldShow);
     }
 
     // AutofillDialogAccountHelper.SignInContinuation implementation.

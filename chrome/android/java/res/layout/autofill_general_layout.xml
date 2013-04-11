@@ -103,6 +103,13 @@
         android:layout_gravity="fill_horizontal"
         android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
         android:layout_columnSpan="4"/>
+    <CheckBox
+        android:id="@+id/save_locally_checkbox"
+        android:padding="@dimen/autofill_steady_margin"
+        android:textSize="@dimen/autofill_notification_text_size"
+        android:visibility="gone"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
     <LinearLayout
         android:id="@+id/bottom_notifications"
         android:visibility="gone"
