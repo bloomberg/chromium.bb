@@ -3250,6 +3250,10 @@ webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-alpha.html [ Pass Ima
 webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-no-alpha.html [ Pass ImageOnlyFailure ]
 webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-reflection.html [ Pass ImageOnlyFailure ]
 
+crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ Crash ]
+crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ Crash ]
+crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-reflection.html [ Crash ]
+
 # Started failing on r128793
 webkit.org/b/96953 http/tests/inspector/network/network-xhr-replay.html [ Timeout Crash Pass ]
 
