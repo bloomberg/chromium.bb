@@ -111,9 +111,6 @@ class ChangeListLoader {
   bool refreshing() const { return refreshing_; }
 
  private:
-  struct GetResourceListUiState;
-  struct LoadFeedParams;
-
   // Starts the change list loading from the cache, and runs |callback| to
   // tell the result to the caller.  |callback| must not be null.
   void LoadFromCache(const FileOperationCallback& callback);
@@ -123,12 +120,6 @@ class ChangeListLoader {
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       DriveFileError error);
-
-  // Starts loading from the server, with details specified in |params|. This
-  // is a general purpose function, which is used for loading change lists,
-  // full resource lists, and directory contents.
-  void LoadFromServer(scoped_ptr<LoadFeedParams> params,
-                      const LoadFeedListCallback& callback);
 
   // Callback to fetch all the resource list response from the server.
   // After all the resource list are fetched, |callback|
@@ -255,10 +246,6 @@ class ChangeListLoader {
 
   // Save filesystem to disk.
   void SaveFileSystem();
-
-  // Callback for handling UI updates caused by feed fetching.
-  void OnNotifyResourceListFetched(
-      base::WeakPtr<GetResourceListUiState> ui_state);
 
   // Callback for ChangeListProcessor::ApplyFeeds.
   void NotifyDirectoryChangedAfterApplyFeed(
