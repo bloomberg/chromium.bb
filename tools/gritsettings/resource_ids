@@ -182,6 +182,7 @@
   "cloud_print/service/win/service_resources.grd": {
     "messages": [23600],
     "includes": [23800],
+    "structures": [23900],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
     "includes": [24000],

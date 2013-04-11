@@ -13,6 +13,7 @@
       '<(SHARED_INTERMEDIATE_DIR)',
     ],
     'defines' : [
+      'COMPILE_CONTENT_STATICALLY',
       'SECURITY_WIN32',
       'STRICT',
       '_ATL_APARTMENT_THREADED',
@@ -49,7 +50,6 @@
     {
       'target_name': 'cloud_print_service_lib',
       'type': 'static_library',
-      'defines': ['COMPILE_CONTENT_STATICALLY'],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_static',
@@ -112,6 +112,36 @@
           'UACExecutionLevel': '2', # /level='requireAdministrator'
           'AdditionalDependencies': [
               'secur32.lib',
+          ],
+        },
+      },
+    },
+    {
+      'target_name': 'cloud_print_service_setup',
+      'type': 'executable',
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_setup_exe_version.rc',
+        'win/cloud_print_service_setup.cc',
+      ],
+      'includes': [
+        'win/service_resources.gypi'
+      ],
+      'dependencies': [
+        'cloud_print_service_lib',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+          'UACExecutionLevel': '2', # /level='requireAdministrator'
+          'AdditionalDependencies': [
+              'secur32.lib',
+          ],
+          'AdditionalOptions': [  # Enable Vista+ look.
+            "\"/manifestdependency:type='win32' "
+                "name='Microsoft.Windows.Common-Controls' "
+                "version='6.0.0.0' "
+                "processorArchitecture='*' "
+                "publicKeyToken='6595b64144ccf1df' language='*'\"",
           ],
         },
       },

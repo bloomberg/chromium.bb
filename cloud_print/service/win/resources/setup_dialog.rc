@@ -1,0 +1,39 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "grit\\generated_resources.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#include "verrsrc.h"
+#include "version.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#ifdef APSTUDIO_INVOKED
+# error Don't open this in the GUI, it'll be massacred on save.
+#endif // APSTUDIO_INVOKED
+
+IDD_SETUP_DIALOG DIALOGEX 0, 0, 280, 156
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK |DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
+EXSTYLE WS_EX_APPWINDOW | WS_EX_COMPOSITED 
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    CONTROL         IDB_LOGO,IDC_LOGO,"Static",SS_BITMAP|SS_CENTERIMAGE,-100,0,380,44
+    CONTROL         "",IDC_SPLITTER,"Static",SS_GRAYFRAME,        0,45,280,1,WS_EX_STATICEDGE 
+
+    LTEXT           "",IDC_STATE_LABEL,    10,49,50,13,SS_CENTERIMAGE
+    LTEXT           "",IDC_STATUS,         60,49,160,13,SS_CENTERIMAGE
+    
+    LTEXT           "",IDC_USER_LABEL,     10,67,50,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_USER,              60,67,160,13,WS_TABSTOP|ES_AUTOHSCROLL
+    
+    LTEXT           "",IDC_PASSWORD_LABEL, 10,85,50,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_PASSWORD,          60,85,160,13,WS_TABSTOP|ES_AUTOHSCROLL|ES_PASSWORD
+    
+    CHECKBOX        "",IDC_LOGGING,        60,103,160,13,WS_TABSTOP
+
+    PUSHBUTTON      "",IDC_START,          76,131,60,15,WS_TABSTOP
+    PUSHBUTTON      "",IDC_INSTALL,        143,131,60,15,WS_TABSTOP|BS_DEFPUSHBUTTON
+    PUSHBUTTON      "",IDCANCEL,           210,131,60,15,WS_TABSTOP
+END

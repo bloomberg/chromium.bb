@@ -21,12 +21,75 @@ file.
       <message name="IDS_SERVICENAME" translateable="false">
         CloudPrintService
       </message>
+      <message name="IDS_SETUP_PROGRAM_NAME">
+        Service Options
+      </message>
+      <message name="IDS_USER_LABEL">
+        &amp;User name:
+      </message>
+      <message name="IDS_PASSWORD_LABEL">
+        &amp;Password:
+      </message>
+      <message name="IDS_STATE_LABEL">
+        State:
+      </message>
+      <message name="IDS_LOGGING_LABEL">
+        Enable &amp;logging
+      </message>
+      <message name="IDS_INSTALL">
+        Install
+      </message>
+      <message name="IDS_UNINSTALL">
+        Uninstall
+      </message>
+      <message name="IDS_SERVICE_NOT_FOUND">
+        Not Found
+      </message>
+      <message name="IDS_SERVICE_STOPPED">
+        Stopped
+      </message>
+      <message name="IDS_SERVICE_RUNNING">
+        Running
+      </message>
+      <message name="IDS_SERVICE_START">
+        &amp;Start
+      </message>
+      <message name="IDS_SERVICE_STOP">
+        &amp;Stop
+      </message>
+      <message name="IDS_SERVICE_INSTALL">
+        &amp;Register
+      </message>
+      <message name="IDS_SERVICE_UNINSTALL">
+        &amp;Unregister
+      </message>
+      <message name="IDS_CLOSE">
+        &amp;Close
+      </message>
+      <message name="IDS_OPERATION_FAILED_TITLE">
+        Operaton failed.
+      </message>
+      <message name="IDS_CONTINUE_IN_CHROME_TITLE">
+        Continue in Chrome.
+      </message>
+      <message name="IDS_ADD_PRINTERS_USING_CHROME">
+        Login and add printers using opened Chrome window. Close Chrome after completion.
+      </message>
     </messages>
+
     <includes>
       <if expr="lang == 'en'">
         <include name="IDR_CLOUDPRINTSERVICE" file="resources/cloud_print_service.rgs" type="REGISTRY" translateable="false" />
         <include name="IDI_ICON" file="resources/cloudprint.ico" type="ICON" translateable="false" />
+        <include name="IDB_LOGO" file="resources/cloud_print_logo_beta.bmp" type="BITMAP" translateable="false" />
       </if>
     </includes>
+
+    <structures fallback_to_english="true">
+      <if expr="lang == 'en'">
+        <structure name="IDD_SETUP_DIALOG" file="resources/setup_dialog.rc" type="dialog" />
+      </if>
+    </structures>
   </release>
 </grit>
+
