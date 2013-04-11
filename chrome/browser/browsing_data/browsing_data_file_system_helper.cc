@@ -138,6 +138,9 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
     int64 temporary_usage = quota_util->GetOriginUsageOnFileThread(
         filesystem_context_, current,
         fileapi::kFileSystemTypeTemporary);
+    int64 syncable_usage = quota_util->GetOriginUsageOnFileThread(
+        filesystem_context_, current,
+        fileapi::kFileSystemTypeSyncable);
     file_system_info_.push_back(
         FileSystemInfo(
             current,
@@ -145,8 +148,11 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
                 fileapi::kFileSystemTypePersistent),
             origin_enumerator->HasFileSystemType(
                 fileapi::kFileSystemTypeTemporary),
+            origin_enumerator->HasFileSystemType(
+                fileapi::kFileSystemTypeSyncable),
             persistent_usage,
-            temporary_usage));
+            temporary_usage,
+            syncable_usage));
   }
 
   BrowserThread::PostTask(
@@ -174,13 +180,17 @@ BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(
     const GURL& origin,
     bool has_persistent,
     bool has_temporary,
+    bool has_syncable,
     int64 usage_persistent,
-    int64 usage_temporary)
+    int64 usage_temporary,
+    int64 usage_syncable)
     : origin(origin),
       has_persistent(has_persistent),
       has_temporary(has_temporary),
+      has_syncable(has_syncable),
       usage_persistent(usage_persistent),
-      usage_temporary(usage_temporary) {
+      usage_temporary(usage_temporary),
+      usage_syncable(usage_syncable){
 }
 
 BrowsingDataFileSystemHelper::FileSystemInfo::~FileSystemInfo() {}
@@ -229,9 +239,12 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
       if (type == fileapi::kFileSystemTypePersistent) {
         file_system->has_persistent = true;
         file_system->usage_persistent = size;
-      } else {
+      } else if (type == fileapi::kFileSystemTypeTemporary) {
         file_system->has_temporary = true;
         file_system->usage_temporary = size;
+      } else {
+        file_system->has_syncable = true;
+        file_system->usage_syncable = size;
       }
       duplicate_origin = true;
       break;
@@ -247,8 +260,10 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
       origin,
       (type == fileapi::kFileSystemTypePersistent),
       (type == fileapi::kFileSystemTypeTemporary),
+      (type == fileapi::kFileSystemTypeSyncable),
       (type == fileapi::kFileSystemTypePersistent) ? size : 0,
-      (type == fileapi::kFileSystemTypeTemporary) ? size : 0));
+      (type == fileapi::kFileSystemTypeTemporary) ? size : 0,
+      (type == fileapi::kFileSystemTypeSyncable) ? size : 0));
 }
 
 void CannedBrowsingDataFileSystemHelper::Reset() {

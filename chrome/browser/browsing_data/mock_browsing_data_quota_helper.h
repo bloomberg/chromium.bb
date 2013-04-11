@@ -20,7 +20,8 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
 
   void AddHost(const std::string& host,
                int64 temporary_usage,
-               int64 persistent_usage);
+               int64 persistent_usage,
+               int64 syncable_usage);
   void AddQuotaSamples();
   void Notify();
 

@@ -50,6 +50,11 @@ void QuotaInternalsProxy::RequestInfo(
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
                  weak_factory_.GetWeakPtr()));
 
+  quota_manager_->GetGlobalUsage(
+      quota::kStorageTypeSyncable,
+      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
+                 weak_factory_.GetWeakPtr()));
+
   quota_manager_->DumpQuotaTable(
       base::Bind(&QuotaInternalsProxy::DidDumpQuotaTable,
                  weak_factory_.GetWeakPtr()));
@@ -150,7 +155,8 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
                                           quota::StorageType type,
                                           int64 usage) {
   DCHECK(type == quota::kStorageTypeTemporary ||
-         type == quota::kStorageTypePersistent);
+         type == quota::kStorageTypePersistent ||
+         type == quota::kStorageTypeSyncable);
 
   PerHostStorageInfo info(host, type);
   info.set_usage(usage);

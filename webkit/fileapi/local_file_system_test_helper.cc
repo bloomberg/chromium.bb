@@ -114,7 +114,8 @@ base::FilePath LocalFileSystemTestOriginHelper::GetLocalPathFromASCII(
 
 base::FilePath LocalFileSystemTestOriginHelper::GetUsageCachePath() const {
   if (type_ != kFileSystemTypeTemporary &&
-      type_ != kFileSystemTypePersistent)
+      type_ != kFileSystemTypePersistent &&
+      type_ != kFileSystemTypeSyncable)
     return base::FilePath();
   return file_system_context_->
       sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);

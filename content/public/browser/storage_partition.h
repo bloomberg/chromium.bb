@@ -72,6 +72,9 @@ class StoragePartition {
     // Local shader storage.
     kShaderStorage = 1 << 5,
 
+    // Corresponds to quota::kStorageTypeSyncable.
+    kQuotaManagedSyncableStorage = 1 << 6,
+
     kAllStorage = -1,
   };
 

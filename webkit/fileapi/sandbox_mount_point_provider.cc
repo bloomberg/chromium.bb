@@ -64,6 +64,7 @@ enum FileSystemError {
 
 const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
 const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
+const char kSyncableOriginsCountLabel[] = "FileSystem.SyncableOriginsCount";
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
@@ -432,6 +433,9 @@ void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
       break;
     case kFileSystemTypePersistent:
       UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
+      break;
+    case kFileSystemTypeSyncable:
+      UMA_HISTOGRAM_COUNTS(kSyncableOriginsCountLabel, origins->size());
       break;
     default:
       break;

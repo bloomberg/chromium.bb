@@ -93,16 +93,24 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
       pending_hosts_.insert(std::make_pair(itr->host(), type));
 
   DCHECK(type == quota::kStorageTypeTemporary ||
-         type == quota::kStorageTypePersistent);
+         type == quota::kStorageTypePersistent ||
+         type == quota::kStorageTypeSyncable);
 
+  // Calling GetOriginsModifiedSince() for all types by chaining callbacks.
   if (type == quota::kStorageTypeTemporary) {
     quota_manager_->GetOriginsModifiedSince(
         quota::kStorageTypePersistent,
         base::Time(),
         base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
                    weak_factory_.GetWeakPtr()));
+  } else if (type == quota::kStorageTypePersistent) {
+    quota_manager_->GetOriginsModifiedSince(
+        quota::kStorageTypeSyncable,
+        base::Time(),
+        base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
+                   weak_factory_.GetWeakPtr()));
   } else {
-    // type == quota::kStorageTypePersistent
+    DCHECK(type == quota::kStorageTypeSyncable);
     ProcessPendingHosts();
   }
 }
@@ -139,6 +147,9 @@ void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,
     case quota::kStorageTypePersistent:
       quota_info_[host].persistent_usage = usage;
       break;
+    case quota::kStorageTypeSyncable:
+      quota_info_[host].syncable_usage = usage;
+      break;
     default:
       NOTREACHED();
   }
@@ -163,7 +174,8 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
     QuotaInfo* info = &itr->second;
     // Skip unused entries
     if (info->temporary_usage <= 0 &&
-        info->persistent_usage <= 0)
+        info->persistent_usage <= 0 &&
+        info->syncable_usage <= 0)
       continue;
 
     info->host = itr->first;

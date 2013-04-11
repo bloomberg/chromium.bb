@@ -50,8 +50,10 @@ class BrowsingDataFileSystemHelper
         const GURL& origin,
         bool has_persistent,
         bool has_temporary,
+        bool has_syncable,
         int64 usage_persistent,
-        int64 usage_temporary);
+        int64 usage_temporary,
+        int64 usage_syncable);
     ~FileSystemInfo();
 
     // The origin for which the information is relevant.
@@ -60,10 +62,14 @@ class BrowsingDataFileSystemHelper
     bool has_persistent;
     // True if the origin has a temporary file system.
     bool has_temporary;
+    // True if the origin has a syncable file system.
+    bool has_syncable;
     // Persistent file system usage, in bytes.
     int64 usage_persistent;
     // Temporary file system usage, in bytes.
     int64 usage_temporary;
+    // Syncable file system usage, in bytes.
+    int64 usage_syncable;
   };
 
   // Creates a BrowsingDataFileSystemHelper instance for the file systems

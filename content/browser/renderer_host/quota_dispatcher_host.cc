@@ -109,7 +109,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
 
   void Start() {
     DCHECK(type_ == quota::kStorageTypeTemporary ||
-           type_ == quota::kStorageTypePersistent);
+           type_ == quota::kStorageTypePersistent ||
+           type_ == quota::kStorageTypeSyncable);
     if (type_ == quota::kStorageTypePersistent) {
       quota_manager()->GetPersistentHostQuota(
           host_,

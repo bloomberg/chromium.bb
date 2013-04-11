@@ -142,6 +142,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
     {"http://example.com/", quota::kStorageTypeTemporary, 1},
     {"https://example.com/", quota::kStorageTypeTemporary, 10},
     {"http://example.com/", quota::kStorageTypePersistent, 100},
+    {"https://example.com/", quota::kStorageTypeSyncable, 1},
     {"http://example2.com/", quota::kStorageTypeTemporary, 1000},
   };
 
@@ -152,8 +153,8 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 
   std::set<QuotaInfo> expected, actual;
   actual.insert(quota_info().begin(), quota_info().end());
-  expected.insert(QuotaInfo("example.com", 11, 100));
-  expected.insert(QuotaInfo("example2.com", 1000, 0));
+  expected.insert(QuotaInfo("example.com", 11, 100, 1));
+  expected.insert(QuotaInfo("example2.com", 1000, 0, 0));
   EXPECT_TRUE(expected == actual);
 }
 
@@ -162,6 +163,7 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
     {"http://example.com/", quota::kStorageTypeTemporary, 1},
     {"https://example.com/", quota::kStorageTypeTemporary, 10},
     {"http://example.com/", quota::kStorageTypePersistent, 100},
+    {"https://example.com/", quota::kStorageTypeSyncable, 1},
     {"http://example2.com/", quota::kStorageTypeTemporary, 1000},
     {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
         quota::kStorageTypeTemporary, 10000},
@@ -180,8 +182,8 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
 
   std::set<QuotaInfo> expected, actual;
   actual.insert(quota_info().begin(), quota_info().end());
-  expected.insert(QuotaInfo("example.com", 11, 100));
-  expected.insert(QuotaInfo("example2.com", 1000, 0));
+  expected.insert(QuotaInfo("example.com", 11, 100, 1));
+  expected.insert(QuotaInfo("example2.com", 1000, 0, 0));
   EXPECT_TRUE(expected == actual);
 }
 

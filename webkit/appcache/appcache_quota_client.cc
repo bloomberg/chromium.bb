@@ -80,7 +80,7 @@ void AppCacheQuotaClient::GetOriginUsage(
     return;
   }
 
-  if (type == quota::kStorageTypePersistent) {
+  if (type != quota::kStorageTypeTemporary) {
     callback.Run(0);
     return;
   }
@@ -130,7 +130,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   current_delete_request_callback_ = callback;
-  if (type == quota::kStorageTypePersistent) {
+  if (type != quota::kStorageTypeTemporary) {
     DidDeleteAppCachesForOrigin(net::OK);
     return;
   }
@@ -173,7 +173,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
     return;
   }
 
-  if (type == quota::kStorageTypePersistent) {
+  if (type != quota::kStorageTypeTemporary) {
     callback.Run(std::set<GURL>(), type);
     return;
   }

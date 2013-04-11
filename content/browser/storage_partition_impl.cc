@@ -75,6 +75,11 @@ void ClearOriginOnIOThread(
                                        origins,
                                        quota::kStorageTypePersistent);
   }
+  if (storage_mask & StoragePartition::kQuotaManagedSyncableStorage) {
+    ClearQuotaManagedOriginsOnIOThread(quota_manager,
+                                       origins,
+                                       quota::kStorageTypeSyncable);
+  }
 }
 
 void ClearAllDataOnIOThread(
@@ -101,6 +106,11 @@ void ClearAllDataOnIOThread(
   if (storage_mask & StoragePartition::kQuotaManagedPersistentStorage) {
     quota_manager->GetOriginsModifiedSince(
         quota::kStorageTypePersistent, base::Time(),
+        base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+  }
+  if (storage_mask & StoragePartition::kQuotaManagedSyncableStorage) {
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypeSyncable, base::Time(),
         base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
   }
 }

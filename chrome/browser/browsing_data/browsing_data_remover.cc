@@ -883,6 +883,14 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
       quota::kStorageTypeTemporary, delete_begin_,
       base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
                  base::Unretained(this)));
+
+  // Do the same for syncable quota.
+  ++quota_managed_storage_types_to_delete_count_;
+  quota_manager_->GetOriginsModifiedSince(
+      quota::kStorageTypeSyncable, delete_begin_,
+      base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
+                 base::Unretained(this)));
+
 }
 
 void BrowsingDataRemover::OnGotQuotaManagedOrigins(

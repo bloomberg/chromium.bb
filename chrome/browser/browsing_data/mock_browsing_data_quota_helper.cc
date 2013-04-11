@@ -25,16 +25,18 @@ void MockBrowsingDataQuotaHelper::RevokeHostQuota(const std::string& host) {
 void MockBrowsingDataQuotaHelper::AddHost(
     const std::string& host,
     int64 temporary_usage,
-    int64 persistent_usage) {
+    int64 persistent_usage,
+    int64 syncable_usage) {
   response_.push_back(QuotaInfo(
       host,
       temporary_usage,
-      persistent_usage));
+      persistent_usage,
+      syncable_usage));
 }
 
 void MockBrowsingDataQuotaHelper::AddQuotaSamples() {
-  AddHost("quotahost1", 1, 2);
-  AddHost("quotahost2", 10, 20);
+  AddHost("quotahost1", 1, 2, 1);
+  AddHost("quotahost2", 10, 20, 10);
 }
 
 void MockBrowsingDataQuotaHelper::Notify() {

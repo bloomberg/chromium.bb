@@ -41,7 +41,8 @@ class BrowsingDataQuotaHelper
     explicit QuotaInfo(const std::string& host);
     QuotaInfo(const std::string& host,
               int64 temporary_usage,
-              int64 persistent_usage);
+              int64 persistent_usage,
+              int64 syncable_usage);
     ~QuotaInfo();
 
     // Certain versions of MSVC 2008 have bad implementations of ADL for nested
@@ -53,6 +54,7 @@ class BrowsingDataQuotaHelper
     std::string host;
     int64 temporary_usage;
     int64 persistent_usage;
+    int64 syncable_usage;
   };
 
   typedef std::list<QuotaInfo> QuotaInfoArray;
