@@ -289,8 +289,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // function, returning the port's subclass.
   static NativeTheme* instance();
 
-  static bool IsNewMenuStyleEnabled();
-
  protected:
   NativeTheme();
   virtual ~NativeTheme();

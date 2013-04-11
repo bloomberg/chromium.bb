@@ -378,8 +378,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
 
   wrench_menu_.reset(new WrenchMenu(browser_, use_new_menu,
                                     supports_new_separators));
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu,
-                                               supports_new_separators));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu));
   wrench_menu_->Init(wrench_menu_model_.get());
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());

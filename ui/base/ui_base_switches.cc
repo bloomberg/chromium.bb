@@ -6,9 +6,6 @@
 
 namespace switches {
 
-// Disables new menu UI.
-const char kDisableNewMenuStyle[] = "disable-new-menu-style";
-
 // Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 

@@ -31,19 +31,14 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
 void MenuConfig::InitAura(const ui::NativeTheme* theme) {
   text_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-  menu_horizontal_border_size = 0;
-  menu_vertical_border_size = 0;
   submenu_horizontal_inset = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   arrow_to_edge_padding = 20;
-  icon_to_label_padding = 4;
   arrow_width =
       rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia()->width();
   const gfx::ImageSkia* check = GetMenuCheckImage();
   check_height = check->height();
-  item_left_margin = 4;
   item_min_height = 29;
-  separator_height = 15;
   separator_spacing_height = 7;
   separator_lower_height = 8;
   separator_upper_height = 8;
@@ -54,8 +49,6 @@ void MenuConfig::InitAura(const ui::NativeTheme* theme) {
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
   corner_radius = kMenuCornerRadiusForAura;
-  if (ui::NativeTheme::IsNewMenuStyleEnabled())
-    AdjustForCommonTheme();
 }
 
 #if !defined(OS_WIN)

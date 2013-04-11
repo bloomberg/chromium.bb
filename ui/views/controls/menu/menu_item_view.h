@@ -396,23 +396,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // are not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
-  // Paints menu item using skia (platform independent).
-  void PaintButtonCommon(gfx::Canvas* canvas, PaintButtonMode mode);
-
-#if defined(OS_WIN)
-  enum SelectionState { SELECTED, UNSELECTED };
-
-  // Paints the check/radio button indicator.
-  void PaintCheck(gfx::Canvas* canvas,
-                  ui::NativeTheme::State state,
-                  SelectionState selection_state,
-                  const MenuConfig& config);
-#endif
-
-#if defined(USE_AURA)
-  void PaintButtonAura(gfx::Canvas* canvas, PaintButtonMode mode);
-#endif
-
   // Paints the accelerator.
   void PaintAccelerator(gfx::Canvas* canvas);
 

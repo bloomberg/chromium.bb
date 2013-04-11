@@ -104,7 +104,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       window_(window),
       zoom_callback_(base::Bind(&BrowserToolbarGtk::OnZoomLevelChanged,
                                 base::Unretained(this))) {
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, false, false));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, false));
 
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
   chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
@@ -671,7 +671,7 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 }
 
 void BrowserToolbarGtk::RebuildWrenchMenu() {
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, false, false));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, false));
   wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.get()));
   // The bookmark menu model needs to be able to force the wrench menu to close.
   wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());

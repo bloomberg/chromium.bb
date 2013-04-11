@@ -248,7 +248,7 @@ class ZoomLevelObserver {
 - (void)createModel {
   recentTabsMenuModelDelegate_.reset();
   wrenchMenuModel_.reset(
-      new WrenchMenuModel(acceleratorDelegate_.get(), browser_, false, false));
+      new WrenchMenuModel(acceleratorDelegate_.get(), browser_, false));
   [self setModel:wrenchMenuModel_.get()];
 
   buttonViewController_.reset(

@@ -228,11 +228,9 @@ NativeThemeWin* NativeThemeWin::instance() {
 gfx::Size NativeThemeWin::GetPartSize(Part part,
                                       State state,
                                       const ExtraParams& extra) const {
-  if (IsNewMenuStyleEnabled()) {
-    gfx::Size size = CommonThemeGetPartSize(part, state, extra);
-    if (!size.IsEmpty())
-      return size;
-  }
+  gfx::Size part_size = CommonThemeGetPartSize(part, state, extra);
+  if (!part_size.IsEmpty())
+    return part_size;
 
   // The GetThemePartSize call below returns the default size without
   // accounting for user customization (crbug/218291).
@@ -288,21 +286,19 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
   if (rect.IsEmpty())
     return;
 
-  if (IsNewMenuStyleEnabled()) {
-    switch (part) {
-      case kMenuPopupGutter:
-        CommonThemePaintMenuGutter(canvas, rect);
-        return;
-      case kMenuPopupSeparator:
-        CommonThemePaintMenuSeparator(canvas, rect, extra.menu_separator);
-        return;
-      case kMenuPopupBackground:
-        CommonThemePaintMenuBackground(canvas, rect);
-        return;
-      case kMenuItemBackground:
-        CommonThemePaintMenuItemBackground(canvas, state, rect);
-        return;
-    }
+  switch (part) {
+    case kMenuPopupGutter:
+      CommonThemePaintMenuGutter(canvas, rect);
+      return;
+    case kMenuPopupSeparator:
+      CommonThemePaintMenuSeparator(canvas, rect, extra.menu_separator);
+      return;
+    case kMenuPopupBackground:
+      CommonThemePaintMenuBackground(canvas, rect);
+      return;
+    case kMenuItemBackground:
+      CommonThemePaintMenuItemBackground(canvas, state, rect);
+      return;
   }
 
   bool needs_paint_indirect = false;
@@ -493,7 +489,7 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   SkColor color;
-  if (IsNewMenuStyleEnabled() && CommonThemeGetSystemColor(color_id, &color))
+  if (CommonThemeGetSystemColor(color_id, &color))
     return color;
 
   switch (color_id) {

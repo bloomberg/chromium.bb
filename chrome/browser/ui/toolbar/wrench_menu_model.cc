@@ -56,7 +56,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -239,15 +238,14 @@ void ToolsMenuModel::Build(Browser* browser) {
 
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                                  Browser* browser,
-                                 bool is_new_menu,
-                                 bool supports_new_separators)
+                                 bool is_new_menu)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       provider_(provider),
       browser_(browser),
       tab_strip_model_(browser_->tab_strip_model()),
       zoom_callback_(base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
                                 base::Unretained(this))) {
-  Build(is_new_menu, supports_new_separators);
+  Build(is_new_menu);
   UpdateZoomControls();
 
   HostZoomMap::GetForBrowserContext(
@@ -471,12 +469,7 @@ WrenchMenuModel::WrenchMenuModel()
       tab_strip_model_(NULL) {
 }
 
-void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
-#if defined(USE_AURA)
-  if (is_new_menu && !ui::NativeTheme::IsNewMenuStyleEnabled())
-    AddSeparator(ui::SPACING_SEPARATOR);
-#endif
-
+void WrenchMenuModel::Build(bool is_new_menu) {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
 #if defined(OS_WIN)
   if (win8::IsSingleWindowMetroMode()) {
@@ -658,11 +651,6 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
 
   if (show_exit_menu)
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
-
-  if (is_new_menu && supports_new_separators &&
-      !ui::NativeTheme::IsNewMenuStyleEnabled()) {
-    AddSeparator(ui::SPACING_SEPARATOR);
-  }
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {

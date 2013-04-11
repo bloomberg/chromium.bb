@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -292,7 +291,7 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   int bottom = menu_config.menu_vertical_border_size + padding;
   int right = menu_config.menu_horizontal_border_size + padding;
 
-  if (use_border && NativeTheme::IsNewMenuStyleEnabled()) {
+  if (use_border) {
     set_border(views::Border::CreateBorderPainter(
         new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
                 ui::NativeTheme::kColorId_MenuBorderColor),

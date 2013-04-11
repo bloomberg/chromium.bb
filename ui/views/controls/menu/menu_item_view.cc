@@ -16,7 +16,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -759,14 +758,7 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
   rect->set_x(GetMirroredXForRect(*rect));
 }
 
-#if defined(USE_AURA) && !defined(OS_WIN)
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
-  PaintButtonCommon(canvas, mode);
-}
-#endif
-
-void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
-                                     PaintButtonMode mode) {
   const MenuConfig& config = GetMenuConfig();
   bool render_selection =
       (mode == PB_NORMAL && IsSelected() &&
@@ -793,16 +785,10 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   } else if (render_selection) {
     // TODO(erg): The following doesn't actually get the focused menu item
     // background for times when we want to match the native OS.
-    if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
-      gfx::Rect item_bounds(0, 0, width(), height());
-      AdjustBoundsForRTLUI(&item_bounds);
-      CommonThemePaintMenuItemBackground(canvas->sk_canvas(),
-          ui::NativeTheme::kHovered, item_bounds);
-    } else {
-      SkColor bg_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-      canvas->DrawColor(bg_color, SkXfermode::kSrc_Mode);
-    }
+    gfx::Rect item_bounds(0, 0, width(), height());
+    AdjustBoundsForRTLUI(&item_bounds);
+    CommonThemePaintMenuItemBackground(canvas->sk_canvas(),
+        ui::NativeTheme::kHovered, item_bounds);
   }
 
   // Render the check.

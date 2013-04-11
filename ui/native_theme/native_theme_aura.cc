@@ -98,7 +98,7 @@ NativeThemeAura::~NativeThemeAura() {
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
   // This implementation returns hardcoded colors.
   SkColor color;
-  if (IsNewMenuStyleEnabled() && CommonThemeGetSystemColor(color_id, &color))
+  if (CommonThemeGetSystemColor(color_id, &color))
     return color;
 
   switch (color_id) {

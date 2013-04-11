@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
-#include "ui/native_theme/common_theme.h"
 
 namespace {
 
@@ -142,26 +141,14 @@ gfx::ImageSkia* GetRtlSubmenuArrowImage() {
 namespace views {
 
 const gfx::ImageSkia* GetMenuCheckImage() {
-  if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
-    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_MENU_CHECK_CHECKED).ToImageSkia();
-  }
-
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_MENU_CHECK).ToImageSkia();
+      IDR_MENU_CHECK_CHECKED).ToImageSkia();
 }
 
 const gfx::ImageSkia* GetRadioButtonImage(bool selected) {
-  if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
-    int image_id = selected ? IDR_MENU_RADIO_SELECTED : IDR_MENU_RADIO_EMPTY;
-    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        image_id).ToImageSkia();
-  }
-
-  static const gfx::ImageSkia* kRadioOn = CreateRadioButtonImage(true);
-  static const gfx::ImageSkia* kRadioOff = CreateRadioButtonImage(false);
-
-  return selected ? kRadioOn : kRadioOff;
+  int image_id = selected ? IDR_MENU_RADIO_SELECTED : IDR_MENU_RADIO_EMPTY;
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      image_id).ToImageSkia();
 }
 
 const gfx::ImageSkia* GetSubmenuArrowImage() {

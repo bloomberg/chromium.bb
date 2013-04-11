@@ -80,33 +80,6 @@ void MenuConfig::Init(const NativeTheme* theme) {
     arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
-  gfx::Size gutter_size = NativeThemeWin::instance()->GetPartSize(
-      NativeTheme::kMenuPopupGutter, NativeTheme::kNormal, extra);
-  if (!gutter_size.IsEmpty()) {
-    gutter_width = gutter_size.width();
-    render_gutter = true;
-  } else {
-    gutter_width = 0;
-    render_gutter = false;
-  }
-
-  gfx::Size separator_size = NativeThemeWin::instance()->GetPartSize(
-      NativeTheme::kMenuPopupSeparator, NativeTheme::kNormal, extra);
-  if (!separator_size.IsEmpty()) {
-    separator_height = separator_size.height();
-  } else {
-    // -1 makes separator centered.
-    separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
-  }
-
-  // On Windows, having some menus use wider spacing than others looks wrong.
-  // See http://crbug.com/88875
-  item_no_icon_bottom_margin = item_bottom_margin;
-  item_no_icon_top_margin = item_top_margin;
-
-  if (NativeTheme::IsNewMenuStyleEnabled())
-    AdjustForCommonTheme();
-
   BOOL show_cues;
   show_mnemonics =
       (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &show_cues, 0) &&

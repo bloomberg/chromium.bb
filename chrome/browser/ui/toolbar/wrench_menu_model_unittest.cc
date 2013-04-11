@@ -89,7 +89,7 @@ class TestWrenchMenuModel : public WrenchMenuModel {
  public:
   TestWrenchMenuModel(ui::AcceleratorProvider* provider,
                       Browser* browser)
-      : WrenchMenuModel(provider, browser, false, false),
+      : WrenchMenuModel(provider, browser, false),
         execute_count_(0),
         checked_count_(0),
         enable_count_(0) {
@@ -174,7 +174,7 @@ TEST_F(WrenchMenuModelTest, GlobalError) {
   MenuError* error2 = new MenuError(command2);
   service->AddGlobalError(error2);
 
-  WrenchMenuModel model(this, browser(), false, false);
+  WrenchMenuModel model(this, browser(), false);
   int index1 = model.GetIndexOfCommandId(command1);
   EXPECT_GT(index1, -1);
   int index2 = model.GetIndexOfCommandId(command2);

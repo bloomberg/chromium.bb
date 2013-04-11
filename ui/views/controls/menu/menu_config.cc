@@ -13,17 +13,17 @@ namespace views {
 MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : text_color(SK_ColorBLACK),
       arrow_color(SK_ColorBLACK),
-      menu_vertical_border_size(3),
-      menu_horizontal_border_size(3),
+      menu_vertical_border_size(7),
+      menu_horizontal_border_size(0),
       submenu_horizontal_inset(3),
-      item_top_margin(3),
-      item_bottom_margin(4),
-      item_no_icon_top_margin(1),
-      item_no_icon_bottom_margin(3),
-      item_left_margin(4),
+      item_top_margin(7),
+      item_bottom_margin(6),
+      item_no_icon_top_margin(7),
+      item_no_icon_bottom_margin(7),
+      item_left_margin(10),
       label_to_arrow_padding(10),
       arrow_to_edge_padding(5),
-      icon_to_label_padding(8),
+      icon_to_label_padding(10),
       gutter_to_label(5),
       check_width(16),
       check_height(16),
@@ -32,7 +32,7 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       arrow_height(9),
       arrow_width(9),
       gutter_width(0),
-      separator_height(6),
+      separator_height(15),
       separator_upper_height(3),
       separator_lower_height(4),
       separator_spacing_height(3),
@@ -58,18 +58,5 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
 }
 
 MenuConfig::~MenuConfig() {}
-
-void MenuConfig::AdjustForCommonTheme() {
-  render_gutter = false;
-  item_left_margin = 10;
-  item_top_margin = 7;
-  item_bottom_margin = 6;
-  item_no_icon_top_margin = 7;
-  item_no_icon_bottom_margin = 7;
-  icon_to_label_padding = 10;
-  separator_height = 15;
-  menu_horizontal_border_size = 0;
-  menu_vertical_border_size = 7;
-}
 
 }  // namespace views

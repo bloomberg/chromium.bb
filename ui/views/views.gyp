@@ -131,7 +131,6 @@
         'controls/menu/menu_host_root_view.h',
         'controls/menu/menu_item_view.cc',
         'controls/menu/menu_item_view.h',
-        'controls/menu/menu_item_view_win.cc',
         'controls/menu/menu_listener.cc',
         'controls/menu/menu_listener.h',
         'controls/menu/menu_model_adapter.cc',
@@ -513,7 +512,6 @@
         ['use_aura==1 and OS=="win"', {
           'sources/': [
             ['include', 'controls/menu/menu_config_win.cc'],
-            ['include', 'controls/menu/menu_item_view_win.cc'],
             ['include', 'controls/menu/menu_separator_win.cc'],
             ['include', 'accessibility/native_view_accessibility_win.cc'],
             ['include', 'accessibility/native_view_accessibility_win.h'],
