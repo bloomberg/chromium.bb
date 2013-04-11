@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -42,13 +42,14 @@
 namespace {
 
 template<typename T>
-void GetValueAndQuit(T* result, base::Closure quit, T actual) {
+void GetValueAndQuit(T* result, const base::Closure& quit, T actual) {
   *result = actual;
   quit.Run();
 }
 
 template<typename T>
-T GetCallbackResult(base::Callback<void(base::Callback<void(T)>)> callback) {
+T GetCallbackResult(
+    const base::Callback<void(const base::Callback<void(T)>&)>& callback) {
   T result = false;
   base::RunLoop loop;
   callback.Run(base::Bind(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
@@ -106,13 +107,13 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 
 }  // namespace
 
-class ProfileSigninConfirmationDialogTest : public testing::Test {
+class ProfileSigninConfirmationHelperTest : public testing::Test {
  public:
-  ProfileSigninConfirmationDialogTest()
+  ProfileSigninConfirmationHelperTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        user_prefs_(NULL),
         model_(NULL) {
   }
-  virtual ~ProfileSigninConfirmationDialogTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create the profile.
@@ -140,17 +141,13 @@ class ProfileSigninConfirmationDialogTest : public testing::Test {
     system->CreateExtensionService(&command_line,
                                    base::FilePath(kExtensionFilePath),
                                    false);
-
-    // Create a dialog, but don't display it.
-    dialog_ = new ProfileSigninConfirmationDialog(profile_.get(),
-                                                  std::string(),
-                                                  base::Bind(&base::DoNothing),
-                                                  base::Bind(&base::DoNothing),
-                                                  base::Bind(&base::DoNothing));
   }
 
   virtual void TearDown() OVERRIDE {
-    delete dialog_;
+    // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
+    // and then run the message queue to clean up.
+    profile_.reset();
+    MessageLoop::current()->RunUntilIdle();
   }
 
  protected:
@@ -158,20 +155,19 @@ class ProfileSigninConfirmationDialogTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
-  ProfileSigninConfirmationDialog* dialog_;
   BookmarkModel* model_;
 };
 
-TEST_F(ProfileSigninConfirmationDialogTest, DoNotPromptForNewProfile) {
+TEST_F(ProfileSigninConfirmationHelperTest, DoNotPromptForNewProfile) {
   // Profile is new and there's no profile data.
   EXPECT_FALSE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Bookmarks) {
+TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
   ASSERT_TRUE(model_);
 
   // Profile is new but has bookmarks.
@@ -180,11 +176,11 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Bookmarks) {
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
+TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
   ExtensionService* extensions =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   ASSERT_TRUE(extensions);
@@ -201,8 +197,8 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
   EXPECT_FALSE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("foo", std::string());
@@ -212,11 +208,11 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_History) {
+TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_History) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(),
       Profile::EXPLICIT_ACCESS);
@@ -235,11 +231,11 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_History) {
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_TypedURLs) {
+TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_TypedURLs) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(),
       Profile::EXPLICIT_ACCESS);
@@ -253,16 +249,16 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_TypedURLs) {
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Restarted) {
+TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Restarted) {
   // Browser has been shut down since profile was created.
   user_prefs_->set_read_error(PersistentPrefStore::PREF_READ_ERROR_NONE);
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(
-              &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
-              base::Unretained(dialog_))));
+              &ui::CheckShouldPromptForNewProfile,
+              profile_.get())));
 }

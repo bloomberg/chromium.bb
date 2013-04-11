@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -13,9 +14,9 @@
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ProfileSigninConfirmationDialogBrowserTest : public InProcessBrowserTest {
+class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
  public:
-  ProfileSigninConfirmationDialogBrowserTest() {}
+  ProfileSigninConfirmationHelperBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Force the first-run flow to trigger autoimport.
@@ -29,20 +30,13 @@ class ProfileSigninConfirmationDialogBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationHelperBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationDialogBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
                        HasNotBeenShutdown) {
 #if !defined(OS_CHROMEOS)
   EXPECT_TRUE(first_run::DidPerformProfileImport(NULL));
 #endif
-  ProfileSigninConfirmationDialog* dialog =
-      new ProfileSigninConfirmationDialog(
-          browser()->profile(), "",
-          base::Bind(&base::DoNothing),
-          base::Bind(&base::DoNothing),
-          base::Bind(&base::DoNothing));
-  EXPECT_FALSE(dialog->HasBeenShutdown());
-  delete dialog;
+  EXPECT_FALSE(ui::HasBeenShutdown(browser()->profile()));
 }

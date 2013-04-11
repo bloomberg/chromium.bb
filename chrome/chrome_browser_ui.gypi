@@ -1348,6 +1348,8 @@
         'browser/ui/sync/one_click_signin_infobar_delegate.h',
         'browser/ui/sync/one_click_signin_sync_starter.cc',
         'browser/ui/sync/one_click_signin_sync_starter.h',
+	'browser/ui/sync/profile_signin_confirmation_helper.cc',
+	'browser/ui/sync/profile_signin_confirmation_helper.h',
         'browser/ui/sync/signin_histogram.h',
         'browser/ui/sync/tab_contents_synced_tab_delegate.cc',
         'browser/ui/sync/tab_contents_synced_tab_delegate.h',

@@ -7,25 +7,15 @@
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_db_task.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -64,66 +54,6 @@ class ProfileSigninConfirmationHandler : public content::WebUIMessageHandler {
   base::Closure signin_with_new_profile_;
   base::Closure continue_signin_;
 };
-
-const int kHistoryEntriesBeforeNewProfilePrompt = 10;
-
-// Determines whether a profile has any typed URLs in its history.
-class HasTypedURLsTask : public history::HistoryDBTask {
- public:
-  HasTypedURLsTask(base::Callback<void(bool)> cb)
-      : has_typed_urls_(0), cb_(cb) {
-  }
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
-    history::URLRows rows;
-    backend->GetAllTypedURLs(&rows);
-    if (!rows.empty())
-      has_typed_urls_ = true;
-    return true;
-  }
-  virtual void DoneRunOnMainThread() OVERRIDE {
-    cb_.Run(has_typed_urls_);
-  }
- private:
-  virtual ~HasTypedURLsTask() {}
-  bool has_typed_urls_;
-  base::Callback<void(bool)> cb_;
-};
-
-// Invokes one of two callbacks depending on a boolean flag.
-void CallbackFork(base::Closure first, base::Closure second,
-                  bool invoke_first) {
-  if (invoke_first)
-    first.Run();
-  else
-    second.Run();
-}
-
-// Invokes a chain of callbacks until one of them signals completion.
-//
-// Each callback accepts a callback parameter that should be invoked
-// with |true| to signal completion (the chain should be broken) or
-// |false| otherwise.  When the chain is stopped |return_result| will be
-// invoked with the result that stopped the chain: |true| if one of the
-// callbacks stopped the chain, or |false| if none of them did.
-//
-// This is essentially a special case of "series" from the async.js
-// library: https://github.com/caolan/async
-//
-// TODO(dconnelly): This should really be in a library.
-void ChainCallbacksUntilTrue(
-    base::Callback<void(base::Callback<void(bool)>)> first,
-    base::Callback<void(base::Callback<void(bool)>)> second,
-    base::Callback<void(bool)> return_result) {
-  // We implement the completion signalling callback using CallbackFork:
-  // if the first callback passes it |true|, |return_result| will be
-  // invoked immediately, and otherwise the second callback will be
-  // invoked and passed |return_result| directly since it's last in
-  // the chain.
-  first.Run(base::Bind(&CallbackFork,
-                       base::Bind(return_result, true),
-                       base::Bind(second, return_result)));
-}
 
 }  // namespace
 
@@ -184,7 +114,8 @@ void ProfileSigninConfirmationDialog::ShowDialog(
                                         cancel_signin,
                                         signin_with_new_profile,
                                         continue_signin);
-  dialog->CheckShouldPromptForNewProfile(
+  ui::CheckShouldPromptForNewProfile(
+      profile,
       base::Bind(&ProfileSigninConfirmationDialog::Show,
                  dialog->weak_pointer_factory_.GetWeakPtr()));
 }
@@ -270,7 +201,7 @@ void ProfileSigninConfirmationDialog::GetDialogSize(gfx::Size* size) const {
 
 std::string ProfileSigninConfirmationDialog::GetDialogArgs() const {
   std::string data;
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetString("username", username_);
   dict.SetBoolean("promptForNewProfile", prompt_for_new_profile_);
 #if defined(OS_WIN)
@@ -295,89 +226,4 @@ void ProfileSigninConfirmationDialog::OnCloseContents(
 
 bool ProfileSigninConfirmationDialog::ShouldShowDialogTitle() const {
   return true;
-}
-
-bool ProfileSigninConfirmationDialog::HasBookmarks() {
-  BookmarkModel* bookmarks = BookmarkModelFactory::GetForProfile(profile_);
-  return bookmarks && bookmarks->HasBookmarks();
-}
-
-bool ProfileSigninConfirmationDialog::HasBeenShutdown() {
-  return !profile_->IsNewProfile();
-}
-
-void ProfileSigninConfirmationDialog::OnHistoryQueryResults(
-    size_t max_entries,
-    base::Callback<void(bool)> cb,
-    CancelableRequestProvider::Handle handle,
-    history::QueryResults* results) {
-  history::QueryResults owned_results;
-  results->Swap(&owned_results);
-  cb.Run(owned_results.size() >= max_entries);
-}
-
-void ProfileSigninConfirmationDialog::CheckHasHistory(
-    int max_entries,
-    base::Callback<void(bool)> cb) {
-  HistoryService* service =
-    HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-  if (!service) {
-    cb.Run(false);
-    return;
-  }
-  history::QueryOptions opts;
-  opts.max_count = max_entries;
-  service->QueryHistory(
-      UTF8ToUTF16(""), opts, &history_count_request_consumer,
-      base::Bind(&ProfileSigninConfirmationDialog::OnHistoryQueryResults,
-                 weak_pointer_factory_.GetWeakPtr(),
-                 max_entries, cb));
-}
-
-bool ProfileSigninConfirmationDialog::HasSyncedExtensions() {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile_);
-  if (system && system->extension_service()) {
-    const ExtensionSet* extensions = system->extension_service()->extensions();
-    for (ExtensionSet::const_iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-      // The webstore is synced so that it stays put on the new tab
-      // page, but since it's installed by default we don't want to
-      // consider it when determining if the profile is dirty.
-      if ((*iter)->IsSyncable() &&
-          (*iter)->id() != extension_misc::kWebStoreAppId) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-void ProfileSigninConfirmationDialog::CheckHasTypedURLs(
-    base::Callback<void(bool)> cb) {
-  HistoryService* service =
-    HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-  if (!service) {
-    cb.Run(false);
-    return;
-  }
-  service->ScheduleDBTask(new HasTypedURLsTask(cb),
-                          &typed_urls_request_consumer);
-}
-
-void ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile(
-    base::Callback<void(bool)> return_result) {
-  if (HasBeenShutdown() ||
-      HasBookmarks() ||
-      HasSyncedExtensions()) {
-    return_result.Run(true);
-    return;
-  }
-  ChainCallbacksUntilTrue(
-      base::Bind(&ProfileSigninConfirmationDialog::CheckHasHistory,
-                 weak_pointer_factory_.GetWeakPtr(),
-                 kHistoryEntriesBeforeNewProfilePrompt),
-      base::Bind(&ProfileSigninConfirmationDialog::CheckHasTypedURLs,
-                 weak_pointer_factory_.GetWeakPtr()),
-      return_result);
 }
