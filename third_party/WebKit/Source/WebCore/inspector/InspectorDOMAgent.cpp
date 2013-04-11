@@ -245,9 +245,6 @@ void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
     m_frontend = frontend->dom();
     m_instrumentingAgents->setInspectorDOMAgent(this);
     m_document = m_pageAgent->mainFrame()->document();
-
-    if (m_nodeToFocus)
-        focusNode();
 }
 
 void InspectorDOMAgent::clearFrontend()
@@ -1065,39 +1062,19 @@ bool InspectorDOMAgent::handleTouchEvent(Node* node)
 
 void InspectorDOMAgent::inspect(Node* inspectedNode)
 {
-    ErrorString error;
-    RefPtr<Node> node = inspectedNode;
-    setSearchingForNode(&error, false, 0);
-
-    if (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE)
-        node = node->parentNode();
-    m_nodeToFocus = node;
-
-    focusNode();
-}
-
-void InspectorDOMAgent::focusNode()
-{
     if (!m_frontend)
         return;
 
-    ASSERT(m_nodeToFocus);
+    Node* node = inspectedNode;
+    if (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE)
+        node = node->parentNode();
 
-    RefPtr<Node> node = m_nodeToFocus.get();
-    m_nodeToFocus = 0;
+    int nodeId = pushNodePathToFrontend(node);
+    if (nodeId)
+        m_frontend->inspectNodeRequested(nodeId);
 
-    Document* document = node->ownerDocument();
-    if (!document)
-        return;
-    Frame* frame = document->frame();
-    if (!frame)
-        return;
-
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(mainWorldScriptState(frame));
-    if (injectedScript.hasNoValue())
-        return;
-
-    injectedScript.inspectNode(node.get());
+    ErrorString error;
+    setSearchingForNode(&error, false, 0);
 }
 
 void InspectorDOMAgent::mouseDidMoveOverElement(const HitTestResult& result, unsigned)
