@@ -39,11 +39,7 @@
 #include "StorageNamespace.h"
 
 #if ENABLE(VIDEO_TRACK)
-#if (PLATFORM(MAC) && !PLATFORM(IOS)) || HAVE(MEDIA_ACCESSIBILITY_FRAMEWORK)
-#include "CaptionUserPreferencesMac.h"
-#else
 #include "CaptionUserPreferences.h"
-#endif
 #endif
 
 #include "VisitedLinks.h"
@@ -406,11 +402,7 @@ void PageGroup::captionPreferencesChanged()
 CaptionUserPreferences* PageGroup::captionPreferences()
 {
     if (!m_captionPreferences)
-#if (PLATFORM(MAC) && !PLATFORM(IOS)) || HAVE(MEDIA_ACCESSIBILITY_FRAMEWORK)
-        m_captionPreferences = CaptionUserPreferencesMac::create(this);
-#else
         m_captionPreferences = CaptionUserPreferences::create(this);
-#endif
 
     return m_captionPreferences.get();
 }
