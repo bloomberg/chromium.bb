@@ -121,8 +121,10 @@ bool IsVisibleToRoot(Window* child) {
 // Returns true if |window| is a "normal" window for purposes of solo window
 // computations.
 bool IsSoloWindowHeaderCandidate(aura::Window* window) {
+  // A normal, non-modal, non-constrained window.
   return window &&
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
       !window->GetProperty(ash::kConstrainedWindowKey);
 }
 

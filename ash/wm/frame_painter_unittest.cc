@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -400,6 +401,37 @@ TEST_F(FramePainterTest, UseSoloWindowHeaderWithPanel) {
   // Even after closing the first window, the panel is still not considered
   // solo.
   w1.reset();
+  EXPECT_FALSE(p2.UseSoloWindowHeader());
+}
+
+// Modal dialogs should not use solo headers.
+TEST_F(FramePainterTest, UseSoloWindowHeaderModal) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w1->Show();
+
+  // We only have one window, so it should use a solo header.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // Create a fake modal window.
+  scoped_ptr<Widget> w2(CreateTestWidget());
+  w2->GetNativeWindow()->SetProperty(aura::client::kModalKey,
+                                     ui::MODAL_TYPE_WINDOW);
+  FramePainter p2;
+  ImageButton size2(NULL);
+  ImageButton close2(NULL);
+  p2.Init(w2.get(), NULL, &size2, &close2, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w2->Show();
+
+  // Despite two windows, the first window should still be considered "solo"
+  // because modal windows aren't included in the computation.
+  EXPECT_TRUE(p1.UseSoloWindowHeader());
+
+  // The modal window itself is not considered solo.
   EXPECT_FALSE(p2.UseSoloWindowHeader());
 }
 
