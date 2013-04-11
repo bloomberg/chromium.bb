@@ -1433,7 +1433,10 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
         1.f/frame_device_scale_factor));
   }
   if (ShouldSkipFrame(frame_size_in_dip)) {
-    SendDelegatedFrameAck();
+    cc::CompositorFrameAck ack;
+    ack.resources.swap(frame_data->resource_list);
+    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
     return;
   }
   window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
