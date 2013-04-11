@@ -810,11 +810,13 @@ Target: x86-64 bit mode
   9d                          386 OperandSize_o NaClIllegal OperandSizeDefaultIs64 LongMode PartialInstruction
     [P] DontCare(illegal)
   --- 9e ---
-  9e                          386 NaClIllegal PartialInstruction
-    [P] DontCare(illegal)
+  9e                          LAHF PartialInstruction
+    [P] DontCare %ah (u)
+      RegAH                   OpUse
   --- 9f ---
-  9f                          386 NaClIllegal PartialInstruction
-    [P] DontCare(illegal)
+  9f                          LAHF PartialInstruction
+    [P] DontCare %ah (s)
+      RegAH                   OpSet
   --- a0 ---
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov %al, $Ob

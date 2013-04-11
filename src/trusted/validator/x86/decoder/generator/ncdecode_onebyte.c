@@ -482,8 +482,8 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("9d: Popf {%@sp}, {$Fvw}", NACLi_386, st, Pop);
   NaClDef_32("9d: Popfd {%@sp}, {$Fvd}", NACLi_386, st, Pop);
   NaClDef_64("9d: Popfq {%@sp}, {$Fvq}", NACLi_386, st, Pop);
-  NaClDefine("9e: Sahf {%ah}", NACLi_386, st, Uses);
-  NaClDefine("9f: Lahf {%ah}", NACLi_386, st, UnarySet);
+  NaClDefine("9e: Sahf {%ah}", NACLi_LAHF, st, Uses);
+  NaClDefine("9f: Lahf {%ah}", NACLi_LAHF, st, UnarySet);
   NaClDefine("a0: Mov %al, $Ob", NACLi_386, st, Move);
   NaClDefine("a1: Mov $rAXv, $Ov", NACLi_386, st, Move);
   NaClDefine("a2: Mov $Ob, %al", NACLi_386, st, Move);

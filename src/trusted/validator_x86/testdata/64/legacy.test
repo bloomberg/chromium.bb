@@ -291,38 +291,24 @@
   # sahf
   9E
 @rval:
-  VALIDATOR: 0000000000000000: 9f                                           lahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000001: 9e                                           sahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: Checking jump targets: 0 to 2
   VALIDATOR: Checking that basic blocks are aligned
-  *** <input> IS UNSAFE ***
+  *** <input> is safe ***
 @rvald:
-  VALIDATOR: 0000000000000000: 9f                                           lahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000001: 9e                                           sahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: Checking block alignment and jump targets: 0 to 2
-  *** <input> IS UNSAFE ***
+  *** <input> is safe ***
 @vd-rval:
-  VALIDATOR: 0000000000000000: 9f                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000001: 9e                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: Checking jump targets: 0 to 2
   VALIDATOR: Checking that basic blocks are aligned
-  *** <input> IS UNSAFE ***
+  *** <input> is safe ***
 @dis:
   0000000000000000: 9f                                           lahf
   0000000000000001: 9e                                           sahf
 @vdis:
-  0000000000000000: 9f                                           [P] dontcare(illegal)
-  0000000000000001: 9e                                           [P] dontcare(illegal)
+  0000000000000000: 9f                                           [P] dontcare %ah (s)
+  0000000000000001: 9e                                           [P] dontcare %ah (u)
 @rdfa_output:
-  0: [0] unrecognized instruction
-  1: [1] unrecognized instruction
-  return code: 1
+  return code: 0
 ----------------------------------------------------------------------
 @hex:
   # Legacy instructions which are valid in 64-bit mode

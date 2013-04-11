@@ -21,6 +21,7 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_INDIRECT",
   "NACLi_OPINMRM",
   "NACLi_RETURN",
+  "NACLi_LAHF",
   "NACLi_SFENCE_CLFLUSH",
   "NACLi_CMPXCHG8B",
   "NACLi_CMPXCHG16B",

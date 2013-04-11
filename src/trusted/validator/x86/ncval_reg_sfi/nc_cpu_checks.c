@@ -57,6 +57,10 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       NaClCheckFeature(NaClCPUFeatureX86_CLFLUSH, state, &squash_me);
       NaClCheckFeature(NaClCPUFeatureX86_FXSR, state, &squash_me);
       break;
+    case NACLi_LAHF:
+      if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64)
+        NaClCheckFeature(NaClCPUFeatureX86_LAHF, state, &squash_me);
+      break;
     case NACLi_CMPXCHG8B:
       NaClCheckFeature(NaClCPUFeatureX86_CX8, state, &squash_me);
       break;

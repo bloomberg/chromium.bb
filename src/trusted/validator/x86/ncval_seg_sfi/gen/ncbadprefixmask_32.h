@@ -20,6 +20,7 @@ static uint32_t BadPrefixMask[kNaClInstTypeRange] = {
   0xffffffff, /* NACLi_INDIRECT */
   0xffffffff, /* NACLi_OPINMRM */
   0xffffffff, /* NACLi_RETURN */
+  0xffffffff, /* NACLi_LAHF */
   0xffffffff, /* NACLi_SFENCE_CLFLUSH */
   0xfffffeff, /* NACLi_CMPXCHG8B */
   0xffffffff, /* NACLi_CMPXCHG16B */

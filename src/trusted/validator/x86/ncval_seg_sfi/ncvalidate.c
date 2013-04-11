@@ -742,6 +742,10 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
     case NACLi_386R:
     case NACLi_386RE:
       break;
+    case NACLi_LAHF:
+      if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64)
+        squashme = !NaClGetCPUFeatureX86(cpufeatures, NaClCPUFeatureX86_LAHF);
+      break;
     case NACLi_JMP8:
       ValidateJmp8(dinst);
       break;

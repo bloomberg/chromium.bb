@@ -1490,12 +1490,12 @@ static const NaClInst g_Opcodes[1370] = {
     NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(NaClIllegal),
     InstPopf, 0x00, 2, 128, 186  },
   /* 188 */
-  { NACLi_386,
-    NACL_IFLAG(NaClIllegal),
+  { NACLi_LAHF,
+    NACL_EMPTY_IFLAGS,
     InstSahf, 0x00, 1, 130, NACL_OPCODE_NULL_OFFSET  },
   /* 189 */
-  { NACLi_386,
-    NACL_IFLAG(NaClIllegal),
+  { NACLi_LAHF,
+    NACL_EMPTY_IFLAGS,
     InstLahf, 0x00, 1, 131, NACL_OPCODE_NULL_OFFSET  },
   /* 190 */
   { NACLi_386,

@@ -98,6 +98,9 @@ typedef enum {
   NACLi_INDIRECT,                                                     /* 32 */
   NACLi_OPINMRM,                                                      /* 32 */
   NACLi_RETURN,                                                       /* 32 */
+                                                                      /* Both */
+  NACLi_LAHF,         /* LAHF/SAHF: unconditionally allowed in 32-bit
+                         conditionally allowed in 64-bit mode  */
   NACLi_SFENCE_CLFLUSH,                                               /* Both */
   NACLi_CMPXCHG8B,                                                    /* Both */
   NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */        /* Both */
@@ -138,7 +141,7 @@ typedef enum {
   /* kNaClInstTypeString in x86_insts.c. */
 } NaClInstType;
 
-#define kNaClInstTypeRange 48
+#define kNaClInstTypeRange 49
 
 /* Returns the print name for the enumerated type.*/
 const char* NaClInstTypeString(NaClInstType typ);
