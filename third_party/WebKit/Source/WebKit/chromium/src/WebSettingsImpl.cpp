@@ -597,11 +597,7 @@ void WebSettingsImpl::setShouldPrintBackgrounds(bool enabled)
 
 void WebSettingsImpl::setEnableScrollAnimator(bool enabled)
 {
-#if ENABLE(SMOOTH_SCROLLING)
     m_settings->setScrollAnimatorEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
@@ -611,11 +607,7 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
 
 bool WebSettingsImpl::scrollAnimatorEnabled() const
 {
-#if ENABLE(SMOOTH_SCROLLING)
     return m_settings->scrollAnimatorEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebSettingsImpl::setVisualWordMovementEnabled(bool enabled)

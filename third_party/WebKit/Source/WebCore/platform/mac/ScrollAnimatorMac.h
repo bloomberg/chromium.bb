@@ -26,8 +26,6 @@
 #ifndef ScrollAnimatorMac_h
 #define ScrollAnimatorMac_h
 
-#if ENABLE(SMOOTH_SCROLLING)
-
 #include "IntRect.h"
 #include "FloatPoint.h"
 #include "FloatSize.h"
@@ -158,7 +156,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SMOOTH_SCROLLING)
 
 #endif // ScrollAnimatorMac_h

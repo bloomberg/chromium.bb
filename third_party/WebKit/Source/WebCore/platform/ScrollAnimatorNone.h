@@ -31,8 +31,6 @@
 #ifndef ScrollAnimatorNone_h
 #define ScrollAnimatorNone_h
 
-#if ENABLE(SMOOTH_SCROLLING)
-
 #include "FloatPoint.h"
 #include "ScrollAnimator.h"
 #include "Timer.h"
@@ -153,7 +151,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SMOOTH_SCROLLING)
 
 #endif // ScrollAnimatorNone_h

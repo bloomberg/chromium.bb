@@ -350,10 +350,6 @@
 #define ENABLE_SHARED_WORKERS 0
 #endif
 
-#if !defined(ENABLE_SMOOTH_SCROLLING)
-#define ENABLE_SMOOTH_SCROLLING 0
-#endif
-
 #if !defined(ENABLE_SPEECH_SYNTHESIS)
 #define ENABLE_SPEECH_SYNTHESIS 0
 #endif

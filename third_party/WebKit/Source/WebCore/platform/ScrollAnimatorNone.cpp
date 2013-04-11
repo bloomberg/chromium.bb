@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SMOOTH_SCROLLING)
-
 #include "ScrollAnimatorNone.h"
 
 #include "FloatPoint.h"
@@ -537,5 +535,3 @@ void ScrollAnimatorNone::stopAnimationTimerIfNeeded()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SMOOTH_SCROLLING)

@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SMOOTH_SCROLLING)
-
 #include "ScrollAnimatorNone.h"
 
 #include "FloatPoint.h"
@@ -1045,5 +1043,3 @@ TEST_F(ScrollAnimatorNoneTest, ReverseInMiddle)
         result = result && animateScroll(t);
     EXPECT_GE(before, m_currentPosition);
 }
-
-#endif // ENABLE(SMOOTH_SCROLLING)

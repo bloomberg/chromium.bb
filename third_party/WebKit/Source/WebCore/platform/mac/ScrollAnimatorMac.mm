@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SMOOTH_SCROLLING)
-
 #include "ScrollAnimatorMac.h"
 
 #include "BlockExceptions.h"
@@ -1286,5 +1284,3 @@ void ScrollAnimatorMac::setVisibleScrollerThumbRect(const IntRect& scrollerThumb
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SMOOTH_SCROLLING)
