@@ -324,6 +324,25 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
 
+  // Gets the payload associated with the key specified by |key_type| and
+  // |key_name|.  The |callback| will be called when the operation completes.
+  // If the key does not exist the callback |result| parameter will be false.
+  // If no payload has been set for the key the callback |result| parameter will
+  // be true and the |data| parameter will be empty.
+  virtual void TpmAttestationGetKeyPayload(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) = 0;
+
+  // Sets the |payload| associated with the key specified by |key_type| and
+  // |key_name|.  The |callback| will be called when the operation completes.
+  // If the operation succeeds, the callback |result| parameter will be true.
+  virtual void TpmAttestationSetKeyPayload(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& payload,
+      const BoolDBusMethodCallback& callback) = 0;
+
  protected:
   // Create() should be used instead.
   CryptohomeClient();

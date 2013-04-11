@@ -356,6 +356,15 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {}
+  virtual void TpmAttestationGetKeyPayload(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const DataMethodCallback& callback) OVERRIDE {}
+  virtual void TpmAttestationSetKeyPayload(
+      AttestationKeyType key_type,
+      const std::string& key_name,
+      const std::string& payload,
+      const chromeos::BoolDBusMethodCallback& callback) OVERRIDE {}
 
  private:
   AsyncCallStatusHandler handler_;
