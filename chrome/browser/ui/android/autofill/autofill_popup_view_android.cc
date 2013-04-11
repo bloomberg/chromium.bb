@@ -15,6 +15,8 @@
 
 using base::android::MethodID;
 
+namespace autofill {
+
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     AutofillPopupController* controller)
     : controller_(controller) {}
@@ -101,3 +103,5 @@ AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
   return new AutofillPopupViewAndroid(controller);
 }
+
+}  // namespace autofill

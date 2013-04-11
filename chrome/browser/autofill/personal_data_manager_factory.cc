@@ -12,11 +12,12 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/browser/personal_data_manager.h"
 
+namespace autofill {
 namespace {
 
 class PersonalDataManagerServiceImpl : public PersonalDataManagerService {
  public:
-  PersonalDataManagerServiceImpl(Profile* profile);
+  explicit PersonalDataManagerServiceImpl(Profile* profile);
   virtual ~PersonalDataManagerServiceImpl();
 
   // PersonalDataManagerService:
@@ -80,3 +81,5 @@ ProfileKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
       new PersonalDataManagerServiceImpl(profile);
   return service;
 }
+
+}  // namespace autofill

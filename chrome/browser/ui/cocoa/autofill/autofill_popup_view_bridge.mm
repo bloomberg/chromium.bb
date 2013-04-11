@@ -37,7 +37,9 @@ NSBox* CreateBorderView() {
   return border_view;
 }
 
-}
+}  // namespac3
+
+namespace autofill {
 
 AutofillPopupViewBridge::AutofillPopupViewBridge(
     AutofillPopupController* controller)
@@ -115,3 +117,5 @@ AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
   return new AutofillPopupViewBridge(controller);
 }
+
+}  // namespace autofill

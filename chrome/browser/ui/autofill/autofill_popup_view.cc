@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
+namespace autofill {
+
 void AutofillPopupView::Hide() {
   hide_called_ = true;
 }
@@ -13,3 +15,5 @@ AutofillPopupView::AutofillPopupView() : hide_called_(false) {}
 AutofillPopupView::~AutofillPopupView() {
   CHECK(hide_called_);
 }
+
+}  // namespace autofill

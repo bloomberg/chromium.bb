@@ -25,6 +25,7 @@ using ::testing::NiceMock;
 using base::WeakPtr;
 using WebKit::WebAutofillClient;
 
+namespace autofill {
 namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
@@ -434,3 +435,5 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
     autofill_popup_controller->DoHide();
   }
 }
+
+}  // namespace autofill

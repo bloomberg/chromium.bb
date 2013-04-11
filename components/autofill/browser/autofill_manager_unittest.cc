@@ -680,7 +680,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     TestingProfile* profile = CreateProfile();
     profile->CreateRequestContext();
     browser_context_.reset(profile);
-    PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+    autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
 
     ChromeRenderViewHostTestHarness::SetUp();

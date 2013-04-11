@@ -382,7 +382,7 @@ class RemoveAutofillTester : public PersonalDataManagerObserver {
  public:
   explicit RemoveAutofillTester(TestingProfile* profile)
       : personal_data_manager_(
-            PersonalDataManagerFactory::GetForProfile(profile)) {
+            autofill::PersonalDataManagerFactory::GetForProfile(profile)) {
     autofill_test::DisableSystemServices(profile);
     personal_data_manager_->AddObserver(this);
   }

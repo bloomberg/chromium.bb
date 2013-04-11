@@ -21,6 +21,8 @@ namespace content {
 struct LoadCommittedDetails;
 }
 
+namespace autofill {
+
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
 class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -69,5 +71,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCCInfoBarDelegate);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_CC_INFOBAR_DELEGATE_H_

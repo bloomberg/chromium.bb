@@ -445,7 +445,8 @@ Browser::Browser(const CreateParams& params)
   if (first_run::ShouldDoPersonalDataManagerFirstRun()) {
 #if defined(OS_WIN)
     // Notify PDM that this is a first run.
-    ImportAutofillDataWin(PersonalDataManagerFactory::GetForProfile(profile_));
+    ImportAutofillDataWin(
+        autofill::PersonalDataManagerFactory::GetForProfile(profile_));
 #endif  // defined(OS_WIN)
   }
 

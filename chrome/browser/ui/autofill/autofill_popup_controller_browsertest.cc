@@ -62,6 +62,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
 }  // namespace
 
+namespace autofill {
+
 class AutofillPopupControllerBrowserTest
     : public InProcessBrowserTest,
       public content::WebContentsObserver {
@@ -100,7 +102,7 @@ class AutofillPopupControllerBrowserTest
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
                        HidePopupOnWindowConfiguration) {
-  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
+  GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
 
@@ -112,3 +114,5 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
 #endif // !defined(OS_MACOSX)
+
+}  // namespace autofill

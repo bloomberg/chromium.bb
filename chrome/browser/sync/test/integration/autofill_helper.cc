@@ -156,7 +156,8 @@ scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  return PersonalDataManagerFactory::GetForProfile(test()->GetProfile(index));
+  return autofill::PersonalDataManagerFactory::GetForProfile(
+      test()->GetProfile(index));
 }
 
 void AddKeys(int profile, const std::set<AutofillKey>& keys) {

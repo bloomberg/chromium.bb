@@ -28,6 +28,8 @@ const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 
 }  // namespace
 
+namespace autofill {
+
 AutofillPopupViewViews::AutofillPopupViewViews(
     AutofillPopupController* controller, views::Widget* observing_widget)
     : controller_(controller),
@@ -223,3 +225,5 @@ AutofillPopupView* AutofillPopupView::Create(
 
   return new AutofillPopupViewViews(controller, observing_widget);
 }
+
+}  // namespace autofill

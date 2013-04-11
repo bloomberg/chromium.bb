@@ -7,8 +7,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class AutofillPopupController;
-
 namespace gfx {
 class Rect;
 }
@@ -16,6 +14,10 @@ class Rect;
 namespace ui {
 class KeyEvent;
 }
+
+namespace autofill {
+
+class AutofillPopupController;
 
 // The interface for creating and controlling a platform-dependent
 // AutofillPopupView.
@@ -69,5 +71,7 @@ class AutofillPopupView {
   // release.
   bool hide_called_;
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_H_

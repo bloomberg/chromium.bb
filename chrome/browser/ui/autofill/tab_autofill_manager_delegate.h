@@ -14,8 +14,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class AutofillPopupControllerImpl;
-
 namespace content {
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
@@ -26,6 +24,7 @@ namespace autofill {
 
 class AutocheckoutBubble;
 class AutofillDialogControllerImpl;
+class AutofillPopupControllerImpl;
 
 // Chrome implementation of AutofillManagerDelegate.
 class TabAutofillManagerDelegate

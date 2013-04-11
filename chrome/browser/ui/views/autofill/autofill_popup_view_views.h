@@ -15,6 +15,8 @@ namespace content {
 class WebContents;
 }
 
+namespace autofill {
+
 // Views toolkit implementation for AutofillPopupView.
 class AutofillPopupViewViews : public AutofillPopupView,
                                public views::WidgetDelegateView,
@@ -64,5 +66,7 @@ class AutofillPopupViewViews : public AutofillPopupView,
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewViews);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_VIEW_VIEWS_H_

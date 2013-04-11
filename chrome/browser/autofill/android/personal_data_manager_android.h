@@ -10,6 +10,8 @@
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
 
+namespace autofill {
+
 // Android wrapper of the PersonalDataManager which provides access from the
 // Java layer. Note that on Android, there's only a single profile, and
 // therefore a single instance of this wrapper.
@@ -93,5 +95,7 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_ANDROID_PERSONAL_DATA_MANAGER_ANDROID_H_

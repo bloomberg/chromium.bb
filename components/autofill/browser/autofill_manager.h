@@ -52,6 +52,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 namespace autofill {
 class AutofillManagerDelegate;
 class AutofillManagerTestDelegate;
+class FormStructureBrowserTest;
 class PasswordGenerator;
 }
 
@@ -434,7 +435,7 @@ class AutofillManager : public content::WebContentsObserver,
   base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
 
   friend class AutofillManagerTest;
-  friend class FormStructureBrowserTest;
+  friend class autofill::FormStructureBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

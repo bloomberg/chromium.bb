@@ -24,6 +24,7 @@
 using base::WeakPtr;
 using WebKit::WebAutofillClient;
 
+namespace autofill {
 namespace {
 
 // Used to indicate that no line is currently selected by the user.
@@ -67,7 +68,7 @@ const DataResource kDataResources[] = {
   { "visaCC", IDR_AUTOFILL_CC_VISA },
 };
 
-}  // end namespace
+}  // namespace
 
 // static
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
@@ -624,3 +625,5 @@ std::pair<int,int> AutofillPopupControllerImpl::CalculatePopupYAndHeight(
                           popup_required_height);
   }
 }
+
+}  // namespace autofill

@@ -23,6 +23,11 @@ class AutofillMetrics;
 class FormStructure;
 class PersonalDataManagerObserver;
 
+namespace autofill {
+class AutofillTest;
+class PersonalDataManagerFactory;
+}
+
 namespace autofill_helper {
 void SetProfiles(int, std::vector<AutofillProfile>*);
 void SetCreditCards(int, std::vector<CreditCard>*);
@@ -174,8 +179,8 @@ class PersonalDataManager : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AggregateExistingAuxiliaryProfile);
-  friend class AutofillTest;
-  friend class PersonalDataManagerFactory;
+  friend class autofill::AutofillTest;
+  friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
   friend class ProfileSyncServiceAutofillTest;
   friend class RemoveAutofillTester;

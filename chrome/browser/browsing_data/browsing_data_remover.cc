@@ -452,7 +452,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                      base::Unretained(this)));
 
       PersonalDataManager* data_manager =
-          PersonalDataManagerFactory::GetForProfile(profile_);
+          autofill::PersonalDataManagerFactory::GetForProfile(profile_);
       if (data_manager) {
         data_manager->Refresh();
       }

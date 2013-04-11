@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
  *
  * See chrome/browser/autofill/personal_data_manager.h for more details.
  */
+@JNINamespace("autofill")
 public class PersonalDataManager {
 
     public interface PersonalDataManagerObserver {

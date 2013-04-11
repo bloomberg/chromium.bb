@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
+namespace autofill {
 namespace {
 
 class MockAutofillManagerDelegate
@@ -156,3 +157,5 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 }
+
+}  // namespace autofill

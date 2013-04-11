@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.ui.gfx.NativeWindow;
@@ -12,6 +13,7 @@ import org.chromium.ui.gfx.NativeWindow;
 /**
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
 */
+@JNINamespace("autofill")
 public class AutofillPopupGlue implements AutofillPopupDelegate{
     private final int mNativeAutofillPopup;
     private final AutofillPopup mAutofillPopup;
@@ -84,5 +86,4 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     private native void nativeRequestHide(int nativeAutofillPopupViewAndroid);
     private native void nativeSuggestionSelected(int nativeAutofillPopupViewAndroid,
             int listIndex);
-
 }

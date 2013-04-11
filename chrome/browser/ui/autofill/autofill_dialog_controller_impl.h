@@ -35,7 +35,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 
-class AutofillPopupControllerImpl;
 class FormGroup;
 class Profile;
 class PrefRegistrySyncable;
@@ -47,6 +46,7 @@ class WebContents;
 namespace autofill {
 
 class AutofillDialogView;
+class AutofillPopupControllerImpl;
 class DataModelWrapper;
 
 namespace risk {

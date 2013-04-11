@@ -16,6 +16,7 @@
 #include "components/autofill/browser/form_structure.h"
 #include "googleurl/src/gurl.h"
 
+namespace autofill {
 namespace {
 
 const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
@@ -261,3 +262,5 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
                     GetOutputDirectory(kTestName),
                     kFileNamePattern);
 }
+
+}  // namespace autofill

@@ -273,7 +273,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
 }
 
 void AutofillOptionsHandler::InitializeHandler() {
-  personal_data_ = PersonalDataManagerFactory::GetForProfile(
+  personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
   // personal_data_ is NULL in guest mode on Chrome OS.
   if (personal_data_)

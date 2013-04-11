@@ -11,11 +11,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
-class AutofillPopupController;
-
 namespace gfx {
 class Rect;
 }
+
+namespace autofill {
+
+class AutofillPopupController;
 
 class AutofillPopupViewAndroid : public AutofillPopupView {
  public:
@@ -48,5 +50,7 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewAndroid);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_POPUP_VIEW_ANDROID_H_

@@ -11,9 +11,12 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
-class AutofillPopupController;
 @class AutofillPopupViewCocoa;
 @class NSWindow;
+
+namespace autofill {
+
+class AutofillPopupController;
 
 // Mac implementation for AutofillPopupView interface.
 // Serves as a bridge to the Objective-C class AutofillPopupViewCocoa which
@@ -44,5 +47,7 @@ class AutofillPopupViewBridge : public AutofillPopupView {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewBridge);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_POPUP_VIEW_BRIDGE_H_

@@ -20,6 +20,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
+namespace autofill {
 namespace {
 
 Profile* GetDefaultProfile() {
@@ -279,3 +280,5 @@ static jint Init(JNIEnv* env, jobject obj) {
       new PersonalDataManagerAndroid(env, obj);
   return reinterpret_cast<jint>(personal_data_manager_android);
 }
+
+}  // namespace autofill

@@ -33,6 +33,8 @@ const GdkColor kSubtextColor = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
 
 }  // namespace
 
+namespace autofill {
+
 AutofillPopupViewGtk::AutofillPopupViewGtk(
     AutofillPopupController* controller)
     : controller_(controller),
@@ -292,3 +294,5 @@ AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
   return new AutofillPopupViewGtk(controller);
 }
+
+}  // namespace autofill

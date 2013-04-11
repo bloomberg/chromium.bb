@@ -77,7 +77,8 @@ bool AutofillProfileDataTypeController::StartModels() {
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
   // association, the local ids in the mappings would wind up colliding.
-  personal_data_ = PersonalDataManagerFactory::GetForProfile(profile());
+  personal_data_ =
+      autofill::PersonalDataManagerFactory::GetForProfile(profile());
   if (!personal_data_->IsDataLoaded()) {
     personal_data_->AddObserver(this);
     return false;

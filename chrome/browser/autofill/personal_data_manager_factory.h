@@ -13,6 +13,8 @@ template <typename T> struct DefaultSingletonTraits;
 class PersonalDataManager;
 class Profile;
 
+namespace autofill {
+
 // A wrapper of PersonalDataManager so we can use it as a profiled keyed
 // service. This should only be subclassed in tests, e.g. to provide a mock
 // PersonalDataManager.
@@ -43,5 +45,7 @@ class PersonalDataManagerFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_FACTORY_H_

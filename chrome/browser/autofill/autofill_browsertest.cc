@@ -56,6 +56,8 @@ using content::WebContents;
 
 using testing::Invoke;
 
+namespace autofill {
+
 static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
 static const char* kTestFormString =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
@@ -1719,3 +1721,5 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   ASSERT_GT(num_of_profiles,
             static_cast<int>(personal_data_manager()->GetProfiles().size()));
 }
+
+}  // namespace autofill

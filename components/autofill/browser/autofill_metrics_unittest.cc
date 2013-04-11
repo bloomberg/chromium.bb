@@ -306,7 +306,8 @@ void AutofillMetricsTest::SetUp() {
   TestingProfile* profile = new TestingProfile();
   profile->CreateRequestContext();
   browser_context_.reset(profile);
-  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile, NULL);
+  autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+      profile, NULL);
 
   ChromeRenderViewHostTestHarness::SetUp();
   io_thread_.StartIOThread();
@@ -341,7 +342,7 @@ scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
               LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
 
   CreditCard credit_card;
-  return AutofillCCInfoBarDelegate::CreateForTesting(
+  return autofill::AutofillCCInfoBarDelegate::CreateForTesting(
       metric_logger,
       base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
                  base::Unretained(personal_data_.get()), credit_card));

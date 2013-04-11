@@ -9,18 +9,19 @@
 
 #import "ui/base/cocoa/base_view.h"
 
+namespace autofill {
 class AutofillPopupController;
-class AutofillPopupViewMac;
+}  // namespace autofill
 
 // Draws the native Autofill popup view on Mac.
 @interface AutofillPopupViewCocoa : BaseView {
  @private
   // The cross-platform controller for this view.
-  __weak AutofillPopupController* controller_;
+  __weak autofill::AutofillPopupController* controller_;
 }
 
 // Designated initializer.
-- (id)initWithController:(AutofillPopupController*)controller
+- (id)initWithController:(autofill::AutofillPopupController*)controller
                    frame:(NSRect)frame;
 
 // Informs the view that its controller has been (or will imminently be)

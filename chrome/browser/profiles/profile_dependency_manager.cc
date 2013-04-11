@@ -344,7 +344,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
-  PersonalDataManagerFactory::GetInstance();
+  autofill::PersonalDataManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
 #endif

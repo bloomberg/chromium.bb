@@ -17,6 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace autofill {
+
 // static
 void AutofillCCInfoBarDelegate::Create(
     InfoBarService* infobar_service,
@@ -115,3 +117,5 @@ bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
                              false));
   return false;
 }
+
+}  // namespace autofill

@@ -16,6 +16,8 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
+using autofill::AutofillPopupView;
+
 namespace {
 
 NSColor* BackgroundColor() {
@@ -38,7 +40,7 @@ NSColor* SubtextColor() {
   return [NSColor grayColor];
 }
 
-}  // anonymous namespace
+}  // namespace
 
 #pragma mark -
 #pragma mark Private methods
@@ -74,7 +76,7 @@ NSColor* SubtextColor() {
   return [self initWithController:NULL frame:frame];
 }
 
-- (id)initWithController:(AutofillPopupController*)controller
+- (id)initWithController:(autofill::AutofillPopupController*)controller
                    frame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self)
@@ -204,7 +206,7 @@ NSColor* SubtextColor() {
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   CGFloat x = bounds.origin.x +
       (isRTL ?
-       bounds.size.width - AutofillPopupView::kEndPadding - nameSize.width:
+       bounds.size.width - AutofillPopupView::kEndPadding - nameSize.width :
        AutofillPopupView::kEndPadding);
   CGFloat y = bounds.origin.y + (bounds.size.height - nameSize.height) / 2;
 

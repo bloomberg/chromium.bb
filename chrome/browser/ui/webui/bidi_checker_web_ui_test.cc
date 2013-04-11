@@ -309,7 +309,7 @@ static void SetupSettingsAutofillPageTest(Profile* profile,
                                 country,
                                 phone);
   PersonalDataManager* personal_data_manager =
-      PersonalDataManagerFactory::GetForProfile(profile);
+      autofill::PersonalDataManagerFactory::GetForProfile(profile);
   ASSERT_TRUE(personal_data_manager);
   personal_data_manager->AddProfile(autofill_profile);
 }

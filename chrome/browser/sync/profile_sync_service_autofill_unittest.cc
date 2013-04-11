@@ -393,7 +393,8 @@ class MockPersonalDataManager : public PersonalDataManager {
   MOCK_METHOD0(Refresh, void());
 };
 
-class MockPersonalDataManagerService : public PersonalDataManagerService {
+class MockPersonalDataManagerService
+    : public autofill::PersonalDataManagerService {
  public:
   static ProfileKeyedService* Build(Profile* profile) {
     return new MockPersonalDataManagerService();
@@ -468,8 +469,9 @@ class ProfileSyncServiceAutofillTest
 
     MockPersonalDataManagerService* personal_data_manager_service =
         static_cast<MockPersonalDataManagerService*>(
-            PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(), MockPersonalDataManagerService::Build));
+            autofill::PersonalDataManagerFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    profile_.get(), MockPersonalDataManagerService::Build));
     personal_data_manager_ =
         personal_data_manager_service->GetPersonalDataManager();
 

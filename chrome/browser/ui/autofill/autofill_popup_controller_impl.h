@@ -15,7 +15,6 @@
 #include "ui/gfx/rect_f.h"
 
 class AutofillPopupDelegate;
-class AutofillPopupView;
 
 namespace gfx {
 class Display;
@@ -24,6 +23,10 @@ class Display;
 namespace ui {
 class KeyEvent;
 }
+
+namespace autofill {
+
+class AutofillPopupView;
 
 // This class is a controller for an AutofillPopupView. It implements
 // AutofillPopupController to allow calls from AutofillPopupView. The
@@ -199,5 +202,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_

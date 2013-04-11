@@ -55,7 +55,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(TemplateURLServiceFactory::GetInstance());
-  DependsOn(PersonalDataManagerFactory::GetInstance());
+  DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
 #if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
 #endif

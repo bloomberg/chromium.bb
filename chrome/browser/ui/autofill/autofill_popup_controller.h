@@ -18,6 +18,8 @@ class Rect;
 class RectF;
 }
 
+namespace autofill {
+
 // This interface provides data to an AutofillPopupView.
 class AutofillPopupController {
  public:
@@ -94,5 +96,7 @@ class AutofillPopupController {
  protected:
   virtual ~AutofillPopupController() {}
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_H_
