@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
@@ -22,6 +23,7 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
   gallery.device_id =
       MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
                                      base::Int64ToString(id));
+  gallery.display_name = ASCIIToUTF16("Display Name");
   return gallery;
 }
 
@@ -44,10 +46,6 @@ TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
       MediaGalleriesDialogController::GalleryPermission(gallery2, false);
   EXPECT_CALL(controller, permissions()).
       WillRepeatedly(ReturnRef(permissions));
-
-  // Initializing checkboxes should not cause them to be toggled.
-  EXPECT_CALL(controller, DidToggleGallery(_, _)).
-      Times(0);
 
   MediaGalleriesDialogGtk dialog(&controller);
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
@@ -100,13 +98,19 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   EXPECT_TRUE(dialog.checkbox_map_.empty());
 
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
+  permissions[gallery1.pref_id] =
+      MediaGalleriesDialogController::GalleryPermission(gallery1, true);
   dialog.UpdateGallery(&gallery1, true);
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
+  permissions[gallery2.pref_id] =
+      MediaGalleriesDialogController::GalleryPermission(gallery2, true);
   dialog.UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 
+  permissions[gallery2.pref_id] =
+      MediaGalleriesDialogController::GalleryPermission(gallery2, false);
   dialog.UpdateGallery(&gallery2, false);
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 }
@@ -123,14 +127,19 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
   EXPECT_TRUE(dialog.checkbox_map_.empty());
 
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
+  permissions[gallery1.pref_id] =
+      MediaGalleriesDialogController::GalleryPermission(gallery1, true);
   dialog.UpdateGallery(&gallery1, true);
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
+  permissions[gallery2.pref_id] =
+      MediaGalleriesDialogController::GalleryPermission(gallery2, true);
   dialog.UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 
   dialog.ForgetGallery(&gallery2);
+  permissions.erase(permissions.find(gallery2.pref_id));
   EXPECT_EQ(1U, dialog.checkbox_map_.size());
 }
 

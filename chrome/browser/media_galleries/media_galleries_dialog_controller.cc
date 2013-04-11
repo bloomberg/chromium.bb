@@ -212,7 +212,7 @@ void MediaGalleriesDialogController::DidToggleGallery(
   // Check new galleries.
   for (NewGalleryPermissions::iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
-    if (&iter->pref_info == gallery) {
+    if (iter->pref_info.pref_id == gallery->pref_id) {
       iter->allowed = enabled;
       return;
     }

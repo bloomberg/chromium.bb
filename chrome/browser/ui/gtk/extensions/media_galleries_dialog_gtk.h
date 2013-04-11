@@ -45,10 +45,15 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
+  // TODO(gbillock): Make this map hold a MediaGalleryPrefInfo key directly.
   typedef std::map<const MediaGalleryPrefInfo*, GtkWidget*> CheckboxMap;
 
   // Creates the widget hierarchy.
   void InitWidgets();
+
+  virtual void UpdateGalleryInContainer(const MediaGalleryPrefInfo* gallery,
+                                        bool permitted,
+                                        GtkWidget* checkbox_container);
 
   // Updates the state of the confirm button. It will be disabled when
   void UpdateConfirmButtonState();
@@ -64,15 +69,9 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
   // The confirm button.
   GtkWidget* confirm_;
 
-  // This widget holds all the checkboxes.
-  GtkWidget* checkbox_container_;
-
   // A map from MediaGalleryPrefInfo struct (owned by controller) to the
   // GtkCheckButton that controls it.
   CheckboxMap checkbox_map_;
-
-  // When true, checkbox toggles are ignored (used when updating the UI).
-  bool ignore_toggles_;
 
   // True if the user has pressed accept.
   bool accepted_;
