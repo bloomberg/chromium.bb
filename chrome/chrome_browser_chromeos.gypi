@@ -46,7 +46,6 @@
         '../build/linux/system.gyp:dbus',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chromeos/chromeos.gyp:chromeos',
-        '../components/components.gyp:autofill_regexes',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../chromeos/ime/input_method.gyp:gencode',

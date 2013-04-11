@@ -2258,7 +2258,6 @@
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
-            '../components/components.gyp:autofill_regexes',
             '../device/device.gyp:device_bluetooth',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',

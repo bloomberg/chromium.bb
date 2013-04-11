@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # Private target only used in components/autofill.
       'target_name': 'autofill_regexes',
       'type': 'none',
       'actions': [{
