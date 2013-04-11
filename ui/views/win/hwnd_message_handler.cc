@@ -1330,6 +1330,11 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
     CRect client_rect, window_rect;
     GetClientRect(hwnd(), &client_rect);
     GetWindowRect(hwnd(), &window_rect);
+    // Due to the client area bottom inset hack (detailed elsewhere), adjust
+    // the reported size of the client area in the case that the standard frame
+    // has been removed.
+    if (remove_standard_frame_)
+      client_rect.bottom += kClientAreaBottomInsetHack;
     window_rect -= client_rect;
     min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
     if (!max_window_size.IsEmpty())
