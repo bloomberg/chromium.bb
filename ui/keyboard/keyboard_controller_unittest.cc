@@ -11,6 +11,8 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/mock_input_method.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -74,7 +76,9 @@ class KeyboardControllerTest : public testing::Test {
 
 class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
-  TestKeyboardControllerProxy() : window_(new aura::Window(&delegate_)) {
+  TestKeyboardControllerProxy()
+      : window_(new aura::Window(&delegate_)),
+        input_method_(new ui::MockInputMethod(NULL)) {
     window_->Init(ui::LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
   }
@@ -86,10 +90,14 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
 
   // Overridden from KeyboardControllerProxy:
   virtual aura::Window* GetKeyboardWindow() OVERRIDE { return window_.get(); }
+  virtual ui::InputMethod* GetInputMethod() OVERRIDE {
+    return input_method_.get();
+  }
 
  private:
   scoped_ptr<aura::Window> window_;
   aura::test::TestWindowDelegate delegate_;
+  scoped_ptr<ui::InputMethod> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(TestKeyboardControllerProxy);
 };

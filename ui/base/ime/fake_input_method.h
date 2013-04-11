@@ -40,6 +40,8 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual bool IsActive() OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
  private:
   internal::InputMethodDelegate* delegate_;

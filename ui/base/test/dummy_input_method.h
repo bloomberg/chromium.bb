@@ -33,6 +33,8 @@ class DummyInputMethod : public InputMethod {
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+  virtual void AddObserver(InputMethod::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(InputMethod::Observer* observer) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethod);
