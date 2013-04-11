@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/editing_layout_email"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:columnCount="4">
+    <EditText
+        android:layout_height="@dimen/autofill_edit_height"
+        android:id="@+id/email_address"
+        android:layout_margin="@dimen/autofill_edit_margin"
+        android:textSize="@dimen/autofill_edit_text_size"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+</GridLayout>

@@ -86,7 +86,7 @@ public class AutofillDialogUtils {
             case AutofillDialogConstants.SECTION_BILLING :
                 return R.id.editing_layout_billing;
             case AutofillDialogConstants.SECTION_EMAIL :
-                return INVALID_ID;
+                return R.id.editing_layout_email;
             default:
                 assert(false);
                 return INVALID_ID;
@@ -127,7 +127,8 @@ public class AutofillDialogUtils {
     public static int getViewIDForField(int section, int field) {
         switch (section) {
             case AutofillDialogConstants.SECTION_EMAIL :
-                return 0;
+                assert(field == AutofillDialogConstants.EMAIL_ADDRESS);
+                return R.id.email_address;
             case AutofillDialogConstants.SECTION_CC :
                 switch (field) {
                     case AutofillDialogConstants.CREDIT_CARD_NUMBER :

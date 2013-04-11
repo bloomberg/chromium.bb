@@ -16,6 +16,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CheckBox;
@@ -157,6 +158,7 @@ public class AutofillDialog extends AlertDialog
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate,
             String useBillingForShippingText, String saveLocallyText) {
         super(context);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         mDelegate = delegate;
 
         mTitleView = new AutofillDialogTitleView(getContext());
@@ -190,6 +192,12 @@ public class AutofillDialog extends AlertDialog
         mContentView.setOnItemSelectedListener(this);
 
         // TODO(aruslan): remove as part of the native model wrapper http://crbug.com/224162.
+        final AutofillDialogMenuItem[] emailItems = {
+                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_new_email)),
+                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_edit_email))
+        };
         final AutofillDialogMenuItem[] ccItems = {
                 new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
                         resources.getString(R.string.autofill_new_credit_card)),
@@ -215,7 +223,7 @@ public class AutofillDialog extends AlertDialog
                         resources.getString(R.string.autofill_edit_shipping))
         };
 
-        // TODO(yusufo): http://crbug.com/226497 Need an email add/edit layout/something.
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_EMAIL] = emailItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_CC] = ccItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_BILLING] = billingAddressItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingDetailsItems;

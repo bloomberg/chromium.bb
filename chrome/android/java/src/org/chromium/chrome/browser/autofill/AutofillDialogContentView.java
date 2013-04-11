@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.NUM_SECTIONS;
+import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_EMAIL;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_CC_BILLING;
 import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTION_BILLING;
@@ -45,14 +46,14 @@ import java.util.List;
  */
 public class AutofillDialogContentView extends LinearLayout {
     private static final int ANIMATION_DURATION_MS = 1000;
-    // TODO(yusufo): Remove all placeholders here and also in related layout xml files.
     static final int INVALID_LAYOUT = -1;
-    static final int LAYOUT_EDITING_SHIPPING = 0;
-    static final int LAYOUT_EDITING_CC = 1;
-    static final int LAYOUT_EDITING_BILLING = 2;
-    static final int LAYOUT_EDITING_CC_BILLING = 3;
-    static final int LAYOUT_FETCHING = 4;
-    static final int LAYOUT_STEADY = 5;
+    static final int LAYOUT_EDITING_EMAIL = 0;
+    static final int LAYOUT_EDITING_SHIPPING = 1;
+    static final int LAYOUT_EDITING_CC = 2;
+    static final int LAYOUT_EDITING_BILLING = 3;
+    static final int LAYOUT_EDITING_CC_BILLING = 4;
+    static final int LAYOUT_FETCHING = 5;
+    static final int LAYOUT_STEADY = 6;
     private final Runnable mDismissSteadyLayoutRunnable = new Runnable() {
         @Override
         public void run() {
@@ -209,9 +210,20 @@ public class AutofillDialogContentView extends LinearLayout {
      * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.
      */
     public void updateMenuItemsForSection(int section, List<AutofillDialogMenuItem> items) {
+        final Spinner spinner = mSpinners[section];
+        final OnItemSelectedListener listener = spinner.getOnItemSelectedListener();
+        // Set the listener to null and reset it after updating the menu items to avoid getting an
+        // onItemSelected call when the first item is selected after updating the items.
+        spinner.setOnItemSelectedListener(null);
         AutofillDialogMenuAdapter adapter = mAdapters[section];
         adapter.clear();
         adapter.addAll(items);
+        spinner.post(new Runnable() {
+            @Override
+            public void run() {
+                spinner.setOnItemSelectedListener(listener);
+            }
+        });
     }
 
     /**
@@ -323,6 +335,8 @@ public class AutofillDialogContentView extends LinearLayout {
 
     private static int getSectionForLayoutMode(int mode) {
         switch (mode) {
+            case LAYOUT_EDITING_EMAIL:
+                return SECTION_EMAIL;
             case LAYOUT_EDITING_CC:
                 return SECTION_CC;
             case LAYOUT_EDITING_BILLING:
