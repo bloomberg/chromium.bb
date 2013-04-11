@@ -69,6 +69,11 @@ squash_space_SOURCES =				\
 	brl_checks.h				\
 	squash_space.c
 
+hyphenate_crash_SOURCES  =		\
+	brl_checks.c			\
+	brl_checks.h			\
+	hyphenate.c
+
 hyphenate_SOURCES =				\
 	brl_checks.c				\
 	brl_checks.h				\
@@ -110,6 +115,7 @@ check_PROGRAMS =				\
 	letterDefTest				\
 	squash_space				\
 	hyphenate				\
+	hyphenate_crash				\
 	pass1Only				\
 	outpos				\
 	getTable \
