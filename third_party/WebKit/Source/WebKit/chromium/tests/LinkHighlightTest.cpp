@@ -48,7 +48,6 @@ using namespace WebCore;
 
 namespace {
 
-#if ENABLE(GESTURE_EVENTS)
 TEST(LinkHighlightTest, verifyWebViewImplIntegration)
 {
     WebKitTests::WebCompositorInitializer compositorInitializer(0);
@@ -121,6 +120,5 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
 
     webViewImpl->close();
 }
-#endif
 
 } // namespace

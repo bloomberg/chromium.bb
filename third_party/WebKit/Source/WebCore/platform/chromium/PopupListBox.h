@@ -52,9 +52,7 @@ class GraphicsContext;
 class IntRect;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
-#if ENABLE(GESTURE_EVENTS)
 class PlatformGestureEvent;
-#endif
 #if ENABLE(TOUCH_EVENTS)
 class PlatformTouchEvent;
 #endif
@@ -137,9 +135,7 @@ public:
 #if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(const PlatformTouchEvent&);
 #endif
-#if ENABLE(GESTURE_EVENTS)
     virtual bool handleGestureEvent(const PlatformGestureEvent&);
-#endif
 
     // ScrollView
     virtual HostWindow* hostWindow() const;

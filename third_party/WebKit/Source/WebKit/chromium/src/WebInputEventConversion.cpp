@@ -150,7 +150,6 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
 // PlatformGestureEventBuilder --------------------------------------------------
 
-#if ENABLE(GESTURE_EVENTS)
 PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const WebGestureEvent& e)
 {
     float scale = widgetScaleFactor(widget);
@@ -231,7 +230,6 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     if (e.modifiers & WebInputEvent::MetaKey)
         m_modifiers |= PlatformEvent::MetaKey;
 }
-#endif
 
 // MakePlatformKeyboardEvent --------------------------------------------------
 
@@ -627,7 +625,6 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::
 
 #endif // ENABLE(TOUCH_EVENTS)
 
-#if ENABLE(GESTURE_EVENTS)
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const GestureEvent& event)
 {
     if (event.type() == eventNames().gesturetapEvent)
@@ -653,6 +650,5 @@ WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCo
     x = localPoint.x();
     y = localPoint.y();
 }
-#endif // ENABLE(GESTURE_EVENTS)
 
 } // namespace WebKit

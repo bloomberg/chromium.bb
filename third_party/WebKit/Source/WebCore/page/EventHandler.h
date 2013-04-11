@@ -64,6 +64,7 @@ class KeyboardEvent;
 class MouseEventWithHitTestResults;
 class Node;
 class OptionalCursor;
+class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
@@ -79,10 +80,6 @@ class WheelEvent;
 class Widget;
 
 struct DragState;
-
-#if ENABLE(GESTURE_EVENTS)
-class PlatformGestureEvent;
-#endif
 
 extern const int LinkDragHysteresis;
 extern const int ImageDragHysteresis;
@@ -167,7 +164,6 @@ public:
     void defaultWheelEventHandler(Node*, WheelEvent*);
     bool handlePasteGlobalSelection(const PlatformMouseEvent&);
 
-#if ENABLE(GESTURE_EVENTS)
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleGestureTap(const PlatformGestureEvent&);
     bool handleGestureLongPress(const PlatformGestureEvent&);
@@ -177,7 +173,6 @@ public:
     bool handleGestureScrollBegin(const PlatformGestureEvent&);
     void clearGestureScrollNodes();
     bool isScrollbarHandlingGestures() const;
-#endif
 
 #if ENABLE(TOUCH_ADJUSTMENT)
     bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
@@ -192,9 +187,7 @@ public:
 #if ENABLE(CONTEXT_MENUS)
     bool sendContextMenuEvent(const PlatformMouseEvent&);
     bool sendContextMenuEventForKey();
-#if ENABLE(GESTURE_EVENTS)
     bool sendContextMenuEventForGesture(const PlatformGestureEvent&);
-#endif
 #endif
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
@@ -316,13 +309,11 @@ private:
 
     bool isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent&) const;
 
-#if ENABLE(GESTURE_EVENTS)
     bool handleGestureTapDown();
     bool handleGestureForTextSelectionOrContextMenu(const PlatformGestureEvent&);
     bool passGestureEventToWidget(const PlatformGestureEvent&, Widget*);
     bool passGestureEventToWidgetIfPossible(const PlatformGestureEvent&, RenderObject*);
     bool sendScrollEventToView(const PlatformGestureEvent&, const FloatSize&);
-#endif
 
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
@@ -405,12 +396,10 @@ private:
     bool m_touchPressed;
 #endif
 
-#if ENABLE(GESTURE_EVENTS)
     RefPtr<Node> m_scrollGestureHandlingNode;
     bool m_lastHitTestResultOverWidget;
     RefPtr<Node> m_previousGestureScrolledNode;
     RefPtr<Scrollbar> m_scrollbarHandlingScrollGesture;
-#endif
 
     double m_maxMouseMovedDuration;
     PlatformEvent::Type m_baseEventType;

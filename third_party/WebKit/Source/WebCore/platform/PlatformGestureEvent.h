@@ -26,8 +26,6 @@
 #ifndef PlatformGestureEvent_h
 #define PlatformGestureEvent_h
 
-#if ENABLE(GESTURE_EVENTS)
-
 #include "FloatPoint.h"
 #include "IntPoint.h"
 #include "IntSize.h"
@@ -80,7 +78,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(GESTURE_EVENTS)
 
 #endif // PlatformGestureEvent_h

@@ -36,6 +36,7 @@
 #include "FramelessScrollView.h"
 #include "IntRect.h"
 #include "NotImplemented.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
@@ -50,10 +51,6 @@
 #include "painting/GraphicsContextBuilder.h"
 #include <public/WebRect.h>
 #include <skia/ext/platform_canvas.h>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 using namespace WebCore;
 

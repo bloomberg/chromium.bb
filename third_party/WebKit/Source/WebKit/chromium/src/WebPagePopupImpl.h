@@ -79,9 +79,7 @@ private:
     // PageWidgetEventHandler functions
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
-#if ENABLE(GESTURE_EVENTS)
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
-#endif
 
     explicit WebPagePopupImpl(WebWidgetClient*);
     bool initializePage();

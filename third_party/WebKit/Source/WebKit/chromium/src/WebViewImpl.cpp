@@ -91,6 +91,7 @@
 #include "PagePopupClient.h"
 #include "PageWidgetDelegate.h"
 #include "PlatformContextSkia.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
@@ -115,6 +116,7 @@
 #include "TextFieldDecoratorImpl.h"
 #include "TextIterator.h"
 #include "Timer.h"
+#include "TouchDisambiguation.h"
 #include "TraceEvent.h"
 #include "ValidationMessageClientImpl.h"
 #include "WebAccessibilityObject.h"
@@ -167,11 +169,6 @@
 #if ENABLE(DEFAULT_RENDER_THEME)
 #include "PlatformThemeChromiumDefault.h"
 #include "RenderThemeChromiumDefault.h"
-#endif
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#include "TouchDisambiguation.h"
 #endif
 
 #if OS(WINDOWS)
@@ -691,7 +688,6 @@ void WebViewImpl::scrollBy(const WebFloatSize& delta)
     }
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     bool eventSwallowed = false;
@@ -888,7 +884,6 @@ void WebViewImpl::enableFakeDoubleTapAnimationForTesting(bool enable)
 {
     m_enableFakeDoubleTapAnimationForTesting = enable;
 }
-#endif
 
 WebViewBenchmarkSupport* WebViewImpl::benchmarkSupport()
 {
@@ -1111,7 +1106,6 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     return true;
 }
 
-#if ENABLE(GESTURE_EVENTS)
 WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, AutoZoomType zoomType)
 {
     if (!mainFrameImpl())
@@ -1323,11 +1317,8 @@ void WebViewImpl::enableTapHighlight(const PlatformGestureEvent& tapEvent)
     m_linkHighlight = LinkHighlight::create(touchNode, this);
 }
 
-#endif
-
 void WebViewImpl::animateZoomAroundPoint(const IntPoint& point, AutoZoomType zoomType)
 {
-#if ENABLE(GESTURE_EVENTS)
     if (!mainFrameImpl())
         return;
 
@@ -1345,7 +1336,6 @@ void WebViewImpl::animateZoomAroundPoint(const IntPoint& point, AutoZoomType zoo
         m_doubleTapZoomPageScaleFactor = scale;
         m_doubleTapZoomPending = true;
     }
-#endif
 }
 
 void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
@@ -2723,17 +2713,14 @@ void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
         return;
     }
 
-#if ENABLE(GESTURE_EVENTS)
     float scale;
     IntPoint scroll;
     bool needAnimation;
     computeScaleAndScrollForFocusedNode(focusedNode, scale, scroll, needAnimation);
     if (needAnimation)
         startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
-#endif
 }
 
-#if ENABLE(GESTURE_EVENTS)
 void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& newScale, IntPoint& newScroll, bool& needAnimation)
 {
     focusedNode->document()->updateLayoutIgnorePendingStylesheets();
@@ -2799,7 +2786,6 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRect))
         needAnimation = true;
 }
-#endif
 
 void WebViewImpl::advanceFocus(bool reverse)
 {
@@ -3104,13 +3090,7 @@ void WebViewImpl::restoreScrollAndScaleState()
     if (!m_savedPageScaleFactor)
         return;
 
-#if ENABLE(GESTURE_EVENTS)
     startPageScaleAnimation(IntPoint(m_savedScrollOffset), false, m_savedPageScaleFactor, scrollAndScaleAnimationDurationInSeconds);
-#else
-    setPageScaleFactor(m_savedPageScaleFactor, WebPoint());
-    mainFrame()->setScrollOffset(m_savedScrollOffset);
-#endif
-
     resetSavedScrollAndScaleState();
 }
 

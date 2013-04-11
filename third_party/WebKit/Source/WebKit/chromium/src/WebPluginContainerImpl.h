@@ -48,14 +48,11 @@ class HTMLPlugInElement;
 class IntRect;
 class KeyboardEvent;
 class MouseEvent;
+class PlatformGestureEvent;
 class ResourceError;
 class ResourceResponse;
 class TouchEvent;
 class WheelEvent;
-
-#if ENABLE(GESTURE_EVENTS)
-class PlatformGestureEvent;
-#endif
 }
 
 namespace WebKit {

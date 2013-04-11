@@ -60,9 +60,7 @@ public:
     virtual bool handleMouseWheel(WebCore::Frame& mainFrame, const WebMouseWheelEvent&);
     virtual bool handleKeyEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleCharEvent(const WebKeyboardEvent&) = 0;
-#if ENABLE(GESTURE_EVENTS)
     virtual bool handleGestureEvent(const WebGestureEvent&) = 0;
-#endif
 #if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(WebCore::Frame& mainFrame, const WebTouchEvent&);
 #endif

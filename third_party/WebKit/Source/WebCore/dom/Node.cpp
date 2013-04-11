@@ -63,6 +63,7 @@
 #include "FocusEvent.h"
 #include "Frame.h"
 #include "FrameView.h"
+#include "GestureEvent.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
@@ -122,10 +123,6 @@
 
 #ifndef NDEBUG
 #include "RenderLayer.h"
-#endif
-
-#if ENABLE(GESTURE_EVENTS)
-#include "GestureEvent.h"
 #endif
 
 #include "InspectorController.h"
@@ -2392,7 +2389,6 @@ bool Node::dispatchMouseEvent(const PlatformMouseEvent& event, const AtomicStrin
     return EventDispatcher::dispatchEvent(this, MouseEventDispatchMediator::create(MouseEvent::create(eventType, document()->defaultView(), event, detail, relatedTarget)));
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
 {
     RefPtr<GestureEvent> gestureEvent = GestureEvent::create(document()->defaultView(), event);
@@ -2400,7 +2396,6 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
         return false;
     return EventDispatcher::dispatchEvent(this, GestureEventDispatchMediator::create(gestureEvent));
 }
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
 bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)

@@ -288,7 +288,6 @@ bool WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent&)
     return false;
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     if (m_closing || !m_page || !m_page->mainFrame() || !m_page->mainFrame()->view())
@@ -296,7 +295,6 @@ bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
     Frame& frame = *m_page->mainFrame();
     return frame.eventHandler()->handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
-#endif
 
 bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
 {

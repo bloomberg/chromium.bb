@@ -556,12 +556,10 @@ public:
     // a plugin can update its own zoom, say because of its own UI.
     void fullFramePluginZoomLevelChanged(double zoomLevel);
 
-#if ENABLE(GESTURE_EVENTS)
     void computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZoomType, float& scale, WebPoint& scroll, bool& isAnchor);
     WebCore::Node* bestTapNode(const WebCore::PlatformGestureEvent& tapEvent);
     void enableTapHighlight(const WebCore::PlatformGestureEvent& tapEvent);
     void computeScaleAndScrollForFocusedNode(WebCore::Node* focusedNode, float& scale, WebCore::IntPoint& scroll, bool& needAnimation);
-#endif
     void animateZoomAroundPoint(const WebCore::IntPoint&, AutoZoomType);
 
     void enableFakeDoubleTapAnimationForTesting(bool);
@@ -590,10 +588,8 @@ public:
     // for viewing websites that are not optimized for mobile devices.
     bool shouldDisableDesktopWorkarounds();
 
-#if ENABLE(GESTURE_EVENTS)
     // Exposed for tests.
     LinkHighlight* linkHighlight() { return m_linkHighlight.get(); }
-#endif
 
     WebSettingsImpl* settingsImpl();
 
@@ -655,14 +651,12 @@ private:
     void reallocateRenderer();
     void updateLayerTreeViewport();
 
-#if ENABLE(GESTURE_EVENTS)
     // Returns the bounding box of the block type node touched by the WebRect.
     WebRect computeBlockBounds(const WebRect&, AutoZoomType);
 
     // Helper function: Widens the width of |source| by the specified margins
     // while keeping it smaller than page width.
     WebRect widenRectWithinPageBounds(const WebRect& source, int targetMargin, int minimumMargin);
-#endif
 
     void pointerLockMouseEvent(const WebInputEvent&);
 
@@ -874,9 +868,7 @@ private:
     WebPoint m_globalPositionOnFlingStart;
     int m_flingModifier;
     bool m_flingSourceDevice;
-#if ENABLE(GESTURE_EVENTS)
     OwnPtr<LinkHighlight> m_linkHighlight;
-#endif
     OwnPtr<ValidationMessageClientImpl> m_validationMessage;
 
     bool m_showFPSCounter;

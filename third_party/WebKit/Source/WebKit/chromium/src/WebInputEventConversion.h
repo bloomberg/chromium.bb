@@ -70,12 +70,10 @@ public:
     PlatformWheelEventBuilder(WebCore::Widget*, const WebMouseWheelEvent&);
 };
 
-#if ENABLE(GESTURE_EVENTS)
 class PlatformGestureEventBuilder : public WebCore::PlatformGestureEvent {
 public:
     PlatformGestureEventBuilder(WebCore::Widget*, const WebGestureEvent&);
 };
-#endif
 
 class PlatformKeyboardEventBuilder : public WebCore::PlatformKeyboardEvent {
 public:
@@ -133,14 +131,12 @@ public:
 };
 #endif // ENABLE(TOUCH_EVENTS)
 
-#if ENABLE(GESTURE_EVENTS)
 // Converts WebCore::GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
 class WebGestureEventBuilder : public WebGestureEvent {
 public:
     WebGestureEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::GestureEvent&);
 };
-#endif // ENABLE(GESTURE_EVENTS)
 
 } // namespace WebKit
 

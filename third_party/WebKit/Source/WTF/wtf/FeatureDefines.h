@@ -188,10 +188,6 @@
 #define ENABLE_GAMEPAD 0
 #endif
 
-#if !defined(ENABLE_GESTURE_EVENTS)
-#define ENABLE_GESTURE_EVENTS 0
-#endif
-
 #if !defined(ENABLE_GLIB_SUPPORT)
 #define ENABLE_GLIB_SUPPORT 0
 #endif

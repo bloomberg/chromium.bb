@@ -37,6 +37,7 @@
 #include "GraphicsContext.h"
 #include "IntRect.h"
 #include "KeyboardCodes.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformScreen.h"
@@ -52,10 +53,6 @@
 #include <ctype.h>
 #include <limits>
 #include <wtf/CurrentTime.h>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
 #include "PlatformTouchEvent.h"
@@ -186,12 +183,10 @@ bool PopupListBox::handleTouchEvent(const PlatformTouchEvent&)
 }
 #endif
 
-#if ENABLE(GESTURE_EVENTS)
 bool PopupListBox::handleGestureEvent(const PlatformGestureEvent&)
 {
     return false;
 }
-#endif
 
 static bool isCharacterTypeEvent(const PlatformKeyboardEvent& event)
 {

@@ -24,12 +24,8 @@
  */
 
 #include "config.h"
-
-#if ENABLE(GESTURE_EVENTS)
-
-#include "GestureEvent.h"
-
 #include "Element.h"
+#include "GestureEvent.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {
@@ -124,5 +120,3 @@ bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) co
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(GESTURE_EVENTS)

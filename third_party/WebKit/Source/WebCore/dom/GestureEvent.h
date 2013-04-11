@@ -26,8 +26,6 @@
 #ifndef GestureEvent_h
 #define GestureEvent_h
 
-#if ENABLE(GESTURE_EVENTS)
-
 #include "EventDispatcher.h"
 #include "EventNames.h"
 #include "Frame.h"
@@ -76,7 +74,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(GESTURE_EVENTS)
 
 #endif // GestureEvent_h

@@ -687,7 +687,6 @@ TEST_F(WebFrameTest, CanOverrideMaximumScaleFactor)
     EXPECT_EQ(4.0f, m_webView->maximumPageScaleFactor());
 }
 
-#if ENABLE(GESTURE_EVENTS)
 void setScaleAndScrollAndLayout(WebKit::WebView* webView, WebPoint scroll, float scale)
 {
     webView->setPageScaleFactor(scale, WebPoint(scroll.x, scroll.y));
@@ -1028,8 +1027,6 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     // The position should have stayed the same since this box was already on screen with the right scale.
     EXPECT_FALSE(needAnimation);
 }
-
-#endif
 
 class TestReloadDoesntRedirectWebFrameClient : public WebFrameClient {
 public:

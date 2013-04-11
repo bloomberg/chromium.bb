@@ -66,6 +66,7 @@
 #include "MouseEventWithHitTestResults.h"
 #include "Page.h"
 #include "PlatformEvent.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformWheelEvent.h"
 #include "PluginDocument.h"
@@ -90,10 +91,6 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/TemporaryChange.h>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 #if ENABLE(TOUCH_ADJUSTMENT)
 #include "TouchAdjustment.h"
@@ -275,7 +272,6 @@ static inline bool scrollNode(float delta, ScrollGranularity granularity, Scroll
     return enclosingBox->scroll(delta < 0 ? negativeDirection : positiveDirection, granularity, absDelta, stopNode);
 }
 
-#if ENABLE(GESTURE_EVENTS)
 static inline bool shouldGesturesTriggerActive()
 {
     // If the platform we're on supports GestureTapDown and GestureTapCancel then we'll
@@ -283,7 +279,6 @@ static inline bool shouldGesturesTriggerActive()
     // know in advance what event types are supported.
     return true;
 }
-#endif
 
 EventHandler::EventHandler(Frame* frame)
     : m_frame(frame)
@@ -312,10 +307,8 @@ EventHandler::EventHandler(Frame* frame)
     , m_originatingTouchPointTargetKey(0)
     , m_touchPressed(false)
 #endif
-#if ENABLE(GESTURE_EVENTS)
     , m_scrollGestureHandlingNode(0)
     , m_lastHitTestResultOverWidget(false)
-#endif
     , m_maxMouseMovedDuration(0)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
@@ -376,12 +369,10 @@ void EventHandler::clear()
     m_originatingTouchPointDocument.clear();
     m_originatingTouchPointTargetKey = 0;
 #endif
-#if ENABLE(GESTURE_EVENTS)
     m_scrollGestureHandlingNode = 0;
     m_lastHitTestResultOverWidget = false;
     m_previousGestureScrolledNode = 0;
     m_scrollbarHandlingScrollGesture = 0;
-#endif
     m_maxMouseMovedDuration = 0;
     m_baseEventType = PlatformEvent::NoType;
     m_didStartDrag = false;
@@ -2306,7 +2297,6 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
         m_previousWheelScrolledNode = stopNode;
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool EventHandler::handleGestureTapDown()
 {
     FrameView* view = m_frame->view();
@@ -2644,7 +2634,6 @@ bool EventHandler::isScrollbarHandlingGestures() const
 {
     return m_scrollbarHandlingScrollGesture.get();
 }
-#endif // ENABLE(GESTURE_EVENTS)
 
 #if ENABLE(TOUCH_ADJUSTMENT)
 bool EventHandler::shouldApplyTouchAdjustment(const PlatformGestureEvent& event) const
@@ -2822,7 +2811,6 @@ bool EventHandler::sendContextMenuEventForKey()
     return !dispatchMouseEvent(eventNames().contextmenuEvent, targetNode, true, 0, mouseEvent, false);
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& event)
 {
 #if OS(WINDOWS)
@@ -2843,7 +2831,6 @@ bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& ev
     // We do not need to send a corresponding mouse release because in case of
     // right-click, the context menu takes capture and consumes all events.
 }
-#endif // ENABLE(GESTURE_EVENTS)
 #endif // ENABLE(CONTEXT_MENUS)
 
 void EventHandler::scheduleHoverStateUpdate()
@@ -3725,10 +3712,8 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             break;
         }
 
-#if ENABLE(GESTURE_EVENTS)
         if (shouldGesturesTriggerActive())
             hitType |= HitTestRequest::ReadOnly;
-#endif
 
         // Increment the platform touch id by 1 to avoid storing a key of 0 in the hashmap.
         unsigned touchPointTargetKey = point.id() + 1;

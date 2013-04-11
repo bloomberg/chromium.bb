@@ -65,9 +65,7 @@ public:
 #if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(const PlatformTouchEvent&);
 #endif
-#if ENABLE(GESTURE_EVENTS)
     virtual bool handleGestureEvent(const PlatformGestureEvent&);
-#endif
 
     // PopupContainer methods
 

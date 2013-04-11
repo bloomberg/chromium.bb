@@ -63,6 +63,7 @@
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "Page.h"
+#include "PlatformGestureEvent.h"
 #include "RenderBox.h"
 #include "ScrollAnimator.h"
 #include "ScrollView.h"
@@ -83,10 +84,6 @@
 #include <public/WebURLError.h>
 #include <public/WebURLRequest.h>
 #include <public/WebVector.h>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 #include "PlatformContextSkia.h"
 

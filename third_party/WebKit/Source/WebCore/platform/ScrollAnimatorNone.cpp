@@ -35,6 +35,7 @@
 #include "FloatPoint.h"
 #include "NotImplemented.h"
 #include <wtf/OwnArrayPtr.h>
+#include "PlatformGestureEvent.h"
 #include "ScrollableArea.h"
 #include "ScrollbarTheme.h"
 #include <algorithm>
@@ -42,10 +43,6 @@
 #include <wtf/PassOwnPtr.h>
 
 #include "TraceEvent.h"
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 using namespace std;
 

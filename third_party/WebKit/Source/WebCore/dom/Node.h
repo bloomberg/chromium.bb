@@ -67,6 +67,7 @@ class NodeList;
 class NodeListsNodeData;
 class NodeRareData;
 class NodeRenderingContext;
+class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformWheelEvent;
@@ -80,10 +81,6 @@ class RenderObject;
 class RenderStyle;
 class ShadowRoot;
 class TagNodeList;
-
-#if ENABLE(GESTURE_EVENTS)
-class PlatformGestureEvent;
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
 class TouchEvent;
@@ -635,9 +632,7 @@ public:
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = 0);
-#if ENABLE(GESTURE_EVENTS)
     bool dispatchGestureEvent(const PlatformGestureEvent&);
-#endif
 #if ENABLE(TOUCH_EVENTS)
     bool dispatchTouchEvent(PassRefPtr<TouchEvent>);
 #endif

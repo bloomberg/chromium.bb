@@ -143,8 +143,6 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
 
     case WebInputEvent::Char:
         return handler.handleCharEvent(*static_cast<const WebKeyboardEvent*>(&event));
-
-#if ENABLE(GESTURE_EVENTS)
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
@@ -159,7 +157,6 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
     case WebInputEvent::GestureLongPress:
     case WebInputEvent::GestureLongTap:
         return handler.handleGestureEvent(*static_cast<const WebGestureEvent*>(&event));
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
     case WebInputEvent::TouchStart:
@@ -171,7 +168,6 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
         return handler.handleTouchEvent(*frame, *static_cast<const WebTouchEvent*>(&event));
 #endif
 
-#if ENABLE(GESTURE_EVENTS)
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
@@ -179,7 +175,6 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
         // should call handleGestureEvent, just like it currently does for
         // gesture scroll.
         return false;
-#endif
 
     default:
         return false;

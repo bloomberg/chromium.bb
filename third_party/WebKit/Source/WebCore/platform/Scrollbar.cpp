@@ -27,15 +27,12 @@
 #include "Scrollbar.h"
 
 #include "GraphicsContext.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformMouseEvent.h"
 #include "ScrollAnimator.h"
 #include "ScrollableArea.h"
 #include "ScrollbarTheme.h"
 #include <algorithm>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 // FIXME: The following #includes are a layering violation and should be removed.
 #include "AXObjectCache.h"
@@ -354,7 +351,6 @@ void Scrollbar::setPressedPart(ScrollbarPart part)
         theme()->invalidatePart(this, m_hoveredPart);
 }
 
-#if ENABLE(GESTURE_EVENTS)
 bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
 {
     bool handled = false;
@@ -392,7 +388,6 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
     m_pressedPos = 0;
     return handled;
 }
-#endif
 
 bool Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
 {

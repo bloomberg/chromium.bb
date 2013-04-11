@@ -41,6 +41,7 @@
 #include "GraphicsContext.h"
 #include "IntRect.h"
 #include "Page.h"
+#include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformScreen.h"
@@ -49,10 +50,6 @@
 #include "PopupMenuClient.h"
 #include "UserGestureIndicator.h"
 #include <limits>
-
-#if ENABLE(GESTURE_EVENTS)
-#include "PlatformGestureEvent.h"
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
 #include "PlatformTouchEvent.h"
@@ -303,7 +300,6 @@ bool PopupContainer::handleTouchEvent(const PlatformTouchEvent&)
 }
 #endif
 
-#if ENABLE(GESTURE_EVENTS)
 // FIXME: Refactor this code to share functionality with EventHandler::handleGestureEvent.
 bool PopupContainer::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 {
@@ -332,7 +328,6 @@ bool PopupContainer::handleGestureEvent(const PlatformGestureEvent& gestureEvent
     }
     return false;
 }
-#endif
 
 bool PopupContainer::handleKeyEvent(const PlatformKeyboardEvent& event)
 {
