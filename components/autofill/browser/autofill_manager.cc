@@ -1261,8 +1261,14 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
       non_queryable_forms.push_back(form_structure.release());
   }
 
-  // If none of the forms were parsed, no use querying the server.
-  if (!form_structures_.empty() && !disable_download_manager_requests_) {
+  if (form_structures_.empty()) {
+    // Call OnLoadedPageMetaData with no page metadata immediately if there is
+    // no form in the page. This give |autocheckout_manager| a chance to
+    // terminate Autocheckout and send Autocheckout status.
+    autocheckout_manager_.OnLoadedPageMetaData(
+        scoped_ptr<autofill::AutocheckoutPageMetaData>(NULL));
+  } else if (!disable_download_manager_requests_) {
+    // Query the server if we have at least one of the forms were parsed.
     download_manager_.StartQueryRequest(form_structures_.get(),
                                         *metric_logger_);
   }

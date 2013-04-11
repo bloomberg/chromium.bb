@@ -99,6 +99,8 @@ void TabAutofillManagerDelegate::SetSyncStateChangedCallback(
 }
 
 void TabAutofillManagerDelegate::OnAutocheckoutError() {
+  // |dialog_controller_| is a WeakPtr, but we require it to be present when
+  // |OnAutocheckoutError| is called, so we intentionally do not do NULL check.
   dialog_controller_->OnAutocheckoutError();
 }
 
@@ -209,6 +211,8 @@ void TabAutofillManagerDelegate::HideAutofillPopup() {
 }
 
 void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
+  // |dialog_controller_| is a WeakPtr, but we require it to be present when
+  // |UpdateProgressBar| is called, so we intentionally do not do NULL check.
   dialog_controller_->UpdateProgressBar(value);
 }
 
