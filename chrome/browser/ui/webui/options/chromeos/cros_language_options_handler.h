@@ -52,6 +52,12 @@ class CrosLanguageOptionsHandler
   //   'displayName': 'Sample IME'},  ...]
   static base::ListValue* GetExtensionImeList();
 
+  // Gets the list of input methods that are implemented in an extension and
+  // working as component one. The return value will look like:
+  // [{'id': '_comp_fpfbhcjppmaeaijcidgiibchfbnhbeljmozc_ja',
+  //   'displayName': 'Mozc'}, ...]
+  static base::ListValue* GetComponentExtensionImeList();
+
  private:
   // LanguageOptionsHandlerCommon implementation.
   virtual string16 GetProductName() OVERRIDE;

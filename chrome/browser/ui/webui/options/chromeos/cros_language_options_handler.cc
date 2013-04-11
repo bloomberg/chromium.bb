@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -86,6 +87,8 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
   localized_strings->Set("extensionImeList", GetExtensionImeList());
+  localized_strings->Set("componentExtensionImeList",
+                         GetComponentExtensionImeList());
 }
 
 void CrosLanguageOptionsHandler::RegisterMessages() {
@@ -250,6 +253,32 @@ base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
   }
 
   return extension_ime_ids_list;
+}
+
+base::ListValue* CrosLanguageOptionsHandler::GetComponentExtensionImeList() {
+  ComponentExtensionIMEManager* component_extension_manager =
+      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+  scoped_ptr<ListValue> extension_ime_ids_list(new ListValue());
+  if (!component_extension_manager->IsInitialized()) {
+    // TODO(nona): Handle not initialized case.
+    DLOG(ERROR) << "Component Extension IME is not Initialized.";
+    return extension_ime_ids_list.release();
+  }
+
+  input_method::InputMethodDescriptors descriptors =
+      component_extension_manager->GetAllIMEAsInputMethodDescriptor();
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    const input_method::InputMethodDescriptor& descriptor = descriptors[i];
+    scoped_ptr<DictionaryValue> dictionary(new DictionaryValue());
+    dictionary->SetString("id", descriptor.id());
+    dictionary->SetString("displayName", descriptor.name());
+
+    scoped_ptr<DictionaryValue> language_codes(new DictionaryValue());
+    language_codes->SetBoolean(descriptor.language_code(), true);
+    dictionary->Set("languageCodeSet", language_codes.release());
+    extension_ime_ids_list->Append(dictionary.release());
+  }
+  return extension_ime_ids_list.release();
 }
 
 string16 CrosLanguageOptionsHandler::GetProductName() {
