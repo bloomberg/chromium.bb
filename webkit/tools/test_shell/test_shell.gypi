@@ -63,7 +63,7 @@
             '<(DEPTH)/skia/skia.gyp:skia',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
-            '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
+            '<(DEPTH)/third_party/WebKit/Source/devtools/devtools.gyp:devtools_frontend_resources',
             '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '<(DEPTH)/ui/native_theme/native_theme.gyp:native_theme',
             '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

@@ -17,7 +17,7 @@
       'target_name': 'devtools_resources',
       'type': 'none',
       'dependencies': [
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:generate_devtools_grd',
+        '<(webkit_src_dir)/Source/devtools/devtools.gyp:generate_devtools_grd',
       ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',

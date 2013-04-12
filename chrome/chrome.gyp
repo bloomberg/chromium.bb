@@ -33,7 +33,7 @@
           '../content/content.gyp:content_ppapi_plugin',
           '../content/content.gyp:content_worker',
           '../printing/printing.gyp:printing',
-          '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
+          '../third_party/WebKit/Source/devtools/devtools.gyp:devtools_frontend_resources',
         ],
       }],
       ['OS=="win"', {
