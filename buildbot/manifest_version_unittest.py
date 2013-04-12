@@ -14,10 +14,8 @@ import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
-from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
-from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -59,18 +57,6 @@ class HelperMethodsTest(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(os.path.join(otherdir, "bar"))
     manifest_version._RemoveDirs(otherdir)
     self.assertFalse(os.path.exists(otherdir), 'Failed to rmdirs.')
-
-  def testPushGitChangesWithRealPrep(self):
-    """Another push test that tests push but on non-repo does it on a branch."""
-    manifest_versions_url = cbuildbot_config.GetManifestVersionsRepoUrl(
-        internal_build=False, read_only=False)
-    git_dir = os.path.join(constants.SOURCE_ROOT, 'manifest-versions')
-    manifest_version.RefreshManifestCheckout(git_dir, manifest_versions_url)
-    git.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir, sync=False)
-    cros_build_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
-                              input='TEST USER <test_user@chromium.org>')
-    manifest_version._PushGitChanges(git_dir, 'Test appending user.',
-                                     dry_run=True)
 
 
 class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
