@@ -857,7 +857,8 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   // Process the window list and check if there are any visible windows.
   for (size_t i = 0; i < windows.size(); ++i) {
     if (windows[i] && windows[i]->IsVisible() &&
-        !ash::wm::IsWindowMinimized(windows[i]))
+        !ash::wm::IsWindowMinimized(windows[i]) &&
+        root_window_ == windows[i]->GetRootWindow())
       return SHELF_AUTO_HIDE_HIDDEN;
   }
 

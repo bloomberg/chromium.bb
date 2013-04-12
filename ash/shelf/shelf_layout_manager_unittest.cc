@@ -1061,6 +1061,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 }
 
 TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
+  UpdateDisplay("800x600,800x600");
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1074,12 +1075,10 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
 
   // Window minimized => auto hide disabled.
   dummy->Minimize();
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   // Window closed => auto hide disabled.
   dummy->CloseNow();
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   // Multiple window test
@@ -1087,22 +1086,28 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   views::Widget* window2 = CreateTestWidget();
 
   // both visible => normal autohide
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // either minimzed => normal autohide
   window2->Minimize();
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   window2->Restore();
   window1->Minimize();
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // both minimzed => disable auto hide
   window2->Minimize();
-  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+  // Test moving windows to/from other display.
+  window2->Restore();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  // Move to second display.
+  window2->SetBounds(gfx::Rect(850, 50, 50, 50));
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  // Move back to primary display.
+  window2->SetBounds(gfx::Rect(50, 50, 50, 50));
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 }
 
 #if defined(OS_WIN)

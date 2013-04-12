@@ -688,6 +688,7 @@ void WorkspaceManager::OnWindowRemovedFromWorkspace(Workspace* workspace,
                                                     Window* child) {
   if (workspace->ShouldMoveToPending())
     MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_WINDOW_REMOVED);
+  UpdateShelfVisibility();
 }
 
 void WorkspaceManager::OnWorkspaceChildWindowVisibilityChanged(
