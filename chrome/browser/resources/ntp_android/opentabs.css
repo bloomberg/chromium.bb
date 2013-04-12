@@ -111,15 +111,15 @@
 }
 
 .session-icon.laptop {
-  background-image: url(images/laptop_mdpi.png);
+  background-image: url(../../../../ui/webui/resources/images/laptop.png);
 }
 
 .session-icon.tablet {
-  background-image: url(images/tablet_mdpi.png);
+  background-image: url(../../../../ui/webui/resources/images/tablet.png);
 }
 
 .session-icon.phone {
-  background-image: url(images/phone_mdpi.png);
+  background-image: url(../../../../ui/webui/resources/images/phone.png);
 }
 
 .session-icon.documents {
@@ -134,13 +134,15 @@
     background-image: url(images/disclosure_closed_hdpi.png);
   }
   .session-icon.laptop {
-    background-image: url(images/laptop_hdpi.png);
+    background-image:
+        url(../../../../ui/webui/resources/images/1.5x/laptop.png);
   }
   .session-icon.tablet {
-    background-image: url(images/tablet_hdpi.png);
+    background-image:
+        url(../../../../ui/webui/resources/images/1.5x/tablet.png);
   }
   .session-icon.phone {
-    background-image: url(images/phone_hdpi.png);
+    background-image: url(../../../../ui/webui/resources/images/1.5x/phone.png);
   }
   .session-icon.documents {
     background-image: url(images/sent_hdpi.png);
@@ -155,13 +157,13 @@
     background-image: url(images/disclosure_closed_xhdpi.png);
   }
   .session-icon.laptop {
-    background-image: url(images/laptop_xhdpi.png);
+    background-image: url(../../../../ui/webui/resources/images/2x/laptop.png);
   }
   .session-icon.tablet {
-    background-image: url(images/tablet_xhdpi.png);
+    background-image: url(../../../../ui/webui/resources/images/2x/tablet.png);
   }
   .session-icon.phone {
-    background-image: url(images/phone_xhdpi.png);
+    background-image: url(../../../../ui/webui/resources/images/2x/phone.png);
   }
   .session-icon.documents {
     background-image: url(images/sent_xhdpi.png);
