@@ -197,10 +197,17 @@ DirectoryModel.prototype.getCurrentRootPath = function() {
 };
 
 /**
- * @return {string} Root name.
+ * @return {string} Filesystem URL representing the mountpoint for the current
+ *     contents.
  */
-DirectoryModel.prototype.getCurrentRootUrl = function() {
-  return util.makeFilesystemUrl(this.getCurrentRootPath());
+DirectoryModel.prototype.getCurrentMountPointUrl = function() {
+  var rootPath = this.getCurrentRootPath();
+  // Special search roots are just showing a search results from DRIVE.
+  if (PathUtil.getRootType(rootPath) == RootType.DRIVE ||
+      PathUtil.isSpecialSearchRoot(rootPath))
+    return util.makeFilesystemUrl(RootDirectory.DRIVE);
+
+  return util.makeFilesystemUrl(rootPath);
 };
 
 /**

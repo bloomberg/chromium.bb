@@ -2071,10 +2071,10 @@ DialogType.isModal = function(type) {
         !this.isOnDrive();
 
     // If volume has changed, then fetch remaining space data.
-    if (this.previousRootUrl_ != this.directoryModel_.getCurrentRootUrl())
+    if (this.previousRootUrl_ != this.directoryModel_.getCurrentMountPointUrl())
       this.refreshRemainingSpace_(true);  // Show loading caption.
 
-    this.previousRootUrl_ = this.directoryModel_.getCurrentRootUrl();
+    this.previousRootUrl_ = this.directoryModel_.getCurrentMountPointUrl();
   };
 
   /**
@@ -2082,7 +2082,7 @@ DialogType.isModal = function(type) {
    * @param {boolean} showLoadingCaption Whether show loading caption or not.
    * @private
    */
-   FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
+  FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
     var volumeSpaceInfoLabel =
         this.dialogDom_.querySelector('#volume-space-info-label');
     var volumeSpaceInnerBar =
@@ -2097,10 +2097,11 @@ DialogType.isModal = function(type) {
       volumeSpaceInnerBar.style.width = '100%';
     }
 
-    var currentRootUrl = this.directoryModel_.getCurrentRootUrl();
+    var currentMountPointUrl = this.directoryModel_.getCurrentMountPointUrl();
     chrome.fileBrowserPrivate.getSizeStats(
-        this.directoryModel_.getCurrentRootUrl(), function(result) {
-          if (this.directoryModel_.getCurrentRootUrl() != currentRootUrl)
+        currentMountPointUrl, function(result) {
+          if (this.directoryModel_.getCurrentMountPointUrl() !=
+              currentMountPointUrl)
             return;
           updateSpaceInfo(result,
                           volumeSpaceInnerBar,
