@@ -53,5 +53,8 @@
 crbug.com/225398 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
 crbug.com/225398 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
 
+# This test has one pixel different on the edge of a circle due to changes
+# in how Skia draws circles (Skia r8613)
+crbug.com/230821 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
