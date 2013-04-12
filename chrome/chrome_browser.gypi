@@ -26,6 +26,7 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:user_prefs',
         '../components/components.gyp:visitedlink_browser',
@@ -54,7 +55,6 @@
         '../ui/ui.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../url/url.gyp:url',
         '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'include_dirs': [

@@ -72,7 +72,7 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
-      'target_name': 'googleurl_unittests',
+      'target_name': 'url_unittests',
       'type': 'executable',
       'dependencies': [
         'url',

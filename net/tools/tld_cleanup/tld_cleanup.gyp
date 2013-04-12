@@ -12,7 +12,7 @@
       'type': 'executable',
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../url/url.gyp:url',
+        '../../../build/temp_gyp/googleurl.gyp:googleurl',
       ],
       'sources': [
         'tld_cleanup.cc',

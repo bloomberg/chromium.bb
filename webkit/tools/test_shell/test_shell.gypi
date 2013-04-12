@@ -53,7 +53,7 @@
             'chromium_code': 1,
           },
           'dependencies': [
-            '../url/url.gyp:url',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -361,7 +361,7 @@
             'chromium_code': 1,
           },
           'dependencies': [
-            '../url/url.gyp:url',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
             'test_shell_common',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/net/net.gyp:net',
