@@ -216,6 +216,7 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
   void SetAllowedUsernamePattern(const std::string& pattern);
   ProfileSyncServiceMock* CreateProfileSyncServiceMock();
   void SubmitGAIAPassword(OneClickSigninHelper* helper);
+  OneClickSigninHelper* SetupHelperForSignin();
 
   SigninManagerMock* signin_manager_;
 
@@ -271,6 +272,35 @@ void OneClickSigninHelperTest::CreateSigninManager(
     signin_manager_->StartSignIn(username, std::string(), std::string(),
                                 std::string());
   }
+}
+
+OneClickSigninHelper* OneClickSigninHelperTest::SetupHelperForSignin() {
+  CreateSigninManager(false, "");
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
+  CreateProfileSyncServiceMock();
+
+  content::WebContents* contents = web_contents();
+
+  OneClickSigninHelper::CreateForWebContents(contents);
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(contents);
+
+  GURL continueUrl(
+      "https://www.google.com/intl/en-US/chrome/blank.html?source=1");
+  OneClickSigninHelper::ShowInfoBarUIThread(
+      "session_index", "user@gmail.com",
+      OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
+      SyncPromoUI::SOURCE_NTP_LINK,
+      continueUrl, process()->GetID(), rvh()->GetRoutingID());
+
+  SubmitGAIAPassword(helper);
+
+  NavigateAndCommit(continueUrl);
+  helper->DidStopLoading(rvh());
+  helper->OnStateChanged();
+  return helper;
 }
 
 void OneClickSigninHelperTest::EnableOneClick(bool enable) {
@@ -698,35 +728,33 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 }
 
 TEST_F(OneClickSigninHelperTest, ShowSigninBubbleAfterSigninComplete) {
-  CreateSigninManager(false, std::string());
-  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
-      .WillRepeatedly(Return(true));
-
-  CreateProfileSyncServiceMock();
-
-  content::WebContents* contents = web_contents();
-
-  OneClickSigninHelper::CreateForWebContents(contents);
-  OneClickSigninHelper* helper =
-      OneClickSigninHelper::FromWebContents(contents);
-
-  GURL continueUrl(
-      "https://www.google.com/intl/en-US/chrome/blank.html?source=1");
-  OneClickSigninHelper::ShowInfoBarUIThread(
-      "session_index", "user@gmail.com",
-      OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
-      SyncPromoUI::SOURCE_NTP_LINK,
-      continueUrl, process()->GetID(), rvh()->GetRoutingID());
-
-  SubmitGAIAPassword(helper);
-
-  NavigateAndCommit(continueUrl);
-  helper->DidStopLoading(rvh());
-  helper->OnStateChanged();
-
+  OneClickSigninHelper* helper = SetupHelperForSignin();
   PrefService* pref_service = profile_->GetPrefs();
   EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
   helper->SigninSuccess();
+  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), true);
+}
+
+TEST_F(OneClickSigninHelperTest, SigninCancelled) {
+  OneClickSigninHelper* helper = SetupHelperForSignin();
+
+  PrefService* pref_service = profile_->GetPrefs();
+  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
+  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+  helper->SigninFailed(error);
+  // Should not show the NTP bubble on user cancellation.
+  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
+}
+
+TEST_F(OneClickSigninHelperTest, SigninFailed) {
+  OneClickSigninHelper* helper = SetupHelperForSignin();
+
+  PrefService* pref_service = profile_->GetPrefs();
+  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  helper->SigninFailed(error);
+  // Should show the NTP bubble with an error.
   EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), true);
 }
 

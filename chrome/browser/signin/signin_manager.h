@@ -308,6 +308,9 @@ class SigninManager : public GaiaAuthConsumer,
   // credentials transfer and load policy.
   void CompleteSigninForNewProfile(Profile* profile,
                                    Profile::CreateStatus status);
+
+  // Cancels the in-progress signin for this profile.
+  void CancelSignin();
 #endif  // defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
 
   // Invoked once policy has been loaded to complete user signin.

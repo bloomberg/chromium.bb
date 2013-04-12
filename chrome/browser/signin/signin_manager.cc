@@ -515,33 +515,44 @@ void SigninManager::ClearTransientSigninData() {
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
                                     bool clear_transient_data) {
+  // In some cases, the user should not be signed out.  For example, the failure
+  // may be due to a captcha or OTP challenge.  In these cases, the transient
+  // data must be kept to properly handle the follow up. This routine clears
+  // the data before sending out the notification so the SigninManager is no
+  // longer in the AuthInProgress state when the notification goes out.
+  if (clear_transient_data)
+    ClearTransientSigninData();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceAuthError>(&error));
-
-  // In some cases, the user should not be signed out.  For example, the failure
-  // may be due to a captcha or OTP challenge.  In these cases, the transient
-  // data must be kept to properly handle the follow up.
-  if (clear_transient_data)
-    ClearTransientSigninData();
 }
 
 void SigninManager::SignOut() {
   DCHECK(IsInitialized());
+
+  if (authenticated_username_.empty()) {
+    if (AuthInProgress()) {
+      // If the user is in the process of signing in, then treat a call to
+      // SignOut as a cancellation request.
+      GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+      HandleAuthError(error, true);
+    } else {
+      // Clean up our transient data and exit if we aren't signed in.
+      // This avoids a perf regression from clearing out the TokenDB if
+      // SignOut() is invoked on startup to clean up any incomplete previous
+      // signin attempts.
+      ClearTransientSigninData();
+    }
+    return;
+  }
+
   if (prohibit_signout_) {
     DVLOG(1) << "Ignoring attempt to sign out while signout is prohibited";
     return;
   }
-  if (authenticated_username_.empty() && !client_login_.get()) {
-    // Clean up our transient data and exit if we aren't signed in (or in the
-    // process of signing in). This avoids a perf regression from clearing out
-    // the TokenDB if SignOut() is invoked on startup to clean up any
-    // incomplete previous signin attempts.
-    ClearTransientSigninData();
-    return;
-  }
-
+  DCHECK(!authenticated_username_.empty());
   GoogleServiceSignoutDetails details(authenticated_username_);
 
   ClearTransientSigninData();
@@ -754,7 +765,7 @@ void SigninManager::LoadPolicyWithCachedClient() {
 
 void SigninManager::OnPolicyFetchComplete(bool success) {
   // For now, we allow signin to complete even if the policy fetch fails. If
-  // we ever want to change this behavior, we could call SignOut() here
+  // we ever want to change this behavior, we could call HandleAuthError() here
   // instead.
   DLOG_IF(ERROR, !success) << "Error fetching policy for user";
   DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
@@ -779,10 +790,12 @@ void SigninManager::CompleteSigninForNewProfile(
     Profile* profile,
     Profile::CreateStatus status) {
   DCHECK_NE(profile_, profile);
-  // TODO(atwilson): On error, unregister the client to release the DMToken.
   if (status == Profile::CREATE_STATUS_FAIL) {
+    // TODO(atwilson): On error, unregister the client to release the DMToken
+    // and surface a better error for the user.
     NOTREACHED() << "Error creating new profile";
-    SignOut();
+    GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+    HandleAuthError(error, true);
     return;
   }
 
@@ -803,7 +816,8 @@ void SigninManager::CompleteSigninForNewProfile(
     browser_sync::SyncPrefs prefs(profile->GetPrefs());
     prefs.SetSyncSetupCompleted();
 
-    // We've transferred our credentials to the new profile - sign out.
+    // We've transferred our credentials to the new profile - notify that
+    // the signin for this profile was cancelled.
     SignOut();
   }
 }

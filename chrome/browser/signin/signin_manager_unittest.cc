@@ -600,7 +600,7 @@ TEST_F(SigninManagerTest, SignOutMidConnect) {
   manager_->StartSignIn("username", "password", std::string(), std::string());
   manager_->SignOut();
   EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(0U, google_login_failure_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
 
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }

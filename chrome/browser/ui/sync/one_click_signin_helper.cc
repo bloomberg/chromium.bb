@@ -1333,6 +1333,7 @@ void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
   if (error_message_.empty() && !error.error_message().empty())
       error_message_ = error.error_message();
 
+  bool display_bubble = true;
   if (error_message_.empty()) {
     switch (error.state()) {
       case GoogleServiceAuthError::NONE:
@@ -1341,20 +1342,26 @@ void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
       case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
         error_message_ = l10n_util::GetStringUTF8(IDS_SYNC_UNRECOVERABLE_ERROR);
         break;
+      case GoogleServiceAuthError::REQUEST_CANCELED:
+        // If the user cancelled signin, then no need to display any error
+        // messages or anything - just go back to the NTP.
+        error_message_.clear();
+        display_bubble = false;
+        break;
       default:
         error_message_ = l10n_util::GetStringUTF8(IDS_SYNC_ERROR_SIGNING_IN);
         break;
     }
   }
-  RedirectOnSigninComplete();
+  RedirectOnSigninComplete(display_bubble);
 }
 
 void OneClickSigninHelper::SigninSuccess() {
-  RedirectOnSigninComplete();
+  RedirectOnSigninComplete(true);
 }
 
-void OneClickSigninHelper::RedirectOnSigninComplete() {
-  // Show the result in the sign-in bubble.
-  RedirectToNtpOrAppsPage(true);
+void OneClickSigninHelper::RedirectOnSigninComplete(bool show_bubble) {
+  // Show the result in the sign-in bubble if desired.
+  RedirectToNtpOrAppsPage(show_bubble);
   signin_tracker_.reset();
 }

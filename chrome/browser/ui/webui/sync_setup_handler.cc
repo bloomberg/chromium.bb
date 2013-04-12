@@ -208,6 +208,20 @@ void BringTabToFront(WebContents* web_contents) {
   }
 }
 
+void CloseTab(content::WebContents* tab) {
+  Browser* browser = chrome::FindBrowserWithWebContents(tab);
+  if (browser) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    if (tab_strip_model) {
+      int index = tab_strip_model->GetIndexOfWebContents(tab);
+      if (index != TabStripModel::kNoTab) {
+        tab_strip_model->ExecuteContextMenuCommand(
+            index, TabStripModel::CommandCloseTab);
+      }
+    }
+  }
+}
+
 }  // namespace
 
 SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
@@ -1273,22 +1287,16 @@ void SyncSetupHandler::CloseGaiaSigninPage() {
   if (active_gaia_signin_tab_) {
     content::WebContentsObserver::Observe(NULL);
 
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        active_gaia_signin_tab_);
-    if (browser) {
-      TabStripModel* tab_strip_model = browser->tab_strip_model();
-      if (tab_strip_model) {
-        int index = tab_strip_model->GetIndexOfWebContents(
-            active_gaia_signin_tab_);
-        if (index != TabStripModel::kNoTab) {
-          tab_strip_model->ExecuteContextMenuCommand(
-              index, TabStripModel::CommandCloseTab);
-        }
-      }
-    }
-  }
+    // This can be invoked from a webui handler in the GAIA page (for example,
+    // if the user clicks 'cancel' in the enterprise signin dialog), so
+    // closing this tab in mid-handler can cause crashes. Instead, close it
+    // via a task so we know we aren't in the middle of any webui code.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&CloseTab, base::Unretained(active_gaia_signin_tab_)));
 
-  active_gaia_signin_tab_ = NULL;
+    active_gaia_signin_tab_ = NULL;
+  }
 }
 
 bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,

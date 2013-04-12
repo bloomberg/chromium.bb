@@ -123,6 +123,8 @@ class OneClickSigninHelper
                            SigninFromWebstoreWithConfigSyncfirst);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
                            ShowSigninBubbleAfterSigninComplete);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninCancelled);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninFailed);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);
@@ -179,7 +181,7 @@ class OneClickSigninHelper
 
   void RedirectToNtpOrAppsPage(bool show_bubble);
   void RedirectToSignin();
-  void RedirectOnSigninComplete();
+  void RedirectOnSigninComplete(bool show_bubble);
 
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();
