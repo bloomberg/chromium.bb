@@ -2730,7 +2730,6 @@
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'sources': [
-            'common/json_value_serializer_perftest.cc',
             'test/perf/perftests.cc',
             'test/perf/url_parse_perftest.cc',
             '../content/browser/net/sqlite_persistent_cookie_store_perftest.cc',
