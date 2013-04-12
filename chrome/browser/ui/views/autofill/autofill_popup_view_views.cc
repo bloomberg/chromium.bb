@@ -50,8 +50,11 @@ void AutofillPopupViewViews::Hide() {
   HideInternal();
 
   if (GetWidget()) {
-    // This deletes |this|.
-    GetWidget()->Close();
+    // Call CloseNow() rather than Close() so that no further pending events are
+    // routed to the popup. Once the |controller_| is gone, the view is not
+    // prepared to handle these events. http://crbug.com/229224
+    // NOTE: This deletes |this|.
+    GetWidget()->CloseNow();
   } else {
     delete this;
   }
