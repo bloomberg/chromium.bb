@@ -397,12 +397,16 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
 }
 
 bool NotificationPromo::CheckAppLauncher() const {
+#if defined(OS_IOS)
+  return true;
+#else
   bool is_app_launcher_promo = false;
   if (!promo_payload_->GetBoolean("is_app_launcher_promo",
                                   &is_app_launcher_promo))
     return true;
   return !is_app_launcher_promo ||
          !prefs_->GetBoolean(apps::prefs::kAppLauncherIsEnabled);
+#endif  // defined(OS_IOS)
 }
 
 bool NotificationPromo::CanShow() const {
