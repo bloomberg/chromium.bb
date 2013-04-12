@@ -84,6 +84,8 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(
           controller->web_contents());
+  DCHECK(web_contents_modal_dialog_manager);
+  DCHECK(web_contents_modal_dialog_manager->delegate());
   window_ = CreateWebContentsModalDialogViews(
       this,
       controller->web_contents()->GetView()->GetNativeView(),
@@ -355,11 +357,6 @@ bool MediaGalleriesDialogViews::Cancel() {
 bool MediaGalleriesDialogViews::Accept() {
   accepted_ = true;
 
-  for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
-       iter != checkbox_map_.end(); ++iter) {
-    controller_->DidToggleGallery(iter->first, iter->second->checked());
-  }
-
   return true;
 }
 
@@ -380,6 +377,14 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   if (sender == add_gallery_button_) {
     controller_->OnAddFolderClicked();
     return;
+  }
+
+  for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
+       iter != checkbox_map_.end(); ++iter) {
+    if (sender == iter->second) {
+      controller_->DidToggleGallery(iter->first, iter->second->checked());
+      return;
+    }
   }
 }
 
