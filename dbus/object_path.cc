@@ -4,6 +4,8 @@
 
 #include "dbus/object_path.h"
 
+#include <ostream>
+
 #include "dbus/string_util.h"
 
 namespace dbus {
@@ -22,6 +24,10 @@ bool ObjectPath::operator==(const ObjectPath& that) const {
 
 bool ObjectPath::operator!=(const ObjectPath& that) const {
   return value_ != that.value_;
+}
+
+void PrintTo(const ObjectPath& path, std::ostream* out) {
+  *out << path.value();
 }
 
 } // namespace dbus

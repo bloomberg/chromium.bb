@@ -5,6 +5,7 @@
 #ifndef DBUS_OBJECT_PATH_H_
 #define DBUS_OBJECT_PATH_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "dbus/dbus_export.h"
@@ -45,6 +46,9 @@ class CHROME_DBUS_EXPORT ObjectPath {
  private:
   std::string value_;
 };
+
+// This is required by gtest to print a readable output on test failures.
+CHROME_DBUS_EXPORT void PrintTo(const ObjectPath& path, std::ostream* out);
 
 }  // namespace dbus
 
