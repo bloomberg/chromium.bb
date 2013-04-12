@@ -210,7 +210,7 @@ NTSTATUS Service64ResolverThunk::Setup(const void* target_module,
     return ret;
 
   size_t thunk_bytes = GetThunkSize();
-  scoped_array<char> thunk_buffer(new char[thunk_bytes]);
+  scoped_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
   ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(
                                 thunk_buffer.get());
 

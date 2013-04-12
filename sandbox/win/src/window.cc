@@ -111,7 +111,7 @@ std::wstring GetWindowObjectName(HANDLE handle) {
   }
 
   // Create the buffer that will hold the name.
-  scoped_array<wchar_t> name_buffer(new wchar_t[size]);
+  scoped_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
 
   // Query the name of the object.
   if (!::GetUserObjectInformation(handle, UOI_NAME, name_buffer.get(), size,

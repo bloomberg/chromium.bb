@@ -81,7 +81,7 @@ bool HandleCloser::InitializeTargetHandles(TargetProcess* target) {
     return true;
 
   size_t bytes_needed = GetBufferSize();
-  scoped_array<size_t> local_buffer(
+  scoped_ptr<size_t[]> local_buffer(
       new size_t[bytes_needed / sizeof(size_t)]);
 
   if (!SetupHandleList(local_buffer.get(), bytes_needed))

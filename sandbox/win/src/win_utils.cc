@@ -191,7 +191,7 @@ bool ConvertToLongPath(const std::wstring& short_path,
   }
 
   DWORD size = MAX_PATH;
-  scoped_array<wchar_t> long_path_buf(new wchar_t[size]);
+  scoped_ptr<wchar_t[]> long_path_buf(new wchar_t[size]);
 
   DWORD return_value = ::GetLongPathName(path.c_str(), long_path_buf.get(),
                                          size);
