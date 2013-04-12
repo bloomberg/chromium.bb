@@ -488,13 +488,12 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
                 referencePoint.move(relativePositionOffset());
             else if (isStickyPositioned())
                 referencePoint.move(stickyPositionOffset());
-            const RenderObject* curr = parent();
-            while (curr != offsetParent) {
+
+            for (const RenderObject* current = parent(); current != offsetParent && current->parent(); current = current->parent()) {
                 // FIXME: What are we supposed to do inside SVG content?
-                if (curr->isBox() && !curr->isTableRow())
-                    referencePoint.moveBy(toRenderBox(curr)->topLeftLocation());
-                referencePoint.move(curr->parent()->offsetForColumns(referencePoint));
-                curr = curr->parent();
+                if (current->isBox() && !current->isTableRow())
+                    referencePoint.moveBy(toRenderBox(current)->topLeftLocation());
+                referencePoint.move(current->parent()->offsetForColumns(referencePoint));
             }
             if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
                 referencePoint.moveBy(toRenderBox(offsetParent)->topLeftLocation());
