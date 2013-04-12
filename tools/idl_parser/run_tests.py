@@ -8,6 +8,13 @@ import sys
 import unittest
 
 if __name__ == '__main__':
-  testlist = glob.glob('*_test.py')
-  for testname in testlist:
-    unittest.main(verbosity=2, module=testname[:-3])
+  suite = unittest.TestSuite()
+  for testname in glob.glob('*_test.py'):
+    print 'Adding Test: ' + testname
+    module = __import__(testname[:-3])
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
+  result = unittest.TextTestRunner(verbosity=2).run(suite)
+  if result.wasSuccessful():
+    sys.exit(0)
+  else:
+    sys.exit(1)

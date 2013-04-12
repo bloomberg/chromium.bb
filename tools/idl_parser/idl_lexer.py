@@ -100,31 +100,24 @@ class IDLLexer(object):
     'void' : 'VOID'
   }
 
-  # Add keywords
-  for key in keywords:
-    tokens.append(keywords[key])
-
-  # 'literals' is a value expected by lex which specifies a list of valid
-  # literal tokens, meaning the token type and token value are identical.
-  literals = '"*.(){}[],;:=+-/~|&^?<>'
-
   # Token definitions
   #
   # Lex assumes any value or function in the form of 't_<TYPE>' represents a
   # regular expression where a match will emit a token of type <TYPE>.  In the
   # case of a function, the function is called when a match is made. These
   # definitions come from WebIDL.
+  def t_ELLIPSIS(self, t):
+    r'\.\.\.'
+    return t
 
-  # 't_ignore' is a special match of items to ignore
-  t_ignore = ' \t'
+  def t_float(self, t):
+    r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][+-]?[0-9]+)?|[0-9]+[Ee][+-]?[0-9]+)'
+    return t
 
-  # Ellipsis operator
-  t_ELLIPSIS = r'\.\.\.'
+  def t_integer(self, t):
+    r'-?(0([0-7]*|[Xx][0-9A-Fa-f]+)|[1-9][0-9]*)'
+    return t
 
-  # Constant values
-  t_integer = r'-?(0([0-7]*|[Xx][0-9A-Fa-f]+)|[1-9][0-9]*)'
-  t_float = r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)'
-  t_float += r'([Ee][+-]?[0-9]+)?|[0-9]+[Ee][+-]?[0-9]+)'
 
   # A line ending '\n', we use this to increment the line number
   def t_LINE_END(self, t):
@@ -160,7 +153,7 @@ class IDLLexer(object):
 
   def t_ANY_error(self, t):
     msg = 'Unrecognized input'
-    line = self.lexobj.lineno
+    line = self.Lexer().lineno
 
     # If that line has not been accounted for, then we must have hit
     # EoF, so compute the beginning of the line that caused the problem.
@@ -169,10 +162,10 @@ class IDLLexer(object):
       word = t.value.split()[0]
       offs = self.lines[line - 1].find(word)
       # Add the computed line's starting position
-      self.index.append(self.lexobj.lexpos - offs)
+      self.index.append(self.Lexer().lexpos - offs)
       msg = 'Unexpected EoF reached after'
 
-    pos = self.lexobj.lexpos - self.index[line]
+    pos = self.Lexer().lexpos - self.index[line]
     out = self.ErrorMessage(line, pos, msg)
     sys.stderr.write(out + '\n')
     self._lex_errors += 1
@@ -183,13 +176,13 @@ class IDLLexer(object):
     # of multiple lines, tokens can not exist on any of the lines except the
     # last one, so the recorded value for previous lines are unused.  We still
     # fill the array however, to make sure the line count is correct.
-    self.lexobj.lineno += count
+    self.Lexer().lineno += count
     for _ in range(count):
-      self.index.append(self.lexobj.lexpos)
+      self.index.append(self.Lexer().lexpos)
 
   def FileLineMsg(self, line, msg):
     # Generate a message containing the file and line number of a token.
-    filename = self.lexobj.filename
+    filename = self.Lexer().filename
     if filename:
       return "%s(%d) : %s" % (filename, line + 1, msg)
     return "<BuiltIn> : %s" % msg
@@ -213,7 +206,7 @@ class IDLLexer(object):
 # against the leaf paterns.
 #
   def token(self):
-    tok = self.lexobj.token()
+    tok = self.Lexer().token()
     if tok:
       self.last = tok
     return tok
@@ -222,21 +215,60 @@ class IDLLexer(object):
   def GetTokens(self):
     outlist = []
     while True:
-      t = self.lexobj.token()
+      t = self.Lexer().token()
       if not t:
         break
       outlist.append(t)
     return outlist
 
   def Tokenize(self, data, filename='__no_file__'):
-    self.lexobj.filename = filename
-    self.lexobj.input(data)
+    lexer = self.Lexer()
+    lexer.lineno = 1
+    lexer.filename = filename
+    lexer.input(data)
     self.lines = data.split('\n')
+
+  def KnownTokens(self):
+    return self.tokens
+
+  def Lexer(self):
+    if not self._lexobj:
+      self._lexobj = lex.lex(object=self, lextab=None, optimize=0)
+    return self._lexobj
+
+  def _AddConstDefs(self):
+    # 'literals' is a value expected by lex which specifies a list of valid
+    # literal tokens, meaning the token type and token value are identical.
+    self.literals = r'"*.(){}[],;:=+-/~|&^?<>'
+    self.t_ignore = ' \t'
+
+  def _AddToken(self, token):
+    if token in self.tokens:
+      raise RuntimeError('Same token: ' + token)
+    self.tokens.append(token)
+
+  def _AddTokens(self, tokens):
+    for token in tokens:
+      self._AddToken(token)
+
+  def _AddKeywords(self, keywords):
+    for key in keywords:
+      value = key.upper()
+      self._AddToken(value)
+      self.keywords[key] = value
 
   def __init__(self):
     self.index = [0]
     self._lex_errors = 0
     self.linex = []
     self.filename = None
-    self.lexobj = lex.lex(object=self, lextab=None, optimize=0)
+    self.keywords = {}
+    self.tokens = []
+    self._AddConstDefs()
+    self._AddTokens(IDLLexer.tokens)
+    self._AddKeywords(IDLLexer.keywords)
+    self._lexobj = None
 
+# If run by itself, attempt to build the lexer
+if __name__ == '__main__':
+  lexer = IDLLexer()

@@ -17,10 +17,8 @@ GETTER getter
 IMPLEMENTS implements
 INFINITY Infinity
 INTERFACE interface
-LABEL label
 LEGACYCALLER legacycaller
 LONG long
-NAMESPACE namespace
 NAN Nan
 NULL null
 OBJECT object
@@ -32,7 +30,6 @@ SETTER setter
 SHORT short
 STATIC static
 STRINGIFIER stringifier
-STRUCT struct
 TYPEDEF typedef
 TRUE true
 UNSIGNED unsigned

@@ -23,32 +23,27 @@ import sys
 # IDL PPAPI Lexer
 #
 class IDLPPAPILexer(IDLLexer):
-  # 'tokens' is a value required by lex which specifies the complete list
-  # of valid token types.  To WebIDL we add the following token types
-  IDLLexer.tokens += [
-    # Operators
-      'LSHIFT',
-      'RSHIFT',
-
-    # Pepper Extras
-      'INLINE',
-  ]
-
-  # 'keywords' is a map of string to token type.  All tokens matching
-  # KEYWORD_OR_SYMBOL are matched against keywords dictionary, to determine
-  # if the token is actually a keyword.  Add the new keywords to the
-  # dictionary and set of tokens
-  ppapi_keywords = ['LABEL', 'NAMESPACE', 'STRUCT']
-  for keyword in ppapi_keywords:
-    IDLLexer.keywords[ keyword.lower() ] = keyword
-    IDLLexer.tokens.append(keyword)
-
   # Special multi-character operators
-  t_LSHIFT = r'<<'
-  t_RSHIFT = r'>>'
+  def t_LSHIFT(self, t):
+    r'<<'
+    return t;
 
-  # Return a "preprocessor" inline block
+  def t_RSHIFT(self, t):
+    r'>>'
+    return t;
+
   def t_INLINE(self, t):
     r'\#inline (.|\n)*?\#endinl.*'
     self.AddLines(t.value.count('\n'))
     return t
+
+  # Return a "preprocessor" inline block
+  def __init__(self):
+    IDLLexer.__init__(self)
+    self._AddTokens(['LSHIFT', 'RSHIFT', 'INLINE'])
+    self._AddKeywords(['label', 'namespace', 'struct'])
+
+
+# If run by itself, attempt to build the lexer
+if __name__ == '__main__':
+  lexer = IDLPPAPILexer()
