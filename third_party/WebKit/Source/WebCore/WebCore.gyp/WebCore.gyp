@@ -1783,17 +1783,6 @@
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
-        ['exclude', 'storage/StorageAreaImpl\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageAreaSync\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageEventDispatcher\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageMap\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageNamespace\\.cpp$'],
-        ['exclude', 'storage/StorageNamespaceImpl\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageSyncManager\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageTask\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageThread\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageTracker\\.(cpp|h)$'],
-        ['exclude', 'storage/StorageTrackerClient\\.h$'],
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
