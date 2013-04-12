@@ -170,7 +170,7 @@ struct DriveFileSystem::GetResolvedFileParams {
         error, base::FilePath(), std::string(), REGULAR_FILE);
   }
 
-  void OnCacheFound(const base::FilePath& local_file_path) {
+  void OnComplete(const base::FilePath& local_file_path) {
     if (entry_proto->file_specific_info().is_hosted_document()) {
       get_file_callback.Run(
           DRIVE_FILE_OK, local_file_path, kMimeTypeJson, HOSTED_DOCUMENT);
@@ -179,12 +179,6 @@ struct DriveFileSystem::GetResolvedFileParams {
           DRIVE_FILE_OK, local_file_path,
           entry_proto->file_specific_info().content_mime_type(), REGULAR_FILE);
     }
-  }
-
-  void OnStoreCompleted(const base::FilePath& local_file_path) {
-    get_file_callback.Run(
-        DRIVE_FILE_OK, local_file_path,
-        entry_proto->file_specific_info().content_mime_type(), REGULAR_FILE);
   }
 
   const base::FilePath drive_file_path;
@@ -841,7 +835,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterCreateDocumentJsonFile(
     return;
   }
 
-  params->OnCacheFound(*file_path);
+  params->OnComplete(*file_path);
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache(
@@ -853,7 +847,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache(
 
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == DRIVE_FILE_OK) {
-    params->OnCacheFound(cache_file_path);
+    params->OnComplete(cache_file_path);
     return;
   }
 
@@ -1082,7 +1076,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetFile(
     params->OnError(error);
     return;
   }
-  params->OnStoreCompleted(cache_file);
+  params->OnComplete(cache_file);
 }
 
 void DriveFileSystem::RefreshDirectory(
