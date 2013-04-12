@@ -172,7 +172,7 @@ void LocalFileSyncContext::RegisterURLForWaitingSync(
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (sync_status()->IsWritable(url)) {
+  if (sync_status()->IsSyncable(url)) {
     // No need to register; fire the callback now.
     ui_task_runner_->PostTask(FROM_HERE, on_syncable_callback);
     return;
@@ -337,7 +337,6 @@ void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
     return;
   }
   // TODO(kinuko): may want to check how many pending tasks we have.
-  sync_status()->StartSyncing(url_waiting_sync_on_io_);
   ui_task_runner_->PostTask(FROM_HERE, url_syncable_callback_);
   url_syncable_callback_.Reset();
 }
