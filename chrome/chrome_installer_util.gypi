@@ -156,6 +156,8 @@
             'installer/util/self_cleaning_temp_dir.h',
             'installer/util/shell_util.cc',
             'installer/util/shell_util.h',
+            'installer/util/uninstall_metrics.cc',
+            'installer/util/uninstall_metrics.h',
             'installer/util/user_experiment.cc',
             'installer/util/user_experiment.h',
           ],

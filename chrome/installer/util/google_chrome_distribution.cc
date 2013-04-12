@@ -11,8 +11,6 @@
 #include <msi.h>
 
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -20,13 +18,13 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/net/test_server_locations.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/uninstall_metrics.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
@@ -63,71 +61,6 @@ GoogleChromeDistribution::GoogleChromeDistribution()
       product_guid_(kChromeGuid) {
 }
 
-bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
-  DCHECK(NULL != metrics);
-  bool has_values = false;
-
-  for (DictionaryValue::Iterator iter(*uninstall_metrics_dict); !iter.IsAtEnd();
-       iter.Advance()) {
-    has_values = true;
-    metrics->append(L"&");
-    metrics->append(UTF8ToWide(iter.key()));
-    metrics->append(L"=");
-
-    std::string value;
-    iter.value().GetAsString(&value);
-    metrics->append(UTF8ToWide(value));
-  }
-
-  return has_values;
-}
-
-bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
-    const base::FilePath& file_path,
-    string16* uninstall_metrics_string) {
-  JSONFileValueSerializer json_serializer(file_path);
-
-  std::string json_error_string;
-  scoped_ptr<Value> root(json_serializer.Deserialize(NULL, NULL));
-  if (!root.get())
-    return false;
-
-  // Preferences should always have a dictionary root.
-  if (!root->IsType(Value::TYPE_DICTIONARY))
-    return false;
-
-  return ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
-                                 uninstall_metrics_string);
-}
-
-bool GoogleChromeDistribution::ExtractUninstallMetrics(
-    const DictionaryValue& root,
-    string16* uninstall_metrics_string) {
-  // Make sure that the user wants us reporting metrics. If not, don't
-  // add our uninstall metrics.
-  bool metrics_reporting_enabled = false;
-  if (!root.GetBoolean(prefs::kMetricsReportingEnabled,
-                       &metrics_reporting_enabled) ||
-      !metrics_reporting_enabled) {
-    return false;
-  }
-
-  const DictionaryValue* uninstall_metrics_dict = NULL;
-  if (!root.HasKey(installer::kUninstallMetricsName) ||
-      !root.GetDictionary(installer::kUninstallMetricsName,
-                          &uninstall_metrics_dict)) {
-    return false;
-  }
-
-  if (!BuildUninstallMetricsString(uninstall_metrics_dict,
-                                   uninstall_metrics_string)) {
-    return false;
-  }
-
-  return true;
-}
-
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,
     const base::FilePath& local_data_path,
@@ -158,7 +91,8 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
       kOSParam + L"=" + os_version;
 
   string16 uninstall_metrics;
-  if (ExtractUninstallMetricsFromFile(local_data_path, &uninstall_metrics)) {
+  if (installer::ExtractUninstallMetricsFromFile(local_data_path,
+                                                 &uninstall_metrics)) {
     // The user has opted into anonymous usage data collection, so append
     // metrics and distribution data.
     command += uninstall_metrics;

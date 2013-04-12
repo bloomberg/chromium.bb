@@ -148,24 +148,6 @@ bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
   return false;
 }
 
-bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
-    const base::FilePath& file_path, string16* uninstall_metrics_string) {
-  NOTREACHED();
-  return false;
-}
-
-bool GoogleChromeDistribution::ExtractUninstallMetrics(
-    const DictionaryValue& root, string16* uninstall_metrics_string) {
-  NOTREACHED();
-  return false;
-}
-
-bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
-  NOTREACHED();
-  return false;
-}
-
 bool GoogleChromeDistribution::HasUserExperiments() {
   NOTREACHED();
   return false;

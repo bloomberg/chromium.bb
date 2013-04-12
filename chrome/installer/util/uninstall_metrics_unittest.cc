@@ -1,20 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Unit tests for GoogleChromeDistribution class.
 
-#include <windows.h>
+#include "chrome/installer/util/uninstall_metrics.h"
+
+#include <string>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_chrome_distribution.h"
+#include "base/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
+namespace installer {
+
+TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
   // A make-believe JSON preferences file.
   std::string pref_string(
       "{ \n"
@@ -37,7 +36,7 @@ TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
       "} \n");
 
   // The URL string we expect to be generated from said make-believe file.
-  std::wstring expected_url_string(
+  string16 expected_url_string(
       L"&installation_date2=1235341141"
       L"&last_launch_time_sec=1235341118"
       L"&last_observed_running_time_sec=1235341183"
@@ -49,15 +48,12 @@ TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
 
   scoped_ptr<Value> root(json_deserializer.Deserialize(NULL, &error_message));
   ASSERT_TRUE(root.get());
-  std::wstring uninstall_metrics_string;
-
-  GoogleChromeDistribution* dist = static_cast<GoogleChromeDistribution*>(
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER));
+  string16 uninstall_metrics_string;
 
   EXPECT_TRUE(
-      dist->ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
-                                    &uninstall_metrics_string));
+      ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
+                              &uninstall_metrics_string));
   EXPECT_EQ(expected_url_string, uninstall_metrics_string);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+
+}  // namespace installer
