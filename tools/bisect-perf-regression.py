@@ -1566,7 +1566,7 @@ def RmTreeAndMkDir(path_to_dir):
       return False
 
   try:
-    os.mkdir(path_to_dir)
+    os.makedirs(path_to_dir)
   except OSError, e:
     if e.errno != errno.EEXIST:
       return False
