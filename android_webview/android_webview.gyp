@@ -84,6 +84,7 @@
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content',
         '../skia/skia.gyp:skia',
+        '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gl/gl.gyp:gl',
         'android_webview_pak',
       ],

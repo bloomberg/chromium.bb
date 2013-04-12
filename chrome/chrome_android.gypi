@@ -102,7 +102,6 @@
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
         '../content/content.gyp:content',
-        '../jingle/jingle.gyp:notifier',
       ],
       'include_dirs': [
         '..',

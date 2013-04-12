@@ -36,6 +36,7 @@
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
+        '../jingle/jingle.gyp:notifier',
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
