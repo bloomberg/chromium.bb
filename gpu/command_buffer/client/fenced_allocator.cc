@@ -10,6 +10,23 @@
 
 namespace gpu {
 
+namespace {
+
+// Allocation alignment, must be a power of two.
+const unsigned int kAllocAlignment = 16;
+
+// Round down to the largest multiple of kAllocAlignment no greater than |size|.
+unsigned int RoundDown(unsigned int size) {
+  return size & ~(kAllocAlignment - 1);
+}
+
+// Round up to the smallest multiple of kAllocAlignment no smaller than |size|.
+unsigned int RoundUp(unsigned int size) {
+  return (size + (kAllocAlignment - 1)) & ~(kAllocAlignment - 1);
+}
+
+}  // namespace
+
 #ifndef _MSC_VER
 const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
 #endif
@@ -17,7 +34,7 @@ const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
 FencedAllocator::FencedAllocator(unsigned int size,
                                  CommandBufferHelper *helper)
     : helper_(helper) {
-  Block block = { FREE, 0, size, kUnusedToken };
+  Block block = { FREE, 0, RoundDown(size), kUnusedToken };
   blocks_.push_back(block);
 }
 
@@ -44,6 +61,9 @@ FencedAllocator::Offset FencedAllocator::Alloc(unsigned int size) {
   if (size == 0)  {
     return kInvalidOffset;
   }
+
+  // Round up the allocation size to ensure alignment.
+  size = RoundUp(size);
 
   // Try first to allocate in a free block.
   for (unsigned int i = 0; i < blocks_.size(); ++i) {

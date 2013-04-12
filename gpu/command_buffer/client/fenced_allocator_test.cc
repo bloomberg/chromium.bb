@@ -463,6 +463,29 @@ TEST_F(FencedAllocatorWrapperTest, TestAllocZero) {
   EXPECT_TRUE(allocator_->CheckConsistency());
 }
 
+// Checks that allocation offsets are aligned to multiples of 16 bytes.
+TEST_F(FencedAllocatorWrapperTest, TestAlignment) {
+  allocator_->CheckConsistency();
+
+  const unsigned int kSize1 = 75;
+  void *pointer1 = allocator_->Alloc(kSize1);
+  ASSERT_TRUE(pointer1);
+  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer1) & 15, 0);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  const unsigned int kSize2 = 43;
+  void *pointer2 = allocator_->Alloc(kSize2);
+  ASSERT_TRUE(pointer2);
+  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer2) & 15, 0);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  allocator_->Free(pointer2);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  allocator_->Free(pointer1);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+}
+
 // Checks out-of-memory condition.
 TEST_F(FencedAllocatorWrapperTest, TestOutOfMemory) {
   allocator_->CheckConsistency();
