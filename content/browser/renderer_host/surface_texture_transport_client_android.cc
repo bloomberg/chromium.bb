@@ -15,13 +15,33 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
+namespace content {
+
 namespace {
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
-} // anonymous namespace
+class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
+ public:
+  SurfaceRefAndroid(
+      const scoped_refptr<SurfaceTextureBridge>& surface,
+      ANativeWindow* window)
+      : surface_(surface),
+        window_(window) {
+    ANativeWindow_acquire(window_);
+  }
 
-namespace content {
+ private:
+  virtual ~SurfaceRefAndroid() {
+    DCHECK(window_);
+    ANativeWindow_release(window_);
+  }
+
+  scoped_refptr<SurfaceTextureBridge> surface_;
+  ANativeWindow* window_;
+};
+
+} // anonymous namespace
 
 SurfaceTextureTransportClient::SurfaceTextureTransportClient()
     : window_(NULL),
@@ -30,12 +50,6 @@ SurfaceTextureTransportClient::SurfaceTextureTransportClient()
 }
 
 SurfaceTextureTransportClient::~SurfaceTextureTransportClient() {
-  if (surface_id_) {
-    GpuSurfaceTracker::Get()->SetNativeWidget(
-        surface_id_, gfx::kNullAcceleratedWidget);
-  }
-  if (window_)
-    ANativeWindow_release(window_);
 }
 
 scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
@@ -56,10 +70,15 @@ SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
   DCHECK(surface_id);
   surface_id_ = surface_id;
 
-  if (!window_)
+  if (!window_) {
     window_ = surface_texture_->CreateSurface();
 
-  GpuSurfaceTracker::Get()->SetNativeWidget(surface_id, window_);
+    GpuSurfaceTracker::Get()->SetNativeWidget(
+        surface_id, window_, new SurfaceRefAndroid(surface_texture_, window_));
+    // SurfaceRefAndroid took ownership (and an extra ref to) window_.
+    ANativeWindow_release(window_);
+  }
+
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_DIRECT);
 }
 

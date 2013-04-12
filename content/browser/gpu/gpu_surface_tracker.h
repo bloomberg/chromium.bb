@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
@@ -27,6 +28,27 @@ namespace content {
 // it is unamibiguously identified.
 class GpuSurfaceTracker : public GpuSurfaceLookup {
  public:
+  // Base class for reference counting surfaces. We store a
+  // reference to an instance of this class in the surface_map_
+  // and GpuProcessHost (if the GPU process is drawing to
+  // the surface with a Command Buffer). The reference count ensures that
+  // we don't destroy the object until it's released from both places.
+  //
+  // This is especially important on Android and GTK where the surface must
+  // not be destroyed when the WebContents is closed if the GPU is still
+  // drawing to it. Those platforms extend this class with the functionality
+  // they need to implement on tear down (see SurfaceRefPluginWindow for GTK and
+  // SurfaceRefAndroid for Android).
+  class SurfaceRef : public base::RefCountedThreadSafe<SurfaceRef> {
+   protected:
+    SurfaceRef() { }
+    virtual ~SurfaceRef() { }
+
+   private:
+    friend class base::RefCountedThreadSafe<SurfaceRef>;
+    DISALLOW_COPY_AND_ASSIGN(SurfaceRef);
+  };
+
   // GpuSurfaceLookup implementation:
   // Returns the native widget associated with a given surface_id.
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE;
@@ -62,7 +84,10 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
   void SetSurfaceHandle(int surface_id, const gfx::GLSurfaceHandle& handle);
 
   // Sets the native widget associated with the surface_id.
-  void SetNativeWidget(int surface_id, gfx::AcceleratedWidget widget);
+  void SetNativeWidget(
+      int surface_id,
+      gfx::AcceleratedWidget widget,
+      SurfaceRef* surface_ref);
 
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
@@ -75,12 +100,24 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
   // named that way for the implementation of Singleton.
   static GpuSurfaceTracker* GetInstance();
 
+  scoped_refptr<SurfaceRef> GetSurfaceRefForSurface(int surface_id) {
+    return surface_map_[surface_id].surface_ref;
+  }
+
  private:
   struct SurfaceInfo {
+    SurfaceInfo();
+    SurfaceInfo(int renderer_id,
+                int render_widget_id,
+                const gfx::AcceleratedWidget& native_widget,
+                const gfx::GLSurfaceHandle& handle,
+                const scoped_refptr<SurfaceRef>& surface_ref);
+    ~SurfaceInfo();
     int renderer_id;
     int render_widget_id;
     gfx::AcceleratedWidget native_widget;
     gfx::GLSurfaceHandle handle;
+    scoped_refptr<SurfaceRef> surface_ref;
   };
   typedef std::map<int, SurfaceInfo> SurfaceMap;
 

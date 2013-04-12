@@ -19,7 +19,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -42,9 +41,6 @@
 #include "ipc/ipc_switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_native_view_id_manager.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -74,14 +70,6 @@ enum GPUProcessLifetimeEvent {
 // only be accessed from the IO thread.
 GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
 
-#if defined(TOOLKIT_GTK)
-
-void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(surface);
-}
-
-#endif
 
 void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
                            CauseForGpuLaunch cause,
@@ -289,33 +277,6 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // defined(OS_WIN)
 
 }  // anonymous namespace
-
-#if defined(TOOLKIT_GTK)
-// Used to put a lock on surfaces so that the window to which the GPU
-// process is drawing to doesn't disappear while it is drawing when
-// a WebContents is closed.
-class GpuProcessHost::SurfaceRef {
- public:
-  explicit SurfaceRef(gfx::PluginWindowHandle surface);
-  ~SurfaceRef();
- private:
-  gfx::PluginWindowHandle surface_;
-};
-
-GpuProcessHost::SurfaceRef::SurfaceRef(gfx::PluginWindowHandle surface)
-    : surface_(surface) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->AddRefPermanentXID(surface_)) {
-    LOG(ERROR) << "Surface " << surface << " cannot be referenced.";
-  }
-}
-
-GpuProcessHost::SurfaceRef::~SurfaceRef() {
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&ReleasePermanentXIDDispatcher, surface_));
-}
-#endif  // defined(TOOLKIT_GTK)
 
 // This class creates a GPU thread (instead of a GPU process), when running
 // with --in-process-gpu or --single-process.
@@ -772,26 +733,12 @@ void GpuProcessHost::CreateViewCommandBuffer(
 
   DCHECK(CalledOnValidThread());
 
-#if defined(TOOLKIT_GTK)
-  // There should only be one such command buffer (for the compositor).  In
-  // practice, if the GPU process lost a context, GraphicsContext3D with
-  // associated command buffer and view surface will not be gone until new
-  // one is in place and all layers are reattached.
-  linked_ptr<SurfaceRef> surface_ref;
-  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
-  if (it != surface_refs_.end())
-    surface_ref = (*it).second;
-  else
-    surface_ref.reset(new SurfaceRef(compositing_surface.handle));
-#endif  // defined(TOOLKIT_GTK)
-
   if (!compositing_surface.is_null() &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           compositing_surface, surface_id, client_id, init_params))) {
     create_command_buffer_requests_.push(callback);
-#if defined(TOOLKIT_GTK)
-    surface_refs_.insert(std::make_pair(surface_id, surface_ref));
-#endif
+    surface_refs_.insert(std::make_pair(surface_id,
+        GpuSurfaceTracker::GetInstance()->GetSurfaceRefForSurface(surface_id)));
   } else {
     callback.Run(MSG_ROUTING_NONE);
   }
@@ -865,12 +812,10 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 
 void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyCommandBuffer");
-
-#if defined(TOOLKIT_GTK)
   SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
-  if (it != surface_refs_.end())
+  if (it != surface_refs_.end()) {
     surface_refs_.erase(it);
-#endif  // defined(TOOLKIT_GTK)
+  }
 }
 
 void GpuProcessHost::OnImageCreated(const gfx::Size size) {
