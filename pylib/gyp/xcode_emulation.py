@@ -224,8 +224,7 @@ class XcodeSettings(object):
 
   def _GetSdkVersionInfoItem(self, sdk, infoitem):
     job = subprocess.Popen(['xcodebuild', '-version', '-sdk', sdk, infoitem],
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT)
+                           stdout=subprocess.PIPE)
     out = job.communicate()[0]
     if job.returncode != 0:
       sys.stderr.write(out + '\n')
