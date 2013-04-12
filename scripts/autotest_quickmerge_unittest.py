@@ -88,8 +88,7 @@ class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
     autotest_quickmerge.RsyncQuickmerge(source_path, sysroot_path,
                                         include_file_name,
                                         pretend=True,
-                                        overwrite=False,
-                                        quiet=False)
+                                        overwrite=False)
 
     self.assertCommandContains(expected_command)
 

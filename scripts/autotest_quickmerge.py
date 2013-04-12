@@ -81,7 +81,7 @@ def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
 
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
                     include_pattern_file=None, pretend=False,
-                    overwrite=False, quiet=False):
+                    overwrite=False):
   """Run rsync quickmerge command, with specified arguments.
   Command will take form `rsync -a [options] --exclude=**.pyc
                          --exclude=**.pyo
@@ -92,7 +92,6 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
     pretend:   True to use the '-n' option to rsync, to perform dry run.
     overwrite: True to omit '-u' option, overwrite all files in sysroot,
                not just older files.
-    quiet:     True to omit the '-i' option, silence rsync change log.
   """
   command = ['rsync', '-a']
 
@@ -102,8 +101,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
   if not overwrite:
     command += ['-u']
 
-  if not quiet:
-    command += ['-i']
+  command += ['-i']
 
   command += ['--exclude=**.pyc']
   command += ['--exclude=**.pyo']
@@ -119,7 +117,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   command += [source_path, sysroot_autotest_path]
 
-  cros_build_lib.SudoRunCommand(command)
+  return cros_build_lib.SudoRunCommand(command, redirect_stdout=True)
 
 
 def ParseArguments(argv):
@@ -162,10 +160,15 @@ def main(argv):
   sysroot_autotest_path = os.path.join('/build', args.board, 'usr', 'local',
                                        'autotest', '')
 
-  RsyncQuickmerge(source_path, sysroot_autotest_path, include_pattern_file,
-                  args.pretend, args.overwrite, args.quiet)
+  rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
+      include_pattern_file, args.pretend, args.overwrite)
 
-  print 'Done'
+  print rsync_output.output
+
+  change_report = ItemizeChangesFromRsyncOutput(rsync_output.output,
+                                                sysroot_autotest_path)
+
+  print change_report
 
 
 if __name__ == '__main__':
