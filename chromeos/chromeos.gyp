@@ -263,6 +263,8 @@
             'display/output_configurator.h',
             'display/real_output_configurator_delegate.cc',
             'display/real_output_configurator_delegate.h',
+            'ime/xkeyboard.cc',
+            'ime/xkeyboard.h',
           ],
         }],
       ],
