@@ -2155,8 +2155,6 @@ void RenderLayer::scrollTo(int x, int y)
         renderer()->node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
 
     InspectorInstrumentation::didScrollLayer(frame);
-    if (scrollsOverflow())
-        frame->loader()->client()->didChangeScrollOffset(); 
 }
 
 static inline bool frameElementAndViewPermitScroll(HTMLFrameElement* frameElement, FrameView* frameView) 
