@@ -848,7 +848,6 @@ void CanvasRenderingContext2D::beginPath()
     m_path.clear();
 }
 
-#if ENABLE(CANVAS_PATH)
 PassRefPtr<DOMPath> CanvasRenderingContext2D::currentPath()
 {
     return DOMPath::create(m_path);
@@ -860,7 +859,6 @@ void CanvasRenderingContext2D::setCurrentPath(DOMPath* path)
         return;
     m_path = path->path();
 }
-#endif
 
 static bool validateRectForCanvas(float& x, float& y, float& width, float& height)
 {

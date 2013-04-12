@@ -61,13 +61,8 @@ public:
     static bool webkitIndexedDBEnabled() { return isIndexedDBEnabled; }
     static bool indexedDBEnabled() { return isIndexedDBEnabled; }
 
-#if ENABLE(CANVAS_PATH)
     static void setCanvasPathEnabled(bool isEnabled) { isCanvasPathEnabled = isEnabled; }
     static bool canvasPathEnabled() { return isCanvasPathEnabled; }
-#else
-    static void setCanvasPathEnabled(bool) { }
-    static bool canvasPathEnabled() { return false; }
-#endif
 
 #if ENABLE(CSS_EXCLUSIONS)
     static void setCSSExclusionsEnabled(bool isEnabled) { isCSSExclusionsEnabled = isEnabled; }

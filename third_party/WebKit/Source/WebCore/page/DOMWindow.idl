@@ -358,7 +358,7 @@
     attribute NotationConstructor Notation;
     attribute EntityConstructor Entity;
     attribute EntityReferenceConstructor EntityReference;
-    [Conditional=CANVAS_PATH, EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
+    [EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
     attribute ProcessingInstructionConstructor ProcessingInstruction;
     [EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
     [EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;

@@ -47,9 +47,7 @@ namespace WebCore {
 class CanvasGradient;
 class CanvasPattern;
 class CanvasStyle;
-#if ENABLE(CANVAS_PATH)
 class DOMPath;
-#endif
 class FloatRect;
 class GraphicsContext;
 class HTMLCanvasElement;
@@ -138,10 +136,8 @@ public:
 
     void beginPath();
 
-#if ENABLE(CANVAS_PATH)
     PassRefPtr<DOMPath> currentPath();
     void setCurrentPath(DOMPath*);
-#endif
     void fill(const String& winding = "nonzero");
     void stroke();
     void clip(const String& winding = "nonzero");

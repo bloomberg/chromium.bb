@@ -28,7 +28,6 @@
 #ifndef DOMPath_h
 #define DOMPath_h
 
-#if ENABLE(CANVAS_PATH)
 #include "CanvasPathMethods.h"
 #if ENABLE(SVG)
 #include "SVGPathUtilities.h"
@@ -73,5 +72,4 @@ private:
     }
 };
 }
-#endif
 #endif

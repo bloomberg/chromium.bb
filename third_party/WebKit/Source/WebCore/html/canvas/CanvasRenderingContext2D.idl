@@ -91,9 +91,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
 
     void beginPath();
 
-#if defined(ENABLE_CANVAS_PATH) && ENABLE_CANVAS_PATH
     attribute DOMPath currentPath;
-#endif
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();
