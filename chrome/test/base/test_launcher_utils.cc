@@ -35,9 +35,12 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // default browser) that could conflicts with some tests expectations.
   command_line->AppendSwitch(switches::kNoDefaultBrowserCheck);
 
-  // Enable warning level logging so that we can see when bad stuff happens.
-  command_line->AppendSwitch(switches::kEnableLogging);
-  command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
+  // Enable info level logging by default so that we can see when bad
+  // stuff happens, but honor the flags specified from the command line.
+  if (!command_line->HasSwitch(switches::kEnableLogging))
+    command_line->AppendSwitch(switches::kEnableLogging);
+  if (!command_line->HasSwitch(switches::kLoggingLevel))
+    command_line->AppendSwitchASCII(switches::kLoggingLevel, "0");  // info
 
   // Disable safebrowsing autoupdate.
   command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
