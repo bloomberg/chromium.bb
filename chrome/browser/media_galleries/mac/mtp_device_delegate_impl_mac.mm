@@ -361,6 +361,8 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
         FROM_HERE,
         base::Bind(iter->success_callback, entry_list, false));
   }
+
+  read_dir_transactions_.clear();
 }
 
 // Invoked on UI thread from the listener.
