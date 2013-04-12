@@ -71,9 +71,7 @@ HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document* documen
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     , m_requestAutocompleteTimer(this, &HTMLFormElement::requestAutocompleteTimerFired)
-#endif
 {
     ASSERT(hasTagName(formTag));
     ScriptWrappable::init(this);
@@ -388,7 +386,6 @@ void HTMLFormElement::reset()
     m_isInResetFunction = false;
 }
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 void HTMLFormElement::requestAutocomplete()
 {
     Frame* frame = document()->frame();
@@ -433,7 +430,6 @@ void HTMLFormElement::requestAutocompleteTimerFired(Timer<HTMLFormElement>*)
     for (size_t i = 0; i < pendingEvents.size(); ++i)
         dispatchEvent(pendingEvents[i].release());
 }
-#endif
 
 void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
@@ -453,12 +449,10 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         else
             document()->unregisterForPageCacheSuspensionCallbacks(this);
     }
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     else if (name == onautocompleteAttr)
         setAttributeEventListener(eventNames().autocompleteEvent, createAttributeEventListener(this, name, value));
     else if (name == onautocompleteerrorAttr)
         setAttributeEventListener(eventNames().autocompleteerrorEvent, createAttributeEventListener(this, name, value));
-#endif
     else
         HTMLElement::parseAttribute(name, value);
 }

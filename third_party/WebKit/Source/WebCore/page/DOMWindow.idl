@@ -530,7 +530,7 @@
     [Conditional=INPUT_SPEECH] attribute SpeechInputEventConstructor SpeechInputEvent;
     [Conditional=WEBGL] attribute WebGLContextEventConstructor WebGLContextEvent;
     [Conditional=PROXIMITY_EVENTS] attribute DeviceProximityEventConstructor DeviceProximityEvent;
-    [Conditional=REQUEST_AUTOCOMPLETE] attribute AutocompleteErrorEventConstructor AutocompleteErrorEvent;
+    [EnabledAtRuntime=requestAutocomplete] attribute AutocompleteErrorEventConstructor AutocompleteErrorEvent;
     [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute SecurityPolicyViolationEventConstructor SecurityPolicyViolationEvent;
 
     attribute EventExceptionConstructor EventException;

@@ -245,10 +245,8 @@ public:
     // The lang attribute support is incomplete and should only be turned on for tests.
     static void setLangAttributeAwareFormControlUIEnabled(bool isEnabled) { isLangAttributeAwareFormControlUIEnabled = isEnabled; }
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     static bool requestAutocompleteEnabled() { return isRequestAutocompleteEnabled; }
     static void setRequestAutocompleteEnabled(bool isEnabled) { isRequestAutocompleteEnabled = isEnabled; }
-#endif
 
 private:
     // Never instantiate.
@@ -323,9 +321,7 @@ private:
     static bool isDialogElementEnabled;
 #endif
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     static bool isRequestAutocompleteEnabled;
-#endif
 
     static bool areExperimentalContentSecurityPolicyFeaturesEnabled;
 

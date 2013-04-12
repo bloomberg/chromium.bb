@@ -556,20 +556,12 @@ bool WebRuntimeFeatures::isFontLoadEventsEnabled()
 
 void WebRuntimeFeatures::enableRequestAutocomplete(bool enable)
 {
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     RuntimeEnabledFeatures::setRequestAutocompleteEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isRequestAutocompleteEnabled()
 {
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     return RuntimeEnabledFeatures::requestAutocompleteEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableDoNotTrack(bool enable)

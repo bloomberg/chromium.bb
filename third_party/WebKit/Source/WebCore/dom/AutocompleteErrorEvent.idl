@@ -23,7 +23,6 @@
  */
 
 [
-    Conditional=REQUEST_AUTOCOMPLETE,
     ConstructorTemplate=Event
 ] interface AutocompleteErrorEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString reason;

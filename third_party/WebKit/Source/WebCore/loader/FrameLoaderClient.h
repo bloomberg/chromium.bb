@@ -250,9 +250,7 @@ namespace WebCore {
         virtual void dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler*) { }
 #endif
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
         virtual void didRequestAutocomplete(PassRefPtr<FormState>) = 0;
-#endif
 
         virtual bool allowWebGL(bool enabledPerSettings) { return enabledPerSettings; }
         // Informs the embedder that a WebGL canvas inside this frame received a lost context

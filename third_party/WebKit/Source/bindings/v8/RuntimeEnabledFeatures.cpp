@@ -185,9 +185,7 @@ bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
 bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
 #endif
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 bool RuntimeEnabledFeatures::isRequestAutocompleteEnabled = false;
-#endif
 
 bool RuntimeEnabledFeatures::areExperimentalContentSecurityPolicyFeaturesEnabled = false;
 

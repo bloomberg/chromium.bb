@@ -98,7 +98,6 @@ public:
 
     bool checkValidity();
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     enum AutocompleteResult {
         AutocompleteResultSuccess,
         AutocompleteResultErrorDisabled,
@@ -111,7 +110,6 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocomplete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocompleteerror);
-#endif
 
     HTMLFormControlElement* elementForAlias(const AtomicString&);
     void addElementAlias(HTMLFormControlElement*, const AtomicString& alias);
@@ -177,12 +175,10 @@ private:
 
     bool m_wasDemoted;
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
     void requestAutocompleteTimerFired(Timer<HTMLFormElement>*);
 
     Vector<RefPtr<Event> > m_pendingAutocompleteEvents;
     Timer<HTMLFormElement> m_requestAutocompleteTimer;
-#endif
 };
 
 } // namespace WebCore

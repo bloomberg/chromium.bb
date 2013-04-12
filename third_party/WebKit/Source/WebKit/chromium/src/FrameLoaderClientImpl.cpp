@@ -62,9 +62,7 @@
 #include "Settings.h"
 #include "SocketStreamHandleInternal.h"
 #include "UserGestureIndicator.h"
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 #include "WebAutofillClient.h"
-#endif
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
 #include "WebDataSourceImpl.h"
@@ -1462,13 +1460,11 @@ void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(RTCPeerC
 }
 #endif
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)
 {
     if (m_webFrame->viewImpl() && m_webFrame->viewImpl()->autofillClient())
         m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(m_webFrame, WebFormElement(formState->form()));
 }
-#endif
 
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)
 {

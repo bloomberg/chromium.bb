@@ -40,9 +40,7 @@
     void reset();
     boolean checkValidity();
 
-#if defined(ENABLE_REQUEST_AUTOCOMPLETE) && ENABLE_REQUEST_AUTOCOMPLETE
     [EnabledAtRuntime=requestAutocomplete] void requestAutocomplete();
     [EnabledAtRuntime=requestAutocomplete,NotEnumerable] attribute EventListener onautocomplete;
     [EnabledAtRuntime=requestAutocomplete,NotEnumerable] attribute EventListener onautocompleteerror;
-#endif
 };

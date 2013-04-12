@@ -49,9 +49,7 @@
 #include "FontSmoothingMode.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 #include "HTMLFormElement.h"
-#endif
 #include "HTMLInputElement.h"
 #include "IDBCursor.h"
 #include "IDBDatabaseBackendInterface.h"
@@ -87,9 +85,7 @@
 #include "WebCursorInfo.h"
 #include "WebEditingAction.h"
 #include "WebFontDescription.h"
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 #include "WebFormElement.h"
-#endif
 #include "WebGeolocationError.h"
 #include "WebGeolocationPosition.h"
 #include "WebIDBCursor.h"
@@ -610,12 +606,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::CORSModeUnspecified, MediaPlayerCli
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::CORSModeAnonymous, MediaPlayerClient::Anonymous);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::CORSModeUseCredentials, MediaPlayerClient::UseCredentials);
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
 COMPILE_ASSERT_MATCHING_ENUM(WebFormElement::AutocompleteResultSuccess, HTMLFormElement::AutocompleteResultSuccess);
 COMPILE_ASSERT_MATCHING_ENUM(WebFormElement::AutocompleteResultErrorDisabled, HTMLFormElement::AutocompleteResultErrorDisabled);
 COMPILE_ASSERT_MATCHING_ENUM(WebFormElement::AutocompleteResultErrorCancel, HTMLFormElement::AutocompleteResultErrorCancel);
 COMPILE_ASSERT_MATCHING_ENUM(WebFormElement::AutocompleteResultErrorInvalid, HTMLFormElement::AutocompleteResultErrorInvalid);
-#endif
 
 COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityUnresolved, ResourceLoadPriorityUnresolved);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityVeryLow, ResourceLoadPriorityVeryLow);

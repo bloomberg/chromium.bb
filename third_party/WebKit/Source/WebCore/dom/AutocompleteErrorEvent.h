@@ -25,8 +25,6 @@
 #ifndef AutocompleteErrorEvent_h
 #define AutocompleteErrorEvent_h
 
-#if ENABLE(REQUEST_AUTOCOMPLETE)
-
 #include "Event.h"
 #include "EventNames.h"
 
@@ -81,7 +79,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(REQUEST_AUTOCOMPLETE)
 
 #endif // AutocompleteErrorEvent_h
