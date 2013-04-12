@@ -14,9 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingProfile;
@@ -24,14 +22,10 @@ class TestingProfile;
 namespace extensions {
 class ManagementPolicy;
 }
-namespace ui {
-class ScopedOleInitializer;
-}
 
 class ExtensionServiceTestBase : public extensions::ExtensionTest {
  public:
-  ExtensionServiceTestBase(
-      MessageLoop::Type main_loop_type = MessageLoop::TYPE_UI);
+  ExtensionServiceTestBase();
   virtual ~ExtensionServiceTestBase();
 
   void InitializeExtensionService(const base::FilePath& profile_path,
@@ -65,11 +59,6 @@ class ExtensionServiceTestBase : public extensions::ExtensionTest {
   MessageLoop loop_;
   base::ShadowingAtExitManager at_exit_manager_;
   base::ScopedTempDir temp_dir_;
-  content::RenderViewHostTestEnabler rvh_enabler_;
-  ScopedTestingLocalState local_state_;
-#if defined(OS_WIN)
-  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
-#endif
   scoped_ptr<TestingProfile> profile_;
   base::FilePath extensions_install_dir_;
   base::FilePath data_dir_;
@@ -82,7 +71,7 @@ class ExtensionServiceTestBase : public extensions::ExtensionTest {
   content::TestBrowserThread webkit_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_user_blocking_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  content::TestBrowserThread io_thread_;
   extensions::FeatureSwitch::ScopedOverride override_sideload_wipeout_;
 };
 

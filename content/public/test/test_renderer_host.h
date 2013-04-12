@@ -109,10 +109,6 @@ class RenderViewHostTestEnabler {
   RenderViewHostTestEnabler();
   ~RenderViewHostTestEnabler();
 
-  MockRenderProcessHostFactory* rph_factory() {
-    return rph_factory_.get();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestEnabler);
   friend class RenderViewHostTestHarness;

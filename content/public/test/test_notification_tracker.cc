@@ -34,11 +34,6 @@ void TestNotificationTracker::ListenFor(
   registrar_.Add(this, type, source);
 }
 
-void TestNotificationTracker::ListenForAll(int type) {
-  registrar_.Add(this, type,
-                 NotificationService::AllBrowserContextsAndSources());
-}
-
 void TestNotificationTracker::Reset() {
   events_.clear();
 }
@@ -76,13 +71,6 @@ bool TestNotificationTracker::Check3AndReset(int type1,
                  events_[2].type == type3;
   Reset();
   return success;
-}
-
-std::vector<int> TestNotificationTracker::GetTypes() const {
-  std::vector<int> types;
-  for (size_t i = 0; i < size(); ++i)
-    types.push_back(at(i).type);
-  return types;
 }
 
 void TestNotificationTracker::Observe(

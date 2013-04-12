@@ -251,14 +251,10 @@ RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     processes_.push_back(host);
     host->SetFactory(this);
   }
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnRenderProcessHostCreated(host));
   return host;
 }
 
 void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnRenderProcessHostDestroyed(host));
   for (ScopedVector<MockRenderProcessHost>::iterator it = processes_.begin();
        it != processes_.end(); ++it) {
     if (*it == host) {
@@ -266,16 +262,6 @@ void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
       break;
     }
   }
-}
-
-MockRenderProcessHostFactory::Observer::Observer(
-    MockRenderProcessHostFactory* factory)
-    : factory_(factory) {
-  factory->AddObserver(this);
-}
-
-MockRenderProcessHostFactory::Observer::~Observer() {
-  factory_->RemoveObserver(this);
 }
 
 }  // content

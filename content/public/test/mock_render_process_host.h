@@ -117,30 +117,11 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   // to remove it from |processes_| to prevent it from being deleted twice.
   void Remove(MockRenderProcessHost* host) const;
 
-  class Observer {
-   public:
-    Observer(MockRenderProcessHostFactory* factory);
-    virtual ~Observer();
-    virtual void OnRenderProcessHostCreated(MockRenderProcessHost*) {}
-    virtual void OnRenderProcessHostDestroyed(MockRenderProcessHost*) {}
-   private:
-    MockRenderProcessHostFactory* factory_;
-  };
-
-  void AddObserver(Observer* obs) {
-    observer_list_.AddObserver(obs);
-  }
-  void RemoveObserver(Observer* obs) {
-    observer_list_.RemoveObserver(obs);
-  }
-
  private:
   // A list of MockRenderProcessHosts created by this object. This list is used
   // for deleting all MockRenderProcessHosts that have not deleted by a test in
   // the destructor and prevent them from being leaked.
   mutable ScopedVector<MockRenderProcessHost> processes_;
-
-  mutable ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
