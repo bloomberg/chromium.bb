@@ -59,6 +59,7 @@
 #include "ScriptableDocumentParser.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "TraceEvent.h"
 #include "UserGestureIndicator.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"
@@ -79,9 +80,6 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>
 
-#if PLATFORM(CHROMIUM)
-#include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -266,18 +264,14 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
 
         // Compile the script.
         v8::Handle<v8::String> code = v8String(source.source(), m_isolate);
-#if PLATFORM(CHROMIUM)
         TRACE_EVENT_BEGIN0("v8", "v8.compile");
-#endif
         OwnPtr<v8::ScriptData> scriptData = ScriptSourceCode::precompileScript(code, source.cachedScript());
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
         // 1, whereas v8 starts at 0.
         v8::Handle<v8::Script> script = ScriptSourceCode::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate);
-#if PLATFORM(CHROMIUM)
         TRACE_EVENT_END0("v8", "v8.compile");
         TRACE_EVENT0("v8", "v8.run");
-#endif
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);

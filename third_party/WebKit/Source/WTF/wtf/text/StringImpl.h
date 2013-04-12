@@ -896,6 +896,7 @@ ALWAYS_INLINE bool equal(const UChar* a, const UChar* b, unsigned length)
     return true;
 }
 #elif PLATFORM(IOS) && WTF_ARM_ARCH_AT_LEAST(7)
+// FIXME: Decide if we want this for Android, http://crbug.com/230934
 ALWAYS_INLINE bool equal(const LChar* a, const LChar* b, unsigned length)
 {
     bool isEqual = false;

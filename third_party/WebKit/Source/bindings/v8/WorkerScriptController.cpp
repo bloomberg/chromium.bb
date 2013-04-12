@@ -47,10 +47,8 @@
 #include "WrapperTypeInfo.h"
 #include <v8.h>
 
-#if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
 #include <public/WebWorkerRunLoop.h>
-#endif
 
 namespace WebCore {
 
@@ -71,12 +69,12 @@ WorkerScriptController::WorkerScriptController(WorkerContext* workerContext)
 WorkerScriptController::~WorkerScriptController()
 {
     m_domDataStore.clear();
-#if PLATFORM(CHROMIUM)
+
     // The corresponding call to didStartWorkerRunLoop is in
     // WorkerThread::workerThread().
     // See http://webkit.org/b/83104#c14 for why this is here.
     WebKit::Platform::current()->didStopWorkerRunLoop(WebKit::WebWorkerRunLoop(&m_workerContext->thread()->runLoop()));
-#endif
+
     disposeContext();
     V8PerIsolateData::dispose(m_isolate);
     m_isolate->Exit();

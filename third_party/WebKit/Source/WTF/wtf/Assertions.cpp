@@ -47,7 +47,7 @@
 
 #if USE(CF)
 #include <CoreFoundation/CFString.h>
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 #define WTF_USE_APPLE_SYSTEM_LOG 1
 #include <asl.h>
 #endif

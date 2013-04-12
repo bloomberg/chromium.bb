@@ -31,10 +31,6 @@
 #include "config.h"
 #include "V8EventListener.h"
 
-#if PLATFORM(CHROMIUM)
-#include "TraceEvent.h"
-#endif
-
 #include "Document.h"
 #include "Frame.h"
 

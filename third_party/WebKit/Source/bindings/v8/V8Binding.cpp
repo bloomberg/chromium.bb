@@ -373,10 +373,7 @@ bool handleOutOfMemory()
         return true;
 
     frame->script()->clearForOutOfMemory();
-
-#if PLATFORM(CHROMIUM)
     frame->loader()->client()->didExhaustMemoryAvailableForScript();
-#endif
 
     if (Settings* settings = frame->settings())
         settings->setScriptEnabled(false);

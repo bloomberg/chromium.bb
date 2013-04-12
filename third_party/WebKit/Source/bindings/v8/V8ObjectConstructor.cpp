@@ -26,12 +26,10 @@
 #include "V8ObjectConstructor.h"
 
 #include "Frame.h"
+#include "TraceEvent.h"
 #include "V8Binding.h"
 #include "V8RecursionScope.h"
 
-#if PLATFORM(CHROMIUM)
-#include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -70,9 +68,7 @@ v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Handle<v8::Function> 
 
 v8::Local<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], Document* document)
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("v8", "v8.newInstance");
-#endif
 
     // No artificial limitations on the depth of recursion.
     V8RecursionScope recursionScope(document);

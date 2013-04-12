@@ -76,4 +76,4 @@ size_t lastHyphenLocation(const UChar* characters, size_t length, size_t beforeI
 
 } // namespace WebCore
 
-#endif // (!PLATFORM(MAC) && !PLATFORM(CHROMIUM)) || PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+#endif // __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070

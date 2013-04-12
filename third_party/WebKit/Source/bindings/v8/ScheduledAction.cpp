@@ -33,14 +33,10 @@
 
 #include "Document.h"
 #include "Frame.h"
+#include "ScriptController.h"
 #include "ScriptExecutionContext.h"
 #include "ScriptSourceCode.h"
-
-#if PLATFORM(CHROMIUM)
 #include "TraceEvent.h"
-#endif
-
-#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8GCController.h"
 #include "V8RecursionScope.h"
@@ -99,9 +95,7 @@ void ScheduledAction::execute(Frame* frame)
         return;
     v8::Context::Scope scope(context);
 
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("v8", "ScheduledAction::execute");
-#endif
 
     if (!m_function.isEmpty())
         frame->script()->callFunction(m_function.get(), context->Global(), m_args.size(), m_args.data());

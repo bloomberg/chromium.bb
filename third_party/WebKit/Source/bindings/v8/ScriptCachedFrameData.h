@@ -31,7 +31,6 @@
 #ifndef ScriptCachedFrameData_h
 #define ScriptCachedFrameData_h
 
-#if PLATFORM(CHROMIUM)
 // We don't use WebKit's page caching, so this implementation is just a stub.
 
 namespace WebCore {
@@ -50,9 +49,5 @@ public:
 };
 
 } // namespace WebCore
-
-#else
-#error You need to consider whether you want Page Cache and either add a stub or a real implementation.
-#endif // PLATFORM(CHROMIUM)
 
 #endif // ScriptCachedFrameData_h
