@@ -29,7 +29,7 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
   virtual bool HasCompleted() OVERRIDE {
-    return IsContextLost() || glTestFenceNV(fence_);
+    return !!glTestFenceNV(fence_);
   }
 
  private:
@@ -49,7 +49,7 @@ class GLFenceARBSync: public gfx::GLFence {
 
   virtual bool HasCompleted() OVERRIDE {
     // Handle the case where FenceSync failed.
-    if (!sync_ || IsContextLost())
+    if (!sync_)
       return true;
 
     GLsizei length = 0;
@@ -89,21 +89,6 @@ GLFence* GLFence::Create() {
   } else {
     return NULL;
   }
-}
-
-// static
-bool GLFence::IsContextLost() {
-  if (!gfx::g_driver_gl.ext.b_GL_ARB_robustness &&
-      !gfx::g_driver_gl.ext.b_GL_EXT_robustness)
-    return false;
-
-  if (!gfx::GLContext::GetCurrent() ||
-      !gfx::GLContext::GetCurrent()->
-          WasAllocatedUsingRobustnessExtension())
-    return false;
-
-  GLenum status = glGetGraphicsResetStatusARB();
-  return status != GL_NO_ERROR;
 }
 
 }  // namespace gfx
