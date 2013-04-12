@@ -71,7 +71,8 @@ AppLauncherPageUI::~AppLauncherPageUI() {
 base::RefCountedMemory* AppLauncherPageUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_WEBSTORE_ICON_16, scale_factor);
+      LoadDataResourceBytesForScale(IDR_BOOKMARK_BAR_APPS_SHORTCUT,
+                                    scale_factor);
 }
 
 Profile* AppLauncherPageUI::GetProfile() const {
