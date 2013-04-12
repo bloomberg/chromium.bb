@@ -51,7 +51,7 @@ def DispatchInstrumentationTests(options):
       results=all_results,
       test_type='Instrumentation',
       test_package=os.path.basename(options.test_apk),
-      annotation=options.annotation,
+      annotation=options.annotations,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 

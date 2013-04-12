@@ -19,22 +19,27 @@ PICKLE_FORMAT_VERSION = 1
 
 
 class TestJar(object):
+  _ANNOTATIONS = frozenset(
+      ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest',
+       'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest'])
+  _DEFAULT_ANNOTATION = 'SmallTest'
+  _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
+  _PROGUARD_METHOD_RE = re.compile(r'\s*?- Method:\s*(\S*)[(].*$')
+  _PROGUARD_ANNOTATION_RE = re.compile(r'\s*?- Annotation \[L(\S*);\]:$')
+  _PROGUARD_ANNOTATION_CONST_RE = (
+      re.compile(r'\s*?- Constant element value.*$'))
+  _PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
+
   def __init__(self, jar_path):
+    if not os.path.exists(jar_path):
+      raise Exception('%s not found, please build it' % jar_path)
+
     sdk_root = os.getenv('ANDROID_SDK_ROOT', constants.ANDROID_SDK_ROOT)
     self._PROGUARD_PATH = os.path.join(sdk_root,
                                        'tools/proguard/bin/proguard.sh')
     if not os.path.exists(self._PROGUARD_PATH):
       self._PROGUARD_PATH = os.path.join(os.environ['ANDROID_BUILD_TOP'],
                                          'external/proguard/bin/proguard.sh')
-    self._PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
-    self._PROGUARD_METHOD_RE = re.compile(r'\s*?- Method:\s*(\S*)[(].*$')
-    self._PROGUARD_ANNOTATION_RE = re.compile(r'\s*?- Annotation \[L(\S*);\]:$')
-    self._PROGUARD_ANNOTATION_CONST_RE = (
-        re.compile(r'\s*?- Constant element value.*$'))
-    self._PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
-
-    if not os.path.exists(jar_path):
-      raise Exception('%s not found, please build it' % jar_path)
     self._jar_path = jar_path
     self._annotation_map = collections.defaultdict(list)
     self._pickled_proguard_name = self._jar_path + '-proguard.pickle'
@@ -157,6 +162,52 @@ class TestJar(object):
   def GetTestMethods(self):
     """Returns a list of all test methods in this apk as Class#testMethod."""
     return self._test_methods
+
+  def _GetTestsMissingAnnotation(self):
+    """Get a list of test methods with no known annotations."""
+    tests_missing_annotations = []
+    for test_method in self.GetTestMethods():
+      annotations_ = frozenset(self.GetTestAnnotations(test_method))
+      if (annotations_.isdisjoint(self._ANNOTATIONS) and
+          not self.IsPythonDrivenTest(test_method)):
+        tests_missing_annotations.append(test_method)
+    return sorted(tests_missing_annotations)
+
+  def _GetAllMatchingTests(self, annotation_filter_list, test_filter):
+    """Get a list of tests matching any of the annotations and the filter.
+
+    Args:
+      annotation_filter_list: List of test annotations. A test must have at
+        least one of the these annotations. A test without any annotations
+        is considered to be SmallTest.
+      test_filter: Filter used for partial matching on the test method names.
+
+    Returns:
+      List of all matching tests.
+    """
+    if annotation_filter_list:
+      available_tests = self.GetAnnotatedTests(annotation_filter_list)
+      # Include un-annotated tests in SmallTest.
+      if annotation_filter_list.count(self._DEFAULT_ANNOTATION) > 0:
+        for test in self._GetTestsMissingAnnotation():
+          logging.warning(
+              '%s has no annotations. Assuming "%s".', test,
+              self._DEFAULT_ANNOTATION)
+          available_tests.append(test)
+    else:
+      available_tests = [m for m in self.GetTestMethods()
+                         if not self.IsPythonDrivenTest(m)]
+
+    tests = []
+    if test_filter:
+      # |available_tests| are in adb instrument format: package.path.class#test.
+      filter_without_hash = test_filter.replace('#', '.')
+      tests = [t for t in available_tests
+               if filter_without_hash in t.replace('#', '.')]
+    else:
+      tests = available_tests
+
+    return tests
 
   @staticmethod
   def IsPythonDrivenTest(test):

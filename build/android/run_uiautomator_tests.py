@@ -16,7 +16,7 @@ from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
 from pylib.host_driven import run_python_tests
-from pylib.instrumentation import dispatch
+from pylib.uiautomator import dispatch
 from pylib.utils import report_results
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
@@ -53,7 +53,7 @@ def DispatchUIAutomatorTests(options):
       results=all_results,
       test_type='UIAutomator',
       test_package=os.path.basename(options.test_jar),
-      annotation=options.annotation,
+      annotation=options.annotations,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs the Java tests. See more information on run_instrumentation_tests.py."""
+"""Class for running instrumentation tests on a single device."""
 
 import logging
 import os
@@ -53,8 +53,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, options, device, shard_index, test_pkg,
-               ports_to_forward, is_uiautomator_test=False):
+  def __init__(self, options, device, shard_index, test_pkg, ports_to_forward):
     """Create a new TestRunner.
 
     Args:
@@ -72,7 +71,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
                         Can be optionally requested by a test case.
-      is_uiautomator_test: Whether this is a uiautomator test.
     """
     super(TestRunner, self).__init__(device, options.tool, options.build_type)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
@@ -85,15 +83,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.disable_assertions = options.disable_assertions
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
-    self.is_uiautomator_test = is_uiautomator_test
-    if self.is_uiautomator_test:
-      self.package_name = options.package_name
-    else:
-      self.install_apk = options.install_apk
-
+    self.install_apk = options.install_apk
     self.forwarder = None
 
-  #override.
+  #override
   def PushDependencies(self):
     # TODO(frankf): Implement a general approach for copying/installing
     # once across test runners.
@@ -120,7 +113,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.adb.PushIfNeeded(host_test_files_path,
                               self.adb.GetExternalStorage() + '/' +
                               TestRunner._DEVICE_DATA_DIR + '/' + dst_layer)
-    if self.is_uiautomator_test or self.install_apk:
+    if self.install_apk:
       self.test_pkg.Install(self.adb)
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[self.device] = True
@@ -310,25 +303,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return 3 * 60
     return 1 * 60
 
-  def _RunUIAutomatorTest(self, test, timeout):
-    """Runs a single uiautomator test.
+  def _RunTest(self, test, timeout):
+    return self.adb.RunInstrumentationTest(
+        test, self.test_pkg.GetPackageName(),
+        self._GetInstrumentationArgs(), timeout)
 
-    Args:
-      test: Test class/method.
-      timeout: Timeout time in seconds.
-
-    Returns:
-      An instance of am_instrument_parser.TestResult object.
-    """
-    self.adb.ClearApplicationState(self.package_name)
-    if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
-      self.flags.RemoveFlags(['--disable-fre'])
-    else:
-      self.flags.AddFlags(['--disable-fre'])
-    return self.adb.RunUIAutomatorTest(
-        test, self.test_pkg.GetPackageName(), timeout)
-
-  #override.
+  #override
   def RunTest(self, test):
     raw_result = None
     start_date_ms = None
@@ -339,14 +319,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       self.TestSetup(test)
       start_date_ms = int(time.time()) * 1000
-
-      if self.is_uiautomator_test:
-        raw_result = self._RunUIAutomatorTest(test, timeout)
-      else:
-        raw_result = self.adb.RunInstrumentationTest(
-            test, self.test_pkg.GetPackageName(),
-            self._GetInstrumentationArgs(), timeout)
-
+      raw_result = self._RunTest(test, timeout)
       duration_ms = int(time.time()) * 1000 - start_date_ms
       status_code = raw_result.GetStatusCode()
       if status_code:

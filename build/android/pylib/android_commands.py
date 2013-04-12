@@ -1272,6 +1272,9 @@ class AndroidCommands(object):
     # convention and doesn't terminate with INSTRUMENTATION_CODE.
     # Just assume the first result is valid.
     (test_results, _) = am_instrument_parser.ParseAmInstrumentOutput(output)
+    if not test_results:
+      raise errors.InstrumentationError(
+          'no test results... device setup correctly?')
     return test_results[0]
 
 
