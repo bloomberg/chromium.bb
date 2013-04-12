@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/at_exit.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -671,6 +672,8 @@ class ChromiumEnv : public Env, public UMALogger {
                           MethodID method,
                           int limit);
 
+  std::string name_;
+
  private:
   const int kMaxRenameTimeMillis;
   // BGThread() is the body of the background thread
@@ -699,11 +702,12 @@ class ChromiumEnv : public Env, public UMALogger {
 };
 
 ChromiumEnv::ChromiumEnv()
-    : page_size_(::base::SysInfo::VMAllocationGranularity()),
+    : name_("LevelDBEnv"),
+      page_size_(::base::SysInfo::VMAllocationGranularity()),
       bgsignal_(&mu_),
       started_bgthread_(false),
       kMaxRenameTimeMillis(1000) {
-  InitHistograms("LevelDBEnv");
+  InitHistograms(name_);
 }
 
 void ChromiumEnv::MakePlatformFileErrorHistogram(
@@ -803,6 +807,8 @@ void ChromiumEnv::Schedule(void (*function)(void*), void* arg) {
 }
 
 void ChromiumEnv::BGThread() {
+  base::PlatformThread::SetName(name_.c_str());
+
   while (true) {
     // Wait until there is an item that is ready to run
     mu_.Acquire();
@@ -815,6 +821,7 @@ void ChromiumEnv::BGThread() {
     queue_.pop_front();
 
     mu_.Release();
+    TRACE_EVENT0("leveldb", "ChromiumEnv::BGThread-Task");
     (*function)(arg);
   }
 }
@@ -826,7 +833,8 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
 class IDBEnv : public ChromiumEnv {
  public:
   IDBEnv() : ChromiumEnv() {
-    InitHistograms("LevelDBEnv.IDB");
+    name_ = "LevelDBEnv.IDB";
+    InitHistograms(name_);
   }
 };
 

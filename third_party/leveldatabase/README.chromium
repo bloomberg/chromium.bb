@@ -20,3 +20,4 @@ Local Additions:
   other LevelDB consumers.
 * ChromiumEnv wraps low-level I/O calls that may be interrupted with a
   HANDLE_EINTR macro that retries the call.
+* TRACE macros/thread name for chrome://tracing diagnostics
