@@ -57,6 +57,13 @@ ProcessMetrics* ProcessMetrics::CreateProcessMetrics(ProcessHandle process) {
   return new ProcessMetrics(process);
 }
 
+size_t ProcessMetrics::GetPagefileUsage() const {
+  task_basic_info_64 task_info_data;
+  if (!GetTaskInfo(&task_info_data))
+    return 0;
+  return task_info_data.virtual_size;
+}
+
 size_t ProcessMetrics::GetWorkingSetSize() const {
   task_basic_info_64 task_info_data;
   if (!GetTaskInfo(&task_info_data))
