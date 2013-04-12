@@ -114,8 +114,6 @@ class PerfTestsRunner(object):
                 help="Don't launch a browser with results after the tests are done"),
             optparse.make_option("--test-results-server",
                 help="Upload the generated JSON file to the specified server when --output-json-path is present."),
-            optparse.make_option("--webkit-test-runner", "-2", action="store_true",
-                help="Use WebKitTestRunner rather than DumpRenderTree."),
             optparse.make_option("--replay", dest="replay", action="store_true", default=False,
                 help="Run replay tests."),
             optparse.make_option("--force", dest="use_skipped_list", action="store_false", default=True,

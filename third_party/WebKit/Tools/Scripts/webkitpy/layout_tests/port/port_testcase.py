@@ -439,16 +439,12 @@ class PortTestCase(unittest.TestCase):
 
     def test_path_to_test_expectations_file(self):
         port = TestWebKitPort()
-        port._options = MockOptions(webkit_test_runner=False)
-        self.assertEqual(port.path_to_test_expectations_file(), '/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations')
-
-        port = TestWebKitPort()
-        port._options = MockOptions(webkit_test_runner=True)
+        port._options = MockOptions()
         self.assertEqual(port.path_to_test_expectations_file(), '/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations')
 
         port = TestWebKitPort()
         port.host.filesystem.files['/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations'] = 'some content'
-        port._options = MockOptions(webkit_test_runner=False)
+        port._options = MockOptions()
         self.assertEqual(port.path_to_test_expectations_file(), '/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations')
 
     def test_skipped_directories_for_symbols(self):
@@ -513,9 +509,6 @@ class PortTestCase(unittest.TestCase):
         port = TestWebKitPort(port_name="testwebkitport-version")
         self.assertEqual(platform_dirs(port), ['LayoutTests', 'testwebkitport', 'testwebkitport-version'])
 
-        port = TestWebKitPort(port_name="testwebkitport-version-wk2")
-        self.assertEqual(platform_dirs(port), ['LayoutTests', 'testwebkitport', 'testwebkitport-version', 'wk2', 'testwebkitport-wk2'])
-
         port = TestWebKitPort(port_name="testwebkitport-version",
                               options=MockOptions(additional_platform_directory=["internal-testwebkitport"]))
         self.assertEqual(platform_dirs(port), ['LayoutTests', 'testwebkitport', 'testwebkitport-version', 'internal-testwebkitport'])
@@ -540,11 +533,6 @@ class PortTestCase(unittest.TestCase):
         port._executive = MockExecutive(should_log=True)
         port._options = MockOptions(configuration="Release")  # This should not be necessary, but I think TestWebKitPort is actually reading from disk (and thus detects the current configuration).
         expected_logs = "MOCK run_command: ['Tools/Scripts/build-dumprendertree', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}\n"
-        self.assertTrue(output.assert_outputs(self, port._build_driver, expected_logs=expected_logs))
-
-        # Make sure when passed --webkit-test-runner we build the right tool.
-        port._options = MockOptions(webkit_test_runner=True, configuration="Release")
-        expected_logs = "MOCK run_command: ['Tools/Scripts/build-dumprendertree', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}\nMOCK run_command: ['Tools/Scripts/build-webkittestrunner', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}\n"
         self.assertTrue(output.assert_outputs(self, port._build_driver, expected_logs=expected_logs))
 
         # Make sure we show the build log when --verbose is passed, which we simulate by setting the logging level to DEBUG.

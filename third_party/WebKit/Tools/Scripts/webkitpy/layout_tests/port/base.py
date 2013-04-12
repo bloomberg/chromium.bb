@@ -88,10 +88,7 @@ class Port(object):
     def determine_full_port_name(cls, host, options, port_name):
         """Return a fully-specified port name that can be used to construct objects."""
         # Subclasses will usually override this.
-        options = options or {}
         assert port_name.startswith(cls.port_name)
-        if getattr(options, 'webkit_test_runner', False) and not '-wk2' in port_name:
-            return port_name + '-wk2'
         return port_name
 
     def __init__(self, host, port_name, options=None, **kwargs):
@@ -108,9 +105,6 @@ class Port(object):
         # well-formed options object that had all of the necessary
         # options defined on it.
         self._options = options or optparse.Values()
-
-        if self._name and '-wk2' in self._name:
-            self._options.webkit_test_runner = True
 
         self.host = host
         self._executive = host.executive
@@ -162,10 +156,6 @@ class Port(object):
         return False
 
     def default_timeout_ms(self):
-        if self.get_option('webkit_test_runner'):
-            # Add some more time to WebKitTestRunner because it needs to syncronise the state
-            # with the web process and we want to detect if there is a problem with that in the driver.
-            return 80 * 1000
         return 35 * 1000
 
     def driver_stop_timeout(self):
@@ -223,8 +213,6 @@ class Port(object):
         """Return a list of absolute paths to directories to search under for
         baselines. The directories are searched in order."""
         search_paths = []
-        if self.get_option('webkit_test_runner'):
-            search_paths.append(self._wk2_port_name())
         search_paths.append(self.name())
         if self.name() != self.port_name:
             search_paths.append(self.port_name)
@@ -398,8 +386,6 @@ class Port(object):
     def driver_name(self):
         if self.get_option('driver_name'):
             return self.get_option('driver_name')
-        if self.get_option('webkit_test_runner'):
-            return 'WebKitTestRunner'
         return 'DumpRenderTree'
 
     def expected_baselines_by_extension(self, test_name):
@@ -1083,11 +1069,6 @@ class Port(object):
         if non_wk2_name != self.port_name:
             search_paths.append(non_wk2_name)
 
-        if self.get_option('webkit_test_runner'):
-            # Because nearly all of the skipped tests for WebKit 2 are due to cross-platform
-            # issues, all wk2 ports share a skipped list under platform/wk2.
-            search_paths.extend(["wk2", self._wk2_port_name()])
-
         search_paths.extend(self.get_option("additional_platform_directory", []))
 
         return [self._filesystem.join(self._webkit_baseline_path(d), 'TestExpectations') for d in search_paths]
@@ -1443,8 +1424,6 @@ class Port(object):
         # projects.
         try:
             self._run_script("build-dumprendertree", args=self._build_driver_flags(), env=env)
-            if self.get_option('webkit_test_runner'):
-                self._run_script("build-webkittestrunner", args=self._build_driver_flags(), env=env)
         except ScriptError, e:
             _log.error(e.message_with_output(output_limit=None))
             return False
