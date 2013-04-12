@@ -504,8 +504,7 @@ private:
     void setupParser(const char* prefix, unsigned prefixLength, const String&, const char* suffix, unsigned suffixLength);
     bool inShorthand() const { return m_inParseShorthand; }
 
-    bool validWidth(CSSParserValue*);
-    bool validHeight(CSSParserValue*);
+    bool validWidthOrHeight(CSSParserValue*);
 
     void deleteFontFaceOnlyValues();
 

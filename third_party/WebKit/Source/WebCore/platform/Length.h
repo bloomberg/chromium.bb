@@ -228,6 +228,8 @@ public:
     bool isCalculatedEqual(const Length&) const;
     bool isMinContent() const { return type() == MinContent; }
     bool isMaxContent() const { return type() == MaxContent; }
+    bool isFillAvailable() const { return type() == FillAvailable; }
+    bool isFitContent() const { return type() == FitContent; }
 
     Length blend(const Length& from, double progress) const
     {

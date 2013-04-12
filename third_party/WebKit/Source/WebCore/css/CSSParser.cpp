@@ -1694,19 +1694,10 @@ static inline bool isForwardSlashOperator(CSSParserValue* value)
     return value->unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
-bool CSSParser::validWidth(CSSParserValue* value)
+bool CSSParser::validWidthOrHeight(CSSParserValue* value)
 {
     int id = value->id;
     if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent)
-        return true;
-    return !id && validUnit(value, FLength | FPercent | FNonNeg);
-}
-
-// FIXME: Combine this with validWidth when we support fit-content, et al, for heights.
-bool CSSParser::validHeight(CSSParserValue* value)
-{
-    int id = value->id;
-    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic)
         return true;
     return !id && validUnit(value, FLength | FPercent | FNonNeg);
 }
@@ -2137,32 +2128,23 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyMaxWidth:
     case CSSPropertyWebkitMaxLogicalWidth:
-        validPrimitive = (id == CSSValueNone || validWidth(value));
+    case CSSPropertyMaxHeight:
+    case CSSPropertyWebkitMaxLogicalHeight:
+        validPrimitive = (id == CSSValueNone || validWidthOrHeight(value));
         break;
 
     case CSSPropertyMinWidth:
     case CSSPropertyWebkitMinLogicalWidth:
-        validPrimitive = validWidth(value);
+    case CSSPropertyMinHeight:
+    case CSSPropertyWebkitMinLogicalHeight:
+        validPrimitive = validWidthOrHeight(value);
         break;
 
     case CSSPropertyWidth:
     case CSSPropertyWebkitLogicalWidth:
-        validPrimitive = (id == CSSValueAuto || validWidth(value));
-        break;
-
-    case CSSPropertyMaxHeight:
-    case CSSPropertyWebkitMaxLogicalHeight:
-        validPrimitive = (id == CSSValueNone || validHeight(value));
-        break;
-
-    case CSSPropertyMinHeight:
-    case CSSPropertyWebkitMinLogicalHeight:
-        validPrimitive = validHeight(value);
-        break;
-
     case CSSPropertyHeight:
     case CSSPropertyWebkitLogicalHeight:
-        validPrimitive = (id == CSSValueAuto || validHeight(value));
+        validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value));
         break;
 
     case CSSPropertyFontSize:

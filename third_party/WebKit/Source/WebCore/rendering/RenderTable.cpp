@@ -327,21 +327,24 @@ LayoutUnit RenderTable::convertStyleLogicalWidthToComputedWidth(const Length& st
 
 LayoutUnit RenderTable::convertStyleLogicalHeightToComputedHeight(const Length& styleLogicalHeight)
 {
+    LayoutUnit borderAndPaddingBefore = borderBefore() + (collapseBorders() ? LayoutUnit() : paddingBefore());
+    LayoutUnit borderAndPaddingAfter = borderAfter() + (collapseBorders() ? LayoutUnit() : paddingAfter());
+    LayoutUnit borderAndPadding = borderAndPaddingBefore + borderAndPaddingAfter;
     LayoutUnit computedLogicalHeight = 0;
     if (styleLogicalHeight.isFixed()) {
         // HTML tables size as though CSS height includes border/padding, CSS tables do not.
         LayoutUnit borders = LayoutUnit();
         // FIXME: We cannot apply box-sizing: content-box on <table> which other browsers allow.
         if ((node() && node()->hasTagName(tableTag)) || style()->boxSizing() == BORDER_BOX) {
-            LayoutUnit borderAndPaddingBefore = borderBefore() + (collapseBorders() ? LayoutUnit() : paddingBefore());
-            LayoutUnit borderAndPaddingAfter = borderAfter() + (collapseBorders() ? LayoutUnit() : paddingAfter());
-            borders = borderAndPaddingBefore + borderAndPaddingAfter;
+            borders = borderAndPadding;
         }
         computedLogicalHeight = styleLogicalHeight.value() - borders;
     } else if (styleLogicalHeight.isPercent())
         computedLogicalHeight = computePercentageLogicalHeight(styleLogicalHeight);
     else if (styleLogicalHeight.isViewportPercentage())
         computedLogicalHeight = minimumValueForLength(styleLogicalHeight, 0, view());
+    else if (styleLogicalHeight.isIntrinsic())
+        computedLogicalHeight = computeIntrinsicLogicalContentHeightUsing(styleLogicalHeight, logicalHeight() - borderAndPadding, borderAndPadding);
     else
         ASSERT_NOT_REACHED();
     return max<LayoutUnit>(0, computedLogicalHeight);
@@ -476,17 +479,17 @@ void RenderTable::layout()
     LayoutUnit computedLogicalHeight = 0;
     
     Length logicalHeightLength = style()->logicalHeight();
-    if (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive())
+    if (logicalHeightLength.isIntrinsic() || (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive()))
         computedLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
     
     Length logicalMaxHeightLength = style()->logicalMaxHeight();
-    if (logicalMaxHeightLength.isSpecified() && !logicalMaxHeightLength.isNegative()) {
+    if (logicalMaxHeightLength.isIntrinsic() || (logicalMaxHeightLength.isSpecified() && !logicalMaxHeightLength.isNegative())) {
         LayoutUnit computedMaxLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMaxHeightLength);
         computedLogicalHeight = min(computedLogicalHeight, computedMaxLogicalHeight);
     }
 
     Length logicalMinHeightLength = style()->logicalMinHeight();
-    if (logicalMinHeightLength.isSpecified() && !logicalMinHeightLength.isNegative()) {
+    if (logicalMinHeightLength.isIntrinsic() || (logicalMinHeightLength.isSpecified() && !logicalMinHeightLength.isNegative())) {
         LayoutUnit computedMinLogicalHeight = convertStyleLogicalHeightToComputedHeight(logicalMinHeightLength);
         computedLogicalHeight = max(computedLogicalHeight, computedMinLogicalHeight);
     }

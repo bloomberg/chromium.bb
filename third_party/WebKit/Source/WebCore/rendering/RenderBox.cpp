@@ -502,26 +502,26 @@ LayoutUnit RenderBox::constrainLogicalWidthInRegionByMinMax(LayoutUnit logicalWi
     return max(logicalWidth, computeLogicalWidthInRegionUsing(MinSize, styleToUse->logicalMinWidth(), availableWidth, cb, region, offsetFromLogicalTopOfFirstPage));
 }
 
-LayoutUnit RenderBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight) const
+LayoutUnit RenderBox::constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
     RenderStyle* styleToUse = style();
     if (!styleToUse->logicalMaxHeight().isUndefined()) {
-        LayoutUnit maxH = computeLogicalHeightUsing(styleToUse->logicalMaxHeight());
+        LayoutUnit maxH = computeLogicalHeightUsing(styleToUse->logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
             logicalHeight = min(logicalHeight, maxH);
     }
-    return max(logicalHeight, computeLogicalHeightUsing(styleToUse->logicalMinHeight()));
+    return max(logicalHeight, computeLogicalHeightUsing(styleToUse->logicalMinHeight(), intrinsicContentHeight));
 }
 
-LayoutUnit RenderBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight) const
+LayoutUnit RenderBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const
 {
     RenderStyle* styleToUse = style();
     if (!styleToUse->logicalMaxHeight().isUndefined()) {
-        LayoutUnit maxH = computeContentLogicalHeight(styleToUse->logicalMaxHeight());
+        LayoutUnit maxH = computeContentLogicalHeight(styleToUse->logicalMaxHeight(), intrinsicContentHeight);
         if (maxH != -1)
             logicalHeight = min(logicalHeight, maxH);
     }
-    return max(logicalHeight, computeContentLogicalHeight(styleToUse->logicalMinHeight()));
+    return max(logicalHeight, computeContentLogicalHeight(styleToUse->logicalMinHeight(), intrinsicContentHeight));
 }
 
 IntRect RenderBox::absoluteContentBox() const
@@ -2469,14 +2469,15 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
 
         LayoutUnit heightResult;
         if (checkMinMaxHeight) {
-            heightResult = computeLogicalHeightUsing(style()->logicalHeight());
+            heightResult = computeLogicalHeightUsing(style()->logicalHeight(), computedValues.m_extent - borderAndPaddingLogicalHeight());
             if (heightResult == -1)
                 heightResult = computedValues.m_extent;
-            heightResult = constrainLogicalHeightByMinMax(heightResult);
+            heightResult = constrainLogicalHeightByMinMax(heightResult, computedValues.m_extent - borderAndPaddingLogicalHeight());
         } else {
             // The only times we don't check min/max height are when a fixed length has
             // been given as an override.  Just use that.  The value has already been adjusted
             // for box-sizing.
+            ASSERT(h.isFixed());
             heightResult = h.value() + borderAndPaddingLogicalHeight();
         }
 
@@ -2516,24 +2517,40 @@ LayoutUnit RenderBox::viewLogicalHeightForPercentages() const
     return view()->viewLogicalHeight();
 }
 
-LayoutUnit RenderBox::computeLogicalHeightUsing(const Length& height) const
+LayoutUnit RenderBox::computeLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const
 {
-    LayoutUnit logicalHeight = computeContentAndScrollbarLogicalHeightUsing(height);
+    LayoutUnit logicalHeight = computeContentAndScrollbarLogicalHeightUsing(height, intrinsicContentHeight);
     if (logicalHeight != -1)
         logicalHeight = adjustBorderBoxLogicalHeightForBoxSizing(logicalHeight);
     return logicalHeight;
 }
 
-LayoutUnit RenderBox::computeContentLogicalHeight(const Length& height) const
+LayoutUnit RenderBox::computeContentLogicalHeight(const Length& height, LayoutUnit intrinsicContentHeight) const
 {
-    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(height);
+    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(height, intrinsicContentHeight);
     if (heightIncludingScrollbar == -1)
         return -1;
     return std::max<LayoutUnit>(0, adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 }
 
-LayoutUnit RenderBox::computeContentAndScrollbarLogicalHeightUsing(const Length& height) const
+LayoutUnit RenderBox::computeIntrinsicLogicalContentHeightUsing(Length logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
 {
+    // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
+    // If that happens, this code will have to change.
+    if (logicalHeightLength.isMinContent() || logicalHeightLength.isMaxContent() || logicalHeightLength.isFitContent())
+        return intrinsicContentHeight;
+    if (logicalHeightLength.isFillAvailable())
+        return containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding) - borderAndPadding;
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+LayoutUnit RenderBox::computeContentAndScrollbarLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const
+{
+    // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
+    // If that happens, this code will have to change.
+    if (height.isIntrinsic())
+        return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight());
     if (height.isFixed())
         return height.value();
     if (height.isPercent())
@@ -2604,7 +2621,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
         }
     } else if (cbstyle->logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle->logicalHeight().value());
-        availableHeight = max<LayoutUnit>(0, cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight()));
+        availableHeight = max<LayoutUnit>(0, cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), -1));
     } else if (cbstyle->logicalHeight().isPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
         LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle->logicalHeight());
@@ -2614,7 +2631,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
             // handle the min/max of the current block, its caller does. So the
             // return value from the recursive call will not have been adjusted
             // yet.
-            LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight());
+            LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight(), -1);
             availableHeight = max<LayoutUnit>(0, contentBoxHeight);
         }
     } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
@@ -2769,6 +2786,11 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(Length logicalHeight) co
         case ViewportPercentageMin:
         case ViewportPercentageMax:
             return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeight, 0, view()));
+        case MinContent:
+        case MaxContent:
+        case FitContent:
+        case FillAvailable:
+            return adjustContentBoxLogicalHeightForBoxSizing(computeIntrinsicLogicalContentHeightUsing(logicalHeight, intrinsicLogicalHeight(), borderAndPaddingHeight()));
         default:
             return intrinsicLogicalHeight();
     }
@@ -2776,7 +2798,7 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(Length logicalHeight) co
 
 LayoutUnit RenderBox::availableLogicalHeight(AvailableLogicalHeightType heightType) const
 {
-    return constrainLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType));
+    return constrainLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType), -1);
 }
 
 LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
@@ -2799,7 +2821,7 @@ LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
         return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(h, availableHeight));
     }
 
-    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(h);
+    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(h, -1);
     if (heightIncludingScrollbar != -1)
         return std::max<LayoutUnit>(0, adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 
@@ -3413,7 +3435,7 @@ void RenderBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
     }
 
     // Calculate constraint equation values for 'min-height' case.
-    if (!styleToUse->logicalMinHeight().isZero()) {
+    if (!styleToUse->logicalMinHeight().isZero() || styleToUse->logicalMinHeight().isIntrinsic()) {
         LogicalExtentComputedValues minValues;
 
         computePositionedLogicalHeightUsing(styleToUse->logicalMinHeight(), containerBlock, containerLogicalHeight, bordersPlusPadding, logicalHeight,
@@ -3500,6 +3522,12 @@ void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, 
         logicalHeightIsAuto = false;
     }
 
+    LayoutUnit resolvedLogicalHeight;
+    if (logicalHeightLength.isIntrinsic())
+        resolvedLogicalHeight = computeIntrinsicLogicalContentHeightUsing(logicalHeightLength, contentLogicalHeight, bordersPlusPadding);
+    else
+        resolvedLogicalHeight = adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeightLength, containerLogicalHeight, renderView));
+
     if (!logicalTopIsAuto && !logicalHeightIsAuto && !logicalBottomIsAuto) {
         /*-----------------------------------------------------------------------*\
          * If none of the three are 'auto': If both 'margin-top' and 'margin-
@@ -3512,7 +3540,7 @@ void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, 
         // NOTE:  It is not necessary to solve for 'bottom' in the over constrained
         // case because the value is not used for any further calculations.
 
-        logicalHeightValue = adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeightLength, containerLogicalHeight, renderView));
+        logicalHeightValue = resolvedLogicalHeight;
         logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
 
         const LayoutUnit availableSpace = containerLogicalHeight - (logicalTopValue + logicalHeightValue + valueForLength(logicalBottom, containerLogicalHeight, renderView) + bordersPlusPadding);
@@ -3579,7 +3607,7 @@ void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, 
             logicalHeightValue = contentLogicalHeight;
         } else if (logicalTopIsAuto && !logicalHeightIsAuto && !logicalBottomIsAuto) {
             // RULE 4: (solve of top)
-            logicalHeightValue = adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeightLength, containerLogicalHeight, renderView));
+            logicalHeightValue = resolvedLogicalHeight;
             logicalTopValue = availableSpace - (logicalHeightValue + valueForLength(logicalBottom, containerLogicalHeight, renderView));
         } else if (!logicalTopIsAuto && logicalHeightIsAuto && !logicalBottomIsAuto) {
             // RULE 5: (solve of height)
@@ -3587,7 +3615,7 @@ void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, 
             logicalHeightValue = max<LayoutUnit>(0, availableSpace - (logicalTopValue + valueForLength(logicalBottom, containerLogicalHeight, renderView)));
         } else if (!logicalTopIsAuto && !logicalHeightIsAuto && logicalBottomIsAuto) {
             // RULE 6: (no need solve of bottom)
-            logicalHeightValue = adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeightLength, containerLogicalHeight, renderView));
+            logicalHeightValue = resolvedLogicalHeight;
             logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
         }
     }

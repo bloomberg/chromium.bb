@@ -245,6 +245,9 @@ bool RenderReplaced::hasReplacedLogicalHeight() const
         return true;
     }
 
+    if (style()->logicalHeight().isIntrinsic())
+        return true;
+
     return false;
 }
 

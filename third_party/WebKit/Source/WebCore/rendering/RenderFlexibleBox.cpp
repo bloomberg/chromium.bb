@@ -534,11 +534,14 @@ LayoutUnit RenderFlexibleBox::computeMainAxisExtentForChild(RenderBox* child, Si
 {
     // FIXME: This is wrong for orthogonal flows. It should use the flexbox's writing-mode, not the child's in order
     // to figure out the logical height/width.
-    // FIXME: This is wrong if the height is set to an intrinsic keyword value. computeContentLogicalHeight will return -1.
-    // Instead, we need to layout the child an get the appropriate height value.
-    // https://bugs.webkit.org/show_bug.cgi?id=113610
-    if (isColumnFlow())
-        return child->computeContentLogicalHeight(size);
+    if (isColumnFlow()) {
+        if (child->style()->logicalHeight().isIntrinsic() || child->style()->logicalMinHeight().isIntrinsic() ||
+            child->style()->logicalMaxHeight().isIntrinsic()) {
+            if (child->needsLayout())
+                child->layout();
+        }
+        return child->computeContentLogicalHeight(size, child->logicalHeight() - child->borderAndPaddingLogicalHeight());
+    }
     // FIXME: Figure out how this should work for regions and pass in the appropriate values.
     LayoutUnit offsetFromLogicalTopOfFirstPage = 0;
     RenderRegion* region = 0;
@@ -1389,7 +1392,8 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox* child, LayoutUni
         // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
         if (!hasOrthogonalFlow(child)) {
             LayoutUnit stretchedLogicalHeight = child->logicalHeight() + availableAlignmentSpaceForChild(lineCrossAxisExtent, child);
-            LayoutUnit desiredLogicalHeight = child->constrainLogicalHeightByMinMax(stretchedLogicalHeight);
+            ASSERT(!child->needsLayout());
+            LayoutUnit desiredLogicalHeight = child->constrainLogicalHeightByMinMax(stretchedLogicalHeight, child->logicalHeight() - child->borderAndPaddingLogicalHeight());
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
             if (desiredLogicalHeight != child->logicalHeight()) {
