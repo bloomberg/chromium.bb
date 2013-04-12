@@ -85,7 +85,8 @@ void DummyDriveService::DownloadFile(
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
-    const GetContentCallback& get_content_callback) {}
+    const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback) {}
 
 void DummyDriveService::CopyHostedDocument(
     const std::string& resource_id,

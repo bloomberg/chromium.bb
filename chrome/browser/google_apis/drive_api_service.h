@@ -100,7 +100,8 @@ class DriveAPIService : public DriveServiceInterface,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
+      const GetContentCallback& get_content_callback,
+      const ProgressCallback& progress_callback) OVERRIDE;
   virtual void CopyHostedDocument(
       const std::string& resource_id,
       const std::string& new_name,

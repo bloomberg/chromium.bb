@@ -655,6 +655,7 @@ DownloadFileOperation::DownloadFileOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback,
     const GURL& download_url,
     const base::FilePath& drive_file_path,
     const base::FilePath& output_file_path)
@@ -664,6 +665,7 @@ DownloadFileOperation::DownloadFileOperation(
                             drive_file_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
+      progress_callback_(progress_callback),
       download_url_(download_url) {
   DCHECK(!download_action_callback_.is_null());
   // get_content_callback may be null.
@@ -686,6 +688,8 @@ void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
                                                        int64 current,
                                                        int64 total) {
   NotifyProgress(current, total);
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(current, total);
 }
 
 bool DownloadFileOperation::ShouldSendDownloadData() {

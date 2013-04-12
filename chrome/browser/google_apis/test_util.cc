@@ -196,5 +196,11 @@ bool ParseContentRangeHeader(const std::string& value,
           base::StringToInt64(parts[1], end_position));
 }
 
+void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
+                                  int64 progress,
+                                  int64 total) {
+  progress_values->push_back(ProgressInfo(progress, total));
+}
+
 }  // namespace test_util
 }  // namespace google_apis

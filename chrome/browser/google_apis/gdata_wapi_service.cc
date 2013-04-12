@@ -337,16 +337,18 @@ void GDataWapiService::DownloadFile(
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
-    const GetContentCallback& get_content_callback) {
+    const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!download_action_callback.is_null());
-  // get_content_callback may be null.
+  // get_content_callback and progress_callback may be null.
 
   runner_->StartOperationWithRetry(
       new DownloadFileOperation(operation_registry(),
                                 url_request_context_getter_,
                                 download_action_callback,
                                 get_content_callback,
+                                progress_callback,
                                 download_url,
                                 virtual_path,
                                 local_cache_path));

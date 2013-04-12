@@ -487,7 +487,8 @@ void FakeDriveService::DownloadFile(
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
-    const GetContentCallback& get_content_callback) {
+    const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!download_action_callback.is_null());
 
@@ -500,7 +501,7 @@ void FakeDriveService::DownloadFile(
     return;
   }
 
-  // The field content.src is the URL to donwload the file.
+  // The field content.src is the URL to download the file.
   base::DictionaryValue* entry = FindEntryByContentUrl(download_url);
   if (!entry) {
     base::MessageLoopProxy::current()->PostTask(
@@ -522,6 +523,17 @@ void FakeDriveService::DownloadFile(
         file_util::WriteFile(local_cache_path,
                              content.data(),
                              content.size())) {
+      if (!progress_callback.is_null()) {
+        // See also the comment in ResumeUpload(). For testing that clients
+        // can handle the case progress_callback is called multiple times,
+        // here we invoke the callback twice.
+        base::MessageLoopProxy::current()->PostTask(
+            FROM_HERE,
+            base::Bind(progress_callback, file_size / 2, file_size));
+        base::MessageLoopProxy::current()->PostTask(
+            FROM_HERE,
+            base::Bind(progress_callback, file_size, file_size));
+      }
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(download_action_callback,

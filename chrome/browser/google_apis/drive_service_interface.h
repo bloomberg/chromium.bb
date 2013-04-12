@@ -79,9 +79,6 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& open_url)>
     AuthorizeAppCallback;
 
-// Callback used for ResumeUpload().
-typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
-
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
@@ -289,15 +286,18 @@ class DriveServiceInterface {
   // If |get_content_callback| is not empty,
   // URLFetcherDelegate::OnURLFetchDownloadData will be called, which will in
   // turn invoke |get_content_callback| on the calling thread.
+  // If |progress_callback| is not empty, it is invoked periodically when
+  // the download made some progress.
   //
   // |download_action_callback| must not be null.
-  // |get_content_callback| may be null.
+  // |get_content_callback| and |progress_callback| may be null.
   virtual void DownloadFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) = 0;
+      const GetContentCallback& get_content_callback,
+      const ProgressCallback& progress_callback) = 0;
 
   // Initiates uploading of a new document/file.
   // |content_type| and |content_length| should be the ones of the file to be

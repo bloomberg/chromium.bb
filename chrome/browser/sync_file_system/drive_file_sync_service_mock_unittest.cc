@@ -566,7 +566,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
 
     EXPECT_CALL(*mock_drive_service(),
-                DownloadFile(_, _, GURL("https://file_content_url"), _, _))
+                DownloadFile(_, _, GURL("https://file_content_url"), _, _, _))
         .WillOnce(InvokeDidDownloadFile())
         .RetiresOnSaturation();
   }

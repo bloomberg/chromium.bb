@@ -123,7 +123,8 @@ class FakeDriveService : public DriveServiceInterface {
       const base::FilePath& local_cache_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
+      const GetContentCallback& get_content_callback,
+      const ProgressCallback& progress_callback) OVERRIDE;
   // The new resource ID for the copied document will look like
   // |resource_id| + "_copied".
   virtual void CopyHostedDocument(

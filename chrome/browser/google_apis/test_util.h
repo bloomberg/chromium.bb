@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -264,6 +266,13 @@ CreateCopyResultCallback(T1* out1, T2* out2, T3* out3, T4* out4) {
       &internal::CopyResultCallback<T1, T2, T3, T4>,
       internal::OutputParams<T1, T2, T3, T4>(out1, out2, out3, out4));
 }
+
+typedef std::pair<int64, int64> ProgressInfo;
+
+// Helper utility for recording the results via ProgressCallback.
+void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
+                                  int64 progress,
+                                  int64 total);
 
 }  // namespace test_util
 }  // namespace google_apis

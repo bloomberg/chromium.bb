@@ -89,6 +89,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &temp_file)),
       GetContentCallback(),
+      ProgressCallback(),
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
@@ -124,6 +125,7 @@ TEST_F(BaseOperationsServerTest,
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &temp_file)),
       GetContentCallback(),
+      ProgressCallback(),
       test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(

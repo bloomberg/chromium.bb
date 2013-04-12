@@ -41,7 +41,7 @@ MockDriveService::MockDriveService() {
           Invoke(this, &MockDriveService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, AddNewDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::CreateDirectoryStub));
-  ON_CALL(*this, DownloadFile(_, _, _, _, _))
+  ON_CALL(*this, DownloadFile(_, _, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock data.
@@ -128,7 +128,8 @@ void MockDriveService::DownloadFileStub(
     const base::FilePath& local_tmp_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
-    const GetContentCallback& get_content_callback) {
+    const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback) {
   GDataErrorCode error = HTTP_SUCCESS;
   if (file_data_.get()) {
     int file_data_size = static_cast<int>(file_data_->size());

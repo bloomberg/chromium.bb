@@ -626,7 +626,8 @@ void DriveFileSyncClient::DownloadFileInternal(
       entry->download_url(),
       base::Bind(&DriveFileSyncClient::DidDownloadFile,
                  AsWeakPtr(), entry->file_md5(), callback),
-      google_apis::GetContentCallback());
+      google_apis::GetContentCallback(),
+      google_apis::ProgressCallback());
 }
 
 void DriveFileSyncClient::DidDownloadFile(

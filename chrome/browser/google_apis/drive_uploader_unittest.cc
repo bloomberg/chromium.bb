@@ -52,14 +52,6 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
       static_cast<int>(size);
 }
 
-typedef std::pair<int64, int64> ProgressInfo;
-
-void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
-                                  int64 progress,
-                                  int64 total) {
-  progress_values->push_back(ProgressInfo(progress, total));
-}
-
 // Mock DriveService that verifies if the uploaded content matches the preset
 // expectation.
 class MockDriveServiceWithUploadExpectation : public DummyDriveService {
@@ -315,7 +307,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
-  std::vector<ProgressInfo> upload_progress_values;
+  std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
@@ -324,7 +316,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry),
-      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
+      base::Bind(&test_util::AppendProgressCallbackResult,
+                 &upload_progress_values));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
@@ -335,7 +328,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ(kTestDummyId, resource_entry->id());
   ASSERT_EQ(1U, upload_progress_values.size());
-  EXPECT_EQ(ProgressInfo(0, 0), upload_progress_values[0]);
+  EXPECT_EQ(test_util::ProgressInfo(0, 0), upload_progress_values[0]);
 }
 
 TEST_F(DriveUploaderTest, UploadExisting512KB) {
@@ -351,7 +344,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
-  std::vector<ProgressInfo> upload_progress_values;
+  std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
@@ -360,7 +353,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry),
-      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
+      base::Bind(&test_util::AppendProgressCallbackResult,
+                 &upload_progress_values));
   test_util::RunBlockingPoolTask();
 
   // 512KB upload should not be split into multiple chunks.
@@ -372,7 +366,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ(kTestDummyId, resource_entry->id());
   ASSERT_EQ(1U, upload_progress_values.size());
-  EXPECT_EQ(ProgressInfo(512 * 1024, 512 * 1024), upload_progress_values[0]);
+  EXPECT_EQ(test_util::ProgressInfo(512 * 1024, 512 * 1024),
+            upload_progress_values[0]);
 }
 
 TEST_F(DriveUploaderTest, UploadExisting1234KB) {
@@ -388,7 +383,7 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
-  std::vector<ProgressInfo> upload_progress_values;
+  std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
@@ -397,7 +392,8 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry),
-      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
+      base::Bind(&test_util::AppendProgressCallbackResult,
+                 &upload_progress_values));
   test_util::RunBlockingPoolTask();
 
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
@@ -410,9 +406,12 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   EXPECT_EQ(kTestDummyId, resource_entry->id());
   // It is the duty of DriveUploader to accumulate up the progress value.
   ASSERT_EQ(3U, upload_progress_values.size());
-  EXPECT_EQ(ProgressInfo(512 * 1024, 1234 * 1024), upload_progress_values[0]);
-  EXPECT_EQ(ProgressInfo(1024 * 1024, 1234 * 1024), upload_progress_values[1]);
-  EXPECT_EQ(ProgressInfo(1234 * 1024, 1234 * 1024), upload_progress_values[2]);
+  EXPECT_EQ(test_util::ProgressInfo(512 * 1024, 1234 * 1024),
+            upload_progress_values[0]);
+  EXPECT_EQ(test_util::ProgressInfo(1024 * 1024, 1234 * 1024),
+            upload_progress_values[1]);
+  EXPECT_EQ(test_util::ProgressInfo(1234 * 1024, 1234 * 1024),
+            upload_progress_values[2]);
 }
 
 TEST_F(DriveUploaderTest, UploadNew1234KB) {

@@ -87,13 +87,14 @@ class MockDriveService : public DriveServiceInterface {
       void(const std::string& parent_resource_id,
           const std::string& directory_name,
           const GetResourceEntryCallback& callback));
-  MOCK_METHOD5(
+  MOCK_METHOD6(
       DownloadFile,
       void(const base::FilePath& virtual_path,
           const base::FilePath& local_cache_path,
           const GURL& download_url,
           const DownloadActionCallback& donwload_action_callback,
-          const GetContentCallback& get_content_callback));
+          const GetContentCallback& get_content_callback,
+          const ProgressCallback& progress_callback));
   MOCK_METHOD6(InitiateUploadNewFile,
       void(const base::FilePath& drive_file_path,
           const std::string& content_type,
@@ -188,7 +189,8 @@ class MockDriveService : public DriveServiceInterface {
       const base::FilePath& local_tmp_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback);
+      const GetContentCallback& get_content_callback,
+      const ProgressCallback& progress_callback);
 
   // Account meta data to be returned from GetAccountMetadata.
   scoped_ptr<base::Value> account_metadata_data_;

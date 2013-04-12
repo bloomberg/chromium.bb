@@ -585,7 +585,8 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           base::Bind(&DriveScheduler::OnDownloadActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)),
-          entry->get_content_callback);
+          entry->get_content_callback,
+          google_apis::ProgressCallback());
     }
     break;
 
