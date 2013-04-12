@@ -830,4 +830,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OverflowBubble) {
   ChromeLauncherController* controller =
       static_cast<ChromeLauncherController*>(launcher_->delegate());
   controller->UnpinAppsWithID(std::string("fake_app_0"));
+
+  test.RunMessageLoopUntilAnimationsDone();
+  EXPECT_FALSE(launcher_->IsShowingOverflowBubble());
 }
