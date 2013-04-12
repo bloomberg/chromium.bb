@@ -409,6 +409,78 @@ bool MinidumpContext::Read(uint32_t expected_size) {
 
     context_.amd64 = context_amd64.release();
   }
+  // |context_flags| of MDRawContextPPC64 is 64 bits, but other MDRawContext
+  // in the else case have 32 bits |context_flags|, so special case it here.
+  else if (expected_size == sizeof(MDRawContextPPC64)) {
+    uint64_t context_flags;
+    if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
+      BPLOG(ERROR) << "MinidumpContext could not read context flags";
+      return false;
+    }
+    if (minidump_->swap())
+      Swap(&context_flags);
+
+    uint32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
+
+    scoped_ptr<MDRawContextPPC64> context_ppc64(new MDRawContextPPC64());
+
+    // Set the context_flags member, which has already been read, and
+    // read the rest of the structure beginning with the first member
+    // after context_flags.
+    context_ppc64->context_flags = context_flags;
+
+    size_t flags_size = sizeof(context_ppc64->context_flags);
+    uint8_t* context_after_flags =
+          reinterpret_cast<uint8_t*>(context_ppc64.get()) + flags_size;
+    if (!minidump_->ReadBytes(context_after_flags,
+                              sizeof(MDRawContextPPC64) - flags_size)) {
+      BPLOG(ERROR) << "MinidumpContext could not read ppc64 context";
+      return false;
+    }
+
+    // Do this after reading the entire MDRawContext structure because
+    // GetSystemInfo may seek minidump to a new position.
+    if (!CheckAgainstSystemInfo(cpu_type)) {
+      BPLOG(ERROR) << "MinidumpContext ppc64 does not match system info";
+      return false;
+    }
+    if (minidump_->swap()) {
+      // context_ppc64->context_flags was already swapped.
+      Swap(&context_ppc64->srr0);
+      Swap(&context_ppc64->srr1);
+      for (unsigned int gpr_index = 0;
+           gpr_index < MD_CONTEXT_PPC64_GPR_COUNT;
+           ++gpr_index) {
+        Swap(&context_ppc64->gpr[gpr_index]);
+      }
+      Swap(&context_ppc64->cr);
+      Swap(&context_ppc64->xer);
+      Swap(&context_ppc64->lr);
+      Swap(&context_ppc64->ctr);
+      Swap(&context_ppc64->vrsave);
+      for (unsigned int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
+           ++fpr_index) {
+        Swap(&context_ppc64->float_save.fpregs[fpr_index]);
+      }
+      // Don't swap context_ppc64->float_save.fpscr_pad because it is only
+      // used for padding.
+      Swap(&context_ppc64->float_save.fpscr);
+      for (unsigned int vr_index = 0;
+           vr_index < MD_VECTORSAVEAREA_PPC_VR_COUNT;
+           ++vr_index) {
+        Normalize128(&context_ppc64->vector_save.save_vr[vr_index], true);
+        Swap(&context_ppc64->vector_save.save_vr[vr_index]);
+      }
+      Swap(&context_ppc64->vector_save.save_vscr);
+      // Don't swap the padding fields in vector_save.
+      Swap(&context_ppc64->vector_save.save_vrvalid);
+    }
+
+    context_flags_ = context_ppc64->context_flags;
+    context_.ppc64 = context_ppc64.release();
+  }
+
   else {
     uint32_t context_flags;
     if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
@@ -753,6 +825,9 @@ bool MinidumpContext::GetInstructionPointer(uint64_t* ip) const {
   case MD_CONTEXT_PPC:
     *ip = context_.ppc->srr0;
     break;
+  case MD_CONTEXT_PPC64:
+    *ip = context_.ppc64->srr0;
+    break;
   case MD_CONTEXT_SPARC:
     *ip = context_.ctx_sparc->pc;
     break;
@@ -785,6 +860,15 @@ const MDRawContextPPC* MinidumpContext::GetContextPPC() const {
   }
 
   return context_.ppc;
+}
+
+const MDRawContextPPC64* MinidumpContext::GetContextPPC64() const {
+  if (GetContextCPU() != MD_CONTEXT_PPC64) {
+    BPLOG(ERROR) << "MinidumpContext cannot get ppc64 context";
+    return NULL;
+  }
+
+  return context_.ppc64;
 }
 
 const MDRawContextAMD64* MinidumpContext::GetContextAMD64() const {
@@ -822,6 +906,10 @@ void MinidumpContext::FreeContext() {
 
     case MD_CONTEXT_PPC:
       delete context_.ppc;
+      break;
+
+    case MD_CONTEXT_PPC64:
+      delete context_.ppc64;
       break;
 
     case MD_CONTEXT_AMD64:
@@ -883,6 +971,11 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
 
     case MD_CONTEXT_PPC:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_PPC)
+        return_value = true;
+      break;
+
+    case MD_CONTEXT_PPC64:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_PPC64)
         return_value = true;
       break;
 
@@ -1015,6 +1108,44 @@ void MinidumpContext::Print() {
       // byte ordering.
       printf("  vector_save.save_vrvalid = 0x%x\n",
              context_ppc->vector_save.save_vrvalid);
+      printf("\n");
+
+      break;
+    }
+
+    case MD_CONTEXT_PPC64: {
+      const MDRawContextPPC64* context_ppc64 = GetContextPPC64();
+      printf("MDRawContextPPC64\n");
+      printf("  context_flags            = 0x%lx\n",
+             context_ppc64->context_flags);
+      printf("  srr0                     = 0x%lx\n", context_ppc64->srr0);
+      printf("  srr1                     = 0x%lx\n", context_ppc64->srr1);
+      for (unsigned int gpr_index = 0;
+           gpr_index < MD_CONTEXT_PPC64_GPR_COUNT;
+           ++gpr_index) {
+        printf("  gpr[%2d]                  = 0x%lx\n",
+               gpr_index, context_ppc64->gpr[gpr_index]);
+      }
+      printf("  cr                       = 0x%lx\n", context_ppc64->cr);
+      printf("  xer                      = 0x%lx\n", context_ppc64->xer);
+      printf("  lr                       = 0x%lx\n", context_ppc64->lr);
+      printf("  ctr                      = 0x%lx\n", context_ppc64->ctr);
+      printf("  vrsave                   = 0x%lx\n", context_ppc64->vrsave);
+      for (unsigned int fpr_index = 0;
+           fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
+           ++fpr_index) {
+        printf("  float_save.fpregs[%2d]    = 0x%" PRIx64 "\n",
+               fpr_index, context_ppc64->float_save.fpregs[fpr_index]);
+      }
+      printf("  float_save.fpscr         = 0x%x\n",
+             context_ppc64->float_save.fpscr);
+      // TODO(mmentovai): print the 128-bit quantities in
+      // context_ppc64->vector_save.  This isn't done yet because printf
+      // doesn't support 128-bit quantities, and printing them using
+      // PRIx64 as two 64-bit quantities requires knowledge of the CPU's
+      // byte ordering.
+      printf("  vector_save.save_vrvalid = 0x%x\n",
+             context_ppc64->vector_save.save_vrvalid);
       printf("\n");
 
       break;
@@ -3198,6 +3329,10 @@ string MinidumpSystemInfo::GetCPU() {
       cpu = "ppc";
       break;
 
+    case MD_CPU_ARCHITECTURE_PPC64:
+      cpu = "ppc64";
+      break;
+
     case MD_CPU_ARCHITECTURE_SPARC:
       cpu = "sparc";
       break;
@@ -3862,6 +3997,9 @@ bool Minidump::GetContextCPUFlagsFromSystemInfo(uint32_t *context_cpu_flags) {
         break;
       case MD_CPU_ARCHITECTURE_PPC:
         *context_cpu_flags = MD_CONTEXT_PPC;
+        break;
+      case MD_CPU_ARCHITECTURE_PPC64:
+        *context_cpu_flags = MD_CONTEXT_PPC64;
         break;
       case MD_CPU_ARCHITECTURE_SHX:
         *context_cpu_flags = MD_CONTEXT_SHX;

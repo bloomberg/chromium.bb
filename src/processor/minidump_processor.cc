@@ -347,6 +347,11 @@ bool MinidumpProcessor::GetCPUInfo(Minidump *dump, SystemInfo *info) {
       break;
     }
 
+    case MD_CPU_ARCHITECTURE_PPC64: {
+      info->cpu = "ppc64";
+      break;
+    }
+
     case MD_CPU_ARCHITECTURE_SPARC: {
       info->cpu = "sparc";
       break;

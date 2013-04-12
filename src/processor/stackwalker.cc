@@ -48,6 +48,7 @@
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
 #include "processor/stackwalker_ppc.h"
+#include "processor/stackwalker_ppc64.h"
 #include "processor/stackwalker_sparc.h"
 #include "processor/stackwalker_x86.h"
 #include "processor/stackwalker_amd64.h"
@@ -163,6 +164,12 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
       cpu_stackwalker = new StackwalkerPPC(system_info,
                                            context->GetContextPPC(),
                                            memory, modules, frame_symbolizer);
+      break;
+
+    case MD_CONTEXT_PPC64:
+      cpu_stackwalker = new StackwalkerPPC64(system_info,
+                                             context->GetContextPPC64(),
+                                             memory, modules, frame_symbolizer);
       break;
 
     case MD_CONTEXT_AMD64:

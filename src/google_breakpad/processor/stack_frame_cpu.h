@@ -123,6 +123,32 @@ struct StackFramePPC : public StackFrame {
   int context_validity;
 };
 
+struct StackFramePPC64 : public StackFrame {
+  // ContextValidity should eventually contain entries for the validity of
+  // other nonvolatile (callee-save) registers as in
+  // StackFrameX86::ContextValidity, but the ppc stackwalker doesn't currently
+  // locate registers other than the ones listed here.
+  enum ContextValidity {
+    CONTEXT_VALID_NONE = 0,
+    CONTEXT_VALID_SRR0 = 1 << 0,
+    CONTEXT_VALID_GPR1 = 1 << 1,
+    CONTEXT_VALID_ALL  = -1
+  };
+
+  StackFramePPC64() : context(), context_validity(CONTEXT_VALID_NONE) {}
+
+  // Register state.  This is only fully valid for the topmost frame in a
+  // stack.  In other frames, the values of nonvolatile registers may be
+  // present, given sufficient debugging information.  Refer to
+  // context_validity.
+  MDRawContextPPC64 context;
+
+  // context_validity is actually ContextValidity, but int is used because
+  // the OR operator doesn't work well with enumerated types.  This indicates
+  // which fields in context are valid.
+  int context_validity;
+};
+
 struct StackFrameAMD64 : public StackFrame {
   // ContextValidity has one entry for each register that we might be able
   // to recover.

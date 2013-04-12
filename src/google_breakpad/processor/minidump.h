@@ -188,6 +188,7 @@ class MinidumpContext : public MinidumpStream {
   const MDRawContextAMD64* GetContextAMD64() const;
   const MDRawContextARM*   GetContextARM() const;
   const MDRawContextPPC*   GetContextPPC() const;
+  const MDRawContextPPC64* GetContextPPC64() const;
   const MDRawContextSPARC* GetContextSPARC() const;
   const MDRawContextX86*   GetContextX86() const;
 
@@ -202,6 +203,7 @@ class MinidumpContext : public MinidumpStream {
     MDRawContextBase*  base;
     MDRawContextX86*   x86;
     MDRawContextPPC*   ppc;
+    MDRawContextPPC64* ppc64;
     MDRawContextAMD64* amd64;
     // on Solaris SPARC, sparc is defined as a numeric constant,
     // so variables can NOT be named as sparc

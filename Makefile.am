@@ -193,6 +193,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/stackwalker_arm.h \
 	src/processor/stackwalker_ppc.cc \
 	src/processor/stackwalker_ppc.h \
+	src/processor/stackwalker_ppc64.cc \
+	src/processor/stackwalker_ppc64.h \
 	src/processor/stackwalker_sparc.cc \
 	src/processor/stackwalker_sparc.h \
 	src/processor/stackwalker_x86.cc \
@@ -621,6 +623,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
@@ -709,6 +712,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
@@ -833,6 +837,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
@@ -953,6 +958,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
