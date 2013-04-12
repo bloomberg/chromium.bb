@@ -76,8 +76,6 @@
     'renderer/devtools/devtools_client.h',
     'renderer/disambiguation_popup_helper.cc',
     'renderer/disambiguation_popup_helper.h',
-    'renderer/do_not_track_bindings.cc',
-    'renderer/do_not_track_bindings.h',
     'renderer/dom_automation_controller.cc',
     'renderer/dom_automation_controller.h',
     'renderer/dom_storage/dom_storage_dispatcher.cc',

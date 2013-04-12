@@ -245,10 +245,6 @@ class CONTENT_EXPORT RenderViewImpl
     return webkit_preferences_;
   }
 
-  bool enable_do_not_track() const {
-    return renderer_preferences_.enable_do_not_track;
-  }
-
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
@@ -667,6 +663,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebString userAgentOverride(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url) OVERRIDE;
+  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame) OVERRIDE;
   virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value) OVERRIDE;
   virtual void didLoseWebGLContext(
       WebKit::WebFrame* frame,

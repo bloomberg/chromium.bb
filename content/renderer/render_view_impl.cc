@@ -72,7 +72,6 @@
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
-#include "content/renderer/do_not_track_bindings.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/external_popup_menu.h"
@@ -3632,8 +3631,6 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
     dom_automation_controller_->BindToJavascript(frame,
                                                  "domAutomationController");
   }
-
-  InjectDoNotTrackBindings(frame);
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {
@@ -4411,6 +4408,12 @@ WebKit::WebString RenderViewImpl::userAgentOverride(
   if (internal_data && internal_data->is_overriding_user_agent())
     return WebString::fromUTF8(renderer_preferences_.user_agent_override);
   return WebKit::WebString();
+}
+
+WebString RenderViewImpl::doNotTrackValue(WebFrame* frame) {
+  if (renderer_preferences_.enable_do_not_track)
+    return WebString::fromUTF8("1");
+  return WebString();
 }
 
 bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
