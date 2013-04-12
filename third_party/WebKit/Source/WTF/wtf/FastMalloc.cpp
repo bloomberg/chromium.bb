@@ -416,7 +416,7 @@ extern "C" WTF_EXPORT_PRIVATE const int jscore_fastmalloc_introspection = 0;
 
 #else // FORCE_SYSTEM_MALLOC
 
-#include "AlwaysInline.h"
+#include "Compiler.h"
 #include "TCPackedCache.h"
 #include "TCPageMap.h"
 #include "TCSpinLock.h"

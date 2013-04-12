@@ -45,7 +45,6 @@
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "break_lines.h"
-#include <wtf/AlwaysInline.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/CharacterNames.h>
 

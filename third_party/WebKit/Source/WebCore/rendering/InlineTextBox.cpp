@@ -48,7 +48,6 @@
 #include "Text.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "break_lines.h"
-#include <wtf/AlwaysInline.h>
 #include <wtf/text/CString.h>
 
 using namespace std;
