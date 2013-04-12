@@ -73,9 +73,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
-// Disables data transfer items.
-const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
-
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 

@@ -795,7 +795,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableAudio,
     switches::kDisableAudioOutputResampler,
     switches::kDisableBreakpad,
-    switches::kDisableDataTransferItems,
     switches::kDisableDatabases,
     switches::kDisableDesktopNotifications,
     switches::kDisableDeviceOrientation,

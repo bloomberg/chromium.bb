@@ -32,7 +32,6 @@ CONTENT_EXPORT extern const char kDisableApplicationCache[];
 CONTENT_EXPORT extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
-extern const char kDisableDataTransferItems[];
 extern const char kDisableDesktopNotifications[];
 CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 #if defined(OS_ANDROID)

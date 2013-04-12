@@ -88,7 +88,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
   WebScriptController::enableV8SingleThreadMode();
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
   WebKit::WebRuntimeFeatures::enableDatabase(true);
-  WebKit::WebRuntimeFeatures::enableDataTransferItems(true);
   WebKit::WebRuntimeFeatures::enableNotifications(true);
   WebKit::WebRuntimeFeatures::enableTouch(true);
   WebKit::WebRuntimeFeatures::enableGamepad(true);
