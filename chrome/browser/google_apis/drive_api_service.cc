@@ -35,60 +35,73 @@ const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
 
-scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
-    scoped_ptr<base::Value> value, GDataErrorCode* error) {
-  if (!value) {
-    // JSON value is not available.
-    return scoped_ptr<ResourceList>();
-  }
-
-  // Parse the value into ResourceList via ChangeList.
-  // If failed, set (i.e. overwrite) the error flag and return immediately.
+scoped_ptr<ResourceList> ParseChangeListJsonToResourceList(
+    scoped_ptr<base::Value> value) {
   scoped_ptr<ChangeList> change_list(ChangeList::CreateFrom(*value));
   if (!change_list) {
-    *error = GDATA_PARSE_ERROR;
     return scoped_ptr<ResourceList>();
   }
 
-  scoped_ptr<ResourceList> resource_list =
-      ResourceList::CreateFromChangeList(*change_list);
-  if (!resource_list) {
-    *error = GDATA_PARSE_ERROR;
+  return ResourceList::CreateFromChangeList(*change_list);
+}
+
+scoped_ptr<ResourceList> ParseFileListJsonToResourceList(
+    scoped_ptr<base::Value> value) {
+  scoped_ptr<FileList> file_list(FileList::CreateFrom(*value));
+  if (!file_list) {
     return scoped_ptr<ResourceList>();
   }
 
-  // Pass the result to the params, so that DidParseResourceListOnBlockingPool
-  // defined below can process it.
-  return resource_list.Pass();
+  return ResourceList::CreateFromFileList(*file_list);
+}
+
+// Parses JSON value representing either ChangeList or FileList into
+// ResourceList.
+scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
+    scoped_ptr<base::Value> value) {
+  DCHECK(value);
+
+  // Dispatch the parsing based on kind field.
+  if (ChangeList::HasChangeListKind(*value)) {
+    return ParseChangeListJsonToResourceList(value.Pass());
+  }
+  if (FileList::HasFileListKind(*value)) {
+    return ParseFileListJsonToResourceList(value.Pass());
+  }
+
+  // The value type is unknown, so give up to parse and return an error.
+  return scoped_ptr<ResourceList>();
 }
 
 // Callback invoked when the parsing of resource list is completed,
 // regardless whether it is succeeded or not.
 void DidParseResourceListOnBlockingPool(
     const GetResourceListCallback& callback,
-    GDataErrorCode* error,
     scoped_ptr<ResourceList> resource_list) {
-  callback.Run(*error, resource_list.Pass());
+  GDataErrorCode error = resource_list ? HTTP_SUCCESS : GDATA_PARSE_ERROR;
+  callback.Run(error, resource_list.Pass());
 }
 
 // Sends a task to parse the JSON value into ResourceList on blocking pool,
 // with a callback which is called when the task is done.
 void ParseResourceListOnBlockingPoolAndRun(
     const GetResourceListCallback& callback,
-    GDataErrorCode in_error,
+    GDataErrorCode error,
     scoped_ptr<base::Value> value) {
-  // Note that the error value may be overwritten in
-  // ParseResoruceListOnBlockingPool before used in
-  // DidParseResourceListOnBlockingPool.
-  GDataErrorCode* error = new GDataErrorCode(in_error);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != HTTP_SUCCESS) {
+    // An error occurs, so run callback immediately.
+    callback.Run(error, scoped_ptr<ResourceList>());
+    return;
+  }
 
   PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&ParseResourceListOnBlockingPool,
-                 base::Passed(&value), error),
-      base::Bind(&DidParseResourceListOnBlockingPool,
-                 callback, base::Owned(error)));
+      base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
+      base::Bind(&DidParseResourceListOnBlockingPool, callback));
 }
 
 // Parses the FileResource value to ResourceEntry and runs |callback| on the
