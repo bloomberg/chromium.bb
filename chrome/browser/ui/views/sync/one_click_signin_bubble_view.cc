@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
@@ -47,6 +48,7 @@ class OneClickSigninDialogView : public OneClickSigninBubbleView {
   OneClickSigninDialogView(
       content::WebContents* web_content,
       views::View* anchor_view,
+      const string16& email,
       const BrowserWindow::StartSyncCallback& start_sync_callback);
 
  private:
@@ -62,6 +64,7 @@ class OneClickSigninDialogView : public OneClickSigninBubbleView {
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  const string16 email_;
   content::WebContents* web_content_;
   views::Link* learn_more_link_;
   views::ImageButton* close_button_;
@@ -72,8 +75,10 @@ class OneClickSigninDialogView : public OneClickSigninBubbleView {
 OneClickSigninDialogView::OneClickSigninDialogView(
     content::WebContents* web_content,
     views::View* anchor_view,
+    const string16& email,
     const BrowserWindow::StartSyncCallback& start_sync_callback)
     : OneClickSigninBubbleView(anchor_view, start_sync_callback),
+      email_(email),
       web_content_(web_content),
       learn_more_link_(NULL),
       close_button_(NULL) {
@@ -102,8 +107,10 @@ void OneClickSigninDialogView::InitContent(views::GridLayout* layout) {
   {
     layout->StartRow(0, COLUMN_SET_TITLE_BAR);
 
-    views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE));
+    views::Label* label = new views::Label(email_.empty() ?
+        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE) :
+        l10n_util::GetStringFUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW,
+                                   email_));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetFont(label->font().DeriveFont(3, gfx::Font::BOLD));
     layout->AddView(label);
@@ -123,8 +130,10 @@ void OneClickSigninDialogView::InitContent(views::GridLayout* layout) {
   {
     layout->StartRow(0, COLUMN_SET_FILL_ALIGN);
 
-    views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE));
+    views::Label* label = new views::Label(email_.empty() ?
+        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE) :
+        l10n_util::GetStringFUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW,
+                                   email_));
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SizeToFit(kMinimumDialogLabelWidth);
@@ -197,15 +206,28 @@ OneClickSigninBubbleView* OneClickSigninBubbleView::bubble_view_ = NULL;
 // static
 void OneClickSigninBubbleView::ShowBubble(
     BrowserWindow::OneClickSigninBubbleType type,
+    const string16& email,
     ToolbarView* toolbar_view,
     const BrowserWindow::StartSyncCallback& start_sync) {
   if (IsShowing())
     return;
 
-  bubble_view_ = type == BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE ?
-      new OneClickSigninBubbleView(toolbar_view->app_menu(), start_sync) :
-      new OneClickSigninDialogView(toolbar_view->GetWebContents(),
-                                   toolbar_view->location_bar(), start_sync);
+  switch (type) {
+    case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE:
+      bubble_view_ = new OneClickSigninBubbleView(toolbar_view->app_menu(),
+                                                  start_sync);
+      break;
+    case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG:
+      bubble_view_ = new OneClickSigninDialogView(
+          toolbar_view->GetWebContents(), toolbar_view->location_bar(),
+          string16(), start_sync);
+      break;
+    case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG:
+      bubble_view_ = new OneClickSigninDialogView(
+          toolbar_view->GetWebContents(), toolbar_view->location_bar(),
+          email, start_sync);
+      break;
+  }
 
   views::BubbleDelegateView::CreateBubble(bubble_view_)->Show();
 }

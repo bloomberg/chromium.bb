@@ -631,22 +631,6 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
   EXPECT_EQ("", error_message);
 }
 
-TEST_F(OneClickSigninHelperTest, CanOfferUntrustedProcess) {
-  content::MockRenderProcessHost trusted(browser_context_.get());
-  ASSERT_NE(trusted.GetID(), process()->GetID());
-  // Make sure the RenderProcessHost used by the test is untrusted.
-  SetTrustedSigninProcessID(trusted.GetID());
-  CreateSigninManager(false, std::string());
-
-  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
-        WillRepeatedly(Return(true));
-
-  EnableOneClick(true);
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
-      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", NULL));
-}
-
 TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
   CreateSigninManager(false, std::string());
 

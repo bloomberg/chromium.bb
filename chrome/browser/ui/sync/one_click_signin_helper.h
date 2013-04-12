@@ -226,6 +226,17 @@ class OneClickSigninHelper
   std::string error_message_;
   scoped_ptr<SigninTracker> signin_tracker_;
 
+  // Number of navigations since starting a sign in that is outside the
+  // the set of trusted Gaia URLs.  Sign in attempts that include visits to
+  // one more untrusted will cause a modal dialog to appear asking the user
+  // to confirm, similar to the interstitial flow.
+  int untrusted_navigations_since_signin_visit_;
+
+  // Whether a Gaia URL during the sign in process was not handled by the
+  // dedicated sign in process.  This is set to false if at least one such
+  // URL is detected.
+  bool is_trusted_;
+
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };
 

@@ -214,7 +214,8 @@ class BrowserWindow : public BaseWindow {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {
     ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-    ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG
+    ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,
+    ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG
   };
 
   // Callback type used with the ShowOneClickSigninBubble() method.  If the
@@ -223,9 +224,11 @@ class BrowserWindow : public BaseWindow {
   typedef base::Callback<void(OneClickSigninSyncStarter::StartSyncMode)>
       StartSyncCallback;
 
-  // Shows the one-click sign in bubble.
+  // Shows the one-click sign in bubble.  |email| holds the full email address
+  // of the account that has signed in.
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
+      const string16& email,
       const StartSyncCallback& start_sync_callback) = 0;
 #endif
 

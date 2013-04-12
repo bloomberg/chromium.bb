@@ -100,6 +100,7 @@ class TestBrowserWindow : public BrowserWindow {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
+      const string16& email,
       const StartSyncCallback& start_sync_callback) OVERRIDE {}
 #endif
   virtual bool IsDownloadShelfVisible() const OVERRIDE;

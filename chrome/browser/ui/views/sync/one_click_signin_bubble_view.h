@@ -36,6 +36,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // will be placed visually beneath |anchor_view|.  |start_sync| is called
   // to start sync.
   static void ShowBubble(BrowserWindow::OneClickSigninBubbleType type,
+                         const string16& email,
                          ToolbarView* toolbar_view,
                          const BrowserWindow::StartSyncCallback& start_sync);
 

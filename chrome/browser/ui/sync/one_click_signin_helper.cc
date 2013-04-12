@@ -79,6 +79,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
 namespace {
 
+// Maximum number of navigations away from the set of valid Gaia URLs before
+// clearing the internal state of the helper.  This is necessary to support
+// SAML-based accounts, but causes bug crbug.com/181163.
+const int kMaxNavigationsSince = 10;
+
 // Set to true if this chrome instance is in the blue-button-on-white-bar
 // experimental group.
 bool use_blue_on_white = false;
@@ -515,6 +520,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
   chrome::FindBrowserWithWebContents(web_contents)->window()->
       ShowOneClickSigninBubble(
           BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+          UTF8ToUTF16(email_),
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser,
                                    OneClickSigninHelper::AUTO_ACCEPT_NONE,
@@ -572,7 +578,9 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       auto_accept_(AUTO_ACCEPT_NONE),
       source_(SyncPromoUI::SOURCE_UNKNOWN),
       switched_to_advanced_(false),
-      original_source_(SyncPromoUI::SOURCE_UNKNOWN) {
+      original_source_(SyncPromoUI::SOURCE_UNKNOWN),
+      untrusted_navigations_since_signin_visit_(0),
+      is_trusted_(true) {
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
@@ -624,16 +632,6 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (!email.empty()) {
     if (!manager)
       return false;
-
-    // Only allow the dedicated signin process to sign the user into
-    // Chrome without intervention, because it doesn't load any untrusted
-    // pages.  In the interstitial case, since chrome will display a modal
-    // dialog, we don't need to make this check.
-    if (can_offer_for == CAN_OFFER_FOR_ALL &&
-        !manager->IsSigninProcess(
-            web_contents->GetRenderProcessHost()->GetID())) {
-      return false;
-    }
 
     // If the signin manager already has an authenticated name, then this is a
     // re-auth scenario.  Make sure the email just signed in corresponds to the
@@ -950,6 +948,16 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     return;
   }
 
+  // Only allow the dedicated signin process to sign the user into
+  // Chrome without intervention, because it doesn't load any untrusted
+  // pages.  If at any point an untrusted page is detected, chrome will
+  // show a modal dialog asking the user to confirm.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  SigninManager* manager = profile ?
+      SigninManagerFactory::GetForProfile(profile) : NULL;
+  helper->is_trusted_ &= manager && manager->IsSigninProcess(child_id);
+
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
@@ -1015,6 +1023,8 @@ void OneClickSigninHelper::CleanTransientState() {
   switched_to_advanced_ = false;
   original_source_ = SyncPromoUI::SOURCE_UNKNOWN;
   continue_url_ = GURL();
+  untrusted_navigations_since_signin_visit_ = 0;
+  is_trusted_ = true;
 
   // Post to IO thread to clear pending email.
   Profile* profile =
@@ -1071,7 +1081,8 @@ void OneClickSigninHelper::NavigateToPendingEntry(
       continue_url_.is_valid() &&
       url.ReplaceComponents(replacements) !=
           continue_url_.ReplaceComponents(replacements)) {
-    CleanTransientState();
+    if (++untrusted_navigations_since_signin_visit_ > kMaxNavigationsSince)
+      CleanTransientState();
   }
 }
 
@@ -1126,6 +1137,12 @@ void OneClickSigninHelper::DidStopLoading(
       SyncPromoUI::SetUserSkippedSyncPromo(profile);
       RedirectToNtpOrAppsPage(false);
     }
+
+    if (!continue_url_match && !IsValidGaiaSigninRedirectOrResponseURL(url) &&
+        ++untrusted_navigations_since_signin_visit_ > kMaxNavigationsSince) {
+      CleanTransientState();
+    }
+
     return;
   }
 
@@ -1211,6 +1228,7 @@ void OneClickSigninHelper::DidStopLoading(
       SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
           bubble_type,
+          UTF8ToUTF16(email_),
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser, auto_accept_,
                                    session_index_, email_, password_,
@@ -1240,11 +1258,22 @@ void OneClickSigninHelper::DidStopLoading(
               OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
               OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
 
-      // If the new email address is different from the email address that
-      // just signed in, show a confirmation dialog.
       std::string last_email =
           profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
-      if (!last_email.empty() && last_email != email_) {
+
+      if (!is_trusted_) {
+        // The user has navigated away from valid Gaia URLs during sign in,
+        // verify this sign in is desired.
+        browser->window()->ShowOneClickSigninBubble(
+            BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
+            UTF8ToUTF16(email_),
+            base::Bind(&StartSync,
+                       StartSyncArgs(profile, browser, auto_accept_,
+                                     session_index_, email_, password_,
+                                     force_same_tab_navigation)));
+      } else if (!last_email.empty() && last_email != email_) {
+        // If the new email address is different from the email address that
+        // just signed in, show a confirmation dialog.
         ConfirmEmailDialogDelegate::AskForConfirmation(
             contents,
             last_email,
