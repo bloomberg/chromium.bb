@@ -151,6 +151,7 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     // on switching back, typing will "just work").
     const string16 user_text(UserTextFromDisplayText(view_->GetText()));
     if (user_text.empty()) {
+      base::AutoReset<bool> tmp(&in_revert_, true);
       view_->RevertAll();
       view_->SelectAll(true);
     } else {
