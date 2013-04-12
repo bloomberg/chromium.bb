@@ -23,8 +23,9 @@ CONFIG_TYPE_FIRMWARE = 'firmware'
 
 CONFIG_TYPE_DUMP_ORDER = (
     'paladin',
-    'pre-cq-group',
+    constants.PRE_CQ_BUILDER_NAME,
     'pre-cq',
+    'pre-cq-launcher',
     'incremental',
     CONFIG_TYPE_FULL,
     CONFIG_TYPE_RELEASE,
@@ -987,12 +988,18 @@ internal_pre_cq = internal_paladin.derive(
   description='Verifies compilation and unit tests',
 )
 
-internal_pre_cq.add_group('pre-cq-group',
+internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
   internal_pre_cq.add_config('parrot-pre-cq',
                              boards=['parrot']),
   internal_pre_cq.add_config('stout-pre-cq', boards=['stout']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
                              arm, boards=['daisy_spring']),
+)
+
+internal_paladin.add_config('pre-cq-launcher',
+  boards=[],
+  build_type=constants.PRE_CQ_LAUNCHER_TYPE,
+  description='Launcher for Pre-CQ builders.',
 )
 
 internal_incremental = internal.derive(

@@ -402,7 +402,9 @@ class SimpleBuilder(Builder):
   def RunStages(self):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
-    if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
+    if self.build_config['build_type'] == constants.PRE_CQ_LAUNCHER_TYPE:
+      self._RunStage(stages.PreCQLauncherStage)
+    elif self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
       self._RunStage(stages.InitSDKStage)
       self._RunStage(stages.SetupBoardStage, [constants.CHROOT_BUILDER_BOARD])

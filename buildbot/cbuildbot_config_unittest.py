@@ -70,8 +70,8 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                       "Config %s doesn't have a list of boards." % build_name)
       self.assertEqual(len(set(config['boards'])), len(config['boards']),
                        'Config %s has duplicate boards.' % build_name)
-      self.assertTrue(config['boards'],
-                      'Config %s has at least one board.' % build_name)
+      self.assertTrue(config['boards'] is not None,
+                      'Config %s defines a list of boards.' % build_name)
 
   def testOverlaySettings(self):
     """Verify overlays and push_overlays have legal values."""

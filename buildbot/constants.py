@@ -165,6 +165,9 @@ COMMIT_QUEUE_TYPE = 'commit-queue'
 # Hybrid Commit and PFQ type.  Ultimate protection.
 PALADIN_TYPE = 'paladin'
 
+# A builder that kicks off Pre-CQ builders that bless the purest CLs.
+PRE_CQ_LAUNCHER_TYPE = 'priest'
+
 # Chrome PFQ type.  Incremental build type that builds and validates new
 # versions of Chrome.  Only valid if set with CHROME_REV.  See
 # VALID_CHROME_REVISIONS for more information.
@@ -194,8 +197,12 @@ VALID_BUILD_TYPES = (
     CHROOT_BUILDER_BOARD,
     CHROME_PFQ_TYPE,
     PFQ_TYPE,
-    REFRESH_PACKAGES_TYPE
+    PRE_CQ_LAUNCHER_TYPE,
+    REFRESH_PACKAGES_TYPE,
 )
+
+# The name of the builder used to launch the pre-CQ.
+PRE_CQ_BUILDER_NAME = 'pre-cq-group'
 
 
 # Define pool of machines for Hardware tests.

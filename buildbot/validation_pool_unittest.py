@@ -35,6 +35,12 @@ class MockPatch(mox.MockObject):
 
   owner = 'elmer.fudd@google.com'
 
+  def __str__(self):
+    return self.id
+
+  def __repr__(self):
+    return repr(self.id)
+
   def __eq__(self, other):
     return self.id == getattr(other, 'id')
 
@@ -511,20 +517,27 @@ class TestPatchSeries(base):
     self.mox.VerifyAll()
 
 
+def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
+             builder_name='foon', is_master=True, dryrun=True, **kwds):
+  """Helper for creating ValidationPool objects for tests."""
+  kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
+  kwds.setdefault('changes', [])
+
+  pool = validation_pool.ValidationPool(
+      overlays, self.build_root, build_number, builder_name, is_master,
+      dryrun, **kwds)
+  return pool
+
+
 # pylint: disable=W0212,R0904
 class TestCoreLogic(base):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
-  def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
-               builder_name='foon', is_master=True, dryrun=True, **kwds):
+  def MakePool(self, *args, **kwds):
+    """Helper for creating ValidationPool objects for Mox tests."""
     handlers = kwds.pop('handlers', False)
-    kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
-    kwds.setdefault('changes', [])
-
-    pool = validation_pool.ValidationPool(
-        overlays, self.build_root, build_number, builder_name, is_master,
-        dryrun, **kwds)
+    pool = MakePool(self, *args, **kwds)
     self.mox.StubOutWithMock(pool, '_SendNotification')
     if handlers:
       self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
@@ -1026,7 +1039,7 @@ class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
       messages: List of messages to include in comment.
     """
     msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
-      change, set(suspects), messages)
+      False, change, set(suspects), messages)
     for x in messages:
       self.assertTrue(x in msg)
     return msg
@@ -1061,6 +1074,65 @@ class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
     """Test case where there are no messages."""
     patch1 = self.GetPatches(1)
     self._AssertMessage(patch1, [patch1], [])
+
+
+class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
+  """Test the CreateDisjointTransactions function."""
+
+  def setUp(self):
+    self.deps = {}
+    self.PatchObject(validation_pool.PatchSeries, '_GetDepsForChange',
+                     side_effect=self.GetDepsForChange)
+    self.PatchObject(validation_pool.PatchSeries, '_GetGerritPatch',
+                     side_effect=self.GetGerritPatch)
+
+  def GetDepsForChange(self, patch):
+    return self.deps[patch], []
+
+  def GetGerritPatch(self, _, dep, **_kwargs):
+    return dep
+
+  def GetPatches(self, how_many=1, **kwargs):
+    if how_many == 1:
+      patches = [base.GetPatches(self, how_many, **kwargs)]
+    else:
+      patches = base.GetPatches(self, how_many, **kwargs)
+    for i, patch in enumerate(patches):
+      self.deps[patch] = [p for p in patches[:i]]
+    return patches
+
+  def testPlans(self):
+    """Verify that independent sets are distinguished."""
+    for num in range(0, 5):
+      expected_plans = [set(self.GetPatches(num)) for _ in range(num)]
+      patches = list(itertools.chain.from_iterable(expected_plans))
+      pool = MakePool(self, changes=patches)
+      plans = pool.CreateDisjointTransactions(None)
+      self.assertEqual(set(map(str, plans)), set(map(str, plans)))
+
+  def runUnresolvedPlan(self, **kwargs):
+    """Helper for testing unresolved plans."""
+    notify = self.PatchObject(validation_pool.ValidationPool,
+                              '_SendNotification')
+    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
+    changes = self.GetPatches(5, **kwargs)[1:]
+    pool = MakePool(self, changes=changes)
+    plans = pool.CreateDisjointTransactions(None)
+    self.assertEqual(plans, [])
+    self.assertEqual(remove.call_count, notify.call_count)
+    return remove.call_count
+
+  def testUnresolvedPlan(self):
+    """Test plan with old approval_timestamp."""
+    with cros_test_lib.LoggingCapturer():
+      call_count = self.runUnresolvedPlan()
+    self.assertEqual(4, call_count)
+
+  def testRecentUnresolvedPlan(self):
+    """Test plan with recent approval_timestamp."""
+    with cros_test_lib.LoggingCapturer():
+      call_count = self.runUnresolvedPlan(approval_timestamp=time.time())
+    self.assertEqual(0, call_count)
 
 
 if __name__ == '__main__':

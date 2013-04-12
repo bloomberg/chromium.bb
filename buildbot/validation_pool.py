@@ -27,6 +27,9 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import patch as cros_patch
 
+# Third-party libraries bundled with chromite need to be listed after the
+# first chromite import.
+import digraph
 
 # We import mox so that w/in ApplyPoolIntoRepo, if a mox exception is
 # thrown, we don't cover it up.
@@ -71,15 +74,8 @@ class NoMatchingChangeFoundException(Exception):
 class DependencyNotReadyForCommit(cros_patch.PatchException):
   """Exception thrown when a required dep isn't satisfied."""
 
-  def __init__(self, patch, unsatisfied_dep):
-    cros_patch.PatchException.__init__(self, patch)
-    self.unsatisfied_dep = unsatisfied_dep
-    self.args += (unsatisfied_dep,)
-
   def __str__(self):
-    return ("Change %s isn't ready for CQ/commit since its dependency "
-            "%s isn't committed, or marked as Commit-Ready."
-            % (self.patch, self.unsatisfied_dep))
+    return "%s isn't committed, or marked as Commit-Ready." % (self.patch,)
 
 
 def _RunCommand(cmd, dryrun):
@@ -345,7 +341,7 @@ class PatchSeries(object):
       if getattr(dep_change, 'IsAlreadyMerged', lambda: False)():
         continue
       elif limit_to is not None and dep_change not in limit_to:
-        raise DependencyNotReadyForCommit(parent, dep)
+        raise DependencyNotReadyForCommit(dep_change)
 
       unsatisfied.append(dep_change)
 
@@ -873,7 +869,7 @@ class ValidationPool(object):
     self.is_master = bool(is_master)
     self.pre_cq = pre_cq
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
-    self.queue = 'The Pre-Commit Queue' if pre_cq else 'The Commit Queue'
+    self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
 
     # See optional args for types of changes.
     self.changes = changes or []
@@ -933,7 +929,8 @@ class ValidationPool(object):
 
   @classmethod
   def AcquirePool(cls, overlays, build_root, build_number, builder_name,
-                  dryrun=False, changes_query=None):
+                  dryrun=False, changes_query=None, check_tree_open=True,
+                  change_filter=None):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -947,6 +944,9 @@ class ValidationPool(object):
       dryrun: Don't submit anything to gerrit.
       changes_query: The gerrit query to use to identify changes; if None,
         uses the internal defaults.
+      check_tree_open: If True, only return when the tree is open.
+      change_filter: If set, use change_filter(pool, changes,
+        non_manifest_changes) to filter out unwanted patches.
     Returns:
       ValidationPool object.
     Raises:
@@ -955,13 +955,15 @@ class ValidationPool(object):
 
     if changes_query is None:
       changes_query = constants.DEFAULT_CQ_READY_QUERY
+    if change_filter is None:
+      change_filter = lambda _, x, y: (x, y)
 
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     end_time = time.time() + cls.MAX_TIMEOUT
     while True:
       time_left = end_time - time.time()
-      if not dryrun and not cros_build_lib.TreeOpen(
+      if check_tree_open and not cros_build_lib.TreeOpen(
           cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left):
         raise TreeIsClosedException()
 
@@ -977,6 +979,10 @@ class ValidationPool(object):
             raw_changes, git.ManifestCheckout.Cached(build_root))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
+
+      # Filter out unwanted changes.
+      pool.changes, pool.non_manifest_changes = change_filter(
+          pool, pool.changes, pool.non_manifest_changes)
 
       if pool.changes or pool.non_manifest_changes or dryrun or time_left < 0:
         break
@@ -1193,7 +1199,7 @@ class ValidationPool(object):
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
-    assert not self.pre_cq, 'Pre-Commit Queue calling SubmitPool'
+    assert not self.pre_cq, 'Trybot calling SubmitPool'
 
     changes_that_failed_to_submit = []
     # We use the default timeout here as while we want some robustness against
@@ -1313,7 +1319,8 @@ class ValidationPool(object):
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
     for change in self.changes:
       self._SendNotification(change, msg)
-      self._UpdatePreCQStatus(change, success=True)
+      status = manifest_version.BuilderStatus.STATUS_PASSED
+      self.UpdatePreCQStatus(change, status)
 
   def _HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
@@ -1397,41 +1404,43 @@ class ValidationPool(object):
     return suspects
 
   @staticmethod
-  def _CreateValidationFailureMessage(change, suspects, messages):
+  def _CreateValidationFailureMessage(pre_cq, change, suspects, messages):
     """Create a message explaining why a validation failure occurred.
 
     Args:
+      pre_cq: Whether this builder is a Pre-CQ builder.
       change: The change we want to create a message for.
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
     """
     msg = ['The following build(s) failed:'] + map(str, messages)
 
-    # Create a list of changes other than this one that might be guilty.
-    other_suspects = suspects - set([change])
-    other_suspects_str = ', '.join(sorted(
-        cros_patch.FormatChangeId(x.change_id, force_internal=x.internal)
-                                  for x in other_suspects))
+    if not pre_cq:
+      # Create a list of changes other than this one that might be guilty.
+      other_suspects = suspects - set([change])
+      other_suspects_str = ', '.join(sorted(
+          cros_patch.FormatChangeId(x.change_id, force_internal=x.internal)
+                                    for x in other_suspects))
 
-    if change in suspects:
-      if other_suspects_str:
-        msg.append('Your change may have caused this failure. There are '
-                   'also other changes that may be at fault: %s'
-                   % other_suspects_str)
-      else:
-        msg.append('This failure was probably caused by your change.')
+      if change in suspects:
+        if other_suspects_str:
+          msg.append('Your change may have caused this failure. There are '
+                     'also other changes that may be at fault: %s'
+                     % other_suspects_str)
+        else:
+          msg.append('This failure was probably caused by your change.')
 
-      msg.append('Please check whether the failure is your fault. If your '
-                 'change is not at fault, you may mark it as ready again.')
-    else:
-      if len(suspects) == 1:
-        msg.append('This failure was probably caused by %s'
-                   % other_suspects_str)
+        msg.append('Please check whether the failure is your fault. If your '
+                   'change is not at fault, you may mark it as ready again.')
       else:
-        msg.append('One of the following changes is probably at fault: %s'
-                   % other_suspects_str)
-      msg.insert(
-          0, 'NOTE: %(queue)s will retry your change automatically.')
+        if len(suspects) == 1:
+          msg.append('This failure was probably caused by %s'
+                     % other_suspects_str)
+        else:
+          msg.append('One of the following changes is probably at fault: %s'
+                     % other_suspects_str)
+        msg.insert(
+            0, 'NOTE: %(queue)s will retry your change automatically.')
 
     return '\n\n'.join(msg)
 
@@ -1453,13 +1462,16 @@ class ValidationPool(object):
 
     # Send out failure notifications for each change.
     for change in self.changes:
-      msg = self._CreateValidationFailureMessage(change, suspects, messages)
+      msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
+                                                 messages)
       self._SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
         if self.pre_cq:
-          self._UpdatePreCQStatus(change, success=False)
-        self._helper_pool.ForChange(change).RemoveCommitReady(
-            change, dryrun=self.dryrun)
+          status = manifest_version.BuilderStatus.STATUS_FAILED
+          self.UpdatePreCQStatus(change, status)
+        else:
+          self._helper_pool.ForChange(change).RemoveCommitReady(
+              change, dryrun=self.dryrun)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""
@@ -1510,17 +1522,63 @@ class ValidationPool(object):
            'You can follow along at %(build_log)s .')
     self._SendNotification(change, msg)
 
-  def _UpdatePreCQStatus(self, change, success):
-    # Update Google Storage with the Pre-CQ status.
-    status = manifest_version.BuilderStatus.GetCompletedStatus(success)
+  def _GetPreCQStatusURL(self, change):
+    internal = 'int' if change.internal else 'ext'
     components = [manifest_version.MANIFEST_VERSIONS_URL, 'pre-cq',
-                  change.gerrit_number, change.patch_number,
-                  self._builder_name]
-    cmd = [gs.GSUTIL_BIN or 'gsutil', 'cp', '-', '/'.join(components)]
-    if self.dryrun:
-      logging.info('Would have run: %s', ' '.join(cmd))
-    else:
-      cros_build_lib.RunCommandWithRetries(3, cmd, input=status)
+                  internal, change.gerrit_number, change.patch_number]
+    return '/'.join(components)
+
+  def GetPreCQStatus(self, change):
+    """Get Pre-CQ status for |change|."""
+    ctx = gs.GSContext()
+    url = self._GetPreCQStatusURL(change)
+    try:
+      return ctx.Cat(url).output
+    except gs.GSNoSuchKey:
+      logging.debug('No status yet for %r', url)
+      return None
+
+  def UpdatePreCQStatus(self, change, status):
+    """Update Google Storage URL for |change| with the Pre-CQ |status|."""
+    url = self._GetPreCQStatusURL(change)
+    ctx = gs.GSContext(dry_run=self.dryrun)
+    ctx.Copy('-', url, input=status)
+
+  def CreateDisjointTransactions(self, manifest):
+    """Create a list of disjoint transactions from the changes in the pool.
+
+    Args:
+      manifest: Manifest to use.
+
+    Returns:
+      A list of disjoint transactions. Each transaction can be tried
+      independently, without involving patches from other transactions.
+      Each change in the pool will included in exactly one of transactions,
+      unless the patch does not apply for some reason.
+    """
+    helper_pool = HelperPool.SimpleCreate()
+    patches = PatchSeries(self.build_root, forced_manifest=manifest,
+                          helper_pool=helper_pool)
+    edges = {}
+    failed = []
+    for change in self.changes:
+      # Create a transaction for the provided change.
+      try:
+        plan = patches.CreateTransaction(change, limit_to=self.changes)
+      except cros_patch.PatchException, e:
+        logging.info('Failed creating transaction for %s: %s', change, e)
+        failed.append(e)
+      else:
+        # Mark everybody in the transaction as bidirectionally connected to the
+        # others.
+        for x in plan:
+          edges.setdefault(x, set()).update(plan)
+
+    failed = self._FilterDependencyErrors(failed)
+    if failed:
+      self._HandleApplyFailure(failed)
+
+    return list(digraph.StronglyConnectedComponents(list(edges), edges))
 
 
 class PaladinMessage():

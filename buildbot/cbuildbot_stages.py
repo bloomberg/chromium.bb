@@ -861,7 +861,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         pool = validation_pool.ValidationPool.AcquirePool(
             self._build_config['overlays'], self._build_root,
             self._options.buildnumber, self.builder_name,
-            self._options.debug,
+            self._options.debug, check_tree_open=not self._options.debug,
             changes_query=self._options.cq_gerrit_override)
 
         # We only have work to do if there are changes to try.
@@ -1094,6 +1094,113 @@ class PreCQCompletionStage(bs.BuilderStage):
     else:
       message = self.sync_stage.pool.GetValidationFailedMessage()
       self.sync_stage.pool.HandleValidationFailure([message])
+
+
+class PreCQLauncherStage(bs.BuilderStage):
+  """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
+
+  STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
+  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
+  STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
+
+  def __init__(self, options, build_config):
+    super(PreCQLauncherStage, self).__init__(options, build_config)
+    self.manifest = git.ManifestCheckout.Cached(self._build_root)
+
+  def GetPreCQStatus(self, pool, changes):
+    """Get the Pre-CQ status of a list of changes.
+
+    Args:
+      pool: The validation pool.
+      changes: Changes to examine.
+
+    Returns:
+      busy: The set of CLs that are currently being tested.
+      passed: The set of CLs that have been verified.
+    """
+    busy, passed = set(), set()
+
+    for change in changes:
+      status = pool.GetPreCQStatus(change)
+      if status in (self.STATUS_INFLIGHT, self.STATUS_FAILED):
+        busy.add(change)
+      elif status == self.STATUS_PASSED:
+        passed.add(change)
+
+    return busy, passed
+
+  def LaunchTrybot(self, pool, plan):
+    """Launch a Pre-CQ run with the provided list of CLs.
+
+    Args:
+      plan: The list of patches to test in the Pre-CQ run.
+    """
+    cmd = ['cbuildbot', '--remote', '--nobootstrap',
+           constants.PRE_CQ_BUILDER_NAME]
+    if self._options.debug_forced:
+      cmd.append('--debug')
+    for patch in plan:
+      number = cros_patch.FormatGerritNumber(
+          patch.gerrit_number, force_internal=patch.internal)
+      cmd += ['-g', number]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+    for patch in plan:
+      pool.UpdatePreCQStatus(patch, self.STATUS_INFLIGHT)
+
+  def GetDisjointTransactionsToTest(self, pool, changes):
+    """Get the list of disjoint transactions to test.
+
+    Returns:
+      A list of disjoint transactions to test. Each transaction should be sent
+      to a different Pre-CQ trybot.
+    """
+    busy, passed = self.GetPreCQStatus(pool, changes)
+
+    # Create a list of disjoint transactions to test.
+    plans = pool.CreateDisjointTransactions(self.manifest)
+    for plan in plans:
+      # If any of the CLs in the plan are currently "busy" being tested,
+      # wait until they're done before launching our trybot run. This helps
+      # avoid race conditions.
+      #
+      # Similarly, if all of the CLs in the plan have already been validated,
+      # there's no need to launch a trybot run.
+      if plan.issubset(passed):
+        logging.info('CLs already verified: %r', ' '.join(map(str, plan)))
+      elif plan.intersection(busy):
+        logging.info('CLs currently being verified: %r',
+                     ' '.join(map(str, plan.intersection(busy))))
+        if plan.difference(busy):
+          logging.info('CLs waiting on verification of dependencies: %r',
+              ' '.join(map(str, plan.difference(busy))))
+      else:
+        yield plan
+
+  def ProcessChanges(self, pool, changes, _non_manifest_changes):
+    """Process a list of changes that were marked as Ready.
+
+    From our list of changes that were marked as Ready, we create a
+    list of disjoint transactions and send each one to a separate Pre-CQ
+    trybot.
+
+    Non-manifest changes are not used here because they don't need to be
+    verified in the Pre-CQ.
+    """
+    for plan in self.GetDisjointTransactionsToTest(pool, changes):
+      self.LaunchTrybot(pool, plan)
+
+    # Tell ValidationPool to keep waiting for more changes until we hit
+    # its internal timeout.
+    return [], []
+
+  def _PerformStage(self):
+    # Loop through all of the changes until we hit a timeout.
+    validation_pool.ValidationPool.AcquirePool(
+        self._build_config['overlays'], self._build_root,
+        self._options.buildnumber, constants.PRE_CQ_BUILDER_NAME,
+        dryrun=self._options.debug_forced,
+        changes_query=self._options.cq_gerrit_override,
+        check_tree_open=False, change_filter=self.ProcessChanges)
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

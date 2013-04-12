@@ -14,6 +14,7 @@ import os
 import signal
 import StringIO
 import sys
+import time
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -25,12 +26,15 @@ from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import lab_status
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
-from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
+from chromite.buildbot import repository
+from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import gerrit
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -84,6 +88,7 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase,
     self.assertFalse(self.options.prebuilts)
     self.assertFalse(self.options.clobber)
     self.assertEquals(self.options.buildnumber, 1234)
+    self.options.debug_forced = self.options.debug
 
     bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
@@ -1536,6 +1541,35 @@ class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
         if not obj.config_name in config._settings:
           self.fail(('cbuildbot_stages.%s.config_name "%s" is missing from '
                      'cbuildbot_config._settings') % (attr, obj.config_name))
+
+
+class MockPatch(mock.MagicMock):
+  gerrit_number = '1234'
+  patch_number = '1'
+  project = 'chromiumos/chromite'
+
+
+class PreCQLauncherStageTest(AbstractStageTest):
+  BUILDROOT = constants.SOURCE_ROOT
+
+  def setUp(self):
+    self.manifest = git.ManifestCheckout.Cached(self.BUILDROOT)
+    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 0.5)
+    self.PatchObject(git.ManifestCheckout, 'Cached', return_value=self.manifest)
+    self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
+                     side_effect=lambda x, _: (x, []))
+    old_sleep = time.sleep
+    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.1))
+    self.PatchObject(gs.GSContext, '_CheckFile', return_value=True)
+    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock.SetDefaultCmdResult()
+
+  def ConstructStage(self):
+    return stages.PreCQLauncherStage(self.options, self.build_config)
+
+  def testSimple(self):
+    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=[MockPatch()])
+    self.RunStage()
 
 
 if __name__ == '__main__':

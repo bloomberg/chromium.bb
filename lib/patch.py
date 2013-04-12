@@ -76,7 +76,6 @@ class PatchAlreadyApplied(ApplyPatchException):
 
 
 class DependencyError(PatchException):
-
   """Exception thrown when a change cannot be applied due to a failure in a
   dependency."""
 
