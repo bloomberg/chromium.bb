@@ -344,6 +344,7 @@ void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
 
 void ImmersiveModeControllerAsh::OnDidChangeFocus(views::View* focused_before,
                                                   views::View* focused_now) {
+  UpdateMouseRevealedLock(true);
   UpdateFocusRevealedLock();
 }
 
