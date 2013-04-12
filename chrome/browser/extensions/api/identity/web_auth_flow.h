@@ -5,11 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_WEB_AUTH_FLOW_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_WEB_AUTH_FLOW_H_
 
-#include <string>
-#include <vector>
-
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -29,14 +24,19 @@ class WebContents;
 
 namespace extensions {
 
-// Controller class to perform an auth flow with a provider.
-// This is the class to start the auth flow and it takes care of all the
-// details. It behaves the following way:
-// Given a provider URL, load the URL and perform usual web navigation
-// until it results in redirection to a valid extension redirect URL.
-// The provider can show any UI to the user if needed before redirecting
-// to an appropriate URL.
-// TODO(munjal): Add link to the design doc here.
+// Controller class for web based auth flows. The WebAuthFlow starts
+// by navigating a WebContents to a URL specificed by the caller. Any
+// time the WebContents navigates to a new URL, the flow's delegate is
+// notified. The delegate is expected to delete the flow when
+// navigation reaches a known target URL.
+//
+// The WebContents is not displayed until the first page load
+// completes. This allows the flow to complete without flashing a
+// window on screen if the provider immediately redirects to the
+// target URL.
+//
+// A WebAuthFlow can be started in Mode::SILENT, which never displays
+// a window. If a window would be required, the flow fails.
 class WebAuthFlow : public content::NotificationObserver,
                     public content::WebContentsObserver {
  public:
@@ -45,16 +45,19 @@ class WebAuthFlow : public content::NotificationObserver,
     SILENT        // No UI should be shown.
   };
 
+  enum Failure {
+    WINDOW_CLOSED,  // Window closed by user.
+    INTERACTION_REQUIRED  // Non-redirect page load in silent mode.
+  };
+
   class Delegate {
    public:
-    // Called when the auth flow is completed successfully.
-    // |redirect_url| is the full URL the provider redirected to at the end
-    // of the flow.
-    virtual void OnAuthFlowSuccess(const std::string& redirect_url) = 0;
     // Called when the auth flow fails. This means that the flow did not result
-    // in a successful redirect to a valid redirect URL or the user canceled
+    // in a successful redirect to a valid redirect URL.
+    virtual void OnAuthFlowFailure(Failure failure) = 0;
+    // Called on redirects and other navigations to see if the URL should stop
     // the flow.
-    virtual void OnAuthFlowFailure() = 0;
+    virtual void OnAuthFlowURLChange(const GURL& redirect_url) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -64,7 +67,6 @@ class WebAuthFlow : public content::NotificationObserver,
   // Caller owns |delegate|.
   WebAuthFlow(Delegate* delegate,
               Profile* profile,
-              const std::string& extension_id,
               const GURL& provider_url,
               Mode mode,
               const gfx::Rect& initial_bounds,
@@ -72,7 +74,6 @@ class WebAuthFlow : public content::NotificationObserver,
   virtual ~WebAuthFlow();
 
   // Starts the flow.
-  // Delegate will be called when the flow is done.
   virtual void Start();
 
  protected:
@@ -97,15 +98,8 @@ class WebAuthFlow : public content::NotificationObserver,
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
-  bool BeforeUrlLoaded(const GURL& url);
+  void BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();
-
-  // Reports the results back to the delegate.
-  void ReportResult(const GURL& url);
-  // Checks if |url| is a valid redirect URL for the extension.
-  bool IsValidRedirectUrl(const GURL& url) const;
-  // Helper to initialize valid extensions URLs vector.
-  void InitValidRedirectUrlPrefixes(const std::string& extension_id);
 
   Delegate* delegate_;
   Profile* profile_;
@@ -114,8 +108,6 @@ class WebAuthFlow : public content::NotificationObserver,
   gfx::Rect initial_bounds_;
   chrome::HostDesktopType host_desktop_type_;
   bool popup_shown_;
-  // List of valid redirect URL prefixes.
-  std::vector<std::string> valid_prefixes_;
 
   content::WebContents* contents_;
   content::NotificationRegistrar registrar_;

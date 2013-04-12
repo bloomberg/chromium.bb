@@ -26,8 +26,8 @@ namespace {
 
 class MockDelegate : public WebAuthFlow::Delegate {
  public:
-  MOCK_METHOD1(OnAuthFlowSuccess, void(const std::string& redirect_url));
-  MOCK_METHOD0(OnAuthFlowFailure, void());
+  MOCK_METHOD1(OnAuthFlowFailure, void(WebAuthFlow::Failure failure));
+  MOCK_METHOD1(OnAuthFlowURLChange, void(const GURL& redirect_url));
 };
 
 class MockWebAuthFlow : public WebAuthFlow {
@@ -35,13 +35,11 @@ class MockWebAuthFlow : public WebAuthFlow {
   MockWebAuthFlow(
      WebAuthFlow::Delegate* delegate,
      Profile* profile,
-     const std::string& extension_id,
      const GURL& provider_url,
      bool interactive)
      : WebAuthFlow(
            delegate,
            profile,
-           extension_id,
            provider_url,
            interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT,
            gfx::Rect(),
@@ -97,27 +95,22 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void CreateAuthFlow(const std::string& extension_id,
-                      const GURL& url,
+  void CreateAuthFlow(const GURL& url,
                       bool interactive) {
     flow_.reset(new MockWebAuthFlow(
-        &delegate_, profile(), extension_id, url, interactive));
+        &delegate_, profile(), url, interactive));
   }
 
   WebAuthFlow* flow_base() {
     return flow_.get();
   }
 
-  bool CallBeforeUrlLoaded(const GURL& url) {
-    return flow_base()->BeforeUrlLoaded(url);
+  void CallBeforeUrlLoaded(const GURL& url) {
+    flow_base()->BeforeUrlLoaded(url);
   }
 
   void CallAfterUrlLoaded() {
     flow_base()->AfterUrlLoaded();
-  }
-
-  bool CallIsValidRedirectUrl(const GURL& url) {
-    return flow_base()->IsValidRedirectUrl(url);
   }
 
   TestBrowserThread thread_;
@@ -126,55 +119,51 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlNonInteractive) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("https://abcdefghij.chromiumapp.org/google_cb");
 
-  CreateAuthFlow(ext_id, url, false);
-  EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
+  CreateAuthFlow(url, false);
+  EXPECT_CALL(delegate_, OnAuthFlowURLChange(result)).Times(1);
   flow_->Start();
   CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("https://abcdefghij.chromiumapp.org/google_cb");
 
-  CreateAuthFlow(ext_id, url, true);
-  EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
+  CreateAuthFlow(url, true);
+  EXPECT_CALL(delegate_, OnAuthFlowURLChange(result)).Times(1);
   flow_->Start();
   CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url, true);
-  EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
+  CreateAuthFlow(url, true);
+  EXPECT_CALL(delegate_, OnAuthFlowURLChange(result)).Times(1);
   flow_->Start();
   CallBeforeUrlLoaded(result);
 }
 
 TEST_F(WebAuthFlowTest, NeedsUIButNonInteractive) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
 
-  CreateAuthFlow(ext_id, url, false);
-  EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
+  CreateAuthFlow(url, false);
+  EXPECT_CALL(
+      delegate_, OnAuthFlowFailure(WebAuthFlow::INTERACTION_REQUIRED)).Times(1);
   flow_->Start();
   CallAfterUrlLoaded();
 }
 
 TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url, true);
-  EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
+  CreateAuthFlow(url, true);
+  EXPECT_CALL(delegate_, OnAuthFlowURLChange(result)).Times(1);
   flow_->Start();
   CallAfterUrlLoaded();
   EXPECT_TRUE(flow_->HasWindow());
@@ -182,44 +171,14 @@ TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
 }
 
 TEST_F(WebAuthFlowTest, UIClosedByUser) {
-  std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url, true);
-  EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
+  CreateAuthFlow(url, true);
+  EXPECT_CALL(
+      delegate_, OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED)).Times(1);
   flow_->Start();
   CallAfterUrlLoaded();
   EXPECT_TRUE(flow_->HasWindow());
   flow_->DestroyWebContents();
-}
-
-TEST_F(WebAuthFlowTest, IsValidRedirectUrl) {
-  std::string ext_id = "abcdefghij";
-  GURL url("https://accounts.google.com/o/oauth2/auth");
-
-  CreateAuthFlow(ext_id, url, false);
-
-  // Positive cases.
-  EXPECT_TRUE(CallIsValidRedirectUrl(
-      GURL("https://abcdefghij.chromiumapp.org/")));
-  EXPECT_TRUE(CallIsValidRedirectUrl(
-      GURL("https://abcdefghij.chromiumapp.org/callback")));
-  EXPECT_TRUE(CallIsValidRedirectUrl(
-      GURL("chrome-extension://abcdefghij/")));
-  EXPECT_TRUE(CallIsValidRedirectUrl(
-      GURL("chrome-extension://abcdefghij/callback")));
-
-  // Negative cases.
-  EXPECT_FALSE(CallIsValidRedirectUrl(
-      GURL("https://www.foo.com/")));
-  // http scheme is not allowed.
-  EXPECT_FALSE(CallIsValidRedirectUrl(
-      GURL("http://abcdefghij.chromiumapp.org/callback")));
-  EXPECT_FALSE(CallIsValidRedirectUrl(
-      GURL("https://abcd.chromiumapp.org/callback")));
-  EXPECT_FALSE(CallIsValidRedirectUrl(
-      GURL("chrome-extension://abcd/callback")));
-  EXPECT_FALSE(CallIsValidRedirectUrl(
-      GURL("chrome-extension://abcdefghijkl/")));
 }

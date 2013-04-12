@@ -4,27 +4,19 @@
 
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
-#include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 #include "ui/base/window_open_disposition.h"
 
 using content::LoadNotificationDetails;
@@ -34,21 +26,11 @@ using content::ResourceRedirectDetails;
 using content::WebContents;
 using content::WebContentsObserver;
 
-namespace {
-
-static const char kChromeExtensionSchemeUrlPattern[] =
-    "chrome-extension://%s/";
-static const char kChromiumDomainRedirectUrlPattern[] =
-    "https://%s.chromiumapp.org/";
-
-}  // namespace
-
 namespace extensions {
 
 WebAuthFlow::WebAuthFlow(
     Delegate* delegate,
     Profile* profile,
-    const std::string& extension_id,
     const GURL& provider_url,
     Mode mode,
     const gfx::Rect& initial_bounds,
@@ -61,27 +43,20 @@ WebAuthFlow::WebAuthFlow(
       host_desktop_type_(host_desktop_type),
       popup_shown_(false),
       contents_(NULL) {
-  InitValidRedirectUrlPrefixes(extension_id);
 }
 
 WebAuthFlow::~WebAuthFlow() {
-  // Set the delegate to NULL to avoid reporting results twice.
-  delegate_ = NULL;
-
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
   registrar_.RemoveAll();
+  WebContentsObserver::Observe(NULL);
 
   if (contents_) {
-    if (popup_shown_) {
+    // The popup owns the contents if it was displayed.
+    if (popup_shown_)
       contents_->Close();
-    } else {
-      contents_->Stop();
-      // Tell message loop to delete contents_ instead of deleting it
-      // directly since destructor can run in response to a callback from
-      // contents_.
-      MessageLoop::current()->DeleteSoon(FROM_HERE, contents_);
-    }
+    else
+      delete contents_;
   }
 }
 
@@ -124,12 +99,8 @@ void WebAuthFlow::ShowAuthFlowPopup() {
   popup_shown_ = true;
 }
 
-bool WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
-  if (IsValidRedirectUrl(url)) {
-    ReportResult(url);
-    return true;
-  }
-  return false;
+void WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
+  delegate_->OnAuthFlowURLChange(url);
 }
 
 void WebAuthFlow::AfterUrlLoaded() {
@@ -139,7 +110,7 @@ void WebAuthFlow::AfterUrlLoaded() {
 
   // Report results directly if not in interactive mode.
   if (mode_ != WebAuthFlow::INTERACTIVE) {
-    ReportResult(GURL());
+    delegate_->OnAuthFlowFailure(WebAuthFlow::INTERACTION_REQUIRED);
     return;
   }
 
@@ -177,43 +148,7 @@ void WebAuthFlow::DidStopLoading(RenderViewHost* render_view_host) {
 
 void WebAuthFlow::WebContentsDestroyed(WebContents* web_contents) {
   contents_ = NULL;
-  ReportResult(GURL());
-}
-
-void WebAuthFlow::ReportResult(const GURL& url) {
-  if (!delegate_)
-    return;
-
-  if (url.is_empty()) {
-    delegate_->OnAuthFlowFailure();
-  } else {
-    // TODO(munjal): Consider adding code to parse out access token
-    // from some common places (e.g. URL fragment) so the apps don't
-    // have to do that work.
-    delegate_->OnAuthFlowSuccess(url.spec());
-  }
-
-  // IMPORTANT: Do not access any members after calling the delegate
-  // since the delegate can destroy |this| in the callback and hence
-  // all data members are invalid after that.
-}
-
-bool WebAuthFlow::IsValidRedirectUrl(const GURL& url) const {
-  std::vector<std::string>::const_iterator iter;
-  for (iter = valid_prefixes_.begin(); iter != valid_prefixes_.end(); ++iter) {
-    if (StartsWithASCII(url.spec(), *iter, false)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void WebAuthFlow::InitValidRedirectUrlPrefixes(
-    const std::string& extension_id) {
-  valid_prefixes_.push_back(base::StringPrintf(
-      kChromeExtensionSchemeUrlPattern, extension_id.c_str()));
-  valid_prefixes_.push_back(base::StringPrintf(
-      kChromiumDomainRedirectUrlPattern, extension_id.c_str()));
+  delegate_->OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED);
 }
 
 }  // namespace extensions

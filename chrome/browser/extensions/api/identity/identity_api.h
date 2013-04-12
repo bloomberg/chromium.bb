@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_API_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -31,6 +32,7 @@ extern const char kAuthFailure[];
 extern const char kNoGrant[];
 extern const char kUserRejected[];
 extern const char kUserNotSignedIn[];
+extern const char kInteractionRequired[];
 extern const char kInvalidRedirect[];
 }  // namespace identity_constants
 
@@ -100,15 +102,26 @@ class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
 
   IdentityLaunchWebAuthFlowFunction();
 
+  // URL checking helpers. Public for testing.
+  // Checks to see if the current URL ends the flow.
+  bool IsFinalRedirectURL(const GURL& url) const;
+
+  // Unit tests may override extension_id.
+  void InitFinalRedirectURLPrefixesForTest(const std::string& extension_id);
+
  private:
   virtual ~IdentityLaunchWebAuthFlowFunction();
   virtual bool RunImpl() OVERRIDE;
 
   // WebAuthFlow::Delegate implementation.
-  virtual void OnAuthFlowSuccess(const std::string& redirect_url) OVERRIDE;
-  virtual void OnAuthFlowFailure() OVERRIDE;
+  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) OVERRIDE;
+  virtual void OnAuthFlowURLChange(const GURL& redirect_url) OVERRIDE;
+
+  // Helper to initialize final URLs vector.
+  void InitFinalRedirectURLPrefixes(const std::string& extension_id);
 
   scoped_ptr<WebAuthFlow> auth_flow_;
+  std::vector<GURL> final_prefixes_;
 };
 
 class IdentityAPI : public ProfileKeyedAPI,

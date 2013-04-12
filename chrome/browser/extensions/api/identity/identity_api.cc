@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -41,8 +42,16 @@ const char kAuthFailure[] = "OAuth2 request failed: ";
 const char kNoGrant[] = "OAuth2 not granted or revoked.";
 const char kUserRejected[] = "The user did not approve access.";
 const char kUserNotSignedIn[] = "The user is not signed in.";
+const char kInteractionRequired[] = "User interaction required.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 }  // namespace identity_constants
+
+namespace {
+
+static const char kChromiumDomainRedirectUrlPattern[] =
+    "https://%s.chromiumapp.org/";
+
+}  // namespace
 
 namespace GetAuthToken = api::experimental_identity::GetAuthToken;
 namespace LaunchWebAuthFlow = api::experimental_identity::LaunchWebAuthFlow;
@@ -232,6 +241,8 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
       details.interactive && *details.interactive ?
       WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT;
 
+  InitFinalRedirectURLPrefixes(GetExtension()->id());
+
   // The bounds attributes are optional, but using 0 when they're not available
   // does the right thing.
   gfx::Rect initial_bounds;
@@ -250,23 +261,62 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
   chrome::HostDesktopType host_desktop_type = current_browser ?
       current_browser->host_desktop_type() : chrome::GetActiveDesktop();
   auth_flow_.reset(new WebAuthFlow(
-      this, profile(), GetExtension()->id(), auth_url, mode, initial_bounds,
+      this, profile(), auth_url, mode, initial_bounds,
       host_desktop_type));
   auth_flow_->Start();
   return true;
 }
 
-void IdentityLaunchWebAuthFlowFunction::OnAuthFlowSuccess(
-    const std::string& redirect_url) {
-  SetResult(Value::CreateStringValue(redirect_url));
-  SendResponse(true);
+bool IdentityLaunchWebAuthFlowFunction::IsFinalRedirectURL(
+    const GURL& url) const {
+  std::vector<GURL>::const_iterator iter;
+  for (iter = final_prefixes_.begin(); iter != final_prefixes_.end(); ++iter) {
+    if (url.GetWithEmptyPath() == *iter) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixesForTest(
+    const std::string& extension_id) {
+  final_prefixes_.clear();
+  InitFinalRedirectURLPrefixes(extension_id);
+}
+
+void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixes(
+    const std::string& extension_id) {
+  final_prefixes_.push_back(
+      Extension::GetBaseURLFromExtensionId(extension_id));
+  final_prefixes_.push_back(GURL(base::StringPrintf(
+      kChromiumDomainRedirectUrlPattern, extension_id.c_str())));
+}
+
+void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
+    WebAuthFlow::Failure failure) {
+  switch (failure) {
+    case WebAuthFlow::WINDOW_CLOSED:
+      error_ = identity_constants::kUserRejected;
+      break;
+    case WebAuthFlow::INTERACTION_REQUIRED:
+      error_ = identity_constants::kInteractionRequired;
+      break;
+    default:
+      NOTREACHED() << "Unexpected error from web auth flow: " << failure;
+      error_ = identity_constants::kInvalidRedirect;
+      break;
+  }
+  SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
 
-void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
-  error_ = identity_constants::kInvalidRedirect;
-  SendResponse(false);
-  Release();  // Balanced in RunImpl.
+void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
+    const GURL& redirect_url) {
+  if (IsFinalRedirectURL(redirect_url)) {
+    SetResult(Value::CreateStringValue(redirect_url.spec()));
+    SendResponse(true);
+    Release();  // Balanced in RunImpl.
+  }
 }
 
 IdentityAPI::IdentityAPI(Profile* profile)

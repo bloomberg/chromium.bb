@@ -461,6 +461,45 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(func->install_ui_shown());
 }
 
+// This helps us be able to wait until an AsyncExtensionFunction calls
+// SendResponse.
+class SendResponseDelegate
+    : public UIThreadExtensionFunction::DelegateForTests {
+ public:
+  SendResponseDelegate() : should_post_quit_(false) {}
+
+  virtual ~SendResponseDelegate() {}
+
+  void set_should_post_quit(bool should_quit) {
+    should_post_quit_ = should_quit;
+  }
+
+  bool HasResponse() {
+    return response_.get() != NULL;
+  }
+
+  bool GetResponse() {
+    EXPECT_TRUE(HasResponse());
+    return *response_.get();
+  }
+
+  virtual void OnSendResponse(UIThreadExtensionFunction* function,
+                              bool success,
+                              bool bad_message) OVERRIDE {
+    ASSERT_FALSE(bad_message);
+    ASSERT_FALSE(HasResponse());
+    response_.reset(new bool);
+    *response_ = success;
+    if (should_post_quit_) {
+      MessageLoopForUI::current()->Quit();
+    }
+  }
+
+ private:
+  scoped_ptr<bool> response_;
+  bool should_post_quit_;
+};
+
 class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
  protected:
   void RunAndCheckBounds(
@@ -475,23 +514,13 @@ class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
 
     scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-    scoped_refptr<Extension> empty_extension(
-        utils::CreateEmptyExtension());
-    function->set_extension(empty_extension.get());
+
     std::string args = base::StringPrintf(
         "[{\"interactive\": true, \"url\": \"data:text/html,auth\"%s%s}]",
         extra_params.length() ? "," : "",
         extra_params.c_str());
-    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
-    EXPECT_TRUE(parsed_args.get()) <<
-          "Could not parse extension function arguments: " << args;
-    function->SetArgs(parsed_args.get());
-    function->set_profile(browser()->profile());
 
-    // We don't use util::RunFunction because that waits until the function
-    // responds, but we want to check the size of the created browser as soon as
-    // it's created, even though there's no actual redirect to an auth URL.
-    function->Run();
+    RunFunctionAsync(function, args);
 
     observer.Wait();
 
@@ -505,6 +534,42 @@ class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
 
     web_auth_flow_browser->window()->Close();
   }
+
+  // Asynchronous function runner allows tests to manipulate the browser window
+  // after the call happens.
+  void RunFunctionAsync(
+      UIThreadExtensionFunction* function,
+      const std::string& args) {
+    response_delegate_.reset(new SendResponseDelegate);
+    function->set_test_delegate(response_delegate_.get());
+    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
+    EXPECT_TRUE(parsed_args.get()) <<
+        "Could not parse extension function arguments: " << args;
+    function->SetArgs(parsed_args.get());
+
+    scoped_refptr<Extension> empty_extension(
+        utils::CreateEmptyExtension());
+    function->set_extension(empty_extension.get());
+
+    function->set_profile(browser()->profile());
+    function->set_has_callback(true);
+    function->Run();
+  }
+
+  std::string WaitForError(UIThreadExtensionFunction* function) {
+    // If the RunImpl of |function| didn't already call SendResponse, run the
+    // message loop until they do.
+    if (!response_delegate_->HasResponse()) {
+      response_delegate_->set_should_post_quit(true);
+      content::RunMessageLoop();
+    }
+
+    EXPECT_TRUE(response_delegate_->HasResponse());
+    return function->GetError();
+  }
+
+ private:
+  scoped_ptr<SendResponseDelegate> response_delegate_;
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
@@ -514,6 +579,131 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
   RunAndCheckBounds(
       "\"left\": 100, \"top\": 200, \"width\": 300, \"height\": 400",
       100, 200, 300, 400);
+}
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, RedirectMatching) {
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+
+  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  // Positive cases.
+  EXPECT_TRUE(function->IsFinalRedirectURL(
+      GURL("https://abcdefghij.chromiumapp.org/")));
+  EXPECT_TRUE(function->IsFinalRedirectURL(
+      GURL("https://abcdefghij.chromiumapp.org/callback")));
+  EXPECT_TRUE(function->IsFinalRedirectURL(
+      GURL("chrome-extension://abcdefghij/")));
+  EXPECT_TRUE(function->IsFinalRedirectURL(
+      GURL("chrome-extension://abcdefghij/callback")));
+
+  // Negative cases.
+  EXPECT_FALSE(function->IsFinalRedirectURL(
+      GURL("https://www.foo.com/")));
+  // http scheme is not allowed.
+  EXPECT_FALSE(function->IsFinalRedirectURL(
+      GURL("http://abcdefghij.chromiumapp.org/callback")));
+  EXPECT_FALSE(function->IsFinalRedirectURL(
+      GURL("https://abcd.chromiumapp.org/callback")));
+  EXPECT_FALSE(function->IsFinalRedirectURL(
+      GURL("chrome-extension://abcd/callback")));
+  EXPECT_FALSE(function->IsFinalRedirectURL(
+      GURL("chrome-extension://abcdefghijkl/")));
+}
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
+
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+
+  RunFunctionAsync(
+      function, "[{\"interactive\": true, \"url\": \"data:text/html,auth\"}]");
+
+  observer.Wait();
+  Browser* web_auth_flow_browser =
+      content::Source<Browser>(observer.source()).ptr();
+  web_auth_flow_browser->window()->Close();
+
+  EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function));
+}
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+  scoped_refptr<Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  function->set_extension(empty_extension.get());
+
+  std::string error = utils::RunFunctionAndReturnError(
+      function, "[{\"interactive\": false, \"url\": \"data:text/html,auth\"}]",
+      browser());
+
+  EXPECT_EQ(std::string(errors::kInteractionRequired), error);
+}
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+  scoped_refptr<Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  function->set_extension(empty_extension.get());
+
+  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      function,
+      "[{\"interactive\": false,"
+      "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
+      browser()));
+
+  std::string url;
+  EXPECT_TRUE(value->GetAsString(&url));
+  EXPECT_EQ(std::string("https://abcdefghij.chromiumapp.org/callback#test"),
+            url);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    LaunchWebAuthFlowFunctionTest, InteractiveFirstNavigationSuccess) {
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+  scoped_refptr<Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  function->set_extension(empty_extension.get());
+
+  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      function,
+      "[{\"interactive\": true,"
+      "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
+      browser()));
+
+  std::string url;
+  EXPECT_TRUE(value->GetAsString(&url));
+  EXPECT_EQ(std::string("https://abcdefghij.chromiumapp.org/callback#test"),
+            url);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    LaunchWebAuthFlowFunctionTest, InteractiveSecondNavigationSuccess) {
+  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+  scoped_refptr<Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  function->set_extension(empty_extension.get());
+
+  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      function,
+      "[{\"interactive\": true,"
+      "\"url\": \"data:text/html,<script>window.location.replace('"
+      "https://abcdefghij.chromiumapp.org/callback#test')</script>\"}]",
+      browser()));
+
+  std::string url;
+  EXPECT_TRUE(value->GetAsString(&url));
+  EXPECT_EQ(std::string("https://abcdefghij.chromiumapp.org/callback#test"),
+            url);
 }
 
 }  // namespace extensions
