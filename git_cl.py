@@ -1361,7 +1361,8 @@ def CMDupload(parser, args):
     return GerritUpload(options, args, cl)
   ret = RietveldUpload(options, args, cl)
   if not ret:
-    git_set_branch_value('last-upload-hash', RunGit(['rev-parse', 'HEAD']))
+    git_set_branch_value('last-upload-hash',
+                         RunGit(['rev-parse', 'HEAD']).strip())
 
   return ret
 
