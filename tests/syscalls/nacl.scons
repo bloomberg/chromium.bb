@@ -225,6 +225,10 @@ node = env.CommandSelLdrTestNacl(
     filter_inverse=True,
     stdout_golden=temporary_file)
 
+# TODO(jfb): Remove the conditional.  The OSX coverage bots are
+# failing due to library versioning issues.  See
+# https://code.google.com/p/nativeclient/issues/detail?id=3333 for
+# more info.
 if not env.Bit('coverage_enabled'):
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
