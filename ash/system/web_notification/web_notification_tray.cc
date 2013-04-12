@@ -199,8 +199,6 @@ bool WebNotificationTray::ShowPopups() {
 void WebNotificationTray::UpdatePopups() {
   if (popup_bubble())
     popup_bubble()->bubble()->ScheduleUpdate();
-  if (popup_collection_.get())
-    popup_collection_->UpdatePopups();
 };
 
 void WebNotificationTray::HidePopups() {
@@ -305,8 +303,6 @@ void WebNotificationTray::AnchorUpdated() {
     popup_bubble()->bubble_view()->GetWidget()->StackAtTop();
     UpdateBubbleViewArrow(popup_bubble()->bubble_view());
   }
-  if (popup_collection_.get())
-    popup_collection_->UpdatePopups();
   if (message_center_bubble()) {
     message_center_bubble()->bubble_view()->UpdateBubble();
     UpdateBubbleViewArrow(message_center_bubble()->bubble_view());

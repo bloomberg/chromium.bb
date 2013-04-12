@@ -169,8 +169,10 @@ void WebNotificationTrayWin::UpdateMessageCenter() {
 }
 
 void WebNotificationTrayWin::UpdatePopups() {
-  if (popup_collection_.get())
-    popup_collection_->UpdatePopups();
+  // |popup_collection_| receives notification add/remove events and updates
+  // itself, so this method doesn't need to do anything.
+  // TODO(mukai): remove this method (currently this is used by
+  // non-rich-notifications in ChromeOS).
 };
 
 void WebNotificationTrayWin::OnMessageCenterTrayChanged() {

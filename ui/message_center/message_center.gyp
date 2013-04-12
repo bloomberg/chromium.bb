@@ -129,10 +129,12 @@
             '../compositor/compositor.gyp:compositor',
             '../compositor/compositor.gyp:compositor_test_support',
             '../views/views.gyp:views',
+            '../views/views.gyp:views_test_support',
           ],
           'sources': [
             'views/bounded_label_unittest.cc',
             'views/message_center_view_unittest.cc',
+            'views/message_popup_collection_unittest.cc',
           ],
         }],
       ],

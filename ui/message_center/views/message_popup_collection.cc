@@ -26,8 +26,11 @@ namespace message_center {
 class ToastContentsView : public views::WidgetDelegateView {
  public:
   ToastContentsView(const Notification* notification,
-                    base::WeakPtr<MessagePopupCollection> collection)
-      : collection_(collection) {
+                    base::WeakPtr<MessagePopupCollection> collection,
+                    MessageCenter* message_center)
+      : id_(notification->id()),
+        collection_(collection),
+        message_center_(message_center) {
     DCHECK(collection_);
 
     set_notify_enter_exit_on_child(true);
@@ -145,10 +148,12 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
  private:
+  std::string id_;
   base::TimeDelta delay_;
   base::Time start_time_;
   scoped_ptr<base::OneShotTimer<views::Widget> > timer_;
   base::WeakPtr<MessagePopupCollection> collection_;
+  MessageCenter* message_center_;
 
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
 };
@@ -158,14 +163,17 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
     : parent_(parent),
       message_center_(message_center) {
   DCHECK(message_center_);
-  UpdatePopups();
+
+  UpdateWidgets();
+  message_center_->AddObserver(this);
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
+  message_center_->RemoveObserver(this);
   CloseAllWidgets();
 }
 
-void MessagePopupCollection::UpdatePopups() {
+void MessagePopupCollection::UpdateWidgets() {
   NotificationList::PopupNotifications popups =
       message_center_->GetPopupNotifications();
 
@@ -174,26 +182,11 @@ void MessagePopupCollection::UpdatePopups() {
     return;
   }
 
-  gfx::Rect work_area;
-  if (!parent_) {
-    // On Win+Aura, we don't have a parent since the popups currently show up
-    // on the Windows desktop, not in the Aura/Ash desktop.  This code will
-    // display the popups on the primary display.
-    gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-    work_area = screen->GetPrimaryDisplay().work_area();
-  } else {
-    gfx::Screen* screen = gfx::Screen::GetScreenFor(parent_);
-    work_area = screen->GetDisplayNearestWindow(parent_).work_area();
-  }
-
-  std::set<std::string> old_toast_ids;
-  for (ToastContainer::iterator iter = toasts_.begin(); iter != toasts_.end();
-       ++iter) {
-    old_toast_ids.insert(iter->first);
-  }
-
-  int bottom = work_area.bottom() - kMarginBetweenItems;
-  int left = work_area.right() - kNotificationWidth - kMarginBetweenItems;
+  gfx::Point base_position = GetWorkAreaBottomRight();
+  int bottom = widgets_.empty() ?
+      base_position.y() : widgets_.back()->GetWindowBoundsInScreen().y();
+  bottom -= kMarginBetweenItems;
+  int left = base_position.x() - kNotificationWidth - kMarginBetweenItems;
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
@@ -206,47 +199,30 @@ void MessagePopupCollection::UpdatePopups() {
       break;
     }
 
-    ToastContainer::iterator toast_iter = toasts_.find((*iter)->id());
-    views::Widget* widget = NULL;
-    if (toast_iter != toasts_.end()) {
-      widget = toast_iter->second->GetWidget();
-      old_toast_ids.erase((*iter)->id());
-      // Need to replace the contents because |view| can be updated, like
-      // image loads.
-      toast_iter->second->SetContents(view);
-    } else {
-      ToastContentsView* toast = new ToastContentsView(*iter, AsWeakPtr());
-      widget = toast->CreateWidget(parent_);
-      toast->SetContents(view);
-      widget->AddObserver(this);
-      toast->StartTimer();
-      toasts_[(*iter)->id()] = toast;
+    if (toasts_.find((*iter)->id()) != toasts_.end()) {
+      delete view;
+      continue;
     }
+
+    ToastContentsView* toast = new ToastContentsView(
+        *iter, AsWeakPtr(), message_center_);
+    views::Widget* widget = toast->CreateWidget(parent_);
+    toast->SetContents(view);
+    widget->AddObserver(this);
+    toast->StartTimer();
+    toasts_[(*iter)->id()] = toast;
+    widgets_.push_back(widget);
 
     // Place/move the toast widgets. Currently it stacks the widgets from the
     // right-bottom of the work area.
     // TODO(mukai): allow to specify the placement policy from outside of this
     // class. The policy should be specified from preference on Windows, or
     // the launcher alignment on ChromeOS.
-    if (widget) {
-      gfx::Rect bounds(widget->GetWindowBoundsInScreen());
-      bounds.set_origin(gfx::Point(left, bottom - bounds.height()));
-      widget->SetBounds(bounds);
-      if (!widget->IsVisible())
-        widget->Show();
-    }
-
+    gfx::Rect bounds(widget->GetWindowBoundsInScreen());
+    bounds.set_origin(gfx::Point(left, bottom - bounds.height()));
+    widget->SetBounds(bounds);
+    widget->Show();
     bottom -= view_height + kMarginBetweenItems;
-  }
-
-  for (std::set<std::string>::const_iterator iter = old_toast_ids.begin();
-       iter != old_toast_ids.end(); ++iter) {
-    ToastContainer::iterator toast_iter = toasts_.find(*iter);
-    DCHECK(toast_iter != toasts_.end());
-    views::Widget* widget = toast_iter->second->GetWidget();
-    widget->RemoveObserver(this);
-    widget->Close();
-    toasts_.erase(toast_iter);
   }
 }
 
@@ -262,6 +238,9 @@ void MessagePopupCollection::OnMouseExited() {
        iter != toasts_.end(); ++iter) {
     iter->second->RestartTimer();
   }
+  RepositionWidgets();
+  // Reposition could create extra space which allows additional widgets.
+  UpdateWidgets();
 }
 
 void MessagePopupCollection::CloseAllWidgets() {
@@ -273,6 +252,7 @@ void MessagePopupCollection::CloseAllWidgets() {
     widget->Close();
   }
   toasts_.clear();
+  widgets_.clear();
 }
 
 void MessagePopupCollection::OnWidgetDestroying(views::Widget* widget) {
@@ -285,7 +265,139 @@ void MessagePopupCollection::OnWidgetDestroying(views::Widget* widget) {
       break;
     }
   }
-  UpdatePopups();
+  widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
+  RepositionWidgets();
+  UpdateWidgets();
+}
+
+gfx::Point MessagePopupCollection::GetWorkAreaBottomRight() {
+  if (!work_area_.IsEmpty())
+    return work_area_.bottom_right();
+
+  if (!parent_) {
+    // On Win+Aura, we don't have a parent since the popups currently show up
+    // on the Windows desktop, not in the Aura/Ash desktop.  This code will
+    // display the popups on the primary display.
+    gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+    work_area_ = screen->GetPrimaryDisplay().work_area();
+  } else {
+    gfx::Screen* screen = gfx::Screen::GetScreenFor(parent_);
+    work_area_ = screen->GetDisplayNearestWindow(parent_).work_area();
+  }
+
+  return work_area_.bottom_right();
+}
+
+void MessagePopupCollection::RepositionWidgets() {
+  int bottom = GetWorkAreaBottomRight().y() - kMarginBetweenItems;
+  for (std::list<views::Widget*>::iterator iter = widgets_.begin();
+       iter != widgets_.end(); ++iter) {
+    gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
+    bounds.set_y(bottom - bounds.height());
+    (*iter)->SetBounds(bounds);
+    bottom -= bounds.height() + kMarginBetweenItems;
+  }
+}
+
+void MessagePopupCollection::RepositionWidgetsWithTarget(
+    const gfx::Rect& target_bounds) {
+  if (widgets_.empty())
+    return;
+
+  if (widgets_.back()->GetWindowBoundsInScreen().y() > target_bounds.y()) {
+    // No widgets are above, thus slides up the widgets.
+    int slide_length =
+        widgets_.back()->GetWindowBoundsInScreen().y() - target_bounds.y();
+    for (std::list<views::Widget*>::iterator iter = widgets_.begin();
+         iter != widgets_.end(); ++iter) {
+      gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
+      bounds.set_y(bounds.y() - slide_length);
+      (*iter)->SetBounds(bounds);
+    }
+  } else {
+    std::list<views::Widget*>::reverse_iterator iter = widgets_.rbegin();
+    for (; iter != widgets_.rend(); ++iter) {
+      if ((*iter)->GetWindowBoundsInScreen().y() > target_bounds.y())
+        break;
+    }
+    --iter;
+    int slide_length =
+        target_bounds.y() - (*iter)->GetWindowBoundsInScreen().y();
+    for (; ; --iter) {
+      gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
+      bounds.set_y(bounds.y() + slide_length);
+      (*iter)->SetBounds(bounds);
+
+      if (iter == widgets_.rbegin())
+        break;
+    }
+  }
+}
+
+void MessagePopupCollection::OnNotificationAdded(
+    const std::string& notification_id) {
+  UpdateWidgets();
+}
+
+void MessagePopupCollection::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
+  ToastContainer::iterator iter = toasts_.find(notification_id);
+  if (iter == toasts_.end())
+    return;
+
+  views::Widget* widget = iter->second->GetWidget();
+  gfx::Rect removed_bounds = widget->GetWindowBoundsInScreen();
+  widget->RemoveObserver(this);
+  widget->Close();
+  widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
+  toasts_.erase(iter);
+  bool widgets_went_empty = widgets_.empty();
+  if (by_user)
+    RepositionWidgetsWithTarget(removed_bounds);
+  else
+    RepositionWidgets();
+
+  // A notification removal may create extra space which allows appearing
+  // other notifications.
+  UpdateWidgets();
+
+  // Also, if the removed notification is the last one but removing that enables
+  // other notifications appearing, the newly created widgets also have to be
+  // repositioned.
+  if (by_user && widgets_went_empty)
+    RepositionWidgetsWithTarget(removed_bounds);
+}
+
+void MessagePopupCollection::OnNotificationUpdated(
+    const std::string& notification_id) {
+  ToastContainer::iterator toast_iter = toasts_.find(notification_id);
+  if (toast_iter == toasts_.end())
+    return;
+
+  NotificationList::Notifications notifications =
+      message_center_->GetNotifications();
+  bool updated = false;
+  for (NotificationList::Notifications::iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if ((*iter)->id() != notification_id)
+      continue;
+
+    MessageView* view = NotificationView::Create(
+        *(*iter), message_center_, true);
+    toast_iter->second->SetContents(view);
+    updated = true;
+  }
+
+  if (updated) {
+    RepositionWidgets();
+    // Reposition could create extra space which allows additional widgets.
+    UpdateWidgets();
+  }
+}
+
+void MessagePopupCollection::SetWorkAreaForTest(const gfx::Rect& work_area) {
+  work_area_ = work_area;
 }
 
 }  // namespace message_center
