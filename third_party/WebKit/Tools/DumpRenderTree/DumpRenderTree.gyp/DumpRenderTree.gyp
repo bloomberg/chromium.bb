@@ -105,8 +105,8 @@
                     ],
                     'dependencies': [
                         '<(DEPTH)/base/base.gyp:base',
-                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                         '<(DEPTH)/skia/skia.gyp:skia',
+                        '<(DEPTH)/url/url.gyp:url',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
                     'direct_dependent_settings': {
@@ -115,7 +115,7 @@
                         ],
                     },
                     'export_dependent_settings': [
-                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(DEPTH)/url/url.gyp:url',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
                     'msvs_settings': {
@@ -231,9 +231,9 @@
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
                 '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
                 '<(DEPTH)/base/base.gyp:test_support_base',
-                '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+                '<(DEPTH)/url/url.gyp:url',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                 '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
             ],
