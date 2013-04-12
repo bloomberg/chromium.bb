@@ -3489,9 +3489,9 @@ sub GenerateCallbackHeader
 
     my @unsortedIncludes = ();
     push(@unsortedIncludes, "#include \"ActiveDOMCallback.h\"");
+    push(@unsortedIncludes, "#include \"DOMWrapperWorld.h\"");
     push(@unsortedIncludes, "#include \"$interfaceName.h\"");
     push(@unsortedIncludes, "#include \"ScopedPersistent.h\"");
-    push(@unsortedIncludes, "#include \"WorldContextHandle.h\"");
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
     push(@headerContent, join("\n", sort @unsortedIncludes));
@@ -3543,7 +3543,7 @@ private:
     ${v8InterfaceName}(v8::Handle<v8::Object>, ScriptExecutionContext*);
 
     ScopedPersistent<v8::Object> m_callback;
-    WorldContextHandle m_worldContext;
+    RefPtr<DOMWrapperWorld> m_world;
 };
 
 END
@@ -3575,7 +3575,7 @@ sub GenerateCallbackImplementation
 ${v8InterfaceName}::${v8InterfaceName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(callback)
-    , m_worldContext(UseCurrentWorld)
+    , m_world(context->isDocument() ? DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent()) : 0)
 {
 }
 
@@ -3621,7 +3621,7 @@ END
             push(@implContent, "    if (!canInvokeCallback())\n");
             push(@implContent, "        return true;\n\n");
             push(@implContent, "    v8::HandleScope handleScope;\n\n");
-            push(@implContent, "    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_worldContext);\n");
+            push(@implContent, "    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());\n");
             push(@implContent, "    if (v8Context.IsEmpty())\n");
             push(@implContent, "        return true;\n\n");
             push(@implContent, "    v8::Context::Scope scope(v8Context);\n\n");
