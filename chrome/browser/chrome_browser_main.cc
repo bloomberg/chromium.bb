@@ -14,7 +14,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cpu.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -34,7 +33,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -139,9 +137,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_handle.h"
-#include "ui/base/touch/touch_device.h"
-#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -215,23 +210,6 @@
 using content::BrowserThread;
 
 namespace {
-
-enum UMATouchEventsState {
-  UMA_TOUCH_EVENTS_ENABLED,
-  UMA_TOUCH_EVENTS_AUTO_ENABLED,
-  UMA_TOUCH_EVENTS_AUTO_DISABLED,
-  UMA_TOUCH_EVENTS_DISABLED,
-  // NOTE: Add states only immediately above this line. Make sure to
-  // update the enum list in tools/histogram/histograms.xml accordingly.
-  UMA_TOUCH_EVENTS_STATE_COUNT
-};
-
-void LogIntelMicroArchitecture() {
-  base::CPU cpu;
-  base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
-  UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
-      base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
-}
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -413,39 +391,6 @@ void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
   counter->AddTime(time);
 }
 
-void RecordDefaultBrowserUMAStat() {
-  // Record whether Chrome is the default browser or not.
-  ShellIntegration::DefaultWebClientState default_state =
-      ShellIntegration::GetDefaultBrowser();
-  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
-                            ShellIntegration::NUM_DEFAULT_STATES);
-}
-
-void RecordTouchEventState(const CommandLine& command_line) {
-  const std::string touch_enabled_switch =
-      command_line.HasSwitch(switches::kTouchEvents) ?
-      command_line.GetSwitchValueASCII(switches::kTouchEvents) :
-      switches::kTouchEventsAuto;
-
-  if (touch_enabled_switch.empty() ||
-      touch_enabled_switch == switches::kTouchEventsEnabled) {
-    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
-                              UMA_TOUCH_EVENTS_ENABLED,
-                              UMA_TOUCH_EVENTS_STATE_COUNT);
-  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
-    bool touch_device_present = ui::IsTouchDevicePresent();
-    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
-                              touch_device_present ?
-                                  UMA_TOUCH_EVENTS_AUTO_ENABLED :
-                                  UMA_TOUCH_EVENTS_AUTO_DISABLED,
-                              UMA_TOUCH_EVENTS_STATE_COUNT);
-  } else if (touch_enabled_switch == switches::kTouchEventsDisabled) {
-    UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled",
-                              UMA_TOUCH_EVENTS_DISABLED,
-                              UMA_TOUCH_EVENTS_STATE_COUNT);
-  }
-}
-
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
   ComponentUpdateService* cus = g_browser_process->component_updater();
 
@@ -537,21 +482,21 @@ void LaunchDevToolsHandlerIfNeeded(Profile* profile,
 // recording and then deletes itself.
 class LoadCompleteListener : public content::NotificationObserver {
  public:
-   LoadCompleteListener() {
-     registrar_.Add(this,
-                    content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                    content::NotificationService::AllSources());
-   }
-   virtual ~LoadCompleteListener() {}
+  LoadCompleteListener() {
+    registrar_.Add(this,
+                   content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                   content::NotificationService::AllSources());
+  }
+  virtual ~LoadCompleteListener() {}
 
-   // content::NotificationObserver implementation.
-   virtual void Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) OVERRIDE {
-     DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
-     startup_metric_utils::OnInitialPageLoadComplete();
-     delete this;
-   }
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    DCHECK_EQ(content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME, type);
+    startup_metric_utils::OnInitialPageLoadComplete();
+    delete this;
+  }
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1096,10 +1041,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   StartMetricsRecording();
 #endif
 
-#if defined(ARCH_CPU_X86_FAMILY)
-  LogIntelMicroArchitecture();
-#endif  // defined(ARCH_CPU_X86_FAMILY)
-
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
   browser_process_->watchdog_thread();
@@ -1439,19 +1380,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   HandleTestParameters(parsed_command_line());
   RecordBreakpadStatusUMA(browser_process_->metrics_service());
-  about_flags::RecordUMAStatistics(local_state_);
 #if defined(ENABLE_LANGUAGE_DETECTION)
   LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
 #endif
-
-  // Querying the default browser state can be slow, do it in the background.
-  BrowserThread::GetBlockingPool()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RecordDefaultBrowserUMAStat),
-        base::TimeDelta::FromSeconds(5));
 
   // The extension service may be available at this point. If the command line
   // specifies --uninstall-extension, attempt the uninstall extension startup
@@ -1595,8 +1529,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
   browser_creator_.reset();
 #endif  // !defined(OS_ANDROID)
-
-  RecordTouchEventState(parsed_command_line());
 
   PostBrowserStart();
 
@@ -1753,13 +1685,13 @@ void RecordBrowserStartupTime() {
 // CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
 // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
-  const base::Time *process_creation_time =
+  const base::Time* process_creation_time =
       base::CurrentProcessInfo::CreationTime();
 
   if (process_creation_time)
     RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
         base::Time::Now() - *process_creation_time);
-#endif // OS_MACOSX || OS_WIN
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   // Record collected startup metrics.
   startup_metric_utils::OnBrowserStartupComplete();

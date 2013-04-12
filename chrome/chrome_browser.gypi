@@ -962,6 +962,8 @@
         'browser/memory_details_win.cc',
         'browser/memory_purger.cc',
         'browser/memory_purger.h',
+        'browser/metrics/chrome_browser_main_extra_parts_metrics.cc',
+        'browser/metrics/chrome_browser_main_extra_parts_metrics.h',
         'browser/metrics/field_trial_synchronizer.cc',
         'browser/metrics/field_trial_synchronizer.h',
         'browser/metrics/metric_event_duration_details.h',

@@ -44,6 +44,7 @@
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -559,6 +560,8 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(USE_AURA)
   chrome::AddAuraToolkitExtraParts(main_parts);
 #endif
+
+  chrome::AddMetricsExtraParts(main_parts);
 
   return main_parts;
 }
