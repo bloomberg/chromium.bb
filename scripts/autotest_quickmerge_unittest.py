@@ -9,6 +9,7 @@
 import os
 import sys
 import unittest
+import mox
 
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
@@ -40,12 +41,22 @@ cd+++++++++ new_empty_directory/
 # that would rarely or never be encountered in the wild, rsync quickmerge
 # will exclude all files which contain the substring " -> " in their name.
 
+RSYNC_TEST_DESTINATION_PATH = '/foo/bar/'
+
+TEST_PACKAGE_CP = 'a_cute/little_puppy'
+TEST_PACKAGE_CPV = 'a_cute/little_puppy-3.14159'
+TEST_PACKAGE_C = 'a_cute'
+TEST_PACKAGE_PV = 'little_puppy-3.14159'
+TEST_PORTAGE_ROOT = '/bib/bob/'
+TEST_PACKAGE_OLDCONTENTS = {
+  u'/by/the/prickling/of/my/thumbs'   : (u'obj', '1234', '4321'),
+  u'/something/wicked/this/way/comes' : (u'dir',)
+}
+
 class ItemizeChangesFromRsyncOutput(unittest.TestCase):
 
   def testItemizeChangesFromRsyncOutput(self):
     """Test that rsync output parser returns correct FileMutations."""
-    destination_path = '/foo/bar'
-
     expected_new = set(
         [('>f+++++++++', '/foo/bar/new_file'),
          ('>f+++++++++', '/foo/bar/directory_a/new_file_in_directory'),
@@ -62,7 +73,7 @@ class ItemizeChangesFromRsyncOutput(unittest.TestCase):
     expected_dir = set([('cd+++++++++', '/foo/bar/new_empty_directory/')])
 
     report = autotest_quickmerge.ItemizeChangesFromRsyncOutput(
-        RSYNC_TEST_OUTPUT, destination_path)
+        RSYNC_TEST_OUTPUT, RSYNC_TEST_DESTINATION_PATH)
 
     self.assertEqual(expected_new, set(report.new_files))
     self.assertEqual(expected_mod, set(report.modified_files))
@@ -91,6 +102,52 @@ class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
                                         overwrite=False)
 
     self.assertCommandContains(expected_command)
+
+
+class PortageManipulationsTest(mox.MoxTestBase):
+  def testUpdatePackageContents(self):
+    """Test that UpdatePackageContents makes the correct calls to portage."""
+    autotest_quickmerge.portage = self.mox.CreateMockAnything('portage')
+    portage = autotest_quickmerge.portage
+
+    portage.root = TEST_PORTAGE_ROOT
+
+    mock_vartree = self.mox.CreateMockAnything('vartree')
+    mock_vartree.settings = {'an arbitrary' : 'dictionary'}
+    mock_tree = {TEST_PORTAGE_ROOT : {'vartree' : mock_vartree}}
+    portage.create_trees(TEST_PORTAGE_ROOT,
+        TEST_PORTAGE_ROOT).AndReturn(mock_tree)
+
+    mock_vartree.dbapi = self.mox.CreateMockAnything('dbapi')
+    mock_vartree.dbapi.cp_list(TEST_PACKAGE_CP).AndReturn([TEST_PACKAGE_CPV])
+
+    mock_package = self.mox.CreateMockAnything('dblink')
+    portage.dblink(TEST_PACKAGE_C, TEST_PACKAGE_PV, #pylint: disable-msg=E1101
+        settings=mock_vartree.settings,
+        vartree=mock_vartree).AndReturn(mock_package)
+    mock_package.getcontents().AndReturn(TEST_PACKAGE_OLDCONTENTS)
+
+    EXPECTED_NEW_ENTRIES = {
+        '/foo/bar/new_empty_directory': (u'dir',),
+        '/foo/bar/directory_a/new_file_in_directory': (u'obj', '0', '0'),
+        '/foo/bar/new_file': (u'obj', '0', '0'),
+        '/foo/bar/new_symlink': (u'obj', '0', '0')
+    }
+    RESULT_DICIONARY = TEST_PACKAGE_OLDCONTENTS.copy()
+    RESULT_DICIONARY.update(EXPECTED_NEW_ENTRIES)
+
+    mock_vartree.dbapi.writeContentsToContentsFile(mock_package,
+      RESULT_DICIONARY)
+
+    self.mox.ReplayAll()
+
+    change_report = autotest_quickmerge.ItemizeChangesFromRsyncOutput(
+      RSYNC_TEST_OUTPUT, RSYNC_TEST_DESTINATION_PATH)
+    autotest_quickmerge.UpdatePackageContents(change_report, TEST_PACKAGE_CP,
+        TEST_PORTAGE_ROOT)
+
+    self.mox.VerifyAll()
+
 
 
 if __name__ == '__main__':

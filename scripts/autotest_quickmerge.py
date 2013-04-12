@@ -15,15 +15,20 @@ import re
 import sys
 from collections import namedtuple
 
-
 from chromite.buildbot import constants
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 
 import argparse
 
+if cros_build_lib.IsInsideChroot():
+  # Only import portage after we've checked that we're inside the chroot.
+  import portage
+
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
+AUTOTEST_TESTS_EBUILD = 'chromeos-base/autotest-tests'
 
 
 # Data structure describing a single rsync filesystem change.
@@ -77,6 +82,63 @@ def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
   return ItemizedChangeReport(new_files=absolute_new,
                               modified_files=absolute_modified,
                               new_directories=absolute_new_dir)
+
+
+def UpdatePackageContents(change_report, package_cp,
+                          portage_root=None):
+  """
+  Add newly created files/directors to package contents.
+
+  Given an ItemizedChangeReport, add the newly created files and directories
+  to the CONTENTS of an installed portage package, such that these files are
+  considered owned by that package.
+
+  Arguments:
+    changereport: ItemizedChangeReport object for the changes to be
+                  made to the package.
+    package_cp: A string similar to 'chromeos-base/autotest-tests' giving
+                the package category and name of the package to be altered.
+    portage_root: Portage root path, corresponding to the board that
+                  we are working on. Defaults to '/'
+  """
+  if portage_root is None:
+    portage_root = portage.root # pylint: disable-msg=E1101
+  # Ensure that portage_root ends with trailing slash.
+  portage_root = os.path.join(portage_root, '')
+
+  # Create vartree object corresponding to portage_root
+  trees = portage.create_trees(portage_root, portage_root)
+  vartree = trees[portage_root]['vartree']
+
+  # List matching installed packages in cpv format
+  matching_packages = vartree.dbapi.cp_list(package_cp)
+
+  if not matching_packages:
+    raise ValueError('No matching package for %s in portage_root %s' % (
+        package_cp, portage_root))
+
+  if len(matching_packages) > 1:
+    raise ValueError('Too many matching packages for %s in portage_root '
+        '%s' % (package_cp, portage_root))
+
+  # Convert string match to package dblink
+  package_cpv = matching_packages[0]
+  package_split = portage_utilities.SplitCPV(package_cpv)
+  package = portage.dblink(package_split.category, # pylint: disable-msg=E1101
+                           package_split.pv, settings=vartree.settings,
+                           vartree=vartree)
+
+  # Append new contents to package contents dictionary
+  contents = package.getcontents().copy()
+  for _, filename in change_report.new_files:
+    contents.setdefault(filename, (u'obj', '0', '0'))
+  for _, dirname in change_report.new_directories:
+    # String trailing slashes if present.
+    dirname = dirname.rstrip('/')
+    contents.setdefault(dirname, (u'dir',))
+
+  # Write new contents dictionary to file
+  vartree.dbapi.writeContentsToContentsFile(package, contents)
 
 
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
@@ -145,8 +207,15 @@ def main(argv):
 
   args = ParseArguments(argv)
 
+  if not os.geteuid()==0:
+    try:
+      cros_build_lib.SudoRunCommand([sys.executable] + sys.argv)
+    except cros_build_lib.RunCommandError:
+      return 1
+    return 0
+
   if not args.board:
-    print "No board specified, and no default board. Aborting."
+    print 'No board specified, and no default board. Aborting.'
     return 1
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
@@ -157,19 +226,24 @@ def main(argv):
   include_pattern_file = os.path.join(script_path, INCLUDE_PATTERNS_FILENAME)
 
   # TODO: Determine the following string programatically.
-  sysroot_autotest_path = os.path.join('/build', args.board, 'usr', 'local',
+  sysroot_path = os.path.join('/build', args.board, '')
+  sysroot_autotest_path = os.path.join(sysroot_path, 'usr', 'local',
                                        'autotest', '')
 
   rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
       include_pattern_file, args.pretend, args.overwrite)
 
-  print rsync_output.output
-
   change_report = ItemizeChangesFromRsyncOutput(rsync_output.output,
                                                 sysroot_autotest_path)
 
-  print change_report
+  if not args.pretend:
+    UpdatePackageContents(change_report, AUTOTEST_TESTS_EBUILD,
+                          sysroot_path)
 
+  if args.pretend:
+    print 'The following message is pretend only. No filesystem changes made.'
+  print 'Quickmerge complete. Created or modified %s files.' % (
+        len(change_report.new_files) + len(change_report.modified_files))
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
