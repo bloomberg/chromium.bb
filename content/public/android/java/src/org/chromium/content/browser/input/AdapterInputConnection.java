@@ -151,7 +151,12 @@ public class AdapterInputConnection extends BaseInputConnection {
         }
 
         Selection.setSelection(editable, selectionStart, selectionEnd);
-        super.setComposingRegion(compositionStart, compositionEnd);
+
+        if (compositionStart == compositionEnd) {
+            removeComposingSpans(editable);
+        } else {
+            super.setComposingRegion(compositionStart, compositionEnd);
+        }
 
         if (mIgnoreTextInputStateUpdates) return;
         updateSelection(selectionStart, selectionEnd, compositionStart, compositionEnd);
@@ -380,7 +385,12 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) Log.w(TAG, "setComposingRegion [" + start + " " + end + "]");
         int a = Math.min(start, end);
         int b = Math.max(start, end);
-        super.setComposingRegion(a, b);
+
+        if (a == b) {
+            removeComposingSpans(getEditable());
+        } else {
+            super.setComposingRegion(a, b);
+        }
         return mImeAdapter.setComposingRegion(a, b);
     }
 
