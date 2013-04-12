@@ -68,7 +68,18 @@ function checkNoDoubleLogging() {
   setCompleted('checkNoDoubleLogging');
 }
 
+// Check whether we log calls to chrome.app.*;
+function checkAppCalls() {
+  chrome.app.getDetails();
+  setCompleted('chrome.app.getDetails()');
+  var b = chrome.app.isInstalled;
+  setCompleted('chrome.app.isInstalled');
+  var c = chrome.app.installState();
+  setCompleted('chrome.app.installState()');
+}
+
 // Makes an API call that the extension doesn't have permission for.
+// Don't add the management permission or this test won't test the code path.
 function makeBlockedApiCall() {
   try {
     var all_extensions = chrome.management.getAll();
@@ -174,6 +185,62 @@ function doWebRequestModifications() {
   window.open('http://www.google.co.uk');
 }
 
+function getSetObjectProperties() {
+  chrome.tabs.onUpdated.addListener(
+    function getTabProperties(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete"
+          && tab.url.match(/google\.dk/g)) {
+        console.log(tab.id + " " + tab.index + " " + tab.url);
+        tab.index = 3333333333333333333;
+        chrome.tabs.remove(tabId);
+        chrome.tabs.onUpdated.removeListener(getTabProperties);
+        setCompleted('getSetObjectProperties');
+      }
+    }
+  );
+  window.open('http://www.google.dk');
+}
+
+function callObjectMethod() {
+  var storageArea = chrome.storage.sync;
+  storageArea.clear();
+  setCompleted('callObjectMethod()');
+}
+
+function sendMessageToCS() {
+  chrome.tabs.onUpdated.addListener(
+    function messageCS(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete"
+          && tab.url.match(/google\.com\.bo/g)) {
+        chrome.tabs.sendMessage(tabId, "hellooooo!");
+        chrome.tabs.remove(tabId);
+        chrome.tabs.onUpdated.removeListener(messageCS);
+        setCompleted('sendMessageToCS');
+      }
+    }
+  );
+  window.open('http://www.google.com.bo');
+}
+
+function sendMessageToSelf() {
+  chrome.runtime.sendMessage("hello hello");
+  setCompleted('sendMessageToSelf');
+}
+
+function sendMessageToOther() {
+  chrome.runtime.sendMessage("ocacnieaapoflmkebkeaidpgfngocapl",
+                             "knock knock",
+                             function response() {
+                               console.log("who's there?");
+                             });
+  setCompleted('sendMessageToOther');
+}
+
+function connectToOther() {
+  chrome.runtime.connect("ocacnieaapoflmkebkeaidpgfngocapl");
+  setCompleted('connectToOther');
+}
+
 // REGISTER YOUR TESTS HERE
 // Attach the tests to buttons.
 function setupEvents() {
@@ -186,6 +253,13 @@ function setupEvents() {
   $('cs_xhr').addEventListener('click', doContentScriptXHR);
   $('webrequest').addEventListener('click', doWebRequestModifications);
   $('double').addEventListener('click', checkNoDoubleLogging);
+  $('app_bindings').addEventListener('click', checkAppCalls);
+  $('object_properties').addEventListener('click', getSetObjectProperties);
+  $('object_methods').addEventListener('click', callObjectMethod);
+  $('message_cs').addEventListener('click', sendMessageToCS);
+  $('message_self').addEventListener('click', sendMessageToSelf);
+  $('message_other').addEventListener('click', sendMessageToOther);
+  $('connect_other').addEventListener('click', connectToOther);
 
   completed = 0;
   total = document.getElementsByTagName('button').length;

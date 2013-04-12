@@ -19,7 +19,7 @@ var utils = require('utils');
 var CHECK = requireNative('logging').CHECK;
 var sendRequestHandler = require('sendRequest');
 var sendRequest = sendRequestHandler.sendRequest;
-var logActivity = requireNative('activityLogger').LogActivity;
+var logActivity = requireNative('activityLogger');
 
 // Stores the name and definition of each API function, with methods to
 // modify their behaviour (such as a custom way to handle requests to the
@@ -53,13 +53,14 @@ APIFunctions.prototype.setHook_ =
 APIFunctions.prototype.setHandleRequest =
     function(apiName, customizedFunction) {
   var prefix = this.namespace;
+  // TODO(ataly): Need to replace/redefine apply and slice.
   return this.setHook_(apiName, 'handleRequest',
     function() {
       var ret = customizedFunction.apply(this, arguments);
       // Logs API calls to the Activity Log if it doesn't go through an
       // ExtensionFunction.
       if (!sendRequestHandler.getCalledSendRequest())
-        logActivity(extensionId, prefix + "." + apiName,
+        logActivity.LogAPICall(extensionId, prefix + "." + apiName,
             Array.prototype.slice.call(arguments));
       return ret;
     });

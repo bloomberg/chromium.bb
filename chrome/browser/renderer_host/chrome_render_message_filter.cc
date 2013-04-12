@@ -57,8 +57,14 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
+enum ActivityLogCallType {
+  ACTIVITYAPI,
+  ACTIVITYEVENT
+};
+
 void AddAPIActionToExtensionActivityLog(
     Profile* profile,
+    const ActivityLogCallType call_type,
     const extensions::Extension* extension,
     const std::string& api_call,
     scoped_ptr<ListValue> args,
@@ -70,6 +76,7 @@ void AddAPIActionToExtensionActivityLog(
                             FROM_HERE,
                             base::Bind(&AddAPIActionToExtensionActivityLog,
                                        profile,
+                                       call_type,
                                        extension,
                                        api_call,
                                        base::Passed(&args),
@@ -77,8 +84,12 @@ void AddAPIActionToExtensionActivityLog(
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log && activity_log->IsLogEnabled())
-      activity_log->LogAPIAction(extension, api_call, args.get(), extra);
+    if (activity_log && activity_log->IsLogEnabled()) {
+      if (call_type == ACTIVITYAPI)
+        activity_log->LogAPIAction(extension, api_call, args.get(), extra);
+      else if (call_type == ACTIVITYEVENT)
+        activity_log->LogEventAction(extension, api_call, args.get(), extra);
+    }
   }
 }
 
@@ -182,6 +193,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
                         OnAddDOMActionToExtensionActivityLog);
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddEventToActivityLog,
+                        OnAddEventToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
@@ -591,13 +604,13 @@ void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
 
 void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
     const std::string& extension_id,
-    const ExtensionHostMsg_APIAction_Params& params) {
+    const ExtensionHostMsg_APIActionOrEvent_Params& params) {
   const extensions::Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
   // The activity is recorded as an API action in the extension
   // activity log.
-  AddAPIActionToExtensionActivityLog(profile_, extension,
+  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYAPI, extension,
                                      params.api_call, args.Pass(),
                                      params.extra);
 }
@@ -612,6 +625,19 @@ void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
   // activity log.
   AddDOMActionToExtensionActivityLog(profile_, extension,
                                      params.url, params.url_title,
+                                     params.api_call, args.Pass(),
+                                     params.extra);
+}
+
+void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
+    const std::string& extension_id,
+    const ExtensionHostMsg_APIActionOrEvent_Params& params) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
+  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+  // The activity is recorded as an event in the extension
+  // activity log.
+  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYEVENT, extension,
                                      params.api_call, args.Pass(),
                                      params.extra);
 }

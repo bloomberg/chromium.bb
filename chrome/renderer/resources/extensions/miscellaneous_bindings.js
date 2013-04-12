@@ -24,6 +24,8 @@
   var manifestVersion = processNatives.GetManifestVersion();
   var extensionId = processNatives.GetExtensionId();
 
+  var logActivity = requireNative('activityLogger');
+
   // The reserved channel name for the sendRequest/sendMessage APIs.
   // Note: sendRequest is deprecated.
   chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
@@ -173,6 +175,14 @@
           }
         }
       });
+      var eventName = (isSendMessage ?
+            (isExternal ?
+                "runtime.onMessageExternal" : "runtime.onMessage") :
+            (isExternal ?
+                "extension.onRequestExternal" : "extension.onRequest"));
+      logActivity.LogEvent(targetExtensionId,
+                           eventName,
+                           [sourceExtensionId]);
       return true;
     }
     return false;
@@ -215,7 +225,12 @@
       if (manifestVersion < 2)
         port.tab = port.sender.tab;
 
+      var eventName = (isExternal ?
+          "runtime.onConnectExternal" : "runtime.onConnect");
       connectEvent.dispatch(port);
+      logActivity.LogEvent(targetExtensionId,
+                           eventName,
+                           [sourceExtensionId]);
       return true;
     }
     return false;

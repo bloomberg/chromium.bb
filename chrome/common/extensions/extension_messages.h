@@ -30,8 +30,9 @@
 
 IPC_ENUM_TRAITS(extensions::ViewType)
 
-// Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog.
-IPC_STRUCT_BEGIN(ExtensionHostMsg_APIAction_Params)
+// Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog and
+// ExtensionHostMsg_AddEventToActivityLog.
+IPC_STRUCT_BEGIN(ExtensionHostMsg_APIActionOrEvent_Params)
   // API name.
   IPC_STRUCT_MEMBER(std::string, api_call)
 
@@ -603,7 +604,12 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_UpdateDraggableRegions,
 // Sent by the renderer to log an API action to the extension activity log.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddAPIActionToActivityLog,
                      std::string /* extension_id */,
-                     ExtensionHostMsg_APIAction_Params)
+                     ExtensionHostMsg_APIActionOrEvent_Params)
+
+// Sent by the renderer to log an event to the extension activity log.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddEventToActivityLog,
+                    std::string /* extension_id */,
+                    ExtensionHostMsg_APIActionOrEvent_Params)
 
 // Sent by the renderer to log a DOM action to the extension activity log.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddDOMActionToActivityLog,

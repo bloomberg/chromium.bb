@@ -17,20 +17,32 @@ namespace extensions {
 APIActivityLogger::APIActivityLogger(
     Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
     : ChromeV8Extension(dispatcher, v8_context) {
-  RouteFunction("LogActivity", base::Bind(&APIActivityLogger::LogActivity));
+  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent));
+  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall));
 }
 
 // static
-v8::Handle<v8::Value> APIActivityLogger::LogActivity(
-    const v8::Arguments& args) {
+v8::Handle<v8::Value> APIActivityLogger::LogAPICall(const v8::Arguments& args) {
+  LogInternal(APICALL, args);
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> APIActivityLogger::LogEvent(const v8::Arguments& args) {
+  LogInternal(EVENT, args);
+  return v8::Undefined();
+}
+
+// static
+void APIActivityLogger::LogInternal(const CallType call_type,
+                                    const v8::Arguments& args) {
   DCHECK_GT(args.Length(), 2);
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsString());
   DCHECK(args[2]->IsArray());
 
-  // Get the simple values.
   std::string ext_id = *v8::String::AsciiValue(args[0]->ToString());
-  ExtensionHostMsg_APIAction_Params params;
+  ExtensionHostMsg_APIActionOrEvent_Params params;
   params.api_call = *v8::String::AsciiValue(args[1]->ToString());
   if (args.Length() == 4)  // Extras are optional.
     params.extra = *v8::String::AsciiValue(args[3]->ToString());
@@ -50,11 +62,15 @@ v8::Handle<v8::Value> APIActivityLogger::LogActivity(
     params.arguments.Swap(arg_list.get());
   }
 
-  content::RenderThread::Get()->Send(
-      new ExtensionHostMsg_AddAPIActionToActivityLog(ext_id, params));
-
-  return v8::Undefined();
+  if (call_type == APICALL) {
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_AddAPIActionToActivityLog(ext_id, params));
+  } else if (call_type == EVENT) {
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_AddEventToActivityLog(ext_id, params));
+  }
 }
+
 
 }  // namespace extensions
 

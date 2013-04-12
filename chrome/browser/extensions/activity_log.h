@@ -200,11 +200,11 @@ class ActivityLog : public ProfileKeyedService,
   bool log_activity_to_stdout_;
   bool log_activity_to_ui_;
 
-  // log_arguments controls whether to log API call arguments. By default, we
+  // testing_mode_ controls whether to log API call arguments. By default, we
   // don't log most arguments to avoid saving too much data. In testing mode,
   // argument collection is enabled. We also whitelist some arguments for
   // collection regardless of whether this bool is true.
-  bool log_arguments_;
+  bool testing_mode_;
   base::hash_set<std::string> arg_whitelist_api_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);

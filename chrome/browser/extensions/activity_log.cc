@@ -143,17 +143,16 @@ bool ActivityLogFactory::ServiceRedirectedInIncognito() const {
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(Profile* profile) {
   // enable-extension-activity-logging and enable-extension-activity-ui
-  log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableExtensionActivityLogging);
-  log_activity_to_ui_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableExtensionActivityUI);
+  log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogging);
+  log_activity_to_ui_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityUI);
 
   // enable-extension-activity-log-testing
-  // Currently, this just controls whether arguments are collected. In the
-  // future, it may also control other optional activity log features.
-  log_arguments_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableExtensionActivityLogTesting);
-  if (!log_arguments_) {
+  // This controls whether arguments are collected.
+  testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogTesting);
+  if (!testing_mode_) {
     for (int i = 0; i < APIAction::kSizeAlwaysLog; i++) {
       arg_whitelist_api_.insert(std::string(APIAction::kAlwaysLog[i]));
     }
@@ -244,7 +243,7 @@ void ActivityLog::LogAPIAction(const Extension* extension,
                                ListValue* args,
                                const std::string& extra) {
   if (!IsLogEnabled()) return;
-  if (!log_arguments_ &&
+  if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
   LogAPIActionInternal(extension,
@@ -263,7 +262,7 @@ void ActivityLog::LogEventAction(const Extension* extension,
                                  ListValue* args,
                                  const std::string& extra) {
   if (!IsLogEnabled()) return;
-  if (!log_arguments_ &&
+  if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
   LogAPIActionInternal(extension,
@@ -279,7 +278,7 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const char* reason,
                                    const std::string& extra) {
   if (!IsLogEnabled()) return;
-  if (!log_arguments_ &&
+  if (!testing_mode_ &&
       arg_whitelist_api_.find(blocked_call) == arg_whitelist_api_.end())
     args->Clear();
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),

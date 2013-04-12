@@ -236,6 +236,10 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 
+#if 0
+  // TODO(felt): Experimentally determine if these are needed, or if they
+  // can be permanently removed. Temporarily removing for now to reduce log
+  // size while under investigation.
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
                                             ExtensionService::INCLUDE_ENABLED);
@@ -246,6 +250,7 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
     activity_log_->LogAPIAction(
         extension, event_name + ".addListener", args.get(), std::string());
   }
+#endif
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
@@ -263,7 +268,10 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
                  profile, listener->extension_id, event_name));
-
+#if 0
+  // TODO(felt): Experimentally determine if these are needed, or if they
+  // can be permanently removed. Temporarily removing for now to reduce log
+  // size while under investigation.
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
                                             ExtensionService::INCLUDE_ENABLED);
@@ -272,6 +280,7 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
     activity_log_->LogAPIAction(
         extension, event_name + ".removeListener", args.get(), std::string());
   }
+#endif
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
