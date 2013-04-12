@@ -1820,3 +1820,11 @@
   fun:chromeos::input_method::Initialize
   fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
 }
+{
+  bug_230874
+  Heapcheck:Leak
+  ...
+  fun:StartSync
+  ...
+  fun:OneClickSigninHelperTest*
+}
