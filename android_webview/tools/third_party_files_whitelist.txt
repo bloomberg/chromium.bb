@@ -63,8 +63,6 @@ chrome/browser/resources/file_manager/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/file_manager/js/media/video_player_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/mock_chrome.js
-# String 'copyright' used in code.
 chrome/browser/resources/file_manager/js/photo/photo_import_scripts.js
 # Copyright Google Inc; no license. Example code only.
 chrome_frame/cfinstall/examples/jquery.html
@@ -177,7 +175,6 @@ ui/gfx/codec/png_codec.cc
 url/gurl.cc
 url/gurl.h
 url/gurl_test_main.cc
-url/gurl_unittest.cc
 url/url_canon.h
 url/url_canon_etc.cc
 url/url_canon_filesystemurl.cc
