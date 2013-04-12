@@ -16,11 +16,10 @@
  */
 function verify(condition, message) {
   // TODO(vadimt): Remove alert.
-  // TODO(vadimt): Make sure the execution doesn't continue after this call.
   if (!condition) {
     var errorText = 'ASSERT: ' + message;
-    console.error(errorText);
     alert(errorText);
+    throw new Error(errorText);
   }
 }
 
@@ -158,10 +157,8 @@ function buildTaskManager(areConflicting) {
         queue.length == 0,
         'Incomplete task when unloading event page, queue = ' +
         JSON.stringify(queue) + ', step = ' + stepName);
-    // TODO(vadimt): Once we add throwing exception to verify(), remove
-    // "queue.length > 0" from this verify() call.
     verify(
-        queue.length > 0 || stepName == null,
+        stepName == null,
         'Step name not null when unloading event page, queue = ' +
         JSON.stringify(queue) + ', step = ' + stepName);
   });

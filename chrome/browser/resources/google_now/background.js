@@ -23,7 +23,7 @@
 // TODO(vadimt): Gather UMAs.
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
-// TODO(vadimt): Consider throwing exceptions. Remove 'console' calls.
+// TODO(vadimt): Remove 'console' calls.
 // TODO(vadimt): Consider sending JS stacks for unexpected exceptions (including
 // ones from verify()), unfinished and infinite tasks, chrome.* API errors and
 // malformed server responses.
