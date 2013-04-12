@@ -231,27 +231,21 @@ class StatsResponse : public webrtc::StatsObserver {
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
     for (std::vector<webrtc::StatsReport>::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
-      // TODO(hta): Remove local/remote from libjingle API.
-      if (it->local.values.size() > 0) {
-        AddElement(it->id, it->type, it->local);
-      }
-      if (it->remote.values.size() > 0) {
-        AddElement(it->id, it->type, it->remote);
+      if (it->values.size() > 0) {
+        AddReport(*it);
       }
     }
     request_->requestSucceeded(response_);
   }
 
  private:
-  void AddElement(const std::string& id,
-                  const std::string& type,
-                  const webrtc::StatsElement& element) {
-    int idx = response_->addReport(WebKit::WebString::fromUTF8(id),
-                                   WebKit::WebString::fromUTF8(type),
-                                   element.timestamp);
-    for (webrtc::StatsElement::Values::const_iterator value_it =
-             element.values.begin();
-         value_it != element.values.end(); ++value_it) {
+  void AddReport(const webrtc::StatsReport& report) {
+    int idx = response_->addReport(WebKit::WebString::fromUTF8(report.id),
+                                   WebKit::WebString::fromUTF8(report.type),
+                                   report.timestamp);
+    for (webrtc::StatsReport::Values::const_iterator value_it =
+         report.values.begin();
+         value_it != report.values.end(); ++value_it) {
       AddStatistic(idx, value_it->name, value_it->value);
     }
   }

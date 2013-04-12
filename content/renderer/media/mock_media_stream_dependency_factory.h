@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 
 namespace content {
 

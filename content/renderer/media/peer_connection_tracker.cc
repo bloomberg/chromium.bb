@@ -150,16 +150,16 @@ static string GetIceGatheringStateString(
   return result;
 }
 
-// Builds a DictionaryValue from the StatsElement.
+// Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
-static DictionaryValue* GetDictValue(const webrtc::StatsElement& elem) {
-  if (elem.values.empty())
+static DictionaryValue* GetDictValueStats(const webrtc::StatsReport& report) {
+  if (report.values.empty())
     return NULL;
 
   DictionaryValue* dict = new DictionaryValue();
   if (!dict)
     return NULL;
-  dict->SetDouble("timestamp", elem.timestamp);
+  dict->SetDouble("timestamp", report.timestamp);
 
   ListValue* values = new ListValue();
   if (!values) {
@@ -168,9 +168,9 @@ static DictionaryValue* GetDictValue(const webrtc::StatsElement& elem) {
   }
   dict->Set("values", values);
 
-  for (size_t i = 0; i < elem.values.size(); ++i) {
-    values->AppendString(elem.values[i].name);
-    values->AppendString(elem.values[i].value);
+  for (size_t i = 0; i < report.values.size(); ++i) {
+    values->AppendString(report.values[i].name);
+    values->AppendString(report.values[i].value);
   }
   return dict;
 }
@@ -178,21 +178,18 @@ static DictionaryValue* GetDictValue(const webrtc::StatsElement& elem) {
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
 static DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
-  scoped_ptr<DictionaryValue> local, remote, result;
+  scoped_ptr<DictionaryValue> stats, result;
 
-  local.reset(GetDictValue(report.local));
-  remote.reset(GetDictValue(report.remote));
-  if (!local.get() && !remote.get())
+  stats.reset(GetDictValueStats(report));
+  if (!stats.get())
     return NULL;
 
   result.reset(new DictionaryValue());
   if (!result.get())
     return NULL;
 
-  if (local.get())
-    result->Set("local", local.release());
-  if (remote.get())
-    result->Set("remote", remote.release());
+  if (stats.get())
+    result->Set("stats", stats.release());
   result->SetString("id", report.id);
   result->SetString("type", report.type);
 
