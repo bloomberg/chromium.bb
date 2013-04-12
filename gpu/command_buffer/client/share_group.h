@@ -6,9 +6,9 @@
 #define GPU_COMMAND_BUFFER_CLIENT_SHARE_GROUP_H_
 
 #include <GLES2/gl2.h>
+#include "base/memory/scoped_ptr.h"
 #include "../client/ref_counted.h"
 #include "../common/gles2_cmd_format.h"
-#include "../common/scoped_ptr.h"
 #include "gles2_impl_export.h"
 
 namespace gpu {

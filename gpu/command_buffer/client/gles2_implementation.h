@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "../client/buffer_tracker.h"
 #include "../client/client_context_state.h"
 #include "../client/gles2_cmd_helper.h"
@@ -24,7 +25,6 @@
 #include "../common/compiler_specific.h"
 #include "../common/debug_marker_manager.h"
 #include "../common/gles2_cmd_utils.h"
-#include "../common/scoped_ptr.h"
 #include "gles2_impl_export.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
