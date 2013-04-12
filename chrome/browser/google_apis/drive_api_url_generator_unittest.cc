@@ -40,15 +40,30 @@ TEST_F(DriveApiUrlGeneratorTest, GetApplistUrl) {
 TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
   // Do not add startChangeId parameter if |start_changestamp| is 0.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/changes",
-            url_generator_.GetChangelistUrl(0).spec());
+            url_generator_.GetChangelistUrl(true, 0).spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes",
-            test_url_generator_.GetChangelistUrl(0).spec());
+            test_url_generator_.GetChangelistUrl(true, 0).spec());
+
+  // Set includeDeleted parameter if |include_deleted| is set to false.
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?includeDeleted=false",
+            url_generator_.GetChangelistUrl(false, 0).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?includeDeleted=false",
+            test_url_generator_.GetChangelistUrl(false, 0).spec());
 
   // Set startChangeId parameter if |start_changestamp| is given.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?startChangeId=100",
-            url_generator_.GetChangelistUrl(100).spec());
+            url_generator_.GetChangelistUrl(true, 100).spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?startChangeId=100",
-            test_url_generator_.GetChangelistUrl(100).spec());
+            test_url_generator_.GetChangelistUrl(true, 100).spec());
+
+  // includeDeleted and startChangeId parameter can be set at the same time.
+  EXPECT_EQ(
+      "https://www.googleapis.com/drive/v2/changes"
+      "?includeDeleted=false&startChangeId=100",
+      url_generator_.GetChangelistUrl(false, 100).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?"
+            "includeDeleted=false&startChangeId=100",
+            test_url_generator_.GetChangelistUrl(false, 100).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {

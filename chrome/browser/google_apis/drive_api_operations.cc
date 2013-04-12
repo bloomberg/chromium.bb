@@ -116,10 +116,12 @@ GetChangelistOperation::GetChangelistOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
+    bool include_deleted,
     int64 start_changestamp,
     const GetDataCallback& callback)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
+      include_deleted_(include_deleted),
       start_changestamp_(start_changestamp) {
   DCHECK(!callback.is_null());
 }
@@ -127,7 +129,7 @@ GetChangelistOperation::GetChangelistOperation(
 GetChangelistOperation::~GetChangelistOperation() {}
 
 GURL GetChangelistOperation::GetURL() const {
-  return url_generator_.GetChangelistUrl(start_changestamp_);
+  return url_generator_.GetChangelistUrl(include_deleted_, start_changestamp_);
 }
 
 //============================= GetFilelistOperation ===========================

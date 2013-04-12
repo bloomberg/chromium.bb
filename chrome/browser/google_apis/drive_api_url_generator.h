@@ -30,10 +30,13 @@ class DriveApiUrlGenerator {
   GURL GetApplistUrl() const;
 
   // Returns a URL to fetch a list of changes.
+  // include_deleted:
+  //   Set to true if the requesting change list should contain the deleted
+  //   entries. Otherwise false.
   // start_changestamp:
   //   The starting point of the requesting change list, or 0 if all changes
   //   are necessary.
-  GURL GetChangelistUrl(int64 start_changestamp) const;
+  GURL GetChangelistUrl(bool include_deleted, int64 start_changestamp) const;
 
   // Returns a URL to fetch a list of files with the given |search_string|.
   // search_string: The search query.

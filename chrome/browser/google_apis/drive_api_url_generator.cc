@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/escape.h"
@@ -54,12 +55,22 @@ GURL DriveApiUrlGenerator::GetApplistUrl() const {
   return base_url_.Resolve(kDriveV2ApplistUrl);
 }
 
-GURL DriveApiUrlGenerator::GetChangelistUrl(int64 start_changestamp) const {
-  const GURL& url = base_url_.Resolve(kDriveV2ChangelistUrl);
-  return start_changestamp ?
-      net::AppendOrReplaceQueryParameter(
-          url, "startChangeId", base::Int64ToString(start_changestamp)) :
-      url;
+GURL DriveApiUrlGenerator::GetChangelistUrl(
+    bool include_deleted, int64 start_changestamp) const {
+  DCHECK_GE(start_changestamp, 0);
+
+  GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);
+  if (!include_deleted) {
+    // If include_deleted is set to "false", set the query parameter,
+    // because its default parameter is "true".
+    url = net::AppendOrReplaceQueryParameter(url, "includeDeleted", "false");
+  }
+
+  if (start_changestamp > 0) {
+    url = net::AppendOrReplaceQueryParameter(
+        url, "startChangeId", base::Int64ToString(start_changestamp));
+  }
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetFilelistUrl(

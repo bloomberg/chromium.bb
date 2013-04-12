@@ -394,7 +394,8 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      100,
+      true,  // include deleted
+      100,  // start changestamp
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));

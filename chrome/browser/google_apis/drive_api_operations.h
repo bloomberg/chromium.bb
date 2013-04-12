@@ -76,12 +76,15 @@ class GetApplistOperation : public GetDataOperation {
 // should be able to be fetched by ContinueGetFileListOperation defined below.
 class GetChangelistOperation : public GetDataOperation {
  public:
+  // |include_deleted| specifies if the response should contain the changes
+  // for deleted entries or not.
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
   GetChangelistOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
+      bool include_deleted,
       int64 start_changestamp,
       const GetDataCallback& callback);
   virtual ~GetChangelistOperation();
@@ -92,7 +95,8 @@ class GetChangelistOperation : public GetDataOperation {
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  int64 start_changestamp_;
+  const bool include_deleted_;
+  const int64 start_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
 };

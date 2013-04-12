@@ -358,6 +358,7 @@ void DriveAPIService::GetChangeList(int64 start_changestamp,
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
+          true,  // include deleted
           start_changestamp,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
