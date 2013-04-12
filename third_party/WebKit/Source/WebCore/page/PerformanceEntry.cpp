@@ -31,8 +31,6 @@
 #include "config.h"
 #include "PerformanceEntry.h"
 
-#if ENABLE(PERFORMANCE_TIMELINE)
-
 namespace WebCore {
 
 PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
@@ -68,5 +66,3 @@ double PerformanceEntry::duration() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(PERFORMANCE_TIMELINE)

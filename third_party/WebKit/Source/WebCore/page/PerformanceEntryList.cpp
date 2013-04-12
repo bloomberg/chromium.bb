@@ -32,8 +32,6 @@
 #include "config.h"
 #include "PerformanceEntryList.h"
 
-#if ENABLE(PERFORMANCE_TIMELINE)
-
 #include "PerformanceEntry.h"
 
 namespace WebCore {
@@ -74,5 +72,3 @@ void PerformanceEntryList::sort()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(PERFORMANCE_TIMELINE)

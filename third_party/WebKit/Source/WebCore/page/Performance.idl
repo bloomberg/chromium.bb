@@ -37,11 +37,9 @@
     readonly attribute PerformanceTiming timing;
     readonly attribute MemoryInfo memory;
 
-#if defined(ENABLE_PERFORMANCE_TIMELINE) && ENABLE_PERFORMANCE_TIMELINE
     PerformanceEntryList webkitGetEntries();
     PerformanceEntryList webkitGetEntriesByType(DOMString entryType);
     PerformanceEntryList webkitGetEntriesByName(DOMString name, [Optional=DefaultIsNullString] DOMString entryType);
-#endif
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned long maxSize);

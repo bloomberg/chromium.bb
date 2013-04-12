@@ -31,8 +31,6 @@
 #include "config.h"
 #include "PerformanceEntry.h"
 
-#if ENABLE(PERFORMANCE_TIMELINE)
-
 #include "Performance.h"
 #include "PerformanceMark.h"
 #include "PerformanceMeasure.h"
@@ -65,5 +63,3 @@ v8::Handle<v8::Object> wrap(PerformanceEntry* impl, v8::Handle<v8::Object> creat
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(PERFORMANCE_TIMELINE)

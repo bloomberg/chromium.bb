@@ -64,11 +64,9 @@ public:
     PerformanceTiming* timing() const;
     double now() const;
 
-#if ENABLE(PERFORMANCE_TIMELINE)
     PassRefPtr<PerformanceEntryList> webkitGetEntries() const;
     PassRefPtr<PerformanceEntryList> webkitGetEntriesByType(const String& entryType);
     PassRefPtr<PerformanceEntryList> webkitGetEntriesByName(const String& name, const String& entryType);
-#endif
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned int);

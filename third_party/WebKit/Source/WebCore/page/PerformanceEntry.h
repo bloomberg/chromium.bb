@@ -32,8 +32,6 @@
 #ifndef PerformanceEntry_h
 #define PerformanceEntry_h
 
-#if ENABLE(PERFORMANCE_TIMELINE)
-
 #include "Performance.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -71,5 +69,4 @@ private:
 
 }
 
-#endif // ENABLE(PERFORMANCE_TIMELINE)
 #endif // !defined(PerformanceEntry_h)

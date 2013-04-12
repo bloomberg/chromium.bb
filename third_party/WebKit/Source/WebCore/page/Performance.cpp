@@ -96,8 +96,6 @@ PerformanceTiming* Performance::timing() const
     return m_timing.get();
 }
 
-#if ENABLE(PERFORMANCE_TIMELINE)
-
 PassRefPtr<PerformanceEntryList> Performance::webkitGetEntries() const
 {
     RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
@@ -157,8 +155,6 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const Strin
     entries->sort();
     return entries;
 }
-
-#endif // ENABLE(PERFORMANCE_TIMELINE)
 
 void Performance::webkitClearResourceTimings()
 {
