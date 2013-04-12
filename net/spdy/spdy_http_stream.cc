@@ -21,6 +21,7 @@
 #include "net/http/http_response_info.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
 
 namespace net {
@@ -408,11 +409,14 @@ int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
       SSLClientSocket::NextProtoToString(protocol_negotiated);
   response_info_->request_time = stream_->GetRequestTime();
   switch (spdy_session_->GetProtocolVersion()) {
-    case 2:
+    case kSpdyVersion2:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY2;
       break;
-    case 3:
+    case kSpdyVersion3:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY3;
+      break;
+    case kSpdyVersion4:
+      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY4;
       break;
     default:
       NOTREACHED();

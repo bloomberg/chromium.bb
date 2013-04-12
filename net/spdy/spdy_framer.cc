@@ -51,8 +51,8 @@ const uint8 kNoFlags = 0;
 
 }  // namespace
 
-const int SpdyFramer::kMinSpdyVersion = 2;
-const int SpdyFramer::kMaxSpdyVersion = 4;
+const int SpdyFramer::kMinSpdyVersion = kSpdyVersion2;
+const int SpdyFramer::kMaxSpdyVersion = kSpdyVersion4;
 const SpdyStreamId SpdyFramer::kInvalidStream = -1;
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 // The size of the control frame buffer. Must be >= the minimum size of the

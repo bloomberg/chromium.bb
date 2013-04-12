@@ -246,6 +246,10 @@ class NET_EXPORT HttpStreamFactory {
   // supported via NPN.
   static void EnableNpnSpdy31();
 
+  // Sets http/1.1, spdy/2, spdy/3, spdy/3.1, and spdy/4a1 as the
+  // protocols supported via NPN.
+  static void EnableNpnSpdy4a1();
+
   // Sets the protocols supported by NPN (next protocol negotiation) during the
   // SSL handshake as well as by HTTP Alternate-Protocol.
   static void SetNextProtos(const std::vector<std::string>& value);

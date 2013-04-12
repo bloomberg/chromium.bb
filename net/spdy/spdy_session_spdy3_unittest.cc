@@ -1712,7 +1712,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation) {
       http_session_.get(), session.get(), test_host_port_pair_);
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM, session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion3, session->buffered_spdy_framer_->protocol_version());
+  EXPECT_EQ(kSpdyVersion3, session->GetProtocolVersion());
   EXPECT_EQ(0, session->session_send_window_size_);
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
@@ -1747,7 +1747,45 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
 
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
-  EXPECT_EQ(kSpdyVersion3, session->buffered_spdy_framer_->protocol_version());
+  EXPECT_EQ(kSpdyVersion3, session->GetProtocolVersion());
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+}
+
+// Within this framework and with the "enable_spdy_4" flag, a
+// SpdySession should be initialized with flow control enabled for
+// streams and sessions and with protocol version 4.
+//
+// NOTE(akalin): We are still figuring out the story for SPDY4 test
+// coverage.
+TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
+  session_deps_.enable_spdy_4 = true;
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, 0, 0)  // EOF
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  scoped_refptr<SpdySession> session = GetSession(pair_);
+
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
+  EXPECT_TRUE(session->buffered_spdy_framer_ == NULL);
+  EXPECT_EQ(0, session->session_send_window_size_);
+  EXPECT_EQ(0, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+
+  InitializeSession(
+      http_session_.get(), session.get(), test_host_port_pair_);
+
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
+            session->flow_control_state());
+  EXPECT_EQ(kSpdyVersion4, session->GetProtocolVersion());
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);

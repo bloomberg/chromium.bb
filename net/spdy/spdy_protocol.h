@@ -26,8 +26,10 @@
 
 namespace net {
 
+// TODO(akalin): Convert this to an enum.
 const int32 kSpdyVersion2 = 2;
 const int32 kSpdyVersion3 = 3;
+const int32 kSpdyVersion4 = 4;
 
 // A SPDY stream id is a 31 bit entity.
 typedef uint32 SpdyStreamId;

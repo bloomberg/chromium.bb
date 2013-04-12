@@ -659,6 +659,8 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     std::string spdy_mode =
         command_line.GetSwitchValueASCII(switches::kUseSpdy);
     EnableSpdy(spdy_mode);
+  } else if (command_line.HasSwitch(switches::kEnableSpdy4a1)) {
+    net::HttpStreamFactory::EnableNpnSpdy4a1();
   } else if (command_line.HasSwitch(switches::kEnableSpdy31)) {
     net::HttpStreamFactory::EnableNpnSpdy31();
   } else if (command_line.HasSwitch(switches::kEnableNpn)) {

@@ -21,7 +21,8 @@ enum NextProto {
   kProtoSPDY21 = 4,
   kProtoSPDY3 = 5,
   kProtoSPDY31 = 6,
-  kProtoSPDYMaximumVersion = kProtoSPDY31,
+  kProtoSPDY4a1 = 7,
+  kProtoSPDYMaximumVersion = kProtoSPDY4a1,
 
   kProtoMaximumVersion = 7,
 };

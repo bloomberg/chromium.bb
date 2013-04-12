@@ -52,6 +52,21 @@ const SpdyStreamId kFirstStreamId = 1;
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
 
+int NPNToSpdyVersion(NextProto next_proto) {
+  switch (next_proto) {
+    case kProtoSPDY2:
+      return kSpdyVersion2;
+    case kProtoSPDY3:
+    case kProtoSPDY31:
+      return kSpdyVersion3;
+    case kProtoSPDY4a1:
+      return kSpdyVersion4;
+    default:
+      NOTREACHED();
+  }
+  return kSpdyVersion2;
+}
+
 base::Value* NetLogSpdySynCallback(const SpdyHeaderBlock* headers,
                                    bool fin,
                                    bool unidirectional,
@@ -426,8 +441,7 @@ net::Error SpdySession::InitializeWithSocket(
   }
 
   DCHECK_GE(protocol, kProtoSPDY2);
-  DCHECK_LE(protocol, kProtoSPDY31);
-  int version = (protocol >= kProtoSPDY3) ? kSpdyVersion3 : kSpdyVersion2;
+  DCHECK_LE(protocol, kProtoSPDY4a1);
   if (protocol >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = kSpdySessionInitialWindowSize;
@@ -438,8 +452,8 @@ net::Error SpdySession::InitializeWithSocket(
     flow_control_state_ = FLOW_CONTROL_NONE;
   }
 
-  buffered_spdy_framer_.reset(new BufferedSpdyFramer(version,
-                                                     enable_compression_));
+  buffered_spdy_framer_.reset(
+      new BufferedSpdyFramer(NPNToSpdyVersion(protocol), enable_compression_));
   buffered_spdy_framer_->set_visitor(this);
   SendInitialSettings();
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
