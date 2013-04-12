@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
@@ -26,14 +27,14 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
 // Dimensions.
-const int kIconColumnWidth = message_center::kNotificationIconSize;
+const int kIconSize = message_center::kNotificationIconSize;
 const int kLegacyIconSize = 40;
-const int kTextLeftPadding = kIconColumnWidth +
-                             message_center::kIconToTextPadding;
+const int kTextLeftPadding = kIconSize + message_center::kIconToTextPadding;
 const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
@@ -85,6 +86,36 @@ views::Border* MakeTextBorder(int top, int bottom) {
 // static
 views::Border* MakeSeparatorBorder(int top, int left, SkColor color) {
   return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
+}
+
+// static
+// Return true if and only if the image is null or has alpha.
+bool HasAlpha(gfx::ImageSkia& image, views::Widget* widget) {
+  // Determine which bitmap to use.
+  ui::ScaleFactor factor = ui::SCALE_FACTOR_100P;
+  if (widget) {
+    factor = ui::GetScaleFactorForNativeView(widget->GetNativeView());
+    if (factor == ui::SCALE_FACTOR_NONE)
+      factor = ui::SCALE_FACTOR_100P;
+  }
+
+  // Extract that bitmap's alpha and look for a non-opaque pixel there.
+  SkBitmap bitmap = image.GetRepresentation(factor).sk_bitmap();
+  if (!bitmap.isNull()) {
+    SkBitmap alpha;
+    alpha.setConfig(SkBitmap::kA1_Config, bitmap.width(), bitmap.height(), 0);
+    bitmap.extractAlpha(&alpha);
+    for (int y = 0; y < bitmap.height(); ++y) {
+      for (int x = 0; x < bitmap.width(); ++x) {
+        if (alpha.getColor(x, y) != SK_ColorBLACK) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // If no opaque pixel was found, return false unless the bitmap is empty.
+  return bitmap.isNull();
 }
 
 // ItemView ////////////////////////////////////////////////////////////////////
@@ -385,16 +416,20 @@ NotificationView::NotificationView(const Notification& notification,
   }
 
   // Create the notification icon view.
-  if (notification.type() == NOTIFICATION_TYPE_SIMPLE) {
+  gfx::ImageSkia icon = notification.icon().AsImageSkia();
+  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
+      (icon.width() != kIconSize ||
+       icon.height() != kIconSize ||
+       HasAlpha(icon, GetWidget()))) {
     views::ImageView* icon_view = new views::ImageView();
-    icon_view->SetImage(notification.icon().AsImageSkia());
+    icon_view->SetImage(icon);
     icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
     icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
     icon_view->SetVerticalAlignment(views::ImageView::CENTER);
     icon_view->set_background(MakeBackground(kLegacyIconBackgroundColor));
     icon_view_ = icon_view;
   } else {
-    icon_view_ = new ProportionalImageView(notification.icon().AsImageSkia());
+    icon_view_ = new ProportionalImageView(icon);
   }
 
   // Create the bottom_view_, which collects into a vertical box all content
@@ -451,8 +486,7 @@ int NotificationView::GetHeightForWidth(int width) {
   gfx::Insets insets = GetInsets();
   int top_height = top_view_->GetHeightForWidth(width - insets.width());
   int bottom_height = bottom_view_->GetHeightForWidth(width - insets.width());
-  int icon_size = message_center::kNotificationIconSize;
-  return std::max(top_height, icon_size) + bottom_height + insets.height();
+  return std::max(top_height, kIconSize) + bottom_height + insets.height();
 }
 
 void NotificationView::Layout() {
@@ -473,11 +507,10 @@ void NotificationView::Layout() {
   top_view_->SetBounds(insets.left(), insets.top(), content_width, top_height);
 
   // Icon.
-  int icon_size = message_center::kNotificationIconSize;
-  icon_view_->SetBounds(insets.left(), insets.top(), icon_size, icon_size);
+  icon_view_->SetBounds(insets.left(), insets.top(), kIconSize, kIconSize);
 
   // Bottom views.
-  int bottom_y = insets.top() + std::max(top_height, icon_size);
+  int bottom_y = insets.top() + std::max(top_height, kIconSize);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
