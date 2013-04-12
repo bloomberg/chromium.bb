@@ -71,6 +71,12 @@ class MockPluginDelegate : public PluginDelegate {
       const GURL& path,
       int flags,
       const AsyncOpenFileSystemURLCallback& callback);
+  virtual bool IsFileSystemOpened(PP_Instance instance,
+                                  PP_Resource resource) const;
+  virtual PP_FileSystemType GetFileSystemType(PP_Instance instance,
+                                              PP_Resource resource) const;
+  virtual GURL GetFileSystemRootUrl(PP_Instance instance,
+                                    PP_Resource resource) const;
   virtual bool OpenFileSystem(
       const GURL& origin_url,
       fileapi::FileSystemType type,
@@ -171,6 +177,7 @@ class MockPluginDelegate : public PluginDelegate {
       base::PlatformFile handle,
       base::ProcessId target_process_id,
       bool should_close_source) const;
+  virtual bool IsRunningInProcess(PP_Instance instance) const;
 };
 
 }  // namespace ppapi

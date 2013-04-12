@@ -24,6 +24,11 @@ struct PPB_FileRef_CreateInfo {
   int file_system_type;  // One of PP_FileSystemType values.
   std::string path;
   std::string name;
+
+  // Since FileRef needs to hold a FileSystem reference, we need to pass the
+  // resource in this CreateInfo.  Note that this is a plugin resource as
+  // FileSystem is already in new design.
+  PP_Resource file_system_plugin_resource;
 };
 
 // This class provides the shared implementation of a FileRef. The functions

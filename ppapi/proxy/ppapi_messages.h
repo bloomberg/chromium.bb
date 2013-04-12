@@ -73,6 +73,7 @@
 IPC_ENUM_TRAITS(PP_AudioSampleRate)
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
 IPC_ENUM_TRAITS(PP_DecryptorStreamType)
+IPC_ENUM_TRAITS(PP_FileSystemType)
 IPC_ENUM_TRAITS(PP_FileType)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
@@ -793,8 +794,9 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
 // PPB_FileRef.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
-                           ppapi::HostResource /* file_system */,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileRef_Create,
+                           PP_Instance /* instance */,
+                           PP_Resource /* file_system */,
                            std::string /* path */,
                            ppapi::PPB_FileRef_CreateInfo /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
@@ -822,15 +824,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Query,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
                            ppapi::HostResource /* file_ref */,
                            ppapi::proxy::SerializedVar /* result */)
-
-// PPB_FileSystem.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileSystem_Create,
-                           PP_Instance /* instance */,
-                           int /* type */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileSystem_Open,
-                    ppapi::HostResource /* result */,
-                    int64_t /* expected_size */)
 
 // PPB_Graphics3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
@@ -1394,6 +1387,13 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileIO_GetOSFileDescriptorReply,
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_RequestOSFileHandle)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_RequestOSFileHandleReply)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_GeneralReply)
+
+// FileSystem
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Create,
+                     PP_FileSystemType /* type */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Open,
+                     int64_t /* expected_size */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_OpenReply)
 
 // Flash device ID.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDeviceID_Create)

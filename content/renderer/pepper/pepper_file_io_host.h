@@ -95,9 +95,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   void ExecutePlatformWriteCallback(ReplyMessageContext reply_context,
                                     base::PlatformFileError error_code,
                                     int bytes_written);
-  void ExecutePlatformWillWriteCallback(ReplyMessageContext reply_context,
-                                        base::PlatformFileError error_code,
-                                        int bytes_written);
 
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
   webkit::ppapi::PluginDelegate* plugin_delegate_;  // Not owned.

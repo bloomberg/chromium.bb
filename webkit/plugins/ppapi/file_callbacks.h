@@ -11,7 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
@@ -29,16 +31,16 @@ class TrackedCallback;
 namespace webkit {
 namespace ppapi {
 
-class PPB_DirectoryReader_Impl;
-class PPB_FileSystem_Impl;
-
 // Instances of this class are deleted by FileSystemDispatcher.
 class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
  public:
   FileCallbacks(::ppapi::Resource* resource,
                 scoped_refptr< ::ppapi::TrackedCallback> callback,
+                PP_FileInfo* info);
+  FileCallbacks(::ppapi::Resource* resource,
+                scoped_refptr< ::ppapi::TrackedCallback> callback,
                 PP_FileInfo* info,
-                scoped_refptr<PPB_FileSystem_Impl> file_system);
+                PP_FileSystemType file_system_type);
   virtual ~FileCallbacks();
 
   // FileSystemCallbackDispatcher implementation.
@@ -63,7 +65,7 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
 
   scoped_refptr< ::ppapi::TrackedCallback> callback_;
   PP_FileInfo* info_;
-  scoped_refptr<PPB_FileSystem_Impl> file_system_;
+  PP_FileSystemType file_system_type_;
 };
 
 }  // namespace ppapi

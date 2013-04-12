@@ -4,10 +4,12 @@
 
 #include "content/renderer/pepper/pepper_directory_reader_host.h"
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/null_file_system_callback_dispatcher.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
@@ -15,9 +17,7 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/thunk/enter.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::EnterResource;
@@ -48,7 +48,7 @@ base::FilePath::StringType UTF8StringToFilePathString(const std::string& str) {
 #endif
 }
 
-class ReadDirectoryCallback : public fileapi::FileSystemCallbackDispatcher {
+class ReadDirectoryCallback : public NullFileSystemCallbackDispatcher {
  public:
   typedef base::Callback<void (const PepperDirectoryReaderHost::Entries&,
                                bool, int32_t)>
@@ -58,45 +58,15 @@ class ReadDirectoryCallback : public fileapi::FileSystemCallbackDispatcher {
       : callback_(callback) {}
   virtual ~ReadDirectoryCallback() {}
 
-  virtual void DidSucceed() OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info,
-                               const base::FilePath& platform_path) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidCreateSnapshotFile(
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path) OVERRIDE {
-    NOTREACHED();
-  }
-
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) OVERRIDE {
     callback_.Run(entries, has_more, PP_OK);
   }
 
-  virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidFail(base::PlatformFileError error) OVERRIDE {
-    callback_.Run(PepperDirectoryReaderHost::Entries(),
-                  false,
-                  ppapi::PlatformFileErrorToPepperError(error));
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual void DidOpenFile(base::PlatformFile file,
-                           quota::QuotaLimitType quota_policy) OVERRIDE {
-    NOTREACHED();
+  virtual void DidFail(base::PlatformFileError platform_error) OVERRIDE {
+    callback_.Run(PepperDirectoryReaderHost::Entries(), false,
+                  ppapi::PlatformFileErrorToPepperError(platform_error));
   }
 
  private:
@@ -175,7 +145,8 @@ bool PepperDirectoryReaderHost::AddNewEntries(const Entries& entries) {
        it != entries.end(); ++it) {
     EntryData data;
     data.file_ref = PPB_FileRef_Impl::CreateInternal(
-        directory_ref_->file_system()->pp_resource(),
+        pp_instance(),
+        directory_ref_->file_system_resource(),
         FilePathStringToUTF8String(dir_file_path + it->name));
     if (!data.file_ref) {
       entry_data_.clear();

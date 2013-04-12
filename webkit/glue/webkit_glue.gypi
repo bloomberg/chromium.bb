@@ -206,8 +206,6 @@
         '../plugins/ppapi/ppb_buffer_impl.h',
         '../plugins/ppapi/ppb_file_ref_impl.cc',
         '../plugins/ppapi/ppb_file_ref_impl.h',
-        '../plugins/ppapi/ppb_file_system_impl.cc',
-        '../plugins/ppapi/ppb_file_system_impl.h',
         '../plugins/ppapi/ppb_flash_message_loop_impl.cc',
         '../plugins/ppapi/ppb_flash_message_loop_impl.h',
         '../plugins/ppapi/ppb_gpu_blacklist_private_impl.cc',

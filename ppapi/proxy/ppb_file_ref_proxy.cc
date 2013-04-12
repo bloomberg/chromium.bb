@@ -17,6 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -81,12 +82,19 @@ class FileRef : public PPB_FileRef_Shared {
   typedef std::map<uint32_t, PP_FileInfo*> PendingFileInfoMap;
   PendingFileInfoMap pending_file_infos_;
 
+  // Holds a reference on plugin side when running out of process, so that
+  // FileSystem won't die before FileRef.  See PPB_FileRef_Impl for
+  // corresponding code for in-process mode.  Note that this workaround will
+  // be no longer needed after FileRef refactoring.
+  ScopedPPResource file_system_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileRef);
 };
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
     : PPB_FileRef_Shared(OBJECT_IS_PROXY, info),
-      next_callback_id_(0u) {
+      next_callback_id_(0u),
+      file_system_(info.file_system_plugin_resource) {
 }
 
 FileRef::~FileRef() {
@@ -204,18 +212,13 @@ PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
 }
 
 // static
-PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Resource file_system,
+PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Instance instance,
+                                                   PP_Resource file_system,
                                                    const char* path) {
-  Resource* file_system_object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_system);
-  if (!file_system_object)
-    return 0;
-
   PPB_FileRef_CreateInfo create_info;
-  PluginDispatcher::GetForResource(file_system_object)->Send(
+  PluginDispatcher::GetForInstance(instance)->Send(
       new PpapiHostMsg_PPBFileRef_Create(
-          API_ID_PPB_FILE_REF, file_system_object->host_resource(),
-          path, &create_info));
+          API_ID_PPB_FILE_REF, instance, file_system, path, &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
@@ -261,14 +264,16 @@ PP_Resource PPB_FileRef_Proxy::DeserializeFileRef(
 }
 
 #if !defined(OS_NACL)
-void PPB_FileRef_Proxy::OnMsgCreate(const HostResource& file_system,
+void PPB_FileRef_Proxy::OnMsgCreate(PP_Instance pp_instance,
+                                    PP_Resource file_system,
                                     const std::string& path,
                                     PPB_FileRef_CreateInfo* result) {
-  thunk::EnterResourceCreation enter(file_system.instance());
+  thunk::EnterResourceCreation enter(pp_instance);
   if (enter.failed())
     return;
+
   PP_Resource resource = enter.functions()->CreateFileRef(
-      file_system.host_resource(), path.c_str());
+      pp_instance, file_system, path.c_str());
   if (!resource)
     return;  // CreateInfo default constructor initializes to 0.
   SerializeFileRef(resource, result);

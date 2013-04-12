@@ -14,7 +14,6 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_message_loop_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -82,16 +81,13 @@ PP_Resource ResourceCreationImpl::CreateDirectoryReader(
   return 0;  // Not supported in-process.
 }
 
-PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,
-                                                const char* path) {
-  PPB_FileRef_Impl* res = PPB_FileRef_Impl::CreateInternal(file_system, path);
-  return res ? res->GetReference() : 0;
-}
-
-PP_Resource ResourceCreationImpl::CreateFileSystem(
+PP_Resource ResourceCreationImpl::CreateFileRef(
     PP_Instance instance,
-    PP_FileSystemType type) {
-  return PPB_FileSystem_Impl::Create(instance, type);
+    PP_Resource file_system,
+    const char* path) {
+  PPB_FileRef_Impl* res = PPB_FileRef_Impl::CreateInternal(
+      instance, file_system, path);
+  return res ? res->GetReference() : 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateFlashDeviceID(PP_Instance instance) {

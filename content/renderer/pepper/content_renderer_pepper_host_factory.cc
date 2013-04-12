@@ -10,17 +10,20 @@
 #include "content/renderer/pepper/pepper_directory_reader_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_io_host.h"
+#include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_truetype_font_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
+#include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
 
 using ppapi::host::ResourceHost;
 using ppapi::proxy::SerializedTrueTypeFontDesc;
+using ppapi::UnpackMessage;
 
 namespace content {
 
@@ -45,22 +48,33 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
 
   // Public interfaces.
   switch (message.type()) {
+    case PpapiHostMsg_FileIO_Create::ID:
+      return scoped_ptr<ResourceHost>(new PepperFileIOHost(
+          host_, instance, params.pp_resource()));
+    case PpapiHostMsg_FileSystem_Create::ID: {
+      PP_FileSystemType file_system_type;
+      if (!UnpackMessage<PpapiHostMsg_FileSystem_Create>(message,
+                                                         &file_system_type)) {
+        NOTREACHED();
+        return scoped_ptr<ResourceHost>();
+      }
+      return scoped_ptr<ResourceHost>(new PepperFileSystemHost(
+          host_, instance, params.pp_resource(), file_system_type));
+    }
     case PpapiHostMsg_Graphics2D_Create::ID: {
-      PpapiHostMsg_Graphics2D_Create::Schema::Param msg_params;
-      if (!PpapiHostMsg_Graphics2D_Create::Read(&message, &msg_params)) {
+      PP_Size size;
+      PP_Bool is_always_opaque;
+      if (!UnpackMessage<PpapiHostMsg_Graphics2D_Create>(message, &size,
+                                                         &is_always_opaque)) {
         NOTREACHED();
         return scoped_ptr<ResourceHost>();
       }
       return scoped_ptr<ResourceHost>(
           PepperGraphics2DHost::Create(host_, instance, params.pp_resource(),
-                                       msg_params.a /* PP_Size */,
-                                       msg_params.b /* PP_Bool */));
+                                       size, is_always_opaque));
     }
     case PpapiHostMsg_WebSocket_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperWebSocketHost(
-          host_, instance, params.pp_resource()));
-    case PpapiHostMsg_FileIO_Create::ID:
-      return scoped_ptr<ResourceHost>(new PepperFileIOHost(
           host_, instance, params.pp_resource()));
   }
 

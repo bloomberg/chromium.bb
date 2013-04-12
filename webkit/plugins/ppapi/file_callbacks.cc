@@ -13,7 +13,6 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 
 using ppapi::Resource;
 using ppapi::TimeToPPTime;
@@ -25,11 +24,20 @@ namespace ppapi {
 FileCallbacks::FileCallbacks(
     Resource* resource,
     scoped_refptr<TrackedCallback> callback,
-    PP_FileInfo* info,
-    scoped_refptr<PPB_FileSystem_Impl> file_system)
+    PP_FileInfo* info)
     : callback_(callback),
       info_(info),
-      file_system_(file_system) {
+      file_system_type_(PP_FILESYSTEMTYPE_INVALID) {
+}
+
+FileCallbacks::FileCallbacks(
+    Resource* resource,
+    scoped_refptr<TrackedCallback> callback,
+    PP_FileInfo* info,
+    PP_FileSystemType file_system_type)
+    : callback_(callback),
+      info_(info),
+      file_system_type_(file_system_type) {
 }
 
 FileCallbacks::~FileCallbacks() {}
@@ -48,12 +56,11 @@ void FileCallbacks::DidReadMetadata(
     return;
 
   DCHECK(info_);
-  DCHECK(file_system_);
   info_->size = file_info.size;
   info_->creation_time = TimeToPPTime(file_info.creation_time);
   info_->last_access_time = TimeToPPTime(file_info.last_accessed);
   info_->last_modified_time = TimeToPPTime(file_info.last_modified);
-  info_->system_type = file_system_->type();
+  info_->system_type = file_system_type_;
   if (file_info.is_directory)
     info_->type = PP_FILETYPE_DIRECTORY;
   else
@@ -75,14 +82,7 @@ void FileCallbacks::DidReadDirectory(
 
 void FileCallbacks::DidOpenFileSystem(const std::string&,
                                       const GURL& root_url) {
-  if (callback_->completed())
-    return;
-
-  DCHECK(file_system_);
-  file_system_->set_root_url(root_url);
-  file_system_->set_opened(true);
-
-  callback_->Run(PP_OK);
+  NOTREACHED();
 }
 
 void FileCallbacks::DidFail(base::PlatformFileError error_code) {

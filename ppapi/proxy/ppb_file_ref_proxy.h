@@ -33,7 +33,8 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
   explicit PPB_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileRef_Proxy();
 
-  static PP_Resource CreateProxyResource(PP_Resource file_system,
+  static PP_Resource CreateProxyResource(PP_Instance instance,
+                                         PP_Resource file_system,
                                          const char* path);
   static PP_Resource CreateProxyResource(
       const PPB_FileRef_CreateInfo& serialized);
@@ -64,7 +65,8 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
 
  private:
   // Plugin -> host message handlers.
-  void OnMsgCreate(const HostResource& file_system,
+  void OnMsgCreate(PP_Instance instance,
+                   PP_Resource file_system,
                    const std::string& path,
                    PPB_FileRef_CreateInfo* result);
   void OnMsgGetParent(const HostResource& host_resource,

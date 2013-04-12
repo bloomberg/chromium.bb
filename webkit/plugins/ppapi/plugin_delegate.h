@@ -24,6 +24,7 @@
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -464,6 +465,17 @@ class PluginDelegate {
                              int flags,
                              const AsyncOpenFileCallback& callback) = 0;
 
+  // These functions expose some of PepperFileSystemHost methods for
+  // PPB_FileRef_Impl (which is in webkit) to access.  Once we migrate FileRef
+  // to the new design in content/, we won't need this delegation.
+  // TODO(victorhsieh): remove these delegation.
+  virtual bool IsFileSystemOpened(PP_Instance instance,
+                                  PP_Resource resource) const = 0;
+  virtual PP_FileSystemType GetFileSystemType(PP_Instance instance,
+                                              PP_Resource resource) const = 0;
+  virtual GURL GetFileSystemRootUrl(PP_Instance instance,
+                                    PP_Resource resource) const = 0;
+
   // Sends an async IPC to open a file through filesystem API.
   // When a file is successfully opened, |callback| is invoked with
   // PLATFORM_FILE_OK, the opened file handle, and a callback function for
@@ -482,11 +494,6 @@ class PluginDelegate {
       int flags,
       const AsyncOpenFileSystemURLCallback& callback) = 0;
 
-  virtual bool OpenFileSystem(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      long long size,
-      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool MakeDirectory(
       const GURL& path,
       bool recursive,
@@ -658,6 +665,9 @@ class PluginDelegate {
       base::PlatformFile handle,
       base::ProcessId target_process_id,
       bool should_close_source) const = 0;
+
+  // Returns true if running in process.
+  virtual bool IsRunningInProcess(PP_Instance instance) const = 0;
 };
 
 }  // namespace ppapi

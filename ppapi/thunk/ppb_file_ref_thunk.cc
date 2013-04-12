@@ -12,6 +12,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
+#include "ppapi/thunk/ppb_file_system_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
@@ -23,14 +24,14 @@ typedef EnterResource<PPB_FileRef_API> EnterFileRef;
 
 PP_Resource Create(PP_Resource file_system, const char* path) {
   ppapi::ProxyAutoLock lock;
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_system);
-  if (!object)
+  EnterResourceNoLock<PPB_FileSystem_API> enter_file_system(file_system, true);
+  if (enter_file_system.failed())
     return 0;
-  EnterResourceCreationNoLock enter(object->pp_instance());
+  PP_Instance instance = enter_file_system.resource()->pp_instance();
+  EnterResourceCreationNoLock enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateFileRef(file_system, path);
+  return enter.functions()->CreateFileRef(instance, file_system, path);
 }
 
 PP_Bool IsFileRef(PP_Resource resource) {

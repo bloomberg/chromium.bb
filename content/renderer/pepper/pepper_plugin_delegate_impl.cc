@@ -43,6 +43,7 @@
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
@@ -341,6 +342,16 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
       RendererPpapiHostImpl::CreateOnModuleForInProcess(
           module, perms);
   render_view->PpapiPluginCreated(host_impl);
+}
+
+template <typename HostType>
+const HostType* GetRendererResourceHost(
+    PP_Instance instance, PP_Resource resource) {
+  const ppapi::host::PpapiHost* ppapi_host =
+      RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
+  if (!resource || !ppapi_host)
+    return NULL;
+  return static_cast<HostType*>(ppapi_host->GetResourceHost(resource));
 }
 
 }  // namespace
@@ -1019,15 +1030,25 @@ void PepperPluginDelegateImpl::WillHandleMouseEvent() {
   last_mouse_event_target_ = NULL;
 }
 
-bool PepperPluginDelegateImpl::OpenFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    long long size,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->OpenFileSystem(
-      origin_url, type, size, true /* create */, dispatcher);
+bool PepperPluginDelegateImpl::IsFileSystemOpened(PP_Instance instance,
+                                                  PP_Resource resource) const {
+  const PepperFileSystemHost* host =
+      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
+  return host && host->IsOpened();
+}
+
+PP_FileSystemType PepperPluginDelegateImpl::GetFileSystemType(
+    PP_Instance instance, PP_Resource resource) const {
+  const PepperFileSystemHost* host =
+      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
+  return host ? host->GetType() : PP_FILESYSTEMTYPE_INVALID;
+}
+
+GURL PepperPluginDelegateImpl::GetFileSystemRootUrl(
+    PP_Instance instance, PP_Resource resource) const {
+  const PepperFileSystemHost* host =
+      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
+  return host ? host->GetRootUrl() : GURL();
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(
@@ -1620,6 +1641,12 @@ IPC::PlatformFileForTransit PepperPluginDelegateImpl::ShareHandleWithRemote(
       handle,
       target_process_id,
       should_close_source);
+}
+
+bool PepperPluginDelegateImpl::IsRunningInProcess(PP_Instance instance) const {
+  RendererPpapiHostImpl* host =
+      RendererPpapiHostImpl::GetForPPInstance(instance);
+  return host && host->IsRunningInProcess();
 }
 
 }  // namespace content

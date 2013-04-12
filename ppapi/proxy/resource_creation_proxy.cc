@@ -13,6 +13,7 @@
 #include "ppapi/proxy/directory_reader_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
+#include "ppapi/proxy/file_system_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
 #include "ppapi/proxy/flash_menu_resource.h"
@@ -26,7 +27,6 @@
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
-#include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -81,15 +81,17 @@ PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
   return (new FileIOResource(GetConnection(), instance))->GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateFileRef(PP_Resource file_system,
+PP_Resource ResourceCreationProxy::CreateFileRef(PP_Instance instance,
+                                                 PP_Resource file_system,
                                                  const char* path) {
-  return PPB_FileRef_Proxy::CreateProxyResource(file_system, path);
+  return PPB_FileRef_Proxy::CreateProxyResource(instance, file_system, path);
 }
 
 PP_Resource ResourceCreationProxy::CreateFileSystem(
     PP_Instance instance,
     PP_FileSystemType type) {
-  return PPB_FileSystem_Proxy::CreateProxyResource(instance, type);
+  return (new FileSystemResource(GetConnection(), instance,
+                                 type))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateIMEInputEvent(

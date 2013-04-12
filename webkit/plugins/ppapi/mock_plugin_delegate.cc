@@ -155,6 +155,24 @@ bool MockPluginDelegate::AsyncOpenFileSystemURL(
   return false;
 }
 
+bool MockPluginDelegate::IsFileSystemOpened(
+    PP_Instance instance,
+    PP_Resource resource) const {
+  return false;
+}
+
+PP_FileSystemType MockPluginDelegate::GetFileSystemType(
+    PP_Instance instance,
+    PP_Resource resource) const {
+  return PP_FILESYSTEMTYPE_INVALID;
+}
+
+GURL MockPluginDelegate::GetFileSystemRootUrl(
+    PP_Instance instance,
+    PP_Resource resource) const {
+  return GURL();
+}
+
 bool MockPluginDelegate::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
@@ -388,6 +406,10 @@ IPC::PlatformFileForTransit MockPluginDelegate::ShareHandleWithRemote(
       base::ProcessId target_process_id,
       bool should_close_source) const {
   return IPC::InvalidPlatformFileForTransit();
+}
+
+bool MockPluginDelegate::IsRunningInProcess(PP_Instance instance) const {
+  return false;
 }
 
 }  // namespace ppapi
