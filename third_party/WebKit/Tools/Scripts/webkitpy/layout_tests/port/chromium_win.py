@@ -47,11 +47,9 @@ class ChromiumWinPort(chromium.ChromiumPort):
         'xp': [
             'chromium-win-xp',
             'chromium-win',
-            'chromium',
         ],
         'win7': [
             'chromium-win',
-            'chromium',
         ],
     }
 

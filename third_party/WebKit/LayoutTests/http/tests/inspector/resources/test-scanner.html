@@ -35,9 +35,8 @@ function fetchExpectations(path)
 {
     var ext = path.lastIndexOf(".");
     path = path.substring(0, ext) + "-expected.txt";
-    var chromiumPath = path.replace("/LayoutTests/", "/LayoutTests/platform/chromium/");
 
-    var expectations = fetch(chromiumPath) || fetch(path) || "";
+    var expectations = fetch(path) || "";
 
     var expectationLines = expectations.split("\n");
     var filtered = [];

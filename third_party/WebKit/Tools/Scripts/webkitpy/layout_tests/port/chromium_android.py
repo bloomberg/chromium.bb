@@ -168,7 +168,6 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         'chromium-android',
         'chromium-linux',
         'chromium-win',
-        'chromium',
     ]
 
     def __init__(self, host, port_name, **kwargs):

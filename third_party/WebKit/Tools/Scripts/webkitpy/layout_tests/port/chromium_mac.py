@@ -46,20 +46,16 @@ class ChromiumMacPort(chromium.ChromiumPort):
             'chromium-mac-snowleopard',
             'chromium-mac-lion',
             'chromium-mac',
-            'chromium',
         ],
         'lion': [
             'chromium-mac-lion',
             'chromium-mac',
-            'chromium',
         ],
         'mountainlion': [
             'chromium-mac',
-            'chromium',
         ],
         'future': [
             'chromium-mac',
-            'chromium',
         ],
     }
 

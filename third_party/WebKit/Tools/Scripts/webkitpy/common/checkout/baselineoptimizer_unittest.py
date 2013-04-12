@@ -63,16 +63,16 @@ class BaselineOptimizerTest(unittest.TestCase):
         host = MockHost()
         host.filesystem.write_binary_file('/mock-checkout/LayoutTests/platform/chromium-win/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/LayoutTests/platform/chromium-mac/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file('/mock-checkout/LayoutTests/platform/chromium/another/test-expected.txt', 'result B')
+        host.filesystem.write_binary_file('/mock-checkout/LayoutTests/another/test-expected.txt', 'result B')
         baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names())
         baseline_optimizer._move_baselines('another/test-expected.txt', {
             'LayoutTests/platform/chromium-win': 'aaa',
             'LayoutTests/platform/chromium-mac': 'aaa',
-            'LayoutTests/platform/chromium': 'bbb',
+            'LayoutTests': 'bbb',
         }, {
-            'LayoutTests/platform/chromium': 'aaa',
+            'LayoutTests': 'aaa',
         })
-        self.assertEqual(host.filesystem.read_binary_file('/mock-checkout/LayoutTests/platform/chromium/another/test-expected.txt'), 'result A')
+        self.assertEqual(host.filesystem.read_binary_file('/mock-checkout/LayoutTests/another/test-expected.txt'), 'result A')
 
     def test_chromium_linux_redundant_with_win(self):
         self._assertOptimization({
@@ -88,5 +88,5 @@ class BaselineOptimizerTest(unittest.TestCase):
             'LayoutTests/platform/chromium-win': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
             'LayoutTests/platform/chromium-linux': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
         }, {
-            'LayoutTests/platform/chromium': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
+            'LayoutTests': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
         })
