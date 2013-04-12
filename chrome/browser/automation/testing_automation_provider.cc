@@ -159,7 +159,8 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mach_ipc_mac.h"
+#include <mach/mach.h>
+#include <mach/mach_vm.h>
 #endif
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
@@ -490,7 +491,29 @@ void TestingAutomationProvider::AppendTab(int handle,
 
 void TestingAutomationProvider::GetMachPortCount(int* port_count) {
 #if defined(OS_MACOSX)
-  base::mac::GetNumberOfMachPorts(mach_task_self(), port_count);
+  mach_port_name_array_t names;
+  mach_msg_type_number_t names_count;
+  mach_port_type_array_t types;
+  mach_msg_type_number_t types_count;
+
+  mach_port_t port = mach_task_self();
+
+  // A friendlier interface would allow NULL buffers to only get the counts.
+  kern_return_t kr = mach_port_names(port, &names, &names_count,
+                                     &types, &types_count);
+  if (kr != KERN_SUCCESS) {
+    *port_count = 0;
+    return;
+  }
+
+  // The documentation states this is an invariant.
+  DCHECK_EQ(names_count, types_count);
+  *port_count = names_count;
+
+  mach_vm_deallocate(port, reinterpret_cast<mach_vm_address_t>(names),
+      names_count * sizeof(mach_port_name_array_t));
+  mach_vm_deallocate(port, reinterpret_cast<mach_vm_address_t>(types),
+      types_count * sizeof(mach_port_type_array_t));
 #else
   *port_count = 0;
 #endif

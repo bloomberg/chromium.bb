@@ -5,6 +5,7 @@
 #include "content/browser/mach_broker_mac.h"
 
 #include <bsm/libbsm.h>
+#include <servers/bootstrap.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,7 +13,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_mach_port.h"
-#include "base/mach_ipc_mac.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

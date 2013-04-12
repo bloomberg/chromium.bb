@@ -248,8 +248,6 @@
           'mac/scoped_nsexception_enabler.mm',
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
-          'mach_ipc_mac.h',
-          'mach_ipc_mac.mm',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
           'memory/discardable_memory.cc',
