@@ -46,7 +46,7 @@ if (window.testRunner) {
     // setup common functions in worlds
     for (var world  = 0; world < 2; ++world) {
         var script = log.toString() + sendMessage.toString() + document.getElementById("isolatedScript" + world).innerHTML;
-        testRunner.evaluateScriptInIsolatedWorld(world, script);
+        testRunner.evaluateScriptInIsolatedWorld(world + 1, script);
     }
     log("Sending from main world...");
     sendMessage();

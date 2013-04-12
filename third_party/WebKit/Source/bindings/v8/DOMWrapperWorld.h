@@ -49,14 +49,11 @@ class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
     static const int mainWorldId = 0;
     static const int mainWorldExtensionGroup = 0;
-    static const int uninitializedWorldId = -1;
-    static const int uninitializedExtensionGroup = -1;
-    // If uninitializedWorldId is passed as worldId, the world will be assigned a temporary id instead.
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static bool isIsolatedWorldId(int worldId) { return worldId != mainWorldId && worldId != uninitializedWorldId; }
+    static bool isIsolatedWorldId(int worldId) { return worldId > mainWorldId; }
     static void getAllWorlds(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     void makeContextWeak(v8::Handle<v8::Context>);
@@ -92,13 +89,8 @@ public:
     static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId);
 
-    // FIXME: this is a workaround for a problem in WebViewImpl.
-    // Do not use this anywhere else!!
-    static PassRefPtr<DOMWrapperWorld> createUninitializedWorld();
-
     bool isMainWorld() const { return m_worldId == mainWorldId; }
     bool isIsolatedWorld() const { return isIsolatedWorldId(m_worldId); }
-    bool createdFromUnitializedWorld() const { return m_worldId < uninitializedWorldId; }
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
@@ -122,9 +114,14 @@ private:
     OwnPtr<DOMDataStore> m_domDataStore;
 
     friend DOMWrapperWorld* mainThreadNormalWorld();
+    friend DOMWrapperWorld* existingWindowShellWorkaroundWorld();
 };
 
 DOMWrapperWorld* mainThreadNormalWorld();
+
+// FIXME: this is a workaround for a problem in ScriptController
+// Do not use this anywhere else!!
+DOMWrapperWorld* existingWindowShellWorkaroundWorld();
 
 } // namespace WebCore
 

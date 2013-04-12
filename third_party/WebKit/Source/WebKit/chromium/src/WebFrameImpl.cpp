@@ -790,6 +790,7 @@ void WebFrameImpl::executeScript(const WebScriptSource& source)
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup)
 {
     ASSERT(frame());
+    ASSERT(worldID > 0);
 
     Vector<ScriptSourceCode> sources;
     for (unsigned i = 0; i < numSources; ++i) {
@@ -870,6 +871,7 @@ v8::Handle<v8::Value> WebFrameImpl::executeScriptAndReturnValue(const WebScriptS
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
 {
     ASSERT(frame());
+    ASSERT(worldID > 0);
 
     Vector<ScriptSourceCode> sources;
 

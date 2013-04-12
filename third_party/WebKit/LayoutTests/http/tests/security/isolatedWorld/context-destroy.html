@@ -17,7 +17,7 @@ window.onload = function() {
 
         var iframeElement = document.querySelector('iframe');
         iframeElement.focus();
-        testRunner.evaluateScriptInIsolatedWorld(0, document.querySelector('#s1').textContent);
+        testRunner.evaluateScriptInIsolatedWorld(1, document.querySelector('#s1').textContent);
 
         iframeElement.onload = function() {
             document.body.textContent = 'PASS';

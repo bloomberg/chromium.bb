@@ -6,12 +6,6 @@ if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.waitUntilDone();
 
-  // World id 0 is never saved, so this should print 'undefined'.
-  testRunner.evaluateScriptInIsolatedWorld(0, "var foo = 'foo';");
-  testRunner.evaluateScriptInIsolatedWorld(0,
-    "document.body.appendChild(document.createTextNode('Expecting undefined: ' + window.foo));" +
-    "document.body.appendChild(document.createElement('br'));");
-
   // Since these two run in the same world, this should print 'bar'.
   testRunner.evaluateScriptInIsolatedWorld(1, "var bar = 'bar';");
   testRunner.evaluateScriptInIsolatedWorld(1,

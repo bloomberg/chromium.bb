@@ -322,13 +322,6 @@ bool ScriptController::initializeMainWorld()
     return windowShell(mainThreadNormalWorld())->isContextInitialized();
 }
 
-// FIXME: Remove this function. There is currently an issue with the inspector related to the call to dispatchDidClearWindowObjectInWorld in ScriptController::windowShell.
-static DOMWrapperWorld* existingWindowShellWorkaroundWorld()
-{
-    DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, world, (DOMWrapperWorld::createUninitializedWorld()));
-    return world.get();
-}
-
 V8DOMWindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
 {
     ASSERT(world);
@@ -337,10 +330,8 @@ V8DOMWindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
         return m_windowShell->isContextInitialized() ? m_windowShell.get() : 0;
 
     // FIXME: Remove this block. See comment with existingWindowShellWorkaroundWorld().
-    if (world->worldId() == DOMWrapperWorld::uninitializedWorldId) {
-        ASSERT(world == existingWindowShellWorkaroundWorld());
+    if (world == existingWindowShellWorkaroundWorld())
         return m_windowShell.get();
-    }
 
     IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(world->worldId());
     if (iter == m_isolatedWorlds.end())
@@ -377,10 +368,7 @@ V8DOMWindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
 
 void ScriptController::evaluateInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results)
 {
-    // Except in the test runner, worldID should be non 0 as it conflicts with the mainWorldId.
-    // FIXME: Change the test runner to perform this swap and make this an ASSERT.
-    if (UNLIKELY(!worldID))
-        worldID = DOMWrapperWorld::uninitializedWorldId;
+    ASSERT(worldID > 0);
 
     v8::HandleScope handleScope;
     v8::Local<v8::Array> v8Results;
@@ -401,12 +389,6 @@ void ScriptController::evaluateInIsolatedWorld(int worldID, const Vector<ScriptS
             if (evaluationResult.IsEmpty())
                 evaluationResult = v8::Local<v8::Value>::New(v8::Undefined());
             resultArray->Set(i, evaluationResult);
-        }
-
-        // Mark temporary shell for weak destruction.
-        if (worldID == DOMWrapperWorld::uninitializedWorldId) {
-            isolatedWorldShell->destroyIsolatedShell();
-            m_isolatedWorlds.remove(world->worldId());
         }
 
         v8Results = evaluateHandleScope.Close(resultArray);
@@ -458,10 +440,6 @@ v8::Local<v8::Context> ScriptController::currentWorldContext()
 
     if (m_frame == frame)
         return v8::Local<v8::Context>::New(context);
-
-    // FIXME: Need to handle weak isolated worlds correctly.
-    if (isolatedWorld->createdFromUnitializedWorld())
-        return v8::Local<v8::Context>();
 
     return contextForWorld(this, isolatedWorld);
 }

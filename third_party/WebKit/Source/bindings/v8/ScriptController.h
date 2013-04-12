@@ -104,8 +104,6 @@ public:
     // If an isolated world with the specified ID already exists, it is reused.
     // Otherwise, a new world is created.
     //
-    // If the worldID is 0 or DOMWrapperWorld::uninitializedWorldId, a new world is always created.
-    //
     // FIXME: Get rid of extensionGroup here.
     void evaluateInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results);
 

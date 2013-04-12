@@ -16,7 +16,7 @@ if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.waitUntilDone();
   testRunner.evaluateScriptInIsolatedWorld(
-    0,
+    1,
     "document.foo = 'PASS';\n" +
     "window.func = function () {\n" +
     "  alert(document.foo);\n" +

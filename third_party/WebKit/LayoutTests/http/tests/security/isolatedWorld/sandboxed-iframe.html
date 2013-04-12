@@ -7,7 +7,7 @@ function test()
         testRunner.dumpAsText();
         var frame = document.getElementById("frame");
         frame.contentWindow.focus();
-        testRunner.evaluateScriptInIsolatedWorld(0, "alert('PASS');");
+        testRunner.evaluateScriptInIsolatedWorld(1, "alert('PASS');");
     } else {
         var msg = document.createElement("p");
         msg.innerText = "FAIL: Test requires testRunner to run.";

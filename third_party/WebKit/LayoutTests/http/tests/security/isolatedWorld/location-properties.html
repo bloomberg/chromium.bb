@@ -7,7 +7,7 @@ location.foo = "FAIL: Visible in isolated world.";
 if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.evaluateScriptInIsolatedWorld(
-    0,
+    1,
     "document.getElementById('console').innerHTML = location.foo");
 }
 </script>

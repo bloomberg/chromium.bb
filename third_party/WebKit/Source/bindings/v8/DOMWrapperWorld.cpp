@@ -46,11 +46,6 @@ namespace WebCore {
 int DOMWrapperWorld::isolatedWorldCount = 0;
 static bool initializingWindow = false;
 
-PassRefPtr<DOMWrapperWorld>  DOMWrapperWorld::createUninitializedWorld()
-{
-    return adoptRef(new DOMWrapperWorld(uninitializedWorldId, uninitializedExtensionGroup));
-}
-
 void DOMWrapperWorld::setInitializingWindow(bool initializing)
 {
     initializingWindow = initializing;
@@ -74,6 +69,13 @@ DOMWrapperWorld* mainThreadNormalWorld()
     ASSERT(isMainThread());
     DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, cachedNormalWorld, (DOMWrapperWorld::createMainWorld()));
     return cachedNormalWorld.get();
+}
+
+// FIXME: Remove this function. There is currently an issue with the inspector related to the call to dispatchDidClearWindowObjectInWorld in ScriptController::windowShell.
+DOMWrapperWorld* existingWindowShellWorkaroundWorld()
+{
+    DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, world, (adoptRef(new DOMWrapperWorld(DOMWrapperWorld::mainWorldId - 1, DOMWrapperWorld::mainWorldExtensionGroup - 1))));
+    return world.get();
 }
 
 bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
@@ -144,27 +146,21 @@ DOMWrapperWorld::~DOMWrapperWorld()
     ASSERT(map.size() == isolatedWorldCount);
 }
 
-static int temporaryWorldId = DOMWrapperWorld::uninitializedWorldId-1;
-
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, int extensionGroup)
 {
-    ASSERT(worldId != mainWorldId);
-    ASSERT(worldId >= uninitializedWorldId);
+    ASSERT(worldId > mainWorldId);
 
     WorldMap& map = isolatedWorldMap();
-    if (worldId == uninitializedWorldId)
-        worldId = temporaryWorldId--;
-    else {
-        WorldMap::iterator i = map.find(worldId);
-        if (i != map.end()) {
-            ASSERT(i->value->worldId() == worldId);
-            ASSERT(i->value->extensionGroup() == extensionGroup);
-            return i->value;
-        }
+    WorldMap::AddResult result = map.add(worldId, 0);
+    RefPtr<DOMWrapperWorld> world = result.iterator->value;
+    if (world) {
+        ASSERT(world->worldId() == worldId);
+        ASSERT(world->extensionGroup() == extensionGroup);
+        return world.release();
     }
 
-    RefPtr<DOMWrapperWorld> world = adoptRef(new DOMWrapperWorld(worldId, extensionGroup));
-    map.add(worldId, world.get());
+    world = adoptRef(new DOMWrapperWorld(worldId, extensionGroup));
+    result.iterator->value = world.get();
     isolatedWorldCount++;
     ASSERT(map.size() == isolatedWorldCount);
 

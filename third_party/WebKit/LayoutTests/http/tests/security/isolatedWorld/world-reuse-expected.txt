@@ -1,5 +1,4 @@
 
-Expecting undefined: undefined
 Expecting bar: bar
 Expecting undefined: undefined
 Expecting true: true
