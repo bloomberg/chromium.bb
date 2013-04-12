@@ -8,20 +8,22 @@
 #include "ui/gfx/rect.h"
 
 OmniboxPopupNonView::OmniboxPopupNonView(OmniboxEditModel* edit_model)
-  : model_(this, edit_model) {
+  : model_(this, edit_model),
+    is_open_(false) {
 }
 
 OmniboxPopupNonView::~OmniboxPopupNonView() {
 }
 
 bool OmniboxPopupNonView::IsOpen() const {
-  return !model_.result().empty();
+  return is_open_;
 }
 
 void OmniboxPopupNonView::InvalidateLine(size_t line) {
 }
 
 void OmniboxPopupNonView::UpdatePopupAppearance() {
+  is_open_ = !model_.result().empty();
 }
 
 gfx::Rect OmniboxPopupNonView::GetTargetBounds() {

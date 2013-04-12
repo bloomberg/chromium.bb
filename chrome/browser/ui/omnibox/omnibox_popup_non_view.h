@@ -32,6 +32,14 @@ class OmniboxPopupNonView : public OmniboxPopupView {
  private:
   OmniboxPopupModel model_;
 
+  // |is_open_| reflects whether the OmniboxEditModel has a non-empty result
+  // set. However, we can't get rid of this variable and just use the model's
+  // state directly, as there's at least one situation when the model's result
+  // set has been emptied, but the popup should still be considered to be open
+  // until UpdatePopupAppearance() is called (cf: |was_open| in
+  // OmniboxEditModel::OnResultChanged()).
+  bool is_open_;
+
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupNonView);
 };
 

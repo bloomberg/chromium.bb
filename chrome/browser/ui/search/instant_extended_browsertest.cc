@@ -1586,3 +1586,34 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, HasBookmarkProvider) {
 
   EXPECT_TRUE(found_bookmark_match);
 }
+
+// Test that the omnibox's temporary text is reset when the popup is closed.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TemporaryTextResetWhenPopupClosed) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // Show the overlay and arrow-down to a suggestion (this sets temporary text).
+  SetOmniboxTextAndWaitForOverlayToShow("juju");
+  SendDownArrow();
+
+  EXPECT_TRUE(HasTemporaryText());
+  EXPECT_EQ("result 1", GetOmniboxText());
+
+  // Click outside the omnibox (but not on the overlay), to make the omnibox
+  // lose focus. Close the popup explicitly, to workaround test/toolkit issues.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TOOLBAR);
+  omnibox()->CloseOmniboxPopup();
+
+  // The temporary text should've been accepted as the user text.
+  EXPECT_FALSE(HasTemporaryText());
+  EXPECT_EQ("result 1", GetOmniboxText());
+
+  // Now refocus the omnibox and hit Escape. This shouldn't crash.
+  FocusOmnibox();
+  SendEscape();
+
+  // The omnibox should've reverted to the underlying permanent URL.
+  EXPECT_FALSE(HasTemporaryText());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), GetOmniboxText());
+}
