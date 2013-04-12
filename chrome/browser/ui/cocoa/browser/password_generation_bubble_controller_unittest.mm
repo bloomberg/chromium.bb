@@ -113,10 +113,16 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   CloseController();
 
   HistogramSamples* samples = GetHistogramSamples();
-  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(0, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(0, samples->GetCount(
-                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(
+      0,
+      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(
+      0,
+      samples->GetCount(
+          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
 
   SetUpController();
 
@@ -126,10 +132,16 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   CloseController();
 
   samples = GetHistogramSamples();
-  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(1, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(0, samples->GetCount(
-                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(
+      0,
+      samples->GetCount(
+          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
 
   SetUpController();
 
@@ -138,9 +150,15 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   CloseController();
 
   samples = GetHistogramSamples();
-  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(1, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(1, samples->GetCount(
-                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(
+      1,
+      samples->GetCount(
+          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
 
 }

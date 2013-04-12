@@ -16,6 +16,8 @@ namespace base {
 class TimeDelta;
 }
 
+namespace autofill {
+
 class AutofillMetrics {
  public:
   // The possible results of an Autocheckout flow.
@@ -409,5 +411,7 @@ class AutofillMetrics {
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_METRICS_H_

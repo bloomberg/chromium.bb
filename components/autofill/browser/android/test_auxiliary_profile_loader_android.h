@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "components/autofill/browser/android/auxiliary_profile_loader_android.h"
 
+namespace autofill {
+
 class TestAuxiliaryProfileLoader
     : public autofill::AuxiliaryProfileLoaderAndroid {
   // Mock object for unit testing |AuxiliaryProfilesAndroid|
@@ -66,5 +68,7 @@ class TestAuxiliaryProfileLoader
   std::vector<base::string16> email_addresses_;
   std::vector<base::string16> phone_numbers_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_ANDROID_TEST_AUXILIARY_PROFILE_LOADER_ANDROID_H_

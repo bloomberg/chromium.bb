@@ -17,6 +17,8 @@
 #include "components/autofill/common/web_element_descriptor.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
+namespace autofill {
+
 // The base class that contains common functionality between
 // AutofillQueryXmlParser and AutofillUploadXmlParser.
 class AutofillXmlParser : public buzz::XmlParseHandler {
@@ -163,5 +165,7 @@ class AutofillUploadXmlParser : public AutofillXmlParser {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillUploadXmlParser);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_XML_PARSER_H_

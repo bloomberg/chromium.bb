@@ -7,9 +7,9 @@
 
 #include "components/autofill/browser/autofill_external_delegate.h"
 
-class AutofillManager;
-
 namespace autofill {
+
+class AutofillManager;
 
 // Calls the required functions on the given external delegate to cause the
 // delegate to display a popup.

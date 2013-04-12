@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "components/autofill/browser/autofill_field.h"
 
+namespace autofill {
+
 AutofillScanner::AutofillScanner(
     const std::vector<const AutofillField*>& fields)
     : cursor_(fields.begin()),
@@ -52,3 +54,5 @@ size_t AutofillScanner::SaveCursor() {
   saved_cursor_ = cursor_;
   return static_cast<size_t>(cursor_ - begin_);
 }
+
+}  // namespace autofill

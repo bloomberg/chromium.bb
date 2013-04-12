@@ -25,6 +25,7 @@
 #include "components/autofill/browser/phone_field.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 bool IsTextField(const std::string& type) {
@@ -195,3 +196,5 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
 
   std::swap(*fields, remaining_fields);
 }
+
+}  // namespace autofill

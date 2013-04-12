@@ -9,7 +9,6 @@
 
 #include <stddef.h>         // For size_t
 
-namespace components {
 namespace autofill {
 
 // Help URL for the Autofill dialog.
@@ -22,6 +21,5 @@ extern const char kHelpURL[];
 extern const size_t kRequiredAutofillFields;
 
 }  // namespace autofill
-}  // namespace components
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_

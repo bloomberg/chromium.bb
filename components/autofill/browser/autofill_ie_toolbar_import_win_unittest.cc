@@ -15,6 +15,8 @@
 
 using base::win::RegKey;
 
+namespace autofill {
+
 // Defined in autofill_ie_toolbar_import_win.cc. Not exposed in the header file.
 bool ImportCurrentUserProfiles(const std::string& app_locale,
                                std::vector<AutofillProfile>* profiles,
@@ -203,3 +205,4 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   EXPECT_EQ(0U, credit_cards.size());
 }
 
+}  // namespace autofill

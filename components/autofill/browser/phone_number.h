@@ -14,6 +14,8 @@
 #include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/phone_number_i18n.h"
 
+namespace autofill {
+
 class AutofillProfile;
 
 // A form group that stores phone number information.
@@ -88,7 +90,9 @@ class PhoneNumber : public FormGroup {
   const AutofillProfile* profile_;  // WEAK
 
   // Cached number.
-  mutable autofill_i18n::PhoneObject cached_parsed_phone_;
+  mutable i18n::PhoneObject cached_parsed_phone_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PHONE_NUMBER_H_

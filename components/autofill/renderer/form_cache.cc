@@ -23,7 +23,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using components::autofill::kRequiredAutofillFields;
 using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;

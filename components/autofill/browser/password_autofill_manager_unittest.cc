@@ -21,6 +21,8 @@ const char* const kValue = "password";
 
 }  // namespace
 
+namespace autofill {
+
 class PasswordAutofillManagerTest : public testing::Test {
  protected:
   PasswordAutofillManagerTest() : password_autofill_manager_(NULL) {}
@@ -72,3 +74,5 @@ TEST_F(PasswordAutofillManagerTest, DidAcceptAutofillSuggestion) {
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
       username_field(), ASCIIToUTF16(kAliceUsername)));
 }
+
+}  // namespace autofill

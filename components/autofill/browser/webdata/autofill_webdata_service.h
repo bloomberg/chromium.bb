@@ -16,16 +16,19 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
 
-class AutofillChange;
-class AutofillProfile;
-class AutofillWebDataServiceObserverOnDBThread;
-class AutofillWebDataServiceObserverOnUIThread;
-class CreditCard;
 class WebDatabaseService;
 
 namespace content {
 class BrowserContext;
 }
+
+namespace autofill {
+
+class AutofillChange;
+class AutofillProfile;
+class AutofillWebDataServiceObserverOnDBThread;
+class AutofillWebDataServiceObserverOnUIThread;
+class CreditCard;
 
 // API for Autofill web data.
 class AutofillWebDataService : public AutofillWebData,
@@ -130,5 +133,7 @@ class AutofillWebDataService : public AutofillWebData,
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_

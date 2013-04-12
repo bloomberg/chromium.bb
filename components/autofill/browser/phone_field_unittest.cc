@@ -11,6 +11,8 @@
 #include "components/autofill/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 class PhoneFieldTest : public testing::Test {
  public:
   PhoneFieldTest() {}
@@ -224,3 +226,5 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
       field_type_map_.find(ASCIIToUTF16("phone")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field_type_map_[ASCIIToUTF16("phone")]);
 }
+
+}  // namespace autofill

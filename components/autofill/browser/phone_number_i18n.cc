@@ -16,6 +16,8 @@
 using i18n::phonenumbers::PhoneNumber;
 using i18n::phonenumbers::PhoneNumberUtil;
 
+namespace autofill {
+
 namespace {
 
 std::string SanitizeRegion(const std::string& region,
@@ -74,7 +76,7 @@ void FormatValidatedNumber(const PhoneNumber& number,
 
 }  // namespace
 
-namespace autofill_i18n {
+namespace i18n {
 
 // Parses the number stored in |value| as it should be interpreted in the given
 // |region|, and stores the results into the remaining arguments.  The |region|
@@ -297,4 +299,5 @@ PhoneObject& PhoneObject::operator=(const PhoneObject& other) {
   return *this;
 }
 
-}  // namespace autofill_i18n
+}  // namespace i18n
+}  // namespace autofill

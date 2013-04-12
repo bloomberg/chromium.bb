@@ -22,7 +22,7 @@ class PasswordManagerDelegateImpl
 
   // PasswordManagerDelegate implementation.
   virtual void FillPasswordForm(
-      const PasswordFormFillData& form_data) OVERRIDE;
+      const autofill::PasswordFormFillData& form_data) OVERRIDE;
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;

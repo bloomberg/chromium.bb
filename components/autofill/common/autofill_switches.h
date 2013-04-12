@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_
 #define COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_
 
+namespace autofill {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -18,5 +19,6 @@ extern const char kWalletServiceUrl[];
 extern const char kWalletServiceUseProd[];
 
 }  // namespace switches
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_

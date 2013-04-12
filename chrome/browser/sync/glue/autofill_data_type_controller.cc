@@ -63,7 +63,8 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
+  web_data_service_ =
+      autofill::AutofillWebDataService::FromBrowserContext(profile());
   if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {

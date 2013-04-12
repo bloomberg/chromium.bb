@@ -12,9 +12,9 @@
 #include "base/string16.h"
 #include "components/autofill/browser/android/auxiliary_profile_loader_android.h"
 
-class AutofillProfile;
-
 namespace autofill {
+
+class AutofillProfile;
 class AuxiliaryProfileLoaderAndroid;
 
  // This class is used to populate an AutofillProfile vector with

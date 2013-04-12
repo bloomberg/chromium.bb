@@ -265,7 +265,7 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
   autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
-  AutofillManager::RegisterUserPrefs(registry);
+  autofill::AutofillManager::RegisterUserPrefs(registry);
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
   browser_sync::SyncPrefs::RegisterUserPrefs(registry);

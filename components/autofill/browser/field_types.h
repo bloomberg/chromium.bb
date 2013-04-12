@@ -8,6 +8,8 @@
 #include <set>
 #include <string>
 
+namespace autofill {
+
 // NOTE: This list MUST not be modified.  The server aggregates and stores these
 // types over several versions, so we must remain fully compatible with the
 // Autofill server, which is itself backward-compatible.  The list must be kept
@@ -87,5 +89,7 @@ enum AutofillFieldType {
 };
 
 typedef std::set<AutofillFieldType> FieldTypeSet;
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_FIELD_TYPES_H_

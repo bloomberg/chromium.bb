@@ -33,8 +33,7 @@ using ::testing::Return;
 
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
-  MOCK_METHOD1(FillPasswordForm, void(
-     const PasswordFormFillData&));
+  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());

@@ -12,9 +12,9 @@
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
 
-class AutofillCountry;
-
 namespace autofill {
+
+class AutofillCountry;
 
 // A model for countries to be used to enter addresses.
 class CountryComboboxModel : public ui::ComboboxModel {

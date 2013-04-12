@@ -12,6 +12,8 @@
 #include "base/string_util.h"
 #include "components/autofill/browser/field_types.h"
 
+namespace autofill {
+
 class AutofillField;
 struct FormFieldData;
 
@@ -92,5 +94,7 @@ class FormGroup {
   virtual bool FillCountrySelectControl(const std::string& app_locale,
                                         FormFieldData* field_data) const;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_FORM_GROUP_H_

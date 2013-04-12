@@ -22,6 +22,18 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/webdata/common/web_database.h"
 
+using autofill::AutofillChangeList;
+using autofill::AutofillEntry;
+using autofill::AutofillKey;
+using autofill::AutofillProfile;
+using autofill::AutofillTable;
+using autofill::AutofillType;
+using autofill::AutofillWebDataService;
+using autofill::AutofillWebDataServiceObserverOnDBThread;
+using autofill::CreditCard;
+using autofill::FormFieldData;
+using autofill::PersonalDataManager;
+using autofill::PersonalDataManagerObserver;
 using base::WaitableEvent;
 using content::BrowserThread;
 using sync_datatype_helper::test;
@@ -120,7 +132,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
   AutofillProfile profile;
   switch (type) {
     case PROFILE_MARION:
-      autofill_test::SetProfileInfoWithGuid(&profile,
+      autofill::test::SetProfileInfoWithGuid(&profile,
           "C837507A-6C3B-4872-AC14-5113F157D668",
           "Marion", "Mitchell", "Morrison",
           "johnwayne@me.xyz", "Fox",
@@ -128,7 +140,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "91601", "US", "12345678910");
       break;
     case PROFILE_HOMER:
-      autofill_test::SetProfileInfoWithGuid(&profile,
+      autofill::test::SetProfileInfoWithGuid(&profile,
           "137DE1C3-6A30-4571-AC86-109B1ECFBE7F",
           "Homer", "J.", "Simpson",
           "homer@abc.com", "SNPP",
@@ -136,14 +148,14 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "94101", "US", "14155551212");
       break;
     case PROFILE_FRASIER:
-      autofill_test::SetProfileInfoWithGuid(&profile,
+      autofill::test::SetProfileInfoWithGuid(&profile,
           "9A5E6872-6198-4688-BF75-0016E781BB0A",
           "Frasier", "Winslow", "Crane",
           "", "randomness", "", "Apt. 4", "Seattle", "WA",
           "99121", "US", "0000000000");
       break;
     case PROFILE_NULL:
-      autofill_test::SetProfileInfoWithGuid(&profile,
+      autofill::test::SetProfileInfoWithGuid(&profile,
           "FE461507-7E13-4198-8E66-74C7DB6D8322",
           "", "", "", "", "", "", "", "", "", "", "", "");
       break;

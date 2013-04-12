@@ -63,14 +63,14 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
 
   AlternateErrorPageTabObserver::CreateForWebContents(contents);
   autofill::TabAutofillManagerDelegate::CreateForWebContents(contents);
-  AutofillManager::CreateForWebContentsAndDelegate(
+  autofill::AutofillManager::CreateForWebContentsAndDelegate(
       contents,
       autofill::TabAutofillManagerDelegate::FromWebContents(contents),
       g_browser_process->GetApplicationLocale());
-  AutofillExternalDelegate::CreateForWebContentsAndManager(
-      contents, AutofillManager::FromWebContents(contents));
-  AutofillManager::FromWebContents(contents)->SetExternalDelegate(
-      AutofillExternalDelegate::FromWebContents(contents));
+  autofill::AutofillExternalDelegate::CreateForWebContentsAndManager(
+      contents, autofill::AutofillManager::FromWebContents(contents));
+  autofill::AutofillManager::FromWebContents(contents)->SetExternalDelegate(
+      autofill::AutofillExternalDelegate::FromWebContents(contents));
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);

@@ -12,6 +12,8 @@
 #include "components/autofill/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 class AddressFieldTest : public testing::Test {
  public:
   AddressFieldTest() {}
@@ -292,3 +294,5 @@ TEST_F(AddressFieldTest, ParseCompany) {
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
   EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
 }
+
+}  // namespace autofill

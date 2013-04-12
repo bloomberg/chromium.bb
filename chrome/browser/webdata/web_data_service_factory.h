@@ -13,8 +13,11 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "components/webdata/common/web_database_service.h"
 
-class AutofillWebDataService;
 class WebDataService;
+
+namespace autofill {
+class AutofillWebDataService;
+}  // namespace autofill
 
 // A wrapper of WebDataService so that we can use it as a profile keyed service.
 class WebDataServiceWrapper : public ProfileKeyedService {
@@ -29,14 +32,14 @@ class WebDataServiceWrapper : public ProfileKeyedService {
   // ProfileKeyedService:
   virtual void Shutdown() OVERRIDE;
 
-  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData();
+  virtual scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData();
 
   virtual scoped_refptr<WebDataService> GetWebData();
 
  private:
   scoped_refptr<WebDatabaseService> web_database_;
 
-  scoped_refptr<AutofillWebDataService> autofill_web_data_;
+  scoped_refptr<autofill::AutofillWebDataService> autofill_web_data_;
   scoped_refptr<WebDataService> web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);

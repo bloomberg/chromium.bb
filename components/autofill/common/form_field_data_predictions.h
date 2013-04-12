@@ -10,6 +10,8 @@
 
 #include "components/autofill/common/form_field_data.h"
 
+namespace autofill {
+
 // Stores information about a field in a form.
 struct FormFieldDataPredictions {
   FormFieldDataPredictions();
@@ -22,5 +24,7 @@ struct FormFieldDataPredictions {
   std::string server_type;
   std::string overall_type;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_

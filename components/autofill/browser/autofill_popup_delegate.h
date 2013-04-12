@@ -11,6 +11,8 @@ namespace content {
 class KeyboardListener;
 }
 
+namespace autofill {
+
 // An interface for interaction with AutofillPopupController. Will be notified
 // of events by the controller.
 class AutofillPopupDelegate {
@@ -38,5 +40,7 @@ class AutofillPopupDelegate {
   // Informs the delegate that the Autofill previewed form should be cleared.
   virtual void ClearPreviewedForm() = 0;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_POPUP_DELEGATE_H_

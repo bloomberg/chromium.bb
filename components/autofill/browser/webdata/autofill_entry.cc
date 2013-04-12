@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 
+namespace autofill {
 namespace {
 
 // The period after which Autofill entries should expire in days.
@@ -124,3 +125,5 @@ bool AutofillEntry::CullTimeStamps(const std::vector<base::Time>& source,
 
   return true;
 }
+
+}  // namespace autofill

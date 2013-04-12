@@ -4,6 +4,8 @@
 
 #include "components/autofill/browser/android/test_auxiliary_profile_loader_android.h"
 
+namespace autofill {
+
 TestAuxiliaryProfileLoader::TestAuxiliaryProfileLoader() {
 }
 
@@ -126,3 +128,5 @@ void TestAuxiliaryProfileLoader::SetPhoneNumbers(
     const std::vector<base::string16>& phone_numbers) {
   phone_numbers_ = phone_numbers;
 }
+
+}  // namespace autofill

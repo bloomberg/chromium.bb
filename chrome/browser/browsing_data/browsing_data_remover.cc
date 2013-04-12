@@ -435,8 +435,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
-    scoped_refptr<AutofillWebDataService> web_data_service =
-        AutofillWebDataService::FromBrowserContext(profile_);
+    scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+        autofill::AutofillWebDataService::FromBrowserContext(profile_);
 
     if (web_data_service.get()) {
       waiting_for_clear_form_ = true;
@@ -451,7 +451,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
           base::Bind(&BrowsingDataRemover::FormDataDBThreadHop,
                      base::Unretained(this)));
 
-      PersonalDataManager* data_manager =
+      autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);
       if (data_manager) {
         data_manager->Refresh();

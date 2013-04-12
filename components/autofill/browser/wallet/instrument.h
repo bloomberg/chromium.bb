@@ -10,14 +10,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
-class AutofillProfile;
-class CreditCard;
-
 namespace base {
 class DictionaryValue;
 }
 
 namespace autofill {
+
+class AutofillProfile;
+class CreditCard;
+
 namespace wallet {
 
 class Address;

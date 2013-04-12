@@ -40,7 +40,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "WebContentsDelegateAndroid",
       components::RegisterWebContentsDelegateAndroidJni },
   { "RegisterAuxiliaryProfileLoader",
-      components::RegisterAutofillAndroidJni },
+      autofill::RegisterAutofillAndroidJni },
   // Register JNI for chrome classes.
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid},
   { "AutofillDialog",

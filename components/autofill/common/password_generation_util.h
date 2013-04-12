@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_
 #define COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_
 
+namespace autofill {
 namespace password_generation {
 
 // Enumerates various events related to the password generation process.
@@ -71,5 +72,6 @@ enum UserAction {
 };
 
 }  // namespace password_generation
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_

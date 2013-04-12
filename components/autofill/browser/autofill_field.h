@@ -12,6 +12,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/common/form_field_data.h"
 
+namespace autofill {
+
 class AutofillField : public FormFieldData {
  public:
   enum PhonePart {
@@ -84,5 +86,7 @@ class AutofillField : public FormFieldData {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_FIELD_H_

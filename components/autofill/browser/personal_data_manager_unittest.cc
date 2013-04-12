@@ -32,6 +32,7 @@
 
 using content::BrowserThread;
 
+namespace autofill {
 namespace {
 
 ACTION(QuitUIMessageLoop) {
@@ -71,7 +72,7 @@ class PersonalDataManagerTest : public testing::Test {
     profile_.reset(new TestingProfile);
     profile_->CreateWebDataService();
 
-    autofill_test::DisableSystemServices(profile_.get());
+    test::DisableSystemServices(profile_.get());
     ResetPersonalDataManager();
   }
 
@@ -114,7 +115,7 @@ class PersonalDataManagerTest : public testing::Test {
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "John", "Mitchell", "Smith",
       "j@s.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
       "94102", "US", "4158889999");
@@ -165,19 +166,19 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
 
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1,
+  test::SetProfileInfo(&profile1,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549");
 
   AutofillProfile profile2;
-  autofill_test::SetProfileInfo(&profile2,
+  test::SetProfileInfo(&profile2,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
@@ -226,15 +227,15 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   CreditCard credit_card0;
-  autofill_test::SetCreditCardInfo(&credit_card0,
+  test::SetCreditCardInfo(&credit_card0,
       "John Dillinger", "423456789012" /* Visa */, "01", "2010");
 
   CreditCard credit_card1;
-  autofill_test::SetCreditCardInfo(&credit_card1,
+  test::SetCreditCardInfo(&credit_card1,
       "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
 
   CreditCard credit_card2;
-  autofill_test::SetCreditCardInfo(&credit_card2,
+  test::SetCreditCardInfo(&credit_card2,
       "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
 
   // Add two test credit cards to the database.
@@ -281,23 +282,23 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
 
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
 
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1,
+  test::SetProfileInfo(&profile1,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549");
 
   CreditCard credit_card0;
-  autofill_test::SetCreditCardInfo(&credit_card0,
+  test::SetCreditCardInfo(&credit_card0,
       "John Dillinger", "423456789012" /* Visa */, "01", "2010");
 
   CreditCard credit_card1;
-  autofill_test::SetCreditCardInfo(&credit_card1,
+  test::SetCreditCardInfo(&credit_card1,
       "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
 
   // Add two test profiles to the database.
@@ -342,7 +343,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
 // correctly on load.
 TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "y", "", "", "", "", "", "", "", "", "", "", "");
 
   // Add the profile0 to the db.
@@ -360,7 +361,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
   // Add a new profile.
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1,
+  test::SetProfileInfo(&profile1,
       "z", "", "", "", "", "", "", "", "", "", "", "");
   personal_data_->AddProfile(profile1);
 
@@ -379,7 +380,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "", "", "", "", "", "", "", "", "", "", "", "");
 
   // Add the empty profile to the database.
@@ -399,7 +400,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
   CreditCard credit_card0;
-  autofill_test::SetCreditCardInfo(&credit_card0, "", "", "", "");
+  test::SetCreditCardInfo(&credit_card0, "", "", "", "");
 
   // Add the empty credit card to the database.
   personal_data_->AddCreditCard(credit_card0);
@@ -418,13 +419,13 @@ TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
 
 TEST_F(PersonalDataManagerTest, Refresh) {
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
 
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1,
+  test::SetProfileInfo(&profile1,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549");
@@ -450,7 +451,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   EXPECT_EQ(profile1, *results1[1]);
 
   AutofillProfile profile2;
-  autofill_test::SetProfileInfo(&profile2,
+  test::SetProfileInfo(&profile2,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
@@ -503,26 +504,23 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 TEST_F(PersonalDataManagerTest, ImportFormData) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
@@ -537,7 +535,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
@@ -548,26 +546,22 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
 TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Email:", "email", "bogus", "text", &field);
+  test::CreateTestFormField("Email:", "email", "bogus", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
@@ -584,25 +578,22 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
 TEST_F(PersonalDataManagerTest, ImportFormDataTwoEmails) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name:", "name", "George Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "example@example.com", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Confirm email:", "confirm_email", "example@example.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
@@ -618,25 +609,22 @@ TEST_F(PersonalDataManagerTest, ImportFormDataTwoEmails) {
 TEST_F(PersonalDataManagerTest, ImportFormDataTwoDifferentEmails) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name:", "name", "George Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "example@example.com", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email2", "example2@example.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
@@ -651,13 +639,13 @@ TEST_F(PersonalDataManagerTest, ImportFormDataTwoDifferentEmails) {
 TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card number:", "card_number", "4111 1111 1111 1111", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
@@ -678,23 +666,18 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressUSA) {
   // zip code.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Name:", "name", "Barack Obama", "text", &field);
+  test::CreateTestFormField("Name:", "name", "Barack Obama", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Washington", "text", &field);
+  test::CreateTestFormField("City:", "city", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "DC", "text", &field);
+  test::CreateTestFormField("State:", "state", "DC", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "20500", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "20500", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Country:", "country", "USA", "text", &field);
+  test::CreateTestFormField("Country:", "country", "USA", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
@@ -710,19 +693,17 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGB) {
   // not requested on forms.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Name:", "name", "David Cameron", "text", &field);
+  test::CreateTestFormField("Name:", "name", "David Cameron", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address", "10 Downing Street", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "London", "text", &field);
+  test::CreateTestFormField("City:", "city", "London", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Postcode:", "postcode", "SW1A 2AA", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Country:", "country", "United Kingdom", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
@@ -739,14 +720,13 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGI) {
   // There are no cities or provinces and no postal/zip code system.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name:", "name", "Sir Adrian Johns", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address", "The Convent, Main Street", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Country:", "country", "Gibraltar", "text", &field);
+  test::CreateTestFormField("Country:", "country", "Gibraltar", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
@@ -760,35 +740,32 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGI) {
 TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Phone #:", "home_phone_area_code", "650", "text", &field);
   field.max_length = 3;
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Phone #:", "home_phone_prefix", "555", "text", &field);
   field.max_length = 3;
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Phone #:", "home_phone_suffix", "0000", "text", &field);
   field.max_length = 4;
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
@@ -803,7 +780,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", NULL, NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, "(650) 555-0000");
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
@@ -851,26 +828,23 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
 TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -886,7 +860,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
@@ -895,26 +869,23 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
 
   // Now create a completely different profile.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "John", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Adams", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "second@gmail.com", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "22 Laussat St", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -931,7 +902,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2;
-  autofill_test::SetProfileInfo(&expected2, "John", NULL,
+  test::SetProfileInfo(&expected2, "John", NULL,
       "Adams", "second@gmail.com", NULL, "22 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
   ASSERT_EQ(2U, results2.size());
@@ -942,26 +913,23 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
 TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -977,7 +945,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
@@ -986,26 +954,22 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
 
   // Now create a completely different profile.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "John", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Last name:", "last_name", "Adams", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Adams", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "second@gmail.com", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1037,32 +1001,28 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
 TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 2:", "address2", "Suite A", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Phone:", "phone", "6505556666", "text", &field);
+  test::CreateTestFormField("Phone:", "phone", "6505556666", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1078,7 +1038,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(
+  test::SetProfileInfo(
       &expected, "George", NULL, "Washington", "theprez@gmail.com", NULL,
       "1600 Pennsylvania Avenue", "Suite A", "San Francisco", "California",
       "94102", NULL, "(650) 555-6666");
@@ -1088,37 +1048,32 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   // Now create an updated profile.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 2:", "address2", "Suite A", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form2.fields.push_back(field);
   // Country gets added.
-  autofill_test::CreateTestFormField(
-      "Country:", "country", "USA", "text", &field);
+  test::CreateTestFormField("Country:", "country", "USA", "text", &field);
   form2.fields.push_back(field);
   // Phone gets updated.
-  autofill_test::CreateTestFormField(
-      "Phone:", "phone", "6502231234", "text", &field);
+  test::CreateTestFormField("Phone:", "phone", "6502231234", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1147,23 +1102,20 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Philadelphia", "text", &field);
+  test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "Pennsylvania", "text", &field);
+  test::CreateTestFormField("State:", "state", "Pennsylvania", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zipcode", "19106", "text", &field);
+  test::CreateTestFormField("Zip:", "zipcode", "19106", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1179,7 +1131,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", NULL, NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
@@ -1188,26 +1140,23 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
 
   // Submit a form with new data for the first profile.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Philadelphia", "text", &field);
+  test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "Pennsylvania", "text", &field);
+  test::CreateTestFormField("State:", "state", "Pennsylvania", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zipcode", "19106", "text", &field);
+  test::CreateTestFormField("Zip:", "zipcode", "19106", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1224,7 +1173,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2;
-  autofill_test::SetProfileInfo(&expected2, "George", NULL,
+  test::SetProfileInfo(&expected2, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
   ASSERT_EQ(1U, results2.size());
@@ -1234,29 +1183,26 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Company:", "company", "Government", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Philadelphia", "text", &field);
+  test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "Pennsylvania", "text", &field);
+  test::CreateTestFormField("State:", "state", "Pennsylvania", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zipcode", "19106", "text", &field);
+  test::CreateTestFormField("Zip:", "zipcode", "19106", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1272,7 +1218,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", "Government", "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
@@ -1281,27 +1227,24 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
 
   // Submit a form with new data for the first profile.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form2.fields.push_back(field);
   // Note missing Company field.
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Philadelphia", "text", &field);
+  test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "Pennsylvania", "text", &field);
+  test::CreateTestFormField("State:", "state", "Pennsylvania", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zipcode", "19106", "text", &field);
+  test::CreateTestFormField("Zip:", "zipcode", "19106", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1325,23 +1268,22 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
 TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Company:", "company", "Government", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "Philadelphia", "text", &field);
+  test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1363,7 +1305,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
   // Simulate having access to an auxiliary profile.
   // |auxiliary_profile| will be owned by |personal_data_|.
   AutofillProfile* auxiliary_profile = new AutofillProfile;
-  autofill_test::SetProfileInfo(auxiliary_profile,
+  test::SetProfileInfo(auxiliary_profile,
       "Tester", "Frederick", "McAddressBookTesterson",
       "tester@example.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco",
       "CA", "94102", "US", "1.415.888.9999");
@@ -1375,29 +1317,24 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
   // Note that the phone number format is different from the saved format.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "Tester", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "McAddressBookTesterson", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "tester@example.com", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Address:", "address1", "1 Main", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "1 Main", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "CA", "text", &field);
+  test::CreateTestFormField("State:", "state", "CA", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Phone:", "phone", "4158889999", "text", &field);
+  test::CreateTestFormField("Phone:", "phone", "4158889999", "text", &field);
   form.fields.push_back(field);
 
   FormStructure form_structure(form, std::string());
@@ -1422,17 +1359,15 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
 
   // Start with a single valid credit card form.
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1450,7 +1385,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   MessageLoop::current()->Run();
 
   CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
+  test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(1U, results.size());
@@ -1458,17 +1393,15 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
 
   // Add a second different valid credit card.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "5500 0000 0000 0004", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "02", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "02", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2012", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1485,8 +1418,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   MessageLoop::current()->Run();
 
   CreditCard expected2;
-  autofill_test::SetCreditCardInfo(&expected2,
-      "", "5500000000000004", "02", "2012");
+  test::SetCreditCardInfo(&expected2,"", "5500000000000004", "02", "2012");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
@@ -1498,17 +1430,15 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
 
   // Start with a single valid credit card form.
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1526,7 +1456,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   MessageLoop::current()->Run();
 
   CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
+  test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(1U, results.size());
@@ -1534,17 +1464,15 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
 
   // Add a second different invalid credit card.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Jim Johansen", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "1000000000000000", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "02", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "02", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2012", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1565,17 +1493,15 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
 
   // Start with a single valid credit card form.
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1593,7 +1519,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   MessageLoop::current()->Run();
 
   CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
+  test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(1U, results.size());
@@ -1602,17 +1528,15 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   // Add a second different valid credit card where the year is different but
   // the credit card number matches.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111 1111 1111 1111", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2012", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1629,7 +1553,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   // Expect that the newer information is saved.  In this case the year is
   // updated to "2012".
   CreditCard expected2;
-  autofill_test::SetCreditCardInfo(&expected2,
+  test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2012");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
@@ -1641,17 +1565,15 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
 
   // Start with a single valid credit card form.
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1669,7 +1591,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   MessageLoop::current()->Run();
 
   CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
+  test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(1U, results.size());
@@ -1677,14 +1599,12 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
 
   // Add a second credit card with no number.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2012", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1697,7 +1617,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
 
   // No change is expected.
   CreditCard expected2;
-  autofill_test::SetCreditCardInfo(&expected2,
+  test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
@@ -1709,17 +1629,15 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   // Start with a single valid credit card form.
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1, std::string());
@@ -1737,7 +1655,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   MessageLoop::current()->Run();
 
   CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
+  test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(1U, results.size());
@@ -1747,14 +1665,12 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   // the credit card number matches.
   FormData form2;
   // Note missing name.
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111111111111111", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2, std::string());
@@ -1770,7 +1686,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   // No change is expected.
   CreditCard expected2;
-  autofill_test::SetCreditCardInfo(&expected2,
+  test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
@@ -1778,10 +1694,10 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   // Add a third credit card where the expiration date is missing.
   FormData form3;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Johnny McEnroe", "text", &field);
   form3.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "5555555555554444", "text", &field);
   form3.fields.push_back(field);
   // Note missing expiration month and year..
@@ -1796,7 +1712,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   // No change is expected.
   CreditCard expected3;
-  autofill_test::SetCreditCardInfo(&expected3,
+  test::SetCreditCardInfo(&expected3,
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results3.size());
@@ -1807,7 +1723,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // Start with a single valid credit card stored via the preferences.
   // Note the empty name.
   CreditCard saved_credit_card;
-  autofill_test::SetCreditCardInfo(&saved_credit_card,
+  test::SetCreditCardInfo(&saved_credit_card,
       "", "4111111111111111" /* Visa */, "01", "2011");
   personal_data_->AddCreditCard(saved_credit_card);
 
@@ -1825,17 +1741,15 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // the credit card number matches.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2012", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
   form.fields.push_back(field);
 
   FormStructure form_structure(form, std::string());
@@ -1853,7 +1767,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // Expect that the newer information is saved.  In this case the year is
   // added to the existing credit card.
   CreditCard expected2;
-  autofill_test::SetCreditCardInfo(&expected2,
+  test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2012");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
@@ -1866,7 +1780,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
   // Start with a single valid credit card stored via the preferences.
   // Note the separators in the credit card number.
   CreditCard saved_credit_card;
-  autofill_test::SetCreditCardInfo(&saved_credit_card,
+  test::SetCreditCardInfo(&saved_credit_card,
       "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
   personal_data_->AddCreditCard(saved_credit_card);
 
@@ -1882,17 +1796,15 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
   // Import the same card info, but with different separators in the number.
   FormData form;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2011", "text", &field);
   form.fields.push_back(field);
 
   FormStructure form_structure(form, std::string());
@@ -1921,7 +1833,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with one profile stored.
   AutofillProfile profile0;
-  autofill_test::SetProfileInfo(&profile0,
+  test::SetProfileInfo(&profile0,
       "Marion", NULL, "Morrison",
       "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL, "Hollywood", "CA",
       "91601", "US", "14155678910");
@@ -1952,13 +1864,13 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with multiple profiles stored.
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1,
+  test::SetProfileInfo(&profile1,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "16502937549");
 
   AutofillProfile profile2;
-  autofill_test::SetProfileInfo(&profile2,
+  test::SetProfileInfo(&profile2,
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "16502937549");
@@ -1994,9 +1906,9 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with credit card information also stored.
   CreditCard credit_card;
-  autofill_test::SetCreditCardInfo(&credit_card,
-                                   "John Dillinger", "423456789012" /* Visa */,
-                                   "01", "2010");
+  test::SetCreditCardInfo(&credit_card,
+                          "John Dillinger", "423456789012" /* Visa */,
+                          "01", "2010");
   personal_data_->AddCreditCard(credit_card);
 
   // Verify that the web database has been updated and the notification sent.
@@ -2036,28 +1948,27 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   FormData form1;
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Phone number:", "phone_number", "817-555-6789", "text", &field);
   form1.fields.push_back(field);
 
@@ -2074,7 +1985,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
+  test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, "(817) 555-6789");
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
@@ -2083,28 +1994,25 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
   // Upper-case the first name and change the phone number.
   FormData form2;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "First name:", "first_name", "GEORGE", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Phone number:", "phone_number", "214-555-1234", "text", &field);
   form2.fields.push_back(field);
 
@@ -2130,3 +2038,5 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
+
+}  // namespace autofill

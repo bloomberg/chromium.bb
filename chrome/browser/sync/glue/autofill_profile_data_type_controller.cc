@@ -16,6 +16,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
 
+using autofill::AutofillWebDataService;
 using content::BrowserThread;
 
 namespace browser_sync {

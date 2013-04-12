@@ -41,7 +41,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using components::autofill::kRequiredAutofillFields;
 using WebKit::WebAutofillClient;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;

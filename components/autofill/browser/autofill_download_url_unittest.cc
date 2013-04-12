@@ -9,6 +9,8 @@
 
 using testing::StartsWith;
 
+namespace autofill {
+
 TEST(AutofillDownloadUrlTest, CheckDefaultUrls) {
   std::string query_url =
       autofill::GetAutofillQueryUrl().spec();
@@ -21,3 +23,4 @@ TEST(AutofillDownloadUrlTest, CheckDefaultUrls) {
       StartsWith("https://clients1.google.com/tbproxy/af/upload?client="));
 }
 
+}  // namespace autofill

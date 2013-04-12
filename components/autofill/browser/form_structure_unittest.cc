@@ -16,6 +16,7 @@
 
 using WebKit::WebInputElement;
 
+namespace autofill {
 namespace {
 
 // Unlike the base AutofillMetrics, exposes copy and assignment constructors,
@@ -2220,3 +2221,5 @@ TEST(FormStructureTest, ToFormData) {
   form.user_submitted = true;
   EXPECT_NE(form, FormStructure(form, std::string()).ToFormData());
 }
+
+}  // namespace autofill

@@ -56,6 +56,8 @@ bool DidSelectedTextFieldLoseFocus(const WebNode& newly_clicked_node) {
 
 }  // namespace
 
+namespace autofill {
+
 PageClickTracker::PageClickTracker(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       was_focused_(false) {
@@ -158,3 +160,5 @@ void PageClickTracker::HandleTextFieldMaybeLosingFocus(
       break;
   }
 }
+
+}  // namespace autofill

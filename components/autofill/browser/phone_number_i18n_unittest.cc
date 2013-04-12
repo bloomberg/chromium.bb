@@ -10,11 +10,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libphonenumber/src/phonenumber_api.h"
 
-using autofill_i18n::NormalizePhoneNumber;
-using autofill_i18n::ParsePhoneNumber;
-using autofill_i18n::ConstructPhoneNumber;
-using autofill_i18n::PhoneNumbersMatch;
 using content::BrowserThread;
+
+namespace autofill {
+
+using i18n::NormalizePhoneNumber;
+using i18n::ParsePhoneNumber;
+using i18n::ConstructPhoneNumber;
+using i18n::PhoneNumbersMatch;
 
 TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
   // "Large" digits.
@@ -44,7 +47,7 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
   base::string16 number;
   base::string16 city_code;
   base::string16 country_code;
-  i18n::phonenumbers::PhoneNumber unused_i18n_number;
+  ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
 
   // Test for empty string.  Should give back empty strings.
   base::string16 phone0;
@@ -382,3 +385,5 @@ TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
                                  "US",
                                  "en-US"));
 }
+
+}  // namespace autofill

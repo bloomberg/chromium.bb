@@ -5,6 +5,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace {
 
 TEST(AutofillTypeTest, AutofillTypes) {
@@ -50,3 +51,4 @@ TEST(AutofillTypeTest, AutofillTypes) {
 }
 
 }  // namespace
+}  // namespace autofill

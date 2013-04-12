@@ -25,6 +25,7 @@ namespace autofill {
 class AutocheckoutBubble;
 class AutofillDialogControllerImpl;
 class AutofillPopupControllerImpl;
+struct FormData;
 
 // Chrome implementation of AutofillManagerDelegate.
 class TabAutofillManagerDelegate

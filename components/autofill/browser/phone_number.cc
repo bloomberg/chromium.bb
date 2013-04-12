@@ -14,6 +14,7 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/phone_number_i18n.h"
 
+namespace autofill {
 namespace {
 
 const char16 kPhoneNumberSeparators[] = { ' ', '.', '(', ')', '-', 0 };
@@ -94,7 +95,7 @@ void PhoneNumber::SetRawInfo(AutofillFieldType type,
   number_ = value;
 
   // Invalidate the cached number.
-  cached_parsed_phone_ = autofill_i18n::PhoneObject();
+  cached_parsed_phone_ = i18n::PhoneObject();
 }
 
 // Normalize phones if |type| is a whole number:
@@ -169,8 +170,7 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
   base::string16 whole_number = GetInfo(PHONE_HOME_WHOLE_NUMBER, app_locale);
   if (!whole_number.empty()) {
     base::string16 normalized_number =
-        autofill_i18n::NormalizePhoneNumber(text,
-                                            GetRegion(*profile_, app_locale));
+        i18n::NormalizePhoneNumber(text, GetRegion(*profile_, app_locale));
     if (normalized_number == whole_number)
       matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
   }
@@ -179,7 +179,7 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
 void PhoneNumber::UpdateCacheIfNeeded(const std::string& app_locale) const {
   std::string region = GetRegion(*profile_, app_locale);
   if (!number_.empty() && cached_parsed_phone_.region() != region)
-    cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, region);
+    cached_parsed_phone_ = i18n::PhoneObject(number_, region);
 }
 
 PhoneNumber::PhoneCombineHelper::PhoneCombineHelper() {
@@ -230,10 +230,12 @@ bool PhoneNumber::PhoneCombineHelper::ParseNumber(
     return true;
   }
 
-  return autofill_i18n::ConstructPhoneNumber(
+  return i18n::ConstructPhoneNumber(
       country_, city_, phone_, GetRegion(profile, app_locale), value);
 }
 
 bool PhoneNumber::PhoneCombineHelper::IsEmpty() const {
   return phone_.empty() && whole_number_.empty();
 }
+
+}  // namespace autofill

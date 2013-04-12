@@ -8,6 +8,8 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+namespace autofill {
+
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillManager, public:
 
@@ -81,3 +83,5 @@ bool PasswordAutofillManager::FindLoginInfo(
   *found_password = iter->second;
   return true;
 }
+
+}  // namespace autofill

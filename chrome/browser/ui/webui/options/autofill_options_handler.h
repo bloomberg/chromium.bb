@@ -11,7 +11,9 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
 
+namespace autofill {
 class PersonalDataManager;
+}  // namespace autofill
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +23,7 @@ class ListValue;
 namespace options {
 
 class AutofillOptionsHandler : public OptionsPageUIHandler,
-                               public PersonalDataManagerObserver {
+                               public autofill::PersonalDataManagerObserver {
  public:
   AutofillOptionsHandler();
   virtual ~AutofillOptionsHandler();
@@ -83,7 +85,7 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
 
   // The personal data manager, used to load Autofill profiles and credit cards.
   // Unowned pointer, may not be NULL.
-  PersonalDataManager* personal_data_;
+  autofill::PersonalDataManager* personal_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);
 };

@@ -11,9 +11,6 @@
 
 #include "base/string16.h"
 
-struct FormData;
-struct FormDataPredictions;
-
 namespace WebKit {
 class WebDocument;
 class WebFormElement;
@@ -23,6 +20,9 @@ class WebSelectElement;
 }
 
 namespace autofill {
+
+struct FormData;
+struct FormDataPredictions;
 
 // Manages the forms in a RenderView.
 class FormCache {

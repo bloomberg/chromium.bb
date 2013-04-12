@@ -7,6 +7,8 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 
+namespace autofill {
+
 AutofillChange::AutofillChange(Type type, const AutofillKey& key)
     : GenericAutofillChange<AutofillKey>(type, key) {
 }
@@ -32,3 +34,5 @@ bool AutofillProfileChange::operator==(
          key() == change.key() &&
          (type() != REMOVE) ? *profile() == *change.profile() : true;
 }
+
+}  // namespace autofill

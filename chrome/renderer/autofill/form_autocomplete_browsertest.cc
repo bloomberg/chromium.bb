@@ -19,6 +19,8 @@ using WebKit::WebURLError;
 
 typedef ChromeRenderViewTest FormAutocompleteTest;
 
+namespace autofill {
+
 // Tests that submitting a form generates a FormSubmitted message
 // with the form fields.
 TEST_F(FormAutocompleteTest, NormalFormSubmit) {
@@ -120,3 +122,5 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormSubmitted::ID));
 }
+
+}  // namespace autofill

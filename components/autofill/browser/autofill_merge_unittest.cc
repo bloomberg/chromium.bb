@@ -18,6 +18,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
+namespace autofill {
+
 namespace {
 
 const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("merge");
@@ -142,7 +144,7 @@ AutofillMergeTest::~AutofillMergeTest() {
 }
 
 void AutofillMergeTest::SetUp() {
-  autofill_test::DisableSystemServices(NULL);
+  test::DisableSystemServices(NULL);
 }
 
 void AutofillMergeTest::GenerateResults(const std::string& input,
@@ -217,3 +219,5 @@ TEST_F(AutofillMergeTest, DataDrivenMergeProfiles) {
   RunDataDrivenTest(GetInputDirectory(kTestName), GetOutputDirectory(kTestName),
                     kFileNamePattern);
 }
+
+}  // namespace autofill

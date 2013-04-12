@@ -59,6 +59,16 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using autofill::AutofillChange;
+using autofill::AutofillChangeList;
+using autofill::AutofillEntry;
+using autofill::AutofillFieldType;
+using autofill::AutofillKey;
+using autofill::AutofillProfile;
+using autofill::AutofillProfileChange;
+using autofill::AutofillTable;
+using autofill::AutofillWebDataService;
+using autofill::PersonalDataManager;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
@@ -85,11 +95,11 @@ using testing::ElementsAre;
 using testing::SetArgumentPointee;
 using testing::Return;
 
+class HistoryService;
+
 namespace syncable {
 class Id;
 }
-
-class HistoryService;
 
 namespace {
 
@@ -935,7 +945,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasProfileEmptySync) {
   std::vector<AutofillProfile> expected_profiles;
   // Owned by GetAutofillProfiles caller.
   AutofillProfile* profile0 = new AutofillProfile;
-  autofill_test::SetProfileInfoWithGuid(profile0,
+  autofill::test::SetProfileInfoWithGuid(profile0,
       "54B3F9AA-335E-4F71-A27D-719C41564230", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -1041,14 +1051,14 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   AutofillProfile sync_profile;
-  autofill_test::SetProfileInfoWithGuid(&sync_profile,
+  autofill::test::SetProfileInfoWithGuid(&sync_profile,
       "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
 
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill_test::SetProfileInfoWithGuid(native_profile,
+  autofill::test::SetProfileInfoWithGuid(native_profile,
       "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
@@ -1078,7 +1088,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
   AutofillProfile sync_profile;
-  autofill_test::SetProfileInfoWithGuid(&sync_profile,
+  autofill::test::SetProfileInfoWithGuid(&sync_profile,
       "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -1086,7 +1096,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
 
   AutofillProfile* native_profile = new AutofillProfile;
   // Same address, but different names, phones and e-mails.
-  autofill_test::SetProfileInfoWithGuid(native_profile,
+  autofill::test::SetProfileInfoWithGuid(native_profile,
       "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "19482937549");
@@ -1120,16 +1130,18 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
   // Check that multivalued fields of the synced back data include original
   // data.
-  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile, NAME_FULL));
-  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile, EMAIL_ADDRESS));
-  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile,
-                            PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_TRUE(
+      IncludesField(new_sync_profiles[0], sync_profile, autofill::NAME_FULL));
+  EXPECT_TRUE(IncludesField(
+      new_sync_profiles[0], sync_profile, autofill::EMAIL_ADDRESS));
+  EXPECT_TRUE(IncludesField(
+      new_sync_profiles[0], sync_profile, autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   AutofillProfile sync_profile;
 
-  autofill_test::SetProfileInfoWithGuid(&sync_profile,
+  autofill::test::SetProfileInfoWithGuid(&sync_profile,
       "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -1137,7 +1149,7 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
 
   std::string native_guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill_test::SetProfileInfoWithGuid(native_profile,
+  autofill::test::SetProfileInfoWithGuid(native_profile,
       native_guid.c_str(), "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -1204,7 +1216,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   ASSERT_TRUE(create_root.success());
 
   AutofillProfile added_profile;
-  autofill_test::SetProfileInfoWithGuid(&added_profile,
+  autofill::test::SetProfileInfoWithGuid(&added_profile,
       "D6ADA912-D374-4C0A-917D-F5C8EBE43011", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
@@ -1278,12 +1290,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   AutofillProfile sync_profile;
-  autofill_test::SetProfileInfoWithGuid(&sync_profile,
+  autofill::test::SetProfileInfoWithGuid(&sync_profile,
       "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill_test::SetProfileInfoWithGuid(native_profile,
+  autofill::test::SetProfileInfoWithGuid(native_profile,
       "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");

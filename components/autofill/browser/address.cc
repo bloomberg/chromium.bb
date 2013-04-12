@@ -21,6 +21,8 @@ const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 
 }  // namespace
 
+namespace autofill {
+
 Address::Address() {}
 
 Address::Address(const Address& address) : FormGroup() {
@@ -127,3 +129,5 @@ void Address::GetMatchingTypes(const base::string16& text,
   if (!country_code.empty() && country_code_ == ASCIIToUTF16(country_code))
     matching_types->insert(ADDRESS_HOME_COUNTRY);
 }
+
+}  // namespace autofill

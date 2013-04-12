@@ -28,6 +28,8 @@
 
 using content::BrowserContext;
 
+namespace autofill {
+
 namespace {
 const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 
@@ -48,7 +50,7 @@ static void LogFieldAssignments(
           << form_xml;
 }
 
-};
+}  // namespace
 
 // static
 std::string AutofillDownloadManager::AutofillRequestTypeToString(
@@ -345,3 +347,5 @@ void AutofillDownloadManager::OnURLFetchComplete(
   delete it->first;
   url_fetchers_.erase(it);
 }
+
+}  // namespace autofill

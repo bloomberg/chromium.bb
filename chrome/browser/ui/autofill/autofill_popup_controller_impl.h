@@ -14,8 +14,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
-class AutofillPopupDelegate;
-
 namespace gfx {
 class Display;
 }
@@ -26,6 +24,7 @@ class KeyEvent;
 
 namespace autofill {
 
+class AutofillPopupDelegate;
 class AutofillPopupView;
 
 // This class is a controller for an AutofillPopupView. It implements

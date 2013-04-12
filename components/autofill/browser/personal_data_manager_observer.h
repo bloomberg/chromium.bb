@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_PERSONAL_DATA_MANAGER_OBSERVER_H_
 #define COMPONENTS_AUTOFILL_BROWSER_PERSONAL_DATA_MANAGER_OBSERVER_H_
 
+namespace autofill {
+
 // An interface the PersonalDataManager uses to notify its clients (observers)
 // when it has finished loading personal data from the web database.  Register
 // observers via PersonalDataManager::AddObserver.
@@ -17,5 +19,7 @@ class PersonalDataManagerObserver {
  protected:
   virtual ~PersonalDataManagerObserver() {}
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PERSONAL_DATA_MANAGER_OBSERVER_H_

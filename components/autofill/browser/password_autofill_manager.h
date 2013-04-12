@@ -20,6 +20,8 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace autofill {
+
 // This class is responsible for filling password forms.
 class PasswordAutofillManager {
  public:
@@ -67,5 +69,7 @@ class PasswordAutofillManager {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PASSWORD_AUTOFILL_MANAGER_H_

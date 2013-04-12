@@ -42,7 +42,7 @@ class PasswordManager;
   PasswordManager* passwordManager_;
   autofill::PasswordGenerator* passwordGenerator_;
   content::PasswordForm form_;
-  password_generation::PasswordGenerationActions actions_;
+  autofill::password_generation::PasswordGenerationActions actions_;
 
   PasswordGenerationTextField* textField_;   // weak
 }

@@ -12,6 +12,8 @@
 #include "base/string16.h"
 #include "components/autofill/browser/field_types.h"
 
+namespace autofill {
+
 // The high-level description of Autofill types, used to categorize form fields
 // and for associating form fields with form values in the Web Database.
 class AutofillType {
@@ -50,5 +52,7 @@ class AutofillType {
 typedef AutofillType::FieldTypeGroup FieldTypeGroup;
 typedef std::set<AutofillFieldType> FieldTypeSet;
 typedef std::map<base::string16, AutofillFieldType> FieldTypeMap;
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_TYPE_H_

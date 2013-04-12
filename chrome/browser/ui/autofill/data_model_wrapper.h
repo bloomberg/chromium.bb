@@ -11,16 +11,16 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/wallet/wallet_items.h"
 
-class AutofillProfile;
-class CreditCard;
-class FormGroup;
-class FormStructure;
-
 namespace gfx {
 class Image;
 }
 
 namespace autofill {
+
+class AutofillProfile;
+class CreditCard;
+class FormGroup;
+class FormStructure;
 
 namespace wallet {
 class Address;

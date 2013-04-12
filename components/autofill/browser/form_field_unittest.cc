@@ -9,6 +9,8 @@
 #include "components/autofill/browser/form_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 TEST(FormFieldTest, Match) {
   AutofillField field;
 
@@ -146,3 +148,5 @@ TEST(FormFieldTest, ParseFormFields) {
   EXPECT_EQ(ADDRESS_HOME_LINE2,
             field_type_map.find(ASCIIToUTF16("Address line2"))->second);
 }
+
+}  // namespace autofill

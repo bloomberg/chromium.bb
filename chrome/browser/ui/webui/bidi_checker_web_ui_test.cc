@@ -33,6 +33,9 @@
 #include <gtk/gtk.h>
 #endif
 
+using autofill::AutofillProfile;
+using autofill::PersonalDataManager;
+
 static const base::FilePath::CharType* kWebUIBidiCheckerLibraryJS =
     FILE_PATH_LITERAL("third_party/bidichecker/bidichecker_packaged.js");
 
@@ -293,21 +296,21 @@ static void SetupSettingsAutofillPageTest(Profile* profile,
                                           const char* zipcode,
                                           const char* country,
                                           const char* phone) {
-  autofill_test::DisableSystemServices(profile);
+  autofill::test::DisableSystemServices(profile);
   AutofillProfile autofill_profile;
-  autofill_test::SetProfileInfo(&autofill_profile,
-                                first_name,
-                                middle_name,
-                                last_name,
-                                email,
-                                company,
-                                address1,
-                                address2,
-                                city,
-                                state,
-                                zipcode,
-                                country,
-                                phone);
+  autofill::test::SetProfileInfo(&autofill_profile,
+                                 first_name,
+                                 middle_name,
+                                 last_name,
+                                 email,
+                                 company,
+                                 address1,
+                                 address2,
+                                 city,
+                                 state,
+                                 zipcode,
+                                 country,
+                                 phone);
   PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForProfile(profile);
   ASSERT_TRUE(personal_data_manager);

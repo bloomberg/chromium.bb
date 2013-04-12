@@ -13,6 +13,10 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/webdata/autofill_entry.h"
 
+using autofill::AutofillFieldType;
+using autofill::AutofillKey;
+using autofill::AutofillProfile;
+
 using autofill_helper::AllProfilesMatch;
 using autofill_helper::GetAllKeys;
 using autofill_helper::GetAllProfiles;
@@ -99,7 +103,7 @@ void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
-    autofill_profiles.back().SetRawInfo(AutofillFieldType(NAME_FIRST),
+    autofill_profiles.back().SetRawInfo(AutofillFieldType(autofill::NAME_FIRST),
                                         UTF8ToUTF16(NextName()));
   }
   SetProfiles(profile, &autofill_profiles);
@@ -120,9 +124,9 @@ void AutofillSyncPerfTest::AddKeys(int profile, int num_keys) {
 
 const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
   AutofillProfile profile;
-  autofill_test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
-                                        NextName().c_str(), "", "", "", "", "",
-                                        "", "", "", "", "", "");
+  autofill::test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
+                                         NextName().c_str(), "", "", "", "", "",
+                                         "", "", "", "", "", "");
   return profile;
 }
 

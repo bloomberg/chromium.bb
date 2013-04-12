@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 
+namespace autofill {
+
 AutofillType::AutofillType(AutofillFieldType field_type) {
   if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
       (field_type >= 15 && field_type <= 19) ||
@@ -292,3 +294,5 @@ AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
   NOTREACHED() << "Unknown AutofillFieldType " << str;
   return UNKNOWN_TYPE;
 }
+
+}  // namespace autofill

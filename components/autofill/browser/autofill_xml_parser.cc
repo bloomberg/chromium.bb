@@ -11,6 +11,8 @@
 #include "components/autofill/browser/autofill_server_field_info.h"
 #include "third_party/libjingle/source/talk/xmllite/qname.h"
 
+namespace autofill {
+
 AutofillXmlParser::AutofillXmlParser()
     : succeeded_(true) {
 }
@@ -195,3 +197,5 @@ double AutofillUploadXmlParser::GetDoubleValue(buzz::XmlParseContext* context,
   }
   return value;
 }
+
+}  // namespace autofill

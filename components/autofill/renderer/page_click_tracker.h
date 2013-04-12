@@ -13,6 +13,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEventListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 
+namespace autofill {
+
 class PageClickListener;
 
 
@@ -70,5 +72,7 @@ class PageClickTracker : public content::RenderViewObserver,
 
   DISALLOW_COPY_AND_ASSIGN(PageClickTracker);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_TRACKER_H_

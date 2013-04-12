@@ -12,6 +12,8 @@
 #include "base/string16.h"
 #include "components/autofill/browser/autofill_type.h"
 
+namespace autofill {
+
 class AutofillField;
 class AutofillScanner;
 
@@ -116,5 +118,7 @@ class FormField {
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_FORM_FIELD_H_

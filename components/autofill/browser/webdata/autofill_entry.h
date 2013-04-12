@@ -12,6 +12,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 
+namespace autofill {
+
 class AutofillKey {
  public:
   AutofillKey();
@@ -67,5 +69,7 @@ class AutofillEntry {
   std::vector<base::Time> timestamps_;
   bool timestamps_culled_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__

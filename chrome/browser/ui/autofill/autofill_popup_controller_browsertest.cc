@@ -18,6 +18,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
+namespace autofill {
 namespace {
 
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
@@ -61,8 +62,6 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 };
 
 }  // namespace
-
-namespace autofill {
 
 class AutofillPopupControllerBrowserTest
     : public InProcessBrowserTest,

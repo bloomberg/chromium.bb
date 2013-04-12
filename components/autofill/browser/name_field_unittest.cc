@@ -11,6 +11,8 @@
 #include "components/autofill/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 class NameFieldTest : public testing::Test {
  public:
   NameFieldTest() {}
@@ -305,3 +307,5 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
       field_type_map_.find(ASCIIToUTF16("name3")) != field_type_map_.end());
   EXPECT_EQ(NAME_LAST, field_type_map_[ASCIIToUTF16("name3")]);
 }
+
+}  // namespace autofill

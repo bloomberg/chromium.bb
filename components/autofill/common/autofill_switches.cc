@@ -4,6 +4,7 @@
 
 #include "components/autofill/common/autofill_switches.h"
 
+namespace autofill {
 namespace switches {
 
 // Flag used to tell Chrome the base url of the Autofill service.
@@ -32,3 +33,4 @@ const char kWalletServiceUrl[]              = "wallet-service-url";
 const char kWalletServiceUseProd[]          = "wallet-service-use-prod";
 
 }  // namespace switches
+}  // namespace autofill

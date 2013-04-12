@@ -26,6 +26,8 @@
 using base::Time;
 using base::TimeDelta;
 
+namespace autofill {
+
 // So we can compare AutofillKeys with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
   return os << UTF16ToASCII(key.name()) << ", " << UTF16ToASCII(key.value());
@@ -1326,3 +1328,5 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
 
   EXPECT_EQ(0U, expected_entries.size());
 }
+
+}  // namespace autofill

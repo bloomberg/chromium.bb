@@ -51,11 +51,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
-typedef PersonalDataManager::GUIDPair GUIDPair;
 using content::BrowserThread;
 using content::WebContents;
 using testing::_;
 using WebKit::WebFormElement;
+
+namespace autofill {
+
+typedef PersonalDataManager::GUIDPair GUIDPair;
 
 namespace {
 
@@ -148,9 +151,9 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
     ClearCreditCards();
     CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Miku Hatsune",
-                                     "4234567890654321", // Visa
-                                     month, year);
+    test::SetCreditCardInfo(credit_card, "Miku Hatsune",
+                            "4234567890654321", // Visa
+                            month, year);
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
     credit_cards_.push_back(credit_card);
   }
@@ -158,44 +161,44 @@ class TestPersonalDataManager : public PersonalDataManager {
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
     AutofillProfile* profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
-                                  "Presley", "theking@gmail.com", "RCA",
-                                  "3734 Elvis Presley Blvd.", "Apt. 10",
-                                  "Memphis", "Tennessee", "38116", "US",
-                                  "12345678901");
+    test::SetProfileInfo(profile, "Elvis", "Aaron",
+                         "Presley", "theking@gmail.com", "RCA",
+                         "3734 Elvis Presley Blvd.", "Apt. 10",
+                         "Memphis", "Tennessee", "38116", "US",
+                         "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
-                                  "Holley", "buddy@gmail.com", "Decca",
-                                  "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "US", "23456789012");
+    test::SetProfileInfo(profile, "Charles", "Hardin",
+                         "Holley", "buddy@gmail.com", "Decca",
+                         "123 Apple St.", "unit 6", "Lubbock",
+                         "Texas", "79401", "US", "23456789012");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "", "", "",
-                                  "", "", "");
+    test::SetProfileInfo(
+        profile, "", "", "", "", "", "", "", "", "", "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
     profiles->push_back(profile);
   }
 
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
-                                     "4234 5678 9012 3456",  // Visa
-                                     "04", "2012");
+    test::SetCreditCardInfo(credit_card, "Elvis Presley",
+                            "4234 5678 9012 3456",  // Visa
+                            "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
 
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Buddy Holly",
-                                     "5187654321098765",  // Mastercard
-                                     "10", "2014");
+    test::SetCreditCardInfo(credit_card, "Buddy Holly",
+                            "5187654321098765",  // Mastercard
+                            "10", "2014");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_cards->push_back(credit_card);
 
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "", "", "", "");
+    test::SetCreditCardInfo(credit_card, "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(credit_card);
   }
@@ -212,18 +215,14 @@ void CreateTestFormWithAutocompleteAttribute(FormData* form) {
   form->user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "First Name", "firstname", "", "text", &field);
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Middle Name", "middlename", "", "text", &field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Last Name", "lastname", "", "text", &field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
   field.autocomplete_attribute="cc-type";
-  autofill_test::CreateTestFormField(
-    "cc-type", "cc-type", "", "text", &field);
+  test::CreateTestFormField("cc-type", "cc-type", "", "text", &field);
   form->fields.push_back(field);
 }
 
@@ -236,11 +235,9 @@ void CreateTestShippingOptionsFormData(FormData* form) {
   form->user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-    "Shipping1", "option", "option1", "radio", &field);
+  test::CreateTestFormField("Shipping1", "option", "option1", "radio", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-    "Shipping2", "option", "option2", "radio", &field);
+  test::CreateTestFormField("Shipping2", "option", "option2", "radio", &field);
   form->fields.push_back(field);
 }
 
@@ -255,38 +252,27 @@ void CreateTestAddressFormData(FormData* form) {
   form->user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "First Name", "firstname", "", "text", &field);
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Middle Name", "middlename", "", "text", &field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Last Name", "lastname", "", "text", &field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Address Line 1", "addr1", "", "text", &field);
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Address Line 2", "addr2", "", "text", &field);
+  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City", "city", "", "text", &field);
+  test::CreateTestFormField("City", "city", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State", "state", "", "text", &field);
+  test::CreateTestFormField("State", "state", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Postal Code", "zipcode", "", "text", &field);
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Country", "country", "", "text", &field);
+  test::CreateTestFormField("Country", "country", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Phone Number", "phonenumber", "", "tel", &field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Email", "email", "", "email", &field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
   form->fields.push_back(field);
 }
 
@@ -308,22 +294,18 @@ void CreateTestCreditCardFormData(FormData* form,
   form->user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Name on Card", "nameoncard", "", "text", &field);
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Card Number", "cardnumber", "", "text", &field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   form->fields.push_back(field);
   if (use_month_type) {
-    autofill_test::CreateTestFormField(
+    test::CreateTestFormField(
         "Expiration Date", "ccmonth", "", "month", &field);
     form->fields.push_back(field);
   } else {
-    autofill_test::CreateTestFormField(
-        "Expiration Date", "ccmonth", "", "text", &field);
+    test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
     form->fields.push_back(field);
-    autofill_test::CreateTestFormField(
-        "", "ccyear", "", "text", &field);
+    test::CreateTestFormField("", "ccyear", "", "text", &field);
     form->fields.push_back(field);
   }
 }
@@ -974,8 +956,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMatchCharacter) {
   FormsSeen(forms);
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("First Name", "firstname", "E", "text",
-                                     &field);
+  test::CreateTestFormField("First Name", "firstname", "E", "text",&field);
   GetAutofillSuggestions(form, field);
 
   // No suggestions provided, so send an empty vector as the results.
@@ -1011,15 +992,13 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsUnknownFields) {
   form.user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("Username", "username", "", "text",
-                                     &field);
+  test::CreateTestFormField("Username", "username", "", "text",&field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Password", "password", "", "password",
-                                     &field);
+  test::CreateTestFormField("Password", "password", "", "password",&field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Quest", "quest", "", "quest", &field);
+  test::CreateTestFormField("Quest", "quest", "", "quest", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Color", "color", "", "text", &field);
+  test::CreateTestFormField("Color", "color", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -1215,8 +1194,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   FormsSeen(forms);
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Card Number", "cardnumber", "4", "text", &field);
+  test::CreateTestFormField("Card Number", "cardnumber", "4", "text", &field);
   GetAutofillSuggestions(form, field);
 
   // No suggestions provided, so send an empty vector as the results.
@@ -1358,9 +1336,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   // Add a credit card with the same obfuscated number as Elvis's.
   // |credit_card| will be owned by the mock PersonalDataManager.
   CreditCard* credit_card = new CreditCard;
-  autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
-                                   "5231567890123456",  // Mastercard
-                                   "04", "2012");
+  test::SetCreditCardInfo(credit_card, "Elvis Presley",
+                          "5231567890123456",  // Mastercard
+                          "04", "2012");
   credit_card->set_guid("00000000-0000-0000-0000-000000000007");
   autofill_manager_->AddCreditCard(credit_card);
 
@@ -1451,8 +1429,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
                     expected_labels, expected_icons, expected_unique_ids);
 
   const int kPageID2 = 2;
-  autofill_test::CreateTestFormField(
-      "Card Number", "cardnumber", "", "text", &field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   GetAutofillSuggestions(kPageID2, form, field);
 
   // No suggestions provided, so send an empty vector as the results.
@@ -1525,8 +1502,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
                     kDefaultPageID, arraysize(expected_values), expected_values,
                     expected_labels, expected_icons, expected_unique_ids);
 
-  autofill_test::CreateTestFormField(
-      "Card Number", "cardnumber", "", "text", &field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
 
@@ -1648,8 +1624,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   FormData form;
   CreateTestAddressFormData(&form);
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Some Field", "somefield", "", "text", &field);
+  test::CreateTestFormField("Some Field", "somefield", "", "text", &field);
   form.fields.push_back(field);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
@@ -1695,8 +1670,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
 
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile* profile = new AutofillProfile;
-  autofill_test::SetProfileInfo(profile, "Elvis", "", "", "", "", "", "", "",
-                                "", "", "", "");
+  test::SetProfileInfo(
+      profile, "Elvis", "", "", "", "", "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   autofill_manager_->AddProfile(profile);
 
@@ -1738,8 +1713,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
 
   // |profile| will be owned by the mock PersonalDataManager.
   AutofillProfile* profile = new AutofillProfile;
-  autofill_test::SetProfileInfo(profile, "Elvis", "", "Presley", "me@x.com", "",
-                                "", "", "", "", "", "", "");
+  test::SetProfileInfo(profile, "Elvis", "", "Presley", "me@x.com", "",
+                       "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   std::vector<base::string16> multi_values(2);
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
@@ -1942,7 +1917,7 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   personal_data_.ClearAutofillProfiles();
   PrefService* prefs = components::UserPrefs::Get(profile());
-  prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, true);
+  prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
   personal_data_.CreateTestAuxiliaryProfiles();
 
   // Set up our form data.
@@ -2202,47 +2177,47 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
 
   FormFieldData field;
 
-  autofill_test::CreateTestFormField("", "country", "", "text", &field);
+  test::CreateTestFormField("", "country", "", "text", &field);
   field.autocomplete_attribute = "section-billing country";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "firstname", "", "text", &field);
+  test::CreateTestFormField("", "firstname", "", "text", &field);
   field.autocomplete_attribute = "given-name";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "lastname", "", "text", &field);
+  test::CreateTestFormField("", "lastname", "", "text", &field);
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "address", "", "text", &field);
+  test::CreateTestFormField("", "address", "", "text", &field);
   field.autocomplete_attribute = "section-billing street-address";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "city", "", "text", &field);
+  test::CreateTestFormField("", "city", "", "text", &field);
   field.autocomplete_attribute = "section-billing locality";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "state", "", "text", &field);
+  test::CreateTestFormField("", "state", "", "text", &field);
   field.autocomplete_attribute = "section-billing region";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "zip", "", "text", &field);
+  test::CreateTestFormField("", "zip", "", "text", &field);
   field.autocomplete_attribute = "section-billing postal-code";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "ccname", "", "text", &field);
+  test::CreateTestFormField("", "ccname", "", "text", &field);
   field.autocomplete_attribute = "section-billing cc-name";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "ccnumber", "", "text", &field);
+  test::CreateTestFormField("", "ccnumber", "", "text", &field);
   field.autocomplete_attribute = "section-billing cc-number";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "ccexp", "", "text", &field);
+  test::CreateTestFormField("", "ccexp", "", "text", &field);
   field.autocomplete_attribute = "section-billing cc-exp";
   form.fields.push_back(field);
 
-  autofill_test::CreateTestFormField("", "email", "", "text", &field);
+  test::CreateTestFormField("", "email", "", "text", &field);
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
 
@@ -2355,8 +2330,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleEmails) {
   FormData form;
   CreateTestAddressFormData(&form);
   FormFieldData field;
-  autofill_test::CreateTestFormField(
-      "Confirm email", "email2", "", "text", &field);
+  test::CreateTestFormField("Confirm email", "email2", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -2522,7 +2496,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   FormFieldData field;
   const size_t default_max_length = field.max_length;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_fields); ++i) {
-    autofill_test::CreateTestFormField(
+    test::CreateTestFormField(
         test_fields[i].label, test_fields[i].name, "", "text", &field);
     field.max_length = test_fields[i].max_length;
     field.autocomplete_attribute = std::string();
@@ -2650,7 +2624,7 @@ TEST_F(AutofillManagerTest, FormChangesRemoveField) {
 
   // Add a field -- we'll remove it again later.
   FormFieldData field;
-  autofill_test::CreateTestFormField("Some", "field", "", "text", &field);
+  test::CreateTestFormField("Some", "field", "", "text", &field);
   form.fields.insert(form.fields.begin() + 3, field);
 
   std::vector<FormData> forms(1, form);
@@ -2840,15 +2814,20 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   // Auxiliary profiles is implemented on Mac and Android only.
   // OSX: enables Mac Address Book integration.
   // Android: enables integration with user's contact profile.
-  ASSERT_TRUE(prefs->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
-  prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, false);
-  prefs->ClearPref(prefs::kAutofillAuxiliaryProfilesEnabled);
-  ASSERT_TRUE(prefs->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_TRUE(
+      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
+  prefs->SetBoolean(
+      ::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, false);
+  prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
+  ASSERT_TRUE(
+      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 #else
-  ASSERT_FALSE(prefs->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
-  prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, true);
-  prefs->ClearPref(prefs::kAutofillAuxiliaryProfilesEnabled);
-  ASSERT_FALSE(prefs->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_FALSE(
+      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
+  prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
+  prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
+  ASSERT_FALSE(
+      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 #endif
 }
 
@@ -2865,212 +2844,212 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   // These fields should all match.
   FormFieldData field;
   FieldTypeSet types;
-  autofill_test::CreateTestFormField("", "1", "Elvis", "text", &field);
+  test::CreateTestFormField("", "1", "Elvis", "text", &field);
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "2", "Aaron", "text", &field);
+  test::CreateTestFormField("", "2", "Aaron", "text", &field);
   types.clear();
   types.insert(NAME_MIDDLE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "3", "A", "text", &field);
+  test::CreateTestFormField("", "3", "A", "text", &field);
   types.clear();
   types.insert(NAME_MIDDLE_INITIAL);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "4", "Presley", "text", &field);
+  test::CreateTestFormField("", "4", "Presley", "text", &field);
   types.clear();
   types.insert(NAME_LAST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "5", "Elvis Presley", "text", &field);
+  test::CreateTestFormField("", "5", "Elvis Presley", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_NAME);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "6", "Elvis Aaron Presley", "text",
+  test::CreateTestFormField("", "6", "Elvis Aaron Presley", "text",
                                      &field);
   types.clear();
   types.insert(NAME_FULL);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "7", "theking@gmail.com", "email",
+  test::CreateTestFormField("", "7", "theking@gmail.com", "email",
                                      &field);
   types.clear();
   types.insert(EMAIL_ADDRESS);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "8", "RCA", "text", &field);
+  test::CreateTestFormField("", "8", "RCA", "text", &field);
   types.clear();
   types.insert(COMPANY_NAME);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "9", "3734 Elvis Presley Blvd.",
+  test::CreateTestFormField("", "9", "3734 Elvis Presley Blvd.",
                                      "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_LINE1);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "10", "Apt. 10", "text", &field);
+  test::CreateTestFormField("", "10", "Apt. 10", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_LINE2);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "11", "Memphis", "text", &field);
+  test::CreateTestFormField("", "11", "Memphis", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_CITY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "12", "Tennessee", "text", &field);
+  test::CreateTestFormField("", "12", "Tennessee", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_STATE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "13", "38116", "text", &field);
+  test::CreateTestFormField("", "13", "38116", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_ZIP);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "14", "USA", "text", &field);
+  test::CreateTestFormField("", "14", "USA", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_COUNTRY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "15", "United States", "text", &field);
+  test::CreateTestFormField("", "15", "United States", "text", &field);
   types.clear();
   types.insert(ADDRESS_HOME_COUNTRY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "16", "+1 (234) 567-8901", "text",
+  test::CreateTestFormField("", "16", "+1 (234) 567-8901", "text",
                                      &field);
   types.clear();
   types.insert(PHONE_HOME_WHOLE_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "17", "2345678901", "text", &field);
+  test::CreateTestFormField("", "17", "2345678901", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_CITY_AND_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "18", "1", "text", &field);
+  test::CreateTestFormField("", "18", "1", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_COUNTRY_CODE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "19", "234", "text", &field);
+  test::CreateTestFormField("", "19", "234", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_CITY_CODE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "20", "5678901", "text", &field);
+  test::CreateTestFormField("", "20", "5678901", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "21", "567", "text", &field);
+  test::CreateTestFormField("", "21", "567", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "22", "8901", "text", &field);
+  test::CreateTestFormField("", "22", "8901", "text", &field);
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "23", "4234-5678-9012-3456", "text",
+  test::CreateTestFormField("", "23", "4234-5678-9012-3456", "text",
                                      &field);
   types.clear();
   types.insert(CREDIT_CARD_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "24", "04", "text", &field);
+  test::CreateTestFormField("", "24", "04", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_EXP_MONTH);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "25", "April", "text", &field);
+  test::CreateTestFormField("", "25", "April", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_EXP_MONTH);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "26", "2012", "text", &field);
+  test::CreateTestFormField("", "26", "2012", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "27", "12", "text", &field);
+  test::CreateTestFormField("", "27", "12", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "28", "04/2012", "text", &field);
+  test::CreateTestFormField("", "28", "04/2012", "text", &field);
   types.clear();
   types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
   // Make sure that we trim whitespace properly.
-  autofill_test::CreateTestFormField("", "29", "", "text", &field);
+  test::CreateTestFormField("", "29", "", "text", &field);
   types.clear();
   types.insert(EMPTY_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "30", " ", "text", &field);
+  test::CreateTestFormField("", "30", " ", "text", &field);
   types.clear();
   types.insert(EMPTY_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "31", " Elvis", "text", &field);
+  test::CreateTestFormField("", "31", " Elvis", "text", &field);
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "32", "Elvis ", "text", &field);
+  test::CreateTestFormField("", "32", "Elvis ", "text", &field);
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
   // These fields should not match, as they differ by case.
-  autofill_test::CreateTestFormField("", "33", "elvis", "text", &field);
+  test::CreateTestFormField("", "33", "elvis", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "34", "3734 Elvis Presley BLVD",
+  test::CreateTestFormField("", "34", "3734 Elvis Presley BLVD",
                                      "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
@@ -3078,50 +3057,50 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   expected_types.push_back(types);
 
   // These fields should not match, as they are unsupported variants.
-  autofill_test::CreateTestFormField("", "35", "Elvis Aaron", "text", &field);
+  test::CreateTestFormField("", "35", "Elvis Aaron", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "36", "Mr. Presley", "text", &field);
+  test::CreateTestFormField("", "36", "Mr. Presley", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "37", "3734 Elvis Presley", "text",
+  test::CreateTestFormField("", "37", "3734 Elvis Presley", "text",
                                      &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "38", "TN", "text", &field);
+  test::CreateTestFormField("", "38", "TN", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "39", "38116-1023", "text", &field);
+  test::CreateTestFormField("", "39", "38116-1023", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "20", "5", "text", &field);
+  test::CreateTestFormField("", "20", "5", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "20", "56", "text", &field);
+  test::CreateTestFormField("", "20", "56", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  autofill_test::CreateTestFormField("", "20", "901", "text", &field);
+  test::CreateTestFormField("", "20", "901", "text", &field);
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
@@ -3140,10 +3119,10 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   PrefService* prefs = components::UserPrefs::Get(profile());
 
   // Allow this test to control what should get synced.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
   // Always set password generation enabled check box so we can test the
   // behavior of password sync.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
 
   // Sync some things, but not passwords. Shouldn't send anything since
   // password generation is disabled by default.
@@ -3198,10 +3177,10 @@ TEST_F(IncognitoAutofillManagerTest, UpdatePasswordSyncStateIncognito) {
   PrefService* prefs = components::UserPrefs::Get(profile());
 
   // Allow this test to control what should get synced.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
   // Always set password generation enabled check box so we can test the
   // behavior of password sync.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
 
   browser_sync::SyncPrefs sync_prefs(profile()->GetPrefs());
   sync_prefs.SetSyncSetupCompleted();
@@ -3219,7 +3198,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
 
   // Always set password sync enabled so we can test the behavior of password
   // generation.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
   ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       profile());
   sync_service->SetSyncSetupCompleted();
@@ -3228,24 +3207,24 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   sync_service->ChangePreferredDataTypes(preferred_set);
 
   // Enabled state remains false, should not sent.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, false);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, false);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Enabled state from false to true, should sent true.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
 
   // Enabled states remains true, should not sent.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Enabled states from true to false, should sent false.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, false);
+  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, false);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
@@ -3359,3 +3338,5 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
 
   autofill_manager_->SetExternalDelegate(NULL);
 }
+
+}  // namespace autofill

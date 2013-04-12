@@ -61,7 +61,7 @@ class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
   autofill::PasswordGenerator* password_generator_;
 
   // Store various status of the current living bubble.
-  password_generation::PasswordGenerationActions actions_;
+  autofill::password_generation::PasswordGenerationActions actions_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleGtk);
 };

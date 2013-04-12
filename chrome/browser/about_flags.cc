@@ -578,7 +578,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
     IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
+    SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)
   },
   {
     "enable-sync-favicons",
@@ -1191,14 +1191,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME,
     IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableExperimentalFormFilling)
+    SINGLE_VALUE_TYPE(autofill::switches::kEnableExperimentalFormFilling)
   },
   {
     "wallet-service-use-prod",
     IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_NAME,
     IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_DESCRIPTION,
     kOsCrOS | kOsWin,
-    SINGLE_VALUE_TYPE(switches::kWalletServiceUseProd)
+    SINGLE_VALUE_TYPE(autofill::switches::kWalletServiceUseProd)
   },
   {
     "enable-interactive-autocomplete",

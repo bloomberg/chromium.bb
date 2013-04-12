@@ -9,6 +9,8 @@
 #include "components/autofill/browser/autofill_regex_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 TEST(AutofillRegexesTest, AutofillRegexes) {
   struct TestCase {
     const char* const input;
@@ -58,3 +60,5 @@ TEST(AutofillRegexesTest, AutofillRegexes) {
                                           ASCIIToUTF16(test_case.pattern)));
   }
 }
+
+}  // namespace autofill

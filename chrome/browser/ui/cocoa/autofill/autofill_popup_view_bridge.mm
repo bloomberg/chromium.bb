@@ -37,7 +37,7 @@ NSBox* CreateBorderView() {
   return border_view;
 }
 
-}  // namespac3
+}  // namespace
 
 namespace autofill {
 

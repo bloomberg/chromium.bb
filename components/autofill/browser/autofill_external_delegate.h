@@ -20,8 +20,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/rect.h"
 
-class AutofillManager;
-
 namespace gfx {
 class Rect;
 }
@@ -29,6 +27,10 @@ class Rect;
 namespace content {
 class WebContents;
 }
+
+namespace autofill {
+
+class AutofillManager;
 
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
 // Once Autofill is moved out of WebKit this class should be the only home for
@@ -187,5 +189,7 @@ class AutofillExternalDelegate
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_EXTERNAL_DELEGATE_H_

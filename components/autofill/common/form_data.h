@@ -12,6 +12,8 @@
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 
+namespace autofill {
+
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
   FormData();
@@ -37,5 +39,7 @@ struct FormData {
   // SSL status of the frame contatining the form.
   content::SSLStatus ssl_status;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__

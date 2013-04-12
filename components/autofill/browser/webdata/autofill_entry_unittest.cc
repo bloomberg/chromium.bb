@@ -9,6 +9,8 @@
 #include "components/autofill/browser/webdata/autofill_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 const unsigned int kMaxAutofillTimeStamps = 2;
 
 TEST(AutofillEntryTest, NoCulling) {
@@ -76,3 +78,5 @@ TEST(AutofillEntryTest, CullByTime) {
   EXPECT_TRUE(entry_outside_the_limits.IsExpired());
   EXPECT_TRUE(entry_outside_the_limits.timestamps_culled());
 }
+
+}  // namespace autofill

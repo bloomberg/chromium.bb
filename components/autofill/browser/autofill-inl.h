@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_INL_H_
 #define COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_INL_H_
 
+namespace autofill {
+
 template<typename T>
 class FormGroupMatchesByCompareFunctor {
  public:
@@ -31,5 +33,7 @@ bool FindByContents(const C& container, const T& form_group) {
       container.end(),
       FormGroupMatchesByCompareFunctor<T>(form_group)) != container.end();
 }
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_INL_H_

@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "components/autofill/common/form_field_data.h"
 
+namespace autofill {
+
 PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
 }
 
@@ -43,3 +45,5 @@ void InitPasswordFormFillData(
       result->additional_logins[iter->first] = iter->second->password_value;
   }
 }
+
+}  // namespace autofill

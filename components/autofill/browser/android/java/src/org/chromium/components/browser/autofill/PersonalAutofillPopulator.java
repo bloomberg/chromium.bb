@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 import java.util.ArrayList;
 
@@ -34,6 +35,7 @@ import java.util.ArrayList;
  * Loads user profile information stored under the "Me" contact.
  * Requires permissions: READ_CONTACTS and READ_PROFILE.
  */
+@JNINamespace("autofill")
 public class PersonalAutofillPopulator {
     /**
      * SQL query definitions for obtaining specific profile information.

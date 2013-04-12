@@ -18,8 +18,10 @@ class PhoneNumber;
 }
 }
 
+namespace autofill {
+
 // Utilities to process, normalize and compare international phone numbers.
-namespace autofill_i18n {
+namespace i18n {
 
 // Most of the following functions require |region| to operate. The |region| is
 // a ISO 3166 standard code ("US" for USA, "CZ" for Czech Republic, etc.).
@@ -34,7 +36,7 @@ bool ParsePhoneNumber(
     base::string16* country_code,
     base::string16* city_code,
     base::string16* number,
-    i18n::phonenumbers::PhoneNumber* i18n_number) WARN_UNUSED_RESULT;
+    ::i18n::phonenumbers::PhoneNumber* i18n_number) WARN_UNUSED_RESULT;
 
 // Normalizes phone number, by changing digits in the extended fonts
 // (such as \xFF1x) into '0'-'9'. Also strips out non-digit characters.
@@ -89,7 +91,8 @@ class PhoneObject {
   std::string region_;
 
   // The parsed number and its components.
-  scoped_ptr<i18n::phonenumbers::PhoneNumber> i18n_number_;
+  //
+  scoped_ptr< ::i18n::phonenumbers::PhoneNumber> i18n_number_;
   base::string16 city_code_;
   base::string16 country_code_;
   base::string16 number_;
@@ -103,6 +106,7 @@ class PhoneObject {
   mutable base::string16 whole_number_;
 };
 
-}  // namespace autofill_i18n
+}  // namespace i18n
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PHONE_NUMBER_I18N_H_

@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 
-namespace components {
 namespace autofill {
 
 const char kHelpURL[] =
@@ -19,4 +18,3 @@ const char kHelpURL[] =
 const size_t kRequiredAutofillFields = 3;
 
 }  // namespace autofill
-}  // namespace components

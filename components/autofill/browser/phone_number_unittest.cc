@@ -10,6 +10,8 @@
 #include "components/autofill/browser/phone_number_i18n.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 TEST(PhoneNumberTest, Matcher) {
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
@@ -201,3 +203,5 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   EXPECT_TRUE(number7.ParseNumber(AutofillProfile(), "en-US", &parsed_phone));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5682"), parsed_phone);
 }
+
+}  // namespace autofill

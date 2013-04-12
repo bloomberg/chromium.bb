@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
+namespace autofill {
+
 class AutofillField;
 
 // A helper class for parsing a stream of |AutofillField|'s with lookahead.
@@ -53,5 +55,7 @@ class AutofillScanner {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillScanner);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_SCANNER_H_

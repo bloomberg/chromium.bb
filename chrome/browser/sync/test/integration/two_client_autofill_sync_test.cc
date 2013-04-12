@@ -13,6 +13,12 @@
 #include "components/autofill/browser/webdata/autofill_entry.h"
 #include "components/autofill/browser/webdata/autofill_table.h"
 
+using autofill::AutofillKey;
+using autofill::AutofillTable;
+using autofill::AutofillProfile;
+using autofill::AutofillType;
+using autofill::CreditCard;
+using autofill::PersonalDataManager;
 using autofill_helper::AddKeys;
 using autofill_helper::AddProfile;
 using autofill_helper::CreateAutofillProfile;
@@ -181,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   // Client0 updates a profile.
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 ASCIIToUTF16("Bart"));
   MakeABookmarkChange(0);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -214,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
 
   AutofillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
   AutofillProfile profile1 = CreateAutofillProfile(PROFILE_HOMER);
-  profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1234567890"));
+  profile1.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                      ASCIIToUTF16("1234567890"));
 
   AddProfile(0, profile0);
   AddProfile(1, profile1);
@@ -300,11 +307,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
 
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 ASCIIToUTF16("Lisa"));
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(EMAIL_ADDRESS),
+                AutofillType(autofill::EMAIL_ADDRESS),
                 ASCIIToUTF16("grrrl@TV.com"));
   MakeABookmarkChange(0);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -324,12 +331,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DISABLED_ConflictingFields) {
   ASSERT_EQ(1U, GetAllProfiles(0).size());
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 ASCIIToUTF16("Lisa"));
   MakeABookmarkChange(0);
   UpdateProfile(1,
                 GetAllProfiles(1)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 ASCIIToUTF16("Bart"));
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitQuiescence());
@@ -399,19 +406,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_LAST),
+                AutofillType(autofill::NAME_LAST),
                 max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(EMAIL_ADDRESS),
+                AutofillType(autofill::EMAIL_ADDRESS),
                 max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(ADDRESS_HOME_LINE1),
+                AutofillType(autofill::ADDRESS_HOME_LINE1),
                 max_length_string);
 
   MakeABookmarkChange(0);
@@ -431,19 +438,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
   string16 exceeds_max_length_string(AutofillTable::kMaxDataLength + 1, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_FIRST),
+                AutofillType(autofill::NAME_FIRST),
                 exceeds_max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(NAME_LAST),
+                AutofillType(autofill::NAME_LAST),
                 exceeds_max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(EMAIL_ADDRESS),
+                AutofillType(autofill::EMAIL_ADDRESS),
                 exceeds_max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(ADDRESS_HOME_LINE1),
+                AutofillType(autofill::ADDRESS_HOME_LINE1),
                 exceeds_max_length_string);
 
   MakeABookmarkChange(0);
@@ -458,7 +465,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
 
   CreditCard card;
-  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("6011111111111117"));
+  card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                  ASCIIToUTF16("6011111111111117"));
   std::vector<CreditCard> credit_cards;
   credit_cards.push_back(card);
   SetCreditCards(0, &credit_cards);

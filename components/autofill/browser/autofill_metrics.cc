@@ -11,6 +11,8 @@
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/common/form_data.h"
 
+namespace autofill {
+
 namespace {
 
 // Server experiments we support.
@@ -132,13 +134,13 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
 
     case AutofillType::CREDIT_CARD:
       switch (field_type) {
-        case ::CREDIT_CARD_NAME:
+        case ::autofill::CREDIT_CARD_NAME:
           group = CREDIT_CARD_NAME;
           break;
-        case ::CREDIT_CARD_NUMBER:
+        case ::autofill::CREDIT_CARD_NUMBER:
           group = CREDIT_CARD_NUMBER;
           break;
-        case ::CREDIT_CARD_TYPE:
+        case ::autofill::CREDIT_CARD_TYPE:
           group = CREDIT_CARD_TYPE;
         default:
           group = CREDIT_CARD_DATE;
@@ -556,3 +558,5 @@ void AutofillMetrics::LogServerExperimentIdForUpload(
     const std::string& experiment_id) const {
   LogServerExperimentId("Autofill.ServerExperimentId.Upload", experiment_id);
 }
+
+}  // namespace autofill

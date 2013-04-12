@@ -7,6 +7,8 @@
 
 #include "components/autofill/browser/webdata/autofill_change.h"
 
+namespace autofill {
+
 class AutofillWebDataServiceObserverOnDBThread {
  public:
   // Called on DB thread whenever Autofill entries are changed.
@@ -33,5 +35,7 @@ class AutofillWebDataServiceObserverOnUIThread {
  protected:
   virtual ~AutofillWebDataServiceObserverOnUIThread() {}
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_

@@ -11,6 +11,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 TEST(NameInfoTest, SetFullName) {
   NameInfo name;
   name.SetRawInfo(NAME_FULL, ASCIIToUTF16("Virgil"));
@@ -99,3 +101,5 @@ TEST(NameInfoTest, GetFullName) {
   EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
   EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last"));
 }
+
+}  // namespace autofill

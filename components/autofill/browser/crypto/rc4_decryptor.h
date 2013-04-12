@@ -9,6 +9,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace autofill {
+
 // This is modified RC4 decryption used for import of Toolbar autofill data
 // only. The difference from the Crypto Api implementation is twofold:
 // First, it uses a non-standard key size (160 bit), not supported by Microsoft
@@ -102,5 +104,7 @@ class RC4Decryptor {
 
   Rc4Key key_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_CRYPTO_RC4_DECRYPTOR_H_

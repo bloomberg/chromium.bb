@@ -11,6 +11,8 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 class AuxiliaryProfileAndroidTest : public testing::Test {
  public:
   AuxiliaryProfileAndroidTest() {}
@@ -157,3 +159,5 @@ TEST_F(AuxiliaryProfileAndroidTest, SetAddressInfoEmpty) {
   EXPECT_EQ(profile->GetRawInfo(ADDRESS_HOME_COUNTRY), base::string16());
 }
 #endif
+
+}  // namespace autofill

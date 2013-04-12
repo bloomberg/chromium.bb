@@ -14,9 +14,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 
-class AutofillField;
-
 namespace autofill {
+
+class AutofillField;
 
 // This struct describes a single input control for the imperative autocomplete
 // dialog.
@@ -40,7 +40,8 @@ struct DetailInput {
 
 // Determines whether |input| and |field| match.
 typedef base::Callback<bool(const DetailInput& input,
-                            const AutofillField& field)> InputFieldComparator;
+                            const AutofillField& field)>
+    InputFieldComparator;
 
 // Sections of the dialog --- all fields that may be shown to the user fit under
 // one of these sections.

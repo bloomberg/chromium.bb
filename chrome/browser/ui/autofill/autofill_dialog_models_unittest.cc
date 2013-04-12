@@ -42,14 +42,14 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
   // When "Pay without wallet" is false, use Wallet by default.
   {
     profile()->GetPrefs()->SetBoolean(
-        prefs::kAutofillDialogPayWithoutWallet, false);
+        ::prefs::kAutofillDialogPayWithoutWallet, false);
     AccountChooserModel model(delegate(), profile()->GetPrefs());
     EXPECT_TRUE(model.WalletIsSelected());
   }
   // When the user chose to "Pay without wallet", use Autofill.
   {
     profile()->GetPrefs()->SetBoolean(
-        prefs::kAutofillDialogPayWithoutWallet, true);
+        ::prefs::kAutofillDialogPayWithoutWallet, true);
     AccountChooserModel model(delegate(), profile()->GetPrefs());
     EXPECT_FALSE(model.WalletIsSelected());
   }
@@ -57,14 +57,14 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
 
 TEST_F(AccountChooserModelTest, IgnoresPrefChanges) {
   ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet));
+      ::prefs::kAutofillDialogPayWithoutWallet));
   EXPECT_TRUE(model()->WalletIsSelected());
 
   // Check that nothing changes while this dialog is running if a pref changes
   // (this could cause subtle bugs or annoyances if a user closes another
   // running dialog).
   profile()->GetPrefs()->SetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet, true);
+      ::prefs::kAutofillDialogPayWithoutWallet, true);
   EXPECT_TRUE(model()->WalletIsSelected());
 }
 

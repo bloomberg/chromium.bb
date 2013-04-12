@@ -9,6 +9,7 @@
 #include "components/autofill/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace {
 
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
@@ -53,8 +54,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00;
-  autofill_test::SetCreditCardInfo(&credit_card00,
-      "John Dillinger", "", "", "");
+  test::SetCreditCardInfo(&credit_card00,"John Dillinger", "", "", "");
   base::string16 summary00 = credit_card00.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary00);
   base::string16 obfuscated00 = credit_card00.ObfuscatedNumber();
@@ -62,8 +62,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 1: No credit card number.
   CreditCard credit_card1;
-  autofill_test::SetCreditCardInfo(&credit_card1,
-      "John Dillinger", "", "01", "2010");
+  test::SetCreditCardInfo(&credit_card1,"John Dillinger", "", "01", "2010");
   base::string16 summary1 = credit_card1.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary1);
   base::string16 obfuscated1 = credit_card1.ObfuscatedNumber();
@@ -71,8 +70,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 2: No month.
   CreditCard credit_card2;
-  autofill_test::SetCreditCardInfo(&credit_card2,
-      "John Dillinger", "5105 1051 0510 5100", "", "2010");
+  test::SetCreditCardInfo(
+      &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
   EXPECT_EQ(ASCIIToUTF16("************5100"), summary2);
   base::string16 obfuscated2 = credit_card2.ObfuscatedNumber();
@@ -80,8 +79,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 3: No year.
   CreditCard credit_card3;
-  autofill_test::SetCreditCardInfo(&credit_card3,
-      "John Dillinger", "5105 1051 0510 5100", "01", "");
+  test::SetCreditCardInfo(
+      &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
   EXPECT_EQ(ASCIIToUTF16("************5100"), summary3);
   base::string16 obfuscated3 = credit_card3.ObfuscatedNumber();
@@ -89,8 +88,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 4: Have everything.
   CreditCard credit_card4;
-  autofill_test::SetCreditCardInfo(&credit_card4,
-      "John Dillinger", "5105 1051 0510 5100", "01", "2010");
+  test::SetCreditCardInfo(
+      &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
   EXPECT_EQ(ASCIIToUTF16("************5100, Exp: 01/2010"), summary4);
   base::string16 obfuscated4 = credit_card4.ObfuscatedNumber();
@@ -98,7 +97,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 5: Very long credit card
   CreditCard credit_card5;
-  autofill_test::SetCreditCardInfo(&credit_card5,
+  test::SetCreditCardInfo(
+      &credit_card5,
       "John Dillinger",
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
   base::string16 summary5 = credit_card5.Label();
@@ -111,8 +111,7 @@ TEST(CreditCardTest, AssignmentOperator) {
   CreditCard a, b;
 
   // Result of assignment should be logically equal to the original profile.
-  autofill_test::SetCreditCardInfo(&a, "John Dillinger",
-                                   "123456789012", "01", "2010");
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
   b = a;
   EXPECT_TRUE(a == b);
 
@@ -145,8 +144,8 @@ TEST(CreditCardTest, IsComplete) {
 TEST(CreditCardTest, InvalidMastercardNumber) {
   CreditCard card;
 
-  autofill_test::SetCreditCardInfo(&card, "Baby Face Nelson",
-                                   "5200000000000004", "01", "2010");
+  test::SetCreditCardInfo(&card, "Baby Face Nelson",
+                          "5200000000000004", "01", "2010");
   EXPECT_EQ("genericCC", card.type());
 }
 
@@ -154,8 +153,8 @@ TEST(CreditCardTest, InvalidMastercardNumber) {
 TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
   CreditCard card;
 
-  autofill_test::SetCreditCardInfo(&card, "Bob Dylan",
-                                   "4321-5432-6543-xxxx", "07", "2013");
+  test::SetCreditCardInfo(&card, "Bob Dylan",
+                          "4321-5432-6543-xxxx", "07", "2013");
   EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
             card.GetRawInfo(CREDIT_CARD_NUMBER));
 }
@@ -363,3 +362,5 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
     EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
   }
 }
+
+}  // namespace autofill

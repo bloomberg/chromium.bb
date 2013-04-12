@@ -26,6 +26,7 @@
 #include "third_party/icu/public/i18n/unicode/ucol.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 // The maximum capacity needed to store a locale up to the country code.
@@ -1110,3 +1111,5 @@ AutofillCountry::AutofillCountry(const std::string& country_code,
       postal_code_label_(postal_code_label),
       state_label_(state_label) {
 }
+
+}  // namespace autofill

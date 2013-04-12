@@ -19,6 +19,12 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
 
+using autofill::AutofillCountry;
+using autofill::AutofillFieldType;
+using autofill::AutofillProfile;
+using autofill::AutofillProfileChange;
+using autofill::AutofillTable;
+using autofill::AutofillWebDataService;
 using content::BrowserThread;
 
 namespace {
@@ -108,8 +114,8 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
          profiles_.begin(); ix != profiles_.end(); ++ix) {
       AutofillProfile* p = *ix;
       DVLOG(2) << "[AUTOFILL MIGRATION]  "
-               << p->GetRawInfo(NAME_FIRST)
-               << p->GetRawInfo(NAME_LAST)
+               << p->GetRawInfo(autofill::NAME_FIRST)
+               << p->GetRawInfo(autofill::NAME_LAST)
                << p->guid();
     }
   }
@@ -147,8 +153,8 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         bundle.profiles_to_sync_back.push_back(it->second);
       DVLOG(2) << "[AUTOFILL SYNC]"
                << "Found similar profile in sync db but with a different guid: "
-               << UTF16ToUTF8(it->second->GetRawInfo(NAME_FIRST))
-               << UTF16ToUTF8(it->second->GetRawInfo(NAME_LAST))
+               << UTF16ToUTF8(it->second->GetRawInfo(autofill::NAME_FIRST))
+               << UTF16ToUTF8(it->second->GetRawInfo(autofill::NAME_LAST))
                << "New guid " << it->second->guid()
                << ". Profile to be deleted "
                << profile_to_merge->second->guid();
@@ -307,31 +313,33 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     AutofillProfile* profile,
     const std::string& app_locale) {
   bool diff = false;
-  diff = UpdateMultivaluedField(NAME_FIRST,
+  diff = UpdateMultivaluedField(autofill::NAME_FIRST,
                                 specifics.name_first(), profile) || diff;
-  diff = UpdateMultivaluedField(NAME_MIDDLE,
+  diff = UpdateMultivaluedField(autofill::NAME_MIDDLE,
                                 specifics.name_middle(), profile) || diff;
-  diff = UpdateMultivaluedField(NAME_LAST,
+  diff = UpdateMultivaluedField(autofill::NAME_LAST,
                                 specifics.name_last(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_LINE1,
+  diff = UpdateField(autofill::ADDRESS_HOME_LINE1,
                      specifics.address_home_line1(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_LINE2,
+  diff = UpdateField(autofill::ADDRESS_HOME_LINE2,
                      specifics.address_home_line2(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_CITY,
+  diff = UpdateField(autofill::ADDRESS_HOME_CITY,
                      specifics.address_home_city(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_STATE,
+  diff = UpdateField(autofill::ADDRESS_HOME_STATE,
                      specifics.address_home_state(), profile) || diff;
   string16 country_name_or_code =
       ASCIIToUTF16(specifics.address_home_country());
   std::string country_code = AutofillCountry::GetCountryCode(
       country_name_or_code, app_locale);
-  diff = UpdateField(ADDRESS_HOME_COUNTRY, country_code, profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_ZIP,
+  diff = UpdateField(
+      autofill::ADDRESS_HOME_COUNTRY, country_code, profile) || diff;
+  diff = UpdateField(autofill::ADDRESS_HOME_ZIP,
                      specifics.address_home_zip(), profile) || diff;
-  diff = UpdateMultivaluedField(EMAIL_ADDRESS,
+  diff = UpdateMultivaluedField(autofill::EMAIL_ADDRESS,
                                 specifics.email_address(), profile) || diff;
-  diff = UpdateField(COMPANY_NAME, specifics.company_name(), profile) || diff;
-  diff = UpdateMultivaluedField(PHONE_HOME_WHOLE_NUMBER,
+  diff = UpdateField(
+      autofill::COMPANY_NAME, specifics.company_name(), profile) || diff;
+  diff = UpdateMultivaluedField(autofill::PHONE_HOME_WHOLE_NUMBER,
                                 specifics.phone_home_whole_number(),
                                 profile) || diff;
   return diff;
@@ -355,43 +363,44 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
 
   specifics->set_guid(profile.guid());
   std::vector<string16> values;
-  profile.GetRawMultiInfo(NAME_FIRST, &values);
+  profile.GetRawMultiInfo(autofill::NAME_FIRST, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_name_first(LimitData(UTF16ToUTF8(values[i])));
   }
 
-  profile.GetRawMultiInfo(NAME_MIDDLE, &values);
+  profile.GetRawMultiInfo(autofill::NAME_MIDDLE, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_name_middle(LimitData(UTF16ToUTF8(values[i])));
   }
 
-  profile.GetRawMultiInfo(NAME_LAST, &values);
+  profile.GetRawMultiInfo(autofill::NAME_LAST, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_name_last(LimitData(UTF16ToUTF8(values[i])));
   }
 
   specifics->set_address_home_line1(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_LINE1))));
   specifics->set_address_home_line2(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_LINE2))));
   specifics->set_address_home_city(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_CITY))));
   specifics->set_address_home_state(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_STATE))));
   specifics->set_address_home_country(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))));
+      LimitData(
+          UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY))));
   specifics->set_address_home_zip(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP))));
 
-  profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
+  profile.GetRawMultiInfo(autofill::EMAIL_ADDRESS, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_email_address(LimitData(UTF16ToUTF8(values[i])));
   }
 
   specifics->set_company_name(
-      LimitData(UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME))));
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(autofill::COMPANY_NAME))));
 
-  profile.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  profile.GetRawMultiInfo(autofill::PHONE_HOME_WHOLE_NUMBER, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_phone_home_whole_number(LimitData(UTF16ToUTF8(values[i])));
   }
@@ -442,8 +451,8 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
         bundle->profiles_to_delete.push_back(i->second->guid());
         DVLOG(2) << "[AUTOFILL SYNC]"
                  << "Found in sync db but with a different guid: "
-                 << UTF16ToUTF8(i->second->GetRawInfo(NAME_FIRST))
-                 << UTF16ToUTF8(i->second->GetRawInfo(NAME_LAST))
+                 << UTF16ToUTF8(i->second->GetRawInfo(autofill::NAME_FIRST))
+                 << UTF16ToUTF8(i->second->GetRawInfo(autofill::NAME_LAST))
                  << "New guid " << new_profile->guid()
                  << ". Profile to be deleted " << i->second->guid();
         profile_map->erase(i);

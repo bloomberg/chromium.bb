@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/string16.h"
 
+namespace autofill {
+
 // A convenience class for implementing data-driven tests. Subclassers need only
 // implement the conversion of serialized input data to serialized output data
 // and provide a set of input files. For each input file, on the first run, a
@@ -46,5 +48,7 @@ class DataDrivenTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(DataDrivenTest);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_DATA_DRIVEN_TEST_H_

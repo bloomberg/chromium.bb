@@ -45,13 +45,8 @@ using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
 
+namespace autofill {
 namespace {
-
-using autofill::ExtractAutofillableElements;
-using autofill::IsAutofillableInputElement;
-using autofill::IsCheckableElement;
-using autofill::IsSelectElement;
-using autofill::IsTextInput;
 
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
@@ -467,7 +462,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               bool force_override,
                               Callback callback) {
   std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(form_element, autofill::REQUIRE_AUTOCOMPLETE,
+  ExtractAutofillableElements(form_element, REQUIRE_AUTOCOMPLETE,
                               &control_elements);
 
   if (control_elements.size() != data.fields.size()) {
@@ -574,13 +569,13 @@ void PreviewFormField(const FormFieldData& data,
 }
 
 std::string RetrievalMethodToString(
-    const autofill::WebElementDescriptor::RetrievalMethod& method) {
+    const WebElementDescriptor::RetrievalMethod& method) {
   switch (method) {
-    case autofill::WebElementDescriptor::CSS_SELECTOR:
+    case WebElementDescriptor::CSS_SELECTOR:
       return "CSS_SELECTOR";
-    case autofill::WebElementDescriptor::ID:
+    case WebElementDescriptor::ID:
       return "ID";
-    case autofill::WebElementDescriptor::NONE:
+    case WebElementDescriptor::NONE:
       return "NONE";
   }
   NOTREACHED();
@@ -588,8 +583,6 @@ std::string RetrievalMethodToString(
 }
 
 }  // namespace
-
-namespace autofill {
 
 const size_t kMaxParseableFields = 100;
 

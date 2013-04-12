@@ -19,23 +19,26 @@
 #include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
-class AutofillMetrics;
-class FormStructure;
-class PersonalDataManagerObserver;
-
-namespace autofill {
-class AutofillTest;
-class PersonalDataManagerFactory;
-}
-
-namespace autofill_helper {
-void SetProfiles(int, std::vector<AutofillProfile>*);
-void SetCreditCards(int, std::vector<CreditCard>*);
-}
+class RemoveAutofillTester;
 
 namespace content {
 class BrowserContext;
 }
+
+namespace autofill {
+class AutofillMetrics;
+class AutofillTest;
+class FormStructure;
+class PersonalDataManagerObserver;
+class PersonalDataManagerFactory;
+}  // namespace autofill
+
+namespace autofill_helper {
+void SetProfiles(int, std::vector<autofill::AutofillProfile>*);
+void SetCreditCards(int, std::vector<autofill::CreditCard>*);
+}  // namespace autofill_helper
+
+namespace autofill {
 
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
@@ -183,11 +186,13 @@ class PersonalDataManager : public WebDataServiceConsumer,
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
   friend class ProfileSyncServiceAutofillTest;
-  friend class RemoveAutofillTester;
+  friend class ::RemoveAutofillTester;
   friend class TestingAutomationProvider;
   friend struct base::DefaultDeleter<PersonalDataManager>;
-  friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
-  friend void autofill_helper::SetCreditCards(int, std::vector<CreditCard>*);
+  friend void autofill_helper::SetProfiles(
+      int, std::vector<autofill::AutofillProfile>*);
+  friend void autofill_helper::SetCreditCards(
+      int, std::vector<autofill::CreditCard>*);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.
@@ -280,5 +285,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PERSONAL_DATA_MANAGER_H_

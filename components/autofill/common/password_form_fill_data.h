@@ -11,6 +11,8 @@
 #include "components/autofill/common/form_data.h"
 #include "content/public/common/password_form.h"
 
+namespace autofill {
+
 // Structure used for autofilling password forms.
 // basic_data identifies the HTML form on the page and preferred username/
 //            password for login, while
@@ -42,5 +44,7 @@ void InitPasswordFormFillData(
     const content::PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
     PasswordFormFillData* result);
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H__

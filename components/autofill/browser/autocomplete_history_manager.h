@@ -13,13 +13,14 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
-struct FormData;
-
 namespace content {
 class BrowserContext;
 }
 
+namespace autofill {
+
 class AutofillExternalDelegate;
+struct FormData;
 
 // Per-tab Autocomplete history manager. Handles receiving form data
 // from the renderer and the storing and retrieving of form data
@@ -88,5 +89,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_

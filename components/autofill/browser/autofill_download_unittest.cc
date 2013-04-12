@@ -26,6 +26,8 @@
 using content::BrowserThread;
 using WebKit::WebInputElement;
 
+namespace autofill {
+
 namespace {
 
 class MockAutofillMetrics : public AutofillMetrics {
@@ -503,3 +505,5 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
 }
+
+}  // namespace autofill

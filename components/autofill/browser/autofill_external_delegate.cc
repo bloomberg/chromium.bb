@@ -25,7 +25,9 @@
 using content::RenderViewHost;
 using WebKit::WebAutofillClient;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(AutofillExternalDelegate);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::AutofillExternalDelegate);
+
+namespace autofill {
 
 void AutofillExternalDelegate::CreateForWebContentsAndManager(
     content::WebContents* web_contents,
@@ -383,3 +385,5 @@ void AutofillExternalDelegate::Observe(
     NOTREACHED();
   }
 }
+
+}  // namespace autofill

@@ -17,6 +17,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
+
 FormField* AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
@@ -333,3 +335,5 @@ AddressField::AddressType AddressField::AddressTypeFromText(
 
   return kShippingAddress;
 }
+
+}  // namespace autofill

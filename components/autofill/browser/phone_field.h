@@ -12,6 +12,8 @@
 #include "components/autofill/browser/form_field.h"
 #include "components/autofill/browser/phone_number.h"
 
+namespace autofill {
+
 class AutofillField;
 class AutofillScanner;
 
@@ -85,5 +87,7 @@ class PhoneField : public FormField {
 
   DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_PHONE_FIELD_H_

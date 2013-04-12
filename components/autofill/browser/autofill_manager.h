@@ -34,27 +34,11 @@
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 
-class AutofillExternalDelegate;
-class AutofillField;
-class AutofillProfile;
-class AutofillMetrics;
-class CreditCard;
-class FormGroup;
 class GURL;
 class PrefRegistrySyncable;
 class ProfileSyncService;
 
-struct FormData;
-struct FormFieldData;
-struct PasswordFormFillData;
 struct ViewHostMsg_FrameNavigate_Params;
-
-namespace autofill {
-class AutofillManagerDelegate;
-class AutofillManagerTestDelegate;
-class FormStructureBrowserTest;
-class PasswordGenerator;
-}
 
 namespace content {
 class RenderViewHost;
@@ -71,6 +55,23 @@ class RectF;
 namespace IPC {
 class Message;
 }
+
+namespace autofill {
+
+class AutofillExternalDelegate;
+class AutofillField;
+class AutofillProfile;
+class AutofillManagerDelegate;
+class AutofillManagerTestDelegate;
+class AutofillMetrics;
+class CreditCard;
+class FormStructureBrowserTest;
+class FormGroup;
+class PasswordGenerator;
+
+struct FormData;
+struct FormFieldData;
+struct PasswordFormFillData;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
@@ -463,5 +464,7 @@ class AutofillManager : public content::WebContentsObserver,
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_MANAGER_H_

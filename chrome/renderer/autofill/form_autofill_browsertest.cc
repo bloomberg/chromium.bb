@@ -37,15 +37,7 @@ using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebVector;
 
-using autofill::ClearPreviewedFormWithElement;
-using autofill::ClickElement;
-using autofill::FillForm;
-using autofill::FindFormAndFieldForInputElement;
-using autofill::FillFormIncludingNonFocusableElements;
-using autofill::FormWithElementIsAutofilled;
-using autofill::FormCache;
-using autofill::PreviewForm;
-using autofill::WebFormControlElementToFormField;
+namespace autofill {
 
 class FormAutofillTest : public ChromeRenderViewTest {
  public:
@@ -3070,3 +3062,5 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 }
+
+}  // namespace autofill

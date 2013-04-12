@@ -8,7 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "components/autofill/browser/android/auxiliary_profile_loader_android.h"
 
-namespace components {
+namespace autofill {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "RegisterAuxiliaryProfileLoader",
@@ -20,4 +20,4 @@ bool RegisterAutofillAndroidJni(JNIEnv* env) {
       kComponentRegisteredMethods, arraysize(kComponentRegisteredMethods));
 }
 
-} // namespace components
+}  // namespace autofill

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_COMMON_AUTOFILL_PREF_NAMES_H_
 #define COMPONENTS_AUTOFILL_COMMON_AUTOFILL_PREF_NAMES_H_
 
+namespace autofill {
 namespace prefs {
 
 // Alphabetical list of preference names specific to the Autofill
@@ -16,5 +17,6 @@ extern const char kAutofillPositiveUploadRate[];
 extern const char kPasswordGenerationEnabled[];
 
 }  // namespace prefs
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_AUTOFILL_PREF_NAMES_H_

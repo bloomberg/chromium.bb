@@ -20,8 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
-struct FormFieldData;
-
 namespace WebKit {
 class WebNode;
 class WebView;
@@ -29,6 +27,8 @@ class WebView;
 
 namespace autofill {
 
+struct FormData;
+struct FormFieldData;
 struct WebElementDescriptor;
 class PasswordAutofillAgent;
 

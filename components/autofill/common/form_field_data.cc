@@ -7,6 +7,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
+namespace autofill {
+
 FormFieldData::FormFieldData()
     : max_length(0),
       is_autofilled(false),
@@ -64,3 +66,5 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
       << " "
       << (field.should_autocomplete ? "true" : "false");
 }
+
+}  // namespace autofill

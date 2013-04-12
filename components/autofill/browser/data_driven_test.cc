@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace {
 
 // Reads |file| into |content|, and converts Windows line-endings to Unix ones.
@@ -88,3 +89,5 @@ DataDrivenTest::DataDrivenTest() {
 
 DataDrivenTest::~DataDrivenTest() {
 }
+
+}  // namespace autofill

@@ -42,6 +42,8 @@ using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 
+namespace autofill {
+
 static const int kWebDataServiceTimeoutSeconds = 8;
 
 ACTION_P(SignalEvent, event) {
@@ -530,3 +532,5 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   EXPECT_EQ(handle2, card_consumer2.handle());
   ASSERT_EQ(0U, card_consumer2.result().size());
 }
+
+}  // namespace autofill

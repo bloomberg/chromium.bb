@@ -57,16 +57,17 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
  public:
   MockWebDataServiceWrapper(
       scoped_refptr<WebDataService> fake_service,
-      scoped_refptr<AutofillWebDataService> fake_autofill);
+      scoped_refptr<autofill::AutofillWebDataService> fake_autofill);
 
   virtual ~MockWebDataServiceWrapper();
 
-  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE;
+  virtual scoped_refptr<autofill::AutofillWebDataService>
+      GetAutofillWebData() OVERRIDE;
 
   virtual scoped_refptr<WebDataService> GetWebData() OVERRIDE;
 
  protected:
-  scoped_refptr<AutofillWebDataService> fake_autofill_web_data_;
+  scoped_refptr<autofill::AutofillWebDataService> fake_autofill_web_data_;
   scoped_refptr<WebDataService> fake_web_data_;
 
  private:

@@ -15,6 +15,8 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"
 
+namespace autofill {
+
 static const AutofillFieldType kAutofillNameInfoTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
@@ -196,3 +198,5 @@ void CompanyInfo::SetRawInfo(AutofillFieldType type,
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;
 }
+
+}  // namespace autofill

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 
+namespace autofill {
 namespace password_generation {
 
 PasswordGenerationActions::PasswordGenerationActions()
@@ -38,3 +39,4 @@ void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
 }
 
 }  // namespace password_generation
+}  // namespace autofill

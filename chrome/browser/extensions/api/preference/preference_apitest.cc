@@ -16,7 +16,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceApi) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
-  pref_service->SetBoolean(prefs::kAutofillEnabled, false);
+  pref_service->SetBoolean(autofill::prefs::kAutofillEnabled, false);
   pref_service->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   pref_service->SetBoolean(prefs::kEnableHyperlinkAuditing, false);
   pref_service->SetBoolean(prefs::kEnableReferrers, false);
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceApi) {
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsExtensionControlled());
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kAlternateErrorPagesEnabled));
-  EXPECT_TRUE(pref_service->GetBoolean(prefs::kAutofillEnabled));
+  EXPECT_TRUE(pref_service->GetBoolean(autofill::prefs::kAutofillEnabled));
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kEnableHyperlinkAuditing));
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kEnableReferrers));

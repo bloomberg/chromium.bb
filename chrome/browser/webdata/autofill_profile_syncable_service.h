@@ -24,12 +24,15 @@
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 
+class ProfileSyncServiceAutofillTest;
+class WebDataServiceBase;
+
+namespace autofill {
 class AutofillProfile;
 class AutofillTable;
 class AutofillWebDataService;
 class FormGroup;
-class ProfileSyncServiceAutofillTest;
-class WebDataServiceBase;
+}  // namespace autofill
 
 extern const char kAutofillProfileTag[];
 
@@ -40,18 +43,20 @@ extern const char kAutofillProfileTag[];
 class AutofillProfileSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread,
+      public autofill::AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
   virtual ~AutofillProfileSyncableService();
 
   // Creates a new AutofillProfileSyncableService and hangs it off of
   // |web_data_service|, which takes ownership.
-  static void CreateForWebDataService(AutofillWebDataService* web_data_service,
-                                      const std::string& app_locale);
+  static void CreateForWebDataService(
+      autofill::AutofillWebDataService* web_data_service,
+      const std::string& app_locale);
+
   // Retrieves the AutofillProfileSyncableService stored on |web_data_service|.
   static AutofillProfileSyncableService* FromWebDataService(
-      AutofillWebDataService* web_data_service);
+      autofill::AutofillWebDataService* web_data_service);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
@@ -70,11 +75,12 @@ class AutofillProfileSyncableService
 
   // AutofillWebDataServiceObserverOnDBThread implementation.
   virtual void AutofillProfileChanged(
-      const AutofillProfileChange& change) OVERRIDE;
+      const autofill::AutofillProfileChange& change) OVERRIDE;
 
  protected:
-  AutofillProfileSyncableService(AutofillWebDataService* web_data_service,
-                                 const std::string& app_locale);
+  AutofillProfileSyncableService(
+      autofill::AutofillWebDataService* web_data_service,
+      const std::string& app_locale);
 
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
@@ -85,7 +91,8 @@ class AutofillProfileSyncableService
   // Helper to query WebDatabase for the current autofill state.
   // Made virtual for ease of mocking in the unit-test.
   // Caller owns returned |profiles|.
-  virtual bool LoadAutofillData(std::vector<AutofillProfile*>* profiles);
+  virtual bool LoadAutofillData(
+      std::vector<autofill::AutofillProfile*>* profiles);
 
   // Helper to persist any changes that occured during model association to
   // the WebDatabase.
@@ -110,23 +117,24 @@ class AutofillProfileSyncableService
                            MergeProfile);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
-  typedef std::map<std::string, AutofillProfile*> GUIDToProfileMap;
+  typedef std::map<std::string, autofill::AutofillProfile*> GUIDToProfileMap;
 
   // Helper function that overwrites |profile| with data from proto-buffer
   // |specifics|.
   static bool OverwriteProfileWithServerData(
       const sync_pb::AutofillProfileSpecifics& specifics,
-      AutofillProfile* profile,
+      autofill::AutofillProfile* profile,
       const std::string& app_locale);
 
   // Writes |profile| data into supplied |profile_specifics|.
-  static void WriteAutofillProfile(const AutofillProfile& profile,
+  static void WriteAutofillProfile(const autofill::AutofillProfile& profile,
                                    sync_pb::EntitySpecifics* profile_specifics);
 
   // Creates |profile_map| from the supplied |profiles| vector. Necessary for
   // fast processing of the changes.
-  void CreateGUIDToProfileMap(const std::vector<AutofillProfile*>& profiles,
-                              GUIDToProfileMap* profile_map);
+  void CreateGUIDToProfileMap(
+      const std::vector<autofill::AutofillProfile*>& profiles,
+      GUIDToProfileMap* profile_map);
 
   // Creates or updates a profile based on |data|. Looks at the guid of the data
   // and if a profile with such guid is present in |profile_map| updates it. If
@@ -139,29 +147,29 @@ class AutofillProfileSyncableService
       DataBundle* bundle);
 
   // Syncs |change| to the cloud.
-  void ActOnChange(const AutofillProfileChange& change);
+  void ActOnChange(const autofill::AutofillProfileChange& change);
 
   // Creates syncer::SyncData based on supplied |profile|.
-  static syncer::SyncData CreateData(const AutofillProfile& profile);
+  static syncer::SyncData CreateData(const autofill::AutofillProfile& profile);
 
-  AutofillTable* GetAutofillTable() const;
+  autofill::AutofillTable* GetAutofillTable() const;
 
   // Helper to compare the local value and cloud value of a field, copy into
   // the local value if they differ, and return whether the change happened.
-  static bool UpdateField(AutofillFieldType field_type,
+  static bool UpdateField(autofill::AutofillFieldType field_type,
                           const std::string& new_value,
-                          AutofillProfile* autofill_profile);
+                          autofill::AutofillProfile* autofill_profile);
   // The same as |UpdateField|, but for multi-valued fields.
   static bool UpdateMultivaluedField(
-      AutofillFieldType field_type,
+      autofill::AutofillFieldType field_type,
       const ::google::protobuf::RepeatedPtrField<std::string>& new_value,
-      AutofillProfile* autofill_profile);
+      autofill::AutofillProfile* autofill_profile);
 
   // Calls merge_into->OverwriteWithOrAddTo() and then checks if the
   // |merge_into| has extra data. Returns |true| if |merge_into| posseses some
   // multi-valued field values that are not in |merge_from|, false otherwise.
-  static bool MergeProfile(const AutofillProfile& merge_from,
-                           AutofillProfile* merge_into,
+  static bool MergeProfile(const autofill::AutofillProfile& merge_from,
+                           autofill::AutofillProfile* merge_into,
                            const std::string& app_locale);
 
   // For unit-tests.
@@ -170,14 +178,14 @@ class AutofillProfileSyncableService
     sync_processor_.reset(sync_processor);
   }
 
-  AutofillWebDataService* web_data_service_;  // WEAK
+  autofill::AutofillWebDataService* web_data_service_;  // WEAK
   std::string app_locale_;
-  ScopedObserver<AutofillWebDataService, AutofillProfileSyncableService>
-      scoped_observer_;
+  ScopedObserver<autofill::AutofillWebDataService,
+                 AutofillProfileSyncableService> scoped_observer_;
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the
   // vector - use the |profiles_map_| to iterate through actual profiles.
-  ScopedVector<AutofillProfile> profiles_;
+  ScopedVector<autofill::AutofillProfile> profiles_;
   GUIDToProfileMap profiles_map_;
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
@@ -193,14 +201,14 @@ struct AutofillProfileSyncableService::DataBundle {
   ~DataBundle();
 
   std::vector<std::string> profiles_to_delete;
-  std::vector<AutofillProfile*> profiles_to_update;
-  std::vector<AutofillProfile*> profiles_to_add;
+  std::vector<autofill::AutofillProfile*> profiles_to_update;
+  std::vector<autofill::AutofillProfile*> profiles_to_add;
 
   // When we go through sync we find profiles that are similar but unmatched.
   // Merge such profiles.
   GUIDToProfileMap candidates_to_merge;
   // Profiles that have multi-valued fields that are not in sync.
-  std::vector<AutofillProfile*> profiles_to_sync_back;
+  std::vector<autofill::AutofillProfile*> profiles_to_sync_back;
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_

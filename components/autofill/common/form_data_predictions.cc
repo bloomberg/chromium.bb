@@ -4,6 +4,8 @@
 
 #include "components/autofill/common/form_data_predictions.h"
 
+namespace autofill {
+
 FormDataPredictions::FormDataPredictions() {
 }
 
@@ -16,3 +18,5 @@ FormDataPredictions::FormDataPredictions(const FormDataPredictions& other)
 
 FormDataPredictions::~FormDataPredictions() {
 }
+
+}  // namespace autofill

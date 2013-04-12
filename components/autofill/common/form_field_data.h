@@ -9,6 +9,8 @@
 
 #include "base/string16.h"
 
+namespace autofill {
+
 // Stores information about a field in a form.
 struct FormFieldData {
   FormFieldData();
@@ -59,4 +61,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.is_checkable, actual.is_checkable); \
   } while (0)
 
+}  // namespace autofill
+
 #endif  // COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
+

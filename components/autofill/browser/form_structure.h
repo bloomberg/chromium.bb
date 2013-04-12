@@ -17,9 +17,6 @@
 #include "components/autofill/common/web_element_descriptor.h"
 #include "googleurl/src/gurl.h"
 
-struct FormData;
-struct FormDataPredictions;
-
 enum RequestMethod {
   GET,
   POST
@@ -31,12 +28,6 @@ enum UploadRequired {
   USE_UPLOAD_RATES
 };
 
-class AutofillMetrics;
-
-namespace autofill {
-struct AutocheckoutPageMetaData;
-}
-
 namespace base {
 class TimeTicks;
 }
@@ -44,6 +35,14 @@ class TimeTicks;
 namespace buzz {
 class XmlElement;
 }
+
+namespace autofill {
+
+class AutofillMetrics;
+
+struct AutocheckoutPageMetaData;
+struct FormData;
+struct FormDataPredictions;
 
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by Autofill.
@@ -254,5 +253,7 @@ class FormStructure {
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_FORM_STRUCTURE_H_

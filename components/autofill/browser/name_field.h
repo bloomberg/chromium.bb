@@ -12,6 +12,8 @@
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/form_field.h"
 
+namespace autofill {
+
 class AutofillScanner;
 
 // A form field that can parse either a FullNameField or a FirstLastNameField.
@@ -38,5 +40,7 @@ class NameField : public FormField {
 
   DISALLOW_COPY_AND_ASSIGN(NameField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_NAME_FIELD_H_

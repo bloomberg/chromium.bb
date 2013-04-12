@@ -127,7 +127,7 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
 void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) {
+      PasswordGenerator* generator) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
@@ -173,12 +173,11 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
                               const std::string&)>& callback) {
   HideRequestAutocompleteDialog();
 
-  dialog_controller_ =
-      autofill::AutofillDialogControllerImpl::Create(web_contents_,
-                                                     form,
-                                                     source_url,
-                                                     dialog_type,
-                                                     callback);
+  dialog_controller_ = AutofillDialogControllerImpl::Create(web_contents_,
+                                                            form,
+                                                            source_url,
+                                                            dialog_type,
+                                                            callback);
   dialog_controller_->Show();
 }
 
@@ -230,8 +229,7 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (dialog_controller_ &&
-      (dialog_controller_->dialog_type() ==
-          autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
+      (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
        !dialog_controller_->AutocheckoutIsRunning())) {
     HideRequestAutocompleteDialog();
   }

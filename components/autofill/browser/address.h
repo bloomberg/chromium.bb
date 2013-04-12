@@ -13,6 +13,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_group.h"
 
+namespace autofill {
+
 // A form group that stores address information.
 class Address : public FormGroup {
  public:
@@ -47,5 +49,7 @@ class Address : public FormGroup {
   base::string16 country_code_;
   base::string16 zip_code_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_ADDRESS_H_

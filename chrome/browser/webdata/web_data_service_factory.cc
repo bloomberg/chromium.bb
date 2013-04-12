@@ -25,6 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+using autofill::AutofillWebDataService;
 using content::BrowserThread;
 
 namespace {
@@ -61,7 +62,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   // All tables objects that participate in managing the database must
   // be added here.
   web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new AutofillTable(
+      scoped_ptr<WebDatabaseTable>(new autofill::AutofillTable(
           g_browser_process->GetApplicationLocale())));
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new KeywordTable()));

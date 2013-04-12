@@ -383,7 +383,8 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
-  PageClickTracker* page_click_tracker = new PageClickTracker(render_view);
+  autofill::PageClickTracker* page_click_tracker =
+      new autofill::PageClickTracker(render_view);
   // Note that the order of insertion of the listeners is important.
   // The password_autocomplete_manager takes the first shot at processing the
   // notification and can stop the propagation.

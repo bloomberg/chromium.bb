@@ -108,7 +108,8 @@ AccountChooserModel::AccountChooserModel(
     PrefService* prefs)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       account_delegate_(delegate),
-      checked_item_(prefs->GetBoolean(prefs::kAutofillDialogPayWithoutWallet) ?
+      checked_item_(
+          prefs->GetBoolean(::prefs::kAutofillDialogPayWithoutWallet) ?
           kAutofillItemId : kWalletItemId),
       had_wallet_error_(false) {
   AddCheckItem(kWalletItemId,

@@ -16,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 // TODO(jhawkins): Add more states/provinces.  See http://crbug.com/45039.
@@ -322,3 +323,5 @@ bool FormGroup::FillCountrySelectControl(const std::string& app_locale,
 bool FormGroup::IsValidState(const base::string16& value) {
   return !State::Abbreviation(value).empty() || !State::FullName(value).empty();
 }
+
+}  // namespace autofill

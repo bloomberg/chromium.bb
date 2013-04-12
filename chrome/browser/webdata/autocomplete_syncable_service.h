@@ -41,17 +41,19 @@ class AutofillSpecifics;
 class AutocompleteSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread,
+      public autofill::AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
   virtual ~AutocompleteSyncableService();
 
   // Creates a new AutocompleteSyncableService and hangs it off of
   // |web_data_service|, which takes ownership.
-  static void CreateForWebDataService(AutofillWebDataService* web_data_service);
+  static void CreateForWebDataService(
+      autofill::AutofillWebDataService* web_data_service);
+
   // Retrieves the AutocompleteSyncableService stored on |web_data|.
   static AutocompleteSyncableService* FromWebDataService(
-      AutofillWebDataService* web_data_service);
+      autofill::AutofillWebDataService* web_data_service);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL; }
 
@@ -70,7 +72,7 @@ class AutocompleteSyncableService
 
   // AutofillWebDataServiceObserverOnDBThread implementation.
   virtual void AutofillEntriesChanged(
-      const AutofillChangeList& changes) OVERRIDE;
+      const autofill::AutofillChangeList& changes) OVERRIDE;
 
   // Called via sync to tell us if we should cull expired entries when merging
   // and/or processing sync changes.
@@ -79,16 +81,18 @@ class AutocompleteSyncableService
 
  protected:
   explicit AutocompleteSyncableService(
-      AutofillWebDataService* web_data_service);
+      autofill::AutofillWebDataService* web_data_service);
 
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
-  virtual bool LoadAutofillData(std::vector<AutofillEntry>* entries) const;
+  virtual bool LoadAutofillData(
+      std::vector<autofill::AutofillEntry>* entries) const;
 
   // Helper to persist any changes that occured during model association to
   // the WebDatabase. |entries| will be either added or updated.
   // Made virtual for ease of mocking in the unit-test.
-  virtual bool SaveChangesToWebData(const std::vector<AutofillEntry>& entries);
+  virtual bool SaveChangesToWebData(
+      const std::vector<autofill::AutofillEntry>& entries);
 
  private:
   friend class ProfileSyncServiceAutofillTest;
@@ -105,9 +109,9 @@ class AutocompleteSyncableService
   // This is a helper map used only in Merge/Process* functions. The lifetime
   // of the iterator is longer than the map object. The bool in the pair is used
   // to indicate if the item needs to be added (true) or updated (false).
-  typedef std::map<AutofillKey,
-                  std::pair<syncer::SyncChange::SyncChangeType,
-                            std::vector<AutofillEntry>::iterator> >
+  typedef std::map<autofill::AutofillKey,
+                   std::pair<syncer::SyncChange::SyncChangeType,
+                             std::vector<autofill::AutofillEntry>::iterator> >
       AutocompleteEntryMap;
 
   // Creates or updates an autocomplete entry based on |data|.
@@ -118,20 +122,20 @@ class AutocompleteSyncableService
   // stored and immediately discarded.
   void CreateOrUpdateEntry(const syncer::SyncData& data,
                            AutocompleteEntryMap* loaded_data,
-                           std::vector<AutofillEntry>* new_entries);
+                           std::vector<autofill::AutofillEntry>* new_entries);
 
   // Writes |entry| data into supplied |autofill_specifics|.
-  static void WriteAutofillEntry(const AutofillEntry& entry,
+  static void WriteAutofillEntry(const autofill::AutofillEntry& entry,
                                  sync_pb::EntitySpecifics* autofill_specifics);
 
   // Deletes the database entry corresponding to the |autofill| specifics.
   syncer::SyncError AutofillEntryDelete(
       const sync_pb::AutofillSpecifics& autofill);
 
-  syncer::SyncData CreateSyncData(const AutofillEntry& entry) const;
+  syncer::SyncData CreateSyncData(const autofill::AutofillEntry& entry) const;
 
   // Syncs |changes| to the cloud.
-  void ActOnChanges(const AutofillChangeList& changes);
+  void ActOnChanges(const autofill::AutofillChangeList& changes);
 
   static std::string KeyToTag(const std::string& name,
                               const std::string& value);
@@ -144,9 +148,9 @@ class AutocompleteSyncableService
 
   // Lifetime of AutocompleteSyncableService object is shorter than
   // |web_data_service_| passed to it.
-  AutofillWebDataService* web_data_service_;
+  autofill::AutofillWebDataService* web_data_service_;
 
-  ScopedObserver<AutofillWebDataService, AutocompleteSyncableService>
+  ScopedObserver<autofill::AutofillWebDataService, AutocompleteSyncableService>
       scoped_observer_;
 
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and

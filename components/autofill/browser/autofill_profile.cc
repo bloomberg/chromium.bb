@@ -26,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 // Like |AutofillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
@@ -196,13 +197,11 @@ class FindByPhone {
   }
 
   bool operator()(const base::string16& phone) {
-    return autofill_i18n::PhoneNumbersMatch(
-        phone, phone_, country_code_, app_locale_);
+    return i18n::PhoneNumbersMatch(phone, phone_, country_code_, app_locale_);
   }
 
   bool operator()(const base::string16* phone) {
-    return autofill_i18n::PhoneNumbersMatch(
-        *phone, phone_, country_code_, app_locale_);
+    return i18n::PhoneNumbersMatch(*phone, phone_, country_code_, app_locale_);
   }
 
  private:
@@ -487,7 +486,7 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
       // Phone numbers should be canonicalized prior to being compared.
       if (*iter != PHONE_HOME_WHOLE_NUMBER) {
         continue;
-      } else if (!autofill_i18n::PhoneNumbersMatch(
+      } else if (!i18n::PhoneNumbersMatch(
             GetRawInfo(*iter),
             profile.GetRawInfo(*iter),
             UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
@@ -860,3 +859,5 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << " "
       << UTF16ToUTF8(MultiString(profile, PHONE_HOME_WHOLE_NUMBER));
 }
+
+}  // namespace autofill

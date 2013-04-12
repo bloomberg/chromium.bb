@@ -115,7 +115,7 @@ PasswordGenerationBubbleGtk::~PasswordGenerationBubbleGtk() {}
 
 void PasswordGenerationBubbleGtk::BubbleClosing(BubbleGtk* bubble,
                                                 bool closed_by_escape) {
-  password_generation::LogUserActions(actions_);
+  autofill::password_generation::LogUserActions(actions_);
 }
 
 void PasswordGenerationBubbleGtk::OnDestroy(GtkWidget* widget) {

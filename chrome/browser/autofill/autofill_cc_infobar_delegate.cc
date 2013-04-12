@@ -110,7 +110,7 @@ string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   owner()->GetWebContents()->GetDelegate()->OpenURLFromTab(
       owner()->GetWebContents(),
-      content::OpenURLParams(GURL(components::autofill::kHelpURL),
+      content::OpenURLParams(GURL(autofill::kHelpURL),
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
                              content::PAGE_TRANSITION_LINK,

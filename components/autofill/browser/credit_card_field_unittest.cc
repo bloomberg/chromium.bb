@@ -11,6 +11,8 @@
 #include "components/autofill/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 class CreditCardFieldTest : public testing::Test {
  public:
   CreditCardFieldTest() {}
@@ -316,3 +318,5 @@ TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
   EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
 }
+
+}  // namespace autofill

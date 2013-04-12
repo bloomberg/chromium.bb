@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+namespace autofill {
 namespace {
 
 // The size above which we stop triggering autocomplete.
@@ -198,8 +199,6 @@ bool DoUsernamesMatch(const base::string16& username1,
 }
 
 }  // namespace
-
-namespace autofill {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, public:

@@ -305,7 +305,7 @@ void PasswordManager::Autofill(
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observer_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      PasswordFormFillData fill_data;
+      autofill::PasswordFormFillData fill_data;
       InitPasswordFormFillData(form_for_autofill,
                                best_matches,
                                &preferred_match,

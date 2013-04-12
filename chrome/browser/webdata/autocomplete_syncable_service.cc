@@ -17,6 +17,12 @@
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
+using autofill::AutofillChange;
+using autofill::AutofillChangeList;
+using autofill::AutofillEntry;
+using autofill::AutofillKey;
+using autofill::AutofillTable;
+using autofill::AutofillWebDataService;
 using content::BrowserThread;
 
 namespace {

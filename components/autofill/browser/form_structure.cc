@@ -29,8 +29,7 @@
 #include "components/autofill/common/form_field_data_predictions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
-using components::autofill::kRequiredAutofillFields;
-
+namespace autofill {
 namespace {
 
 const char kFormMethodPost[] = "post";
@@ -1219,3 +1218,5 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       (*field)->set_section((*field)->section() + "-default");
   }
 }
+
+}  // namespace autofill

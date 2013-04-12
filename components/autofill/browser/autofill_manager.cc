@@ -57,6 +57,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
+namespace autofill {
+
 typedef PersonalDataManager::GUIDPair GUIDPair;
 
 using base::TimeTicks;
@@ -1352,3 +1354,5 @@ void AutofillManager::UpdateInitialInteractionTimestamp(
     initial_interaction_timestamp_ = interaction_timestamp;
   }
 }
+
+}  // namespace autofill

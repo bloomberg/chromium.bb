@@ -32,6 +32,7 @@
 
 using base::Time;
 
+namespace autofill {
 namespace {
 
 typedef std::vector<Tuple3<int64, base::string16, base::string16> >
@@ -2050,3 +2051,5 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
 
   return true;
 }
+
+}  // namespace autofill

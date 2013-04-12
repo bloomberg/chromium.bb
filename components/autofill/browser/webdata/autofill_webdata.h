@@ -12,10 +12,13 @@
 #include "base/string16.h"
 #include "components/webdata/common/web_data_service_base.h"
 
-class AutofillProfile;
-class CreditCard;
 class Profile;
 class WebDataServiceConsumer;
+
+namespace autofill {
+
+class AutofillProfile;
+class CreditCard;
 struct FormFieldData;
 
 // Pure virtual interface for retrieving Autofill data.  API users
@@ -84,5 +87,7 @@ class AutofillWebData {
   virtual void RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_WEBDATA_H_

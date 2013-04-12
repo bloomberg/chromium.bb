@@ -13,6 +13,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 // A form field that can parse a full name field.
@@ -212,3 +213,5 @@ bool FirstLastNameField::ClassifyField(FieldTypeMap* map) const {
   ok = ok && AddClassification(middle_name_, type, map);
   return ok;
 }
+
+}  // namespace autofill

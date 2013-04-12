@@ -76,7 +76,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   // non-threadsafe); accessed on both the UI and FILE threads in
   // GetSyncableServiceForType.
   extensions::ExtensionSystem* extension_system_;
-  scoped_refptr<AutofillWebDataService> web_data_service_;
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };

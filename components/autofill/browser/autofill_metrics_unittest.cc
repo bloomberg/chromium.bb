@@ -35,6 +35,8 @@ using ::testing::Mock;
 using base::TimeTicks;
 using base::TimeDelta;
 
+namespace autofill {
+
 namespace {
 
 class MockAutofillMetrics : public AutofillMetrics {
@@ -125,18 +127,18 @@ class TestPersonalDataManager : public PersonalDataManager {
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
     AutofillProfile* profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
-                                  "Presley", "theking@gmail.com", "RCA",
-                                  "3734 Elvis Presley Blvd.", "Apt. 10",
-                                  "Memphis", "Tennessee", "38116", "US",
-                                  "12345678901");
+    test::SetProfileInfo(profile, "Elvis", "Aaron",
+                         "Presley", "theking@gmail.com", "RCA",
+                         "3734 Elvis Presley Blvd.", "Apt. 10",
+                         "Memphis", "Tennessee", "38116", "US",
+                         "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutofillProfile;
-    autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
-                                  "Holley", "buddy@gmail.com", "Decca",
-                                  "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "US", "2345678901");
+    test::SetProfileInfo(profile, "Charles", "Hardin",
+                         "Holley", "buddy@gmail.com", "Decca",
+                         "123 Apple St.", "unit 6", "Lubbock",
+                         "Texas", "79401", "US", "2345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
   }
@@ -182,7 +184,7 @@ class TestFormStructure : public FormStructure {
 class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(content::WebContents* web_contents,
-                      autofill::AutofillManagerDelegate* manager_delegate,
+                      AutofillManagerDelegate* manager_delegate,
                       TestPersonalDataManager* personal_manager)
       : AutofillManager(web_contents, manager_delegate, personal_manager),
         autofill_enabled_(true),
@@ -306,18 +308,17 @@ void AutofillMetricsTest::SetUp() {
   TestingProfile* profile = new TestingProfile();
   profile->CreateRequestContext();
   browser_context_.reset(profile);
-  autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
-      profile, NULL);
+  PersonalDataManagerFactory::GetInstance()->SetTestingFactory( profile, NULL);
 
   ChromeRenderViewHostTestHarness::SetUp();
   io_thread_.StartIOThread();
-  autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+  TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->SetBrowserContext(profile);
   autofill_manager_.reset(new TestAutofillManager(
       web_contents(),
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
+      TabAutofillManagerDelegate::FromWebContents(web_contents()),
       personal_data_.get()));
 
   file_thread_.Start();
@@ -342,7 +343,7 @@ scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
               LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
 
   CreditCard credit_card;
-  return autofill::AutofillCCInfoBarDelegate::CreateForTesting(
+  return AutofillCCInfoBarDelegate::CreateForTesting(
       metric_logger,
       base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
                  base::Unretained(personal_data_.get()), credit_card));
@@ -361,43 +362,39 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   std::vector<AutofillFieldType> heuristic_types, server_types;
   FormFieldData field;
 
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
-  autofill_test::CreateTestFormField(
-      "Empty", "empty", "", "text", &field);
+  test::CreateTestFormField("Empty", "empty", "", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
-  autofill_test::CreateTestFormField(
-      "Unknown", "unknown", "garbage", "text", &field);
+  test::CreateTestFormField("Unknown", "unknown", "garbage", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
-  autofill_test::CreateTestFormField(
-      "Select", "select", "USA", "select-one", &field);
+  test::CreateTestFormField("Select", "select", "USA", "select-one", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
   server_types.push_back(NO_SERVER_DATA);
 
-  autofill_test::CreateTestFormField(
-      "Phone", "phone", "2345678901", "tel", &field);
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
@@ -575,9 +572,9 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
   std::vector<AutofillFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
     FormFieldData field;
-    autofill_test::CreateTestFormField(failure_cases[i].label,
-                                       failure_cases[i].name,
-                                       failure_cases[i].value, "text", &field);
+    test::CreateTestFormField(failure_cases[i].label,
+                              failure_cases[i].name,
+                              failure_cases[i].value, "text", &field);
     form.fields.push_back(field);
     heuristic_types.push_back(failure_cases[i].heuristic_type);
     server_types.push_back(failure_cases[i].server_type);
@@ -628,26 +625,25 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   std::vector<AutofillFieldType> heuristic_types, server_types;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Both match", "match", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FULL);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Both mismatch", "mismatch", "buddy@gmail.com", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(PHONE_HOME_NUMBER);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Only heuristics match", "mixed", "Memphis", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(ADDRESS_HOME_CITY);
   server_types.push_back(PHONE_HOME_NUMBER);
-  autofill_test::CreateTestFormField(
-      "Unknown", "unknown", "garbage", "text", &field);
+  test::CreateTestFormField("Unknown", "unknown", "garbage", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
@@ -662,7 +658,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   // Add a field and re-arrange the remaining form fields before submitting.
   std::vector<FormFieldData> cached_fields = form.fields;
   form.fields.clear();
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "New field", "new field", "Tennessee", "text", &field);
   form.fields.push_back(field);
   form.fields.push_back(cached_fields[2]);
@@ -782,9 +778,9 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   form.action = GURL("http://example.com/submit.html");
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -799,7 +795,7 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   }
 
   // Add another field to the form, so that it becomes fillable.
-  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
   forms.back().fields.push_back(field);
 
   // Expect only the "form parsed" metric to be logged; no metrics about
@@ -823,13 +819,13 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   // three fillable fields to be considered to be autofillable; and if at least
   // one field specifies an explicit type hint, we don't apply any of our usual
   // local heuristics to detect field types in the rest of the form.
-  autofill_test::CreateTestFormField("", "", "", "text", &field);
+  test::CreateTestFormField("", "", "", "text", &field);
   field.autocomplete_attribute = "given-name";
   forms.back().fields.push_back(field);
-  autofill_test::CreateTestFormField("", "", "", "text", &field);
+  test::CreateTestFormField("", "", "", "text", &field);
   field.autocomplete_attribute = "email";
   forms.back().fields.push_back(field);
-  autofill_test::CreateTestFormField("", "", "", "text", &field);
+  test::CreateTestFormField("", "", "", "text", &field);
   field.autocomplete_attribute = "street-address";
   forms.back().fields.push_back(field);
 
@@ -861,11 +857,11 @@ TEST_F(AutofillMetricsTest, NoQualityMetricsForNonAutofillableForms) {
   form.user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
   form.fields.push_back(field);
 
@@ -878,8 +874,7 @@ TEST_F(AutofillMetricsTest, NoQualityMetricsForNonAutofillableForms) {
 
   // Search forms are not auto-fillable.
   form.action = GURL("http://example.com/search?q=Elvis%20Presley");
-  autofill_test::CreateTestFormField(
-      "Empty", "empty", "", "text", &field);
+  test::CreateTestFormField("Empty", "empty", "", "text", &field);
   form.fields.push_back(field);
 
   // Simulate form submission.
@@ -903,36 +898,33 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   std::vector<AutofillFieldType> heuristic_types, server_types;
   FormFieldData field;
 
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
-  autofill_test::CreateTestFormField(
+  test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
-  autofill_test::CreateTestFormField(
-      "Empty", "empty", "", "text", &field);
+  test::CreateTestFormField("Empty", "empty", "", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
-  autofill_test::CreateTestFormField(
-      "Unknown", "unknown", "garbage", "text", &field);
+  test::CreateTestFormField("Unknown", "unknown", "garbage", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
-  autofill_test::CreateTestFormField(
-      "Select", "select", "USA", "select-one", &field);
+  test::CreateTestFormField("Select", "select", "USA", "select-one", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
@@ -1057,13 +1049,13 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   FormFieldData field;
   std::vector<AutofillFieldType> field_types;
-  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
   field_types.push_back(NAME_FULL);
-  autofill_test::CreateTestFormField("Email", "email", "", "email", &field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
   form.fields.push_back(field);
   field_types.push_back(EMAIL_ADDRESS);
-  autofill_test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
   form.fields.push_back(field);
   field_types.push_back(PHONE_HOME_NUMBER);
 
@@ -1083,7 +1075,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Simulate activating the autofill popup for the email field after typing.
   // No new metric should be logged, since we're still on the same page.
-  autofill_test::CreateTestFormField("Email", "email", "b", "email", &field);
+  test::CreateTestFormField("Email", "email", "b", "email", &field);
   autofill_manager_->OnQueryFormFieldAutofill(
       0, form, field, gfx::Rect(), false);
 
@@ -1199,7 +1191,7 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(
                   AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
-  autofill::AutocheckoutPageMetaData page_meta_data;
+  AutocheckoutPageMetaData page_meta_data;
   FormStructure::ParseQueryResponse(
       "<autofillqueryresponse></autofillqueryresponse>",
       std::vector<FormStructure*>(),
@@ -1235,9 +1227,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   form.user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -1272,9 +1264,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   }
 
   // Add more fields to the form.
-  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Unknown", "unknown", "", "text", &field);
+  test::CreateTestFormField("Unknown", "unknown", "", "text", &field);
   form.fields.push_back(field);
   forms.front() = form;
 
@@ -1369,11 +1361,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   form.user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -1475,11 +1467,11 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   form.user_submitted = true;
 
   FormFieldData field;
-  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
-  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -1576,3 +1568,5 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     Mock::VerifyAndClearExpectations(autofill_manager_->metric_logger());
   }
 }
+
+}  // namespace autofill

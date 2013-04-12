@@ -13,6 +13,8 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/form_field.h"
 
+namespace autofill {
+
 class AutofillField;
 class AutofillScanner;
 
@@ -67,5 +69,7 @@ class CreditCardField : public FormField {
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_CREDIT_CARD_FIELD_H_

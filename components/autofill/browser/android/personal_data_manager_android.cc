@@ -8,6 +8,8 @@
 #include "components/autofill/browser/android/auxiliary_profiles_android.h"
 #include "components/autofill/browser/personal_data_manager.h"
 
+namespace autofill {
+
 void PersonalDataManager::LoadAuxiliaryProfiles() {
   auxiliary_profiles_.clear();
   autofill::AuxiliaryProfileLoaderAndroid profile_loader;
@@ -19,3 +21,5 @@ void PersonalDataManager::LoadAuxiliaryProfiles() {
     auxiliary_profiles_.push_back(impl.LoadContactsProfile().release());
   }
 }
+
+}  // namespace autofill

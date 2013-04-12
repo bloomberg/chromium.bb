@@ -12,7 +12,7 @@ namespace autofill {
 GURL GetAutofillQueryUrl();
 GURL GetAutofillUploadUrl();
 
-}
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_DOWNLOAD_URL_H_
 

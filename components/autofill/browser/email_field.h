@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "components/autofill/browser/form_field.h"
 
+namespace autofill {
+
 class EmailField : public FormField {
  public:
   static FormField* Parse(AutofillScanner* scanner);
@@ -24,5 +26,7 @@ class EmailField : public FormField {
 
   DISALLOW_COPY_AND_ASSIGN(EmailField);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_EMAIL_FIELD_H_

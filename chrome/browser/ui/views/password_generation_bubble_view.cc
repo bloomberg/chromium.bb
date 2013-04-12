@@ -247,5 +247,5 @@ views::View* PasswordGenerationBubbleView::GetInitiallyFocusedView() {
 }
 
 void PasswordGenerationBubbleView::WindowClosing() {
-  password_generation::LogUserActions(actions_);
+  autofill::password_generation::LogUserActions(actions_);
 }

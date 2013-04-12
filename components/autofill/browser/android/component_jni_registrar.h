@@ -7,12 +7,12 @@
 
 #include <jni.h>
 
-namespace components {
+namespace autofill {
 
 // Register all JNI bindings necessary for the autofill
 // component.
 bool RegisterAutofillAndroidJni(JNIEnv* env);
 
-}  // namespace components
+}  // namespace autofill
 
 #endif  // COMPONENT_AUTOFILL_BROWSER_ANDROID_COMPONENT_JNI_REGISTRAR_H_

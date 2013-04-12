@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
+namespace autofill {
+
 // The minimal required fields for an address to be complete for a given
 // country.
 enum AddressRequiredFields {
@@ -102,5 +104,7 @@ class AutofillCountry {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCountry);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_COUNTRY_H_

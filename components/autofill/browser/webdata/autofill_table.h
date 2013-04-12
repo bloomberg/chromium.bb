@@ -12,18 +12,21 @@
 #include "base/string16.h"
 #include "components/webdata/common/web_database_table.h"
 
+class WebDatabase;
+
+namespace base {
+class Time;
+}
+
+namespace autofill {
+
 class AutofillChange;
 class AutofillEntry;
 class AutofillProfile;
 class AutofillTableTest;
 class CreditCard;
-class WebDatabase;
 
 struct FormFieldData;
-
-namespace base {
-class Time;
-}
 
 // This class manages the various Autofill tables within the SQLite database
 // passed to the constructor. It expects the following schemas:
@@ -363,5 +366,7 @@ class AutofillTable : public WebDatabaseTable {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_TABLE_H_

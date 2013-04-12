@@ -13,16 +13,7 @@
 #include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/common/autocheckout_status.h"
 
-class AutofillField;
-class AutofillManager;
-class AutofillMetrics;
-class AutofillProfile;
-class CreditCard;
-class FormStructure;
 class GURL;
-
-struct FormData;
-struct FormFieldData;
 
 namespace content {
 struct SSLStatus;
@@ -33,6 +24,16 @@ class RectF;
 }
 
 namespace autofill {
+
+class AutofillField;
+class AutofillManager;
+class AutofillMetrics;
+class AutofillProfile;
+class CreditCard;
+class FormStructure;
+
+struct FormData;
+struct FormFieldData;
 
 class AutocheckoutManager {
  public:

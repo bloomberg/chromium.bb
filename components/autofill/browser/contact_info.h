@@ -12,6 +12,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_group.h"
 
+namespace autofill {
+
 // A form group that stores name information.
 class NameInfo : public FormGroup {
  public:
@@ -90,5 +92,7 @@ class CompanyInfo : public FormGroup {
 
   base::string16 company_name_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_CONTACT_INFO_H_

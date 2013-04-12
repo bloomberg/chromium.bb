@@ -221,11 +221,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableTranslate) {
 // TCM ID - 3664293.
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kAutofillEnabled) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kAutofillEnabled));
+  ASSERT_TRUE(BooleanPrefMatches(autofill::prefs::kAutofillEnabled));
 
-  ChangeBooleanPref(0, prefs::kAutofillEnabled);
+  ChangeBooleanPref(0, autofill::prefs::kAutofillEnabled);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kAutofillEnabled));
+  ASSERT_TRUE(BooleanPrefMatches(autofill::prefs::kAutofillEnabled));
 }
 
 // TCM ID - 3632259.
@@ -370,16 +370,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_TRUE(
+      BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 
-  ChangeBooleanPref(0, prefs::kAutofillAuxiliaryProfilesEnabled);
+  ChangeBooleanPref(0, autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // kAutofillAuxiliaryProfilesEnabled is only synced on Mac.
 #if defined(OS_MACOSX)
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_TRUE(
+      BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 #else
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kAutofillAuxiliaryProfilesEnabled));
+  ASSERT_FALSE(
+      BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 #endif  // OS_MACOSX
 }
 

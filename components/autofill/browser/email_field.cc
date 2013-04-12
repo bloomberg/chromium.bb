@@ -9,6 +9,8 @@
 #include "components/autofill/browser/autofill_scanner.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
+
 // static
 FormField* EmailField::Parse(AutofillScanner* scanner) {
   const AutofillField* field;
@@ -26,3 +28,5 @@ EmailField::EmailField(const AutofillField* field) : field_(field) {
 bool EmailField::ClassifyField(FieldTypeMap* map) const {
   return AddClassification(field_, EMAIL_ADDRESS, map);
 }
+
+}  // namespace autofill

@@ -20,6 +20,8 @@
 #include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/phone_number.h"
 
+namespace autofill {
+
 struct FormFieldData;
 
 // A collection of FormGroups stored in a profile.  AutofillProfile also
@@ -209,5 +211,7 @@ class AutofillProfile : public FormGroup {
 
 // So we can compare AutofillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile);
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_PROFILE_H_

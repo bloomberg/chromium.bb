@@ -12,13 +12,14 @@
 #include "base/string16.h"
 #include "components/autofill/browser/field_types.h"
 
-class AutofillProfile;
-
 namespace base {
 class DictionaryValue;
 }
 
 namespace autofill {
+
+class AutofillProfile;
+
 namespace wallet {
 
 // TODO(ahutter): This address is a lot like

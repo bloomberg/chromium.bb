@@ -18,9 +18,6 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class AutofillMetrics;
-class FormStructure;
-
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -28,6 +25,11 @@ class BrowserContext;
 namespace net {
 class URLFetcher;
 }  // namespace net
+
+namespace autofill {
+
+class AutofillMetrics;
+class FormStructure;
 
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager : public net::URLFetcherDelegate {
@@ -162,5 +164,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // Needed for unit-test.
   int fetcher_id_for_unittest_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_DOWNLOAD_H_

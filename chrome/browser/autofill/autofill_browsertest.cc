@@ -228,7 +228,7 @@ class AutofillTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Don't want Keychain coming up on Mac.
-    autofill_test::DisableSystemServices(browser()->profile());
+    test::DisableSystemServices(browser()->profile());
 
     // When testing the native UI, hook up a test external delegate, which
     // allows us to forward keyboard events to the popup directly.
@@ -259,7 +259,7 @@ class AutofillTest : public InProcessBrowserTest {
 
   void CreateTestProfile() {
     AutofillProfile profile;
-    autofill_test::SetProfileInfo(
+    test::SetProfileInfo(
         &profile, "Milton", "C.", "Waddams",
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",
         "Basement", "Austin", "Texas", "78744", "US", "5125551234");

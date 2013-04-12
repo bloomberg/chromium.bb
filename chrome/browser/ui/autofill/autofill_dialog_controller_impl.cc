@@ -256,7 +256,7 @@ base::WeakPtr<AutofillDialogControllerImpl>
 // static
 void AutofillDialogControllerImpl::RegisterUserPrefs(
     PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kAutofillDialogPayWithoutWallet,
+  registry->RegisterBooleanPref(::prefs::kAutofillDialogPayWithoutWallet,
                                 kPayWithoutWalletDefault,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 }
@@ -1576,7 +1576,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),
       is_first_run_(!profile_->GetPrefs()->HasPrefPath(
-          prefs::kAutofillDialogPayWithoutWallet)),
+          ::prefs::kAutofillDialogPayWithoutWallet)),
       is_submitting_(false),
       autocheckout_is_running_(false),
       had_autocheckout_error_(false) {
@@ -1862,10 +1862,11 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
       GetBaseWindowForWebContents(web_contents())->GetBounds();
 
   PrefService* user_prefs = profile_->GetPrefs();
-  std::string charset = user_prefs->GetString(prefs::kDefaultCharset);
-  std::string accept_languages = user_prefs->GetString(prefs::kAcceptLanguages);
+  std::string charset = user_prefs->GetString(::prefs::kDefaultCharset);
+  std::string accept_languages =
+      user_prefs->GetString(::prefs::kAcceptLanguages);
   base::Time install_time = base::Time::FromTimeT(
-      g_browser_process->local_state()->GetInt64(prefs::kInstallDate));
+      g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
 
   risk::GetFingerprint(
       gaia_id, window_bounds, *web_contents(), chrome::VersionInfo().Version(),

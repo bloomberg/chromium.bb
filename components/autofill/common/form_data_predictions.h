@@ -11,6 +11,8 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data_predictions.h"
 
+namespace autofill {
+
 // Holds information about a form to be filled and/or submitted.
 struct FormDataPredictions {
   // Data for this form.
@@ -26,5 +28,7 @@ struct FormDataPredictions {
   FormDataPredictions(const FormDataPredictions& other);
   ~FormDataPredictions();
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_COMMON_FORM_DATA_PREDICTIONS_H__

@@ -673,7 +673,7 @@ void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   const Value* value = policies.GetValue(policy_name());
   bool auto_fill_enabled;
   if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled) {
-    prefs->SetValue(prefs::kAutofillEnabled,
+    prefs->SetValue(autofill::prefs::kAutofillEnabled,
                     Value::CreateBooleanValue(false));
   }
 }

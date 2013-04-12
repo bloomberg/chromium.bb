@@ -10,6 +10,7 @@
 #include "components/autofill/common/autofill_switches.h"
 #include "googleurl/src/gurl.h"
 
+namespace autofill {
 namespace {
 
 const char kDefaultAutofillServiceUrl[] =
@@ -31,15 +32,16 @@ std::string GetBaseAutofillUrl() {
   return baseAutofillServiceUrl;
 }
 
-}  // anonymous namespace
+}  // namespace
 
-GURL autofill::GetAutofillQueryUrl() {
+GURL GetAutofillQueryUrl() {
   std::string baseAutofillServiceUrl = GetBaseAutofillUrl();
   return GURL(baseAutofillServiceUrl + "query?client=" + kClientName);
 }
 
-GURL autofill::GetAutofillUploadUrl() {
+GURL GetAutofillUploadUrl() {
   std::string baseAutofillServiceUrl = GetBaseAutofillUrl();
   return GURL(baseAutofillServiceUrl + "upload?client=" + kClientName);
 }
 
+}  // namespace autofill

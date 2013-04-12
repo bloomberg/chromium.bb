@@ -24,6 +24,7 @@ using base::StringPiece16;
 using content::BrowserContext;
 using content::WebContents;
 
+namespace autofill {
 namespace {
 
 // Limit on the number of suggestions to appear in the pop-up menu under an
@@ -287,3 +288,5 @@ void AutocompleteHistoryManager::SendSuggestions(
   autofill_icons_.clear();
   autofill_unique_ids_.clear();
 }
+
+}  // namespace autofill

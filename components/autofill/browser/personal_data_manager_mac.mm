@@ -22,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+namespace autofill {
 namespace {
 
 // This implementation makes use of the Address Book API.  Profiles are
@@ -264,3 +265,5 @@ void PersonalDataManager::LoadAuxiliaryProfiles() {
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
   impl.GetAddressBookMeCard(app_locale_);
 }
+
+}  // namespace autofill

@@ -986,7 +986,7 @@ class ConfigurationPolicyPrefStoreAutofillTest
     : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
-  EXPECT_FALSE(store_->GetValue(prefs::kAutofillEnabled, NULL));
+  EXPECT_FALSE(store_->GetValue(autofill::prefs::kAutofillEnabled, NULL));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
@@ -995,7 +995,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
              base::Value::CreateBooleanValue(true));
   UpdateProviderPolicy(policy);
   // Enabling Autofill should not set the pref.
-  EXPECT_FALSE(store_->GetValue(prefs::kAutofillEnabled, NULL));
+  EXPECT_FALSE(store_->GetValue(autofill::prefs::kAutofillEnabled, NULL));
 }
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
@@ -1005,7 +1005,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   UpdateProviderPolicy(policy);
   // Disabling Autofill should switch the pref to managed.
   const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kAutofillEnabled, &value));
+  EXPECT_TRUE(store_->GetValue(autofill::prefs::kAutofillEnabled, &value));
   ASSERT_TRUE(value);
   bool autofill_enabled = true;
   bool result = value->GetAsBoolean(&autofill_enabled);

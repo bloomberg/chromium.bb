@@ -75,6 +75,9 @@
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #endif
 
+using autofill::AutofillExternalDelegate;
+using autofill::AutofillManager;
+using autofill::TabAutofillManagerDelegate;
 using content::WebContents;
 
 namespace {
@@ -109,10 +112,10 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   SessionTabHelper::CreateForWebContents(web_contents);
 
   AlternateErrorPageTabObserver::CreateForWebContents(web_contents);
-  autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents);
+  TabAutofillManagerDelegate::CreateForWebContents(web_contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       web_contents,
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents),
+      TabAutofillManagerDelegate::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNativeAutofillUi)) {

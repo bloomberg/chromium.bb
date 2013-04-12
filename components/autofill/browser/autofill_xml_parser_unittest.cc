@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
+namespace autofill {
 namespace {
 
 TEST(AutofillQueryXmlParserTest, BasicQuery) {
@@ -365,3 +366,4 @@ TEST(AutofillUploadXmlParser, TestFailedResponse) {
 }
 
 }  // namespace
+}  // namespace autofill

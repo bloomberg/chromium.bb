@@ -20,6 +20,8 @@ using base::Bind;
 using base::Time;
 using content::BrowserThread;
 
+namespace autofill {
+
 // static
 void AutofillWebDataService::NotifyOfMultipleAutofillChanges(
     AutofillWebDataService* web_data_service) {
@@ -458,3 +460,5 @@ void AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread() {
                     ui_observer_list_,
                     AutofillMultipleChanged());
 }
+
+}  // namespace autofill

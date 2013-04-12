@@ -14,6 +14,7 @@
 #include "components/autofill/browser/autofill_scanner.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
 namespace {
 
 // This string includes all area code separators, including NoText.
@@ -271,3 +272,5 @@ base::string16 PhoneField::GetRegExp(RegexType regex_id) {
   }
   return base::string16();
 }
+
+}  // namespace autofill

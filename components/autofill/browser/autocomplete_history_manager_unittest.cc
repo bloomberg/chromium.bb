@@ -28,6 +28,8 @@ using content::BrowserThread;
 using content::WebContents;
 using testing::_;
 
+namespace autofill {
+
 namespace {
 
 class MockWebDataService : public AutofillWebDataService {
@@ -259,3 +261,5 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   EXPECT_CALL(external_delegate, OnSuggestionsReturned(_, _, _, _, _));
   autocomplete_history_manager.SendSuggestions(NULL);
 }
+
+}  // namespace autofill

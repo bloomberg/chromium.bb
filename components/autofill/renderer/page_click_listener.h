@@ -9,6 +9,8 @@ namespace WebKit {
 class WebInputElement;
 }
 
+namespace autofill {
+
 // Interface that should be implemented by classes interested in getting
 // notifications for clicks on a page.
 // Register on the PageListenerTracker object.
@@ -32,5 +34,7 @@ class PageClickListener {
  protected:
   virtual ~PageClickListener() {}
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_LISTENER_H_

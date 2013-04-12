@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
 
+namespace autofill {
 namespace {
 
 const char kProdWalletServiceUrl[] = "https://wallet.google.com/";
@@ -61,9 +62,8 @@ GURL GetBaseSecureUrl() {
   return GURL(kSandboxWalletSecureServiceUrl);
 }
 
-}  // anonymous namespace
+}  // namespace
 
-namespace autofill {
 namespace wallet {
 
 GURL GetGetWalletItemsUrl() {

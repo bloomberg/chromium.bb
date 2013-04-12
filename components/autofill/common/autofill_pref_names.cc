@@ -4,6 +4,7 @@
 
 #include "components/autofill/common/autofill_pref_names.h"
 
+namespace autofill {
 namespace prefs {
 
 // Boolean that is true when auxiliary Autofill profiles are enabled.
@@ -24,3 +25,4 @@ const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 const char kPasswordGenerationEnabled[] = "password_generation.enabled";
 
 }  // namespace prefs
+}  // namespace autofill

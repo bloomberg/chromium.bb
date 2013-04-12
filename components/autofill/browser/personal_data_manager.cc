@@ -30,6 +30,7 @@
 
 using content::BrowserContext;
 
+namespace autofill {
 namespace {
 
 const base::string16::value_type kCreditCardPrefix[] = {'*', 0};
@@ -1008,3 +1009,5 @@ void PersonalDataManager::set_browser_context(
     content::BrowserContext* context) {
   browser_context_ = context;
 }
+
+}  // namespace autofill

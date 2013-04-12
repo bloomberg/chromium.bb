@@ -235,7 +235,7 @@ class AutofillDialogControllerTest : public testing::Test {
     form_data.fields.push_back(field);
 
     profile()->GetPrefs()->SetBoolean(
-        prefs::kAutofillDialogPayWithoutWallet, true);
+        ::prefs::kAutofillDialogPayWithoutWallet, true);
     profile()->CreateRequestContext();
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
@@ -359,7 +359,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   EXPECT_EQ(1, shipping_model->GetItemCount());
 
   // A full profile should be picked up.
-  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  AutofillProfile full_profile(test::GetFullProfile());
   full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
@@ -370,7 +370,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
   // Set up some variant data.
-  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  AutofillProfile full_profile(test::GetFullProfile());
   std::vector<string16> names;
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
@@ -471,7 +471,7 @@ TEST_F(AutofillDialogControllerTest, CancelNoSave) {
 TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  AutofillProfile full_profile(test::GetFullProfile());
   const string16 kEmail = ASCIIToUTF16("first@johndoe.com");
   full_profile.SetRawInfo(EMAIL_ADDRESS, kEmail);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -509,7 +509,7 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
 TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  AutofillProfile full_profile(test::GetFullProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->EditClickedForSection(SECTION_SHIPPING);
 

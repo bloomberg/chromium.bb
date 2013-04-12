@@ -65,7 +65,7 @@ PrefMappingEntry kPrefMapping[] = {
     APIPermission::kPrivacy
   },
   { "autofillEnabled",
-    prefs::kAutofillEnabled,
+    autofill::prefs::kAutofillEnabled,
     APIPermission::kPrivacy
   },
   { "hyperlinkAuditingEnabled",

@@ -29,6 +29,8 @@
 #include "third_party/icu/public/i18n/unicode/dtfmtsym.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
+
 namespace {
 
 const char16 kCreditCardObfuscationSymbol = '*';
@@ -680,3 +682,5 @@ const char* const kJCBCard = "jcbCC";
 const char* const kMasterCard = "masterCardCC";
 const char* const kSoloCard = "soloCC";
 const char* const kVisaCard = "visaCC";
+
+}  // namespace autofill

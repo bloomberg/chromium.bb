@@ -9,6 +9,8 @@
 
 #include "components/autofill/browser/webdata/autofill_entry.h"
 
+namespace autofill {
+
 class AutofillProfile;
 class CreditCard;
 
@@ -68,5 +70,7 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   // Weak reference, can be NULL.
   const AutofillProfile* profile_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__

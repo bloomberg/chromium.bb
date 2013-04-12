@@ -12,15 +12,17 @@
 #include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 
+namespace autofill {
 class AutofillWebDataService;
 class PersonalDataManager;
+}  // namespace autofill
 
 namespace browser_sync {
 
 class AutofillProfileDataTypeController
     : public NonUIDataTypeController,
-      public AutofillWebDataServiceObserverOnUIThread,
-      public PersonalDataManagerObserver {
+      public autofill::AutofillWebDataServiceObserverOnUIThread,
+      public autofill::PersonalDataManagerObserver {
  public:
   AutofillProfileDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -48,10 +50,10 @@ class AutofillProfileDataTypeController
   virtual void StopModels() OVERRIDE;
 
  private:
-  PersonalDataManager* personal_data_;
-  scoped_refptr<AutofillWebDataService> web_data_service_;
-  ScopedObserver<AutofillWebDataService, AutofillProfileDataTypeController>
-      scoped_observer_;
+  autofill::PersonalDataManager* personal_data_;
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  ScopedObserver<autofill::AutofillWebDataService,
+                 AutofillProfileDataTypeController> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);
 };

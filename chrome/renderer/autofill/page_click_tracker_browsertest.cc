@@ -15,6 +15,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+namespace autofill {
+
 class TestPageClickListener : public PageClickListener {
  public:
   TestPageClickListener()
@@ -224,3 +226,5 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
   EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
   EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
 }
+
+}  // namespace autofill

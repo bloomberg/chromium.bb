@@ -6,6 +6,8 @@
 
 #include "base/string_util.h"
 
+namespace autofill {
+
 FormData::FormData()
     : user_submitted(false) {
 }
@@ -36,3 +38,5 @@ bool FormData::operator==(const FormData& form) const {
 bool FormData::operator!=(const FormData& form) const {
   return !operator==(form);
 }
+
+}  // namespace autofill

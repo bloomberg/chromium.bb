@@ -15,7 +15,8 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata/encryptor/encryptor.h"
 
-namespace autofill_test {
+namespace autofill {
+namespace test {
 
 void CreateTestFormField(const char* label,
                          const char* name,
@@ -107,4 +108,5 @@ void DisableSystemServices(Profile* profile) {
   }
 }
 
-}  // namespace autofill_test
+}  // namespace test
+}  // namespace autofill

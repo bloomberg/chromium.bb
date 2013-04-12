@@ -102,7 +102,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   ui::ThemeProvider* theme_provider_;
 
   // Store stats on the users actions for logging.
-  password_generation::PasswordGenerationActions actions_;
+  autofill::password_generation::PasswordGenerationActions actions_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleView);
 };

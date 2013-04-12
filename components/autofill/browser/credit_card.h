@@ -13,6 +13,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_group.h"
 
+namespace autofill {
+
 struct FormFieldData;
 
 // A form group that stores credit card information.
@@ -156,5 +158,7 @@ extern const char* const kJCBCard;
 extern const char* const kMasterCard;
 extern const char* const kSoloCard;
 extern const char* const kVisaCard;
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_CREDIT_CARD_H_

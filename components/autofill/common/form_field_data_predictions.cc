@@ -4,6 +4,8 @@
 
 #include "components/autofill/common/form_field_data_predictions.h"
 
+namespace autofill {
+
 FormFieldDataPredictions::FormFieldDataPredictions() {
 }
 
@@ -18,3 +20,5 @@ FormFieldDataPredictions::FormFieldDataPredictions(
 
 FormFieldDataPredictions::~FormFieldDataPredictions() {
 }
+
+}  // namespace autofill

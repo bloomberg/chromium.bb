@@ -7,6 +7,7 @@
 #include "components/autofill/browser/validation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace {
 
 struct ExpirationDate {
@@ -158,3 +159,5 @@ TEST(AutofillValidation, IsValidCreditCardSecurityCodeWithNumber) {
   EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kInvalidNumbers[0])));
 }
+
+}  // namespace autofill

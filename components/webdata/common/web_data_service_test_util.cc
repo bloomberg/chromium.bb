@@ -6,6 +6,8 @@
 
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 
+using autofill::AutofillWebDataService;
+
 MockWebDataServiceWrapperBase::MockWebDataServiceWrapperBase() {
 }
 

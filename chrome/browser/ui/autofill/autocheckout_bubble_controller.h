@@ -10,9 +10,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-class AutofillMetrics;
-
 namespace autofill {
+
+class AutofillMetrics;
 
 // The controller for the Autocheckout bubble UI. Implements a platform
 // agnostic way to interact with the bubble, in addition to being a place

@@ -14,6 +14,8 @@
 
 using content::BrowserThread;
 
+namespace autofill {
+
 class AddressTest : public testing::Test {
  public:
   // In order to access the application locale -- which the tested functions do
@@ -120,3 +122,5 @@ TEST_F(AddressTest, IsCountry) {
   address.GetMatchingTypes(ASCIIToUTF16("Garbage"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
 }
+
+}  // namespace autofill

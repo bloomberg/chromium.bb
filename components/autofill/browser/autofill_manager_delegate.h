@@ -10,10 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/string16.h"
 
-namespace autofill {
-class PasswordGenerator;
-}
-
 namespace content {
 struct PasswordForm;
 struct SSLStatus;
@@ -24,19 +20,20 @@ class Rect;
 class RectF;
 }
 
+class GURL;
+class InfoBarService;
+class PrefService;
+class ProfileSyncServiceBase;
+
+namespace autofill {
+
 class AutofillMetrics;
 class AutofillPopupDelegate;
 class CreditCard;
 class FormStructure;
-class GURL;
-class InfoBarService;
+class PasswordGenerator;
 class PersonalDataManager;
-class PrefService;
-class ProfileSyncServiceBase;
-
 struct FormData;
-
-namespace autofill {
 
 namespace autocheckout {
 class WhitelistManager;

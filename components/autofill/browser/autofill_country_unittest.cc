@@ -9,6 +9,8 @@
 #include "components/autofill/browser/autofill_country.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 // Test the constructor and accessors
 TEST(AutofillCountryTest, AutofillCountry) {
   AutofillCountry united_states_en("US", "en_US");
@@ -84,3 +86,5 @@ TEST(AutofillCountryTest, GetCountryCode) {
                                                   "es"));
   EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("USA"), "es"));
 }
+
+}  // namespace autofill

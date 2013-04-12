@@ -17,6 +17,8 @@
 #include "components/autofill/browser/field_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace autofill {
+
 // static
 FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
@@ -227,3 +229,5 @@ bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
 
   return ok;
 }
+
+}  // namespace autofill

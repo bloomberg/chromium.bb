@@ -9,6 +9,8 @@
 
 #include "components/autofill/browser/field_types.h"
 
+namespace autofill {
+
 struct AutofillServerFieldInfo {
   // The predicted type returned by the Autofill server for this field.
   AutofillFieldType field_type;
@@ -16,5 +18,7 @@ struct AutofillServerFieldInfo {
   // FIELD_WITH_DEFAULT_TYPE field type)
   std::string default_value;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_SERVER_FIELD_INFO_H_

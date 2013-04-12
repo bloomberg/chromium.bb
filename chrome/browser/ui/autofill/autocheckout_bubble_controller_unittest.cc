@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
+namespace autofill {
 namespace {
 
 class TestAutofillMetrics : public AutofillMetrics {
@@ -77,8 +78,6 @@ class TestAutocheckoutBubbleController :
 };
 
 }  // namespace
-
-namespace autofill {
 
 TEST(AutocheckoutBubbleControllerTest, BubbleCreationAndDestructionMetrics) {
   // Test bubble created metric.

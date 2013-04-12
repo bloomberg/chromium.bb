@@ -398,7 +398,7 @@ const CGFloat kIconSize = 26.0;
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  password_generation::LogUserActions(actions_);
+  autofill::password_generation::LogUserActions(actions_);
   [super windowWillClose:notification];
 }
 

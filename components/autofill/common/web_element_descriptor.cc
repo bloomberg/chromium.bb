@@ -4,6 +4,9 @@
 
 #include "components/autofill/common/web_element_descriptor.h"
 
+namespace autofill {
+
 autofill::WebElementDescriptor::WebElementDescriptor()
   : retrieval_method(NONE) {}
 
+}  // namespace autofill

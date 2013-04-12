@@ -23,6 +23,8 @@ using content::BrowserThread;
 using testing::_;
 using WebKit::WebAutofillClient;
 
+namespace autofill {
+
 namespace {
 
 // A constant value to use as the Autofill query ID.
@@ -332,3 +334,5 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
                                             autofill_items,
                                             autofill_ids);
 }
+
+}  // namespace autofill

@@ -28,6 +28,8 @@
 
 using base::win::RegKey;
 
+namespace autofill {
+
 // Forward declaration. This function is not in unnamed namespace as it
 // is referenced in the unittest.
 bool ImportCurrentUserProfiles(const std::string& app_locale,
@@ -299,3 +301,5 @@ bool ImportAutofillDataWin(PersonalDataManager* pdm) {
   // importer will self delete.
   return importer->ImportProfiles();
 }
+
+}  // namespace autofill

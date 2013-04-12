@@ -8,6 +8,7 @@
 #include "components/autofill/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace {
 
 TEST(AutofillFieldTest, Type) {
@@ -91,3 +92,4 @@ TEST(AutofillFieldTest, IsFieldFillable) {
 }
 
 }  // namespace
+}  // namespace autofill
