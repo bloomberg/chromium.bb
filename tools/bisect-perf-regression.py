@@ -1494,6 +1494,12 @@ def SetNinjaBuildSystemDefault():
           'chromium_win_pch=0'
 
 
+def SetMakeBuildSystemDefault():
+  """Makes make the default build system to be used by
+  the bisection script."""
+  os.environ['GYP_GENERATORS'] = 'make'
+
+
 def CheckPlatformSupported(opts):
   """Checks that this platform and build system are supported.
 
@@ -1525,10 +1531,15 @@ def CheckPlatformSupported(opts):
       assert False, 'Error: %s build not supported' % opts.build_preference
   else:
     if not opts.build_preference:
-      opts.build_preference = 'make'
+      if 'ninja' in os.getenv('GYP_GENERATORS'):
+        opts.build_preference = 'ninja'
+      else:
+        opts.build_preference = 'make'
 
     if opts.build_preference == 'ninja':
       SetNinjaBuildSystemDefault()
+    elif opts.build_preference == 'make':
+      SetMakeBuildSystemDefault()
     elif opts.build_preference != 'make':
       assert False, 'Error: %s build not supported' % opts.build_preference
 
