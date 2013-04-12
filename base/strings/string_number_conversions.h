@@ -102,6 +102,12 @@ BASE_EXPORT bool HexStringToInt(const StringPiece& input, int* output);
 // -0x8000000000000000 < |input| < 0x7FFFFFFFFFFFFFFF.
 BASE_EXPORT bool HexStringToInt64(const StringPiece& input, int64* output);
 
+// Best effort conversion, see StringToInt above for restrictions.
+// Will only successful parse hex values that will fit into |output|, i.e.
+// 0x0000000000000000 < |input| < 0xFFFFFFFFFFFFFFFF.
+// The string is not required to start with 0x.
+BASE_EXPORT bool HexStringToUInt64(const StringPiece& input, uint64* output);
+
 // Similar to the previous functions, except that output is a vector of bytes.
 // |*output| will contain as many bytes as were successfully parsed prior to the
 // error.  There is no overflow, but input.size() must be evenly divisible by 2.
@@ -112,4 +118,3 @@ BASE_EXPORT bool HexStringToBytes(const std::string& input,
 }  // namespace base
 
 #endif  // BASE_STRINGS_STRING_NUMBER_CONVERSIONS_H_
-

@@ -302,11 +302,19 @@ class BaseHexIteratorRangeToInt64Traits
     : public BaseIteratorRangeToNumberTraits<ITERATOR, int64, 16> {
 };
 
+template<typename ITERATOR>
+class BaseHexIteratorRangeToUInt64Traits
+    : public BaseIteratorRangeToNumberTraits<ITERATOR, uint64, 16> {
+};
+
 typedef BaseHexIteratorRangeToIntTraits<StringPiece::const_iterator>
     HexIteratorRangeToIntTraits;
 
 typedef BaseHexIteratorRangeToInt64Traits<StringPiece::const_iterator>
     HexIteratorRangeToInt64Traits;
+
+typedef BaseHexIteratorRangeToUInt64Traits<StringPiece::const_iterator>
+    HexIteratorRangeToUInt64Traits;
 
 template<typename STR>
 bool HexStringToBytesT(const STR& input, std::vector<uint8>* output) {
@@ -489,6 +497,11 @@ bool HexStringToInt(const StringPiece& input, int* output) {
 bool HexStringToInt64(const StringPiece& input, int64* output) {
   return IteratorRangeToNumber<HexIteratorRangeToInt64Traits>::Invoke(
     input.begin(), input.end(), output);
+}
+
+bool HexStringToUInt64(const StringPiece& input, uint64* output) {
+  return IteratorRangeToNumber<HexIteratorRangeToUInt64Traits>::Invoke(
+      input.begin(), input.end(), output);
 }
 
 bool HexStringToBytes(const std::string& input, std::vector<uint8>* output) {
