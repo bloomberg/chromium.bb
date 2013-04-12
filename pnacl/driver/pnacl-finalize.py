@@ -42,7 +42,7 @@ def main(argv):
   else:
     f_output = inputs[0]
 
-  # Transform the file, and re-wrap the result.
+  # Transform the file, and wrap the result.
   driver_tools.RunWithEnv('${RUN_OPT}', input=inputs[0], output=f_output)
   driver_tools.WrapBitcode(f_output)
   return 0

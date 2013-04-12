@@ -18,7 +18,6 @@ EXTRA_ENV = {
   'INPUTS'             : '',
   'OUTPUT'             : '',
   'MODE'               : 'all',
-  'DO_WRAP'            : '1',
 
   'OPT_FLAGS_all'      : '-disable-opt --strip',
   'OPT_FLAGS_debug'    : '-disable-opt --strip-debug',
@@ -35,8 +34,6 @@ EXTRA_ENV = {
 StripPatterns = [
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
-
-    ( '--do-not-wrap',   "env.set('DO_WRAP', '0')"),
 
     ( '--strip-all',     "env.set('MODE', 'all')"),
     ( '-s',              "env.set('MODE', 'all')"),
@@ -74,8 +71,6 @@ def main(argv):
       f_output = f
     if driver_tools.IsBitcode(f):
       driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
-      if env.getbool('DO_WRAP'):
-        driver_tools.WrapBitcode(f_output)
     elif driver_tools.IsELF(f) or driver_tools.IsNativeArchive(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)
     elif driver_tools.IsBitcodeArchive(f):

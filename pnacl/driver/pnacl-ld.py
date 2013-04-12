@@ -32,7 +32,7 @@ EXTRA_ENV = {
 
   'STRIP_MODE' : 'none',
 
-  'STRIP_FLAGS'      : '--do-not-wrap ${STRIP_FLAGS_%STRIP_MODE%}',
+  'STRIP_FLAGS'      : '${STRIP_FLAGS_%STRIP_MODE%}',
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
@@ -42,8 +42,7 @@ EXTRA_ENV = {
                     # the value to TRANSLATE_FLAGS if it wasn't explicitly set.
   'OPT_LTO_FLAGS': '-std-link-opts -disable-internalize',
   'OPT_FLAGS': '${#OPT_LEVEL && !OPT_LEVEL == 0 ? ${OPT_LTO_FLAGS}} ${OPT_STRIP_%STRIP_MODE%} ' +
-               '-inline-threshold=${OPT_INLINE_THRESHOLD} ' +
-               '--do-not-wrap',
+               '-inline-threshold=${OPT_INLINE_THRESHOLD} ',
   'OPT_STRIP_none': '',
   'OPT_STRIP_all': '-disable-opt --strip',
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
@@ -398,8 +397,6 @@ def main(argv):
   chain.run()
 
   if bitcode_type == 'pexe' and not arch_flag_given:
-    # Add bitcode wrapper header
-    WrapBitcode(output)
     # Mark .pexe files as executable.
     # Some versions of 'configure' expect this.
     SetExecutableMode(output)
@@ -488,7 +485,7 @@ def DoLLVMPasses(pass_list):
   def Func(infile, outfile):
     filtered_list = [pass_option for pass_option in pass_list
                      if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
-    RunDriver('opt', filtered_list + [infile, '-o', outfile, '--do-not-wrap'])
+    RunDriver('opt', filtered_list + [infile, '-o', outfile])
   return Func
 
 def DoLTO(infile, outfile):

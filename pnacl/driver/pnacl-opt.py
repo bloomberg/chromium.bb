@@ -15,7 +15,6 @@ import driver_tools
 import subprocess
 
 EXTRA_ENV = {
-  'DO_WRAP': '1',
   'ARGS'   : '',
   'OUTPUT' : '',
   # Binary output may go to stdout (when -o was not specified)
@@ -29,7 +28,6 @@ EXTRA_ENV = {
 }
 
 PATTERNS  = [
-  ( '--do-not-wrap',   "env.set('DO_WRAP', '0')"),
   ( '--enable-simplify-libcalls', "env.set('DISABLE_SIMPLIFY_LIBCALLS', '0')"),
   (('-o','(.*)'),      "env.set('OUTPUT', pathtools.normalize($0))\n" +
                        "env.set('HAVE_OUTPUT', '1')"),
@@ -45,11 +43,6 @@ def main(argv):
       '${DISABLE_SIMPLIFY_LIBCALLS ? -disable-simplify-libcalls} ' +
       '${HAVE_OUTPUT ? -o ${OUTPUT}}')
 
-  if env.getbool('DO_WRAP'):
-    if not env.getbool('HAVE_OUTPUT'):
-      Log.Error("unable to wrap pexe on stdout, use: --do-not-wrap flag")
-    else:
-      driver_tools.WrapBitcode(env.getone('OUTPUT'))
   # only reached in case of no errors
   return 0
 
