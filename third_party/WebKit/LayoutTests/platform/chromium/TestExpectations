@@ -581,11 +581,7 @@ http/tests/websocket/tests/hybi/workers/shared-worker-simple.html [ WontFix ]
 http/tests/inspector/network/network-shared-worker.html [ WontFix ]
 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-allowed.html [ WontFix ]
 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-blocked.html [ WontFix ]
-http/tests/security/cross-origin-shared-worker.html [ WontFix ]
 http/tests/security/cross-origin-shared-worker-allowed.html [ WontFix ]
-http/tests/security/same-origin-shared-worker-blocked.html [ WontFix ]
-http/tests/security/storage-blocking-loosened-shared-worker.html [ WontFix ]
-http/tests/security/storage-blocking-strengthened-shared-worker.html [ WontFix ]
 storage/indexeddb/basics-shared-workers.html [ WontFix ]
 
 # test_shell does not support message ports
@@ -2387,9 +2383,6 @@ crbug.com/33287 [ Mac ] fast/canvas/set-colors.html [ Failure ]
 
 webkit.org/b/69103 [ Linux Win ] fast/text/line-initial-and-final-swashes.html [ Failure ]
 
-webkit.org/b/69136 [ Mac ] fast/frames/frame-set-rotation-hit.html [ ImageOnlyFailure ]
-webkit.org/b/69136 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure ]
-
 # New failures from WebKit r51577
 webkit.org/b/72530 [ Debug ] fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
 
@@ -2598,7 +2591,6 @@ webkit.org/b/81145 [ Lion MountainLion ] virtual/softwarecompositing/plugins/com
 webkit.org/b/81145 [ Lion MountainLion ] fast/repaint/transform-absolute-in-positioned-container.html [ Failure ]
 webkit.org/b/81145 [ Lion MountainLion ] animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 webkit.org/b/81145 [ Lion MountainLion ] fast/frames/invalid.html [ Failure ImageOnlyFailure Pass Slow ]
-webkit.org/b/81145 [ Lion MountainLion ] fast/repaint/background-scaling.html [ ImageOnlyFailure ]
 webkit.org/b/81145 [ Lion MountainLion ] editing/spelling/spelling-backspace-between-lines.html [ Failure ]
 webkit.org/b/81145 [ Lion MountainLion ] virtual/gpu/fast/canvas/set-colors.html [ Failure ]
 webkit.org/b/81145 [ Lion MountainLion ] plugins/plugin-javascript-access.html [ Failure ]
@@ -3617,29 +3609,18 @@ crbug.com/225184 [ Mac ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyF
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/227473 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/227473 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-crbug.com/192172 [ Linux Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ImageOnlyFailure ]
-
-# These tests flakily reorder the scrollbars in debug, causing text failures
-webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 
 # This is possibly a bug in the version of fontconfig on Precise, not sure.
 webkit.org/b/110915 [ Linux ] platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure Pass ]
@@ -3728,10 +3709,6 @@ webkit.org/b/113178 [ Linux ] fast/css/font-family-pictograph.html [ Pass Failur
 webkit.org/b/113467 [ Win ] compositing/shadows/shadow-drawing.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnlyFailure ]
-
-# Application cache blocking is not supported in Chromium
-webkit.org/b/112288 http/tests/security/cross-origin-appcache.html [ Failure ]
-webkit.org/b/112288 http/tests/security/same-origin-appcache-blocked.html [ Failure ]
 
 # Snapshotted plugins not enabled
 webkit.org/b/98696 plugins/snapshotting [ Skip ]

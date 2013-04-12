@@ -28,7 +28,6 @@ crbug.com/145338 http/tests/security/contentSecurityPolicy/object-src-url-allowe
 crbug.com/145338 http/tests/security/contentSecurityPolicy/object-src-url-blocked.html
 crbug.com/145338 http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html
 crbug.com/145338 permissionclient/plugin-permission.html
-crbug.com/145338 userscripts/user-script-plugin-document.html
 
 crbug.com/145338 http/tests/inspector
 crbug.com/145338 http/tests/inspector-enabled
@@ -57,8 +56,6 @@ platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ W
 crbug.com/135877 compositing/webgl
 crbug.com/135877 fast/canvas/webgl
 crbug.com/135877 http/tests/canvas/webgl
-crbug.com/135877 platform/chromium/virtual/gpu/fast/canvas/webgl
-crbug.com/135877 platform/chromium/virtual/threaded/compositing/webgl
 
 # LAYER_TREE_INCLUDES_VISIBLE_RECTS option to layerTreeAsText is only applicable to Mac.
 compositing/visible-rect [ WontFix ]
