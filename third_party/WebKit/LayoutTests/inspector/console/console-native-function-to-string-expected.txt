@@ -61,3 +61,7 @@ function clear() { [Command Line API] }
 getEventListeners
 function getEventListeners() { [Command Line API] }
 
+
+table
+function table() { [Command Line API] }
+
