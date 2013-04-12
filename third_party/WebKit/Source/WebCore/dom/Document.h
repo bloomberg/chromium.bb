@@ -171,10 +171,6 @@ class Touch;
 class TouchList;
 #endif
 
-#if ENABLE(MICRODATA)
-class MicroDataItemList;
-#endif
-
 #if ENABLE(LINK_PRERENDER)
 class Prerenderer;
 #endif
@@ -1096,10 +1092,6 @@ public:
     const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
 #else
     const TouchEventTargetSet* touchEventTargets() const { return 0; }
-#endif
-
-#if ENABLE(MICRODATA)
-    PassRefPtr<NodeList> getItems(const String& typeNames);
 #endif
 
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }

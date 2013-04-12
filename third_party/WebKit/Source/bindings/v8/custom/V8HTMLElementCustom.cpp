@@ -33,11 +33,6 @@
 
 #include "V8HTMLElementWrapperFactory.h"
 
-#if ENABLE(MICRODATA)
-#include "V8Binding.h"
-#include "V8MicroDataItemValue.h"
-#endif
-
 namespace WebCore {
 
 v8::Handle<v8::Object> wrap(HTMLElement* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -45,22 +40,5 @@ v8::Handle<v8::Object> wrap(HTMLElement* impl, v8::Handle<v8::Object> creationCo
     ASSERT(impl);
     return createV8HTMLWrapper(impl, creationContext, isolate);
 }
-
-#if ENABLE(MICRODATA)
-v8::Handle<v8::Value> V8HTMLElement::itemValueAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    HTMLElement* impl = V8HTMLElement::toNative(info.Holder());
-    return toV8Fast(impl->itemValue().get(), info, impl);
-}
-
-void V8HTMLElement::itemValueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    HTMLElement* impl = V8HTMLElement::toNative(info.Holder());
-    ExceptionCode ec = 0;
-    impl->setItemValue(toWebCoreString(value), ec);
-    if (ec)
-        setDOMException(ec, info.GetIsolate());
-}
-#endif
 
 } // namespace WebCore

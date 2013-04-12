@@ -340,7 +340,6 @@
     attribute DocumentConstructor Document;
     attribute NodeConstructor Node;
     attribute NodeListConstructor NodeList;
-    [Conditional=MICRODATA] attribute PropertyNodeListConstructor PropertyNodeList;
     attribute NamedNodeMapConstructor NamedNodeMap;
     attribute CharacterDataConstructor CharacterData;
     attribute AttrConstructor Attr;
@@ -436,7 +435,6 @@
     attribute HTMLAllCollectionConstructor HTMLAllCollection;
     attribute HTMLFormControlsCollectionConstructor HTMLFormControlsCollection;
     attribute HTMLOptionsCollectionConstructor HTMLOptionsCollection;
-    [Conditional=MICRODATA] attribute HTMLPropertiesCollectionConstructor HTMLPropertiesCollection;
     attribute HTMLUnknownElementConstructor HTMLUnknownElement;
 
     [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator

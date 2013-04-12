@@ -101,11 +101,6 @@ private:
     virtual void derefFormAssociatedElement() { deref(); }
     virtual HTMLFormElement* virtualForm() const;
 
-#if ENABLE(MICRODATA)
-    virtual String itemValueText() const OVERRIDE;
-    virtual void setItemValueText(const String&, ExceptionCode&) OVERRIDE;
-#endif
-
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return isDocNamedItem(); }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return isDocNamedItem(); }
 

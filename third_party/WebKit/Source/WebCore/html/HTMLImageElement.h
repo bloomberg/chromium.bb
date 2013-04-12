@@ -106,11 +106,6 @@ private:
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
 
-#if ENABLE(MICRODATA)
-    virtual String itemValueText() const OVERRIDE;
-    virtual void setItemValueText(const String&, ExceptionCode&) OVERRIDE;
-#endif
-
     HTMLImageLoader m_imageLoader;
     HTMLFormElement* m_form;
     CompositeOperator m_compositeOperator;

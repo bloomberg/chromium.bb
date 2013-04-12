@@ -127,11 +127,6 @@
 
 #include "InspectorController.h"
 
-#if ENABLE(MICRODATA)
-#include "HTMLPropertiesCollection.h"
-#include "PropertyNodeList.h"
-#endif
-
 using namespace std;
 
 namespace WebCore {
@@ -2534,43 +2529,6 @@ bool Node::willRespondToTouchEvents()
     return false;
 #endif
 }
-
-#if ENABLE(MICRODATA)
-DOMSettableTokenList* Node::itemProp()
-{
-    return ensureRareData()->ensureMicroDataTokenLists()->itemProp(this);
-}
-
-void Node::setItemProp(const String& value)
-{
-    ensureRareData()->ensureMicroDataTokenLists()->itemProp(this)->setValueInternal(value);
-}
-
-DOMSettableTokenList* Node::itemRef()
-{
-    return ensureRareData()->ensureMicroDataTokenLists()->itemRef(this);
-}
-
-void Node::setItemRef(const String& value)
-{
-    ensureRareData()->ensureMicroDataTokenLists()->itemRef(this)->setValueInternal(value);
-}
-
-DOMSettableTokenList* Node::itemType()
-{
-    return ensureRareData()->ensureMicroDataTokenLists()->itemType(this);
-}
-
-void Node::setItemType(const String& value)
-{
-    ensureRareData()->ensureMicroDataTokenLists()->itemType(this)->setValueInternal(value);
-}
-
-PassRefPtr<PropertyNodeList> Node::propertyNodeList(const String& name)
-{
-    return ensureRareData()->ensureNodeLists()->addCacheWithName<PropertyNodeList>(this, PropertyNodeListType, name);
-}
-#endif
 
 // This is here for inlining
 inline void TreeScope::removedLastRefToScope()

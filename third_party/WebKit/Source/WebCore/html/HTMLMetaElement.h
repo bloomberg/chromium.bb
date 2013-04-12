@@ -42,12 +42,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
     void process();
-
-#if ENABLE(MICRODATA)
-    virtual String itemValueText() const OVERRIDE;
-    virtual void setItemValueText(const String&, ExceptionCode&) OVERRIDE;
-#endif
-
 };
 
 } //namespace

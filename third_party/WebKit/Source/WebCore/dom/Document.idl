@@ -137,10 +137,6 @@
 
     [PerWorldBindings] NodeList getElementsByName([Optional=DefaultIsUndefined] DOMString elementName);
 
-#if defined(ENABLE_MICRODATA) && ENABLE_MICRODATA
-    NodeList getItems([TreatNullAs=NullString, TreatUndefinedAs=NullString, Optional=DefaultIsUndefined] DOMString typeNames);
-#endif
-
     [Custom] attribute Location location;
 
     // IE extensions

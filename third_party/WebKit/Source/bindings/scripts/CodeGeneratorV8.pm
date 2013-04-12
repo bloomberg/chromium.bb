@@ -2738,12 +2738,7 @@ END
             $hasEnumerator = 0;
         }
 
-        # FIXME: implement V8HTMLPropertiesCollection::namedPropertyGetter
-        if ($interfaceName eq "HTMLPropertiesCollection") {
-            push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(V8HTMLCollection::namedPropertyGetter, ");
-        } else {
-            push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, ");
-        }
+        push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, ");
         push(@implContent, $hasCustomNamedSetter ? "${v8InterfaceName}::namedPropertySetter, " : "0, ");
         # If there is a custom enumerator, there MUST be custom query to properly communicate property attributes.
         push(@implContent, $hasEnumerator ? "${v8InterfaceName}::namedPropertyQuery, " : "0, ");
@@ -2961,12 +2956,6 @@ END
 
         if ($function->signature->name eq "item") {
             $indexer = $function->signature;
-        }
-
-        if ($interfaceName eq "HTMLPropertiesCollection") {
-            if ($function->signature->name eq "propertyNodeList") {
-                $namedPropertyGetter = $function->signature;
-            }
         } elsif ($function->signature->name eq "namedItem") {
             $namedPropertyGetter = $function->signature;
         }

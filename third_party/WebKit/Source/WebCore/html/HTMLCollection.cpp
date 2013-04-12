@@ -33,11 +33,6 @@
 #include "NodeRareData.h"
 #include "NodeTraversal.h"
 
-#if ENABLE(MICRODATA)
-#include "HTMLPropertiesCollection.h"
-#include "PropertyNodeList.h"
-#endif
-
 #include <utility>
 
 namespace WebCore {
@@ -62,9 +57,6 @@ static bool shouldOnlyIncludeDirectChildren(CollectionType type)
     case SelectedOptions:
     case DataListOptions:
     case WindowNamedItems:
-#if ENABLE(MICRODATA)
-    case ItemProperties:
-#endif
     case FormControls:
         return false;
     case NodeChildren:
@@ -79,8 +71,6 @@ static bool shouldOnlyIncludeDirectChildren(CollectionType type)
     case HTMLTagNodeListType:
     case RadioNodeListType:
     case LabelsNodeListType:
-    case MicroDataItemListType:
-    case PropertyNodeListType:
         break;
     }
     ASSERT_NOT_REACHED();
@@ -100,9 +90,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case DocAll:
     case WindowNamedItems:
     case DocumentNamedItems:
-#if ENABLE(MICRODATA)
-    case ItemProperties:
-#endif
     case FormControls:
         return NodeListIsRootedAtDocument;
     case NodeChildren:
@@ -122,8 +109,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case HTMLTagNodeListType:
     case RadioNodeListType:
     case LabelsNodeListType:
-    case MicroDataItemListType:
-    case PropertyNodeListType:
         break;
     }
     ASSERT_NOT_REACHED();
@@ -159,10 +144,6 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
         return InvalidateOnIdNameAttrChange;
     case DocumentNamedItems:
         return InvalidateOnIdNameAttrChange;
-#if ENABLE(MICRODATA)
-    case ItemProperties:
-        return InvalidateOnItemAttrChange;
-#endif
     case FormControls:
         return InvalidateForFormControls;
     case ChildNodeListType:
@@ -172,8 +153,6 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
     case HTMLTagNodeListType:
     case RadioNodeListType:
     case LabelsNodeListType:
-    case MicroDataItemListType:
-    case PropertyNodeListType:
         break;
     }
     ASSERT_NOT_REACHED();
@@ -245,10 +224,6 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
     case DocAll:
     case NodeChildren:
         return true;
-#if ENABLE(MICRODATA)
-    case ItemProperties:
-        return element->fastHasAttribute(itempropAttr);
-#endif
     case FormControls:
     case DocumentNamedItems:
     case TableRows:
@@ -260,8 +235,6 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
     case HTMLTagNodeListType:
     case RadioNodeListType:
     case LabelsNodeListType:
-    case MicroDataItemListType:
-    case PropertyNodeListType:
         ASSERT_NOT_REACHED();
     }
     return false;
@@ -444,13 +417,6 @@ Node* LiveNodeListBase::item(unsigned offset) const
 
     if (isLengthCacheValid() && cachedLength() <= offset)
         return 0;
-
-#if ENABLE(MICRODATA)
-    if (type() == ItemProperties)
-        static_cast<const HTMLPropertiesCollection*>(this)->updateRefElements();
-    else if (type() == PropertyNodeListType)
-        static_cast<const PropertyNodeList*>(this)->updateRefElements();
-#endif
 
     ContainerNode* root = rootContainerNode();
     if (!root) {

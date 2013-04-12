@@ -51,11 +51,6 @@ private:
 
     void parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues);
 
-#if ENABLE(MICRODATA)
-    virtual String itemValueText() const OVERRIDE;
-    virtual void setItemValueText(const String&, ExceptionCode&) OVERRIDE;
-#endif
-
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
 };
 

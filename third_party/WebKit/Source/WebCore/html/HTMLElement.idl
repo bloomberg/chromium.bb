@@ -56,19 +56,6 @@
 
              attribute boolean spellcheck;
 
-             [Conditional=MICRODATA, Reflect] attribute boolean itemScope;
-    [Conditional=MICRODATA] readonly attribute DOMSettableTokenList itemType;
-             [Conditional=MICRODATA, Reflect, URL] attribute DOMString itemId;
-
-    [Conditional=MICRODATA] readonly attribute DOMSettableTokenList itemRef;
-    [Conditional=MICRODATA] readonly attribute DOMSettableTokenList itemProp;
-
-#if defined(ENABLE_MICRODATA) && ENABLE_MICRODATA
-    [Conditional=MICRODATA] readonly attribute HTMLPropertiesCollection properties;
-#endif
-
-    [Conditional=MICRODATA, Custom, SetterRaisesException] attribute any itemValue;
-
     void click();
 };
 

@@ -32,15 +32,12 @@
 #include "V8HTMLCollection.h"
 
 #include "HTMLCollection.h"
-#include "HTMLPropertiesCollection.h"
-#include "PropertyNodeList.h"
 #include "V8Binding.h"
 #include "V8HTMLAllCollection.h"
 #include "V8HTMLFormControlsCollection.h"
 #include "V8HTMLOptionsCollection.h"
 #include "V8NamedNodesCollection.h"
 #include "V8Node.h"
-#include "V8PropertyNodeList.h"
 
 namespace WebCore {
 
@@ -52,16 +49,6 @@ v8::Handle<v8::Value> V8HTMLCollection::namedPropertyGetter(v8::Local<v8::String
         return v8Undefined();
 
     HTMLCollection* imp = V8HTMLCollection::toNative(info.Holder());
-#if ENABLE(MICRODATA)
-    if (imp->type() == ItemProperties) {
-        if (!static_cast<HTMLPropertiesCollection*>(imp)->hasNamedItem(toWebCoreAtomicString(name)))
-            return v8Undefined();
-        RefPtr<PropertyNodeList> item = static_cast<HTMLPropertiesCollection*>(imp)->propertyNodeList(toWebCoreAtomicString(name));
-        if (!item)
-            return v8Undefined();
-        return toV8Fast(item.release(), info, imp);
-    }
-#endif
     Node* item = imp->namedItem(toWebCoreAtomicString(name));
     if (!item)
         return v8Undefined();
