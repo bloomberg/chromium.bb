@@ -1017,11 +1017,13 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
                 DriveCache::CACHE_TYPE_PERSISTENT);
 
   // Verifies dirty file exists.
-  base::FilePath dirty_path = GetCacheFilePath(
-      resource_id,
-      md5,
-      DriveCache::CACHE_TYPE_PERSISTENT,
-      DriveCache::CACHED_FILE_LOCALLY_MODIFIED);
+  base::FilePath dirty_path;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  cache_->GetFile(
+      resource_id, md5,
+      google_apis::test_util::CreateCopyResultCallback(&error, &dirty_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
   // Pin the dirty file.
@@ -1211,7 +1213,6 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
 TEST_F(DriveCacheTest, MountUnmount) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
-  base::FilePath file_path;
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1233,10 +1234,14 @@ TEST_F(DriveCacheTest, MountUnmount) {
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Clear mounted state of the file.
-  file_path = cache_->GetCacheFilePath(resource_id,
-                                       md5,
-                                       DriveCache::CACHE_TYPE_PERSISTENT,
-                                       DriveCache::CACHED_FILE_MOUNTED);
+  base::FilePath file_path;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  cache_->GetFile(
+      resource_id, md5,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
   TestMarkAsUnmounted(resource_id, md5, file_path,
                       DRIVE_FILE_OK,
                       test_util::TEST_CACHE_STATE_PRESENT,

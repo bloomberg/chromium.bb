@@ -77,13 +77,6 @@ class DriveCache {
     NUM_CACHE_TYPES,           // This must be at the end.
   };
 
-  // Enum defining origin of a cached file.
-  enum CachedFileOrigin {
-    CACHED_FILE_FROM_SERVER = 0,
-    CACHED_FILE_LOCALLY_MODIFIED,
-    CACHED_FILE_MOUNTED,
-  };
-
   // Enum defining type of file operation e.g. copy or move, etc.
   enum FileOperationType {
     FILE_OPERATION_MOVE = 0,
@@ -108,14 +101,6 @@ class DriveCache {
   // Can be called on any thread.
   base::FilePath GetCacheDirectoryPath(
       CacheSubDirectoryType sub_dir_type) const;
-
-  // Returns absolute path of the file if it were cached or to be cached.
-  //
-  // Can be called on any thread.
-  base::FilePath GetCacheFilePath(const std::string& resource_id,
-                            const std::string& md5,
-                            CacheSubDirectoryType sub_dir_type,
-                            CachedFileOrigin file_origin) const;
 
   // Returns true if the given path is under drive cache directory, i.e.
   // <user_profile_dir>/GCache/v1
@@ -276,9 +261,27 @@ class DriveCache {
       const DriveCacheEntry& cache_entry);
 
  private:
+  friend class DriveCacheTest;
+
   typedef std::pair<DriveFileError, base::FilePath> GetFileResult;
 
+  // Enum defining origin of a cached file.
+  enum CachedFileOrigin {
+    CACHED_FILE_FROM_SERVER = 0,
+    CACHED_FILE_LOCALLY_MODIFIED,
+    CACHED_FILE_MOUNTED,
+  };
+
   virtual ~DriveCache();
+
+  // Returns absolute path of the file if it were cached or to be cached.
+  //
+  // Can be called on any thread.
+  base::FilePath GetCacheFilePath(const std::string& resource_id,
+                                  const std::string& md5,
+                                  CacheSubDirectoryType sub_dir_type,
+                                  CachedFileOrigin file_origin) const;
+
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
