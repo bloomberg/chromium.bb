@@ -119,6 +119,10 @@ class InstantController : public InstantPage::Delegate,
                 const string16& user_text,
                 const string16& full_text);
 
+  // Called when the user navigates to a URL from the omnibox. This will send
+  // an onsubmit notification to the instant page.
+  void OmniboxNavigateToURL();
+
   // The overlay WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetOverlayContents() const;
 
@@ -207,6 +211,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            NavigationSuggestionIsDiscardedUponSearchSuggestion);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           NavigateToURLSuggestionHitEnterAndLookForSubmit);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            MiddleClickOnSuggestionOpensInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
@@ -216,7 +222,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-      OmniboxCommitsWhenShownFullHeight);
+                           OmniboxCommitsWhenShownFullHeight);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotLocalOverlay);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);

@@ -6,7 +6,7 @@ var apiHandle;
 var newTabPageHandle;
 var savedUserText = null;
 var suggestionIndex = -1;
-var suggestions = ["result 1", "result 2", "result 3"];
+var suggestions = ["result 1", "result 2", "http://www.google.com"];
 var suggestion;
 var behavior = 2;
 var onMostVisitedChangedCalls = 0;
@@ -14,6 +14,7 @@ var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
 var onNativeSuggestionsCalls = 0;
 var onChangeCalls = 0;
+var submitCount = 0;
 
 function getApiHandle() {
   if (window.navigator && window.navigator.searchBox)
@@ -41,6 +42,7 @@ function handleNativeSuggestions() {
 
 function handleSubmit() {
   location.hash = 'q=' + encodeURIComponent(apiHandle.value);
+  submitCount++;
 }
 
 function handleOnChange() {

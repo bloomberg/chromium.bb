@@ -234,15 +234,24 @@ void SearchBox::OnChange(const string16& query,
 }
 
 void SearchBox::OnSubmit(const string16& query) {
-  query_ = query;
-  verbatim_ = true;
-  selection_start_ = selection_end_ = query_.size();
+  // Submit() is called when the user hits Enter to commit the omnibox text.
+  // If |query| is non-blank, the user committed a search. If it's blank, the
+  // omnibox text was a URL, and the user is navigating to it, in which case
+  // we shouldn't update the |query_| or associated state.
+  if (!query.empty()) {
+    query_ = query;
+    verbatim_ = true;
+    selection_start_ = selection_end_ = query_.size();
+  }
+
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnSubmit";
     extensions_v8::SearchBoxExtension::DispatchSubmit(
         render_view()->GetWebView()->mainFrame());
   }
-  Reset();
+
+  if (!query.empty())
+    Reset();
 }
 
 void SearchBox::OnCancel(const string16& query) {

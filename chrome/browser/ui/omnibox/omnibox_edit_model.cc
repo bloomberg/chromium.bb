@@ -730,6 +730,19 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         base::TimeTicks::Now() - time_user_first_modified_omnibox_;
     const GURL destination_url = autocomplete_controller_->
         GetDestinationURL(match, query_formulation_time);
+
+    // If running with instant, notify the instant controller that a navigation
+    // is about to take place if we are navigating to a URL. This can be
+    // determined by inspecting the transition type. To ensure that this is only
+    // done on Enter key press, check that the disposition is CURRENT_TAB. This
+    // is the same heuristic used by BrowserInstantController::OpenInstant
+    if (match.transition == content::PAGE_TRANSITION_TYPED &&
+        disposition == CURRENT_TAB) {
+      InstantController* instant = controller_->GetInstant();
+      if (instant)
+        instant->OmniboxNavigateToURL();
+    }
+
     // This calls RevertAll again.
     base::AutoReset<bool> tmp(&in_revert_, true);
     controller_->OnAutocompleteAccept(destination_url, disposition,

@@ -75,7 +75,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
         most_visited_items_count_(0),
         first_most_visited_item_id_(0),
         on_native_suggestions_calls_(0),
-        on_change_calls_(0) {
+        on_change_calls_(0),
+        submit_count_(0) {
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -118,7 +119,11 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetIntFromJS(contents, "onNativeSuggestionsCalls",
                         &on_native_suggestions_calls_) &&
            GetIntFromJS(contents, "onChangeCalls",
-                        &on_change_calls_);
+                        &on_change_calls_) &&
+           GetIntFromJS(contents, "submitCount",
+                        &submit_count_) &&
+           GetStringFromJS(contents, "apiHandle.value",
+                           &query_value_);
   }
 
   int on_most_visited_change_calls_;
@@ -126,6 +131,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int first_most_visited_item_id_;
   int on_native_suggestions_calls_;
   int on_change_calls_;
+  int submit_count_;
+  std::string query_value_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the
@@ -435,10 +442,58 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
   // TODO(beaudoin): Figure out why this fails.
   // EXPECT_FALSE(HasTemporaryText());
 
-
   // Commit the search by pressing Enter.
   browser()->window()->GetLocationBar()->AcceptInput();
   EXPECT_EQ("hello", GetOmniboxText());
+}
+
+// This test simulates a search provider using the InstantExtended API to
+// navigate through the suggested results and back to the original user query.
+// If this test starts to flake, it may be that the second call to AcceptInput
+// below causes instant()->instant_tab() to no longer be valid due to e.g. a
+// navigation. In that case, see https://codereview.chromium.org/12895007/#msg28
+// and onwards for possible alternatives.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       NavigateToURLSuggestionHitEnterAndLookForSubmit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  // Do a search and commit it.
+  SetOmniboxTextAndWaitForOverlayToShow("hello k");
+  EXPECT_EQ(ASCIIToUTF16("hello k"), omnibox()->GetText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  SetOmniboxText("http");
+  EXPECT_EQ("http", GetOmniboxText());
+
+  SendDownArrow();
+  EXPECT_EQ("result 1", GetOmniboxText());
+  SendDownArrow();
+  EXPECT_EQ("result 2", GetOmniboxText());
+  SendDownArrow();
+  EXPECT_EQ("http://www.google.com", GetOmniboxText());
+
+  EXPECT_TRUE(HasUserInputInProgress());
+
+  EXPECT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  // Note the commit count is initially 1 due to the AcceptInput() call above.
+  EXPECT_EQ(1, submit_count_);
+
+  std::string old_query_value(query_value_);
+
+  // Commit the search by pressing Enter.
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Make sure a submit message got sent.
+  EXPECT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  EXPECT_EQ(2, submit_count_);
+  EXPECT_EQ(old_query_value, query_value_);
 }
 
 // This test simulates a search provider using the InstantExtended API to

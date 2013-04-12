@@ -637,6 +637,14 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   }
 }
 
+void InstantController::OmniboxNavigateToURL() {
+  if (!extended_enabled_)
+    return;
+
+  if (instant_tab_)
+    instant_tab_->Submit(string16());
+}
+
 content::WebContents* InstantController::GetOverlayContents() const {
   return overlay_ ? overlay_->contents() : NULL;
 }
