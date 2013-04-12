@@ -24,6 +24,8 @@ import subprocess
 import sys
 import pipes
 
+from distutils import spawn
+
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -56,31 +58,41 @@ class Checkout(object):
   def sync(self):
     pass
 
+  def run(self, cmd, **kwargs):
+    print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
+    if self.dryrun:
+      return 0
+    return subprocess.check_call(cmd, **kwargs)
+
 
 class GclientCheckout(Checkout):
 
   def run_gclient(self, *cmd, **kwargs):
-    print 'Running: gclient %s' % ' '.join(pipes.quote(x) for x in cmd)
-    if not self.dryrun:
-      return subprocess.check_call(
-          (sys.executable, os.path.join(SCRIPT_PATH, 'gclient.py')) + cmd,
-          **kwargs)
+    if not spawn.find_executable('gclient'):
+      cmd_prefix = (sys.executable, os.path.join(SCRIPT_PATH, 'gclient.py'))
+    else:
+      cmd_prefix = ('gclient',)
+    return self.run(cmd_prefix + cmd, **kwargs)
 
 
 class GitCheckout(Checkout):
 
   def run_git(self, *cmd, **kwargs):
-    print 'Running: git %s' % ' '.join(pipes.quote(x) for x in cmd)
-    if not self.dryrun:
-      return subprocess.check_call(('git',) + cmd, **kwargs)
+    if sys.platform == 'win32' and not spawn.find_executable('git'):
+      git_path = os.path.join(SCRIPT_PATH, 'git-1.8.0_bin', 'bin', 'git.exe')
+    else:
+      git_path = 'git'
+    return self.run((git_path,) + cmd, **kwargs)
 
 
 class SvnCheckout(Checkout):
 
   def run_svn(self, *cmd, **kwargs):
-    print 'Running: svn %s' % ' '.join(pipes.quote(x) for x in cmd)
-    if not self.dryrun:
-      return subprocess.check_call(('svn',) + cmd, **kwargs)
+    if sys.platform == 'win32' and not spawn.find_executable('svn'):
+      svn_path = os.path.join(SCRIPT_PATH, 'svn_bin', 'svn.exe')
+    else:
+      svn_path = 'svn'
+    return self.run((svn_path,) + cmd, **kwargs)
 
 
 class GclientGitCheckout(GclientCheckout, GitCheckout):
