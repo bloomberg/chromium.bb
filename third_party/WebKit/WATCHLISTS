@@ -45,6 +45,10 @@
     'platform_graphics': {
       'filepath': 'Source/WebCore/platform/graphics',
     },
+    'platform': {
+      'filepath': 'Source/WebCore/platform' \
+                  '|Source/Platform'
+    },
     'svg': {
       'filepath': 'Source/WebCore/svg|Source/WebCore/rendering/svg',
     },
@@ -121,10 +125,11 @@
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'jamesr@chromium.org', 'schenney@chromium.org' ],
+    'platform': [ 'forgerbr@gmail.com' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org' ],
     'public_api': [ 'abarth@chromum.org', 'jamesr@chromium.org' ],
-    'wtf': [ 'abarth@chromium.org' ],
+    'wtf': [ 'abarth@chromium.org', 'forgerbr@gmail.com' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
     'rendering': [ 'jchaffraix+rendering@chromium.org' ],
