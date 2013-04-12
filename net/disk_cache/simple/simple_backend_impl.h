@@ -15,6 +15,10 @@
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace disk_cache {
 
 // SimpleBackendImpl is a new cache backend that stores entries in individual
@@ -34,9 +38,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
                     const scoped_refptr<base::TaskRunner>& cache_thread,
                     net::NetLog* net_log);
 
-  int Init(const CompletionCallback& callback);
-
   virtual ~SimpleBackendImpl();
+
+  // Must run on IO Thread.
+  int Init(const CompletionCallback& completion_callback);
 
   // From Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
@@ -61,12 +66,19 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
+  typedef base::Callback<void(int result)> InitializeIndexCallback;
+
+  // Must run on IO Thread.
+  void InitializeIndex(const CompletionCallback& callback, int result);
+
+  // Try to create the directory if it doesn't exist.
   // Must run on Cache Thread.
-  void InitializeIndex(base::MessageLoopProxy* io_thread,
-                       const CompletionCallback& callback);
+  static void CreateDirectory(
+      base::MessageLoopProxy* io_thread,
+      const base::FilePath& path,
+      const InitializeIndexCallback& initialize_index_callback);
 
   const base::FilePath path_;
-
   scoped_ptr<SimpleIndex> index_;
   const scoped_refptr<base::TaskRunner> cache_thread_;
 };

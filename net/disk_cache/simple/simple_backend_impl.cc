@@ -44,21 +44,26 @@ SimpleBackendImpl::SimpleBackendImpl(
     const scoped_refptr<base::TaskRunner>& cache_thread,
     net::NetLog* net_log)
   : path_(path),
-    cache_thread_(cache_thread) {
-  index_.reset(new SimpleIndex(cache_thread, path));
-}
-
-int SimpleBackendImpl::Init(const CompletionCallback& callback) {
-  cache_thread_->PostTask(FROM_HERE,
-                          base::Bind(&SimpleBackendImpl::InitializeIndex,
-                                     base::Unretained(this),
-                                     MessageLoopProxy::current(),
-                                     callback));
-  return net::ERR_IO_PENDING;
-}
+    index_(new SimpleIndex(cache_thread,
+                           MessageLoopProxy::current(),  // io_thread
+                           path)),
+    cache_thread_(cache_thread) {}
 
 SimpleBackendImpl::~SimpleBackendImpl() {
-  index_->Cleanup();
+  index_->WriteToDisk();
+}
+
+int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
+  InitializeIndexCallback initialize_index_callback =
+      base::Bind(&SimpleBackendImpl::InitializeIndex,
+                 base::Unretained(this),
+                 completion_callback);
+  cache_thread_->PostTask(FROM_HERE,
+                          base::Bind(&SimpleBackendImpl::CreateDirectory,
+                                     MessageLoopProxy::current(),  // io_thread
+                                     path_,
+                                     initialize_index_callback));
+  return net::ERR_IO_PENDING;
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {
@@ -129,15 +134,25 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
   NOTIMPLEMENTED();
 }
 
-void SimpleBackendImpl::InitializeIndex(MessageLoopProxy* io_thread,
-                                        const CompletionCallback& callback) {
+void SimpleBackendImpl::InitializeIndex(
+    const CompletionCallback& callback, int result) {
+  if (result == net::OK)
+    index_->Initialize();
+  callback.Run(result);
+}
+
+// static
+void SimpleBackendImpl::CreateDirectory(
+    MessageLoopProxy* io_thread,
+    const base::FilePath& path,
+    const InitializeIndexCallback& initialize_index_callback) {
   int rv = net::OK;
-  if (!file_util::PathExists(path_) && !file_util::CreateDirectory(path_)) {
-    LOG(ERROR) << "Simple Cache Backend: failed to create: " << path_.value();
+  if (!file_util::PathExists(path) && !file_util::CreateDirectory(path)) {
+    LOG(ERROR) << "Simple Cache Backend: failed to create: " << path.value();
     rv = net::ERR_FAILED;
-  } else
-    rv = index_->Initialize() ? net::OK : net::ERR_FAILED;
-  io_thread->PostTask(FROM_HERE, base::Bind(callback, rv));
+  }
+
+  io_thread->PostTask(FROM_HERE, base::Bind(initialize_index_callback, rv));
 }
 
 }  // namespace disk_cache
