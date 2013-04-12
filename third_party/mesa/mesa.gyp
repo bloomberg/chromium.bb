@@ -3,11 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    # Disable warnings as errors for mesa until they're fixed or disabled.
-    # http://crbug.com/143877
-    'win_third_party_warn_as_error': 'false',
-  },
   'conditions': [
     ['use_system_mesa==0', {
       'target_defaults': {
@@ -57,6 +52,12 @@
           ],
           'dependencies': [
             'mesa_headers',
+          ],
+          # TODO(scottmg): http://crbug.com/143877 These should be removed if
+          # Mesa is ever rolled and the warnings are fixed.
+          'msvs_disabled_warnings': [
+              4005, 4018, 4065, 4090, 4099, 4113, 4133, 4146, 4267, 4273, 4291,
+              4305, 4334, 4748,
           ],
           'sources': [
             '../talloc/talloc.c',
@@ -580,6 +581,11 @@
             'MesaLib/src/mapi',
             'MesaLib/src/mesa',
             'MesaLib/src/mesa/drivers',
+          ],
+          # TODO(scottmg): http://crbug.com/143877 These should be removed if
+          # Mesa is ever rolled and the warnings are fixed.
+          'msvs_disabled_warnings': [
+              4005, 4133, 4267,
           ],
           'sources': [
             'MesaLib/src/mesa/drivers/common/driverfuncs.c',
