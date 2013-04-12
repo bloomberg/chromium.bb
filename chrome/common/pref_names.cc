@@ -2169,13 +2169,21 @@ const char kManagedNotificationsBlockedForUrls[] =
 const char kManagedAutoSelectCertificateForUrls[] =
     "profile.managed_auto_select_certificate_for_urls";
 
-// Set to true if the user created a login item so we should not modify it when
-// uninstalling background apps.
-const char kUserCreatedLoginItem[] = "background_mode.user_created_login_item";
-
+#if defined(OS_MACOSX)
 // Set to true if the user removed our login item so we should not create a new
 // one when uninstalling background apps.
 const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";
+
+// Set to true if Chrome already created a login item, so there's no need to
+// create another one.
+const char kChromeCreatedLoginItem[] =
+  "background_mode.chrome_created_login_item";
+
+// Set to true once we've initialized kChromeCreatedLoginItem for the first
+// time.
+const char kMigratedLoginItemPref[] =
+  "background_mode.migrated_login_item_pref";
+#endif
 
 // Set to true if background mode is enabled on this browser.
 const char kBackgroundModeEnabled[] = "background_mode.enabled";

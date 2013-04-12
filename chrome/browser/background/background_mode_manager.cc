@@ -225,8 +225,11 @@ BackgroundModeManager::~BackgroundModeManager() {
 
 // static
 void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
+#if defined(OS_MACOSX)
   registry->RegisterBooleanPref(prefs::kUserRemovedLoginItem, false);
+  registry->RegisterBooleanPref(prefs::kChromeCreatedLoginItem, false);
+  registry->RegisterBooleanPref(prefs::kMigratedLoginItemPref, false);
+#endif
   registry->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
 }
 
@@ -382,16 +385,10 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
     // background mode.
     if (!in_background_mode_) {
       // We're entering background mode - make sure we have launch-on-startup
-      // enabled.
-      // On a Mac, we use 'login items' mechanism which has user-facing UI so we
-      // don't want to stomp on user choice every time we start and load
-      // registered extensions. This means that if a background app is removed
-      // or added while Chrome is not running, we could leave Chrome in the
-      // wrong state, but this is better than constantly forcing Chrome to
-      // launch on startup even after the user removes the LoginItem manually.
-#if !defined(OS_MACOSX)
+      // enabled. On Mac, the platform-specific code tracks whether the user
+      // has deleted a login item in the past, and if so, no login item will
+      // be created (to avoid overriding the specific user action).
       EnableLaunchOnStartup(true);
-#endif
 
       StartBackgroundMode();
     }
@@ -629,15 +626,6 @@ void BackgroundModeManager::OnBackgroundAppInstalled(
   // Background mode is disabled - don't do anything.
   if (!IsBackgroundModePrefEnabled())
     return;
-
-  // Special behavior for the Mac: We enable "launch-on-startup" only on new app
-  // installation rather than every time we go into background mode. This is
-  // because the Mac exposes "Open at Login" UI to the user and we don't want to
-  // clobber the user's selection on every browser launch.
-  // Other platforms enable launch-on-startup in OnApplicationListChanged().
-#if defined(OS_MACOSX)
-  EnableLaunchOnStartup(true);
-#endif
 
   // Check if we need a status tray icon and make one if we do (needed so we
   // can display the app-installed notification below).

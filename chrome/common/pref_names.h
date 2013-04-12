@@ -784,8 +784,12 @@ extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];
 extern const char kCustomHandlersEnabled[];
 
-extern const char kUserCreatedLoginItem[];
+#if defined(OS_MACOSX)
 extern const char kUserRemovedLoginItem[];
+extern const char kChromeCreatedLoginItem[];
+extern const char kMigratedLoginItemPref[];
+#endif
+
 extern const char kBackgroundModeEnabled[];
 extern const char kHardwareAccelerationModeEnabled[];
 extern const char kHardwareAccelerationModePrevious[];

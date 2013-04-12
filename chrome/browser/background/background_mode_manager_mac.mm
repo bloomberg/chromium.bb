@@ -17,105 +17,135 @@
 using content::BrowserThread;
 
 namespace {
-#if !defined(NDEBUG)
-// The code to remove a login item has a potential race (because the code to
-// set and check the kUserRemovedLoginItem pref runs on the UI thread, while
-// the code that checks for a login item runs on the IO thread). We add this
-// flag which should always match the value of the pref to see if we ever hit
-// this race in practice.
-static bool login_item_removed = false;
-#endif
-
-void SetUserRemovedLoginItemPrefCallback() {
+void SetUserRemovedLoginItemPrefOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   PrefService* service = g_browser_process->local_state();
   service->SetBoolean(prefs::kUserRemovedLoginItem, true);
 }
 
-void DisableLaunchOnStartupCallback() {
-  // Check if Chrome is not a login Item, or is a Login Item but w/o 'hidden'
-  // flag - most likely user has modified the setting, don't override it.
-  bool is_hidden = false;
-  if (!base::mac::CheckLoginItemStatus(&is_hidden)) {
-    // No login item - this means the user must have already removed it, so
-    // call back to the UI thread to set a preference so we don't try to
-    // recreate it the next time they enable/install a background app.
-#if !defined(NDEBUG)
-    login_item_removed = true;
-#endif
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(SetUserRemovedLoginItemPrefCallback));
-    return;
-  }
-
-  // If the login item does not have the "hidden" flag set, just leave it there
-  // since it means the user must have created it.
-  if (!is_hidden)
-    return;
-
-  // Remove the login item we created.
-  base::mac::RemoveFromLoginItems();
-}
-
-void SetUserCreatedLoginItemPrefCallback() {
+void SetCreatedLoginItemPrefOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   PrefService* service = g_browser_process->local_state();
-  service->SetBoolean(prefs::kUserCreatedLoginItem, true);
+  service->SetBoolean(prefs::kChromeCreatedLoginItem, true);
 }
 
-void EnableLaunchOnStartupCallback(bool should_add_login_item) {
-  // Check if Chrome is already a Login Item (avoid overriding user choice).
-  if (base::mac::CheckLoginItemStatus(NULL)) {
-    // Call back to the UI thread to set our preference so we don't delete the
-    // user's login item when we disable launch on startup. There's a race
-    // condition here if the user disables launch on startup before our callback
-    // is run, but the user can manually disable "Open At Login" via the dock if
-    // this happens.
+void DisableLaunchOnStartupOnFileThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  // If the LoginItem is not hidden, it means it's user created, so don't
+  // delete it.
+  bool is_hidden = false;
+  if (base::mac::CheckLoginItemStatus(&is_hidden) && is_hidden)
+    base::mac::RemoveFromLoginItems();
+}
+
+void CheckForUserRemovedLoginItemOnFileThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  if (!base::mac::CheckLoginItemStatus(NULL)) {
+    // There's no LoginItem, so set the kUserRemovedLoginItem pref.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(SetUserCreatedLoginItemPrefCallback));
-    return;
+                            base::Bind(SetUserRemovedLoginItemPrefOnUIThread));
+  }
+}
+
+void EnableLaunchOnStartupOnFileThread(bool need_migration) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  if (need_migration) {
+    // This is the first time running Chrome since the kChromeCreatedLoginItem
+    // pref was added. Initialize the status of this pref based on whether
+    // there is already a hidden login item.
+    bool is_hidden = false;
+    if (base::mac::CheckLoginItemStatus(&is_hidden)) {
+      if (is_hidden) {
+      // We already have a hidden login item, so set the kChromeCreatedLoginItem
+      // flag.
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                base::Bind(SetCreatedLoginItemPrefOnUIThread));
+      }
+      // LoginItem already exists - just exit.
+      return;
+    }
   }
 
-  if (should_add_login_item)
+  // Check if Chrome is already a Login Item - if not, create one.
+  if (!base::mac::CheckLoginItemStatus(NULL)) {
+    // Call back to the UI thread to set our preference so we know that Chrome
+    // created the login item (which means we are allowed to delete it later).
+    // There's a race condition here if the user disables launch on startup
+    // before our callback is run, but the user can manually disable
+    // "Open At Login" via the dock if this happens.
     base::mac::AddToLoginItems(true);  // Hide on startup.
-#if !defined(NDEBUG)
-  else
-    DCHECK(!login_item_removed); // Check for race condition (see above).
-#endif
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(SetCreatedLoginItemPrefOnUIThread));
+  }
 }
 
 }  // namespace
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
-  // This functionality is only defined for default profile, currently.
+  // LoginItems are associated with an executable, not with a specific
+  // user-data-dir, so only mess with the LoginItem when running with the
+  // default user-data-dir. So if a user is running multiple instances of
+  // Chrome with different user-data-dirs, they won't conflict in their
+  // use of LoginItems.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
 
+  // There are a few cases we need to handle:
+  //
+  // 1) Chrome is transitioning to "launch on startup" state, and there's no
+  // login item currently. We create a new item if the kUserRemovedLoginItem
+  // and kChromeCreatedLoginItem flags are already false, and set the
+  // kChromeCreatedLoginItem flag to true. If kChromeCreatedLoginItem is
+  // already set (meaning that we created a login item that has since been
+  // deleted) then we will set the kUserRemovedLoginItem so we do not create
+  // login items in the future.
+  //
+  // 2) Chrome is transitioning to the "do not launch on startup" state. If
+  // the kChromeCreatedLoginItem flag is false, we do nothing. Otherwise, we
+  // will delete the login item if it's present, and not we will set
+  // kUserRemovedLoginItem to true to prevent future login items from being
+  // created.
   if (should_launch) {
     PrefService* service = g_browser_process->local_state();
-    // Create a login item if the user did not remove our login item
-    // previously. We call out to the FILE thread either way since we
-    // want to check for a user-created login item.
-    bool should_add_login_item =
-        !service->GetBoolean(prefs::kUserRemovedLoginItem);
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(EnableLaunchOnStartupCallback,
-                                       should_add_login_item));
+    // If the user removed the login item, don't ever create another one.
+    if (service->GetBoolean(prefs::kUserRemovedLoginItem))
+      return;
+
+    if (service->GetBoolean(prefs::kChromeCreatedLoginItem)) {
+      DCHECK(service->GetBoolean(prefs::kMigratedLoginItemPref));
+      // If we previously created a login item, we don't need to create
+      // a new one - just check to see if the user removed it so we don't
+      // ever create another one.
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(
+                                  CheckForUserRemovedLoginItemOnFileThread));
+    } else {
+      bool need_migration = !service->GetBoolean(
+          prefs::kMigratedLoginItemPref);
+      service->SetBoolean(prefs::kMigratedLoginItemPref, true);
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(EnableLaunchOnStartupOnFileThread,
+                                         need_migration));
+    }
   } else {
     PrefService* service = g_browser_process->local_state();
-    if (service->GetBoolean(prefs::kUserCreatedLoginItem)) {
-      // We didn't create the login item, so nothing to do here. Clear our
-      // prefs so if the user removes the login item before installing a
-      // background app, we will revert to the default behavior.
-      service->ClearPref(prefs::kUserCreatedLoginItem);
-      service->ClearPref(prefs::kUserRemovedLoginItem);
-#if !defined(NDEBUG)
-      login_item_removed = false;
-#endif
+    // If Chrome didn't create any login items, just exit.
+    if (!service->GetBoolean(prefs::kChromeCreatedLoginItem))
       return;
-    }
+
+    // Clear the pref now that we're removing the login item.
+    service->ClearPref(prefs::kChromeCreatedLoginItem);
+
+    // If the user removed our login item, note this so we don't ever create
+    // another one.
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(
+                                CheckForUserRemovedLoginItemOnFileThread));
+
     // Call to the File thread to remove the login item since it requires
     // accessing the disk.
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(DisableLaunchOnStartupCallback));
+                            base::Bind(DisableLaunchOnStartupOnFileThread));
   }
 }
 
