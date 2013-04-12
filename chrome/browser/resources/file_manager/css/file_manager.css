@@ -769,11 +769,18 @@ button#detail-view:not([disabled]) {
   height: 0;
 }
 
+@-webkit-keyframes heightAnimation {
+  0% {
+    height: 0;
+    display: -webkit-box;
+  }
+}
+
 /* Drive space warning banner. */
 .volume-warning {
+  -webkit-animation: heightAnimation 70ms linear;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-transition: height 70ms linear;
   background-image: url(chrome://resources/images/clouds.png);
   background-repeat: repeat-x;
   background-size: 150px 44px;
@@ -788,6 +795,9 @@ button#detail-view:not([disabled]) {
 
 .volume-warning[hidden] {
   border-top-width: 0;
+  /* [hidden] has already set in dialog.css, but it is overridden by the
+   * selector ".volume-warning", hence we need to override it again. */
+  display: none;
   height: 0;
 }
 
