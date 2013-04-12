@@ -6,8 +6,6 @@
 2005-05-11-Popcount-ffs-fls
 
 # runtime errors
-# EH: exception not caught
-inlined_cleanup x86-64
 # some output incorrect
 anagram
 sphereflake
@@ -49,7 +47,8 @@ SingleSource/UnitTests/Vector/sumarray-dbl
 SingleSource/Regression/C/2004-03-15-IndirectGoto
 
 # The following tests use C++ exception handling, which is not yet
-# supported for PNaCl's stable ABI.
+# supported for PNaCl's stable ABI.  When the -lowerinvoke pass is
+# applied, the "throw" statements in these tests fail at run time.
 SingleSource/Benchmarks/Shootout-C++/except
 SingleSource/Regression/C++/EH/ctor_dtor_count
 SingleSource/Regression/C++/EH/ctor_dtor_count-2
@@ -58,3 +57,8 @@ SingleSource/Regression/C++/EH/function_try_block
 SingleSource/Regression/C++/EH/simple_rethrow
 SingleSource/Regression/C++/EH/simple_throw
 SingleSource/Regression/C++/EH/throw_rethrow_test
+
+# The "inlined_cleanup" test fails on x86-64 (but not x86-32 or ARM)
+# at run time with "exception not caught", even without the
+# -lowerinvoke pass applied.
+SingleSource/Regression/C++/EH/inlined_cleanup
