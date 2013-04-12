@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/at_exit.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
@@ -23,7 +23,7 @@ namespace {
 // A best effort way to zap CF policy entries that may be in the registry.
 void DeleteChromeFramePolicyEntries(HKEY root) {
   RegKey key;
-  if (key.Open(root, policy::kRegistryMandatorySubKey,
+  if (key.Open(root, policy::kRegistryChromePolicyKey,
                KEY_ALL_ACCESS) == ERROR_SUCCESS) {
     key.DeleteValue(
         ASCIIToWide(policy::key::kChromeFrameRendererSettings).c_str());
@@ -36,7 +36,7 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
 
 bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
   EXPECT_EQ(ERROR_SUCCESS, policy_key->Create(policy_root,
-      policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS));
+      policy::kRegistryChromePolicyKey, KEY_ALL_ACCESS));
   return policy_key->Valid();
 }
 

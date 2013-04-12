@@ -74,7 +74,7 @@ void PolicySettings::ReadUrlSettings(
   std::wstring settings_value(
       ASCIIToWide(policy::key::kChromeFrameRendererSettings));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if ((config_key.Open(kRootKeys[i], policy::kRegistryMandatorySubKey,
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
         (config_key.ReadValueDW(settings_value.c_str(),
                                 &value) == ERROR_SUCCESS)) {
@@ -109,7 +109,7 @@ void PolicySettings::ReadContentTypeSetting(
     std::vector<std::wstring>* content_type_list) {
   DCHECK(content_type_list);
 
-  std::wstring sub_key(policy::kRegistryMandatorySubKey);
+  std::wstring sub_key(policy::kRegistryChromePolicyKey);
   sub_key += L"\\";
   sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
 
@@ -128,7 +128,7 @@ void PolicySettings::ReadStringSetting(const char* value_name,
   base::win::RegKey config_key;
   std::wstring value_name_str(ASCIIToWide(value_name));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if ((config_key.Open(kRootKeys[i], policy::kRegistryMandatorySubKey,
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
         (config_key.ReadValue(value_name_str.c_str(),
                               value) == ERROR_SUCCESS)) {
