@@ -28,9 +28,7 @@
 
 #include "ScriptInstance.h"
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
 struct NPObject;
-#endif
 
 namespace WebCore {
 
@@ -56,9 +54,7 @@ public:
     DisplayState displayState() const { return m_displayState; }
     virtual void setDisplayState(DisplayState state) { m_displayState = state; }
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     NPObject* getNPObject();
-#endif
 
     bool isCapturingMouseEvents() const { return m_isCapturingMouseEvents; }
     void setIsCapturingMouseEvents(bool capturing) { m_isCapturingMouseEvents = capturing; }
@@ -95,9 +91,7 @@ private:
     virtual bool isPluginElement() const;
 
     mutable ScriptInstance m_instance;
-#if ENABLE(NETSCAPE_PLUGIN_API)
     NPObject* m_NPObject;
-#endif
     bool m_isCapturingMouseEvents;
     bool m_inBeforeLoadEventHandler;
     DisplayState m_displayState;

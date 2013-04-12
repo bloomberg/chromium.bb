@@ -111,9 +111,7 @@ ScriptController::ScriptController(Frame* frame)
     , m_isolate(v8::Isolate::GetCurrent())
     , m_windowShell(V8DOMWindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
     , m_paused(false)
-#if ENABLE(NETSCAPE_PLUGIN_API)
     , m_wrappedWindowScriptNPObject(0)
-#endif
 {
 }
 
@@ -131,7 +129,6 @@ void ScriptController::clearScriptObjects()
     }
     m_pluginObjects.clear();
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     if (m_wrappedWindowScriptNPObject) {
         NPObjectWrapper* windowScriptObjectWrapper = NPObjectWrapper::getWrapper(m_wrappedWindowScriptNPObject);
         ASSERT(windowScriptObjectWrapper);
@@ -148,7 +145,6 @@ void ScriptController::clearScriptObjects()
         _NPN_ReleaseObject(m_wrappedWindowScriptNPObject);
         m_wrappedWindowScriptNPObject = 0;
     }
-#endif
 }
 
 void ScriptController::clearForOutOfMemory()

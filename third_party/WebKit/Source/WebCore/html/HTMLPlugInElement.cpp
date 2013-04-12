@@ -39,11 +39,9 @@
 #include "RenderWidget.h"
 #include "Settings.h"
 #include "Widget.h"
+#include "npruntime_impl.h"
 #include <wtf/UnusedParam.h>
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
-#include "npruntime_impl.h"
-#endif
 
 namespace WebCore {
 
@@ -51,9 +49,7 @@ using namespace HTMLNames;
 
 HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document* doc)
     : HTMLFrameOwnerElement(tagName, doc)
-#if ENABLE(NETSCAPE_PLUGIN_API)
     , m_NPObject(0)
-#endif
     , m_isCapturingMouseEvents(false)
     , m_inBeforeLoadEventHandler(false)
     , m_displayState(Playing)
@@ -64,12 +60,10 @@ HTMLPlugInElement::~HTMLPlugInElement()
 {
     ASSERT(!m_instance); // cleared in detach()
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
         m_NPObject = 0;
     }
-#endif
 }
 
 bool HTMLPlugInElement::canProcessDrag() const
@@ -100,12 +94,10 @@ void HTMLPlugInElement::detach()
         m_isCapturingMouseEvents = false;
     }
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
         m_NPObject = 0;
     }
-#endif
 
     HTMLFrameOwnerElement::detach();
 }
@@ -243,8 +235,6 @@ bool HTMLPlugInElement::supportsFocus() const
     return !toRenderEmbeddedObject(renderer())->showsUnavailablePluginIndicator();
 }
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
-
 NPObject* HTMLPlugInElement::getNPObject()
 {
     ASSERT(document()->frame());
@@ -252,7 +242,5 @@ NPObject* HTMLPlugInElement::getNPObject()
         m_NPObject = document()->frame()->script()->createScriptObjectForPluginElement(this);
     return m_NPObject;
 }
-
-#endif /* ENABLE(NETSCAPE_PLUGIN_API) */
 
 }
