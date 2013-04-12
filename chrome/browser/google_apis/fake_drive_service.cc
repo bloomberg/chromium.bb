@@ -826,6 +826,7 @@ void FakeDriveService::InitiateUploadExistingFile(
         base::Bind(callback, HTTP_PRECONDITION, GURL()));
     return;
   }
+  entry->SetString("docs$size.$t", "0");
 
   const GURL upload_url = GetUploadUrl(*entry);
   DCHECK(upload_url.is_valid());
@@ -885,6 +886,23 @@ void FakeDriveService::ResumeUpload(
     return;
   }
 
+  // Chunks are required to be sent in such a ways that they fill from the start
+  // of the not-yet-uploaded part with no gaps nor overlaps.
+  std::string current_size_string;
+  int64 current_size;
+  if (!entry->GetString("docs$size.$t", &current_size_string) ||
+      !base::StringToInt64(current_size_string, &current_size) ||
+      current_size != start_position) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   UploadRangeResponse(HTTP_BAD_REQUEST,
+                                       start_position,
+                                       end_position),
+                   base::Passed(&result_entry)));
+    return;
+  }
+
   entry->SetString("docs$size.$t", base::Int64ToString(end_position));
 
   if (!progress_callback.is_null()) {
@@ -893,12 +911,12 @@ void FakeDriveService::ResumeUpload(
     // it twice per one ResumeUpload. This is for making sure that client code
     // works fine even if the callback is invoked more than once; it is the
     // crucial difference of the progress callback from others.
-    int64 chunk_size = end_position - start_position;
-    int64 mid_position = start_position + chunk_size / 2;
+    // Note that progress is notified in the relative offset in each chunk.
+    const int64 chunk_size = end_position - start_position;
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, mid_position, chunk_size));
+        FROM_HERE, base::Bind(progress_callback, chunk_size / 2, chunk_size));
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, end_position, chunk_size));
+        FROM_HERE, base::Bind(progress_callback, chunk_size, chunk_size));
   }
 
   if (content_length != end_position) {

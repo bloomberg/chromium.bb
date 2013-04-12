@@ -1638,12 +1638,17 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
   EXPECT_FALSE(entry.get());
+  ASSERT_TRUE(!upload_progress_values.empty());
+  EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
+  EXPECT_GE(upload_progress_values.front(), 0);
+  EXPECT_LE(upload_progress_values.back(), 13);
 
+  upload_progress_values.clear();
   fake_service_.ResumeUpload(
       UPLOAD_EXISTING_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
-      14, 15, 15, "text/plain",
+      13, 15, 15, "text/plain",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
@@ -1656,7 +1661,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_GE(upload_progress_values.front(), 0);
-  EXPECT_LE(upload_progress_values.back(), entry->file_size());
+  EXPECT_LE(upload_progress_values.back(), 2);
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
@@ -1694,12 +1699,17 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
   EXPECT_FALSE(entry.get());
+  ASSERT_TRUE(!upload_progress_values.empty());
+  EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
+  EXPECT_GE(upload_progress_values.front(), 0);
+  EXPECT_LE(upload_progress_values.back(), 13);
 
+  upload_progress_values.clear();
   fake_service_.ResumeUpload(
       UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
-      14, 15, 15, "test/foo",
+      13, 15, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
@@ -1712,7 +1722,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_GE(upload_progress_values.front(), 0);
-  EXPECT_LE(upload_progress_values.back(), entry->file_size());
+  EXPECT_LE(upload_progress_values.back(), 2);
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
