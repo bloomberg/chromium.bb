@@ -18,7 +18,7 @@ update_toplevel () {
 
 set_target_os () {
   # Get the os we're building for.  On first run, this will be unset.
-  target_os=$(git config target.os 2>/dev/null)
+  target_os=$(git config --get-all target.os 2>/dev/null)
   if [ -z "$target_os" ]; then
     case $(uname -s) in
       Linux) target_os=unix ;;
@@ -55,13 +55,18 @@ process_submodule () {
   update_policy=$(git config --get "submodule.$1.update")
   if [ -z "$update_policy" ]; then
     submod_os=$(git config -f .gitmodules --get "submodule.$1.os")
-    if [ -n "$submod_os" -a \
-        "$submod_os" != "all" -a \
-        "${submod_os/${target_os}/}" = "${submod_os}" ]; then
+    if [ -n "$submod_os" -a "$submod_os" != "all" ]; then
       update_policy=none
+      for os in $target_os; do
+        if [ "${submod_os/${os}/}" != "${submod_os}" ]; then
+          update_policy=checkout
+        fi
+      done
     else
-      git submodule --quiet init "$1"
       update_policy=checkout
+    fi
+    if [ "$update_policy" != "none" ]; then
+      git submodule --quiet init "$1"
     fi
     git config "submodule.$1.update" $update_policy
   fi
