@@ -14,12 +14,16 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chrome {
 
 namespace {
 
 GetUserDataDirCallback* custom_get_user_data_dir_callback = NULL;
+
+const char kUserDataDirDialogFallbackLocale[] = "en-US";
 
 }  // namespace
 
@@ -46,6 +50,16 @@ base::FilePath GetUserDataDir(const content::MainFunctionParams& parameters) {
     // TODO(beng):
     NOTIMPLEMENTED();
 #else
+    // Make sure ResourceBundle is initialized. The user data dialog needs to
+    // access string resources. See http://crbug.com/230432
+    if (!ResourceBundle::HasSharedInstance()) {
+      std::string locale = l10n_util::GetApplicationLocale(std::string());
+      DCHECK(!locale.empty());
+      if (locale.empty())
+        locale = kUserDataDirDialogFallbackLocale;
+      ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+    }
+
     base::FilePath new_user_data_dir =
         chrome::ShowUserDataDirDialog(user_data_dir);
 
