@@ -49,7 +49,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE PmpColumnReader {
   long IndexStrings();
 
   // Source data
-  scoped_array<uint8> data_;
+  scoped_ptr<uint8[]> data_;
   size_t length_;
 
   // Header data
