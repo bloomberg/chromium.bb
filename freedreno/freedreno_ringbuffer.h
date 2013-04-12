@@ -74,6 +74,8 @@ static inline void fd_ringbuffer_emit(struct fd_ringbuffer *ring,
 
 void fd_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 		struct fd_bo *bo, uint32_t offset, uint32_t or);
+void fd_ringbuffer_emit_reloc_shift(struct fd_ringbuffer *ring,
+		struct fd_bo *bo, uint32_t offset, uint32_t or, int32_t shift);
 void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		struct fd_ringmarker *target);
 
