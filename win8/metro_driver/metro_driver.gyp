@@ -52,7 +52,7 @@
           'type': 'shared_library',
           'dependencies': [
             '../../base/base.gyp:base',
-            '../../build/temp_gyp/googleurl.gyp:googleurl',
+            '../../url/url.gyp:url',
             '../../chrome/common_constants.gyp:common_constants',
             '../../crypto/crypto.gyp:crypto',
             '../../google_update/google_update.gyp:google_update',

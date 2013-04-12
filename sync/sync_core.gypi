@@ -12,11 +12,11 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
-    '../build/temp_gyp/googleurl.gyp:googleurl',
     '../crypto/crypto.gyp:crypto',
     '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
     '../sql/sql.gyp:sql',
+    '../url/url.gyp:url',
   ],
   'conditions': [
     ['OS=="linux" and chromeos==1', {

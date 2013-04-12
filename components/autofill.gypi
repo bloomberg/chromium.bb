@@ -44,11 +44,11 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/ui.gyp:ui',
+            '../url/url.gyp:url',
           ],
           'conditions': [
             ['OS == "android"', {
@@ -108,7 +108,6 @@
             'webdata_common',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
@@ -119,6 +118,7 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../ui/ui.gyp:ui',
+            '../url/url.gyp:url',
             '../webkit/support/webkit_support.gyp:webkit_resources',
 
             # For grip/generated_resources.h and grit/chromium_strings.h
