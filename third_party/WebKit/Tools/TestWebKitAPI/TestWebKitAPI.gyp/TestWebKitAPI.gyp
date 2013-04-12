@@ -43,6 +43,7 @@
             'type': 'executable',
             'dependencies': [
                 '<(source_dir)/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                '<(source_dir)/bindings/bindings.gyp:bindings',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
                 '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
