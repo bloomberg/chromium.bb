@@ -101,9 +101,6 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
     if (!style->hasAppearance())
         return;
 
-    // Never support box-shadow on native controls.
-    style->setBoxShadow(nullptr);
-    
 #if USE(NEW_THEME)
     switch (part) {
     case CheckboxPart:
@@ -624,6 +621,14 @@ bool RenderTheme::isControlContainer(ControlPart appearance) const
     return appearance != CheckboxPart && appearance != RadioPart;
 }
 
+static bool isBackgroundOrBorderStyled(const RenderStyle& style, const BorderData& border, const FillLayer& background, const Color& backgroundColor)
+{
+    // Test the style to see if the UA border and background match.
+    return style.border() != border
+        || *style.backgroundLayers() != background
+        || style.visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor;
+}
+
 bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& border, const FillLayer& background, const Color& backgroundColor) const
 {
     switch (style->appearance()) {
@@ -631,22 +636,26 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& bo
     case SquareButtonPart:
     case DefaultButtonPart:
     case ButtonPart:
-    case ListboxPart:
-    case MenulistPart:
     case ProgressBarPart:
     case MeterPart:
     case RelevancyLevelIndicatorPart:
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-    // FIXME: Uncomment this when making search fields style-able.
-    // case SearchFieldPart:
-    case TextFieldPart:
+        return isBackgroundOrBorderStyled(*style, border, background, backgroundColor);
+
+    case ListboxPart:
+    case MenulistPart:
     case TextAreaPart:
-        // Test the style to see if the UA border and background match.
-        return (style->border() != border
-            || *style->backgroundLayers() != background
-            || style->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor);
+    case TextFieldPart:
+        return isBackgroundOrBorderStyled(*style, border, background, backgroundColor) || style->boxShadow();
+
+    // FIXME: SearchFieldPart should be in the above group. crbug.com/101447.
+    case SearchFieldPart:
+    case SliderHorizontalPart:
+    case SliderVerticalPart:
+        return style->boxShadow();
+
     default:
         return false;
     }
@@ -838,8 +847,6 @@ void RenderTheme::adjustCheckboxStyle(StyleResolver*, RenderStyle* style, Elemen
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
     style->resetBorder();
-
-    style->setBoxShadow(nullptr);
 }
 
 void RenderTheme::adjustRadioStyle(StyleResolver*, RenderStyle* style, Element*) const
@@ -855,8 +862,6 @@ void RenderTheme::adjustRadioStyle(StyleResolver*, RenderStyle* style, Element*)
     // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
     // for now, we will not honor it.
     style->resetBorder();
-
-    style->setBoxShadow(nullptr);
 }
 
 void RenderTheme::adjustButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
@@ -898,7 +903,6 @@ bool RenderTheme::paintInputFieldSpeechButton(RenderObject* object, const PaintI
 
 void RenderTheme::adjustMeterStyle(StyleResolver*, RenderStyle* style, Element*) const
 {
-    style->setBoxShadow(nullptr);
 }
 
 IntSize RenderTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const

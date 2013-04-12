@@ -485,7 +485,7 @@ bool RenderThemeMacShared::isControlStyled(const RenderStyle* style, const Borde
                                      const FillLayer& background, const Color& backgroundColor) const
 {
     if (style->appearance() == TextFieldPart || style->appearance() == TextAreaPart || style->appearance() == ListboxPart)
-        return style->border() != border;
+        return style->border() != border || style->boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.  Menu lists cannot draw properly when
     // scaled.  They can't really draw properly when transformed either.  We can't detect the transform case at style
@@ -1231,8 +1231,6 @@ void RenderThemeMacShared::adjustMenuListStyle(StyleResolver* styleResolver, Ren
     // a reasonable control size, but once that control size is determined, we throw that font away and use the appropriate
     // system font for the control size instead.
     setFontFromControlSize(styleResolver, style, controlSize);
-
-    style->setBoxShadow(nullptr);
 }
 
 int RenderThemeMacShared::popupInternalPaddingLeft(RenderStyle* style) const
@@ -1318,11 +1316,6 @@ int RenderThemeMacShared::minimumMenuListSize(RenderStyle* style) const
 const int trackWidth = 5;
 const int trackRadius = 2;
 
-void RenderThemeMacShared::adjustSliderTrackStyle(StyleResolver*, RenderStyle* style, Element*) const
-{
-    style->setBoxShadow(nullptr);
-}
-
 bool RenderThemeMacShared::paintSliderTrack(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     IntRect bounds = r;
@@ -1362,12 +1355,6 @@ bool RenderThemeMacShared::paintSliderTrack(RenderObject* o, const PaintInfo& pa
     CGContextDrawShading(context, mainShading.get());
 
     return false;
-}
-
-void RenderThemeMacShared::adjustSliderThumbStyle(StyleResolver* styleResolver, RenderStyle* style, Element* element) const
-{
-    RenderTheme::adjustSliderThumbStyle(styleResolver, style, element);
-    style->setBoxShadow(nullptr);
 }
 
 const float verticalSliderHeightPadding = 0.1f;
