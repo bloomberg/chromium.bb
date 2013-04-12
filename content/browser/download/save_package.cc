@@ -424,7 +424,7 @@ bool SavePackage::GetSafePureFileName(
                                           dir_path.value().length() -
                                           file_name_ext.length());
   // Need an extra space for the separator.
-  if (!file_util::EndsWithSeparator(dir_path))
+  if (!dir_path.EndsWithSeparator())
     --available_length;
 
   // Plenty of room.

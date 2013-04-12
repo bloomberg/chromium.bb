@@ -52,8 +52,9 @@ base::FilePath ExtensionResource::GetFilePath(
     SymlinkPolicy symlink_policy) {
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
-  base::FilePath clean_extension_root(extension_root);
-  if (!file_util::AbsolutePath(&clean_extension_root))
+  base::FilePath clean_extension_root(
+      base::MakeAbsoluteFilePath(extension_root));
+  if (clean_extension_root.empty())
     return base::FilePath();
 
   base::FilePath full_path = clean_extension_root.Append(relative_path);
@@ -80,13 +81,14 @@ base::FilePath ExtensionResource::GetFilePath(
 
   // We must resolve the absolute path of the combined path when
   // the relative path contains references to a parent folder (i.e., '..').
-  // We also check if the path exists because the posix version of AbsolutePath
-  // will fail if the path doesn't exist, and we want the same behavior on
-  // Windows... So until the posix and Windows version of AbsolutePath are
-  // unified, we need an extra call to PathExists, unfortunately.
-  // TODO(mad): Fix this once AbsolutePath is unified.
-  if (file_util::AbsolutePath(&full_path) &&
-      file_util::PathExists(full_path) &&
+  // We also check if the path exists because the posix version of
+  // MakeAbsoluteFilePath will fail if the path doesn't exist, and we want the
+  // same behavior on Windows... So until the posix and Windows version of
+  // MakeAbsoluteFilePath are unified, we need an extra call to PathExists,
+  // unfortunately.
+  // TODO(mad): Fix this once MakeAbsoluteFilePath is unified.
+  full_path = base::MakeAbsoluteFilePath(full_path);
+  if (file_util::PathExists(full_path) &&
       (symlink_policy == FOLLOW_SYMLINKS_ANYWHERE ||
        clean_extension_root.IsParent(full_path))) {
     return full_path;

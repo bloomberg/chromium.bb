@@ -28,6 +28,18 @@
 
 using base::FilePath;
 
+namespace base {
+
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  wchar_t file_path[MAX_PATH];
+  if (!_wfullpath(file_path, input.value().c_str(), MAX_PATH))
+    return FilePath();
+  return FilePath(file_path);
+}
+
+}  // namespace base
+
 namespace file_util {
 
 namespace {
@@ -36,15 +48,6 @@ const DWORD kFileShareAll =
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 
 }  // namespace
-
-bool AbsolutePath(FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  wchar_t file_path_buf[MAX_PATH];
-  if (!_wfullpath(file_path_buf, path->value().c_str(), MAX_PATH))
-    return false;
-  *path = FilePath(file_path_buf);
-  return true;
-}
 
 bool Delete(const FilePath& path, bool recursive) {
   base::ThreadRestrictions::AssertIOAllowed();

@@ -385,8 +385,9 @@ void SyncManagerImpl::Init(
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
 
-  base::FilePath absolute_db_path(database_path_);
-  file_util::AbsolutePath(&absolute_db_path);
+  base::FilePath absolute_db_path = database_path_;
+  DCHECK(absolute_db_path.IsAbsolute());
+
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       internal_components_factory->BuildDirectoryBackingStore(
           credentials.email, absolute_db_path).Pass();

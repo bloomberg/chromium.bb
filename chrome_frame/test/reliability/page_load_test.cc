@@ -587,9 +587,8 @@ void SetPageRange(const CommandLine& parsed_command_line) {
         CommandLine v8_command_line(
             parsed_command_line.GetSwitchValuePath(switches::kJavaScriptFlags));
         if (v8_command_line.HasSwitch(kV8LogFileSwitch)) {
-          g_v8_log_path = v8_command_line.GetSwitchValuePath(kV8LogFileSwitch);
-          if (!file_util::AbsolutePath(&g_v8_log_path))
-            g_v8_log_path = base::FilePath();
+          g_v8_log_path = base::MakeAbsoluteFilePath(
+              v8_command_line.GetSwitchValuePath(kV8LogFileSwitch));
         }
       }
     }

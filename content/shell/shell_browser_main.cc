@@ -60,8 +60,7 @@ GURL GetURLForLayoutTest(const std::string& test_name,
 #else
     base::FilePath local_file(path_or_url);
 #endif
-    file_util::AbsolutePath(&local_file);
-    test_url = net::FilePathToFileURL(local_file);
+    test_url = net::FilePathToFileURL(base::MakeAbsoluteFilePath(local_file));
   }
   base::FilePath local_path;
   if (current_working_directory) {

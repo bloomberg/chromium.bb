@@ -305,7 +305,8 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
   base::FilePath root_path;
   ASSERT_TRUE(file_util::CreateNewTempDirectory(
       base::FilePath::StringType(), &root_path));
-  ASSERT_TRUE(file_util::AbsolutePath(&root_path));
+  root_path = base::MakeAbsoluteFilePath(root_path);
+  ASSERT_FALSE(root_path.empty());
 
   base::FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));
   ASSERT_TRUE(file_util::CreateDirectory(api_path));

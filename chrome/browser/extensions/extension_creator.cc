@@ -47,8 +47,9 @@ bool ExtensionCreator::InitializeInput(
     return false;
   }
 
-  base::FilePath absolute_extension_dir = extension_dir;
-  if (!file_util::AbsolutePath(&absolute_extension_dir)) {
+  base::FilePath absolute_extension_dir =
+      base::MakeAbsoluteFilePath(extension_dir);
+  if (absolute_extension_dir.empty()) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH);
     return false;

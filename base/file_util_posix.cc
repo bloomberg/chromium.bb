@@ -59,6 +59,19 @@
 #endif
 
 using base::FilePath;
+using base::MakeAbsoluteFilePath;
+
+namespace base {
+
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  char full_path[PATH_MAX];
+  if (realpath(input.value().c_str(), full_path) == NULL)
+    return FilePath();
+  return FilePath(full_path);
+}
+
+}  // namespace base
 
 namespace file_util {
 
@@ -148,15 +161,6 @@ static std::string TempFileName() {
 #else
   return std::string(".org.chromium.Chromium.XXXXXX");
 #endif
-}
-
-bool AbsolutePath(FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For realpath().
-  char full_path[PATH_MAX];
-  if (realpath(path->value().c_str(), full_path) == NULL)
-    return false;
-  *path = FilePath(full_path);
-  return true;
 }
 
 // TODO(erikkay): The Windows version of this accepts paths like "foo/bar/*"
@@ -253,15 +257,16 @@ bool CopyDirectory(const FilePath& from_path,
   // This function does not properly handle destinations within the source
   FilePath real_to_path = to_path;
   if (PathExists(real_to_path)) {
-    if (!AbsolutePath(&real_to_path))
+    real_to_path = MakeAbsoluteFilePath(real_to_path);
+    if (real_to_path.empty())
       return false;
   } else {
-    real_to_path = real_to_path.DirName();
-    if (!AbsolutePath(&real_to_path))
+    real_to_path = MakeAbsoluteFilePath(real_to_path.DirName());
+    if (real_to_path.empty())
       return false;
   }
-  FilePath real_from_path = from_path;
-  if (!AbsolutePath(&real_from_path))
+  FilePath real_from_path = MakeAbsoluteFilePath(from_path);
+  if (real_from_path.empty())
     return false;
   if (real_to_path.value().size() >= real_from_path.value().size() &&
       real_to_path.value().compare(0, real_from_path.value().size(),

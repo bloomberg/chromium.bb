@@ -88,9 +88,9 @@ ShellContentBrowserClient::ShellContentBrowserClient()
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   webkit_source_dir_ = GetWebKitRootDirFilePath();
-  base::FilePath dictionary_file_path = GetChromiumRootDirFilePath().Append(
-      FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
-  file_util::AbsolutePath(&dictionary_file_path);
+  base::FilePath dictionary_file_path = base::MakeAbsoluteFilePath(
+      GetChromiumRootDirFilePath().Append(
+          FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic")));
   hyphen_dictionary_file_ = base::CreatePlatformFile(dictionary_file_path,
                                                      base::PLATFORM_FILE_READ |
                                                      base::PLATFORM_FILE_OPEN,

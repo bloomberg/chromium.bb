@@ -175,7 +175,7 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
     // If the given path ends with '/', consider it is a directory.
     // Note: This does NOT check that a directory (or file) actually exists
     // (the behavior is same as what gtest does).
-    if (file_util::EndsWithSeparator(path)) {
+    if (path.EndsWithSeparator()) {
       base::FilePath executable = command_line.GetProgram().BaseName();
       path = path.Append(executable.ReplaceExtension(
           base::FilePath::StringType(FILE_PATH_LITERAL("xml"))));

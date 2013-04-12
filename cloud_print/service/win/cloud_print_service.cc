@@ -184,7 +184,7 @@ class CloudPrintServiceModule
     user_data_dir_switch_ =
         command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (!user_data_dir_switch_.empty())
-      file_util::AbsolutePath(&user_data_dir_switch_);
+      user_data_dir_switch_ = base::MakeAbsoluteFilePath(user_data_dir_switch_);
     if (command_line.HasSwitch(kStopSwitch))
       return controller_->StopService();
 

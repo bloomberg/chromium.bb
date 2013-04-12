@@ -679,8 +679,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
   // There are total 2 available base tags in this test file.
   const int kTotalBaseTagCountInTestFile = 2;
 
-  base::FilePath page_file_path = data_dir_.AppendASCII("dom_serializer");
-  file_util::EnsureEndsWithSeparator(&page_file_path);
+  base::FilePath page_file_path =
+      data_dir_.AppendASCII("dom_serializer").AsEndingWithSeparator();
 
   // Get page dir URL which is base URL of this file.
   GURL path_dir_url = net::FilePathToFileURL(page_file_path);

@@ -227,8 +227,7 @@ int main(int argc, char* argv[]) {
       starting_url = url;
     } else {
       // Treat as a relative file path.
-      base::FilePath path = base::FilePath(args[0]);
-      file_util::AbsolutePath(&path);
+      base::FilePath path = base::MakeAbsoluteFilePath(base::FilePath(args[0]));
       starting_url = net::FilePathToFileURL(path);
     }
   }

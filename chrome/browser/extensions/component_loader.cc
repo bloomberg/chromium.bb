@@ -150,8 +150,7 @@ std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
 }
 
 std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
-  base::FilePath absolute_path = path;
-  file_util::AbsolutePath(&absolute_path);
+  base::FilePath absolute_path = base::MakeAbsoluteFilePath(path);
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
       extension_file_util::LoadManifest(absolute_path, &error));

@@ -1961,50 +1961,6 @@ TEST_F(FileUtilTest, AppendToFile) {
   EXPECT_EQ(L"hellohello", read_content);
 }
 
-TEST_F(FileUtilTest, Contains) {
-  FilePath data_dir =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("FilePathTest"));
-
-  // Create a fresh, empty copy of this directory.
-  if (file_util::PathExists(data_dir)) {
-    ASSERT_TRUE(file_util::Delete(data_dir, true));
-  }
-  ASSERT_TRUE(file_util::CreateDirectory(data_dir));
-
-  FilePath foo(data_dir.Append(FILE_PATH_LITERAL("foo")));
-  FilePath bar(foo.Append(FILE_PATH_LITERAL("bar.txt")));
-  FilePath baz(data_dir.Append(FILE_PATH_LITERAL("baz.txt")));
-  FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
-
-  // Annoyingly, the directories must actually exist in order for realpath(),
-  // which Contains() relies on in posix, to work.
-  ASSERT_TRUE(file_util::CreateDirectory(foo));
-  std::string data("hello");
-  ASSERT_TRUE(file_util::WriteFile(bar, data.c_str(), data.length()));
-  ASSERT_TRUE(file_util::WriteFile(baz, data.c_str(), data.length()));
-  ASSERT_TRUE(file_util::WriteFile(foobar, data.c_str(), data.length()));
-
-  EXPECT_TRUE(file_util::ContainsPath(foo, bar));
-  EXPECT_FALSE(file_util::ContainsPath(foo, baz));
-  EXPECT_FALSE(file_util::ContainsPath(foo, foobar));
-  EXPECT_FALSE(file_util::ContainsPath(foo, foo));
-
-  // Platform-specific concerns.
-  FilePath foo_caps(data_dir.Append(FILE_PATH_LITERAL("FOO")));
-#if defined(OS_WIN)
-  EXPECT_TRUE(file_util::ContainsPath(foo,
-      foo_caps.Append(FILE_PATH_LITERAL("bar.txt"))));
-  EXPECT_TRUE(file_util::ContainsPath(foo,
-      FilePath(foo.value() + FILE_PATH_LITERAL("/bar.txt"))));
-#elif defined(OS_MACOSX)
-  // We can't really do this test on OS X since the case-sensitivity of the
-  // filesystem is configurable.
-#elif defined(OS_POSIX)
-  EXPECT_FALSE(file_util::ContainsPath(foo,
-      foo_caps.Append(FILE_PATH_LITERAL("bar.txt"))));
-#endif
-}
-
 TEST_F(FileUtilTest, TouchFile) {
   FilePath data_dir =
       temp_dir_.path().Append(FILE_PATH_LITERAL("FilePathTest"));

@@ -61,7 +61,7 @@ ui::DataPack* LoadResourceDataPack(const char* dir_path,
                              dir_path, branding_strings_name, locale_name];
   if (resource_path) {
     base::FilePath resources_pak_path([resource_path fileSystemRepresentation]);
-    file_util::AbsolutePath(&resources_pak_path);
+    resources_pak_path = base::MakeAbsoluteFilePath(resources_pak_path);
     resource_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
     bool success = resource_pack->LoadFromPath(resources_pak_path);
     if (!success) {

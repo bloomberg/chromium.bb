@@ -86,8 +86,8 @@ Profile* ExtensionBrowserTest::profile() {
 // static
 const Extension* ExtensionBrowserTest::GetExtensionByPath(
     const ExtensionSet* extensions, const base::FilePath& path) {
-  base::FilePath extension_path = path;
-  EXPECT_TRUE(file_util::AbsolutePath(&extension_path));
+  base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
+  EXPECT_TRUE(!extension_path.empty());
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     if ((*iter)->path() == extension_path) {

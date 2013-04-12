@@ -37,28 +37,6 @@ namespace file_util {
 
 bool g_bug108724_debug = false;
 
-bool EndsWithSeparator(const FilePath& path) {
-  FilePath::StringType value = path.value();
-  if (value.empty())
-    return false;
-
-  return FilePath::IsSeparator(value[value.size() - 1]);
-}
-
-bool EnsureEndsWithSeparator(FilePath* path) {
-  if (!DirectoryExists(*path))
-    return false;
-
-  if (EndsWithSeparator(*path))
-    return true;
-
-  FilePath::StringType& path_str =
-      const_cast<FilePath::StringType&>(path->value());
-  path_str.append(&FilePath::kSeparators[0], 1);
-
-  return true;
-}
-
 void InsertBeforeExtension(FilePath* path, const FilePath::StringType& suffix) {
   FilePath::StringType& value =
       const_cast<FilePath::StringType&>(path->value());
@@ -287,33 +265,6 @@ int GetUniquePathNumber(
   }
 
   return -1;
-}
-
-bool ContainsPath(const FilePath &parent, const FilePath& child) {
-  FilePath abs_parent = FilePath(parent);
-  FilePath abs_child = FilePath(child);
-
-  if (!file_util::AbsolutePath(&abs_parent) ||
-      !file_util::AbsolutePath(&abs_child))
-    return false;
-
-#if defined(OS_WIN)
-  // file_util::AbsolutePath() does not flatten case on Windows, so we must do
-  // a case-insensitive compare.
-  if (!StartsWith(abs_child.value(), abs_parent.value(), false))
-#else
-  if (!StartsWithASCII(abs_child.value(), abs_parent.value(), true))
-#endif
-    return false;
-
-  // file_util::AbsolutePath() normalizes '/' to '\' on Windows, so we only need
-  // to check kSeparators[0].
-  if (abs_child.value().length() <= abs_parent.value().length() ||
-      abs_child.value()[abs_parent.value().length()] !=
-          FilePath::kSeparators[0])
-    return false;
-
-  return true;
 }
 
 int64 ComputeDirectorySize(const FilePath& root_path) {

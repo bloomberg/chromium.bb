@@ -1163,14 +1163,14 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ExtensionResource resource00(extension->id(),
                                scripts[0].js_scripts()[0].extension_root(),
                                scripts[0].js_scripts()[0].relative_path());
-  base::FilePath expected_path(extension->path().AppendASCII("script1.js"));
-  ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
+  base::FilePath expected_path =
+      base::MakeAbsoluteFilePath(extension->path().AppendASCII("script1.js"));
   EXPECT_TRUE(resource00.ComparePathWithDefault(expected_path));
   ExtensionResource resource01(extension->id(),
                                scripts[0].js_scripts()[1].extension_root(),
                                scripts[0].js_scripts()[1].relative_path());
-  expected_path = extension->path().AppendASCII("script2.js");
-  ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
+  expected_path =
+      base::MakeAbsoluteFilePath(extension->path().AppendASCII("script2.js"));
   EXPECT_TRUE(resource01.ComparePathWithDefault(expected_path));
   EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(extension));
   EXPECT_EQ(1u, scripts[1].url_patterns().patterns().size());
@@ -1181,7 +1181,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
                                scripts[1].js_scripts()[0].relative_path());
   expected_path =
       extension->path().AppendASCII("js_files").AppendASCII("script3.js");
-  ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
+  expected_path = base::MakeAbsoluteFilePath(expected_path);
   EXPECT_TRUE(resource10.ComparePathWithDefault(expected_path));
 
   expected_patterns.ClearPatterns();

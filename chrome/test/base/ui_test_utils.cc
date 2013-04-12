@@ -357,9 +357,9 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   // We must first generate absolute paths to SRC and EXE and from there
   // generate a relative path.
   if (!exe_dir.IsAbsolute())
-    file_util::AbsolutePath(&exe_dir);
+    exe_dir = base::MakeAbsoluteFilePath(exe_dir);
   if (!src_dir.IsAbsolute())
-    file_util::AbsolutePath(&src_dir);
+    src_dir = base::MakeAbsoluteFilePath(src_dir);
   if (!exe_dir.IsAbsolute())
     return false;
   if (!src_dir.IsAbsolute())

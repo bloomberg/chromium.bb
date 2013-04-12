@@ -39,30 +39,17 @@
 
 namespace base {
 class Time;
-}
+
+// Returns an absolute version of a relative path. Returns an empty path on
+// error. On POSIX, this function fails if the path does not exist. This
+// function can result in I/O so it can be slow.
+BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
+
+}  // namespace base
 
 namespace file_util {
 
 extern bool g_bug108724_debug;
-
-//-----------------------------------------------------------------------------
-// Functions that operate purely on a path string w/o touching the filesystem:
-
-// Returns true if the given path ends with a path separator character.
-BASE_EXPORT bool EndsWithSeparator(const base::FilePath& path);
-
-// Makes sure that |path| ends with a separator IFF path is a directory that
-// exists. Returns true if |path| is an existing directory, false otherwise.
-BASE_EXPORT bool EnsureEndsWithSeparator(base::FilePath* path);
-
-// Convert provided relative path into an absolute path.  Returns false on
-// error. On POSIX, this function fails if the path does not exist.
-BASE_EXPORT bool AbsolutePath(base::FilePath* path);
-
-// Returns true if |parent| contains |child|. Both paths are converted to
-// absolute paths before doing the comparison.
-BASE_EXPORT bool ContainsPath(const base::FilePath& parent,
-                              const base::FilePath& child);
 
 //-----------------------------------------------------------------------------
 // Functions that involve filesystem access or modification:

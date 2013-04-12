@@ -110,10 +110,8 @@ bool AddDirectory(int path, const wchar_t* sub_dir, bool children,
   if (!PathService::Get(path, &directory))
     return false;
 
-  if (sub_dir) {
-    directory = directory.Append(sub_dir);
-    file_util::AbsolutePath(&directory);
-  }
+  if (sub_dir)
+    directory = base::MakeAbsoluteFilePath(directory.Append(sub_dir));
 
   sandbox::ResultCode result;
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES, access,

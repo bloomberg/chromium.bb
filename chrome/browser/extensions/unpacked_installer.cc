@@ -129,8 +129,7 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   // between extension loading and loading an URL from the command line.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  extension_path_ = path_in;
-  file_util::AbsolutePath(&extension_path_);
+  extension_path_ = base::MakeAbsoluteFilePath(path_in);
 
   if (!IsLoadingUnpackedAllowed()) {
     ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
@@ -200,7 +199,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 void UnpackedInstaller::GetAbsolutePath() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  file_util::AbsolutePath(&extension_path_);
+  extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&UnpackedInstaller::CheckExtensionFileAccess, this));

@@ -1197,7 +1197,7 @@ installer::InstallStatus RegisterDevChrome(
   if (chrome_exe.empty())
     chrome_exe = cmd_line.GetProgram().DirName().Append(installer::kChromeExe);
   if (!chrome_exe.IsAbsolute())
-    file_util::AbsolutePath(&chrome_exe);
+    chrome_exe = base::MakeAbsoluteFilePath(chrome_exe);
 
   installer::InstallStatus status = installer::FIRST_INSTALL_SUCCESS;
   if (file_util::PathExists(chrome_exe)) {

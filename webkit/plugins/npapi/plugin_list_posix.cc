@@ -216,10 +216,9 @@ void PluginList::GetPluginsInDir(
 
     // Java doesn't like being loaded through a symlink, since it uses
     // its path to find dependent data files.
-    // file_util::AbsolutePath calls through to realpath(), which resolves
+    // MakeAbsoluteFilePath calls through to realpath(), which resolves
     // symlinks.
-    base::FilePath orig_path = path;
-    file_util::AbsolutePath(&path);
+    base::FilePath orig_path = base::MakeAbsoluteFilePath(path);
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Resolved " << orig_path.value() << " -> " << path.value();
 

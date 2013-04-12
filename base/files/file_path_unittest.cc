@@ -1196,7 +1196,34 @@ TEST_F(FilePathTest, NormalizePathSeparators) {
               "i: " << i << ", input: " << input.value();
   }
 }
-
 #endif
+
+TEST_F(FilePathTest, EndsWithSeparator) {
+  const UnaryBooleanTestData cases[] = {
+    { FPL(""), false },
+    { FPL("/"), true },
+    { FPL("foo/"), true },
+    { FPL("bar"), false },
+    { FPL("/foo/bar"), false },
+  };
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    FilePath input = FilePath(cases[i].input).NormalizePathSeparators();
+    EXPECT_EQ(cases[i].expected, input.EndsWithSeparator());
+  }
+}
+
+TEST_F(FilePathTest, AsEndingWithSeparator) {
+  const UnaryTestData cases[] = {
+    { FPL(""), FPL("") },
+    { FPL("/"), FPL("/") },
+    { FPL("foo"), FPL("foo/") },
+    { FPL("foo/"), FPL("foo/") }
+  };
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    FilePath input = FilePath(cases[i].input).NormalizePathSeparators();
+    FilePath expected = FilePath(cases[i].expected).NormalizePathSeparators();
+    EXPECT_EQ(expected.value(), input.AsEndingWithSeparator().value());
+  }
+}
 
 }  // namespace base

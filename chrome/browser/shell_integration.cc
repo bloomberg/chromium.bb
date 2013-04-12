@@ -78,10 +78,9 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
 #endif
   if (!user_data_dir.empty()) {
     // Make sure user_data_dir is an absolute path.
-    if (file_util::AbsolutePath(&user_data_dir) &&
-        file_util::PathExists(user_data_dir)) {
+    user_data_dir = base::MakeAbsoluteFilePath(user_data_dir);
+    if (!user_data_dir.empty() && file_util::PathExists(user_data_dir))
       new_cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-    }
   }
 
 #if defined(OS_CHROMEOS)

@@ -254,7 +254,7 @@ void BlockingObliteratePath(
     const std::vector<base::FilePath>& paths_to_keep,
     const scoped_refptr<base::TaskRunner>& closure_runner,
     const base::Closure& on_gc_required) {
-  // Early exit required because file_util::AbsolutePath() will fail on POSIX
+  // Early exit required because MakeAbsoluteFilePath() will fail on POSIX
   // if |unnormalized_root| does not exist. This is safe because there is
   // nothing to do in this situation anwyays.
   if (!file_util::PathExists(unnormalized_root)) {
@@ -263,12 +263,12 @@ void BlockingObliteratePath(
 
   // Never try to obliterate things outside of the browser context root or the
   // browser context root itself. Die hard.
-  base::FilePath root = unnormalized_root;
-  base::FilePath browser_context_root = unnormalized_browser_context_root;
-  CHECK(file_util::AbsolutePath(&root));
-  CHECK(file_util::AbsolutePath(&browser_context_root));
-  CHECK(file_util::ContainsPath(browser_context_root, root) &&
-        browser_context_root != root);
+  base::FilePath root = base::MakeAbsoluteFilePath(unnormalized_root);
+  base::FilePath browser_context_root =
+      base::MakeAbsoluteFilePath(unnormalized_browser_context_root);
+  CHECK(!root.empty());
+  CHECK(!browser_context_root.empty());
+  CHECK(browser_context_root.IsParent(root) && browser_context_root != root);
 
   // Reduce |paths_to_keep| set to those under the root and actually on disk.
   std::vector<base::FilePath> valid_paths_to_keep;

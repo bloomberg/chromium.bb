@@ -151,8 +151,8 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   base::FilePath expected_path;
   // Expect default path only, since fallback logic is disabled.
   // See http://crbug.com/27359.
-  expected_path = root_resource;
-  ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
+  expected_path = base::MakeAbsoluteFilePath(root_resource);
+  ASSERT_FALSE(expected_path.empty());
 
   EXPECT_EQ(ToLower(expected_path.value()), ToLower(resolved_path.value()));
   EXPECT_EQ(ToLower(temp.path().value()),

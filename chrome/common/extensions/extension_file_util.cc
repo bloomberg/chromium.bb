@@ -492,11 +492,11 @@ base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
     return base::FilePath();
 
   base::FilePath path = root.AppendASCII(host).Append(relative_path);
-  if (!file_util::PathExists(path) ||
-      !file_util::AbsolutePath(&path) ||
-      !root.IsParent(path)) {
+  if (!file_util::PathExists(path))
     return base::FilePath();
-  }
+  path = base::MakeAbsoluteFilePath(path);
+  if (path.empty() || !root.IsParent(path))
+    return base::FilePath();
   return path;
 }
 

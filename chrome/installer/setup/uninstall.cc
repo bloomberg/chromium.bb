@@ -1317,8 +1317,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
   } else if (!installer_state.is_multi_install() ||
              product.is_chrome_binaries()) {
-    base::FilePath setup_exe(cmd_line.GetProgram());
-    file_util::AbsolutePath(&setup_exe);
+    base::FilePath setup_exe(base::MakeAbsoluteFilePath(cmd_line.GetProgram()));
     DeleteResult delete_result = DeleteChromeFilesAndFolders(
         installer_state, setup_exe);
     if (delete_result == DELETE_FAILED) {
@@ -1360,8 +1359,7 @@ void CleanUpInstallationDirectoryAfterUninstall(
     *uninstall_status = installer::UNINSTALL_FAILED;
     return;
   }
-  base::FilePath setup_exe(cmd_line.GetProgram());
-  file_util::AbsolutePath(&setup_exe);
+  base::FilePath setup_exe(base::MakeAbsoluteFilePath(cmd_line.GetProgram()));
   if (!target_path.IsParent(setup_exe)) {
     LOG(INFO) << "setup.exe is not in target path. Skipping installer cleanup.";
     return;

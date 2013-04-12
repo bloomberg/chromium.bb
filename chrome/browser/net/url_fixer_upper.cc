@@ -103,8 +103,8 @@ void PrepareStringForFileOps(const base::FilePath& text,
 // returns false and leaves |full_path| unchanged.
 bool ValidPathForFile(const base::FilePath::StringType& text,
                       base::FilePath* full_path) {
-  base::FilePath file_path(text);
-  if (!file_util::AbsolutePath(&file_path))
+  base::FilePath file_path = base::MakeAbsoluteFilePath(base::FilePath(text));
+  if (file_path.empty())
     return false;
 
   if (!file_util::PathExists(file_path))

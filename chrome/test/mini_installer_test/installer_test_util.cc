@@ -87,13 +87,11 @@ bool GetInstallDirectory(bool system_level,
       BrowserDistribution::GetSpecificDistribution(type);
   *path = installer::GetChromeInstallPath(system_level, dist);
   base::FilePath parent;
-  if (system_level) {
+  if (system_level)
     PathService::Get(base::DIR_PROGRAM_FILES, &parent);
-    return file_util::ContainsPath(parent, *path);
-  } else {
+  else
     PathService::Get(base::DIR_LOCAL_APP_DATA, &parent);
-    return file_util::ContainsPath(parent, *path);
-  }
+  return parent.IsParent(*path);
 }
 
 bool GetInstalledProducts(

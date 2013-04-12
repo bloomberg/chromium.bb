@@ -27,17 +27,17 @@ void GetFilePaths(const base::FilePath& profile_path,
                   string16* profile_path_out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  base::FilePath executable_path =
-      CommandLine::ForCurrentProcess()->GetProgram();
-  if (file_util::AbsolutePath(&executable_path)) {
+  base::FilePath executable_path = base::MakeAbsoluteFilePath(
+      CommandLine::ForCurrentProcess()->GetProgram());
+  if (!executable_path.empty()) {
     *exec_path_out = executable_path.LossyDisplayName();
   } else {
     *exec_path_out =
         l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND);
   }
 
-  base::FilePath profile_path_copy(profile_path);
-  if (!profile_path.empty() && file_util::AbsolutePath(&profile_path_copy)) {
+  base::FilePath profile_path_copy(base::MakeAbsoluteFilePath(profile_path));
+  if (!profile_path.empty() && !profile_path_copy.empty()) {
     *profile_path_out = profile_path.LossyDisplayName();
   } else {
     *profile_path_out =

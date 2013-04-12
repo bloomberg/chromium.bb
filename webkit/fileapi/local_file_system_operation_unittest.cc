@@ -546,7 +546,6 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   base::FilePath src_dir_path(CreateUniqueDir());
   base::FilePath nonexisting_path = base::FilePath(
       FILE_PATH_LITERAL("DontExistDir"));
-  file_util::EnsureEndsWithSeparator(&nonexisting_path);
   base::FilePath nonexisting_file_path(nonexisting_path.Append(
       FILE_PATH_LITERAL("DontExistFile")));
 
@@ -889,7 +888,7 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataFailure) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
-  file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
+  nonexisting_dir_path = nonexisting_dir_path.AsEndingWithSeparator();
   NewOperation()->DirectoryExists(URLForPath(nonexisting_dir_path),
                                   RecordStatusCallback());
   MessageLoop::current()->RunUntilIdle();
@@ -949,8 +948,7 @@ TEST_F(LocalFileSystemOperationTest, TestTypeMismatchErrors) {
 TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   // Path doesn't exist
   base::FilePath nonexisting_dir_path(base::FilePath(
-      FILE_PATH_LITERAL("NonExistingDir")));
-  file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
+      FILE_PATH_LITERAL("NonExistingDir")).AsEndingWithSeparator());
   NewOperation()->ReadDirectory(URLForPath(nonexisting_dir_path),
                                 RecordReadDirectoryCallback());
   MessageLoop::current()->RunUntilIdle();
@@ -998,8 +996,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirSuccess) {
 TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
   // Path doesn't exist.
   base::FilePath nonexisting_path(base::FilePath(
-      FILE_PATH_LITERAL("NonExistingDir")));
-  file_util::EnsureEndsWithSeparator(&nonexisting_path);
+      FILE_PATH_LITERAL("NonExistingDir")).AsEndingWithSeparator());
 
   NewOperation()->Remove(URLForPath(nonexisting_path), false /* recursive */,
                          RecordStatusCallback());

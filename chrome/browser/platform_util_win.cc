@@ -31,9 +31,9 @@ namespace {
 
 void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath dir = full_path.DirName();
+  base::FilePath dir = full_path.DirName().AsEndingWithSeparator();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
-  if (dir.value() == L"" || !file_util::EnsureEndsWithSeparator(&dir))
+  if (dir.empty())
     return;
 
   typedef HRESULT (WINAPI *SHOpenFolderAndSelectItemsFuncPtr)(

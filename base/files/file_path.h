@@ -285,6 +285,13 @@ class BASE_EXPORT FilePath {
   // platforms, an absolute path begins with a separator character.
   bool IsAbsolute() const;
 
+  // Returns true if the patch ends with a path separator character.
+  bool EndsWithSeparator() const WARN_UNUSED_RESULT;
+
+  // Returns a copy of this FilePath that ends with a trailing separator. If
+  // the input path is empty, an empty FilePath will be returned.
+  FilePath AsEndingWithSeparator() const WARN_UNUSED_RESULT;
+
   // Returns a copy of this FilePath that does not end with a trailing
   // separator.
   FilePath StripTrailingSeparators() const WARN_UNUSED_RESULT;

@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 
 using base::FilePath;
+using base::MakeAbsoluteFilePath;
 
 namespace base {
   bool PathProvider(int key, FilePath* result);
@@ -217,9 +218,9 @@ bool PathService::Get(int key, FilePath* result) {
 
   if (path.ReferencesParent()) {
     // Make sure path service never returns a path with ".." in it.
-    if (!file_util::AbsolutePath(&path)) {
+    path = MakeAbsoluteFilePath(path);
+    if (path.empty())
       return false;
-    }
   }
   *result = path;
 
@@ -250,17 +251,16 @@ bool PathService::OverrideAndCreateIfNeeded(int key,
   // fore we protect this call with a flag.
   if (create) {
     // Make sure the directory exists. We need to do this before we translate
-    // this to the absolute path because on POSIX, AbsolutePath fails if called
-    // on a non-existent path.
+    // this to the absolute path because on POSIX, MakeAbsoluteFilePath fails
+    // if called on a non-existent path.
     if (!file_util::PathExists(file_path) &&
         !file_util::CreateDirectory(file_path))
       return false;
   }
 
-  // We need to have an absolute path, as extensions and plugins don't like
-  // relative paths, and will gladly crash the browser in CHECK()s if they get a
-  // relative path.
-  if (!file_util::AbsolutePath(&file_path))
+  // We need to have an absolute path.
+  file_path = MakeAbsoluteFilePath(file_path);
+  if (file_path.empty())
     return false;
 
   base::AutoLock scoped_lock(path_data->lock);

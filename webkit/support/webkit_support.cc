@@ -255,7 +255,8 @@ base::FilePath GetWebKitRootDirFilePath() {
     // We're in a WebKit-only/xcodebuild checkout on Mac
     basePath = basePath.Append(FILE_PATH_LITERAL("../../.."));
   }
-  CHECK(file_util::AbsolutePath(&basePath));
+  basePath = base::MakeAbsoluteFilePath(basePath);
+  CHECK(!basePath.empty());
   // We're in a WebKit-only, make-build, so the DIR_SOURCE_ROOT is already the
   // WebKit root. That, or we have no idea where we are.
   return basePath;
@@ -573,8 +574,7 @@ void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
 WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {
 #if defined(OS_WIN)
   base::FilePath path(UTF8ToWide(utf8_path));
-  file_util::AbsolutePath(&path);
-  return WebString(path.value());
+  return WebString(base::MakeAbsoluteFilePath(path).value());
 #else
   base::FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
 #if defined(OS_ANDROID)
@@ -589,10 +589,10 @@ WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {
       net::FileURLToFilePath(base_url.Resolve(path.value()), &path);
     }
   } else {
-    file_util::AbsolutePath(&path);
+    path = base::MakeAbsoluteFilePath(path);
   }
 #else
-  file_util::AbsolutePath(&path);
+  path = base::MakeAbsoluteFilePath(path);
 #endif  // else defined(OS_ANDROID)
   return WideToUTF16(base::SysNativeMBToWide(path.value()));
 #endif  // else defined(OS_WIN)
@@ -612,8 +612,7 @@ WebURL CreateURLForPathOrURL(const std::string& path_or_url_in_nativemb) {
 #else
   base::FilePath path(path_or_url_in_nativemb);
 #endif
-  file_util::AbsolutePath(&path);
-  return net::FilePathToFileURL(path);
+  return net::FilePathToFileURL(base::MakeAbsoluteFilePath(path));
 }
 
 WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {

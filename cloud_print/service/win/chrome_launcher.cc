@@ -121,8 +121,7 @@ void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
     return;
   std::vector<string16> to_delete;
 
-  base::FilePath abs_user_data_dir = user_data_dir;
-  file_util::AbsolutePath(&abs_user_data_dir);
+  base::FilePath abs_user_data_dir = base::MakeAbsoluteFilePath(user_data_dir);
 
   {
     base::win::RegistryValueIterator value(HKEY_CURRENT_USER, kAutoRunKeyPath);
@@ -132,9 +131,8 @@ void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
         if (cmd.GetSwitchValueASCII(switches::kProcessType) ==
             switches::kServiceProcess &&
             cmd.HasSwitch(switches::kUserDataDir)) {
-          base::FilePath path_from_reg =
-              cmd.GetSwitchValuePath(switches::kUserDataDir);
-          file_util::AbsolutePath(&path_from_reg);
+          base::FilePath path_from_reg = base::MakeAbsoluteFilePath(
+              cmd.GetSwitchValuePath(switches::kUserDataDir));
           if (path_from_reg == abs_user_data_dir) {
             to_delete.push_back(value.Name());
           }

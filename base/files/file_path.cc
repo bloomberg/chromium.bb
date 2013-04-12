@@ -521,6 +521,24 @@ bool FilePath::IsAbsolute() const {
   return IsPathAbsolute(path_);
 }
 
+bool FilePath::EndsWithSeparator() const {
+  if (empty())
+    return false;
+  return IsSeparator(path_[path_.size() - 1]);
+}
+
+FilePath FilePath::AsEndingWithSeparator() const {
+  if (EndsWithSeparator() || path_.empty())
+    return *this;
+
+  StringType path_str;
+  path_str.reserve(path_.length() + 1);  // Only allocate string once.
+
+  path_str = path_;
+  path_str.append(&kSeparators[0], 1);
+  return FilePath(path_str);
+}
+
 FilePath FilePath::StripTrailingSeparators() const {
   FilePath new_path(path_);
   new_path.StripTrailingSeparatorsInternal();

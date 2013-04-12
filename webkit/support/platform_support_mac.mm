@@ -225,8 +225,7 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
       // In order to match WebKit's colors for the missing image, we have to
       // use a PNG. The GIF doesn't have the color range needed to correctly
       // match the TIFF they use in Safari.
-      path = path.AppendASCII("missingImage.png");
-      file_util::AbsolutePath(&path);
+      path = base::MakeAbsoluteFilePath(path.AppendASCII("missingImage.png"));
       bool success = file_util::ReadFileToString(path, &broken_image_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
@@ -239,8 +238,8 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     CR_DEFINE_STATIC_LOCAL(std::string, resize_corner_data, ());
     if (resize_corner_data.empty()) {
       base::FilePath path = GetResourcesFilePath();
-      path = path.AppendASCII("textAreaResizeCorner.png");
-      file_util::AbsolutePath(&path);
+      path = base::MakeAbsoluteFilePath(
+          path.AppendASCII("textAreaResizeCorner.png"));
       bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();

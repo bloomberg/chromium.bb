@@ -86,7 +86,7 @@ bool CallGetSaveFileName(OPENFILENAME* ofn) {
 bool IsDirectory(const base::FilePath& path) {
   base::PlatformFileInfo file_info;
   return file_util::GetFileInfo(path, &file_info) ?
-      file_info.is_directory : file_util::EndsWithSeparator(path);
+      file_info.is_directory : path.EndsWithSeparator();
 }
 
 // Get the file type description from the registry. This will be "Text Document"

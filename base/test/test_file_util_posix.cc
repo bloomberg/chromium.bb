@@ -17,6 +17,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
+using base::MakeAbsoluteFilePath;
+
 namespace file_util {
 
 namespace {
@@ -90,11 +92,12 @@ bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
   // This function does not properly handle destinations within the source
   base::FilePath real_to_path = dest_dir;
   if (PathExists(real_to_path)) {
-    if (!AbsolutePath(&real_to_path))
+    real_to_path = MakeAbsoluteFilePath(real_to_path);
+    if (real_to_path.empty())
       return false;
   } else {
-    real_to_path = real_to_path.DirName();
-    if (!AbsolutePath(&real_to_path))
+    real_to_path = MakeAbsoluteFilePath(real_to_path.DirName());
+    if (real_to_path.empty())
       return false;
   }
   if (real_to_path.value().compare(0, source_dir.value().size(),
