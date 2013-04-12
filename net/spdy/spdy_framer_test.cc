@@ -934,14 +934,14 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   if (IsSpdy2()) {
     EXPECT_EQ(139u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(93u, visitor->last_compressed_size_);
+    EXPECT_EQ(155u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(135u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
     EXPECT_EQ(165u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(72u, visitor->last_compressed_size_);
+    EXPECT_EQ(181u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(117u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
@@ -970,14 +970,14 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   if (IsSpdy2()) {
     EXPECT_EQ(139u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(9u, visitor->last_compressed_size_);
+    EXPECT_EQ(149u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(101u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
     EXPECT_EQ(165u, visitor->last_uncompressed_size_);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(9u, visitor->last_compressed_size_);
+    EXPECT_EQ(175u, visitor->last_compressed_size_);
 #else  // !defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(102u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
