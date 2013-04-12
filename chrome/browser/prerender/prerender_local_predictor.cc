@@ -489,8 +489,7 @@ bool PrerenderLocalPredictor::IsPrerenderStillValid(
 
 void PrerenderLocalPredictor::RecordEvent(
     PrerenderLocalPredictor::Event event) const {
-  UMA_HISTOGRAM_ENUMERATION(
-      base::FieldTrial::MakeName("Prerender.LocalPredictorEvent", "Prerender"),
+  UMA_HISTOGRAM_ENUMERATION("Prerender.LocalPredictorEvent",
       event, PrerenderLocalPredictor::EVENT_MAX_VALUE);
 }
 

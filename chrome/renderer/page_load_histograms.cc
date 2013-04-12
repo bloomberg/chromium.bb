@@ -338,65 +338,17 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     PLT_HISTOGRAM("PLT.BeginToFinish_SpdyProxy", begin_to_finish_all_loads);
   }
 
-  // Histograms to determine if prefetch & prerender has an impact on PLT.
-  static const bool prefetching_fieldtrial =
-      base::FieldTrialList::TrialExists("Prefetch");
-  if (prefetching_fieldtrial) {
-    if (document_state->was_prefetcher()) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcher", "Prefetch"),
-          begin_to_finish_doc);
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcher", "Prefetch"),
-          begin_to_finish_all_loads);
-    }
-    if (document_state->was_referred_by_prefetcher()) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prefetch"),
-          begin_to_finish_doc);
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcherReferrer", "Prefetch"),
-          begin_to_finish_all_loads);
-    }
-    UMA_HISTOGRAM_ENUMERATION(base::FieldTrial::MakeName(
-        "PLT.Abandoned", "Prefetch"),
-        abandoned_page ? 1 : 0, 2);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinishDoc", "Prefetch"),
-        begin_to_finish_doc);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinish", "Prefetch"),
-        begin_to_finish_all_loads);
+  if (document_state->was_prefetcher()) {
+    PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
+                  begin_to_finish_doc);
+    PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcher",
+                  begin_to_finish_all_loads);
   }
-
-  static const bool prerendering_fieldtrial =
-      base::FieldTrialList::TrialExists("Prerender");
-  if (prerendering_fieldtrial) {
-    if (document_state->was_prefetcher()) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcher", "Prerender"),
-          begin_to_finish_doc);
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcher", "Prerender"),
-          begin_to_finish_all_loads);
-    }
-    if (document_state->was_referred_by_prefetcher()) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prerender"),
-          begin_to_finish_doc);
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcherReferrer", "Prerender"),
-          begin_to_finish_all_loads);
-    }
-    UMA_HISTOGRAM_ENUMERATION(base::FieldTrial::MakeName(
-        "PLT.Abandoned", "Prerender"),
-        abandoned_page ? 1 : 0, 2);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinishDoc", "Prerender"),
-        begin_to_finish_doc);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinish", "Prerender"),
-        begin_to_finish_all_loads);
+  if (document_state->was_referred_by_prefetcher()) {
+    PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
+                  begin_to_finish_doc);
+    PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
+                  begin_to_finish_all_loads);
   }
 
   // Histograms to determine if SDCH has an impact.
@@ -704,28 +656,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());
-
-  // Record histograms for cache sensitivity analysis.
-  static const bool cache_sensitivity_histogram =
-      base::FieldTrialList::TrialExists("CacheSensitivityAnalysis");
-  if (cache_sensitivity_histogram) {
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinishDoc_CacheSensitivity", "CacheSensitivityAnalysis"),
-                  begin_to_finish_doc);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinish_CacheSensitivity", "CacheSensitivityAnalysis"),
-                  begin_to_finish_all_loads);
-    if (begin_to_first_paint.get()) {
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFirstPaint_CacheSensitivity", "CacheSensitivityAnalysis"),
-                  *begin_to_first_paint);
-    }
-    if (commit_to_first_paint.get()) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.CommitToFirstPaint_CacheSensitivity", "CacheSensitivityAnalysis"),
-                    *commit_to_first_paint);
-    }
-  }
 
   // Since there are currently no guarantees that renderer histograms will be
   // sent to the browser, we initiate a PostTask here to be sure that we send

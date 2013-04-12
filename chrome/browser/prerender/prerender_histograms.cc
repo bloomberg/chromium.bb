@@ -7,11 +7,9 @@
 #include <string>
 
 #include "base/format_macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
 
@@ -200,9 +198,8 @@ void PrerenderHistograms::RecordFractionPixelsFinalAtSwapin(
   int percentage = static_cast<int>(fraction * 100);
   if (percentage < 0 || percentage > 100)
     return;
-  PREFIXED_HISTOGRAM(
-      base::FieldTrial::MakeName("FractionPixelsFinalAtSwapin", "Prerender"),
-      origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
+  PREFIXED_HISTOGRAM("FractionPixelsFinalAtSwapin",
+                     origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
@@ -212,7 +209,7 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
   PREFIXED_HISTOGRAM( \
-      base::FieldTrial::MakeName(tag, "Prerender"), origin, \
+      tag, origin, \
       UMA_HISTOGRAM_CUSTOM_TIMES( \
         name, \
         perceived_page_load_time, \
@@ -314,9 +311,8 @@ void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(Origin origin,
   int percentage = static_cast<int>(fraction * 100);
   if (percentage < 0 || percentage > 100)
     return;
-  PREFIXED_HISTOGRAM(
-      base::FieldTrial::MakeName("PercentLoadDoneAtSwapin", "Prerender"),
-      origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
+  PREFIXED_HISTOGRAM("PercentLoadDoneAtSwapin",
+                     origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
@@ -367,16 +363,14 @@ void PrerenderHistograms::RecordFinalStatus(
   if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACED) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-        base::FieldTrial::MakeName("FinalStatus", "Prerender"),
-        origin, experiment_id,
+        "FinalStatus", origin, experiment_id,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
   if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-        base::FieldTrial::MakeName("FinalStatusMatchComplete", "Prerender"),
-        origin, experiment_id,
+        "FinalStatusMatchComplete", origin, experiment_id,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
 }

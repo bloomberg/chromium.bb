@@ -1280,32 +1280,6 @@ void URLRequestHttpJob::RecordTimer() {
   request_creation_time_ = base::Time();
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpTimeToFirstByte", to_start);
-
-  static const bool use_overlapped_read_histogram =
-      base::FieldTrialList::TrialExists("OverlappedReadImpact");
-  if (use_overlapped_read_histogram) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        base::FieldTrial::MakeName("Net.HttpTimeToFirstByte",
-                                   "OverlappedReadImpact"),
-        to_start);
-  }
-
-  static const bool use_prefetch_histogram =
-      base::FieldTrialList::TrialExists("Prefetch");
-  if (use_prefetch_histogram) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        base::FieldTrial::MakeName("Net.HttpTimeToFirstByte",
-                                   "Prefetch"),
-        to_start);
-  }
-  static const bool use_prerender_histogram =
-      base::FieldTrialList::TrialExists("Prerender");
-  if (use_prerender_histogram) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        base::FieldTrial::MakeName("Net.HttpTimeToFirstByte",
-                                   "Prerender"),
-        to_start);
-  }
 }
 
 void URLRequestHttpJob::ResetTimer() {
@@ -1471,76 +1445,6 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeCached", total_time);
     } else  {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeNotCached", total_time);
-    }
-  }
-
-  static const bool use_overlapped_read_histogram =
-      base::FieldTrialList::TrialExists("OverlappedReadImpact");
-  if (use_overlapped_read_histogram) {
-    UMA_HISTOGRAM_TIMES(
-        base::FieldTrial::MakeName("Net.HttpJob.TotalTime",
-                                   "OverlappedReadImpact"),
-        total_time);
-
-    if (reason == FINISHED) {
-      UMA_HISTOGRAM_TIMES(
-          base::FieldTrial::MakeName("Net.HttpJob.TotalTimeSuccess",
-                                     "OverlappedReadImpact"),
-          total_time);
-    } else {
-      UMA_HISTOGRAM_TIMES(
-          base::FieldTrial::MakeName("Net.HttpJob.TotalTimeCancel",
-                                     "OverlappedReadImpact"),
-          total_time);
-    }
-
-    if (response_info_) {
-      if (response_info_->was_cached) {
-        UMA_HISTOGRAM_TIMES(
-            base::FieldTrial::MakeName("Net.HttpJob.TotalTimeCached",
-                                       "OverlappedReadImpact"),
-            total_time);
-      } else  {
-        UMA_HISTOGRAM_TIMES(
-            base::FieldTrial::MakeName("Net.HttpJob.TotalTimeNotCached",
-                                       "OverlappedReadImpact"),
-            total_time);
-      }
-    }
-  }
-
-  static const bool cache_sensitivity_analysis =
-      base::FieldTrialList::TrialExists("CacheSensitivityAnalysis");
-  if (cache_sensitivity_analysis) {
-    UMA_HISTOGRAM_TIMES(
-        base::FieldTrial::MakeName("Net.HttpJob.TotalTime",
-                                   "CacheSensitivityAnalysis"),
-        total_time);
-
-    if (reason == FINISHED) {
-      UMA_HISTOGRAM_TIMES(
-          base::FieldTrial::MakeName("Net.HttpJob.TotalTimeSuccess",
-                                     "CacheSensitivityAnalysis"),
-          total_time);
-    } else {
-      UMA_HISTOGRAM_TIMES(
-          base::FieldTrial::MakeName("Net.HttpJob.TotalTimeCancel",
-                                     "CacheSensitivityAnalysis"),
-          total_time);
-    }
-
-    if (response_info_) {
-      if (response_info_->was_cached) {
-        UMA_HISTOGRAM_TIMES(
-            base::FieldTrial::MakeName("Net.HttpJob.TotalTimeCached",
-                                       "CacheSensitivityAnalysis"),
-            total_time);
-      } else  {
-        UMA_HISTOGRAM_TIMES(
-            base::FieldTrial::MakeName("Net.HttpJob.TotalTimeNotCached",
-                                       "CacheSensitivityAnalysis"),
-            total_time);
-      }
     }
   }
 
