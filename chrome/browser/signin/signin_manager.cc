@@ -927,8 +927,8 @@ void SigninManager::Shutdown() {
   }
 }
 
-void SigninManager::ProhibitSignout() {
-  prohibit_signout_ = true;
+void SigninManager::ProhibitSignout(bool prohibit_signout) {
+  prohibit_signout_ = prohibit_signout;
 }
 
 bool SigninManager::IsSignoutProhibited() const {

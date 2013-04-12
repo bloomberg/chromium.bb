@@ -224,7 +224,8 @@ void CloudPolicyClientRegistrationHelper::OnClientError(
 
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin) ||
       ProfileManager::IsImportProcess(*cmd_line)) {
@@ -340,6 +341,8 @@ void UserPolicySigninService::StopObserving() {
   UserCloudPolicyManager* manager = GetManager();
   if (manager && manager->core()->service())
     manager->core()->service()->RemoveObserver(this);
+  if (manager && manager->core()->client())
+    manager->core()->client()->RemoveObserver(this);
 }
 
 void UserPolicySigninService::StartObserving() {
@@ -348,6 +351,7 @@ void UserPolicySigninService::StartObserving() {
   DCHECK(manager);
   DCHECK(manager->core()->service());
   manager->core()->service()->AddObserver(this);
+  manager->core()->client()->AddObserver(this);
 }
 
 void UserPolicySigninService::Observe(
@@ -481,8 +485,11 @@ void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
   StopObserving();
 
   UserCloudPolicyManager* manager = GetManager();
-  if (manager)  // Can be null in unit tests.
+  if (manager) {  // Can be null in unit tests.
     manager->DisconnectAndRemovePolicy();
+    // Allow the user to signout again.
+    SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(false);
+  }
 }
 
 void UserPolicySigninService::OnInitializationCompleted(
@@ -508,6 +515,36 @@ void UserPolicySigninService::OnInitializationCompleted(
   }
   // If client is registered now, prohibit signout.
   ProhibitSignoutIfNeeded();
+}
+
+void UserPolicySigninService::OnPolicyFetched(CloudPolicyClient* client) {
+}
+
+void UserPolicySigninService::OnRegistrationStateChanged(
+    CloudPolicyClient* client) {
+}
+
+void UserPolicySigninService::OnClientError(CloudPolicyClient* client) {
+  if (client->is_registered()) {
+    // If the client is already registered, it means this error must have
+    // come from a policy fetch.
+    if (client->status() ==
+        policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED) {
+      // OK, policy fetch failed with MANAGEMENT_NOT_SUPPORTED - this is our
+      // trigger to revert to "unmanaged" mode (we will check for management
+      // being re-enabled on the next restart and/or login).
+      DVLOG(1) << "DMServer returned NOT_SUPPORTED error - removing policy";
+
+      // Can't shutdown now because we're in the middle of a callback from
+      // the CloudPolicyClient, so queue up a task to do the shutdown.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&UserPolicySigninService::ShutdownUserCloudPolicyManager,
+                     weak_factory_.GetWeakPtr()));
+    } else {
+      DVLOG(1) << "Error fetching policy: " << client->status();
+    }
+  }
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService(
@@ -539,7 +576,7 @@ void UserPolicySigninService::ProhibitSignoutIfNeeded() {
     DVLOG(1) << "User is registered for policy - prohibiting signout";
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(profile_);
-    signin_manager->ProhibitSignout();
+    signin_manager->ProhibitSignout(true);
   }
 }
 

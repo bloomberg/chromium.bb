@@ -636,6 +636,56 @@ TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   TestSuccessfulSignin();
 }
 
+TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureTemporary) {
+  TestSuccessfulSignin();
+
+  ASSERT_TRUE(manager_->IsClientRegistered());
+
+  // Kick off another policy fetch.
+  MockDeviceManagementJob* fetch_request = NULL;
+  EXPECT_CALL(*device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .Times(1);
+  manager_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(this);
+
+  // Now, fake a transient error from the server on this policy fetch. This
+  // should have no impact on the cached policy.
+  fetch_request->SendResponse(DM_STATUS_REQUEST_FAILED,
+                              em::DeviceManagementResponse());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(manager_->IsClientRegistered());
+}
+
+TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
+  TestSuccessfulSignin();
+
+  EXPECT_TRUE(manager_->IsClientRegistered());
+  EXPECT_TRUE(signin_manager_->IsSignoutProhibited());
+
+  // Kick off another policy fetch.
+  MockDeviceManagementJob* fetch_request = NULL;
+  EXPECT_CALL(*device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .Times(1);
+  manager_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(this);
+
+  // Now, fake a SC_FORBIDDEN error from the server on this policy fetch. This
+  // indicates that chrome management is disabled and will result in the cached
+  // policy being removed and the manager shut down.
+  EXPECT_CALL(*mock_store_, Clear());
+  fetch_request->SendResponse(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED,
+                              em::DeviceManagementResponse());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(manager_->IsClientRegistered());
+  EXPECT_FALSE(signin_manager_->IsSignoutProhibited());
+}
+
 }  // namespace
 
 }  // namespace policy

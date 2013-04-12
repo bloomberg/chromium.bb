@@ -210,8 +210,9 @@ class SigninManager : public GaiaAuthConsumer,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // Tells the SigninManager to prohibit signout for this profile.
-  void ProhibitSignout();
+  // Tells the SigninManager whether to prohibit signout for this profile.
+  // If |prohibit_signout| is true, then signout will be prohibited.
+  void ProhibitSignout(bool prohibit_signout);
 
   // If true, signout is prohibited for this profile (calls to SignOut() are
   // ignored).

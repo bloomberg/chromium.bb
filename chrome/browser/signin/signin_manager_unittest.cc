@@ -663,9 +663,12 @@ TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->SetAuthenticatedUsername("user@gmail.com");
-  manager_->ProhibitSignout();
+  manager_->ProhibitSignout(true);
   manager_->SignOut();
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+  manager_->ProhibitSignout(false);
+  manager_->SignOut();
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }
 
 TEST_F(SigninManagerTest, TestIsWebBasedSigninFlowURL) {

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/user_info_fetcher.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -40,6 +41,7 @@ class UserCloudPolicyManager;
 // the policy infrastructure to ensure that any cached policy is cleared.
 class UserPolicySigninService
     : public ProfileKeyedService,
+      public CloudPolicyClient::Observer,
       public CloudPolicyService::Observer,
       public content::NotificationObserver {
  public:
@@ -78,6 +80,11 @@ class UserPolicySigninService
 
   // CloudPolicyService::Observer implementation.
   virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
+
+  // CloudPolicyClient::Observer implementation.
+  virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
+  virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
 
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
@@ -130,6 +137,8 @@ class UserPolicySigninService
   content::NotificationRegistrar registrar_;
 
   scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
+
+  base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };
