@@ -476,6 +476,24 @@ class GitSourceControl(SourceControl):
 
     return commit_info
 
+  def CheckoutFileAtRevision(self, file_name, revision):
+    """Performs a checkout on a file at the given revision.
+
+    Returns:
+      True if successful.
+    """
+    return not RunGit(['checkout', revision, file_name])[1]
+
+  def RevertFileToHead(self, file_name):
+    """Unstages a file and returns it to HEAD.
+
+    Returns:
+      True if successful.
+    """
+    # Reset doesn't seem to return 0 on success.
+    RunGit(['reset', 'HEAD', FILE_DEPS_GIT])
+
+    return not RunGit(['checkout', FILE_DEPS_GIT])[1]
 
 class BisectPerformanceMetrics(object):
   """BisectPerformanceMetrics performs a bisection against a list of range
@@ -490,6 +508,9 @@ class BisectPerformanceMetrics(object):
     self.src_cwd = os.getcwd()
     self.depot_cwd = {}
     self.cleanup_commands = []
+
+    # This always starts true since the script grabs latest first.
+    self.was_blink = True
 
     for d in DEPOT_NAMES:
       # The working directory of each depot is just the path to the depot, but
@@ -765,6 +786,53 @@ class BisectPerformanceMetrics(object):
           path_to_file = os.path.join(path, cur_file)
           os.remove(path_to_file)
 
+  def PerformWebkitDirectoryCleanup(self, revision):
+    """If the script is switching between Blink and WebKit during bisect,
+    its faster to just delete the directory rather than leave it up to git
+    to sync.
+
+    Returns:
+      True if successful.
+    """
+    if not self.source_control.CheckoutFileAtRevision(
+        FILE_DEPS_GIT, revision):
+      return False
+
+    cwd = os.getcwd()
+    os.chdir(self.src_cwd)
+
+    locals = {'Var': lambda _: locals["vars"][_],
+              'From': lambda *args: None}
+    execfile(FILE_DEPS_GIT, {}, locals)
+
+    os.chdir(cwd)
+
+    is_blink = 'blink.git' in locals['vars']['webkit_url']
+
+    if not self.source_control.RevertFileToHead(FILE_DEPS_GIT):
+      return False
+
+    if self.was_blink != is_blink:
+      self.was_blink = is_blink
+      try:
+        path_to_dir = os.path.join(os.getcwd(), 'third_party', 'WebKit')
+        if os.path.exists(path_to_dir):
+          shutil.rmtree(path_to_dir)
+      except OSError, e:
+        if e.errno != errno.ENOENT:
+          return False
+    return True
+
+  def PerformPreSyncCleanup(self, revision, depot):
+    """Performs any necessary cleanup before syncing.
+
+    Returns:
+      True if successful.
+    """
+    if depot == 'chromium':
+      return self.PerformWebkitDirectoryCleanup(revision)
+    return True
+
   def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric):
     """Performs a full sync/build/run of the specified revision.
 
@@ -784,6 +852,9 @@ class BisectPerformanceMetrics(object):
 
     if not revisions_to_sync:
       return ('Failed to resolve dependant depots.', 1)
+
+    if not self.PerformPreSyncCleanup(revision, depot):
+      return ('Failed to perform pre-sync cleanup.', 1)
 
     success = True
 
