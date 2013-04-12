@@ -351,11 +351,14 @@ void FileSystemDispatcher::OnDidWrite(
 }
 
 void FileSystemDispatcher::OnDidOpenFile(
-    int request_id, IPC::PlatformFileForTransit file) {
+    int request_id,
+    IPC::PlatformFileForTransit file,
+    quota::QuotaLimitType quota_policy) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file));
+  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file),
+                          quota_policy);
   dispatchers_.Remove(request_id);
 }
 

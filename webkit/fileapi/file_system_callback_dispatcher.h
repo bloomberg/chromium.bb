@@ -11,6 +11,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "webkit/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
@@ -63,8 +64,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemCallbackDispatcher {
   // Callback for OpenFile.  This isn't in WebFileSystemCallbacks, as it's just
   // for Pepper.
   // The method will be responsible for closing |file|.
-  virtual void DidOpenFile(
-      base::PlatformFile file);
+  virtual void DidOpenFile(base::PlatformFile file,
+                           quota::QuotaLimitType quota_policy);
 };
 
 }  // namespace fileapi

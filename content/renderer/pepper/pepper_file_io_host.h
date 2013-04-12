@@ -84,6 +84,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       ReplyMessageContext reply_context,
       base::PlatformFileError error_code,
       base::PassPlatformFile file,
+      quota::QuotaLimitType quota_policy,
       const PluginDelegate::NotifyCloseFileCallback& callback);
   void ExecutePlatformQueryCallback(ReplyMessageContext reply_context,
                                     base::PlatformFileError error_code,
@@ -110,6 +111,9 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   GURL file_system_url_;
+
+  // Used to check if we can pass file handle to plugins.
+  quota::QuotaLimitType quota_policy_;
 
   // Callback function for notifying when the file handle is closed.
   PluginDelegate::NotifyCloseFileCallback notify_close_file_callback_;

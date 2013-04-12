@@ -475,6 +475,7 @@ class PluginDelegate {
   typedef base::Callback<
       void (base::PlatformFileError,
             base::PassPlatformFile,
+            quota::QuotaLimitType,
             const NotifyCloseFileCallback&)> AsyncOpenFileSystemURLCallback;
   virtual bool AsyncOpenFileSystemURL(
       const GURL& path,

@@ -26,6 +26,12 @@ enum StorageType {
   kStorageTypeUnknown,
 };
 
+enum QuotaLimitType {
+  kQuotaLimitTypeUnknown,
+  kQuotaLimitTypeLimited,
+  kQuotaLimitTypeUnlimited,
+};
+
 struct UsageInfo;
 typedef std::vector<UsageInfo> UsageInfoEntries;
 

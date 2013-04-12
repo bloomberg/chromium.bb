@@ -89,7 +89,8 @@ class PlatformGeneralCallbackTranslator
     NOTREACHED();
   }
 
-  virtual void DidOpenFile(base::PlatformFile file) OVERRIDE {
+  virtual void DidOpenFile(base::PlatformFile file,
+                           quota::QuotaLimitType quota_policy) OVERRIDE {
     NOTREACHED();
   }
 
@@ -112,6 +113,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
+      quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
@@ -454,12 +456,12 @@ int32_t PepperFileIOHost::OnHostMsgWillSetLength(
 int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     ppapi::host::HostMessageContext* context) {
   if (!is_running_in_process_ &&
+      quota_policy_ != quota::kQuotaLimitTypeUnlimited &&
+      // TODO(hamaji): Remove the whitelist once it turned out the
+      // quota check is sufficient. http://crbug.com/226386
       !GetContentClient()->renderer()->IsRequestOSFileHandleAllowedForURL(
           file_system_url_))
     return PP_ERROR_FAILED;
-
-  // TODO(hamaji): Should fail if quota is not unlimited.
-  // http://crbug.com/224123
 
   RendererPpapiHost* renderer_ppapi_host =
       RendererPpapiHost::GetForPPInstance(pp_instance());
@@ -533,9 +535,11 @@ void PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback(
     ppapi::host::ReplyMessageContext reply_context,
     base::PlatformFileError error_code,
     base::PassPlatformFile file,
+    quota::QuotaLimitType quota_policy,
     const PluginDelegate::NotifyCloseFileCallback& callback) {
   if (error_code == base::PLATFORM_FILE_OK)
     notify_close_file_callback_ = callback;
+  quota_policy_ = quota_policy;
   ExecutePlatformOpenFileCallback(reply_context, error_code, file);
 }
 

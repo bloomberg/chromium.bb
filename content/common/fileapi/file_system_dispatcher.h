@@ -16,6 +16,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/quota/quota_types.h"
 
 namespace base {
 class FilePath;
@@ -119,7 +120,8 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidWrite(int request_id, int64 bytes, bool complete);
   void OnDidOpenFile(
       int request_id,
-      IPC::PlatformFileForTransit file);
+      IPC::PlatformFileForTransit file,
+      quota::QuotaLimitType quota_policy);
 
   IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;
 

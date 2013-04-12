@@ -94,7 +94,8 @@ class ReadDirectoryCallback : public fileapi::FileSystemCallbackDispatcher {
     NOTREACHED();
   }
 
-  virtual void DidOpenFile(base::PlatformFile file) OVERRIDE {
+  virtual void DidOpenFile(base::PlatformFile file,
+                           quota::QuotaLimitType quota_policy) OVERRIDE {
     NOTREACHED();
   }
 

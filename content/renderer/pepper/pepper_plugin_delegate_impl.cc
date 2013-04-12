@@ -295,6 +295,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
     base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
     callback_.Run(error_code,
                   base::PassPlatformFile(&invalid_file),
+                  quota::kQuotaLimitTypeUnknown,
                   webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
   }
 
@@ -302,9 +303,11 @@ class AsyncOpenFileSystemURLCallbackTranslator
     NOTREACHED();
   }
 
-  virtual void DidOpenFile(base::PlatformFile file) OVERRIDE {
+  virtual void DidOpenFile(base::PlatformFile file,
+                           quota::QuotaLimitType quota_policy) OVERRIDE {
     callback_.Run(base::PLATFORM_FILE_OK,
                   base::PassPlatformFile(&file),
+                  quota_policy,
                   close_file_callback_);
     // Make sure we won't leak file handle if the requester has died.
     if (file != base::kInvalidPlatformFileValue) {

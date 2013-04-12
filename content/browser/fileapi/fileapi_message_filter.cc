@@ -35,6 +35,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/quota/quota_manager.h"
 
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
@@ -691,9 +692,26 @@ void FileAPIMessageFilter::DidOpenFile(int request_id,
             IPC::GetFileHandleForProcess(file, peer_handle, true) :
             IPC::InvalidPlatformFileForTransit();
     open_filesystem_urls_.insert(path);
-    Send(new FileSystemMsg_DidOpenFile(request_id, file_for_transit));
+
+    quota::QuotaLimitType quota_policy = quota::kQuotaLimitTypeUnknown;
+    quota::QuotaManagerProxy* quota_manager_proxy =
+        context_->quota_manager_proxy();
+    CHECK(quota_manager_proxy);
+    CHECK(quota_manager_proxy->quota_manager());
+    FileSystemURL url = context_->CrackURL(path);
+    if (quota_manager_proxy->quota_manager()->IsStorageUnlimited(
+            url.origin(), FileSystemTypeToQuotaStorageType(url.type()))) {
+      quota_policy = quota::kQuotaLimitTypeUnlimited;
+    } else {
+      quota_policy = quota::kQuotaLimitTypeLimited;
+    }
+
+    Send(new FileSystemMsg_DidOpenFile(request_id,
+                                       file_for_transit,
+                                       quota_policy));
   } else {
-    Send(new FileSystemMsg_DidFail(request_id, result));
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   result));
   }
   UnregisterOperation(request_id);
 }
