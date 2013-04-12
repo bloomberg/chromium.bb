@@ -139,8 +139,6 @@
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',
     'renderer/media/media_stream_impl.h',
-    'renderer/media/media_stream_source_observer.cc',
-    'renderer/media/media_stream_source_observer.h',
     'renderer/media/pepper_platform_video_decoder_impl.cc',
     'renderer/media/pepper_platform_video_decoder_impl.h',
     'renderer/media/render_media_log.cc',

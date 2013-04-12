@@ -9,7 +9,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
-#include "content/renderer/media/media_stream_source_observer.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
@@ -265,10 +264,6 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
         CreateLocalVideoSource(source_data->device_info().session_id,
                                is_screencast,
                                &native_video_constraints));
-    source_data->SetSourceObserver(new MediaStreamSourceObserver(
-        source_data->video_source(),
-        video_tracks[i].source()));
-
     source_observer->AddSource(source_data->video_source());
   }
 
