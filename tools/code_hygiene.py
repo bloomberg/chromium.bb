@@ -139,6 +139,14 @@ class CppLintChecker(ExternalChecker):
     return '.cc' in props or '.h' in props
 
 
+class NotForCommitChecker(object):
+  def FindProblems(self, unused_props, data):
+    return ['This file should not be committed!']
+
+  def FileFilter(self, props):
+    return 'not_for_commit' in props['name']
+
+
 # ======================================================================
 class GenericRegexChecker(object):
   """Base Class"""
@@ -459,6 +467,7 @@ def IsBinary(data):
 # ======================================================================
 # CHECK entry is: is_fatal, name, check_function.
 CHECKS = [# fatal checks
+          (True, 'not_for_commit_files', NotForCommitChecker()),
           (True, 'tabs', TabsChecker()),
           (True, 'trailing_space', TrailingWhiteSpaceChecker()),
           (True, 'cpp_comment', CppCommentChecker()),

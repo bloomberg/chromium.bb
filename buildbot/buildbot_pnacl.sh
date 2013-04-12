@@ -72,12 +72,14 @@ tc-compile-toolchain() {
   local build_fat=$1
   echo @@@BUILD_STEP compile_toolchain@@@
   ${PNACL_BUILD} clean
+  ${PNACL_BUILD} sync-sources
+  ${PNACL_BUILD} checkout-llvm-bundle-for-trybot
   if ${build_fat}; then
-    HOST_ARCH=x86_32 ${PNACL_BUILD} everything
+    HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
     HOST_ARCH=x86_64 ${PNACL_BUILD} build-host
     HOST_ARCH=x86_64 ${PNACL_BUILD} driver
   else
-    ${PNACL_BUILD} everything
+    ${PNACL_BUILD} build-all
   fi
   ${PNACL_BUILD} tarball pnacl-toolchain.tgz
   chmod a+r pnacl-toolchain.tgz

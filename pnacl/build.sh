@@ -573,6 +573,21 @@ git-sync() {
   newlib-nacl-headers
 }
 
+checkout-llvm-bundle-for-trybot() {
+  # For testing LLVM changes on the trybots, look for a Git bundle
+  # file created by llvm_change_try_helper.sh.
+  local patch_dir=${NACL_ROOT}/pnacl/not_for_commit
+  if [ -e ${patch_dir}/llvm_bundle.b64 ]; then
+    python -c "import base64, sys; base64.decode(sys.stdin, sys.stdout)" \
+        < ${patch_dir}/llvm_bundle.b64 > ${patch_dir}/llvm_bundle
+    spushd "${TC_SRC_LLVM}"
+    git fetch
+    git bundle unbundle ${patch_dir}/llvm_bundle
+    git checkout $(head -1 ${patch_dir}/llvm_commit_id)
+    spopd
+  fi
+}
+
 gerrit-upload() {
   # Upload to gerrit code review
   # (Note: normally we use Rietveld code review. This is only useful if
