@@ -63,7 +63,7 @@ def SetupEnvironment():
                                 env.scons_os + '_x86')
 
   # Path to PNaCl toolchain
-  pnacl_label = 'pnacl_%s_%s' % (GetSconsOS(), GetBuildArch().replace('-','_'))
+  pnacl_label = 'pnacl_%s_x86' % GetSconsOS()
   env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
   env.pnacl_root_newlib = os.path.join(env.pnacl_base, 'newlib')
   env.pnacl_root_glibc = os.path.join(env.pnacl_base, 'glibc')
