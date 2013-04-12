@@ -17,7 +17,11 @@ void MockInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
+  if (text_input_client_ == client)
+    return;
   text_input_client_ = client;
+  if (client)
+    OnTextInputTypeChanged(client);
 }
 
 TextInputClient* MockInputMethod::GetTextInputClient() const {

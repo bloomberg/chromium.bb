@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/keyboard/keyboard_export.h"
 
@@ -24,7 +25,8 @@ class KeyboardControllerProxy;
 
 // Provides control of the virtual keyboard, including providing a container,
 // managing object lifetimes and controlling visibility.
-class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver {
+class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
+                                           public aura::WindowObserver {
  public:
   // Takes ownership of |proxy|.
   explicit KeyboardController(KeyboardControllerProxy* proxy);
@@ -39,6 +41,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver {
       const ui::TextInputClient* client) OVERRIDE;
 
  private:
+  // aura::WindowObserver overrides
+  virtual void OnWindowParentChanged(aura::Window* window,
+                                     aura::Window* parent) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
   scoped_ptr<KeyboardControllerProxy> proxy_;
   aura::Window* container_;
 

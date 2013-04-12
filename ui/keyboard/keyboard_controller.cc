@@ -117,6 +117,8 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
 }
 
 KeyboardController::~KeyboardController() {
+  if (container_)
+    container_->RemoveObserver(this);
   proxy_->GetInputMethod()->RemoveObserver(this);
 }
 
@@ -125,6 +127,7 @@ aura::Window* KeyboardController::GetContainerWindow() {
     container_ = new aura::Window(new KeyboardWindowDelegate());
     container_->SetName("KeyboardContainer");
     container_->Init(ui::LAYER_NOT_DRAWN);
+    container_->AddObserver(this);
 
     aura::Window* keyboard = proxy_->GetKeyboardWindow();
     keyboard->Show();
@@ -132,8 +135,6 @@ aura::Window* KeyboardController::GetContainerWindow() {
     container_->SetLayoutManager(
         new KeyboardLayoutManager(container_, keyboard));
     container_->AddChild(keyboard);
-
-    OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
   }
   return container_;
 }
@@ -153,6 +154,16 @@ void KeyboardController::OnTextInputStateChanged(
   // TODO(bryeung): whenever the TextInputClient changes we need to notify the
   // keyboard (with the TextInputType) so that it can reset it's state (e.g.
   // abandon compositions in progress)
+}
+
+void KeyboardController::OnWindowParentChanged(aura::Window* window,
+                                               aura::Window* parent) {
+  OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
+}
+
+void KeyboardController::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(container_, window);
+  container_ = NULL;
 }
 
 }  // namespace keyboard

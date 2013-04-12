@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -123,6 +124,54 @@ class EventObserver : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventObserver);
 };
 
+class TestTextInputClient : public ui::TextInputClient {
+ public:
+  explicit TestTextInputClient(ui::TextInputType type)
+      : type_(type) {}
+  virtual ~TestTextInputClient() {}
+
+ private:
+  // Overridden from ui::TextInputClient:
+  virtual void SetCompositionText(
+      const ui::CompositionText& composition) OVERRIDE {}
+  virtual void ConfirmCompositionText() OVERRIDE {}
+  virtual void ClearCompositionText() OVERRIDE {}
+  virtual void InsertText(const string16& text) OVERRIDE {}
+  virtual void InsertChar(char16 ch, int flags) OVERRIDE {}
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE {
+    return type_;
+  }
+  virtual bool CanComposeInline() const OVERRIDE { return false; }
+  virtual gfx::Rect GetCaretBounds() OVERRIDE { return gfx::Rect(); }
+
+  virtual bool GetCompositionCharacterBounds(uint32 index,
+                                             gfx::Rect* rect) OVERRIDE {
+    return false;
+  }
+  virtual bool HasCompositionText() OVERRIDE { return false; }
+  virtual bool GetTextRange(ui::Range* range) OVERRIDE { return false; }
+  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE {
+    return false;
+  }
+  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE { return false; }
+  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE {
+    return false;
+  }
+  virtual bool DeleteRange(const ui::Range& range) OVERRIDE { return false; }
+  virtual bool GetTextFromRange(const ui::Range& range,
+                                string16* text) OVERRIDE {
+    return false;
+  }
+  virtual void OnInputMethodChanged() OVERRIDE {}
+  virtual bool ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) OVERRIDE { return false; }
+  virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE {}
+
+  ui::TextInputType type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
+};
+
 }  // namespace
 
 TEST_F(KeyboardControllerTest, KeyboardSize) {
@@ -187,6 +236,37 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   generator.MoveMouseTo(gfx::Point());
   generator.ClickLeftButton();
   EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
+}
+
+TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
+  const gfx::Rect& root_bounds = root_window()->bounds();
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetBounds(root_bounds);
+  root_window()->AddChild(window.get());
+  window->Show();
+  window->Focus();
+
+  KeyboardControllerProxy* proxy = new TestKeyboardControllerProxy();
+  ui::InputMethod* input_method = proxy->GetInputMethod();
+  TestTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  TestTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+  input_method->SetFocusedTextInputClient(&input_client);
+
+  KeyboardController controller(proxy);
+
+  scoped_ptr<aura::Window> keyboard_container(controller.GetContainerWindow());
+  keyboard_container->SetBounds(root_bounds);
+  root_window()->AddChild(keyboard_container.get());
+
+  EXPECT_TRUE(keyboard_container->IsVisible());
+
+  input_method->SetFocusedTextInputClient(&no_input_client);
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  input_method->SetFocusedTextInputClient(&input_client);
+  EXPECT_TRUE(keyboard_container->IsVisible());
 }
 
 }  // namespace keyboard
