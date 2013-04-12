@@ -530,6 +530,7 @@
                       'yfriedman+watch@chromium.org',
                       'ilevy+watch@chromium.org',
                       'klundberg+watch@chromium.org',
+                      'craigdh+watch@chromium.org',
                       'frankf+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['tfarina@chromium.org', 'chrome-apps-syd-reviews@chromium.org'],
