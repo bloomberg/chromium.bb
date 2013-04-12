@@ -167,7 +167,7 @@ MessagePopupCollection::~MessagePopupCollection() {
 
 void MessagePopupCollection::UpdatePopups() {
   NotificationList::PopupNotifications popups =
-      message_center_->notification_list()->GetPopupNotifications();
+      message_center_->GetPopupNotifications();
 
   if (popups.empty()) {
     CloseAllWidgets();
@@ -280,8 +280,7 @@ void MessagePopupCollection::OnWidgetDestroying(views::Widget* widget) {
   for (ToastContainer::iterator iter = toasts_.begin();
        iter != toasts_.end(); ++iter) {
     if (iter->second->GetWidget() == widget) {
-      message_center_->notification_list()->MarkSinglePopupAsShown(
-          iter->first, false);
+      message_center_->MarkSinglePopupAsShown(iter->first, false);
       toasts_.erase(iter);
       break;
     }

@@ -15,39 +15,13 @@
 namespace message_center {
 namespace test {
 
-class MockNotificationListDelegate : public NotificationList::Delegate {
- public:
-  MockNotificationListDelegate() : send_remove_count_(0) {}
-  virtual ~MockNotificationListDelegate() {}
-
-  size_t GetSendRemoveCountAndReset() {
-    size_t result = send_remove_count_;
-    send_remove_count_ = 0;
-    return result;
-  }
-
- private:
-  // Overridden from NotificationList::Delegate:
-  virtual void SendRemoveNotification(const std::string& id,
-                                      bool by_user) OVERRIDE {
-    send_remove_count_++;
-  }
-
-  virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE {
-  }
-
-  size_t send_remove_count_;
-  DISALLOW_COPY_AND_ASSIGN(MockNotificationListDelegate);
-};
-
 class NotificationListTest : public testing::Test {
  public:
   NotificationListTest() {}
   virtual ~NotificationListTest() {}
 
   virtual void SetUp() {
-    delegate_.reset(new MockNotificationListDelegate);
-    notification_list_.reset(new NotificationList(delegate_.get()));
+    notification_list_.reset(new NotificationList());
     counter_ = 0;
   }
 
@@ -91,7 +65,6 @@ class NotificationListTest : public testing::Test {
     return *iter;
   }
 
-  MockNotificationListDelegate* delegate() { return delegate_.get(); }
   NotificationList* notification_list() { return notification_list_.get(); }
 
  private:
@@ -101,12 +74,21 @@ class NotificationListTest : public testing::Test {
   static const char kDisplaySource[];
   static const char kExtensionId[];
 
-  scoped_ptr<MockNotificationListDelegate> delegate_;
   scoped_ptr<NotificationList> notification_list_;
   size_t counter_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationListTest);
 };
+
+bool IsInNotifications(const NotificationList::Notifications& notifications,
+                       const std::string& id) {
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if ((*iter)->id() == id)
+      return true;
+  }
+  return false;
+}
 
 const char NotificationListTest::kIdFormat[] = "id%ld";
 const char NotificationListTest::kTitleFormat[] = "id%ld";
@@ -174,7 +156,7 @@ TEST_F(NotificationListTest, UpdateNotification) {
   EXPECT_EQ(UTF8ToUTF16("newbody"), (*notifications.begin())->message());
 }
 
-TEST_F(NotificationListTest, SendRemoveNotifications) {
+TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
   notification_list()->AddNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, "id0", UTF8ToUTF16("title0"),
       UTF8ToUTF16("message0"), UTF8ToUTF16("source0"), "ext0", NULL);
@@ -188,10 +170,19 @@ TEST_F(NotificationListTest, SendRemoveNotifications) {
       message_center::NOTIFICATION_TYPE_SIMPLE, "id3", UTF8ToUTF16("title1"),
       UTF8ToUTF16("message1"), UTF8ToUTF16("source2"), "ext1", NULL);
 
-  notification_list()->SendRemoveNotificationsBySource("id0");
-  EXPECT_EQ(2u, delegate()->GetSendRemoveCountAndReset());
-  notification_list()->SendRemoveNotificationsByExtension("id0");
-  EXPECT_EQ(3u, delegate()->GetSendRemoveCountAndReset());
+  NotificationList::Notifications by_source =
+      notification_list()->GetNotificationsBySource("id0");
+  EXPECT_TRUE(IsInNotifications(by_source, "id0"));
+  EXPECT_TRUE(IsInNotifications(by_source, "id1"));
+  EXPECT_FALSE(IsInNotifications(by_source, "id2"));
+  EXPECT_FALSE(IsInNotifications(by_source, "id3"));
+
+  NotificationList::Notifications by_extension =
+      notification_list()->GetNotificationsByExtension("id0");
+  EXPECT_TRUE(IsInNotifications(by_extension, "id0"));
+  EXPECT_TRUE(IsInNotifications(by_extension, "id1"));
+  EXPECT_TRUE(IsInNotifications(by_extension, "id2"));
+  EXPECT_FALSE(IsInNotifications(by_extension, "id3"));
 }
 
 TEST_F(NotificationListTest, OldPopupShouldNotBeHidden) {

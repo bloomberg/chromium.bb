@@ -46,19 +46,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // toasts.
   typedef std::set<Notification*, CompareTimestampSerial> PopupNotifications;
 
-  class MESSAGE_CENTER_EXPORT Delegate {
-   public:
-    virtual ~Delegate();
-
-    // Removes notifications
-    virtual void SendRemoveNotification(const std::string& id,
-                                        bool by_user) = 0;
-
-    // Called when the quiet mode status has been changed.
-    virtual void OnQuietModeChanged(bool quiet_mode) = 0;
-  };
-
-  explicit NotificationList(Delegate* delegate);
+  explicit NotificationList();
   virtual ~NotificationList();
 
   // Affects whether or not a message has been "read".
@@ -82,9 +70,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void RemoveAllNotifications();
 
-  void SendRemoveNotificationsBySource(const std::string& id);
-
-  void SendRemoveNotificationsByExtension(const std::string& id);
+  Notifications GetNotificationsBySource(const std::string& id);
+  Notifications GetNotificationsByExtension(const std::string& id);
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationIcon(const std::string& notification_id,
@@ -154,7 +141,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Sets the current quiet mode status to |quiet_mode|.
   void SetQuietModeInternal(bool quiet_mode);
 
-  Delegate* delegate_;
   Notifications notifications_;
   bool message_center_visible_;
   size_t unread_count_;

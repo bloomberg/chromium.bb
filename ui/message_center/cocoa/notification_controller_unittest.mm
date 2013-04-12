@@ -8,21 +8,40 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
+#include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 
 namespace {
 
-class MockChangeObserver : public message_center::NotificationChangeObserver {
+class MockMessageCenter : public FakeMessageCenter {
  public:
-  MOCK_METHOD2(OnRemoveNotification, void(const std::string&, bool));
+  MockMessageCenter()
+    : last_removed_by_user_(false),
+      remove_count_(0) {
+  }
+
+  virtual void RemoveNotification(const std::string& id,
+                                  bool by_user) OVERRIDE {
+    last_removed_id_ = id;
+    last_removed_by_user_ = by_user_;
+  }
+
+  const std::string& last_removed_id() const { return last_removed_id_; }
+  bool last_removed_by_user() const { return last_removed_by_user_; }
+  int remove_count() const { return remove_count_; }
+
+ private:
+  std::string last_removed_id_;
+  bool last_removed_by_user_;
+  int remove_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
 
-}  // namespace
+}
 
 @implementation MCNotificationController (TestingInterface)
 - (NSButton*)closeButton {
@@ -106,14 +125,16 @@ TEST_F(NotificationControllerTest, Close) {
           string16(),
           std::string(),
           NULL));
-  MockChangeObserver observer;
+  MockMessageCenter messageCenter;
 
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
-                                              changeObserver:&observer]);
+                                               messageCenter:&messageCenter]);
   [controller view];
 
-  EXPECT_CALL(observer, OnRemoveNotification("an_id", true));
+  EXPECT_TRUE(1, messageCenter.remove_count());
+  EXPECT_EQ("an_id", messageCenter.last_removed_id());
+  EXPECT_TRUE(messageCenter.last_removed_by_user());
 
   [[controller closeButton] performClick:nil];
 }

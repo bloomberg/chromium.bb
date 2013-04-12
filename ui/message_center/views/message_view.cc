@@ -13,9 +13,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
@@ -185,7 +185,7 @@ gfx::Insets ShadowBorder::GetInsets() const {
 class MenuModel : public ui::SimpleMenuModel,
                   public ui::SimpleMenuModel::Delegate {
  public:
-  MenuModel(message_center::NotificationChangeObserver* observer,
+  MenuModel(message_center::MessageCenter* message_center,
             const std::string& notification_id,
             const string16& display_source,
             const std::string& extension_id);
@@ -201,18 +201,18 @@ class MenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
-  message_center::NotificationChangeObserver* observer_;  // Weak reference.
+  message_center::MessageCenter* message_center_;  // Weak reference.
   std::string notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuModel);
 };
 
-MenuModel::MenuModel(message_center::NotificationChangeObserver* observer,
+MenuModel::MenuModel(message_center::MessageCenter* message_center,
                      const std::string& notification_id,
                      const string16& display_source,
                      const std::string& extension_id)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      observer_(observer),
+      message_center_(message_center),
       notification_id_(notification_id) {
   // Add 'disable notifications' menu item.
   if (!extension_id.empty() && !display_source.empty()) {
@@ -254,16 +254,16 @@ bool MenuModel::GetAcceleratorForCommandId(int command_id,
 void MenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case kToggleExtensionCommand:
-      observer_->OnDisableNotificationsByExtension(notification_id_);
+      message_center_->DisableNotificationsByExtension(notification_id_);
       break;
     case kTogglePermissionCommand:
-      observer_->OnDisableNotificationsByUrl(notification_id_);
+      message_center_->DisableNotificationsByUrl(notification_id_);
       break;
     case kShowSettingsCommand:
       if (message_center::IsRichNotificationEnabled())
-        observer_->OnShowNotificationSettingsDialog(NULL);
+        message_center_->ShowNotificationSettingsDialog(NULL);
       else
-        observer_->OnShowNotificationSettings(notification_id_);
+        message_center_->ShowNotificationSettings(notification_id_);
       break;
     default:
       NOTREACHED();
@@ -275,9 +275,9 @@ void MenuModel::ExecuteCommand(int command_id, int event_flags) {
 namespace message_center {
 
 MessageView::MessageView(const Notification& notification,
-                         NotificationChangeObserver* observer,
+                         MessageCenter* message_center,
                          bool expanded)
-    : observer_(observer),
+    : message_center_(message_center),
       notification_id_(notification.id()),
       display_source_(notification.display_source()),
       extension_id_(notification.extension_id()),
@@ -322,13 +322,13 @@ bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
     ShowMenu(event.location());
     return true;
   }
-  observer_->OnClicked(notification_id_);
+  message_center_->ClickOnNotification(notification_id_);
   return true;
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    observer_->OnClicked(notification_id_);
+    message_center_->ClickOnNotification(notification_id_);
     event->SetHandled();
     return;
   }
@@ -355,15 +355,15 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   if (sender == close_button()) {
-    observer_->OnRemoveNotification(notification_id_, true);  // By user.
+    message_center_->RemoveNotification(notification_id_, true);  // By user.
   } else if (sender == expand_button()) {
     is_expanded_ = true;
-    observer_->OnExpanded(notification_id_);
+    message_center_->ExpandNotification(notification_id_);
   }
 }
 
 void MessageView::ShowMenu(gfx::Point screen_location) {
-  MenuModel menu_model(observer_, notification_id_,
+  MenuModel menu_model(message_center_, notification_id_,
                        display_source_, extension_id_);
   if (menu_model.GetItemCount() == 0)
     return;
@@ -380,7 +380,7 @@ void MessageView::ShowMenu(gfx::Point screen_location) {
 }
 
 void MessageView::OnSlideOut() {
-  observer_->OnRemoveNotification(notification_id_, true);  // By user.
+  message_center_->RemoveNotification(notification_id_, true);  // By user.
 }
 
 }  // namespace message_center

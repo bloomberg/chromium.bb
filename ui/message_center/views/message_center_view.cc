@@ -15,9 +15,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/background.h"
@@ -59,7 +59,7 @@ const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 class PoorMessageCenterButtonBar : public MessageCenterButtonBar,
                                    public views::ButtonListener {
  public:
-  explicit PoorMessageCenterButtonBar(NotificationChangeObserver* observer);
+  explicit PoorMessageCenterButtonBar(MessageCenter* message_center);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -70,8 +70,8 @@ class PoorMessageCenterButtonBar : public MessageCenterButtonBar,
 };
 
 PoorMessageCenterButtonBar::PoorMessageCenterButtonBar(
-    NotificationChangeObserver* observer)
-    : MessageCenterButtonBar(observer) {
+    MessageCenter* message_center)
+    : MessageCenterButtonBar(message_center) {
   set_background(views::Background::CreateBackgroundPainter(
       true,
       views::Painter::CreateVerticalGradient(kBackgroundLightColor,
@@ -103,7 +103,7 @@ PoorMessageCenterButtonBar::PoorMessageCenterButtonBar(
 void PoorMessageCenterButtonBar::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender == close_all_button())
-    observer()->OnRemoveAllNotifications(true);  // Action by user.
+    message_center()->RemoveAllNotifications(true);  // Action by user.
 }
 
 // NotificationCenterButton ////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ void NotificationCenterButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 class RichMessageCenterButtonBar : public MessageCenterButtonBar,
                                    public views::ButtonListener {
  public:
-  explicit RichMessageCenterButtonBar(NotificationChangeObserver* observer);
+  explicit RichMessageCenterButtonBar(MessageCenter* message_center);
 
  private:
   // Overridden from views::View:
@@ -178,8 +178,8 @@ class RichMessageCenterButtonBar : public MessageCenterButtonBar,
 };
 
 RichMessageCenterButtonBar::RichMessageCenterButtonBar(
-    NotificationChangeObserver* observer)
-  : MessageCenterButtonBar(observer) {
+    MessageCenter* message_center)
+  : MessageCenterButtonBar(message_center) {
   set_background(views::Background::CreateSolidBackground(
       kMessageCenterBackgroundColor));
   set_border(views::Border::CreateSolidSidedBorder(
@@ -230,9 +230,9 @@ void RichMessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {
 void RichMessageCenterButtonBar::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender == close_all_button())
-    observer()->OnRemoveAllNotifications(true);  // Action by user.
+    message_center()->RemoveAllNotifications(true);  // Action by user.
   else if (sender == settings_button_)
-    observer()->OnShowNotificationSettingsDialog(
+    message_center()->ShowNotificationSettingsDialog(
         GetWidget()->GetNativeView());
   else
     NOTREACHED();
@@ -341,9 +341,8 @@ MessageListView::MessageListView() {
 
 // MessageCenterButtonBar //////////////////////////////////////////////////////
 
-MessageCenterButtonBar::MessageCenterButtonBar(
-    NotificationChangeObserver* observer)
-    : observer_(observer),
+MessageCenterButtonBar::MessageCenterButtonBar(MessageCenter* message_center)
+    : message_center_(message_center),
       close_all_button_(NULL) {
 }
 
@@ -357,18 +356,18 @@ void MessageCenterButtonBar::SetCloseAllVisible(bool visible) {
 
 // MessageCenterView ///////////////////////////////////////////////////////////
 
-MessageCenterView::MessageCenterView(NotificationChangeObserver* observer,
+MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      int max_height)
-    : observer_(observer) {
+    : message_center_(message_center) {
   int between_child = IsRichNotificationEnabled() ? 0 : 1;
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
 
 
   if (IsRichNotificationEnabled())
-    button_bar_ = new RichMessageCenterButtonBar(observer);
+    button_bar_ = new RichMessageCenterButtonBar(message_center);
   else
-    button_bar_ = new PoorMessageCenterButtonBar(observer);
+    button_bar_ = new PoorMessageCenterButtonBar(message_center);
 
   const int button_height = button_bar_->GetPreferredSize().height();
   scroller_ = new BoundedScrollView(kMinHeight - button_height,
@@ -450,7 +449,8 @@ void MessageCenterView::RemoveAllNotifications() {
 void MessageCenterView::AddNotification(const Notification& notification) {
   // NotificationViews are expanded by default here until
   // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
-  MessageView* view = NotificationView::Create(notification, observer_, true);
+  MessageView* view = NotificationView::Create(
+      notification, message_center_, true);
   view->set_scroller(scroller_);
   message_views_[notification.id()] = view;
   message_list_view_->AddChildView(view);

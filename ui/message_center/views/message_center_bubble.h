@@ -6,7 +6,6 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_BUBBLE_H_
 
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/views/message_bubble_base.h"
 
 namespace message_center {

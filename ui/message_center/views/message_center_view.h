@@ -16,9 +16,9 @@ class Button;
 
 namespace message_center {
 
+class MessageCenter;
 class MessageCenterBubble;
 class MessageView;
-class NotificationChangeObserver;
 
 // MessageCenterButtonBar //////////////////////////////////////////////////////
 
@@ -26,20 +26,20 @@ class NotificationChangeObserver;
 // otherwise please refrain from using it :-).
 class MessageCenterButtonBar : public views::View {
  public:
-  explicit MessageCenterButtonBar(NotificationChangeObserver* observer);
+  explicit MessageCenterButtonBar(MessageCenter* message_center);
   virtual ~MessageCenterButtonBar();
 
   void SetCloseAllVisible(bool visible);
 
  protected:
-  NotificationChangeObserver* observer() { return observer_; }
+  MessageCenter* message_center() { return message_center_; }
   views::Button* close_all_button() { return close_all_button_; }
   void set_close_all_button(views::Button* button) {
     close_all_button_ = button;
   }
 
  private:
-  NotificationChangeObserver* observer_;  // Weak reference.
+  MessageCenter* message_center_;  // Weak reference.
   views::Button* close_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterButtonBar);
@@ -49,7 +49,7 @@ class MessageCenterButtonBar : public views::View {
 
 class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View {
  public:
-  MessageCenterView(NotificationChangeObserver* observer, int max_height);
+  MessageCenterView(MessageCenter* message_center, int max_height);
   virtual ~MessageCenterView();
 
   void SetNotifications(const NotificationList::Notifications& notifications);
@@ -67,7 +67,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View {
   void RemoveAllNotifications();
   void AddNotification(const Notification& notification);
 
-  NotificationChangeObserver* observer_;  // Weak reference.
+  MessageCenter* message_center_;  // Weak reference.
   std::map<std::string,MessageView*> message_views_;
   views::ScrollView* scroller_;
   views::View* message_list_view_;

@@ -12,11 +12,11 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_simple_view.h"
@@ -303,14 +303,14 @@ namespace message_center {
 
 // static
 MessageView* NotificationView::Create(const Notification& notification,
-                                      NotificationChangeObserver* observer,
+                                      MessageCenter* message_center,
                                       bool expanded) {
   // Use MessageSimpleView for simple notifications unless rich style
   // notifications are enabled. This preserves the appearance of notifications
   // created by existing code that uses webkitNotifications.
   if (!IsRichNotificationEnabled() &&
       notification.type() == NOTIFICATION_TYPE_SIMPLE)
-    return new MessageSimpleView(notification, observer);
+    return new MessageSimpleView(notification, message_center);
 
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
@@ -330,13 +330,13 @@ MessageView* NotificationView::Create(const Notification& notification,
   }
 
   // Currently all roads lead to the generic NotificationView.
-  return new NotificationView(notification, observer, expanded);
+  return new NotificationView(notification, message_center, expanded);
 }
 
 NotificationView::NotificationView(const Notification& notification,
-                                   NotificationChangeObserver* observer,
+                                   MessageCenter* message_center,
                                    bool expanded)
-    : MessageView(notification, observer, expanded) {
+    : MessageView(notification, message_center, expanded) {
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
   background_view_->set_background(MakeBackground());
@@ -503,7 +503,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      observer()->OnButtonClicked(notification_id(), i);
+      message_center()->ClickOnNotificationButton(notification_id(), i);
       return;
     }
   }

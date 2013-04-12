@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
 
   {
     ResultCatcher catcher;
-    g_browser_process->message_center()->SendRemoveNotification(
+    g_browser_process->message_center()->RemoveNotification(
         extension->id() + "-FOO",
         false);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
 
   {
     ResultCatcher catcher;
-    g_browser_process->message_center()->SendRemoveNotification(
+    g_browser_process->message_center()->RemoveNotification(
         extension->id() + "-BAR",
         true);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

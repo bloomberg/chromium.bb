@@ -13,7 +13,7 @@
 namespace message_center {
 
 class BoundedLabel;
-class NotificationChangeObserver;
+class MessageCenter;
 
 // View that displays all current types of notification (web, basic, image, and
 // list). Future notification types may be handled by other classes, in which
@@ -26,7 +26,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   // may be instances of other classes, with the class depending on the
   // notification type.
   static MessageView* Create(const Notification& notification,
-                             NotificationChangeObserver* observer,
+                             MessageCenter* message_center,
                              bool expanded);
 
   virtual ~NotificationView();
@@ -42,7 +42,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
 
  protected:
   NotificationView(const Notification& notification,
-                   NotificationChangeObserver* observer,
+                   MessageCenter* message_center,
                    bool expanded);
 
  private:

@@ -10,8 +10,8 @@
 #import "base/memory/scoped_nsobject.h"
 
 namespace message_center {
+class MessageCenter;
 class Notification;
-class NotificationChangeObserver;
 }
 
 @class MCNotificationController;
@@ -26,7 +26,7 @@ class NotificationChangeObserver;
 
 // Designated initializer.
 - (id)initWithNotification:(const message_center::Notification*)notification
-    changeObserver:(message_center::NotificationChangeObserver*)observer;
+    messageCenter:(message_center::MessageCenter*)messageCenter;
 
 // Accessor for the notification.
 - (const message_center::Notification*)notification;

@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 
 class PopupControllerTest : public ui::CocoaTest {
 };
@@ -28,7 +27,7 @@ TEST_F(PopupControllerTest, Creation) {
 
   scoped_nsobject<MCPopupController> controller(
       [[MCPopupController alloc] initWithNotification:notification.get()
-                                       changeObserver:NULL]);
+                                        messageCenter:NULL]);
 
   EXPECT_TRUE([controller window]);
   EXPECT_EQ(notification.get(), [controller notification]);

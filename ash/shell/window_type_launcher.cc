@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"

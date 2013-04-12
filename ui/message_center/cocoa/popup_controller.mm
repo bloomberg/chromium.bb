@@ -18,7 +18,7 @@ enum {
 @implementation MCPopupController
 
 - (id)initWithNotification:(const message_center::Notification*)notification
-    changeObserver:(message_center::NotificationChangeObserver*)observer {
+    messageCenter:(message_center::MessageCenter*)messageCenter {
   scoped_nsobject<NSWindow> window(
       [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                   styleMask:NSBorderlessWindowMask
@@ -27,7 +27,7 @@ enum {
   if ((self = [super initWithWindow:window])) {
     notificationController_.reset(
         [[MCNotificationController alloc] initWithNotification:notification
-                                                changeObserver:observer]);
+                                                 messageCenter:messageCenter]);
     [window setReleasedWhenClosed:NO];
 
     [window setLevel:NSFloatingWindowLevel];

@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
@@ -22,7 +22,7 @@ namespace message_center {
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
  public:
-  explicit PopupBubbleContentsView(NotificationChangeObserver* observer);
+  explicit PopupBubbleContentsView(MessageCenter* message_center);
 
   void Update(const NotificationList::PopupNotifications& popup_notifications);
 
@@ -31,15 +31,15 @@ class PopupBubbleContentsView : public views::View {
   }
 
  private:
-  NotificationChangeObserver* observer_; // Weak reference.
+  MessageCenter* message_center_; // Weak reference.
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
 PopupBubbleContentsView::PopupBubbleContentsView(
-    NotificationChangeObserver* observer)
-    : observer_(observer) {
+    MessageCenter* message_center)
+    : message_center_(message_center) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
   content_ = new views::View;
@@ -64,7 +64,8 @@ void PopupBubbleContentsView::Update(
     // hasn't been tested yet with changing subview sizes, and such changes
     // could come if those subviews were initially collapsed and allowed to be
     // expanded by users. TODO(dharcourt): Fix.
-    content_->AddChildView(NotificationView::Create(*(*iter), observer_, true));
+    content_->AddChildView(
+        NotificationView::Create(*(*iter), message_center_, true));
   }
   content_->SizeToPreferredSize();
   content_->InvalidateLayout();
@@ -158,7 +159,7 @@ void MessagePopupBubble::OnBubbleViewDestroyed() {
 
 void MessagePopupBubble::UpdateBubbleView() {
   NotificationList::PopupNotifications popups =
-      message_center()->notification_list()->GetPopupNotifications();
+      message_center()->GetPopupNotifications();
 
   if (popups.size() == 0) {
     if (bubble_view())
@@ -214,7 +215,7 @@ void MessagePopupBubble::OnMouseExitedView() {
 }
 
 void MessagePopupBubble::OnAutoClose(const std::string& id) {
-  message_center()->notification_list()->MarkSinglePopupAsShown(id, false);
+  message_center()->MarkSinglePopupAsShown(id, false);
   DeleteTimer(id);
   UpdateBubbleView();
 }

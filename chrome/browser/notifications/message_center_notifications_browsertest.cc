@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
-  message_center()->OnButtonClicked("n", 1);
+  message_center()->ClickOnNotificationButton("n", 1);
   // Verify that delegate accumulated correct log of events.
   EXPECT_EQ("Display_ButtonClick_1_", delegate->log());
   delegate->Release();

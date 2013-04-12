@@ -10,8 +10,8 @@
 #import "base/memory/scoped_nsobject.h"
 
 namespace message_center {
+class MessageCenter;
 class Notification;
-class NotificationChangeObserver;
 }
 
 @class HoverImageButton;
@@ -24,8 +24,8 @@ class NotificationChangeObserver;
   // The message object. Weak.
   const message_center::Notification* notification_;
 
-  // Observer of the notification, where action messages are forwarded. Weak.
-  message_center::NotificationChangeObserver* observer_;
+  // Controller of the notifications, where action messages are forwarded. Weak.
+  message_center::MessageCenter* messageCenter_;
 
   // The button that invokes |-close:|, in the upper-right corner.
   scoped_nsobject<HoverImageButton> closeButton_;
@@ -42,7 +42,7 @@ class NotificationChangeObserver;
 
 // Creates a new controller for a given notification.
 - (id)initWithNotification:(const message_center::Notification*)notification
-    changeObserver:(message_center::NotificationChangeObserver*)observer;
+    messageCenter:(message_center::MessageCenter*)messageCenter;
 
 // Action for clicking on the notification's |closeButton_|.
 - (void)close:(id)sender;

@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 
@@ -19,18 +18,19 @@ namespace base {
 class DictionaryValue;
 }
 
-// Class for managing the NotificationList. The client (e.g. Chrome) calls
+// Interface to manage the NotificationList. The client (e.g. Chrome) calls
 // [Add|Remove|Update]Notification to create and update notifications in the
-// list. It can also implement Delegate to receive callbacks when a
-// notification is removed (closed), or clicked on.
-// If an Observer is provided, it will be informed when the notification list
-// changes, and is expected to handle creating, showing, and hiding of any
-// bubbles.
+// list. It also sends those changes to its observers when a notification
+// is shown, closed, or clicked on.
+// It can also implement Delegate to ask platform-dependent features like
+// disabling extensions or opening settings.
 
 namespace message_center {
 
-class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationChangeObserver,
-                                            public NotificationList::Delegate {
+class MessageCenterObserver;
+class NotificationList;
+
+class MESSAGE_CENTER_EXPORT MessageCenter {
  public:
   // Creates the global message center object.
   static void Initialize();
@@ -41,24 +41,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationChangeObserver,
   // Destroys the global message_center object.
   static void Shutdown();
 
-  // Class that hosts the message center.
-  class MESSAGE_CENTER_EXPORT Observer {
-   public:
-    // Called when the notification list has changed. |new_notification| will
-    // be true if a notification was added or updated.
-    virtual void OnMessageCenterChanged(bool new_notification) = 0;
-   protected:
-    virtual ~Observer() {}
-  };
-
   class MESSAGE_CENTER_EXPORT Delegate {
    public:
     virtual ~Delegate();
-
-    // Called when the notification associated with |notification_id| is
-    // removed (i.e. closed by the user).
-    virtual void NotificationRemoved(const std::string& notification_id,
-                                     bool by_user) = 0;
 
     // Request to disable the extension associated with |notification_id|.
     virtual void DisableExtension(const std::string& notification_id) = 0;
@@ -74,37 +59,29 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationChangeObserver,
     // Request to show the notification settings dialog. |context| is necessary
     // to create a new window.
     virtual void ShowSettingsDialog(gfx::NativeView context) = 0;
-
-    // Called when the notification body is clicked on.
-    virtual void OnClicked(const std::string& notification_id) = 0;
-
-    // Called when a button in a notification is clicked. |button_index|
-    // indicates which button was clicked, zero-indexed (button one is 0,
-    // button two is 1).
-    //
-    // TODO(miket): consider providing default implementations for the pure
-    // virtuals above, to avoid changing so many files in disparate parts of
-    // the codebase each time we enhance this interface.
-    virtual void OnButtonClicked(const std::string& id, int button_index) = 0;
   };
 
   // Called to set the delegate.  Generally called only once, except in tests.
   // Changing the delegate does not affect notifications in its
   // NotificationList.
-  void SetDelegate(Delegate* delegate);
+  virtual void SetDelegate(Delegate* delegate) = 0;
 
   // Management of the observer list.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(MessageCenterObserver* observer) = 0;
+  virtual void RemoveObserver(MessageCenterObserver* observer) = 0;
 
-  // Informs the notification list whether the message center is visible.
-  // This affects whether or not a message has been "read".
-  void SetMessageCenterVisible(bool visible);
+  // Queries of current notification list status.
+  virtual size_t NotificationCount() const = 0;
+  virtual size_t UnreadNotificationCount() const = 0;
+  virtual bool HasPopupNotifications() const = 0;
+  virtual bool HasNotification(const std::string& id) = 0;
+  virtual bool IsQuietMode() const = 0;
 
-  // Accessors to notification_list_
-  size_t NotificationCount() const;
-  size_t UnreadNotificationCount() const;
-  bool HasPopupNotifications() const;
+  // Getters of the current notifications.
+  virtual const NotificationList::Notifications& GetNotifications() = 0;
+  virtual NotificationList::PopupNotifications GetPopupNotifications() = 0;
+
+  // Basic operations of notification: add/remove/update.
 
   // Adds a new notification. |id| is a unique identifier, used to update or
   // remove notifications. |title| and |meesage| describe the notification text.
@@ -114,73 +91,66 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationChangeObserver,
   // from the extension. Otherwise if |display_source| is provided, a menu item
   // showing the source and allowing notifications from that source to be
   // disabled will be shown. All actual disabling is handled by the Delegate.
-  void AddNotification(NotificationType type,
-                       const std::string& id,
-                       const string16& title,
-                       const string16& message,
-                       const string16& display_source,
-                       const std::string& extension_id,
-                       const base::DictionaryValue* optional_fields);
+  virtual void AddNotification(
+      NotificationType type,
+      const std::string& id,
+      const string16& title,
+      const string16& message,
+      const string16& display_source,
+      const std::string& extension_id,
+      const base::DictionaryValue* optional_fields) = 0;
 
   // Updates an existing notification with id = old_id and set its id to new_id.
   // |optional_fields| can be NULL in case of no updates on those fields.
-  void UpdateNotification(const std::string& old_id,
-                          const std::string& new_id,
-                          const string16& title,
-                          const string16& message,
-                          const base::DictionaryValue* optional_fields);
+  virtual void UpdateNotification(
+      const std::string& old_id,
+      const std::string& new_id,
+      const string16& title,
+      const string16& message,
+      const base::DictionaryValue* optional_fields) = 0;
 
   // Removes an existing notification.
-  void RemoveNotification(const std::string& id);
+  virtual void RemoveNotification(const std::string& id, bool by_user) = 0;
+  virtual void RemoveAllNotifications(bool by_user) = 0;
 
-  void SetNotificationIcon(const std::string& notification_id,
-                           const gfx::Image& image);
+  // Sets the icon image. Icon appears at the top-left of the notification.
+  virtual void SetNotificationIcon(const std::string& notification_id,
+                                   const gfx::Image& image) = 0;
 
-  void SetNotificationImage(const std::string& notification_id,
-                            const gfx::Image& image);
+  // Sets the large image for the notifications of type == TYPE_IMAGE. Specified
+  // image will appear below of the notification.
+  virtual void SetNotificationImage(const std::string& notification_id,
+                                    const gfx::Image& image) = 0;
 
-  void SetNotificationButtonIcon(const std::string& notification_id,
-                                 int button_index,
-                                 const gfx::Image& image);
+  // Sets the image for the icon of the specific aaction button.
+  virtual void SetNotificationButtonIcon(const std::string& notification_id,
+                                         int button_index,
+                                         const gfx::Image& image) = 0;
 
-  NotificationList* notification_list() { return notification_list_.get(); }
-  bool quiet_mode() const { return notification_list_->quiet_mode(); }
-
-  // Overridden from NotificationChangeObserver:
-  virtual void OnRemoveNotification(const std::string& id, bool by_user)
-      OVERRIDE;
-  virtual void OnRemoveAllNotifications(bool by_user) OVERRIDE;
-  virtual void OnDisableNotificationsByExtension(const std::string& id)
-      OVERRIDE;
-  virtual void OnDisableNotificationsByUrl(const std::string& id) OVERRIDE;
-  virtual void OnShowNotificationSettings(const std::string& id) OVERRIDE;
-  virtual void OnShowNotificationSettingsDialog(gfx::NativeView context)
-      OVERRIDE;
-  virtual void OnExpanded(const std::string& id) OVERRIDE;
-  virtual void OnClicked(const std::string& id) OVERRIDE;
-  virtual void OnButtonClicked(const std::string& id, int button_index)
-      OVERRIDE;
-
-  // Overridden from NotificationList::Delegate:
-  virtual void SendRemoveNotification(const std::string& id,
-                                      bool by_user) OVERRIDE;
-  virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE;
+  // Operations happening especially from GUIs: click, expand, disable,
+  // and settings.
+  // TODO(mukai): settings can be in another class?
+  virtual void DisableNotificationsByExtension(const std::string& id) = 0;
+  virtual void DisableNotificationsByUrl(const std::string& id) = 0;
+  virtual void ShowNotificationSettings(const std::string& id) = 0;
+  virtual void ShowNotificationSettingsDialog(gfx::NativeView context) = 0;
+  virtual void ExpandNotification(const std::string& id) = 0;
+  virtual void ClickOnNotification(const std::string& id) = 0;
+  virtual void ClickOnNotificationButton(const std::string& id,
+                                         int button_index) = 0;
+  virtual void MarkSinglePopupAsShown(const std::string& id,
+                                      bool mark_notification_as_read) = 0;
+  virtual void SetQuietMode(bool in_quiet_mode) = 0;
+  virtual void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) = 0;
+  // Informs the notification list whether the message center is visible.
+  // This affects whether or not a message has been "read".
+  virtual void SetMessageCenterVisible(bool visible) = 0;
 
  protected:
   MessageCenter();
   virtual ~MessageCenter();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest,
-                           ManyMessageCenterNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
-  // Calls OnMessageCenterChanged on each observer.
-  void NotifyMessageCenterChanged(bool new_notification);
-
-  scoped_ptr<NotificationList> notification_list_;
-  ObserverList<Observer> observer_list_;
-  Delegate* delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(MessageCenter);
 };
 

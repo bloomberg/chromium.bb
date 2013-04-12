@@ -9,14 +9,14 @@
 
 namespace message_center {
 
+class MessageCenter;
 class Notification;
-class NotificationChangeObserver;
 
 // A simple view for a notification entry (icon + message + buttons).
 class MessageSimpleView : public MessageView {
  public:
   MessageSimpleView(const Notification& notification,
-                    NotificationChangeObserver* observer);
+                    MessageCenter* message_center);
   virtual ~MessageSimpleView();
 
   // Overridden from MessageView:

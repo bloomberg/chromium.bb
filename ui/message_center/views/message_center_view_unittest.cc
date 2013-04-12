@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_center_view.h"
@@ -25,23 +25,6 @@ enum CallType {
   LAYOUT
 };
 
-/* Dummy NotificationChangeObserver *******************************************/
-
-class DummyObserver : public NotificationChangeObserver {
- public:
-  DummyObserver();
-  virtual ~DummyObserver();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyObserver);
-};
-
-DummyObserver::DummyObserver() {
-}
-
-DummyObserver::~DummyObserver() {
-}
-
 /* Instrumented/Mock NotificationView subclass ********************************/
 
 class MockNotificationView : public NotificationView {
@@ -52,7 +35,7 @@ class MockNotificationView : public NotificationView {
   };
 
   explicit MockNotificationView(const Notification& notification,
-                                NotificationChangeObserver* observer,
+                                MessageCenter* message_center,
                                 Test* test,
                                 int view_id);
   virtual ~MockNotificationView();
@@ -73,10 +56,10 @@ class MockNotificationView : public NotificationView {
 };
 
 MockNotificationView::MockNotificationView(const Notification& notification,
-                                           NotificationChangeObserver* observer,
+                                           MessageCenter* message_center,
                                            Test* test,
                                            int view_id)
-    : NotificationView(notification, observer, true),
+    : NotificationView(notification, message_center, true),
       test_(test),
       id_(view_id) {
 }
@@ -129,7 +112,7 @@ class MessageCenterViewTest : public testing::Test,
 
 
   scoped_ptr<MessageCenterView> message_center_view_;
-  DummyObserver observer;
+  FakeMessageCenter message_center_;
   std::map<CallType,int> callCounts_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterViewTest);
@@ -157,14 +140,14 @@ void MessageCenterViewTest::SetUp() {
   notifications.insert(&notification);
 
   // Then create a new MessageCenterView with that single notification.
-  message_center_view_.reset(new MessageCenterView(&observer, 100));
+  message_center_view_.reset(new MessageCenterView(&message_center_, 100));
   message_center_view_->SetNotifications(notifications);
 
   // Remove and delete the NotificationView now owned by the MessageCenterView's
   // MessageListView and replace it with an instrumented MockNotificationView
   // that will become owned by the MessageListView.
   MockNotificationView* mock;
-  mock = new MockNotificationView(notification, &observer, this, 42);
+  mock = new MockNotificationView(notification, &message_center_, this, 42);
   message_center_view_->message_views_[notification.id()] = mock;
   message_center_view_->message_list_view_->RemoveAllChildViews(true);
   message_center_view_->message_list_view_->AddChildView(mock);

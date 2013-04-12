@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 class MessageCenterSettingsController;
@@ -23,7 +24,8 @@ class Profile;
 // of notifications to MessageCenter, doing necessary conversions.
 class MessageCenterNotificationManager
     : public NotificationUIManagerImpl,
-      public message_center::MessageCenter::Delegate {
+      public message_center::MessageCenter::Delegate,
+      public message_center::MessageCenterObserver {
  public:
   explicit MessageCenterNotificationManager(
       message_center::MessageCenter* message_center);
@@ -43,16 +45,20 @@ class MessageCenterNotificationManager
                                   Profile* profile) OVERRIDE;
 
   // MessageCenter::Delegate
-  virtual void NotificationRemoved(const std::string& notification_id,
-                                   bool by_user) OVERRIDE;
   virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(
       const std::string& notification_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
   virtual void ShowSettingsDialog(gfx::NativeView context) OVERRIDE;
-  virtual void OnClicked(const std::string& notification_id) OVERRIDE;
-  virtual void OnButtonClicked(const std::string& notification_id,
-                               int button_index) OVERRIDE;
+
+  // MessageCenter::Observer
+  virtual void OnNotificationRemoved(const std::string& notification_id,
+                                     bool by_user) OVERRIDE;
+  virtual void OnNotificationClicked(
+      const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationButtonClicked(
+      const std::string& notification_id,
+      int button_index) OVERRIDE;
 
  private:
   typedef base::Callback<void(const gfx::Image&)> SetImageCallback;

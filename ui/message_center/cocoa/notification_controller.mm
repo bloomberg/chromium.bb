@@ -10,9 +10,9 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_change_observer.h"
 
 namespace {
 
@@ -50,10 +50,10 @@ const int kTextTopPaddingAdjustment = -6;
 @implementation MCNotificationController
 
 - (id)initWithNotification:(const message_center::Notification*)notification
-    changeObserver:(message_center::NotificationChangeObserver*)observer {
+    messageCenter:(message_center::MessageCenter*)messageCenter {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     notification_ = notification;
-    observer_ = observer;
+    messageCenter_ = messageCenter;
   }
   return self;
 }
@@ -96,7 +96,7 @@ const int kTextTopPaddingAdjustment = -6;
 }
 
 - (void)close:(id)sender {
-  observer_->OnRemoveNotification(notification_->id(), /*by_user=*/true);
+  messageCenter_->RemoveNotification(notification_->id(), /*by_user=*/true);
 }
 
 - (const message_center::Notification*)notification {

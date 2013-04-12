@@ -7,12 +7,13 @@
 
 #include "base/observer_list.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 namespace message_center {
 
+class MessageCenter;
 class MessageBubbleBase;
 class MessagePopupBubble;
 class QuietModeBubble;
@@ -25,7 +26,7 @@ MessageCenterTrayDelegate* CreateMessageCenterTray();
 // bubbles. Tells the MessageCenterTrayHost when the tray is changed, as well
 // as when bubbles are shown and hidden.
 class MESSAGE_CENTER_EXPORT MessageCenterTray
-    : public message_center::MessageCenter::Observer,
+    : public MessageCenterObserver,
       public ui::SimpleMenuModel::Delegate {
  public:
   MessageCenterTray(MessageCenterTrayDelegate* delegate,
@@ -60,8 +61,17 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   }
   message_center::MessageCenter* message_center() { return message_center_; }
 
-  // Overridden from message_center::MessageCenter::Observer:
-  virtual void OnMessageCenterChanged(bool new_notification) OVERRIDE;
+  // Overridden from MessageCenterObserver:
+  virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationRemoved(const std::string& notification_id,
+                                     bool by_user) OVERRIDE;
+  virtual void OnNotificationUpdated(
+      const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationClicked(
+      const std::string& notification_id) OVERRIDE;
+  virtual void OnNotificationButtonClicked(
+      const std::string& notification_id,
+      int button_index) OVERRIDE;
 
   // Overridden from SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -72,6 +82,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
+  void OnMessageCenterChanged(bool new_notification);
   void NotifyMessageCenterTrayChanged();
 
   // |message_center_| is a weak pointer that must live longer than

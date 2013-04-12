@@ -30,11 +30,22 @@ class ScreenshotTakerTest : public AshTestBase,
                             public ScreenshotTakerObserver {
  public:
   ScreenshotTakerTest()
-      : local_state_(TestingBrowserProcess::GetGlobal()),
-        ui_thread_(content::BrowserThread::UI, message_loop()),
+      : ui_thread_(content::BrowserThread::UI, message_loop()),
         running_(false),
         screenshot_complete_(false),
         screenshot_result_(ScreenshotTakerObserver::SCREENSHOT_SUCCESS) {
+  }
+
+  virtual void SetUp() {
+    AshTestBase::SetUp();
+    local_state_.reset(
+        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
+  }
+
+  virtual void TearDown() {
+    RunAllPendingInMessageLoop();
+    local_state_.reset();
+    AshTestBase::TearDown();
   }
 
   // Overridden from ScreenshotTakerObserver
@@ -73,7 +84,7 @@ class ScreenshotTakerTest : public AshTestBase,
     EXPECT_TRUE(screenshot_complete_);
   }
 
-  ScopedTestingLocalState local_state_;
+  scoped_ptr<ScopedTestingLocalState> local_state_;
   content::TestBrowserThread ui_thread_;
   bool running_;
   bool screenshot_complete_;

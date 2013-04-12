@@ -53,6 +53,7 @@
 #if defined(ENABLE_MESSAGE_CENTER)
 #include "base/command_line.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_switches.h"
 #endif
 
@@ -76,7 +77,7 @@ enum InfobarAction {
 
 #if ENABLE_MESSAGE_CENTER_TESTING
 class MessageCenterChangeObserver
-    : public message_center::MessageCenter::Observer {
+    : public message_center::MessageCenterObserver {
  public:
   MessageCenterChangeObserver()
       : notification_received_(false) {
@@ -96,7 +97,20 @@ class MessageCenterChangeObserver
     return notification_received_;
   }
 
-  virtual void OnMessageCenterChanged(bool new_notification) OVERRIDE {
+  // overridden from message_center::MessageCenterObserver:
+  virtual void OnNotificationAdded(
+      const std::string& notification_id) OVERRIDE {
+    OnMessageCenterChanged();
+  }
+  virtual void OnNotificationRemoved(
+      const std::string& notification_id, bool by_user) {
+    OnMessageCenterChanged();
+  }
+  virtual void OnNotificationUpdated(const std::string& notification_id) {
+    OnMessageCenterChanged();
+  }
+
+  void OnMessageCenterChanged() {
     notification_received_ = true;
     if (message_loop_runner_)
       message_loop_runner_->Quit();
@@ -512,9 +526,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
       browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
-// Disable new testcases on Chrome OS due to failure on creating notification.
-#if !defined(OS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
 #if defined(OS_MACOSX)
   // TODO(kbr): re-enable: http://crbug.com/222296
@@ -532,10 +543,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
   GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
   ASSERT_EQ(1, GetNotificationCount());
 #if ENABLE_MESSAGE_CENTER_TESTING
-  message_center::NotificationList* notification_list =
-      message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
-      notification_list->GetNotifications();
+      message_center::MessageCenter::Get()->GetNotifications();
   EXPECT_EQ(ASCIIToUTF16("My Title"), (*notifications.rbegin())->title());
   EXPECT_EQ(ASCIIToUTF16("My Body"), (*notifications.rbegin())->message());
 #else
@@ -565,13 +574,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
   ASSERT_EQ(1, GetNotificationCount());
 
 #if ENABLE_MESSAGE_CENTER_TESTING
-  message_center::NotificationList* notification_list =
-      message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
-      notification_list->GetNotifications();
-  message_center::MessageCenter::Get()->SendRemoveNotification(
-    (*notifications.rbegin())->id(),
-    true);  // by_user
+      message_center::MessageCenter::Get()->GetNotifications();
+  message_center::MessageCenter::Get()->RemoveNotification(
+      (*notifications.rbegin())->id(),
+      true);  // by_user
 #else
   const std::deque<Balloon*>& balloons = GetActiveBalloons();
   EXPECT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
@@ -759,13 +766,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
 
   EXPECT_EQ(1, GetNotificationCount());
 #if ENABLE_MESSAGE_CENTER_TESTING
-  message_center::NotificationList* notification_list =
-      message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
-      notification_list->GetNotifications();
-  message_center::MessageCenter::Get()->SendRemoveNotification(
-    (*notifications.rbegin())->id(),
-    true);  // by_user
+      message_center::MessageCenter::Get()->GetNotifications();
+  message_center::MessageCenter::Get()->RemoveNotification(
+      (*notifications.rbegin())->id(),
+      true);  // by_user
 #else
   const std::deque<Balloon*>& balloons = GetActiveBalloons();
   ASSERT_TRUE(CloseNotificationAndWait(balloons[0]->notification()));
@@ -955,10 +960,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
 
 #if ENABLE_MESSAGE_CENTER_TESTING
   ASSERT_EQ(1, GetNotificationCount());
-  message_center::NotificationList* notification_list =
-      message_center::MessageCenter::Get()->notification_list();
   message_center::NotificationList::Notifications notifications =
-      notification_list->GetNotifications();
+      message_center::MessageCenter::Get()->GetNotifications();
   EXPECT_EQ(ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
   EXPECT_EQ(ASCIIToUTF16("Body2"), (*notifications.rbegin())->message());
 #else
@@ -972,5 +975,3 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
   EXPECT_EQ(ASCIIToUTF16("Body2"), notification.body());
 #endif
 }
-
-#endif  // !defined(OS_CHROMEOS)

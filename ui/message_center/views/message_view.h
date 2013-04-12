@@ -18,7 +18,7 @@ class ScrollView;
 
 namespace message_center {
 
-class NotificationChangeObserver;
+class MessageCenter;
 
 // Individual notifications constants.
 const int kPaddingBetweenItems = 10;
@@ -31,7 +31,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
   MessageView(const Notification& notification,
-              NotificationChangeObserver* observer,
+              MessageCenter* message_center,
               bool expanded);
   virtual ~MessageView();
 
@@ -59,7 +59,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Overridden from views::SlideOutView:
   virtual void OnSlideOut() OVERRIDE;
 
-  NotificationChangeObserver* observer() { return observer_; }
+  MessageCenter* message_center() { return message_center_; }
   const std::string& notification_id() { return notification_id_; }
   const string16& display_source() const { return display_source_; }
   const std::string& extension_id() const { return extension_id_; }
@@ -69,7 +69,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   const bool is_expanded() { return is_expanded_; }
 
  private:
-  NotificationChangeObserver* observer_;  // Weak reference.
+  MessageCenter* message_center_;  // Weak reference.
   std::string notification_id_;
   string16 display_source_;
   std::string extension_id_;

@@ -38,12 +38,8 @@ bool CompareTimestampSerial::operator()(Notification* n1, Notification* n2) {
 const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
 const size_t NotificationList::kMaxVisiblePopupNotifications = 3;
 
-NotificationList::Delegate::~Delegate() {
-}
-
-NotificationList::NotificationList(Delegate* delegate)
-    : delegate_(delegate),
-      message_center_visible_(false),
+NotificationList::NotificationList()
+    : message_center_visible_(false),
       unread_count_(0),
       quiet_mode_(false) {
 }
@@ -127,37 +123,36 @@ void NotificationList::RemoveAllNotifications() {
   unread_count_ = 0;
 }
 
-void NotificationList::SendRemoveNotificationsBySource(
+NotificationList::Notifications NotificationList::GetNotificationsBySource(
     const std::string& id) {
+  Notifications notifications;
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
-    return;
-  string16 display_source = (*source_iter)->display_source();
+    return notifications;
 
-  for (Notifications::iterator loopiter = notifications_.begin();
-       loopiter != notifications_.end(); ) {
-    Notifications::iterator curiter = loopiter++;
-    if ((*curiter)->display_source() == display_source)
-      // This method is only called when the user is manipulating the admin
-      // UI, so technically the removal is indirect.
-      delegate_->SendRemoveNotification((*curiter)->id(), false);
+  string16 display_source = (*source_iter)->display_source();
+  for (Notifications::iterator iter = notifications_.begin();
+       iter != notifications_.end(); ++iter) {
+    if ((*iter)->display_source() == display_source)
+      notifications.insert(*iter);
   }
+  return notifications;
 }
 
-void NotificationList::SendRemoveNotificationsByExtension(
-    const std::string& id) {
+NotificationList::Notifications NotificationList::GetNotificationsByExtension(
+        const std::string& id) {
+  Notifications notifications;
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
-    return;
+    return notifications;
+
   std::string extension_id = (*source_iter)->extension_id();
-  for (Notifications::iterator loopiter = notifications_.begin();
-       loopiter != notifications_.end(); ) {
-    Notifications::iterator curiter = loopiter++;
-    if ((*curiter)->extension_id() == extension_id)
-      // This method is only called when the user is manipulating the admin
-      // UI, so technically the removal is indirect.
-      delegate_->SendRemoveNotification((*curiter)->id(), false);
+  for (Notifications::iterator iter = notifications_.begin();
+       iter != notifications_.end(); ++iter) {
+    if ((*iter)->extension_id() == extension_id)
+      notifications.insert(*iter);
   }
+  return notifications;
 }
 
 bool NotificationList::SetNotificationIcon(const std::string& notification_id,
@@ -298,7 +293,6 @@ void NotificationList::SetQuietModeInternal(bool quiet_mode) {
     }
     unread_count_ = 0;
   }
-  delegate_->OnQuietModeChanged(quiet_mode);
 }
 
 NotificationList::Notifications::iterator
