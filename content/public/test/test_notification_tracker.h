@@ -45,6 +45,9 @@ class TestNotificationTracker : public NotificationObserver {
   // Clears the list of events.
   void Reset();
 
+  // TODO(jyasskin): Replace calls to Check*AndReset() with
+  // EXPECT_THAT(GetTypesAndReset()).
+  //
   // Given notifications type(sp, returns true if the list of notifications
   // were exactly those listed in the given arg(s), and in the same order.
   //
@@ -60,6 +63,20 @@ class TestNotificationTracker : public NotificationObserver {
   bool Check3AndReset(int type1,
                       int type2,
                       int type3);
+
+  // Returns the types of the received notifications in order.  Usable
+  // with EXPECT_THAT(ElementsAre):
+  //   EXPECT_THAT(tracker.GetTypesAndReset(),
+  //               testing::ElementsAre(content::NOTIFICATION_LOAD_START, ...));
+  std::vector<int> GetTypes() const;
+
+  // Like GetTypes, but also calls Reset() so that the next call will
+  // only check for new notifications.
+  std::vector<int> GetTypesAndReset() {
+    std::vector<int> result = GetTypes();
+    Reset();
+    return result;
+  }
 
   // Returns the number of notifications received since the last reset.
   size_t size() const { return events_.size(); }

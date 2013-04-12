@@ -120,7 +120,7 @@ class SimpleTestJobProtocolHandler
 
 class UserScriptListenerTest : public ExtensionServiceTestBase {
  public:
-  UserScriptListenerTest() {
+  UserScriptListenerTest() : ExtensionServiceTestBase(MessageLoop::TYPE_IO) {
     net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
         "http", "google.com",
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(

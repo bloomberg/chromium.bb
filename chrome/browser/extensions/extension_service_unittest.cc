@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -58,6 +59,7 @@
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -68,12 +70,14 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -85,7 +89,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
@@ -102,6 +108,7 @@
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "webkit/database/database_tracker.h"
@@ -111,6 +118,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#endif
+
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
 using content::BrowserContext;
@@ -409,8 +420,13 @@ class MockProviderVisitor
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.
-ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : loop_(MessageLoop::TYPE_IO),
+ExtensionServiceTestBase::ExtensionServiceTestBase(
+    MessageLoop::Type main_loop_type)
+    : loop_(main_loop_type),
+      local_state_(TestingBrowserProcess::GetGlobal()),
+#if defined(OS_WIN)
+      ole_initializer_(new ui::ScopedOleInitializer()),
+#endif
       service_(NULL),
       management_policy_(NULL),
       expected_extensions_count_(0),
@@ -419,9 +435,13 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
       file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING, &loop_),
-      io_thread_(BrowserThread::IO, &loop_),
+      io_thread_(main_loop_type == MessageLoop::TYPE_IO
+                     ? new content::TestBrowserThread(BrowserThread::IO, &loop_)
+                     : new content::TestBrowserThread(BrowserThread::IO)),
       override_sideload_wipeout_(
           FeatureSwitch::sideload_wipeout(), false) {
+  if (main_loop_type != MessageLoop::TYPE_IO)
+    io_thread_->StartIOThread();
   base::FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
@@ -438,6 +458,8 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
   MessageLoop::current()->RunUntilIdle();
   profile_.reset(NULL);
   MessageLoop::current()->RunUntilIdle();
+
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
@@ -507,6 +529,10 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
+  // Needed in order to look up RenderProcessHosts.
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(
+      new ProfileManagerWithoutInit(temp_dir_.path()));
+
   static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile_.get()))->
       CreateExtensionProcessManager();
@@ -554,6 +580,32 @@ void ExtensionServiceTestBase::SetUp() {
   (new extensions::DefaultLocaleHandler)->Register();
   (new extensions::PluginsHandler)->Register();
   (new extensions::RequirementsHandler)->Register();
+}
+
+template<typename Result>
+static Result PostTaskAndWaitForResult(
+    content::BrowserThread::ID thread,
+    const tracked_objects::Location& from_here,
+    const base::Callback<Result(void)>& task) {
+  struct ResultSaver {
+    static void UpdateResult(base::RunLoop* loop,
+                             Result* saved,
+                             Result from_task) {
+      using std::swap;
+      swap(*saved, from_task);
+      loop->Quit();
+    }
+  };
+
+  Result result;
+  base::RunLoop loop;
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      thread, from_here, task,
+      base::Bind(&ResultSaver::UpdateResult,
+                 base::Unretained(&loop),
+                 base::Unretained(&result)));
+  loop.Run();
+  return result;
 }
 
 class ExtensionServiceTest
@@ -3607,10 +3659,70 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 }
 
+namespace {
+std::vector<uint32> ExtensionMessageTypes(const IPC::TestSink& sink) {
+  std::vector<uint32> message_types;
+  for (size_t i = 0; i < sink.message_count(); ++i) {
+    uint32 type = sink.GetMessageAt(i)->type();
+    if (IPC_MESSAGE_ID_CLASS(type) == ExtensionMsgStart)
+      message_types.push_back(type);
+  }
+  return message_types;
+}
+
+struct ProcessObserver
+    : public content::MockRenderProcessHostFactory::Observer {
+  explicit ProcessObserver(content::MockRenderProcessHostFactory* factory)
+      : Observer(factory) {}
+
+  ~ProcessObserver() {
+    for (size_t i = 0; i < hosts.size(); ++i) {
+      if (destroyed_processes.count(process_ids[i]) == 0)
+        hosts[i]->sink().RemoveFilter(process_messages[i]);
+      delete process_messages[i];
+    }
+  }
+
+  virtual void OnRenderProcessHostCreated(
+      content::MockRenderProcessHost* host) {
+    IPC::TestSink* sink = new IPC::TestSink;
+    hosts.push_back(host);
+    process_ids.push_back(host->GetID());
+    process_messages.push_back(sink);
+    host->sink().AddFilter(sink);
+  }
+  virtual void OnRenderProcessHostDestroyed(
+      content::MockRenderProcessHost* host) {
+    destroyed_processes.insert(host->GetID());
+  }
+
+  std::vector<content::MockRenderProcessHost*> hosts;
+  std::vector<int> process_ids;
+  std::vector<IPC::TestSink*> process_messages;
+  std::set<int> destroyed_processes;
+};
+}  // namespace
+
 // Tests reloading an extension.
 TEST_F(ExtensionServiceTest, ReloadExtension) {
+  ProcessObserver observer(rvh_enabler_.rph_factory());
+
+  content::TestNotificationTracker notifications;
+  notifications.ListenForAll(chrome::NOTIFICATION_EXTENSIONS_READY);
+  notifications.ListenForAll(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED);
+  notifications.ListenForAll(chrome::NOTIFICATION_EXTENSION_LOADED);
+  notifications.ListenForAll(chrome::NOTIFICATION_EXTENSION_UNLOADED);
+  notifications.ListenForAll(content::NOTIFICATION_RENDERER_PROCESS_CLOSING);
+  notifications.ListenForAll(content::NOTIFICATION_RENDERER_PROCESS_CREATED);
+  notifications.ListenForAll(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  notifications.ListenForAll(
+      content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW);
+
   InitializeEmptyExtensionService();
   InitializeExtensionProcessManager();
+  service_->Init();
+  EXPECT_THAT(notifications.GetTypesAndReset(),
+              testing::ElementsAre(chrome::NOTIFICATION_EXTENSIONS_READY));
 
   // Simple extension that should install without error.
   const char* extension_id = "behllobkkfkfnphdnhnkndlbkcpglgmj";
@@ -3622,10 +3734,32 @@ TEST_F(ExtensionServiceTest, ReloadExtension) {
   extensions::UnpackedInstaller::Create(service_)->Load(ext);
   loop_.RunUntilIdle();
 
+  EXPECT_THAT(notifications.GetTypesAndReset(),
+              testing::ElementsAre(chrome::NOTIFICATION_EXTENSION_LOADED));
+  ASSERT_EQ(1u, observer.process_messages.size());
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[0]),
+              testing::ElementsAre(ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID,
+                                   ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID));
+  observer.process_messages[0]->ClearMessages();
+
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 
   service_->ReloadExtension(extension_id);
+
+  EXPECT_THAT(notifications.GetTypesAndReset(),
+              testing::ElementsAre(
+                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                  content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
+                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED));
+
+  ASSERT_EQ(1u, observer.process_messages.size());
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[0]),
+              testing::ElementsAre());
+  observer.process_messages[0]->ClearMessages();
 
   // Extension should be disabled now, waiting to be reloaded.
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -3633,11 +3767,47 @@ TEST_F(ExtensionServiceTest, ReloadExtension) {
   EXPECT_EQ(Extension::DISABLE_RELOAD,
             service_->extension_prefs()->GetDisableReasons(extension_id));
 
-  // Reloading again should not crash.
+  // Reloading again before iterating the MessageLoop should not crash and
+  // shouldn't cause an extra reload.
   service_->ReloadExtension(extension_id);
+  EXPECT_THAT(notifications.GetTypesAndReset(),
+              testing::ElementsAre());
+  ASSERT_EQ(1u, observer.process_messages.size());
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[0]),
+              testing::ElementsAre());
+  observer.process_messages[0]->ClearMessages();
 
   // Finish reloading
   loop_.RunUntilIdle();
+
+  EXPECT_THAT(notifications.GetTypesAndReset(),
+              testing::ElementsAre(
+                  chrome::NOTIFICATION_EXTENSION_LOADED,
+                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                  content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
+                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                  chrome::NOTIFICATION_EXTENSION_LOADED));
+
+  ASSERT_EQ(3u, observer.process_messages.size());
+  EXPECT_THAT(observer.destroyed_processes,
+              testing::ElementsAre(observer.process_ids[0],
+                                   observer.process_ids[1]));
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[0]),
+              testing::ElementsAre());
+  observer.process_messages[0]->ClearMessages();
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[1]),
+              testing::ElementsAre(ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID,
+                                   ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID));
+  observer.process_messages[1]->ClearMessages();
+  EXPECT_THAT(ExtensionMessageTypes(*observer.process_messages[2]),
+              testing::ElementsAre(ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID,
+                                   ExtensionMsg_Loaded::ID,
+                                   ExtensionMsg_ActivateExtension::ID));
+  observer.process_messages[2]->ClearMessages();
 
   // Extension should be enabled again.
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -3783,8 +3953,8 @@ TEST_F(ExtensionServiceTest, UnpackedRequirements) {
 class ExtensionCookieCallback {
  public:
   ExtensionCookieCallback()
-    : result_(false),
-      weak_factory_(MessageLoop::current()) {}
+      : result_(false),
+        weak_factory_(MessageLoop::current()) {}
 
   void SetCookieCallback(bool result) {
     MessageLoop::current()->PostTask(
@@ -3797,10 +3967,17 @@ class ExtensionCookieCallback {
         FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()));
     list_ = list;
   }
+
   net::CookieList list_;
   bool result_;
   base::WeakPtrFactory<MessageLoop> weak_factory_;
 };
+
+// Must run on IO thread to set up ThreadCheckers correctly.
+static net::CookieMonster* GetCookieMonsterFromIOThread(
+    net::URLRequestContextGetter* getter) {
+  return getter->GetURLRequestContext()->cookie_store()->GetCookieMonster();
+}
 
 // Verifies extension state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearExtensionData) {
@@ -3817,23 +3994,26 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       webkit_database::DatabaseUtil::GetOriginIdentifier(ext_url);
 
   // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster =
-      profile_->GetRequestContextForExtensions()->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
+  net::CookieMonster* cookie_monster = PostTaskAndWaitForResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetCookieMonsterFromIOThread,
+                 make_scoped_refptr(
+                     profile_->GetRequestContextForExtensions())));
   ASSERT_TRUE(cookie_monster);
+
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptionsAsync(
-       ext_url, "dummy=value", options,
-       base::Bind(&ExtensionCookieCallback::SetCookieCallback,
-                  base::Unretained(&callback)));
-  loop_.RunUntilIdle();
+      ext_url, "dummy=value", options,
+      base::Bind(&ExtensionCookieCallback::SetCookieCallback,
+                 base::Unretained(&callback)));
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(callback.result_);
 
   cookie_monster->GetAllCookiesForURLAsync(
       ext_url,
       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                  base::Unretained(&callback)));
-  loop_.RunUntilIdle();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, callback.list_.size());
 
   // Open a database.
@@ -3931,9 +4111,10 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       IsStorageUnlimited(origin2));
 
   // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster =
-      profile_->GetRequestContext()->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
+  net::CookieMonster* cookie_monster = PostTaskAndWaitForResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetCookieMonsterFromIOThread,
+                 make_scoped_refptr(profile_->GetRequestContext())));
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptionsAsync(

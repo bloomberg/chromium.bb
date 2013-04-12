@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 
 namespace IPC {
 
@@ -70,7 +71,7 @@ class Message;
 //
 // To hook up the sink, all you need to do is call OnMessageReceived when a
 // message is received.
-class TestSink : public Channel {
+class TestSink : public Channel, public Listener {
  public:
   TestSink();
   virtual ~TestSink();
@@ -81,7 +82,7 @@ class TestSink : public Channel {
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.
-  bool OnMessageReceived(const Message& msg);
+  virtual bool OnMessageReceived(const Message& msg) OVERRIDE;
 
   // Returns the number of messages in the queue.
   size_t message_count() const { return messages_.size(); }

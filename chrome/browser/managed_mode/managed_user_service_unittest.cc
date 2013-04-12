@@ -148,7 +148,8 @@ TEST(ManagedUserServiceTest, GetManualExceptionsForHost) {
 
 class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
  public:
-  ManagedUserServiceExtensionTest() {}
+  ManagedUserServiceExtensionTest()
+      : ExtensionServiceTestBase(MessageLoop::TYPE_IO) {}
   virtual ~ManagedUserServiceExtensionTest() {}
 
   virtual void SetUp() OVERRIDE {
