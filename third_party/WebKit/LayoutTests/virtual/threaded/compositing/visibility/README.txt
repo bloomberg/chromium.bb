@@ -1,2 +1,3 @@
-# Test suites in this directory run with --force-compositing-mode and
-# --enable-threaded-compositing
+# This suite runs the tests in LayoutTests/compositing/visibility/ with
+# --enable-threaded-compositing.
+# See the virtual_test_suites() method in Tools/Scripts/webkitpy/layout_tests/port/chromium.py.
