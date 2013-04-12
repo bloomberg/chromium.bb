@@ -13,6 +13,11 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Disables portal detection and network error handling before auto
+// update.
+const char kDisableOOBEBlockingUpdate[] =
+    "disable-oobe-blocking-update";
+
 // Disables fake ethernet network in the stub implementations.
 const char kDisableStubEthernet[] = "disable-stub-ethernet";
 
@@ -22,11 +27,6 @@ const char kEnableExperimentalBluetooth[] = "enable-experimental-bluetooth";
 // Enables the new NetworkChangeNotifier using the NetworkStateHandler class.
 const char kEnableNewNetworkChangeNotifier[] =
     "enable-new-network-change-notifier";
-
-// Enables portal detection and network error handling before auto
-// update.
-const char kEnableOOBEBlockingUpdate[] =
-    "enable-oobe-blocking-update";
 
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";

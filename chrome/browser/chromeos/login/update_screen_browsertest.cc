@@ -49,9 +49,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableOOBEBlockingUpdate);
-
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())

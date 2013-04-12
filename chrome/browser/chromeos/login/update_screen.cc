@@ -78,8 +78,8 @@ void StartUpdateCallback(UpdateScreen* screen,
 
 // Returns true if blocking AU is enabled in command line.
 bool IsBlockingUpdateEnabledInCommandLine() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableOOBEBlockingUpdate);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableOOBEBlockingUpdate);
 }
 
 }  // anonymous namespace
