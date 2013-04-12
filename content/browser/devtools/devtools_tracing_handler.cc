@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -103,7 +102,6 @@ DevToolsTracingHandler::OnStart(DevToolsProtocol::Command* command) {
   is_running_ = true;
   return command->SuccessResponse(NULL);
 }
-
 
 scoped_ptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnEnd(DevToolsProtocol::Command* command) {

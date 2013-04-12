@@ -306,11 +306,11 @@ void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
 }
 
 void RenderViewDevToolsAgentHost::RenderViewCrashed() {
-  scoped_ptr<DevToolsProtocol::Event> event(
-      DevToolsProtocol::CreateEvent(
+  scoped_ptr<DevToolsProtocol::Notification> notification(
+      DevToolsProtocol::CreateNotification(
           devtools::Inspector::targetCrashed::kName, NULL));
   DevToolsManagerImpl::GetInstance()->
-      DispatchOnInspectorFrontend(this, event->Serialize());
+      DispatchOnInspectorFrontend(this, notification->Serialize());
 }
 
 bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(

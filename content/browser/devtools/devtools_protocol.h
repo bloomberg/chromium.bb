@@ -21,45 +21,55 @@ class DevToolsProtocol {
  public:
   typedef base::Callback<void(const std::string& message)> Notifier;
 
-  // JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
-  enum Error {
-    kErrorParseError = -32700,
-    kErrorInvalidRequest = -32600,
-    kErrorNoSuchMethod = -32601,
-    kErrorInvalidParams = -32602,
-    kErrorInternalError = -32603
-  };
-
   class Response;
 
-  class Command {
+  class Message {
    public:
-    ~Command();
+    virtual ~Message();
 
-    int id() { return id_; }
     std::string domain() { return domain_; }
     std::string method() { return method_; }
     base::DictionaryValue* params() { return params_.get(); }
+    virtual std::string Serialize() = 0;
+
+   protected:
+    Message(const std::string& method,
+            base::DictionaryValue* params);
+
+    std::string domain_;
+    std::string method_;
+    scoped_ptr<base::DictionaryValue> params_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Message);
+  };
+
+  class Command : public Message {
+   public:
+    virtual  ~Command();
+
+    int id() { return id_; }
+
+    virtual std::string Serialize() OVERRIDE;
 
     // Creates success response. Takes ownership of |result|.
     scoped_ptr<Response> SuccessResponse(base::DictionaryValue* result);
 
     // Creates error response. Caller takes ownership of the return value.
-    scoped_ptr<Response> ErrorResponse(int error_code,
-                                       const std::string& error_message);
+    scoped_ptr<Response> InternalErrorResponse(const std::string& message);
+
+    // Creates error response. Caller takes ownership of the return value.
+    scoped_ptr<Response> InvalidParamResponse(const std::string& param);
 
     // Creates error response. Caller takes ownership of the return value.
     scoped_ptr<Response> NoSuchMethodErrorResponse();
 
    private:
     friend class DevToolsProtocol;
-    Command(int id, const std::string& domain, const std::string& method,
+    Command(int id, const std::string& method,
             base::DictionaryValue* params);
 
     int id_;
-    std::string domain_;
-    std::string method_;
-    scoped_ptr<base::DictionaryValue> params_;
 
     DISALLOW_COPY_AND_ASSIGN(Command);
   };
@@ -85,37 +95,20 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Response);
   };
 
-  class Notification {
+  class Notification : public Message {
    public:
-    // Takes ownership of |params|.
-    Notification(const std::string& method, base::DictionaryValue* params);
-    ~Notification();
+    virtual ~Notification();
 
-    std::string Serialize();
-
-   private:
-    std::string method_;
-    scoped_ptr<base::DictionaryValue> params_;
-
-    DISALLOW_COPY_AND_ASSIGN(Notification);
-  };
-
-  class Event {
-   public:
-    ~Event();
-
-    std::string Serialize();
+    virtual std::string Serialize() OVERRIDE;
 
    private:
     friend class DevToolsProtocol;
 
-    // Takes ownership over |params|.
-    Event(const std::string& method, base::DictionaryValue* params);
+    // Takes ownership of |params|.
+    Notification(const std::string& method,
+                 base::DictionaryValue* params);
 
-    std::string method_;
-    scoped_ptr<base::DictionaryValue> params_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
+    DISALLOW_COPY_AND_ASSIGN(Notification);
   };
 
   class Handler {
@@ -152,10 +145,15 @@ class DevToolsProtocol {
   static Command* ParseCommand(const std::string& json,
                                std::string* error_response);
 
-  static Event* CreateEvent(const std::string& method,
-                            base::DictionaryValue* params);
+  static Notification* ParseNotification(const std::string& json);
+
+  static Notification* CreateNotification(const std::string& method,
+                                          base::DictionaryValue* params);
 
  private:
+  static DictionaryValue* ParseMessage(const std::string& json,
+                                       std::string* error_response);
+
   DevToolsProtocol() {}
   ~DevToolsProtocol() {}
 };

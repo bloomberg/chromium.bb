@@ -11,8 +11,6 @@
 
 namespace content {
 
-class DevToolsWebSocketSender;
-
 // This class bridges DevTools remote debugging server with the trace
 // infrastructure.
 class DevToolsTracingHandler

@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/stringprintf.h"
 
 namespace content {
 
@@ -20,25 +21,65 @@ const char kErrorCodeParam[] = "code";
 const char kErrorMessageParam[] = "message";
 const int kNoId = -1;
 
+// JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
+enum Error {
+  kErrorParseError = -32700,
+  kErrorInvalidRequest = -32600,
+  kErrorNoSuchMethod = -32601,
+  kErrorInvalidParams = -32602,
+  kErrorInternalError = -32603
+};
+
 }  // namespace
 
 using base::DictionaryValue;
 using base::Value;
 
+DevToolsProtocol::Message::~Message() {
+}
+
+DevToolsProtocol::Message::Message(const std::string& method,
+                                   DictionaryValue* params)
+    : method_(method),
+      params_(params) {
+  size_t pos = method.find(".");
+  if (pos != std::string::npos && pos > 0)
+    domain_ = method.substr(0, pos);
+}
+
 DevToolsProtocol::Command::~Command() {
 }
 
+std::string DevToolsProtocol::Command::Serialize() {
+  DictionaryValue command;
+  command.SetInteger(kIdParam, id_);
+  command.SetString(kMethodParam, method_);
+  if (params_.get())
+    command.Set(kParamsParam, params_->DeepCopy());
+
+  std::string json_command;
+  base::JSONWriter::Write(&command, &json_command);
+  return json_command;
+}
+
 scoped_ptr<DevToolsProtocol::Response>
-DevToolsProtocol::Command::SuccessResponse(base::DictionaryValue* result) {
+DevToolsProtocol::Command::SuccessResponse(DictionaryValue* result) {
   return scoped_ptr<DevToolsProtocol::Response>(
       new DevToolsProtocol::Response(id_, result));
 }
 
 scoped_ptr<DevToolsProtocol::Response>
-DevToolsProtocol::Command::ErrorResponse(int error_code,
-                                         const std::string& error_message) {
+DevToolsProtocol::Command::InternalErrorResponse(const std::string& message) {
   return scoped_ptr<DevToolsProtocol::Response>(
-      new DevToolsProtocol::Response(id_, error_code, error_message));
+      new DevToolsProtocol::Response(id_, kErrorInternalError, message));
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsProtocol::Command::InvalidParamResponse(const std::string& param) {
+  std::string message =
+      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str());
+  return scoped_ptr<DevToolsProtocol::Response>(
+      new DevToolsProtocol::Response(id_, kErrorInvalidParams, message));
 }
 
 scoped_ptr<DevToolsProtocol::Response>
@@ -48,13 +89,10 @@ DevToolsProtocol::Command::NoSuchMethodErrorResponse() {
 }
 
 DevToolsProtocol::Command::Command(int id,
-                                   const std::string& domain,
                                    const std::string& method,
                                    DictionaryValue* params)
-    : id_(id),
-      domain_(domain),
-      method_(method),
-      params_(params) {
+    : Message(method, params),
+      id_(id) {
 }
 
 std::string DevToolsProtocol::Response::Serialize() {
@@ -98,17 +136,14 @@ DevToolsProtocol::Response::~Response() {
 
 DevToolsProtocol::Notification::Notification(const std::string& method,
                                              DictionaryValue* params)
-    : method_(method),
-      params_(params) {
+    : Message(method, params) {
 }
 
 DevToolsProtocol::Notification::~Notification() {
 }
 
 std::string DevToolsProtocol::Notification::Serialize() {
-  DictionaryValue response;
-
-  base::DictionaryValue notification;
+  DictionaryValue notification;
   notification.SetString(kMethodParam, method_);
   if (params_.get())
     notification.Set(kParamsParam, params_->DeepCopy());
@@ -116,27 +151,6 @@ std::string DevToolsProtocol::Notification::Serialize() {
   std::string json_notification;
   base::JSONWriter::Write(&notification, &json_notification);
   return json_notification;
-}
-
-DevToolsProtocol::Event::~Event() {
-}
-
-std::string DevToolsProtocol::Event::Serialize() {
-  DictionaryValue dictionary;
-
-  dictionary.SetString(kMethodParam, method_);
-  if (params_)
-    dictionary.Set(kParamsParam, params_->DeepCopy());
-
-  std::string result;
-  base::JSONWriter::Write(&dictionary, &result);
-  return result;
-}
-
-DevToolsProtocol::Event::Event(const std::string& method,
-                               DictionaryValue* params)
-    : method_(method),
-      params_(params) {
 }
 
 DevToolsProtocol::Handler::~Handler() {
@@ -166,62 +180,87 @@ void DevToolsProtocol::Handler::RegisterCommandHandler(
 
 void DevToolsProtocol::Handler::SendNotification(
     const std::string& method,
-    base::DictionaryValue* params) {
+    DictionaryValue* params) {
   DevToolsProtocol::Notification notification(method, params);
   if (!notifier_.is_null())
     notifier_.Run(notification.Serialize());
+}
+
+static bool ParseMethod(DictionaryValue* command,
+                        std::string* method) {
+  if (!command->GetString(kMethodParam, method))
+    return false;
+  size_t pos = method->find(".");
+  if (pos == std::string::npos || pos == 0)
+    return false;
+  return true;
 }
 
 // static
 DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
     const std::string& json,
     std::string* error_response) {
-  int parse_error_code;
-  std::string error_message;
-  scoped_ptr<base::Value> command(
-      base::JSONReader::ReadAndReturnError(
-          json, 0, &parse_error_code, &error_message));
-
-  if (!command || !command->IsType(base::Value::TYPE_DICTIONARY)) {
-    Response response(0, kErrorParseError, error_message);
-    *error_response = response.Serialize();
+  scoped_ptr<DictionaryValue> command_dict(ParseMessage(json, error_response));
+  if (!command_dict)
     return NULL;
-  }
-
-  base::DictionaryValue* command_dict = NULL;
-  command->GetAsDictionary(&command_dict);
 
   int id;
   std::string method;
-  bool ok = true;
-  ok &= command_dict->GetInteger(kIdParam, &id);
-  ok &= id >= 0;
-  ok &= command_dict->GetString(kMethodParam, &method);
+  bool ok = command_dict->GetInteger(kIdParam, &id) && id >= 0;
+  ok = ok && ParseMethod(command_dict.get(), &method);
   if (!ok) {
-    Response response(kNoId, kErrorInvalidRequest, "Invalid request");
+    Response response(kNoId, kErrorInvalidRequest, "No such method");
     *error_response = response.Serialize();
     return NULL;
   }
 
-  size_t pos = method.find(".");
-  if (pos == std::string::npos || pos == 0) {
-    Response response(id, kErrorNoSuchMethod, "No such method");
-    *error_response = response.Serialize();
-    return NULL;
-  }
-
-  std::string domain = method.substr(0, pos);
-
-  base::DictionaryValue* params = NULL;
+  DictionaryValue* params = NULL;
   command_dict->GetDictionary(kParamsParam, &params);
-  return new Command(id, domain, method, params ? params->DeepCopy() : NULL);
+  return new Command(id, method, params ? params->DeepCopy() : NULL);
+}
+
+// static
+DevToolsProtocol::Notification*
+DevToolsProtocol::ParseNotification(const std::string& json) {
+  scoped_ptr<DictionaryValue> dict(ParseMessage(json, NULL));
+  if (!dict)
+    return NULL;
+
+  std::string method;
+  bool ok = ParseMethod(dict.get(), &method);
+  if (!ok)
+    return NULL;
+
+  DictionaryValue* params = NULL;
+  dict->GetDictionary(kParamsParam, &params);
+  return new Notification(method, params ? params->DeepCopy() : NULL);
 }
 
 //static
-DevToolsProtocol::Event* DevToolsProtocol::CreateEvent(
+DevToolsProtocol::Notification* DevToolsProtocol::CreateNotification(
     const std::string& method,
-    base::DictionaryValue* params) {
-  return new Event(method, params);
+    DictionaryValue* params) {
+  return new Notification(method, params);
+}
+
+// static
+DictionaryValue* DevToolsProtocol::ParseMessage(
+    const std::string& json,
+    std::string* error_response) {
+  int parse_error_code;
+  std::string error_message;
+  scoped_ptr<Value> message(
+      base::JSONReader::ReadAndReturnError(
+          json, 0, &parse_error_code, &error_message));
+
+  if (!message || !message->IsType(Value::TYPE_DICTIONARY)) {
+    Response response(0, kErrorParseError, error_message);
+    if (error_response)
+      *error_response = response.Serialize();
+    return NULL;
+  }
+
+  return static_cast<DictionaryValue*>(message.release());
 }
 
 }  // namespace content

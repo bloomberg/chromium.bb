@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/string16.h"
-#include "base/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -64,22 +63,16 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
   base::ListValue* file_list = NULL;
   const char* param =
       devtools::DOM::setFileInputFiles::kParamFiles;
-  if (!params || !params->GetList(param, &file_list)) {
-    return command->ErrorResponse(
-        DevToolsProtocol::kErrorInvalidParams,
-        base::StringPrintf("Missing or invalid '%s' parameter", param));
-  }
+  if (!params || !params->GetList(param, &file_list))
+    return command->InvalidParamResponse(param);
   RenderViewHost* host = agent_->GetRenderViewHost();
   if (!host)
     return scoped_ptr<DevToolsProtocol::Response>();
 
   for (size_t i = 0; i < file_list->GetSize(); ++i) {
     base::FilePath::StringType file;
-    if (!file_list->GetString(i, &file)) {
-      return command->ErrorResponse(
-          DevToolsProtocol::kErrorInvalidParams,
-          base::StringPrintf("'%s' must be a list of strings", param));
-    }
+    if (!file_list->GetString(i, &file))
+      return command->InvalidParamResponse(param);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         host->GetProcess()->GetID(), base::FilePath(file));
   }
@@ -93,11 +86,8 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
   const char* paramAccept =
       devtools::Page::handleJavaScriptDialog::kParamAccept;
   bool accept;
-  if (!params || !params->GetBoolean(paramAccept, &accept)) {
-    return command->ErrorResponse(
-        DevToolsProtocol::kErrorInvalidParams,
-        base::StringPrintf("Missing or invalid '%s' parameter", paramAccept));
-  }
+  if (!params || !params->GetBoolean(paramAccept, &accept))
+    return command->InvalidParamResponse(paramAccept);
   string16 prompt_override;
   string16* prompt_override_ptr = &prompt_override;
   if (!params || !params->GetString(
@@ -118,9 +108,7 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
       }
     }
   }
-  return command->ErrorResponse(
-      DevToolsProtocol::kErrorInternalError,
-      "No JavaScript dialog to handle");
+  return command->InternalErrorResponse("No JavaScript dialog to handle");
 }
 
 scoped_ptr<DevToolsProtocol::Response>
@@ -129,17 +117,11 @@ RendererOverridesHandler::PageNavigate(
   base::DictionaryValue* params = command->params();
   std::string url;
   const char* param = devtools::Page::navigate::kParamUrl;
-  if (!params || !params->GetString(param, &url)) {
-    return command->ErrorResponse(
-        DevToolsProtocol::kErrorInvalidParams,
-        base::StringPrintf("Missing or invalid '%s' parameter",
-                           param));
-  }
+  if (!params || !params->GetString(param, &url))
+    return command->InvalidParamResponse(param);
   GURL gurl(url);
   if (!gurl.is_valid()) {
-    return command->ErrorResponse(
-        DevToolsProtocol::kErrorInternalError,
-        "Cannot navigate to invalid URL");
+    return command->InternalErrorResponse("Cannot navigate to invalid URL");
   }
   RenderViewHost* host = agent_->GetRenderViewHost();
   if (host) {
@@ -150,9 +132,7 @@ RendererOverridesHandler::PageNavigate(
       return command->SuccessResponse(new base::DictionaryValue());
     }
   }
-  return command->ErrorResponse(
-      DevToolsProtocol::kErrorInternalError,
-      "No WebContents to navigate");
+  return command->InternalErrorResponse("No WebContents to navigate");
 }
 
 scoped_ptr<DevToolsProtocol::Response>
@@ -160,8 +140,7 @@ RendererOverridesHandler::PageCaptureScreenshot(
     DevToolsProtocol::Command* command) {
   std::string base_64_data;
   if (!CaptureScreenshot(&base_64_data))
-    return command->ErrorResponse(DevToolsProtocol::kErrorInternalError,
-                                  "Unable to capture a screenshot");
+    return command->InternalErrorResponse("Unable to capture a screenshot");
 
   base::DictionaryValue* response = new base::DictionaryValue();
   response->SetString(
