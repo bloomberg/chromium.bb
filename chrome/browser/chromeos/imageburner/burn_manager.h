@@ -17,13 +17,14 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/imageburner/burn_device_handler.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
 class URLFetcher;
+class URLRequestContextGetter;
 }  // namespace net
 
 namespace chromeos {
@@ -210,7 +211,7 @@ class StateMachine {
 // TODO(hidehiko): Simplify the relationship among this class,
 // BurnController and helper classes defined above.
 class BurnManager : public net::URLFetcherDelegate,
-                    public ConnectivityStateHelperObserver {
+                    public NetworkStateHandlerObserver {
  public:
   // Interface for classes that need to observe events for the burning image
   // tasks.
@@ -246,7 +247,9 @@ class BurnManager : public net::URLFetcherDelegate,
   };
 
   // Creates the global BurnManager instance.
-  static void Initialize();
+  static void Initialize(
+      const base::FilePath& downloads_directory,
+      scoped_refptr<net::URLRequestContextGetter> context_getter);
 
   // Destroys the global BurnManager instance if it exists.
   static void Shutdown();
@@ -263,9 +266,6 @@ class BurnManager : public net::URLFetcherDelegate,
 
   // Returns devices on which we can burn recovery image.
   std::vector<disks::DiskMountManager::Disk> GetBurnableDevices();
-
-  // Returns true if some network is connected.
-  bool IsNetworkConnected() const;
 
   // Cancels a currently running task of burning recovery image.
   // Note: currently we only support Cancel method, which may look asymmetry
@@ -316,8 +316,8 @@ class BurnManager : public net::URLFetcherDelegate,
                                           int64 current,
                                           int64 total) OVERRIDE;
 
-  // ConnectivityStateHelperObserver override.
-  virtual void NetworkManagerChanged() OVERRIDE;
+  // NetworkStateHandlerObserver override.
+  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.
@@ -345,7 +345,8 @@ class BurnManager : public net::URLFetcherDelegate,
   StateMachine* state_machine() const { return state_machine_.get(); }
 
  private:
-  BurnManager();
+  BurnManager(const base::FilePath& downloads_directory,
+              scoped_refptr<net::URLRequestContextGetter> context_getter);
   virtual ~BurnManager();
 
   void UpdateBurnStatus(BurnEvent evt, const ImageBurnStatus& status);
@@ -388,6 +389,8 @@ class BurnManager : public net::URLFetcherDelegate,
 
   scoped_ptr<net::URLFetcher> config_fetcher_;
   scoped_ptr<net::URLFetcher> image_fetcher_;
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   base::TimeTicks tick_image_download_start_;
   int64 bytes_image_download_progress_last_reported_;

@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -81,6 +82,7 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -106,6 +108,7 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
 
@@ -452,7 +455,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   AudioHandler::Initialize();
-  imageburner::BurnManager::Initialize();
+
+  base::FilePath downloads_directory;
+  CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
+  imageburner::BurnManager::Initialize(
+      downloads_directory, g_browser_process->system_request_context());
 
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen, if Chrome is running on Chrome OS
