@@ -249,6 +249,21 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 
 - (NSRect)overlayWindowFrameForParentView:(NSView*)parentView {
   NSRect viewFrame = [parentView convertRect:[parentView bounds] toView:nil];
+
+  id<NSWindowDelegate> delegate = [[parentView window] delegate];
+  if ([delegate respondsToSelector:@selector(window:
+                                  willPositionSheet:
+                                          usingRect:)]) {
+    NSRect sheetFrame = NSZeroRect;
+    // This API needs Y to be the distance from the bottom of the overlay to
+    // the top of the sheet. X, width, and height are ignored.
+    sheetFrame.origin.y = NSMaxY(viewFrame);
+    NSRect customSheetFrame = [delegate window:[parentView window]
+                             willPositionSheet:nil
+                                     usingRect:sheetFrame];
+    viewFrame.size.height += NSMinY(customSheetFrame) - NSMinY(sheetFrame);
+  }
+
   viewFrame.origin = [[parentView window] convertBaseToScreen:viewFrame.origin];
   return viewFrame;
 }
