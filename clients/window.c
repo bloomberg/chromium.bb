@@ -5109,6 +5109,12 @@ display_get_display(struct display *display)
 	return display->display;
 }
 
+cairo_device_t *
+display_get_cairo_device(struct display *display)
+{
+	return display->argb_device;
+}
+
 struct output *
 display_get_output(struct display *display)
 {

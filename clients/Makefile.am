@@ -60,6 +60,8 @@ clients_programs =				\
 	dnd					\
 	smoke					\
 	resizor					\
+	nested					\
+	nested-client				\
 	eventdemo				\
 	clickdot				\
 	transformed				\
@@ -120,6 +122,12 @@ smoke_LDADD = libtoytoolkit.la
 
 resizor_SOURCES = resizor.c
 resizor_LDADD = libtoytoolkit.la
+
+nested_SOURCES = nested.c
+nested_LDADD = libtoytoolkit.la
+
+nested_client_SOURCES = nested-client.c
+nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = libtoytoolkit.la
