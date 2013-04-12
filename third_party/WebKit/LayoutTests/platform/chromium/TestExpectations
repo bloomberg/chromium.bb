@@ -3609,7 +3609,6 @@ crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-ab
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
