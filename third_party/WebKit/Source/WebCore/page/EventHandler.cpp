@@ -33,6 +33,8 @@
 #include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
+#include "ChromiumDataObject.h"
+#include "ClipboardChromium.h"
 #include "Cursor.h"
 #include "CursorList.h"
 #include "Document.h"
@@ -52,7 +54,6 @@
 #include "FrameSelection.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "htmlediting.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLFrameSetElement.h"
 #include "HTMLInputElement.h"
@@ -64,6 +65,7 @@
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "MouseEventWithHitTestResults.h"
+#include "NotImplemented.h"
 #include "Page.h"
 #include "PlatformEvent.h"
 #include "PlatformGestureEvent.h"
@@ -87,6 +89,7 @@
 #include "UserTypingGestureIndicator.h"
 #include "WheelEvent.h"
 #include "WindowsKeyboardCodes.h"
+#include "htmlediting.h"
 #include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
@@ -146,6 +149,13 @@ const int maximumCursorSize = 128;
 // dividing cursor sizes (limited above) by the scale.
 const double minimumCursorScale = 0.001;
 #endif
+
+#if OS(DARWIN)
+const double EventHandler::TextDragDelay = 0.15;
+#else
+const double EventHandler::TextDragDelay = 0.0;
+#endif
+
 
 enum NoCursorChangeType { NoCursorChange };
 
@@ -2195,12 +2205,19 @@ bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
     return false;
 }
 
-#if !(PLATFORM(CHROMIUM) && (OS(UNIX) && !OS(DARWIN)))
-bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&, const PlatformWheelEvent&) const
+bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult& result, const PlatformWheelEvent& event) const
 {
+#if OS(UNIX) && !OS(DARWIN)
+    // GTK+ must scroll horizontally if the mouse pointer is on top of the
+    // horizontal scrollbar while scrolling with the wheel.
+    // This code comes from gtk/EventHandlerGtk.cpp.
+    return !event.hasPreciseScrollingDeltas() && result.scrollbar() && result.scrollbar()->orientation() == HorizontalScrollbar;
+#else
+    UNUSED_PARAM(result);
+    UNUSED_PARAM(event);
     return false;
-}
 #endif
+}
 
 bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
 {
@@ -3883,6 +3900,108 @@ void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
     m_mousePositionIsUnknown = false;
     m_lastKnownMousePosition = event.position();
     m_lastKnownMouseGlobalPosition = event.globalPosition();
+}
+
+bool EventHandler::passMousePressEventToSubframe(MouseEventWithHitTestResults& mev, Frame* subframe)
+{
+    // If we're clicking into a frame that is selected, the frame will appear
+    // greyed out even though we're clicking on the selection.  This looks
+    // really strange (having the whole frame be greyed out), so we deselect the
+    // selection.
+    IntPoint p = m_frame->view()->windowToContents(mev.event().position());
+    if (m_frame->selection()->contains(p)) {
+        VisiblePosition visiblePos(
+            mev.targetNode()->renderer()->positionForPoint(mev.localPoint()));
+        VisibleSelection newSelection(visiblePos);
+        if (m_frame->selection()->shouldChangeSelection(newSelection))
+            m_frame->selection()->setSelection(newSelection);
+    }
+
+    subframe->eventHandler()->handleMousePressEvent(mev.event());
+    return true;
+}
+
+bool EventHandler::passMouseMoveEventToSubframe(MouseEventWithHitTestResults& mev, Frame* subframe, HitTestResult* hoveredNode)
+{
+    if (m_mouseDownMayStartDrag && !m_mouseDownWasInSubframe)
+        return false;
+    subframe->eventHandler()->handleMouseMoveEvent(mev.event(), hoveredNode);
+    return true;
+}
+
+bool EventHandler::passMouseReleaseEventToSubframe(MouseEventWithHitTestResults& mev, Frame* subframe)
+{
+    subframe->eventHandler()->handleMouseReleaseEvent(mev.event());
+    return true;
+}
+
+bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, Widget* widget)
+{
+    // We can sometimes get a null widget!  EventHandlerMac handles a null
+    // widget by returning false, so we do the same.
+    if (!widget)
+        return false;
+
+    // If not a FrameView, then probably a plugin widget.  Those will receive
+    // the event via an EventTargetNode dispatch when this returns false.
+    if (!widget->isFrameView())
+        return false;
+
+    return toFrameView(widget)->frame()->eventHandler()->handleWheelEvent(wheelEvent);
+}
+
+bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)
+{
+    // Figure out which view to send the event to.
+    if (!event.targetNode() || !event.targetNode()->renderer() || !event.targetNode()->renderer()->isWidget())
+        return false;
+    return passMouseDownEventToWidget(toRenderWidget(event.targetNode()->renderer())->widget());
+}
+
+bool EventHandler::passMouseDownEventToWidget(Widget* widget)
+{
+    notImplemented();
+    return false;
+}
+
+bool EventHandler::tabsToAllFormControls(KeyboardEvent*) const
+{
+    return true;
+}
+
+bool EventHandler::eventActivatedView(const PlatformMouseEvent& event) const
+{
+    // FIXME: EventHandlerWin.cpp does the following:
+    // return event.activatedWebView();
+    return false;
+}
+
+PassRefPtr<Clipboard> EventHandler::createDraggingClipboard() const
+{
+    RefPtr<ChromiumDataObject> dataObject = ChromiumDataObject::create();
+    return ClipboardChromium::create(Clipboard::DragAndDrop, dataObject.get(), ClipboardWritable, m_frame);
+}
+
+void EventHandler::focusDocumentView()
+{
+    Page* page = m_frame->page();
+    if (!page)
+        return;
+    page->focusController()->setFocusedFrame(m_frame);
+}
+
+bool EventHandler::passWidgetMouseDownEventToWidget(RenderWidget* renderWidget)
+{
+    return passMouseDownEventToWidget(renderWidget->widget());
+}
+
+unsigned EventHandler::accessKeyModifiers()
+{
+#if OS(DARWIN)
+    return PlatformEvent::CtrlKey | PlatformEvent::AltKey;
+#else
+    return PlatformEvent::AltKey;
+#endif
 }
 
 } // namespace WebCore
