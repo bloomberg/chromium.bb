@@ -365,10 +365,12 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   if (profile)
     return profile;
 
+#if !defined(OS_WIN)
   // TODO(port): fix this.  See comments near the definition of
   // user_data_dir.  It is better to CHECK-fail here than it is to
   // silently exit because of missing code in the above test.
   CHECK(profile) << "Cannot get default profile.";
+#endif
 
   return NULL;
 }
