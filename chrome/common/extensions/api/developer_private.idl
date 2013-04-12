@@ -152,6 +152,10 @@ namespace developerPrivate {
     // Load a user selected unpacked item
     static void loadUnpacked(optional VoidCallback callback);
 
+    // Copies the syncfs folder for the extension to local disk.
+    static void exportSyncfsFolderToLocalfs(DOMString folder_name,
+                                            optional VoidCallback callback);
+
     // Open Dialog to browse to an entry.
     // |select_type| : Select a file or a folder.
     // |file_type| : Required file type. For Example pem type is for private

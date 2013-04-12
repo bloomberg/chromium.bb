@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -43,6 +45,10 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using content::RenderViewHost;
 
@@ -753,6 +759,123 @@ DeveloperPrivatePackDirectoryFunction::~DeveloperPrivatePackDirectoryFunction()
 {}
 
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
+
+bool DeveloperPrivateExportSyncfsFolderToLocalfsFunction::RunImpl() {
+  base::FilePath::StringType project_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
+
+  context_ = content::BrowserContext::GetStoragePartition(profile(),
+      render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                 ReadSyncFileSystemDirectory,
+                 this, project_name));
+
+  return true;
+}
+
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    ReadSyncFileSystemDirectory(
+    const base::FilePath::StringType& project_name) {
+  std::string origin_url(
+      Extension::GetBaseURLFromExtensionId(extension_id()).spec());
+  fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
+      GURL(origin_url),
+      sync_file_system::DriveFileSyncService::kServiceName,
+      base::FilePath()));
+
+  base::PlatformFileError error_code;
+  fileapi::FileSystemOperation* op =
+      context_->CreateFileSystemOperation(url, &error_code);
+
+  DCHECK(op);
+
+  op->ReadDirectory(url, base::Bind(
+      &DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+          ReadSyncFileSystemDirectoryCb, this, project_name));
+}
+
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    ReadSyncFileSystemDirectoryCb(
+    const base::FilePath::StringType& project_name,
+    base::PlatformFileError status,
+    const fileapi::FileSystemOperation::FileEntryList& file_list,
+    bool has_more) {
+
+  if (status != base::PLATFORM_FILE_OK) {
+    DLOG(ERROR) << "Error in copying files from sync filesystem.";
+    return;
+  }
+
+  for (size_t i = 0; i < file_list.size(); ++i) {
+    std::string origin_url(
+        Extension::GetBaseURLFromExtensionId(extension_id()).spec());
+    fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
+        GURL(origin_url),
+        sync_file_system::DriveFileSyncService::kServiceName,
+        base::FilePath(file_list[i].name)));
+    base::FilePath target_path(profile()->GetPath());
+    target_path =
+        target_path.Append(FILE_PATH_LITERAL("apps_target"));
+    target_path = target_path.Append(project_name);
+    target_path = target_path.Append(file_list[i].name);
+
+    base::PlatformFileError error_code;
+    fileapi::FileSystemOperation* op =
+        context_->CreateFileSystemOperation(url, &error_code);
+    DCHECK(op);
+
+    if (error_code != base::PLATFORM_FILE_OK) {
+      DLOG(ERROR) << "Error in copying files from sync filesystem.";
+      return;
+    }
+
+    op->CreateSnapshotFile(
+        url,
+        base::Bind(
+            &DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                SnapshotFileCallback,
+            this,
+            target_path));
+  }
+}
+
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
+    const base::FilePath& target_path,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& src_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  if (result != base::PLATFORM_FILE_OK) {
+    DLOG(ERROR) << "Error in copying files from sync filesystem.";
+    return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile,
+                 this,
+                 src_path,
+                 target_path));
+}
+
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
+    const base::FilePath& src_path,
+    const base::FilePath& target_path) {
+  // Return silently if the directory creation fails.
+  if (!file_util::CreateDirectory(target_path.DirName())) {
+    DLOG(ERROR) << "Error in copying files from sync filesystem.";
+    return;
+  }
+
+  file_util::CopyFile(src_path, target_path);
+}
+
+DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    DeveloperPrivateExportSyncfsFolderToLocalfsFunction()
+{}
+
+DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
 
 bool DeveloperPrivateChoosePathFunction::RunImpl() {
 

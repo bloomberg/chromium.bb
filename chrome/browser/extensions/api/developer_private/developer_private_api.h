@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 
+#include "base/platform_file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -17,6 +18,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 class ExtensionService;
 
@@ -327,6 +330,42 @@ class DeveloperPrivateGetStringsFunction : public SyncExtensionFunction {
 
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
+};
+
+class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
+    : public SyncExtensionFunction {
+  public:
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.exportSyncfsFolderToLocalfs",
+                              DEVELOPERPRIVATE_LOADUNPACKEDCROS);
+
+   DeveloperPrivateExportSyncfsFolderToLocalfsFunction();
+
+  protected:
+   virtual ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction();
+
+   // ExtensionFunction
+   virtual bool RunImpl() OVERRIDE;
+
+   void ReadSyncFileSystemDirectory(
+       const base::FilePath::StringType& project_name);
+
+   void ReadSyncFileSystemDirectoryCb(
+       const base::FilePath::StringType& project_name,
+       base::PlatformFileError result,
+       const fileapi::FileSystemOperation::FileEntryList& file_list,
+       bool has_more);
+
+   void SnapshotFileCallback(
+       const base::FilePath& target_path,
+       base::PlatformFileError result,
+       const base::PlatformFileInfo& file_info,
+       const base::FilePath& platform_path,
+       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
+   void CopyFile(const base::FilePath& src_path,
+                 const base::FilePath& dest_path);
+
+   scoped_refptr<fileapi::FileSystemContext> context_;
 };
 
 }  // namespace api
