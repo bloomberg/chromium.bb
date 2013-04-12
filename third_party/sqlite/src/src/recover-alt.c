@@ -491,13 +491,265 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
   return rc;
 }
 
+/* Large rows are spilled to overflow pages.  The row's main page
+ * stores the overflow page number after the local payload, with a
+ * linked list forward from there as necessary.  overflowMaybeCreate()
+ * and overflowGetSegment() provide an abstraction for accessing such
+ * data while centralizing the code.
+ *
+ * overflowDestroy - releases all resources associated with the structure.
+ * overflowMaybeCreate - create the overflow structure if it is needed
+ *                       to represent the given record.  See function comment.
+ * overflowGetSegment - fetch a segment from the record, accounting
+ *                      for overflow pages.  Segments which are not
+ *                      entirely contained with a page are constructed
+ *                      into a buffer which is returned.  See function comment.
+ */
+typedef struct RecoverOverflow RecoverOverflow;
+struct RecoverOverflow {
+  RecoverOverflow *pNextOverflow;
+  DbPage *pPage;
+  unsigned nPageSize;
+};
+
+static void overflowDestroy(RecoverOverflow *pOverflow){
+  while( pOverflow ){
+    RecoverOverflow *p = pOverflow;
+    pOverflow = p->pNextOverflow;
+
+    if( p->pPage ){
+      sqlite3PagerUnref(p->pPage);
+      p->pPage = NULL;
+    }
+
+    memset(p, 0xA5, sizeof(*p));
+    sqlite3_free(p);
+  }
+}
+
+/* Internal helper.  Used to detect if iPage would cause a loop. */
+static int overflowPageInUse(RecoverOverflow *pOverflow, unsigned iPage){
+  while( pOverflow && pOverflow->pPage->pgno!=iPage ){
+    pOverflow = pOverflow->pNextOverflow;
+  }
+  return pOverflow!=NULL;
+}
+
+/* Setup to access an nRecordBytes record beginning at iRecordOffset
+ * in pPage.  If nRecordBytes can be satisfied entirely from pPage,
+ * then no overflow pages are needed an *pnLocalRecordBytes is set to
+ * nRecordBytes.  Otherwise, *ppOverflow is set to the head of a list
+ * of overflow pages, and *pnLocalRecordBytes is set to the number of
+ * bytes local to pPage.
+ *
+ * overflowGetSegment() will do the right thing regardless of whether
+ * those values are set to be in-page or not.
+ */
+static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
+                               unsigned iRecordOffset, unsigned nRecordBytes,
+                               unsigned *pnLocalRecordBytes,
+                               RecoverOverflow **ppOverflow){
+  /* Calculations from the "Table B-Tree Leaf Cell" part of section
+   * 1.5 of http://www.sqlite.org/fileformat2.html .  maxLocal and
+   * minLocal to match naming in btree.c.
+   */
+  /* TODO(shess): Account for reserved space. */
+  const unsigned maxLocal = nPageSize - 35;
+  const unsigned minLocal = ((nPageSize-12)*32/255)-23;  /* m */
+
+  /* Always fit anything smaller than maxLocal. */
+  if( nRecordBytes<=maxLocal ){
+    *pnLocalRecordBytes = nRecordBytes;
+    *ppOverflow = NULL;
+    return SQLITE_OK;
+  }
+
+  /* Calculate the remainder after accounting for minLocal on the leaf
+   * page and what packs evenly into overflow pages.  If the remainder
+   * does not fit into maxLocal, then a partially-full overflow page
+   * will be required in any case, so store as little as possible locally.
+   */
+  unsigned nLocalRecordBytes = minLocal+((nRecordBytes-minLocal)%(nPageSize-4));
+  if( maxLocal<nLocalRecordBytes ){
+    nLocalRecordBytes = minLocal;
+  }
+
+  /* Don't read off the end of the page. */
+  if( iRecordOffset+nLocalRecordBytes+4>nPageSize ){
+    return SQLITE_CORRUPT;
+  }
+
+  /* First overflow page number is after the local bytes. */
+  unsigned iNextPage =
+      decodeUnsigned32(PageData(pPage, iRecordOffset + nLocalRecordBytes));
+  unsigned nBytes = nLocalRecordBytes;
+
+  /* Ends of a linked list of overflow pages. */
+  RecoverOverflow *pFirstOverflow = NULL;
+  RecoverOverflow *pLastOverflow = NULL;
+
+  /* While there are more pages to read, and more bytes are needed,
+   * get another page.
+   */
+  int rc = SQLITE_OK;
+  while( iNextPage && nBytes<nRecordBytes ){
+    rc = sqlite3PagerAcquire(pPage->pPager, iNextPage, &pPage, 0);
+    if( rc!=SQLITE_OK ){
+      break;
+    }
+
+    RecoverOverflow *pOverflow = sqlite3_malloc(sizeof(RecoverOverflow));
+    if( !pOverflow ){
+      sqlite3PagerUnref(pPage);
+      rc = SQLITE_NOMEM;
+      break;
+    }
+    memset(pOverflow, 0, sizeof(*pOverflow));
+    pOverflow->pPage = pPage;
+    pOverflow->nPageSize = nPageSize;
+
+    if( !pFirstOverflow ){
+      pFirstOverflow = pOverflow;
+    }else{
+      pLastOverflow->pNextOverflow = pOverflow;
+    }
+    pLastOverflow = pOverflow;
+
+    iNextPage = decodeUnsigned32(pPage->pData);
+    nBytes += nPageSize-4;
+
+    /* Avoid loops. */
+    if( overflowPageInUse(pFirstOverflow, iNextPage) ){
+      fprintf(stderr, "Overflow loop detected at %d\n", iNextPage);
+      rc = SQLITE_CORRUPT;
+      break;
+    }
+  }
+
+  /* If there were not enough pages, or too many, things are corrupt.
+   * Not having enough pages is an obvious problem, all the data
+   * cannot be read.  Too many pages means that the contents of the
+   * row between the main page and the overflow page(s) is
+   * inconsistent (most likely one or more of the overflow pages does
+   * not really belong to this row).
+   */
+  if( rc==SQLITE_OK && (nBytes<nRecordBytes || iNextPage) ){
+    rc = SQLITE_CORRUPT;
+  }
+
+  if( rc==SQLITE_OK ){
+    *ppOverflow = pFirstOverflow;
+    *pnLocalRecordBytes = nLocalRecordBytes;
+  }else if( pFirstOverflow ){
+    overflowDestroy(pFirstOverflow);
+  }
+  return rc;
+}
+
+/* Use in concert with overflowMaybeCreate() to efficiently read parts
+ * of a potentially-overflowing record.  pPage and iRecordOffset are
+ * the values passed into overflowMaybeCreate(), nLocalRecordBytes and
+ * pOverflow are the values returned by that call.
+ *
+ * On SQLITE_OK, *ppBase points to nRequestBytes of data at
+ * iRequestOffset within the record.  If the data exists contiguously
+ * in a page, a direct pointer is returned, otherwise a buffer from
+ * sqlite3_malloc() is returned with the data.  *pbFree is set true if
+ * sqlite3_free() should be called on *ppBase.
+ */
+/* Operation of this function is subtle.  At any time, pPage is the
+ * current page, with iRecordOffset and nLocalRecordBytes being record
+ * data within pPage, and pOverflow being the overflow page after
+ * pPage.  This allows the code to handle both the initial leaf page
+ * and overflow pages consistently by adjusting the values
+ * appropriately.
+ */
+static int overflowGetSegment(DbPage *pPage, unsigned iRecordOffset,
+                              unsigned nLocalRecordBytes,
+                              RecoverOverflow *pOverflow,
+                              unsigned iRequestOffset, unsigned nRequestBytes,
+                              unsigned char **ppBase, int *pbFree){
+  /* Skip to the page containing the start of the data. */
+  while( iRequestOffset>=nLocalRecordBytes && pOverflow ){
+    /* Factor out current page's contribution. */
+    iRequestOffset -= nLocalRecordBytes;
+
+    /* Move forward to the next page in the list. */
+    pPage = pOverflow->pPage;
+    iRecordOffset = 4;
+    nLocalRecordBytes = pOverflow->nPageSize - iRecordOffset;
+    pOverflow = pOverflow->pNextOverflow;
+  }
+
+  /* If the requested data is entirely within this page, return a
+   * pointer into the page.
+   */
+  if( iRequestOffset+nRequestBytes<=nLocalRecordBytes ){
+    /* TODO(shess): "assignment discards qualifiers from pointer target type"
+     * Having ppBase be const makes sense, but sqlite3_free() takes non-const.
+     */
+    *ppBase = PageData(pPage, iRecordOffset + iRequestOffset);
+    *pbFree = 0;
+    return SQLITE_OK;
+  }
+
+  /* The data range would require additional pages. */
+  if( !pOverflow ){
+    /* Should never happen, the range is outside the nRecordBytes
+     * passed to overflowMaybeCreate().
+     */
+    assert(NULL);  /* NOTREACHED */
+    return SQLITE_ERROR;
+  }
+
+  /* Get a buffer to construct into. */
+  unsigned nBase = 0;
+  unsigned char *pBase = sqlite3_malloc(nRequestBytes);
+  if( !pBase ){
+    return SQLITE_NOMEM;
+  }
+  while( nBase<nRequestBytes ){
+    /* Copy over data present on this page. */
+    unsigned nCopyBytes = nRequestBytes - nBase;
+    if( nLocalRecordBytes-iRequestOffset<nCopyBytes ){
+      nCopyBytes = nLocalRecordBytes - iRequestOffset;
+    }
+    memcpy(pBase + nBase, PageData(pPage, iRecordOffset + iRequestOffset),
+           nCopyBytes);
+    nBase += nCopyBytes;
+
+    if( pOverflow ){
+      /* Copy from start of record data in future pages. */
+      iRequestOffset = 0;
+
+      /* Move forward to the next page in the list.  Should match
+       * first while() loop.
+       */
+      pPage = pOverflow->pPage;
+      iRecordOffset = 4;
+      nLocalRecordBytes = pOverflow->nPageSize - iRecordOffset;
+      pOverflow = pOverflow->pNextOverflow;
+    }else if( nBase<nRequestBytes ){
+      /* Ran out of overflow pages with data left to deliver.  Not
+       * possible if the requested range fits within nRecordBytes
+       * passed to overflowMaybeCreate() when creating pOverflow.
+       */
+      assert(NULL);  /* NOTREACHED */
+      sqlite3_free(pBase);
+      return SQLITE_ERROR;
+    }
+  }
+  assert( nBase==nRequestBytes );
+  *ppBase = pBase;
+  *pbFree = 1;
+  return SQLITE_OK;
+}
+
 /* Primary structure for iterating the contents of a table.
  *
  * TODO(shess): Handle interior nodes by iterating them for new leaf
  * pages, with interior nodes iterating their parents, and so on to
  * the root.  For now, only handles tables with one leaf node.
- *
- * TODO(shess): Account for overflow pages.
  *
  * leafCursorDestroy - release all resources associated with the cursor.
  * leafCursorCreate - create a cursor to iterate items from tree at
@@ -513,6 +765,9 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
  * impossible offsets, or where header data doesn't correctly describe
  * payload data.  Returns SQLITE_ROW if a valid cell is found,
  * SQLITE_DONE if all pages in the tree were exhausted.
+ *
+ * leafCursorCellColInfo() accounts for overflow pages in the style of
+ * overflowGetSegment().
  */
 typedef struct RecoverLeafCursor RecoverLeafCursor;
 struct RecoverLeafCursor {
@@ -532,9 +787,11 @@ struct RecoverLeafCursor {
    * those checks should be redundant.
    */
   u64 nRecordBytes;                /* Size of record data. */
+  u64 nLocalRecordBytes;           /* Amount of record data in-page. */
   unsigned nRecordHeaderBytes;     /* Size of record header data. */
   unsigned char *pRecordHeader;    /* Pointer to record header data. */
-  /* TODO(shess): Something to handle overflow pages. */
+  int bFreeRecordHeader;           /* True if record header requires free. */
+  RecoverOverflow *pOverflow;      /* Cell overflow info, if needed. */
 };
 
 /* Internal helper shared between next-page and create-cursor.  If
@@ -586,8 +843,21 @@ static int leafCursorNextPage(RecoverLeafCursor *pCursor){
   return SQLITE_DONE;
 }
 
-static void leafCursorDestroy(RecoverLeafCursor *pCursor){
+static void leafCursorDestroyCellData(RecoverLeafCursor *pCursor){
+  if( pCursor->bFreeRecordHeader ){
+    sqlite3_free(pCursor->pRecordHeader);
+  }
+  pCursor->bFreeRecordHeader = 0;
   pCursor->pRecordHeader = NULL;
+
+  if( pCursor->pOverflow ){
+    overflowDestroy(pCursor->pOverflow);
+    pCursor->pOverflow = NULL;
+  }
+}
+
+static void leafCursorDestroy(RecoverLeafCursor *pCursor){
+  leafCursorDestroyCellData(pCursor);
 
   if( pCursor->pPage ){
     sqlite3PagerUnref(pCursor->pPage);
@@ -661,7 +931,7 @@ static int ValidateError(){
 static int leafCursorCellDecode(RecoverLeafCursor *pCursor){
   assert( pCursor->iCell<pCursor->nCells );
 
-  pCursor->pRecordHeader = NULL;
+  leafCursorDestroyCellData(pCursor);
 
   /* Find the offset to the row. */
   const unsigned char *pPageHeader = PageHeader(pCursor->pPage);
@@ -693,15 +963,25 @@ static int leafCursorCellDecode(RecoverLeafCursor *pCursor){
   u64 iRowid;
   nRead += getVarint(pCell + nRead, &iRowid);
   assert( iCellOffset+nRead<=pCursor->nPageSize );
-  /* TODO(shess): This will not be true with overflow support. */
-  assert( iCellOffset+nRead+nRecordBytes<=pCursor->nPageSize );
   pCursor->iRowid = (i64)iRowid;
 
   pCursor->iRecordOffset = iCellOffset + nRead;
 
+  /* Start overflow setup here because nLocalRecordBytes is needed to
+   * check cell overlap.
+   */
+  int rc = overflowMaybeCreate(pCursor->pPage, pCursor->nPageSize,
+                               pCursor->iRecordOffset, pCursor->nRecordBytes,
+                               &pCursor->nLocalRecordBytes,
+                               &pCursor->pOverflow);
+  if( rc!=SQLITE_OK ){
+    return ValidateError();
+  }
+
   /* Check that no other cell starts within this cell. */
   unsigned i;
-  const unsigned iEndOffset = iCellOffset + nRecordBytes;
+  const unsigned iEndOffset =
+      pCursor->iRecordOffset + pCursor->nLocalRecordBytes;
   for( i=0; i<pCursor->nCells; ++i ){
     const unsigned iOtherOffset = decodeUnsigned16(pCellOffsets + i*2);
     if( iOtherOffset>iCellOffset && iOtherOffset<iEndOffset ){
@@ -715,11 +995,14 @@ static int leafCursorCellDecode(RecoverLeafCursor *pCursor){
   assert( nRecordHeaderBytes<=nRecordBytes );
   pCursor->nRecordHeaderBytes = nRecordHeaderBytes;
 
-  /* TODO(shess): The header data potentially could be large enough to
-   * overflow.  For now just point directly into the page.
-   */
-  pCursor->pRecordHeader = (unsigned char *)PageData(pCursor->pPage,
-                                                     iCellOffset + nRead);
+  /* Large headers could overflow if pages are small. */
+  rc = overflowGetSegment(pCursor->pPage,
+                          pCursor->iRecordOffset, pCursor->nLocalRecordBytes,
+                          pCursor->pOverflow, 0, nRecordHeaderBytes,
+                          &pCursor->pRecordHeader, &pCursor->bFreeRecordHeader);
+  if( rc!=SQLITE_OK ){
+    return ValidateError();
+  }
 
   /* Tally up the column count and size of data. */
   unsigned nRecordCols = 0;
@@ -765,7 +1048,6 @@ static unsigned leafCursorCellColumns(RecoverLeafCursor *pCursor){
  * retrieving the data segment.  If *pbFree is true, *ppBase must be
  * freed by the caller using sqlite3_free().
  */
-/* TODO(shess): *pbFree will be necessary when supporting overflow. */
 static int leafCursorCellColInfo(RecoverLeafCursor *pCursor,
                                  unsigned iCol, u64 *piColType,
                                  unsigned char **ppBase, int *pbFree){
@@ -824,17 +1106,14 @@ static int leafCursorCellColInfo(RecoverLeafCursor *pCursor,
 
   *piColType = iSerialType;
   if( ppBase ){
-    /* Offset from end of headers to beginning of column. */
     const u32 nColBytes = SerialTypeLength(iSerialType);
-    const unsigned iColOffset = iColEndOffset-nColBytes;
 
-    /* Start of record, plus the header, plus the column offset. */
-    const unsigned iOffset =
-        pCursor->iRecordOffset+nRecordHeaderBytes+iColOffset;
+    /* Offset from start of record to beginning of column. */
+    const unsigned iColOffset = nRecordHeaderBytes+iColEndOffset-nColBytes;
 
-    /* TODO(shess): Deal with overflow pages. */
-    *ppBase = (unsigned char *)PageData(pCursor->pPage, iOffset);
-    *pbFree = 0;
+    return overflowGetSegment(pCursor->pPage, pCursor->iRecordOffset,
+                              pCursor->nLocalRecordBytes, pCursor->pOverflow,
+                              iColOffset, nColBytes, ppBase, pbFree);
   }
   return SQLITE_OK;
 }
