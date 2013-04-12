@@ -111,6 +111,9 @@ typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 
 typedef int (*TYPE_nacl_mprotect) (void *start, size_t length, int prot);
 
+typedef int (*TYPE_nacl_list_mappings) (struct NaClMemMappingInfo *region,
+                                        size_t count);
+
 /* ============================================================ */
 /* threads */
 /* ============================================================ */
@@ -201,9 +204,6 @@ typedef int (*TYPE_nacl_dyncode_modify) (void *dest, const void *src,
                                        size_t size);
 
 typedef int (*TYPE_nacl_dyncode_delete) (void *dest, size_t size);
-
-typedef int (*TYPE_nacl_list_mappings) (struct NaClMemMappingInfo *region,
-                                        size_t count);
 
 typedef int (*TYPE_nacl_exception_handler) (
     void (*handler)(struct NaClExceptionContext *context),

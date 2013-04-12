@@ -122,10 +122,6 @@ static void test_list_mappings_order_and_overlap(void) {
   ASSERT_EQ(0, result);
   ASSERT_LE(size, capacity);
 
-  for (uint32_t i = 0; i < size; ++i) {
-    ASSERT_LE(map[i].size, 0x40000000);
-  }
-
   for (uint32_t i = 0; i < size - 1; ++i) {
     ASSERT_LE(map[i].start + map[i].size, map[i + 1].start);
   }
