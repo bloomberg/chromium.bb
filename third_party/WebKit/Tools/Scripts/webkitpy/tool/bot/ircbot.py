@@ -53,15 +53,9 @@ class _IRCThreadTearoff(IRCBotDelegate):
 
 
 class Eliza(IRCCommand):
-    therapist = None
-
-    def __init__(self):
-        if not self.therapist:
-            import webkitpy.thirdparty.autoinstalled.eliza as eliza
-            Eliza.therapist = eliza.eliza()
 
     def execute(self, nick, args, tool, sheriff):
-        return "%s: %s" % (nick, self.therapist.respond(" ".join(args)))
+        return "%s: the psychiatrist is out." % nick
 
 
 class IRCBot(object):

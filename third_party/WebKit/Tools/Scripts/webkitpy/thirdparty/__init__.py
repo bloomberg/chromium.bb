@@ -85,12 +85,8 @@ class AutoinstallImportHook(object):
             self._install_pylint()
         elif '.coverage' in fullname:
             self._install_coverage()
-        elif '.eliza' in fullname:
-            self._install_eliza()
         elif '.irc' in fullname:
             self._install_irc()
-        elif '.buildbot' in fullname:
-            self._install_buildbot()
         elif '.webpagereplay' in fullname:
             self._install_webpagereplay()
 
@@ -119,31 +115,9 @@ class AutoinstallImportHook(object):
 
     # autoinstalled.buildbot is used by BuildSlaveSupport/build.webkit.org-config/mastercfg_unittest.py
     # and should ideally match the version of BuildBot used at build.webkit.org.
-    def _install_buildbot(self):
-        # The buildbot package uses jinja2, for example, in buildbot/status/web/base.py.
-        # buildbot imports jinja2 directly (as though it were installed on the system),
-        # so the search path needs to include jinja2.  We put jinja2 in
-        # its own directory so that we can include it in the search path
-        # without including other modules as a side effect.
-        jinja_dir = self._fs.join(_AUTOINSTALLED_DIR, "jinja2")
-        installer = AutoInstaller(append_to_search_path=True, target_dir=jinja_dir)
-        did_install_something = installer.install(url="http://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.6.tar.gz#md5=1c49a8825c993bfdcf55bb36897d28a2",
-                                                url_subpath="Jinja2-2.6/jinja2")
-
-        SQLAlchemy_dir = self._fs.join(_AUTOINSTALLED_DIR, "sqlalchemy")
-        installer = AutoInstaller(append_to_search_path=True, target_dir=SQLAlchemy_dir)
-        did_install_something |= installer.install(url="http://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-0.7.7.tar.gz#md5=ddf6df7e014cea318fa981364f3f93b9",
-                                                 url_subpath="SQLAlchemy-0.7.7/lib/sqlalchemy")
-
-        did_install_something |= self._install("http://pypi.python.org/packages/source/b/buildbot/buildbot-0.8.6p1.tar.gz#md5=b6727d2810c692062c657492bcbeac6a", "buildbot-0.8.6p1/buildbot")
-        return did_install_something
-
     def _install_coverage(self):
         self._ensure_autoinstalled_dir_is_in_sys_path()
         return self._install(url="http://pypi.python.org/packages/source/c/coverage/coverage-3.5.1.tar.gz#md5=410d4c8155a4dab222f2bc51212d4a24", url_subpath="coverage-3.5.1/coverage")
-
-    def _install_eliza(self):
-        return self._install(url="http://www.adambarth.com/webkit/eliza", target_name="eliza.py")
 
     def _install_irc(self):
         # Since irclib and ircbot are two top-level packages, we need to import
