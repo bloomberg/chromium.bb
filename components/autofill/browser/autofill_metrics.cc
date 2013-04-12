@@ -173,32 +173,32 @@ std::string WalletApiMetricToString(
     AutofillMetrics::WalletApiCallMetric metric) {
   switch (metric) {
     case AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS:
-      return "ACCEPT_LEGAL_DOCUMENTS";
+      return "AcceptLegalDocuments";
     case AutofillMetrics::AUTHENTICATE_INSTRUMENT:
-      return "AUTHENTICATE_INSTRUMENT";
+      return "AuthenticateInstrument";
     case AutofillMetrics::GET_FULL_WALLET:
-      return "GET_FULL_WALLET";
+      return "GetFullWallet";
     case AutofillMetrics::GET_WALLET_ITEMS:
-      return "GET_WALLET_ITEMS";
+      return "GetWalletItems";
     case AutofillMetrics::SAVE_ADDRESS:
-      return "SAVE_ADDRESS";
+      return "SaveAddress";
     case AutofillMetrics::SAVE_INSTRUMENT:
-      return "SAVE_INSTRUMENT";
+      return "SaveInstrument";
     case AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS:
-      return "SAVE_INSTRUMENT_AND_ADDRESS";
+      return "SaveInstrumentAndAddress";
     case AutofillMetrics::SEND_STATUS:
-      return "SEND_STATUS";
+      return "SendStatus";
     case AutofillMetrics::UPDATE_ADDRESS:
-      return "UPDATE_ADDRESS";
+      return "UpdateAddress";
     case AutofillMetrics::UPDATE_INSTRUMENT:
-      return "UPDATE_INSTRUMENT";
+      return "UpdateInstrument";
     case AutofillMetrics::UNKNOWN_API_CALL:
       NOTREACHED();
-      return "UNKNOWN_API_CALL";
+      return "UnknownApiCall";
   }
 
   NOTREACHED();
-  return "UNKNOWN_API_CALL";
+  return "UnknownApiCall";
 }
 
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
@@ -402,8 +402,8 @@ void AutofillMetrics::LogWalletErrorMetric(autofill::DialogType dialog_type,
 void AutofillMetrics::LogWalletApiCallDuration(
     WalletApiCallMetric metric,
     const base::TimeDelta& duration) const {
-  LogUMAHistogramTimes("Wallet." + WalletApiMetricToString(metric) +
-                       ".ApiCallDuration", duration);
+  LogUMAHistogramTimes("Wallet.ApiCallDuration." +
+                       WalletApiMetricToString(metric), duration);
 }
 
 void AutofillMetrics::LogWalletRequiredActionMetric(

@@ -62,6 +62,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Autocheckout.BuyFlow" enum="AutocheckoutBuyFlow">
+  <summary>
+    Measures the frequency of final states reached in Autocheckout buy flow.
+  </summary>
+</histogram>
+
 <histogram name="Autocheckout.FlowDuration" units="ms">
   <summary>
     Measures the time elapsed between when the user submitted the Autocheckout
@@ -2883,6 +2889,82 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Wallet.ApiCallDuration.AcceptLegalDocuments" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's accept legal
+    document API call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.AuthenticateInstrument" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's authenticate
+    instrument API call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.GetFullWallet" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's get full wallet API
+    call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.GetWalletItems" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's get wallet items
+    API call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.SaveAddress" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's save address API
+    call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.SaveInstrument" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's save instrument API
+    call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.SaveInstrumentAndAddress" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's save instument and
+    address API call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.SendStatus" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's send status API
+    call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.UnknownApiCall" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's unknown API calls.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.UpdateAddress" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's update address API
+    call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.UpdateInstrument" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's update instument
+    API call.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.BackingStore.ConsistencyError"
     enum="IDBLevelDBBackingStoreInternalErrorType">
   <summary>
@@ -2982,6 +3064,15 @@ other types of suffix sets.
   <int value="1" label="Accepted"/>
   <int value="2" label="Dismissed"/>
   <int value="3" label="Ignored"/>
+  <int value="4" label="Could be displayed"/>
+</enum>
+
+<enum name="AutocheckoutBuyFlow" type="int">
+  <int value="0" label="Started"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Missing field mappings"/>
+  <int value="3" label="Missing advance element"/>
+  <int value="4" label="Cannot proceed"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">
