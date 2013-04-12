@@ -31,6 +31,7 @@
 #include <wtf/VectorTraits.h>
 #include <limits>
 #include <utility>
+#include <string.h>
 
 namespace WTF {
 

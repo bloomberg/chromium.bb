@@ -30,6 +30,7 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/Threading.h>
 #include <wtf/ValueCheck.h>
+#include <string.h>
 
 #ifndef NDEBUG
 // Required for CHECK_HASHTABLE_ITERATORS.

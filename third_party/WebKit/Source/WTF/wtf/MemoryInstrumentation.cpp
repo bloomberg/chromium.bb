@@ -32,6 +32,7 @@
 #include "MemoryInstrumentation.h"
 
 #include <wtf/MemoryObjectInfo.h>
+#include <string.h>
 
 #if DEBUG_POINTER_INSTRUMENTATION
 #include <stdio.h>

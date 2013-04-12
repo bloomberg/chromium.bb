@@ -35,6 +35,7 @@
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 #include <wtf/unicode/Unicode.h>
+#include <string.h>
 
 namespace WebCore {
 

@@ -366,7 +366,7 @@ inline void move(PassOwnPtr<CSSSelector> from, CSSSelector* to)
     memcpy(to, from.get(), sizeof(CSSSelector));
     // We want to free the memory (which was allocated with fastNew), but we
     // don't want the destructor to run since it will affect the copy we've just made.
-    fastDeleteSkippingDestructor(from.leakPtr());
+    fastFree(from.leakPtr());
 }
 
 inline CSSSelector::CSSSelector()
