@@ -74,12 +74,12 @@ bool MockInputMethod::CanComposeInline() const {
   return true;
 }
 
-void MockInputMethod::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
+void MockInputMethod::AddObserver(InputMethodObserver* observer) {
+  observer_list_.AddObserver(static_cast<Observer*>(observer));
 }
 
-void MockInputMethod::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void MockInputMethod::RemoveObserver(InputMethodObserver* observer) {
+  observer_list_.RemoveObserver(static_cast<Observer*>(observer));
 }
 
 }  // namespace ui

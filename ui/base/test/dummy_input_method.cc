@@ -69,6 +69,12 @@ bool DummyInputMethod::CanComposeInline() const {
   return true;
 }
 
+void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
+}
+
+void DummyInputMethod::RemoveObserver(InputMethodObserver* observer) {
+}
+
 }  // namespace test
 }  // namespace ui
 

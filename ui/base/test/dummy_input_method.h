@@ -8,6 +8,9 @@
 #include "ui/base/ime/input_method.h"
 
 namespace ui {
+
+class InputMethodObserver;
+
 namespace test {
 
 class DummyInputMethod : public InputMethod {
@@ -33,6 +36,8 @@ class DummyInputMethod : public InputMethod {
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+  virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethod);

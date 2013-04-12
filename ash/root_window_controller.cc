@@ -293,8 +293,6 @@ void RootWindowController::InitForPrimaryDisplay() {
   if (Shell::GetInstance()->delegate()->IsUserLoggedIn())
     shelf_->CreateLauncher();
 
-  // TODO(bryeung): Move this to CreateContainersInRootWindow when the
-  // keyboard controller will take care of deferring creation of the keyboard.
   InitKeyboard();
 }
 
@@ -513,9 +511,6 @@ void RootWindowController::InitKeyboard() {
     aura::Window* keyboard_container =
         keyboard_controller_->GetContainerWindow();
     parent->AddChild(keyboard_container);
-    // TODO(bryeung): move this to the controller on visibility changed
-    parent->StackChildAtTop(keyboard_container);
-    keyboard_container->Show();
   }
 }
 

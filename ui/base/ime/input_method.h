@@ -20,6 +20,7 @@ namespace internal {
 class InputMethodDelegate;
 }  // namespace internal
 
+class InputMethodObserver;
 class KeyEvent;
 class TextInputClient;
 
@@ -124,6 +125,10 @@ class InputMethod {
 
   // Checks if the focused text input client supports inline composition.
   virtual bool CanComposeInline() const = 0;
+
+  // Management of the observer list.
+  virtual void AddObserver(InputMethodObserver* observer) = 0;
+  virtual void RemoveObserver(InputMethodObserver* observer) = 0;
 };
 
 }  // namespace ui

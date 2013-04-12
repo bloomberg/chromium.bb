@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 
+#include "ash/shell.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -12,7 +13,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 AshKeyboardControllerProxy::AshKeyboardControllerProxy() {}
@@ -41,6 +45,12 @@ aura::Window* AshKeyboardControllerProxy::GetKeyboardWindow() {
         std::string());
   }
   return web_contents_->GetView()->GetNativeView();
+}
+
+ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
+  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+  DCHECK(root_window);
+  return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
 }
 
 extensions::WindowController*

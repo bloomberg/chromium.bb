@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -20,16 +21,19 @@ class TextInputClient;
 
 // A mock ui::InputMethod implementation for testing. You can get the instance
 // of this class as the global input method with calling
-// SetUpInputMethodFacotryForTesting() which is decleared in
+// SetUpInputMethodFacotryForTesting() which is declared in
 // ui/base/ime/input_method_factory.h
 class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  public:
-  class Observer {
+  class Observer : public InputMethodObserver {
    public:
     virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
     virtual void OnFocus() = 0;
     virtual void OnBlur() = 0;
     virtual void OnCaretBoundsChanged(const TextInputClient* client) = 0;
+
+    // InputMethodObserver overrides
+    virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
   };
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
@@ -51,9 +55,8 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 
  private:
   TextInputClient* text_input_client_;

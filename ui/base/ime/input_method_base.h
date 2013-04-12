@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_export.h"
@@ -17,6 +18,7 @@ class Rect;
 
 namespace ui {
 
+class InputMethodObserver;
 class TextInputClient;
 
 // A helper class providing functionalities shared among ui::InputMethod
@@ -43,6 +45,9 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
 
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+
+  virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 
  protected:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
@@ -73,6 +78,9 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
                                          KeyboardCode key_code,
                                          int flags) const;
 
+  // Convenience method to notify all observers of TextInputClient changes.
+  void NotifyTextInputStateChanged(const TextInputClient* client);
+
   bool system_toplevel_window_focused() const {
     return system_toplevel_window_focused_;
   }
@@ -80,6 +88,8 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
  private:
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
+
+  ObserverList<InputMethodObserver> observer_list_;
 
   bool system_toplevel_window_focused_;
 
