@@ -76,7 +76,7 @@ I am the first commit.
   # ChangeId; only GerritPatches do.
   has_native_change_id = False
 
-  DEFAULT_TRACKING = 'refs/remotes/origin/master'
+  DEFAULT_TRACKING = 'refs/remotes/%s/master' % constants.EXTERNAL_REMOTE
 
   def _CreateSourceRepo(self, path):
     """Generate a new repo with a single commit."""
@@ -108,7 +108,7 @@ I am the first commit.
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master',
+                          '%s/master' % constants.EXTERNAL_REMOTE,
                           kwds.pop('remote', constants.EXTERNAL_REMOTE),
                           sha1=sha1, **kwds)
 
@@ -124,11 +124,14 @@ I am the first commit.
   def _GetSha1(self, cwd, refspec):
     return self._run(['git', 'rev-list', '-n1', refspec], cwd=cwd)
 
-  def _MakeRepo(self, name, clone, alternates=True):
+  def _MakeRepo(self, name, clone, remote=None, alternates=True):
     path = os.path.join(self.tempdir, name)
     cmd = ['git', 'clone', clone, path]
     if alternates:
       cmd += ['--reference', clone]
+    if remote is None:
+      remote = constants.EXTERNAL_REMOTE
+    cmd += ['--origin', remote]
     self._run(cmd)
     return path
 
@@ -319,25 +322,26 @@ I am the first commit.
 
   def _assertGerritDependencies(self, remote=constants.EXTERNAL_REMOTE):
     convert = str
+    tracking = 'refs/remotes/%s/master' % remote
     if remote == constants.INTERNAL_REMOTE:
       convert = lambda val: '*%s' % (val,)
-    git1 = self._MakeRepo('git1', self.source)
+    git1 = self._MakeRepo('git1', self.source, remote=remote)
     # Check that we handle the edge case of the first commit in a
     # repo...
     patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
     self.assertEqual(
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        patch.GerritDependencies(git1, tracking),
         [])
     cid1, cid2, cid3 = self.MakeChangeId(3)
     patch = self.CommitChangeIdFile(git1, cid1, remote=remote)
     # Since its parent is ToT, there are no deps.
     self.assertEqual(
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        patch.GerritDependencies(git1, tracking),
         [])
     patch = self.CommitChangeIdFile(git1, cid2, content='monkeys',
                                     remote=remote)
     self.assertEqual(
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        patch.GerritDependencies(git1, tracking),
         [convert(cid1)])
 
     # Check the behaviour for missing ChangeId in a parent next.
@@ -346,7 +350,7 @@ I am the first commit.
 
     # Verify it returns just the parrent, rather than all parents.
     self.assertEqual(
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        patch.GerritDependencies(git1, tracking),
         [convert(cid2)])
 
     parent_sha1 = patch.sha1
@@ -355,10 +359,11 @@ I am the first commit.
       patch = self.CommitChangeIdFile(git1, content='thus %s' % content,
                                       raw_changeid_text='Change-Id: I%s'
                                       % content, remote=remote)
-      patch = self.CommitChangeIdFile(git1, cid3, content='update')
+      patch = self.CommitChangeIdFile(git1, cid3, content='update',
+                                      remote=remote)
       self.assertRaises2(cros_patch.BrokenChangeID,
                          patch.GerritDependencies, git1,
-                         'refs/remotes/origin/master',
+                         tracking,
                          msg="Change-Id: I%s failed to trigger a "
                          "BrokenChangeId" % (content,))
       # Now wipe those commits since they'll interfere w/ the next run, and the
@@ -371,7 +376,7 @@ I am the first commit.
                                     content='the glass walls.',
                                     remote=remote)
     self.assertEqual(
-        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        patch.GerritDependencies(git1, tracking),
         map(convert, [parent_sha1]))
 
   def testExternalGerritDependencies(self):
@@ -455,10 +460,9 @@ class TestLocalPatchGit(TestGitRepoPatch):
 
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+    remote = kwds.pop('remote', constants.EXTERNAL_REMOTE)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master',
-                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
-                          sha1, **kwds)
+                          '%s/master' % remote, remote, sha1, **kwds)
 
   def testUpload(self):
     def ProjectDirMock(_sourceroot):
@@ -511,7 +515,8 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, self.PROJECT, ref,
-                          'origin/master', self.ORIGINAL_BRANCH,
+                          '%s/master' % constants.EXTERNAL_REMOTE,
+                          self.ORIGINAL_BRANCH,
                           self.ORIGINAL_SHA1,
                           kwds.pop('remote', constants.EXTERNAL_REMOTE),
                           carbon_copy_sha1=sha1, **kwds)
