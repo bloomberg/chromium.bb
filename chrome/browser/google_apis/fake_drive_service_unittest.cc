@@ -91,7 +91,9 @@ class FakeDriveServiceTest : public testing::Test {
   FakeDriveService fake_service_;
 };
 
-void AppendProgressCallbackResult(std::vector<int64>* values, int64 progress) {
+void AppendProgressCallbackResult(std::vector<int64>* values,
+                                  int64 progress,
+                                  int64 total) {
   values->push_back(progress);
 }
 

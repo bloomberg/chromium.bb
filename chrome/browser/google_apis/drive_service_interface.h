@@ -80,7 +80,7 @@ typedef base::Callback<void(GDataErrorCode error,
     AuthorizeAppCallback;
 
 // Callback used for ResumeUpload().
-typedef base::Callback<void(int64 progress)> ProgressCallback;
+typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
 
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.

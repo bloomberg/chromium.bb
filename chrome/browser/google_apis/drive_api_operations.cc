@@ -566,7 +566,7 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
     const net::URLFetcher* source, int64 current, int64 total) {
   ResumeUploadOperationBase::OnURLFetchUploadProgress(source, current, total);
   if (!progress_callback_.is_null())
-    progress_callback_.Run(current);
+    progress_callback_.Run(current, total);
 }
 
 }  // namespace drive

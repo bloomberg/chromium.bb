@@ -893,11 +893,12 @@ void FakeDriveService::ResumeUpload(
     // it twice per one ResumeUpload. This is for making sure that client code
     // works fine even if the callback is invoked more than once; it is the
     // crucial difference of the progress callback from others.
-    int64 mid_position = start_position + (end_position - start_position) / 2;
+    int64 chunk_size = end_position - start_position;
+    int64 mid_position = start_position + chunk_size / 2;
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, mid_position));
+        FROM_HERE, base::Bind(progress_callback, mid_position, chunk_size));
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(progress_callback, end_position));
+        FROM_HERE, base::Bind(progress_callback, end_position, chunk_size));
   }
 
   if (content_length != end_position) {
