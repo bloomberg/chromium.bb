@@ -254,6 +254,12 @@ void StartupAppLauncher::Launch() {
                                                   extension_misc::LAUNCH_WINDOW,
                                                   NEW_WINDOW));
   InitAppSession(profile_, app_id_);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+
   OnLaunchSuccess();
 }
 
@@ -279,6 +285,7 @@ void StartupAppLauncher::BeginInstall() {
 
 void StartupAppLauncher::InstallCallback(bool success,
                                          const std::string& error) {
+  installer_ = NULL;
   if (success) {
     // Schedules Launch() to be called after the callback returns.
     // So that the app finishes its installation.

@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -143,17 +144,13 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   DCHECK(default_host_ == NULL);
   default_host_ = this;
 
-  // Add a reference count so the message loop won't exit when other
-  // message loop clients (e.g. menus) do.
-  g_browser_process->AddRefModule();
+  // Make sure chrome won't exit while we are at login/oobe screen.
+  chrome::StartKeepAlive();
 }
 
 BaseLoginDisplayHost::~BaseLoginDisplayHost() {
-  // A browser should already exist when destructor is called since
-  // deletion is scheduled with MessageLoop::DeleteSoon() from
-  // OnSessionStart(), so the browser will already have incremented
-  // the reference count.
-  g_browser_process->ReleaseModule();
+  // Let chrome process exit after login/oobe screen if needed.
+  chrome::EndKeepAlive();
 
   default_host_ = NULL;
 }

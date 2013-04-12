@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,6 +45,9 @@ void KioskAppMenuHandler::GetLocalizedStrings(
 void KioskAppMenuHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("initializeKioskApps",
       base::Bind(&KioskAppMenuHandler::HandleInitializeKioskApps,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("kioskAppsLoaded",
+      base::Bind(&KioskAppMenuHandler::HandleKioskAppsLoaded,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchKioskApp",
       base::Bind(&KioskAppMenuHandler::HandleLaunchKioskApps,
@@ -85,6 +89,14 @@ void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
   initialized_ = true;
   SendKioskApps();
+}
+
+void KioskAppMenuHandler::HandleKioskAppsLoaded(
+    const base::ListValue* args) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_KIOSK_APPS_LOADED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void KioskAppMenuHandler::HandleLaunchKioskApps(const base::ListValue* args) {

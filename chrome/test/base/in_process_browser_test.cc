@@ -70,7 +70,8 @@ base::LazyInstance<chrome::ChromeContentRendererClient>::Leaky
 }  // namespace
 
 InProcessBrowserTest::InProcessBrowserTest()
-    : browser_(NULL)
+    : browser_(NULL),
+      exit_when_last_browser_closes_(true)
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
 #endif  // OS_MACOSX
@@ -185,7 +186,8 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
 #endif
 
   // TODO(pkotwicz): Investigate if we can remove this switch.
-  command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
+  if (exit_when_last_browser_closes_)
+    command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
 
   if (command_line->GetArgs().empty())
     command_line->AppendArg(chrome::kAboutBlankURL);

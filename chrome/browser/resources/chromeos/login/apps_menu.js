@@ -74,6 +74,19 @@ cr.define('login', function() {
       }, 500);
     },
 
+    findAndRunAppForTesting: function(id) {
+      this.showMenu(true);
+      for (var i = 0; i < this.menu.menuItems.length; i++) {
+        var menuNode = this.menu.menuItems[i];
+        if (menuNode.appId == id) {
+          var activationEvent = cr.doc.createEvent('Event');
+          activationEvent.initEvent('activate', true, true);
+          menuNode.dispatchEvent(activationEvent);
+          break;
+        }
+      }
+    },
+
     /**
      * Adds an app to the menu.
      * @param {Object} app An app info object.
@@ -82,6 +95,7 @@ cr.define('login', function() {
     addItem_: function(app) {
       var menuItem = this.menu.addMenuItem(app);
       menuItem.classList.add('apps-menu-item');
+      menuItem.appId = app.id;
       menuItem.addEventListener('activate', function() {
         chrome.send('launchKioskApp', [app.id]);
       });
@@ -95,6 +109,7 @@ cr.define('login', function() {
   AppsMenuButton.setApps = function(apps) {
     $('show-apps-button').data = apps;
     $('login-header-bar').hasApps = apps.length > 0;
+    chrome.send('kioskAppsLoaded');
   };
 
   /**
@@ -109,6 +124,15 @@ cr.define('login', function() {
                                    cr.ui.Bubble.Attachment.TOP,
                                    BUBBLE_OFFSET,
                                    BUBBLE_PADDING);
+  };
+
+
+  /**
+   * Runs app with a given id from the list of loaded apps.
+   * @param {!string} id of an app to run.
+   */
+  AppsMenuButton.runAppForTesting = function(id) {
+    $('show-apps-button').findAndRunAppForTesting(id);
   };
 
   return {

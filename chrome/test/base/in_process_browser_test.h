@@ -173,6 +173,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   }
 #endif  // OS_MACOSX
 
+  void SetExitWhenLastBrowserCloses(bool value) {
+    exit_when_last_browser_closes_ = value;
+  }
+
  private:
   // Creates a user data directory for the test if one is needed. Returns true
   // if successful.
@@ -194,6 +198,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // Temporary user data directory. Used only when a user data directory is not
   // specified in the command line.
   base::ScopedTempDir temp_user_data_dir_;
+
+  // True if we should exit the tests after the last browser instance closes.
+  bool exit_when_last_browser_closes_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;

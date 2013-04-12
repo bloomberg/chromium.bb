@@ -107,6 +107,7 @@ class KioskAppManager : public content::NotificationObserver,
   friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;
   friend struct base::DefaultDeleter<KioskAppManager>;
   friend class KioskAppManagerTest;
+  friend class KioskTest;
 
   KioskAppManager();
   virtual ~KioskAppManager();
