@@ -74,7 +74,8 @@ void DiskCacheTestWithCache::InitCache() {
     InitDiskCache();
 
   ASSERT_TRUE(NULL != cache_);
-  if (first_cleanup_)
+  // TODO(pasko): enable Entry Count for the Simple Cache.
+  if (first_cleanup_ && !simple_cache_mode_)
     ASSERT_EQ(0, cache_->GetEntryCount());
 }
 
