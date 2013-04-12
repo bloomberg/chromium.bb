@@ -53,6 +53,7 @@ std::string GetEntryHashForKey(const std::string& key);
 namespace SimpleIndexFile {
   // Simple Index File metadata is defined here.
   struct Header {
+    Header();
     uint64 initial_magic_number;
     uint32 version;
     uint64 number_of_entries;
@@ -89,6 +90,7 @@ namespace SimpleIndexFile {
   const size_t kEntryMetadataSize = sizeof(EntryMetadata);
 
   struct Footer {
+    Footer();
     uint32 crc;
   };
 

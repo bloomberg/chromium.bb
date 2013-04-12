@@ -27,16 +27,30 @@ std::string GetEntryHashForKey(const std::string& key) {
 
 namespace SimpleIndexFile {
 
-EntryMetadata::EntryMetadata() :
-    last_used_time(0),
-    entry_size(0) {
+Footer::Footer() {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  memset(this, 0, sizeof(*this));
+}
+
+Header::Header() {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  memset(this, 0, sizeof(*this));
+}
+
+EntryMetadata::EntryMetadata() {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  memset(this, 0, sizeof(*this));
 }
 
 EntryMetadata::EntryMetadata(const std::string& hash_key_p,
                              base::Time last_used_time_p,
-                             uint64 entry_size_p) :
-    last_used_time(last_used_time_p.ToInternalValue()),
-    entry_size(entry_size_p) {
+                             uint64 entry_size_p) {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  memset(this, 0, sizeof(*this));
+
+  // Proceed with field initializations.
+  entry_size = entry_size_p;
+  last_used_time = last_used_time_p.ToInternalValue();
   DCHECK_EQ(kEntryHashKeySize, implicit_cast<int>(hash_key_p.size()));
   hash_key_p.copy(hash_key, kEntryHashKeySize);
 }
