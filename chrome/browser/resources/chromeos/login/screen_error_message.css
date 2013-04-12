@@ -36,9 +36,10 @@
 }
 
 .error-header {
-  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
-                                      rgba(255,255,255,0.97));
-  border-bottom: 1px solid #eee;
+  background-clip: padding-box;
+  background-image: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                            rgba(255,255,255,0.97));
+  border-bottom: 1px solid rgba(238,238,238,0.97);
   padding: 71px 20px 50px;
   text-align: center;
 }
@@ -53,8 +54,8 @@
 }
 
 .error-body {
-  background: -webkit-linear-gradient(rgba(255,255,255,0.97),
-                                      rgba(255,255,255,0.95));
+  background-image: -webkit-linear-gradient(rgba(249,249,249,0.97),
+                                            rgba(249,249,249,0.95));
   padding: 20px 20px 20px;
 }
 
