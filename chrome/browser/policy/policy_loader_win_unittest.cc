@@ -81,7 +81,7 @@ bool InstallValue(const base::Value& value,
       if (!value.GetAsDictionary(&sub_dict))
         return false;
       for (base::DictionaryValue::Iterator it(*sub_dict);
-           it.HasNext(); it.Advance()) {
+           !it.IsAtEnd(); it.Advance()) {
         if (!InstallValue(it.value(), hive, path + kPathSep + name,
                           UTF8ToUTF16(it.key()))) {
           return false;
@@ -149,7 +149,7 @@ base::DictionaryValue* BuildSchema(const base::Value& value) {
       if (value.GetAsDictionary(&dict)) {
         base::DictionaryValue* properties = new base::DictionaryValue();
         for (base::DictionaryValue::Iterator it(*dict);
-             it.HasNext(); it.Advance()) {
+             !it.IsAtEnd(); it.Advance()) {
           properties->Set(it.key(), BuildSchema(it.value()));
         }
         schema->SetString(schema::kType, "object");
@@ -379,14 +379,14 @@ void TestHarness::Install3rdPartyPolicy(const base::DictionaryValue* policies) {
   const string16 kPathPrefix = string16(kRegistryMandatorySubKey) + kPathSep +
                                kThirdParty + kPathSep;
   for (base::DictionaryValue::Iterator domain(*policies);
-       domain.HasNext(); domain.Advance()) {
+       !domain.IsAtEnd(); domain.Advance()) {
     const base::DictionaryValue* components = NULL;
     if (!domain.value().GetAsDictionary(&components)) {
       ADD_FAILURE();
       continue;
     }
     for (base::DictionaryValue::Iterator component(*components);
-         component.HasNext(); component.Advance()) {
+         !component.IsAtEnd(); component.Advance()) {
       const string16 path = string16(kRegistryMandatorySubKey) + kPathSep +
                             kThirdParty + kPathSep +
                             UTF8ToUTF16(domain.key()) + kPathSep +

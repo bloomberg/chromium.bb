@@ -22,7 +22,7 @@ TEST(PluginFinderTest, JsonSyntax) {
   EXPECT_EQ(base::Value::TYPE_INTEGER, version->GetType());
 
   for (DictionaryValue::Iterator plugin_it(*plugin_list);
-       plugin_it.HasNext(); plugin_it.Advance()) {
+       !plugin_it.IsAtEnd(); plugin_it.Advance()) {
     const DictionaryValue* plugin = NULL;
     ASSERT_TRUE(plugin_it.value().GetAsDictionary(&plugin));
     std::string dummy_str;

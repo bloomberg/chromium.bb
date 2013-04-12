@@ -172,7 +172,7 @@ class PolicyWatcherWin :
     scoped_ptr<base::DictionaryValue> policy(new base::DictionaryValue());
 
     for (base::DictionaryValue::Iterator i(Defaults());
-         i.HasNext(); i.Advance()) {
+         !i.IsAtEnd(); i.Advance()) {
       const std::string& policy_name = i.key();
       if (i.value().GetType() == base::DictionaryValue::TYPE_BOOLEAN) {
         bool bool_value;

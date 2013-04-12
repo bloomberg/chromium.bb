@@ -234,7 +234,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
-  for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
+  for (DictionaryValue::Iterator it(settings); !it.IsAtEnd(); it.Advance()) {
     error = AddToBatch(options, it.key(), it.value(), &batch, changes.get());
     if (!error.empty()) {
       return WriteFailureForKey("find changes to set multiple items",

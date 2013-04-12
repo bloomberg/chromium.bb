@@ -198,7 +198,7 @@ bool LocalTestServer::AddCommandLineArguments(CommandLine* command_line) const {
     return false;
 
   // Serialize the argument dictionary into CommandLine.
-  for (DictionaryValue::Iterator it(arguments_dict); it.HasNext();
+  for (DictionaryValue::Iterator it(arguments_dict); !it.IsAtEnd();
        it.Advance()) {
     const base::Value& value = it.value();
     const std::string& key = it.key();

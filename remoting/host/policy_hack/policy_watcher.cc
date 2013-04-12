@@ -39,7 +39,7 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
     const base::DictionaryValue* bad_type_values) {
   scoped_ptr<base::DictionaryValue> to(default_values->DeepCopy());
   for (base::DictionaryValue::Iterator i(*default_values);
-       i.HasNext(); i.Advance()) {
+       !i.IsAtEnd(); i.Advance()) {
 
     const base::Value* value = NULL;
 
@@ -193,7 +193,7 @@ void PolicyWatcher::UpdatePolicies(
   scoped_ptr<base::DictionaryValue> changed_policies(
       new base::DictionaryValue());
   base::DictionaryValue::Iterator iter(*new_policies);
-  while (iter.HasNext()) {
+  while (!iter.IsAtEnd()) {
     base::Value* old_policy;
     if (!(old_policies_->Get(iter.key(), &old_policy) &&
           old_policy->Equals(&iter.value()))) {

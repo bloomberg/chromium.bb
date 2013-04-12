@@ -740,14 +740,14 @@ TEST(ValuesTest, MergeDictionaryDeepCopy) {
 
 TEST(ValuesTest, DictionaryIterator) {
   DictionaryValue dict;
-  for (DictionaryValue::Iterator it(dict); it.HasNext(); it.Advance()) {
+  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     ADD_FAILURE();
   }
 
   StringValue value1("value1");
   dict.Set("key1", value1.DeepCopy());
   bool seen1 = false;
-  for (DictionaryValue::Iterator it(dict); it.HasNext(); it.Advance()) {
+  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     EXPECT_FALSE(seen1);
     EXPECT_EQ("key1", it.key());
     EXPECT_TRUE(value1.Equals(&it.value()));
@@ -758,7 +758,7 @@ TEST(ValuesTest, DictionaryIterator) {
   StringValue value2("value2");
   dict.Set("key2", value2.DeepCopy());
   bool seen2 = seen1 = false;
-  for (DictionaryValue::Iterator it(dict); it.HasNext(); it.Advance()) {
+  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == "key1") {
       EXPECT_FALSE(seen1);
       EXPECT_TRUE(value1.Equals(&it.value()));

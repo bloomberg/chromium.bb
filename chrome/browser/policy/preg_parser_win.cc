@@ -193,7 +193,7 @@ void HandleRecord(const string16& key_name,
   } else if (StartsWithASCII(action_trigger, kActionTriggerDelVals, true)) {
     // Delete all values, but keep keys (i.e. retain dictionary entries).
     base::DictionaryValue new_dict;
-    for (base::DictionaryValue::Iterator it(*dict); it.HasNext();
+    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
       base::DictionaryValue* subdict = NULL;
       if (dict->GetDictionaryWithoutPathExpansion(it.key(), &subdict)) {

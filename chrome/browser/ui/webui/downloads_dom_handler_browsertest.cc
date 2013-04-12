@@ -32,7 +32,7 @@ bool ListMatches(base::ListValue* left_list, const std::string& right_json) {
     CHECK(left_list->GetDictionary(i, &left_dict));
     CHECK(right_list->GetDictionary(i, &right_dict));
     for (base::DictionaryValue::Iterator iter(*right_dict);
-          iter.HasNext(); iter.Advance()) {
+          !iter.IsAtEnd(); iter.Advance()) {
       base::Value* left_value = NULL;
       if (left_dict->HasKey(iter.key()) &&
           left_dict->Get(iter.key(), &left_value) &&

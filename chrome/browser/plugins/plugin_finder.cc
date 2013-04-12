@@ -250,7 +250,7 @@ void PluginFinder::ReinitializePlugins(
   identifier_plugin_.clear();
 
   for (DictionaryValue::Iterator plugin_it(*plugin_list);
-      plugin_it.HasNext(); plugin_it.Advance()) {
+      !plugin_it.IsAtEnd(); plugin_it.Advance()) {
     const DictionaryValue* plugin = NULL;
     const std::string& identifier = plugin_it.key();
     if (plugin_list->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
