@@ -193,10 +193,6 @@
     [RaisesException] void setBatteryStatus(Document document, DOMString eventType, boolean charging, double chargingTime, double dischargingTime, double level);
 #endif
 
-#if defined(ENABLE_NETWORK_INFO) && ENABLE_NETWORK_INFO
-    [RaisesException] void setNetworkInformation(Document document, DOMString eventType, double bandwidth, boolean metered);
-#endif
-
 #if defined(ENABLE_PROXIMITY_EVENTS) && ENABLE_PROXIMITY_EVENTS
     [RaisesException] void setDeviceProximity(Document document, DOMString eventType, double value, double min, double max);
 #endif

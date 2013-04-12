@@ -212,9 +212,6 @@ webkit.org/b/72010 fast/dom/navigator-vibration.html
 # Battery Status API is not supported yet in the chromium port.
 webkit.org/b/62698 batterystatus
 
-# Network Information API is not supported yet in the chromium port.
-webkit.org/b/73528 networkinformation
-
 # CSS image-resolution is not yet enabled.
 webkit.org/b/85262 fast/css/image-resolution
 

@@ -21,7 +21,6 @@ MediaSource
 MediaStream conditional=MEDIA_STREAM
 MediaStreamTrack conditional=MEDIA_STREAM
 MessagePort
-NetworkInfoConnection conditional=NETWORK_INFO
 Node
 Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 Performance

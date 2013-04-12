@@ -210,8 +210,6 @@ public:
 
     void setBatteryStatus(Document*, const String& eventType, bool charging, double chargingTime, double dischargingTime, double level, ExceptionCode&);
 
-    void setNetworkInformation(Document*, const String& eventType, double bandwidth, bool metered, ExceptionCode&);
-
     void setDeviceProximity(Document*, const String& eventType, double value, double min, double max, ExceptionCode&);
 
     enum {
