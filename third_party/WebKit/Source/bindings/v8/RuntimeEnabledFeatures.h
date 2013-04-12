@@ -31,8 +31,6 @@
 #ifndef RuntimeEnabledFeatures_h
 #define RuntimeEnabledFeatures_h
 
-#include "PlatformExportMacros.h"
-
 namespace WebCore {
 
 // A class that stores static enablers for all experimental features. Note that
@@ -277,7 +275,7 @@ private:
     static bool isCSSExclusionsEnabled;
     static bool isCSSRegionsEnabled;
     static bool isCSSCompositingEnabled;
-    WEBCORE_TESTING static bool isLangAttributeAwareFormControlUIEnabled;
+    static bool isLangAttributeAwareFormControlUIEnabled;
 #if ENABLE(SCRIPTED_SPEECH)
     static bool isScriptedSpeechEnabled;
 #endif

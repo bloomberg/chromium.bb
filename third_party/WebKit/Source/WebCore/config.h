@@ -22,7 +22,6 @@
 #include <wtf/Platform.h>
 
 #include <wtf/ExportMacros.h>
-#include "PlatformExportMacros.h"
 
 #ifdef __APPLE__
 #define HAVE_FUNC_USLEEP 1
