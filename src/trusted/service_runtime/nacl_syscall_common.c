@@ -42,9 +42,14 @@
 
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
+
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -55,19 +60,16 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-
-#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #if NACL_WINDOWS
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 #endif
 
+#include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator/validation_metadata.h"
 
 struct NaClDescQuotaInterface;
 
@@ -1465,26 +1467,25 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                                          (off_t) offset);
     } else if (mapping_code) {
       /*
-       * TODO(bsy):  coming in the next CL.
-       *
        * Map a read-only view in trusted memory, ask validator if
-       * valid without patching; if okay, then stop threads on
-       * windows, then map in untrusted executable memory, continue
-       * threads on windows.  Fallback to using the dyncode_create
-       * interface otherwise.  (We could also stop threads, mmap
-       * in-place, run patching-validation, resume threads.)
+       * valid without patching; if okay, then map in untrusted
+       * executable memory.  Fallback to using the dyncode_create
+       * interface otherwise.
        *
-       * For mmap, stopping threads on Windows is only needed to
-       * ensure that nothing gets allocated into the temporary address
-       * space hole.  This is particularly dangerous, since the hole
-       * is in an executable region.  We must abort the program if
-       * some other trusted thread (or injected thread) allocates into
-       * this space.  We also need interprocessor interrupts to flush
-       * the icaches associated other cores, since they may contain
-       * stale data.  NB: mmap with PROT_EXEC should do this for us,
-       * since otherwise loading shared libraries in a multithreaded
-       * environment cannot work in a portable fashion.  (Mutex locks
-       * only ensure dcache coherency.)
+       * On Windows, threads are already stopped by the
+       * NaClVmHoleOpeningMu invocation above.
+       *
+       * For mmap, stopping threads on Windows is needed to ensure
+       * that nothing gets allocated into the temporary address space
+       * hole.  This would otherwise have been particularly dangerous,
+       * since the hole is in an executable region.  We must abort the
+       * program if some other trusted thread (or injected thread)
+       * allocates into this space.  We also need interprocessor
+       * interrupts to flush the icaches associated other cores, since
+       * they may contain stale data.  NB: mmap with PROT_EXEC should
+       * do this for us, since otherwise loading shared libraries in a
+       * multithreaded environment cannot work in a portable fashion.
+       * (Mutex locks only ensure dcache coherency.)
        *
        * For eventual munmap, stopping threads also involve looking at
        * their registers to make sure their %rip/%eip/%ip are not
@@ -1492,13 +1493,12 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
        * insertion).  This is needed because mmap->munmap->mmap could
        * cause problems due to scheduler races.
        *
-       * Fast path: if single threaded, no need to have two mappings,
-       * since we do not allow overmapping of existing code.
-       *
        * Use NaClDynamicRegionCreate to mark region as allocated.
        */
       uintptr_t image_sys_addr;
+      NaClValidationStatus validator_status = NaClValidationFailed;
       int sys_ret;  /* syscall return convention */
+      int ret;
 
       NaClLog(4, "NaClSysMmap: checking descriptor type\n");
       if (NACL_VTBL(NaClDesc, ndp)->typeTag != NACL_DESC_HOST_IO) {
@@ -1512,25 +1512,115 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
        * First, try to mmap.  Check if target address range is
        * available.  It must be neither in use by NaClText interface,
        * nor used by previous mmap'd code.  We record mmap'd code
-       * regions in the NaClText's data structures to avoid lo both
-       * having to deal with looking in two data structures.
+       * regions in the NaClText's data structures to avoid having to
+       * deal with looking in two data structures.
+       *
+       * This mapping is PROT_READ | PROT_WRITE, MAP_PRIVATE so that
+       * if validation fails in read-only mode, we can re-run the
+       * validator to patch in place.
        */
 
-      /*
-       * Fallback implementation only.
-       */
       image_sys_addr = (*NACL_VTBL(NaClDesc, ndp)->
                         Map)(ndp,
                              NaClDescEffectorTrustedMem(),
                              (void *) NULL,
                              length,
-                             PROT_READ | PROT_WRITE,
-                             MAP_PRIVATE,
+                             NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                             NACL_ABI_MAP_PRIVATE,
                              offset);
       if (NaClPtrIsNegErrno(&image_sys_addr)) {
         map_result = image_sys_addr;
         goto cleanup;
       }
+
+      /*
+       * TODO(bsy): when ncbray provides validation cache metadata
+       * interface, plumb this through here. We need to extract the
+       * descriptor metadata as a bag of bits via NACL_VTBL(NaClDesc,
+       * ndp)->GetMetadata(...), possibly deserialize its contents
+       * using a validation cache provided function into a struct
+       * NaClValidationMetadata object, and pass it through here, as
+       * well as destroying the metadata object etc.
+       */
+
+      /* Ask validator / validation cache */
+      validator_status = NACL_FI("MMAP_FORCE_MMAP_VALIDATION_FAIL",
+                                 (*nap->validator->
+                                  Validate)(usraddr,
+                                            (uint8_t *) image_sys_addr,
+                                            length,
+                                            0,  /* stubout_mode: no */
+                                            1,  /* readonly_text: yes */
+                                            nap->cpu_features,
+                                            NULL,  /* metadata */
+                                            nap->validation_cache),
+                                 NaClValidationFailed);
+      NaClLog(3, "NaClSysMmap: prot_exec, validator_status %d\n",
+              validator_status);
+
+      if (NaClValidationSucceeded == validator_status) {
+        /*
+         * Check if target address range is actually available.  It
+         * must be neither in use by NaClText interface, nor used by
+         * previous mmap'd code.  We record mmap'd code regions in the
+         * NaClText's data structures to avoid lo both having to deal
+         * with looking in two data structures.  We could do this
+         * first since this is a cheaper check, but it shouldn't
+         * matter since application errors ought to be rare and we
+         * shouldn't optimize for error handling, and this makes the
+         * code simpler (releasing a created region is more code).
+         */
+        NaClXMutexLock(&nap->dynamic_load_mutex);
+        ret = NaClDynamicRegionCreate(nap, usraddr, length, 1);
+        NaClXMutexUnlock(&nap->dynamic_load_mutex);
+        if (!ret) {
+          NaClLog(3, "NaClSysMmap: PROT_EXEC region"
+                  " overlaps other dynamic code\n");
+          map_result = -NACL_ABI_EINVAL;
+          goto cleanup;
+        }
+        /*
+         * Remove scratch mapping.
+         */
+#if NACL_WINDOWS
+        sys_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                   UnmapUnsafe)(ndp, (void *) image_sys_addr, length);
+#else
+        sys_ret = munmap((void *) image_sys_addr, length);
+#endif
+        if (0 != sys_ret) {
+          NaClLog(LOG_FATAL,
+                  "NaClSysMmap: validated internal copy,"
+                  " but could not unmap\n");
+        }
+        /*
+         * We must succeed in mapping into the untrusted executable
+         * space, since otherwise it would mean that the temporary
+         * hole (for Windows) was filled by some other thread, and
+         * that's unrecoverable.  For Linux and OSX, this should never
+         * happen, since it's an atomic overmap.
+         */
+        NaClLog(3, "NaClSysMmap: mapping into executable memory\n");
+        image_sys_addr = (*NACL_VTBL(NaClDesc, ndp)->
+                          Map)(ndp,
+                               nap->effp,
+                               (void *) sysaddr,
+                               length,
+                               NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
+                               NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_FIXED,
+                               offset);
+        if (image_sys_addr != sysaddr) {
+          NaClLog(LOG_FATAL,
+                  "NaClSysMmap: map into executable memory failed:"
+                  " got 0x%"NACL_PRIxPTR"\n", image_sys_addr);
+        }
+        map_result = (int32_t) usraddr;
+        goto cleanup;
+      }
+
+      NaClLog(3,
+              "NaClSysMmap: did not validate in readonly_text mode;"
+              " attempting to use dyncode interface.\n");
 
       if (holding_app_lock) {
         NaClVmHoleClosingMu(nap);
@@ -1543,6 +1633,10 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
             *(volatile uint8_t *) image_sys_addr;
       }
 
+      /*
+       * Fallback implementation.  Use the mapped memory as source for
+       * the dynamic code insertion interface.
+       */
       sys_ret = NaClTextDyncodeCreate(nap,
                                       (uint32_t) usraddr,
                                       (uint8_t *) image_sys_addr,

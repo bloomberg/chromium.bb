@@ -152,11 +152,16 @@ int prot_exec_test(int d, size_t file_size, void *test_specifics) {
       fflush(stdout);
       value = (*func)(param);
       printf("%d\n", value);
+      fflush(stdout);
       CHECK(value == x_plus_1(param));
     }
 
+    printf("unmapping code...\n");
+    fflush(stdout);
     CHECK(-1 == munmap(addr, file_size));
     CHECK(EINVAL == errno);
+    printf("... failed as expected\n");
+    fflush(stdout);
   }
 
   return 0;
@@ -456,44 +461,43 @@ struct MapPrivateSpecifics test1 = { 1 };
 
 struct ProtExecSpecifics exec_spec[] = {
   {
-    /* non-functional no NACL_FI */
+    /* 0:  non-functional no NACL_FI */
     (0 * 0x10000 + (uintptr_t) &etext), 0,
     PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
     EINVAL,
-  },
-  {
-    /* functional */
-    (1 * 0x10000 + (uintptr_t) &etext), 0,
+  }, {
+    /* 1:  functional */
+    (0 * 0x10000 + (uintptr_t) &etext), 0,
     PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
     0,
-  },
-  {
-    /* short_file */
+  }, {
+    /* 2:  functional, fallback */
     (2 * 0x10000 + (uintptr_t) &etext), 0,
     PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+    0,
+  }, {
+    /* 3:  short_file */
+    (4 * 0x10000 + (uintptr_t) &etext), 0,
+    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
     EINVAL,
-  },
-  {
-    /* PROT_WRITE|PROT_EXEC */
-    (3 * 0x10000 + (uintptr_t) &etext), 0,
+  }, {
+    /* 4:  PROT_WRITE|PROT_EXEC */
+    (4 * 0x10000 + (uintptr_t) &etext), 0,
     PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_FIXED,
     EINVAL,
-  },
-  {
-    /* unaligned */
+  }, {
+    /* 5:  unaligned */
     (4 * 0x10000 + (uintptr_t) &etext), 1,
     PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
     EINVAL,
-  },
-  {
-    /* no MAP_FIXED, hint */
-    (5 * 0x10000 + (uintptr_t) &etext), 0,
+  }, {
+    /* 6: no MAP_FIXED, hint */
+    (4 * 0x10000 + (uintptr_t) &etext), 0,
     PROT_READ | PROT_EXEC, MAP_SHARED,
     EINVAL,
-  },
-  {
-    /* no MAP_FIXED, no hint */
-    /* 6... */ 0, 0,
+  }, {
+    /* 7: no MAP_FIXED, no hint */
+    0, 0,
     PROT_READ | PROT_EXEC, MAP_SHARED,
     EINVAL,
   },
@@ -562,7 +566,8 @@ struct TestParams tests[] = {
     NULL, 0,
     &test1,
   }, {
-    "PROT_EXEC Mapping Test: non-functional (no NACL_FI)",
+    "PROT_EXEC Mapping Test: non-functional"
+    " (no MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
     (O_RDWR | O_CREAT),
     NUM_FILE_BYTES,
@@ -570,7 +575,7 @@ struct TestParams tests[] = {
     test_machine_code, sizeof test_machine_code,
     &exec_spec[0],
   }, {
-    "PROT_EXEC Mapping Test: functional",
+    "PROT_EXEC Mapping Test: functional (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
     (O_RDWR | O_CREAT),
     NUM_FILE_BYTES,
@@ -578,13 +583,22 @@ struct TestParams tests[] = {
     test_machine_code, sizeof test_machine_code,
     &exec_spec[1],
   }, {
+    "PROT_EXEC Mapping Test: functional, fallback\n"
+    " (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK, MMAP_FORCE_MMAP_VALIDATION_FAIL)",
+    prot_exec_test,
+    (O_RDWR | O_CREAT),
+    NUM_FILE_BYTES,
+    1,
+    test_machine_code, sizeof test_machine_code,
+    &exec_spec[2],
+  }, {
     "PROT_EXEC Mapping Test: short file",
     prot_exec_test,
     (O_RDWR | O_CREAT),
     4096,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[2],
+    &exec_spec[3],
   }, {
     "PROT_EXEC Mapping Test: PROT_WRITE|PROT_EXEC",
     prot_exec_write_test,
@@ -592,7 +606,7 @@ struct TestParams tests[] = {
     NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[3],
+    &exec_spec[4],
   }, {
     "PROT_EXEC Mapping Test: unaligned target address",
     prot_exec_test,
@@ -600,7 +614,7 @@ struct TestParams tests[] = {
     NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[4],
+    &exec_spec[5],
   }, {
     "PROT_EXEC Mapping Test: no MAP_FIXED, hint",
     prot_exec_test,
@@ -608,7 +622,7 @@ struct TestParams tests[] = {
     NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[5],
+    &exec_spec[6],
   }, {
     "PROT_EXEC Mapping Test: no MAP_FIXED, no hint",
     prot_exec_test,
@@ -616,7 +630,7 @@ struct TestParams tests[] = {
     NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[6],
+    &exec_spec[7],
   },
 };
 

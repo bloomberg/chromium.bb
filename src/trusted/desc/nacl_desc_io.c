@@ -169,6 +169,10 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
       NaClLog(1, "NaClDescIoDescMap: no address space?\n");
       return -NACL_ABI_ENOMEM;
     }
+    NaClLog(4,
+            "NaClDescIoDescMap: NaClFindAddressSpace"
+            " returned 0x%"NACL_PRIxPTR"\n",
+            addr);
     start_addr = (void *) addr;
   }
   flags |= NACL_ABI_MAP_FIXED;

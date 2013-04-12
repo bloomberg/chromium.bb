@@ -70,9 +70,17 @@ node = env.CommandSelLdrTestNacl(
     nexe_command_line,
     sel_ldr_flags=['-a'],
     osenv=['NACL_FAULT_INJECTION=' +
-           'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
+           'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GPF/100:' +
+           'MMAP_FORCE_MMAP_VALIDATION_FAIL=GF:' +
            'MMAP_STUBOUT_EMULATION=GF'])
 
+# This test is marked broken for glibc since there is no coordination
+# between the addresses at which the test will try to mmap in code and
+# where runnable-ld.so or dlopen may have already map in shared
+# library code.  The test could, in principle, just try a variety of
+# locations in user-level code, but the test failures will be
+# unpredictable, making the use of deterministic fault injection
+# impossible.
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test',
                        is_broken=env.Bit('nacl_glibc'))
 
@@ -83,6 +91,7 @@ disabled_syscall_node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-a'],
     osenv=['NACL_FAULT_INJECTION=' +
            'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
+           'MMAP_FORCE_MMAP_VALIDATION_FAIL=GF:' +
            'MMAP_STUBOUT_EMULATION=GF',
            'NACL_DISABLE_DYNCODE_SYSCALLS=1'])
 

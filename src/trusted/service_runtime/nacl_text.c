@@ -246,33 +246,23 @@ struct NaClDynamicRegion* NaClDynamicRegionFindClosestLEQ(struct NaClApp *nap,
   return nap->dynamic_regions + begin;
 }
 
-/*
- * Find the last region overlapping with the given memory range, return 0 if
- * region is unused.
- * caller must hold nap->dynamic_load_mutex, and must discard result
- * when lock is released.
- */
 struct NaClDynamicRegion* NaClDynamicRegionFind(struct NaClApp *nap,
                                                 uintptr_t ptr,
                                                 size_t size) {
-  struct NaClDynamicRegion *p = NaClDynamicRegionFindClosestLEQ(nap,
-                                                                ptr + size - 1);
+  struct NaClDynamicRegion *p =
+      NaClDynamicRegionFindClosestLEQ(nap, ptr + size - 1);
   return (p != NULL && ptr < p->start + p->size) ? p : NULL;
 }
 
-/*
- * Insert a new region into nap->dynamic regions, maintaining the sorted
- * ordering. Returns 1 on success, 0 if there is a conflicting region
- * Caller must hold nap->dynamic_load_mutex.
- * Invalidates all previous NaClDynamicRegion pointers.
- */
 int NaClDynamicRegionCreate(struct NaClApp *nap,
                             uintptr_t start,
-                            size_t size) {
+                            size_t size,
+                            int is_mmap) {
   struct NaClDynamicRegion item, *regionp, *end;
   item.start = start;
   item.size = size;
   item.delete_generation = -1;
+  item.is_mmap = is_mmap;
   if (nap->dynamic_regions_allocated == nap->num_dynamic_regions) {
     /* out of space, double buffer size */
     nap->dynamic_regions_allocated *= 2;
@@ -312,11 +302,6 @@ int NaClDynamicRegionCreate(struct NaClApp *nap,
   return 1;
 }
 
-/*
- * Delete a region from nap->dynamic_regions, maintaining the sorted ordering
- * Caller must hold nap->dynamic_load_mutex.
- * Invalidates all previous NaClDynamicRegion pointers.
- */
 void NaClDynamicRegionDelete(struct NaClApp *nap, struct NaClDynamicRegion* r) {
   struct NaClDynamicRegion *end = nap->dynamic_regions
                                 + nap->num_dynamic_regions;
@@ -698,7 +683,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
     goto cleanup_unlock;
   }
 
-  if (NaClDynamicRegionCreate(nap, dest_addr, size) != 1) {
+  if (NaClDynamicRegionCreate(nap, dest_addr, size, 0) != 1) {
     /* target addr is in use */
     NaClLog(1, "NaClTextDyncodeCreate: Code range already allocated\n");
     retval = -NACL_ABI_EINVAL;
@@ -810,9 +795,13 @@ int32_t NaClSysDyncodeModify(struct NaClAppThread *natp,
   NaClXMutexLock(&nap->dynamic_load_mutex);
 
   region = NaClDynamicRegionFind(nap, dest_addr, size);
-  if (NULL == region || region->start > dest_addr
-        || region->start + region->size < dest_addr + size) {
-    /* target not a subregion of region or region is null */
+  if (NULL == region ||
+      region->start > dest_addr ||
+      region->start + region->size < dest_addr + size ||
+      region->is_mmap) {
+    /*
+     * target not a subregion of region or region is null, or came from a file.
+     */
     NaClLog(1, "NaClSysDyncodeModify: Can't find region to modify\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unlock;
@@ -939,7 +928,10 @@ int32_t NaClSysDyncodeDelete(struct NaClAppThread *natp,
    * previously inserted region, so no need to check for alignment/bounds/etc
    */
   region = NaClDynamicRegionFind(nap, dest_addr, size);
-  if (NULL == region || region->start != dest_addr || region->size != size) {
+  if (NULL == region ||
+      region->start != dest_addr ||
+      region->size != size ||
+      region->is_mmap) {
     NaClLog(1, "NaClSysDyncodeDelete: Can't find region to delete\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unlock;
