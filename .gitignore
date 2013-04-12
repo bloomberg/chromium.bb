@@ -24,6 +24,14 @@
 /git_bin
 /svn_bin
 
+# Ignore ctags/cscope index files
+/TAGS
+/cscope.files
+/cscope.in.out
+/cscope.out
+/cscope.po.out
+/tags
+
 # Ignore unittest related files.
 /testing_support/_rietveld
 /tests/git-svn-submodule/
