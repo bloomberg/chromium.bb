@@ -29,9 +29,9 @@
 #ifndef ArchiveResourceCollection_h
 #define ArchiveResourceCollection_h
 
-#include "Archive.h"
 #include "ArchiveResource.h"
 #include "KURL.h"
+#include "MHTMLArchive.h"
 #include <wtf/text/WTFString.h>
 
 #include <wtf/HashMap.h>
@@ -45,14 +45,14 @@ public:
     ArchiveResourceCollection();
 
     void addResource(PassRefPtr<ArchiveResource>);
-    void addAllResources(Archive*);
+    void addAllResources(MHTMLArchive*);
     
     ArchiveResource* archiveResourceForURL(const KURL&);
-    PassRefPtr<Archive> popSubframeArchive(const String& frameName, const KURL&);
+    PassRefPtr<MHTMLArchive> popSubframeArchive(const String& frameName, const KURL&);
     
 private:    
     HashMap<String, RefPtr<ArchiveResource> > m_subresources;
-    HashMap<String, RefPtr<Archive> > m_subframes;
+    HashMap<String, RefPtr<MHTMLArchive> > m_subframes;
 };
 
 }

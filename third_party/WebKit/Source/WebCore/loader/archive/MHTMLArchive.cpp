@@ -240,4 +240,21 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
     return mhtmlData.release();
 }
 
+void MHTMLArchive::clearAllSubframeArchives()
+{
+    Vector<RefPtr<MHTMLArchive> > clearedArchives;
+    clearAllSubframeArchivesImpl(&clearedArchives);
+}
+
+void MHTMLArchive::clearAllSubframeArchivesImpl(Vector<RefPtr<MHTMLArchive> >* clearedArchives)
+{
+    for (Vector<RefPtr<MHTMLArchive> >::iterator it = m_subframeArchives.begin(); it != m_subframeArchives.end(); ++it) {
+        if (!clearedArchives->contains(*it)) {
+            clearedArchives->append(*it);
+            (*it)->clearAllSubframeArchivesImpl(clearedArchives);
+        }
+    }
+    m_subframeArchives.clear();
+}
+
 }

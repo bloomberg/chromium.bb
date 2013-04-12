@@ -31,7 +31,6 @@
 #include "DocumentLoader.h"
 
 #include "ApplicationCacheHost.h"
-#include "ArchiveFactory.h"
 #include "ArchiveResourceCollection.h"
 #include "CachedPage.h"
 #include "CachedResourceLoader.h"
@@ -50,6 +49,7 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
+#include "MHTMLArchive.h"
 #include "MemoryCache.h"
 #include "Page.h"
 #include "ProgressTracker.h"
@@ -644,6 +644,11 @@ void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
     }
 }
 
+static bool isArchiveMIMEType(const String& mimeType)
+{
+    return mimeType == "multipart/related";
+}
+
 void DocumentLoader::commitLoad(const char* data, int length)
 {
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
@@ -655,7 +660,7 @@ void DocumentLoader::commitLoad(const char* data, int length)
     FrameLoader* frameLoader = DocumentLoader::frameLoader();
     if (!frameLoader)
         return;
-    if (ArchiveFactory::isArchiveMimeType(response().mimeType()))
+    if (isArchiveMIMEType(response().mimeType()))
         return;
     frameLoader->client()->committedLoad(this, data, length);
 }
@@ -692,7 +697,7 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         
         // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
         // relative URLs are resolved properly.
-        if (m_archive && m_archive->type() == Archive::MHTML)
+        if (m_archive)
             m_frame->document()->setBaseURLOverride(m_archive->mainResource()->url());
 
         // Call receivedFirstData() exactly once per load. We should only reach this point multiple times
@@ -840,10 +845,12 @@ bool DocumentLoader::isLoadingInAPISense() const
 bool DocumentLoader::maybeCreateArchive()
 {
     // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
-    RefPtr<ResourceBuffer> mainResourceBuffer = mainResourceData();
-    m_archive = ArchiveFactory::create(m_response.url(), mainResourceBuffer ? mainResourceBuffer->sharedBuffer() : 0, m_response.mimeType());
-    if (!m_archive)
+    if (!isArchiveMIMEType(m_response.mimeType()))
         return false;
+
+    RefPtr<ResourceBuffer> mainResourceBuffer = mainResourceData();
+    m_archive = MHTMLArchive::create(m_response.url(), mainResourceBuffer ? mainResourceBuffer->sharedBuffer() : 0);
+    ASSERT(m_archive);
     
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
@@ -854,13 +861,13 @@ bool DocumentLoader::maybeCreateArchive()
     return true;
 }
 
-void DocumentLoader::setArchive(PassRefPtr<Archive> archive)
+void DocumentLoader::setArchive(PassRefPtr<MHTMLArchive> archive)
 {
     m_archive = archive;
     addAllArchiveResources(m_archive.get());
 }
 
-void DocumentLoader::addAllArchiveResources(Archive* archive)
+void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
 {
     if (!m_archiveResourceCollection)
         m_archiveResourceCollection = adoptPtr(new ArchiveResourceCollection);
@@ -872,9 +879,9 @@ void DocumentLoader::addAllArchiveResources(Archive* archive)
     m_archiveResourceCollection->addAllResources(archive);
 }
 
-PassRefPtr<Archive> DocumentLoader::popArchiveForSubframe(const String& frameName, const KURL& url)
+PassRefPtr<MHTMLArchive> DocumentLoader::popArchiveForSubframe(const String& frameName, const KURL& url)
 {
-    return m_archiveResourceCollection ? m_archiveResourceCollection->popSubframeArchive(frameName, url) : PassRefPtr<Archive>(0);
+    return m_archiveResourceCollection ? m_archiveResourceCollection->popSubframeArchive(frameName, url) : PassRefPtr<MHTMLArchive>(0);
 }
 
 void DocumentLoader::clearArchiveResources()
@@ -969,16 +976,7 @@ bool DocumentLoader::scheduleArchiveLoad(ResourceLoader* loader, const ResourceR
         deliverSubstituteResourcesAfterDelay();
         return true;
     }
-
-    if (!m_archive)
-        return false;
-
-    switch (m_archive->type()) {
-    case Archive::MHTML:
-        return true; // Always fail the load for resources not included in the MHTML.
-    default:
-        return false;
-    }
+    return m_archive;
 }
 
 void DocumentLoader::setTitle(const StringWithDirection& title)

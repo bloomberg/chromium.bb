@@ -35,7 +35,7 @@ ArchiveResourceCollection::ArchiveResourceCollection()
 {
 }
 
-void ArchiveResourceCollection::addAllResources(Archive* archive)
+void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
 {
     ASSERT(archive);
     if (!archive)
@@ -45,9 +45,9 @@ void ArchiveResourceCollection::addAllResources(Archive* archive)
     for (Vector<RefPtr<ArchiveResource> >::const_iterator iterator = subresources.begin(); iterator != subresources.end(); ++iterator)
         m_subresources.set((*iterator)->url(), iterator->get());
 
-    const Vector<RefPtr<Archive> >& subframes = archive->subframeArchives();
-    for (Vector<RefPtr<Archive> >::const_iterator iterator = subframes.begin(); iterator != subframes.end(); ++iterator) {
-        RefPtr<Archive> archive = *iterator;
+    const Vector<RefPtr<MHTMLArchive> >& subframes = archive->subframeArchives();
+    for (Vector<RefPtr<MHTMLArchive> >::const_iterator iterator = subframes.begin(); iterator != subframes.end(); ++iterator) {
+        RefPtr<MHTMLArchive> archive = *iterator;
         ASSERT(archive->mainResource());
 
         const String& frameName = archive->mainResource()->frameName();
@@ -81,9 +81,9 @@ ArchiveResource* ArchiveResourceCollection::archiveResourceForURL(const KURL& ur
     return resource;
 }
 
-PassRefPtr<Archive> ArchiveResourceCollection::popSubframeArchive(const String& frameName, const KURL& url)
+PassRefPtr<MHTMLArchive> ArchiveResourceCollection::popSubframeArchive(const String& frameName, const KURL& url)
 {
-    RefPtr<Archive> archive = m_subframes.take(frameName);
+    RefPtr<MHTMLArchive> archive = m_subframes.take(frameName);
     if (archive)
         return archive.release();
 

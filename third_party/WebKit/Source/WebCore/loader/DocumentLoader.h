@@ -52,7 +52,6 @@ class SchedulePair;
 
 namespace WebCore {
     class ApplicationCacheHost;
-    class Archive;
     class ArchiveResource;
     class ArchiveResourceCollection;
     class CachedResourceLoader;
@@ -60,6 +59,7 @@ namespace WebCore {
     class FormState;
     class Frame;
     class FrameLoader;
+    class MHTMLArchive;
     class Page;
     class ResourceBuffer;
     class ResourceLoader;
@@ -123,9 +123,9 @@ namespace WebCore {
         void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
-        void setArchive(PassRefPtr<Archive>);
-        void addAllArchiveResources(Archive*);
-        PassRefPtr<Archive> popArchiveForSubframe(const String& frameName, const KURL&);
+        void setArchive(PassRefPtr<MHTMLArchive>);
+        void addAllArchiveResources(MHTMLArchive*);
+        PassRefPtr<MHTMLArchive> popArchiveForSubframe(const String& frameName, const KURL&);
 
         bool scheduleArchiveLoad(ResourceLoader*, const ResourceRequest&);
 
@@ -302,7 +302,7 @@ namespace WebCore {
         Timer<DocumentLoader> m_substituteResourceDeliveryTimer;
 
         OwnPtr<ArchiveResourceCollection> m_archiveResourceCollection;
-        RefPtr<Archive> m_archive;
+        RefPtr<MHTMLArchive> m_archive;
 
         HashSet<String> m_resourcesClientKnowsAbout;
         Vector<String> m_resourcesLoadedFromMemoryCacheForClientNotification;

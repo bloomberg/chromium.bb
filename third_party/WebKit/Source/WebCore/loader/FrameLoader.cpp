@@ -37,7 +37,6 @@
 
 #include "AXObjectCache.h"
 #include "ApplicationCacheHost.h"
-#include "Archive.h"
 #include "BackForwardController.h"
 #include "BeforeUnloadEvent.h"
 #include "MemoryCache.h"
@@ -78,6 +77,7 @@
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
+#include "MHTMLArchive.h"
 #include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PageCache.h"
@@ -818,7 +818,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
 {
     ASSERT(childFrame);
 
-    RefPtr<Archive> subframeArchive = activeDocumentLoader()->popArchiveForSubframe(childFrame->tree()->uniqueName(), url);    
+    RefPtr<MHTMLArchive> subframeArchive = activeDocumentLoader()->popArchiveForSubframe(childFrame->tree()->uniqueName(), url);
     if (subframeArchive) {
         childFrame->loader()->loadArchive(subframeArchive.release());
         return;
@@ -839,7 +839,7 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
     childFrame->loader()->loadURL(url, referer, "_self", false, FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
 }
 
-void FrameLoader::loadArchive(PassRefPtr<Archive> archive)
+void FrameLoader::loadArchive(PassRefPtr<MHTMLArchive> archive)
 {
     ArchiveResource* mainResource = archive->mainResource();
     ASSERT(mainResource);

@@ -31,19 +31,21 @@
 #ifndef MHTMLArchive_h
 #define MHTMLArchive_h
 
-
-#include "Archive.h"
+#include "ArchiveResource.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+#include <wtf/RefPtr.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
+class KURL;
 class MHTMLParser;
 class Page;
 class SharedBuffer;
 
-class MHTMLArchive : public Archive {
+class MHTMLArchive : public RefCounted<MHTMLArchive> {
 public:
-    virtual Type type() const { return MHTML; }
-
     static PassRefPtr<MHTMLArchive> create();
     static PassRefPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
 
@@ -52,12 +54,26 @@ public:
     static PassRefPtr<SharedBuffer> generateMHTMLDataUsingBinaryEncoding(Page*);
 
     virtual ~MHTMLArchive();
+    ArchiveResource* mainResource() { return m_mainResource.get(); }
+    const Vector<RefPtr<ArchiveResource> >& subresources() const { return m_subresources; }
+    const Vector<RefPtr<MHTMLArchive> >& subframeArchives() const { return m_subframeArchives; }
 
 private:
     static PassRefPtr<SharedBuffer> generateMHTMLData(Page*, bool useBinaryEncoding);
 
     friend class MHTMLParser;
     MHTMLArchive();
+
+    void setMainResource(PassRefPtr<ArchiveResource> mainResource) { m_mainResource = mainResource; }
+    void addSubresource(PassRefPtr<ArchiveResource> subResource) { m_subresources.append(subResource); }
+    void addSubframeArchive(PassRefPtr<MHTMLArchive> subframeArchive) { m_subframeArchives.append(subframeArchive); }
+
+    void clearAllSubframeArchives();
+    void clearAllSubframeArchivesImpl(Vector<RefPtr<MHTMLArchive> >* clearedArchives);
+
+    RefPtr<ArchiveResource> m_mainResource;
+    Vector<RefPtr<ArchiveResource> > m_subresources;
+    Vector<RefPtr<MHTMLArchive> > m_subframeArchives;
 };
 
 }
