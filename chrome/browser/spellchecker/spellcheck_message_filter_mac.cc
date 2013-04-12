@@ -19,8 +19,6 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
                         OnCheckSpelling)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_FillSuggestionList,
                         OnFillSuggestionList)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_DocumentClosed,
-                        OnDocumentClosed)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ShowSpellingPanel,
                         OnShowSpellingPanel)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
@@ -46,12 +44,6 @@ void SpellCheckMessageFilterMac::OnFillSuggestionList(
   spellcheck_mac::FillSuggestionList(word, suggestions);
 }
 
-
-void SpellCheckMessageFilterMac::OnDocumentClosed(int route_id) {
-  spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
-  RetireDocumentTag(route_id);
-}
-
 void SpellCheckMessageFilterMac::OnShowSpellingPanel(bool show) {
   spellcheck_mac::ShowSpellingPanel(show);
 }
@@ -75,7 +67,11 @@ int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {
   return tag_map_[route_id];
 }
 
+// TODO(groby): We are currently not notified of retired tags. We need
+// to track destruction of RenderViewHosts on the browser process side
+// to update our mappings when a document goes away.
 void SpellCheckMessageFilterMac::RetireDocumentTag(int route_id) {
+  spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }
 

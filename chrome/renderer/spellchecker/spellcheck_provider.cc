@@ -57,9 +57,6 @@ SpellCheckProvider::SpellCheckProvider(
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
-#if defined(OS_MACOSX)
-  Send(new SpellCheckHostMsg_DocumentClosed(routing_id(), routing_id()));
-#endif
 }
 
 void SpellCheckProvider::RequestTextChecking(

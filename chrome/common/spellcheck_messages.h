@@ -95,11 +95,6 @@ IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_CallSpellingService,
 #endif
 
 #if defined(OS_MACOSX)
-// This message tells the spellchecker that a document has been closed and all
-// of the ignored words for that document can be forgotten.
-IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_DocumentClosed,
-                    int /* route_id to identify document */)
-
 // Tells the browser to display or not display the SpellingPanel
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
                     bool /* if true, then show it, otherwise hide it*/)
