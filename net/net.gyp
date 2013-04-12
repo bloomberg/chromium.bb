@@ -7,7 +7,6 @@
     'chromium_code': 1,
 
     'linux_link_kerberos%': 0,
-    'use_tracing_cache_backend%': 0,
     'conditions': [
       ['chromeos==1 or OS=="android" or OS=="ios"', {
         # Disable Kerberos on ChromeOS, Android and iOS, at least for now.
@@ -374,8 +373,6 @@
         'disk_cache/stress_support.h',
         'disk_cache/trace.cc',
         'disk_cache/trace.h',
-        'disk_cache/tracing_cache_backend.cc',
-        'disk_cache/tracing_cache_backend.h',
         'disk_cache/simple/simple_backend_impl.cc',
         'disk_cache/simple/simple_backend_impl.h',
         'disk_cache/simple/simple_disk_format.cc',
@@ -1110,11 +1107,6 @@
             'dns/dns_client.cc',
           ],
         }],
-        ['use_tracing_cache_backend==1', {
-          'defines': [
-            'USE_TRACING_CACHE_BACKEND'
-          ],
-         }],
         ['use_openssl==1', {
             'sources!': [
               'base/crypto_module_nss.cc',
