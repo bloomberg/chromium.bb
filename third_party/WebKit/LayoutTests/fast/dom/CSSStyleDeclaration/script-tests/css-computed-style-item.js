@@ -6,7 +6,7 @@ document.documentElement.appendChild(element);
 var computedStyle = window.getComputedStyle(element, null);
 
 shouldBeEqualToString('typeof computedStyle.length', 'number');
-shouldBeUndefined('computedStyle[computedStyle.length]');
+shouldBeEqualToString('computedStyle[computedStyle.length]', '');
 shouldBeUndefined('computedStyle[-1]')
 
 document.documentElement.removeChild(element);
