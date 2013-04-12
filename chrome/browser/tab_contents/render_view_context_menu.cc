@@ -121,11 +121,11 @@ namespace {
 // just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
 // Never change mapping or reuse |enum_id|. Always push back new items.
 // Items that is not used any more by |RenderViewContextMenu.ExecuteCommand|
-// could be deleted, but don't change the rest of |kUmaEnumToCommand|.
+// could be deleted, but don't change the rest of |kUmaEnumToControlId|.
 const struct UmaEnumCommandIdPair {
   int enum_id;
-  int command_id;
-} kUmaEnumToCommand[] = {
+  int control_id;
+} kUmaEnumToControlId[] = {
   {  0, IDC_CONTENT_CONTEXT_CUSTOM_FIRST },
   {  1, IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST },
   {  2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST },
@@ -215,40 +215,38 @@ int CollapleCommandsForUMA(int id) {
 // Returns UMA enum value for command specified by |id| or -1 if not found.
 int FindUMAEnumValueForCommand(int id) {
   id = CollapleCommandsForUMA(id);
-  const size_t kMappingSize = arraysize(kUmaEnumToCommand);
+  const size_t kMappingSize = arraysize(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
-    if (kUmaEnumToCommand[i].command_id == id) {
-      return kUmaEnumToCommand[i].enum_id;
+    if (kUmaEnumToControlId[i].control_id == id) {
+      return kUmaEnumToControlId[i].enum_id;
     }
   }
   return -1;
 }
 
-// Increments histogram value for executed command specified by |id|.
-void RecordExecutedCommand(int id) {
+// Increments histogram value for used items specified by |id|.
+void RecordUsedItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id);
   if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToCommand);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ExecuteCommand",
-                              enum_id,
-                              kUmaEnumToCommand[kMappingSize - 1].enum_id);
+    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Used", enum_id,
+                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
   } else {
-    NOTREACHED() << "Update kUmaEnumToCommand. Unhanded IDC: " << id;
+    NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
   }
 }
 
 // Increments histogram value for visible context menu item specified by |id|.
-void RecordShownItems(int id) {
+void RecordShownItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id);
   if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToCommand);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ShowCommand",
-                              enum_id,
-                              kUmaEnumToCommand[kMappingSize - 1].enum_id);
+    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Shown", enum_id,
+                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
   } else {
     // Just warning here. It's harder to maintain list of all possibly
     // visible items than executable items.
-    DLOG(ERROR) << "Update kUmaEnumToCommand. Unhanded IDC: " << id;
+    DLOG(ERROR) << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
   }
 }
 
@@ -1472,7 +1470,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       return observer->ExecuteCommand(id);
   }
 
-  RecordExecutedCommand(id);
+  RecordUsedItem(id);
 
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
 
@@ -1926,7 +1924,7 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
   for (int i = 0; i < source->GetItemCount(); ++i) {
     if (source->IsVisibleAt(i) &&
         source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR) {
-      RecordShownItems(source->GetCommandIdAt(i));
+      RecordShownItem(source->GetCommandIdAt(i));
     }
   }
 
