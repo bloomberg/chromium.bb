@@ -585,6 +585,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForSyncable
   virtual void RunBody() OVERRIDE {
     manager()->GetUsageTracker(type())->GetHostUsage(
         host(), NewWaitableHostUsageCallback());
+    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
   }
 
   virtual void DispatchCallbacks() OVERRIDE {
