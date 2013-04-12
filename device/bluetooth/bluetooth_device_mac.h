@@ -20,7 +20,7 @@ namespace device {
 
 class BluetoothDeviceMac : public BluetoothDevice {
  public:
-  explicit BluetoothDeviceMac(const IOBluetoothDevice* device);
+  explicit BluetoothDeviceMac(IOBluetoothDevice* device);
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
@@ -71,34 +71,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
  private:
   friend class BluetoothAdapterMac;
 
-  // Computes the fingerprint that can be used to compare the devices.
-  static uint32 ComputeDeviceFingerprint(const IOBluetoothDevice* device);
-
-  uint32 device_fingerprint() const {
-    return device_fingerprint_;
-  }
-
-  // The Bluetooth class of the device, a bitmask that may be decoded using
-  // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
-  uint32 bluetooth_class_;
-
-  // The name of the device, as supplied by the remote device.
-  std::string name_;
-
-  // The Bluetooth address of the device.
-  std::string address_;
-
-  // Tracked device state, updated by the adapter managing the lifecyle of
-  // the device.
-  bool paired_;
-  bool connected_;
-
-  // The services (identified by UUIDs) that this device provides.
-  ServiceList service_uuids_;
-
-  // Used to compare the devices.
-  const uint32 device_fingerprint_;
-  ServiceRecordList service_record_list_;
+  IOBluetoothDevice* device_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
 };

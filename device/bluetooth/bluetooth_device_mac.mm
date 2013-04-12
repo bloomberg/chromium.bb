@@ -7,11 +7,13 @@
 #include <IOBluetooth/Bluetooth.h>
 #import <IOBluetooth/objc/IOBluetoothDevice.h>
 #import <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
+#import <IOBluetooth/objc/IOBluetoothSDPUUID.h>
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/hash.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
@@ -31,46 +33,60 @@ MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 #endif  // MAC_OS_X_VERSION_10_7
 
+namespace {
+
+// Converts |uuid| to a IOBluetoothSDPUUID instance.
+//
+// |uuid| must be in the format of XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.
+IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
+  DCHECK(uuid.size() == 36);
+  DCHECK(uuid[8] == '-');
+  DCHECK(uuid[13] == '-');
+  DCHECK(uuid[18] == '-');
+  DCHECK(uuid[23] == '-');
+  std::string numbers_only = uuid;
+  numbers_only.erase(23, 1);
+  numbers_only.erase(18, 1);
+  numbers_only.erase(13, 1);
+  numbers_only.erase(8, 1);
+  std::vector<uint8> uuid_bytes_vector;
+  base::HexStringToBytes(numbers_only, &uuid_bytes_vector);
+  DCHECK(uuid_bytes_vector.size() == 16);
+
+  return [IOBluetoothSDPUUID uuidWithBytes:&uuid_bytes_vector[0]
+                                    length:uuid_bytes_vector.size()];
+}
+
+}  // namespace
+
 namespace device {
 
-BluetoothDeviceMac::BluetoothDeviceMac(const IOBluetoothDevice* device)
-    : BluetoothDevice(),
-      device_fingerprint_(ComputeDeviceFingerprint(device)) {
-  name_ = base::SysNSStringToUTF8([device name]);
-  address_ = base::SysNSStringToUTF8([device addressString]);
-  bluetooth_class_ = [device classOfDevice];
-  connected_ = [device isConnected];
-  paired_ = [device isPaired];
-
-  for (IOBluetoothSDPServiceRecord* service in [device services]) {
-    BluetoothServiceRecord* service_record =
-        new BluetoothServiceRecordMac(service);
-    service_record_list_.push_back(service_record);
-    service_uuids_.push_back(service_record->uuid());
-  }
+BluetoothDeviceMac::BluetoothDeviceMac(IOBluetoothDevice* device)
+    : BluetoothDevice(), device_([device retain]) {
 }
 
 BluetoothDeviceMac::~BluetoothDeviceMac() {
+  [device_ release];
 }
 
 uint32 BluetoothDeviceMac::GetBluetoothClass() const {
-  return bluetooth_class_;
+  return [device_ classOfDevice];
 }
 
 std::string BluetoothDeviceMac::GetDeviceName() const {
-  return name_;
+  return base::SysNSStringToUTF8([device_ name]);
 }
 
 std::string BluetoothDeviceMac::GetAddress() const {
-  return address_;
+  return base::SysNSStringToUTF8([device_ addressString]);
 }
 
 bool BluetoothDeviceMac::IsPaired() const {
-  return paired_;
+  return [device_ isPaired];
 }
 
 bool BluetoothDeviceMac::IsConnected() const {
-  return connected_;
+  return [device_ isConnected];
 }
 
 bool BluetoothDeviceMac::IsConnectable() const {
@@ -81,27 +97,36 @@ bool BluetoothDeviceMac::IsConnecting() const {
   return false;
 }
 
+// TODO(youngki): BluetoothServiceRecord is deprecated; implement this method
+// without using BluetoothServiceRecord.
 BluetoothDevice::ServiceList BluetoothDeviceMac::GetServices() const {
-  return service_uuids_;
+  ServiceList service_uuids;
+  for (IOBluetoothSDPServiceRecord* service in [device_ services]) {
+    BluetoothServiceRecordMac service_record(service);
+    service_uuids.push_back(service_record.uuid());
+  }
+  return service_uuids;
 }
 
+// NOTE(youngki): This method is deprecated; it will be removed soon.
 void BluetoothDeviceMac::GetServiceRecords(
     const ServiceRecordsCallback& callback,
     const ErrorCallback& error_callback) {
-  callback.Run(service_record_list_);
+  ServiceRecordList service_record_list;
+  for (IOBluetoothSDPServiceRecord* service in [device_ services]) {
+    BluetoothServiceRecord* service_record =
+        new BluetoothServiceRecordMac(service);
+    service_record_list.push_back(service_record);
+  }
+
+  callback.Run(service_record_list);
 }
 
+// NOTE(youngki): This method is deprecated; it will be removed soon.
 void BluetoothDeviceMac::ProvidesServiceWithName(
     const std::string& name,
     const ProvidesServiceCallback& callback) {
-  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
-       iter != service_record_list_.end();
-       ++iter) {
-    if ((*iter)->name() == name) {
-      callback.Run(true);
-      return;
-    }
-  }
+  NOTIMPLEMENTED();
   callback.Run(false);
 }
 
@@ -160,18 +185,14 @@ void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
 void BluetoothDeviceMac::ConnectToService(
     const std::string& service_uuid,
     const SocketCallback& callback) {
-  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
-       iter != service_record_list_.end();
-       ++iter) {
-    if ((*iter)->uuid() == service_uuid) {
-      // If multiple service records are found, use the first one that works.
-      scoped_refptr<BluetoothSocket> socket(
-        BluetoothSocketMac::CreateBluetoothSocket(**iter));
-      if (socket.get() != NULL) {
-        callback.Run(socket);
-        return;
-      }
-    }
+  IOBluetoothSDPServiceRecord* record =
+      [device_ getServiceRecordForUUID:GetIOBluetoothSDPUUID(service_uuid)];
+  if (record != nil) {
+    BluetoothServiceRecordMac service_record(record);
+    scoped_refptr<BluetoothSocket> socket(
+        BluetoothSocketMac::CreateBluetoothSocket(service_record));
+    if (socket.get() != NULL)
+      callback.Run(socket);
   }
 }
 
@@ -186,27 +207,6 @@ void BluetoothDeviceMac::ClearOutOfBandPairingData(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-}
-
-// static
-uint32 BluetoothDeviceMac::ComputeDeviceFingerprint(
-    const IOBluetoothDevice* device) {
-  std::string device_string = base::StringPrintf("%s|%s|%u|%d|%d",
-      base::SysNSStringToUTF8([device name]).c_str(),
-      base::SysNSStringToUTF8([device addressString]).c_str(),
-      [device classOfDevice],
-      [device isConnected],
-      [device isPaired]);
-
-  for (IOBluetoothSDPServiceRecord* record in [device services]) {
-    base::StringAppendF(
-        &device_string,
-        "|%s|%lu",
-        base::SysNSStringToUTF8([record getServiceName]).c_str(),
-        static_cast<unsigned long>([[record attributes] count]));
-  }
-
-  return base::Hash(device_string);
 }
 
 }  // namespace device

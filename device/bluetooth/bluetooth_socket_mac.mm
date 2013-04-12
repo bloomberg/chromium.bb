@@ -53,6 +53,8 @@ BluetoothSocketMac::BluetoothSocketMac(IOBluetoothRFCOMMChannel* rfcomm_channel)
 }
 
 BluetoothSocketMac::~BluetoothSocketMac() {
+  [rfcomm_channel_ setDelegate:nil];
+  [rfcomm_channel_ closeChannel];
   [rfcomm_channel_ release];
   [delegate_ release];
 }
