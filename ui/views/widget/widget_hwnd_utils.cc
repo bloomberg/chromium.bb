@@ -6,8 +6,10 @@
 
 #include <dwmapi.h>
 
+#include "base/command_line.h"
 #include "base/win/windows_version.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
@@ -59,6 +61,9 @@ void CalculateWindowStylesFromInitParams(
     if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       BOOL enabled = FALSE;
       HRESULT hr = DwmIsCompositionEnabled(&enabled);
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableDwmComposition))
+        enabled = FALSE;
       if (SUCCEEDED(hr) && (enabled == TRUE))
         *ex_style |= WS_EX_COMPOSITED;
     }

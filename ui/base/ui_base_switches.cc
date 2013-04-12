@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Disables use of DWM composition for top level windows.
+const char kDisableDwmComposition[] = "disable-dwm-composition";
+
 // Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 

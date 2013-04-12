@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/pref_names.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget.h"
@@ -194,6 +195,9 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     BOOL composition_enabled = FALSE;
     HRESULT hr = DwmIsCompositionEnabled(&composition_enabled);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableDwmComposition))
+      composition_enabled = FALSE;
     if (SUCCEEDED(hr) && composition_enabled) {
       if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
           params->parent &&
