@@ -23,9 +23,10 @@
 // TODO(vadimt): Gather UMAs.
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
-// TODO(vadimt): Collect UMAs on internal and server errors. Consider throwing
-// exceptions. Remove 'console' calls.
-// TODO(vadimt): Consider processing errors for all storage.set calls.
+// TODO(vadimt): Consider throwing exceptions. Remove 'console' calls.
+// TODO(vadimt): Consider sending JS stacks for unexpected exceptions (including
+// ones from verify()), unfinished and infinite tasks, chrome.* API errors and
+// malformed server responses.
 
 // TODO(vadimt): Figure out the server name. Use it in the manifest and for
 // NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
@@ -107,6 +108,36 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 var tasks = buildTaskManager(areTasksConflicting);
 
 /**
+ * Diagnostic event identifier.
+ * @enum {number}
+ */
+var DiagnosticEvent = {
+  REQUEST_FOR_CARDS_TOTAL: 0,
+  REQUEST_FOR_CARDS_SUCCESS: 1,
+  CARDS_PARSE_SUCCESS: 2,
+  DISMISS_REQUEST_TOTAL: 3,
+  DISMISS_REQUEST_SUCCESS: 4,
+  EVENTS_TOTAL: 5  // EVENTS_TOTAL is not an event; all new events need to be
+                   // added before it.
+};
+
+/**
+ * Records a diagnostic event.
+ * @param {DiagnosticEvent} event Event identifier.
+ */
+function recordEvent(event) {
+  var metricDescription = {
+    metricName: 'GoogleNow.Event',
+    type: 'histogram-linear',
+    min: 1,
+    max: DiagnosticEvent.EVENTS_TOTAL,
+    buckets: DiagnosticEvent.EVENTS_TOTAL + 1
+  };
+
+  chrome.metricsPrivate.recordValue(metricDescription, event);
+}
+
+/**
  * Shows a notification and remembers information associated with it.
  * @param {Object} card Google Now card represented as a set of parameters for
  *     showing a Chrome notification.
@@ -136,7 +167,6 @@ function parseAndShowNotificationCards(response, callback) {
   try {
     var parsedResponse = JSON.parse(response);
   } catch (error) {
-    // TODO(vadimt): Increase UMA counter.
     console.error('parseAndShowNotificationCards parse error: ' + error);
     callback();
     return;
@@ -145,13 +175,11 @@ function parseAndShowNotificationCards(response, callback) {
   var cards = parsedResponse.cards;
 
   if (!(cards instanceof Array)) {
-    // TODO(vadimt): Increase UMA counter.
     callback();
     return;
   }
 
   if (typeof parsedResponse.expiration_timestamp_seconds != 'number') {
-    // TODO(vadimt): Increase UMA counter.
     callback();
     return;
   }
@@ -194,6 +222,8 @@ function parseAndShowNotificationCards(response, callback) {
       }
     }
 
+    recordEvent(DiagnosticEvent.CARDS_PARSE_SUCCESS);
+
     // Create/update notifications and store their new properties.
     var notificationsUrlInfo = {};
 
@@ -203,7 +233,6 @@ function parseAndShowNotificationCards(response, callback) {
         try {
           createNotification(card, notificationsUrlInfo);
         } catch (error) {
-          // TODO(vadimt): Increase UMA counter.
           console.error('Error in createNotification: ' + error);
         }
       }
@@ -230,16 +259,19 @@ function parseAndShowNotificationCards(response, callback) {
  */
 function requestNotificationCards(requestParameters, callback) {
   console.log('requestNotificationCards ' + requestParameters);
+  recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_TOTAL);
   // TODO(vadimt): Figure out how to send user's identity to the server.
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
   request.onloadend = function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
-    if (request.status == HTTP_OK)
+    if (request.status == HTTP_OK) {
+      recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_SUCCESS);
       parseAndShowNotificationCards(request.response, callback);
-    else
+    } else {
       callback();
+    }
   };
 
   request.open(
@@ -317,12 +349,16 @@ function updateNotificationsCards() {
  */
 function requestCardDismissal(notificationId, callbackBoolean) {
   console.log('requestDismissingCard ' + notificationId);
+  recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
   // Send a dismiss request to the server.
   var requestParameters = '?id=' + notificationId;
   var request = new XMLHttpRequest();
   request.responseType = 'text';
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
+    if (request.status == HTTP_OK)
+      recordEvent(DiagnosticEvent.DISMISS_REQUEST_SUCCESS);
+
     callbackBoolean(request.status == HTTP_OK);
   };
 
@@ -403,7 +439,6 @@ function onNotificationClicked(notificationId, selector) {
     storage.get('activeNotifications', function(items) {
       var actionUrls = items.activeNotifications[notificationId];
       if (typeof actionUrls != 'object') {
-      // TODO(vadimt): Increase UMA counter.
         callback();
         return;
       }
@@ -411,17 +446,13 @@ function onNotificationClicked(notificationId, selector) {
       var url = selector(actionUrls);
 
       if (typeof url != 'string') {
-        // TODO(vadimt): Increase UMA counter.
         callback();
         return;
       }
 
       chrome.tabs.create({url: url}, function(tab) {
-        if (!tab) {
-          chrome.windows.create({url: url}, function(window) {
-            // TODO(vadimt): Increase UMA counter.
-          });
-        }
+        if (!tab)
+          chrome.windows.create({url: url});
       });
       callback();
     });

@@ -15,7 +15,7 @@
  *     false.
  */
 function verify(condition, message) {
-  // TODO(vadimt): Send UMAs instead of showing alert.
+  // TODO(vadimt): Remove alert.
   // TODO(vadimt): Make sure the execution doesn't continue after this call.
   if (!condition) {
     var errorText = 'ASSERT: ' + message;
@@ -136,7 +136,6 @@ function buildTaskManager(areConflicting) {
    * @param {string} step Name of new step.
    */
   function debugSetStepName(step) {
-    // TODO(vadimt): Pass UMA counters instead of step names.
     stepName = step;
   }
 
@@ -154,9 +153,17 @@ function buildTaskManager(areConflicting) {
 
   chrome.runtime.onSuspend.addListener(function() {
     chrome.alarms.clear(CANNOT_UNLOAD_ALARM_NAME);
-    verify(queue.length == 0 && stepName == null,
-      'Incomplete task when unloading event page, queue = ' +
-      JSON.stringify(queue) + ', step = ' + stepName);
+
+    verify(
+        queue.length == 0,
+        'Incomplete task when unloading event page, queue = ' +
+        JSON.stringify(queue) + ', step = ' + stepName);
+    // TODO(vadimt): Once we add throwing exception to verify(), remove
+    // "queue.length > 0" from this verify() call.
+    verify(
+        queue.length > 0 || stepName == null,
+        'Step name not null when unloading event page, queue = ' +
+        JSON.stringify(queue) + ', step = ' + stepName);
   });
 
   return {
