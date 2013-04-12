@@ -31,7 +31,7 @@
 [
     Conditional=MICRODATA,
     IndexedGetter,
-    NamedGetter
+    CustomNamedGetter
 ] interface HTMLPropertiesCollection : HTMLCollection {
     readonly attribute unsigned long length;
     Node item(unsigned long index);

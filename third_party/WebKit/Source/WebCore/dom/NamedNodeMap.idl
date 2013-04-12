@@ -21,7 +21,7 @@
 [
     GenerateIsReachable=ImplElementRoot,
     IndexedGetter,
-    NamedGetter,
+    CustomNamedGetter,
     CustomIndexedGetter,
     ImplementationLacksVTable
 ] interface NamedNodeMap {

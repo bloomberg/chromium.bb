@@ -427,9 +427,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8:
         V8TestInterfaceAttrs, WTF_ARRAY_LENGTH(V8TestInterfaceAttrs),
         V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
-#if ENABLE(TEST_INTERFACE)
     desc->SetCallHandler(V8TestInterface::constructorCallback);
-#endif // ENABLE(TEST_INTERFACE)
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.

@@ -25,7 +25,7 @@
 
 [
     GenerateIsReachable=ImplElementRoot,
-    NamedGetter,
+    CustomNamedGetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
     CustomNamedSetter,

@@ -20,7 +20,7 @@
 
 [
     IndexedGetter,
-    NamedGetter,
+    CustomNamedGetter,
     CustomToJSObject,
     GenerateIsReachable=ImplOwnerNodeRoot,
     DependentLifetime,

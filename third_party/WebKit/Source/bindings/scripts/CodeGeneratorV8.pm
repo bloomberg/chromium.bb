@@ -2701,60 +2701,56 @@ sub GenerateImplementationNamedPropertyGetter
     my $namedPropertyGetter = shift;
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
-    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
-
-    if ($interfaceName eq "HTMLAppletElement" || $interfaceName eq "HTMLEmbedElement" || $interfaceName eq "HTMLObjectElement") {
-        $hasCustomNamedGetter = 1;
-    }
-
-    if ($interfaceName eq "HTMLDocument") {
-        $hasCustomNamedGetter = 0;
-    }
-
-    my $hasGetter = $interface->extendedAttributes->{"NamedGetter"} || $hasCustomNamedGetter;
-    if (!$hasGetter) {
-        return;
-    }
 
     if (!$namedPropertyGetter) {
         $namedPropertyGetter = $codeGenerator->FindSuperMethod($interface, "namedItem");
     }
 
-    if ($namedPropertyGetter && $namedPropertyGetter->type ne "Node" && !$namedPropertyGetter->extendedAttributes->{"Custom"} && !$hasCustomNamedGetter) {
+    if ($interface->extendedAttributes->{"NamedGetter"}) {
         AddToImplIncludes("V8Collection.h");
         my $type = $namedPropertyGetter->type;
         push(@implContent, <<END);
     setCollectionNamedGetter<${interfaceName}, ${type}>(desc);
 END
-        return;
     }
 
-    my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
-    my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
-    my $hasEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
-    my $setOn = "Instance";
+    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
+    # FIXME: make consistent between IDL and implementation. Then remove these special cases.
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLAppletElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLEmbedElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLObjectElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "DOMWindow";
+    $hasCustomNamedGetter = 0 if $interfaceName eq "HTMLDocument";
 
-    # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
-    # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
-    # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
-    # on the object.
-    if ($interfaceName eq "DOMWindow") {
-        $setOn = "Prototype";
-        $hasDeleter = 0;
-        $hasEnumerator = 0;
-    }
+    if ($hasCustomNamedGetter) {
+        my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
+        my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
+        my $hasEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
+        my $setOn = "Instance";
 
-    if ($interfaceName eq "HTMLPropertiesCollection") {
-        push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(V8HTMLCollection::namedPropertyGetter, ");
-    } else {
-        push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, ");
+        # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
+        # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
+        # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
+        # on the object.
+        if ($interfaceName eq "DOMWindow") {
+            $setOn = "Prototype";
+            $hasDeleter = 0;
+            $hasEnumerator = 0;
+        }
+
+        # FIXME: implement V8HTMLPropertiesCollection::namedPropertyGetter
+        if ($interfaceName eq "HTMLPropertiesCollection") {
+            push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(V8HTMLCollection::namedPropertyGetter, ");
+        } else {
+            push(@implContent, "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, ");
+        }
+        push(@implContent, $hasCustomNamedSetter ? "${v8InterfaceName}::namedPropertySetter, " : "0, ");
+        # If there is a custom enumerator, there MUST be custom query to properly communicate property attributes.
+        push(@implContent, $hasEnumerator ? "${v8InterfaceName}::namedPropertyQuery, " : "0, ");
+        push(@implContent, $hasDeleter ? "${v8InterfaceName}::namedPropertyDeleter, " : "0, ");
+        push(@implContent, $hasEnumerator ? "${v8InterfaceName}::namedPropertyEnumerator" : "0");
+        push(@implContent, ");\n");
     }
-    push(@implContent, $hasCustomNamedSetter ? "${v8InterfaceName}::namedPropertySetter, " : "0, ");
-    # If there is a custom enumerator, there MUST be custom query to properly communicate property attributes.
-    push(@implContent, $hasEnumerator ? "${v8InterfaceName}::namedPropertyQuery, " : "0, ");
-    push(@implContent, $hasDeleter ? "${v8InterfaceName}::namedPropertyDeleter, " : "0, ");
-    push(@implContent, $hasEnumerator ? "${v8InterfaceName}::namedPropertyEnumerator" : "0");
-    push(@implContent, ");\n");
 }
 
 sub GenerateImplementationCustomCall

@@ -97,6 +97,20 @@ static v8::Handle<v8::Value> itemMethodCallback(const v8::Arguments& args)
     return TestEventTargetV8Internal::itemMethod(args);
 }
 
+static v8::Handle<v8::Value> namedItemMethod(const v8::Arguments& args)
+{
+    if (args.Length() < 1)
+        return throwNotEnoughArgumentsError(args.GetIsolate());
+    TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, name, args[0]);
+    return toV8(imp->namedItem(name), args.Holder(), args.GetIsolate());
+}
+
+static v8::Handle<v8::Value> namedItemMethodCallback(const v8::Arguments& args)
+{
+    return TestEventTargetV8Internal::namedItemMethod(args);
+}
+
 static v8::Handle<v8::Value> addEventListenerMethod(const v8::Arguments& args)
 {
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOrCreate);
@@ -155,6 +169,7 @@ static v8::Handle<v8::Value> dispatchEventMethodCallback(const v8::Arguments& ar
 
 static const V8DOMConfiguration::BatchedMethod V8TestEventTargetMethods[] = {
     {"item", TestEventTargetV8Internal::itemMethodCallback, 0},
+    {"namedItem", TestEventTargetV8Internal::namedItemMethodCallback, 0},
     {"addEventListener", TestEventTargetV8Internal::addEventListenerMethodCallback, 0},
     {"removeEventListener", TestEventTargetV8Internal::removeEventListenerMethodCallback, 0},
 };
@@ -174,7 +189,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     
     setCollectionIndexedGetter<TestEventTarget, Node>(desc);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, 0, 0, 0, 0);
+    setCollectionNamedGetter<TestEventTarget, Node>(desc);
     desc->InstanceTemplate()->MarkAsUndetectable();
 
     // Custom Signature 'dispatchEvent'

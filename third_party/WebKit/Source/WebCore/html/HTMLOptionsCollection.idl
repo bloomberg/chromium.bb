@@ -20,7 +20,7 @@
 
 [
     CustomIndexedSetter,
-    NamedGetter,
+    CustomNamedGetter,
     GenerateIsReachable=ImplOwnerNodeRoot,
     CustomIndexedGetter,
     DependentLifetime,

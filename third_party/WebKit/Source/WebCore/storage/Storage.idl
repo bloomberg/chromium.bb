@@ -24,7 +24,7 @@
  */
 
 [
-    NamedGetter,
+    CustomNamedGetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
     CustomIndexedGetter,

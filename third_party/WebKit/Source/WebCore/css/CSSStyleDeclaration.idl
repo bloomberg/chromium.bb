@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     CustomNamedSetter,
-    NamedGetter,
+    CustomNamedGetter,
     IndexedGetter,
     CustomEnumerateProperty,
     DependentLifetime,

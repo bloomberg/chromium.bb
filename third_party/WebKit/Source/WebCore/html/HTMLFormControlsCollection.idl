@@ -20,7 +20,7 @@
 
 [
     IndexedGetter,
-    NamedGetter,
+    CustomNamedGetter,
     GenerateIsReachable=ImplOwnerNodeRoot,
     DependentLifetime,
 ] interface HTMLFormControlsCollection : HTMLCollection {
