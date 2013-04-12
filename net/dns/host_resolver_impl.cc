@@ -170,14 +170,32 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
 }
 
 // Attempts to connect a UDP socket to |dest|:80.
-int AttemptRoute(const IPAddressNumber& dest) {
+bool IsGloballyReachable(const IPAddressNumber& dest) {
   scoped_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND,
           RandIntCallback(),
           NULL,
           NetLog::Source()));
-  return socket->Connect(IPEndPoint(dest, 80));
+  int rv = socket->Connect(IPEndPoint(dest, 80));
+  if (rv != OK)
+    return false;
+  IPEndPoint endpoint;
+  rv = socket->GetLocalAddress(&endpoint);
+  if (rv != OK)
+    return false;
+  DCHECK(endpoint.GetFamily() == ADDRESS_FAMILY_IPV6);
+  const IPAddressNumber& address = endpoint.address();
+  bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
+  if (is_link_local)
+    return false;
+  const uint8 kTeredoPrefix[] = { 0x20, 0x01, 0, 0 };
+  bool is_teredo = std::equal(kTeredoPrefix,
+                              kTeredoPrefix + arraysize(kTeredoPrefix),
+                              address.begin());
+  if (is_teredo)
+    return false;
+  return true;
 }
 
 // Provide a common macro to simplify code and readability. We must use a
@@ -2033,12 +2051,12 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     const uint8 kIPv6Address[] =
         { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
-    int rv6 = AttemptRoute(
+    bool rv6 = IsGloballyReachable(
         IPAddressNumber(kIPv6Address, kIPv6Address + arraysize(kIPv6Address)));
 
     UMA_HISTOGRAM_TIMES("Net.IPv6ConnectDuration",
                         base::TimeTicks::Now() - start_time);
-    if (rv6 == OK) {
+    if (rv6) {
       UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectSuccessMatch",
           default_address_family_ == ADDRESS_FAMILY_UNSPECIFIED);
     } else {
