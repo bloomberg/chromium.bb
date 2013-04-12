@@ -2305,7 +2305,7 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
       if (model()->is_keyword_hint() && !shift_pressed) {
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
-        model()->AcceptKeyword();
+        model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
       } else if (shift_pressed &&
                  model()->popup_model()->selected_line_state() ==
                     OmniboxPopupModel::KEYWORD) {

@@ -86,6 +86,11 @@ enum UserTextClearedType {
   OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS,
 };
 
+// Histogram name which counts the number of times the user enters
+// keyword hint mode and via what method.  The possible values are listed
+// in the EnteredKeywordModeMethod enum which is defined in the .h file.
+const char kEnteredKeywordModeHistogram[] = "Omnibox.EnteredKeywordMode";
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -754,7 +759,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_OMNIBOX);
 }
 
-bool OmniboxEditModel::AcceptKeyword() {
+bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
   DCHECK(is_keyword_hint_ && !keyword_.empty());
 
   autocomplete_controller_->Stop(false);
@@ -776,6 +781,9 @@ bool OmniboxEditModel::AcceptKeyword() {
       save_original_selection, true);
 
   content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
+  UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram, entered_method,
+                            ENTERED_KEYWORD_MODE_NUM_ITEMS);
+
   return true;
 }
 
@@ -1107,6 +1115,11 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
       !just_deleted_text && no_selection &&
       CreatedKeywordSearchByInsertingSpaceInMiddle(old_text, user_text_,
                                                    selection_start);
+  if (allow_exact_keyword_match_) {
+    UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram,
+                              ENTERED_KEYWORD_MODE_VIA_SPACE_IN_MIDDLE,
+                              ENTERED_KEYWORD_MODE_NUM_ITEMS);
+  }
   view_->UpdatePopup();
   allow_exact_keyword_match_ = false;
 
@@ -1292,7 +1305,7 @@ bool OmniboxEditModel::MaybeAcceptKeywordBySpace(const string16& new_text) {
       (keyword_.length() == keyword_length) &&
       IsSpaceCharForAcceptingKeyword(new_text[keyword_length]) &&
       !new_text.compare(0, keyword_length, keyword_, 0, keyword_length) &&
-      AcceptKeyword();
+      AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_SPACE_AT_END);
 }
 
 bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(

@@ -48,6 +48,15 @@ enum OmniboxFocusChangeReason {
   OMNIBOX_FOCUS_CHANGE_TYPING,
 };
 
+// Reasons why the Omnibox could change into keyword mode.
+// These numeric values are used in UMA logs; do not change them.
+enum EnteredKeywordModeMethod {
+  ENTERED_KEYWORD_MODE_VIA_TAB = 0,
+  ENTERED_KEYWORD_MODE_VIA_SPACE_AT_END = 1,
+  ENTERED_KEYWORD_MODE_VIA_SPACE_IN_MIDDLE = 2,
+  ENTERED_KEYWORD_MODE_NUM_ITEMS
+};
+
 class OmniboxEditModel : public AutocompleteControllerDelegate {
  public:
   struct State {
@@ -212,8 +221,10 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   bool is_keyword_hint() const { return is_keyword_hint_; }
 
   // Accepts the current keyword hint as a keyword. It always returns true for
-  // caller convenience.
-  bool AcceptKeyword();
+  // caller convenience. |entered_method| indicates how the use entered
+  // keyword mode. This parameter is only used for metrics/logging; it's not
+  // used to change user-visible behavior.
+  bool AcceptKeyword(EnteredKeywordModeMethod entered_method);
 
   // Clears the current keyword.  |visible_text| is the (non-keyword) text
   // currently visible in the edit.

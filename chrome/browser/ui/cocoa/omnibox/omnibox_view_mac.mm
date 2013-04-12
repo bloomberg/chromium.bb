@@ -712,7 +712,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if ((cmd == @selector(insertTab:) ||
       cmd == @selector(insertTabIgnoringFieldEditor:)) &&
       model()->is_keyword_hint()) {
-    return model()->AcceptKeyword();
+    return model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
   }
 
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op

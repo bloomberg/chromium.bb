@@ -309,7 +309,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
   // This must run before acclerator handling invokes a focus change on tab.
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (model()->is_keyword_hint() && !event.IsShiftDown()) {
-      model()->AcceptKeyword();
+      model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
       return true;
     }
     if (model()->popup_model()->IsOpen()) {

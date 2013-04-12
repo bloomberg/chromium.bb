@@ -1537,7 +1537,7 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
 
   // Trigger Tab to search behavior only when Tab key is pressed.
   if (model()->is_keyword_hint() && !shift_was_pressed_) {
-    handled = model()->AcceptKeyword();
+    handled = model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
   } else if (model()->popup_model()->IsOpen()) {
     if (shift_was_pressed_ &&
         model()->popup_model()->selected_line_state() ==
