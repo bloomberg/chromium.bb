@@ -259,8 +259,11 @@ def run(dryrun, spec, root):
   except KeyError:
     return 1
   if checkout.exists():
-    print 'You appear to already have this checkout.'
-    print 'Aborting to avoid clobbering your work.'
+    print 'You appear to already have a checkout. "fetch" is used only'
+    print 'to get new checkouts. Use "gclient sync" to update the checkout.'
+    print
+    print 'Fetch also does not yet deal with partial checkouts, so if fetch'
+    print 'failed, delete the checkout and start over (crbug.com/230691).'
     return 1
   return checkout.init()
 
