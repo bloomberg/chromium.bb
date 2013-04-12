@@ -39,6 +39,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+struct SameSizeAsCSSSelector {
+    unsigned bitfields;
+    void *pointers[1];
+};
+
+COMPILE_ASSERT(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector), CSSSelectorShouldStaySmall);
+
 void CSSSelector::createRareData()
 {
     ASSERT(m_match != Tag);
