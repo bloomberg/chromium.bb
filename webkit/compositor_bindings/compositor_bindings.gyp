@@ -69,6 +69,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
+        '../../gpu/gpu.gyp:gpu',
         '../../media/media.gyp:media',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',

@@ -7,6 +7,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/resource_update_queue.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureMailbox.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
@@ -17,13 +18,16 @@ using cc::ResourceUpdateQueue;
 namespace webkit {
 
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
-    WebKit::WebExternalTextureLayerClient* client)
-    : client_(client) {
+    WebKit::WebExternalTextureLayerClient* client,
+    bool mailbox)
+    : client_(client),
+      uses_mailbox_(mailbox) {
   scoped_refptr<TextureLayer> layer;
-  if (client_)
-    layer = TextureLayer::Create(this);
+  cc::TextureLayerClient* cc_client = client_ ? this : NULL;
+  if (mailbox)
+    layer = TextureLayer::CreateForMailbox(cc_client);
   else
-    layer = TextureLayer::Create(NULL);
+    layer = TextureLayer::Create(cc_client);
   layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
 }
@@ -33,6 +37,15 @@ WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
 }
 
 WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
+
+void WebExternalTextureLayerImpl::clearTexture() {
+  if (uses_mailbox_) {
+    static_cast<TextureLayer*>(layer_->layer())->SetTextureMailbox(
+        cc::TextureMailbox());
+  } else {
+    static_cast<TextureLayer*>(layer_->layer())->SetTextureId(0);
+  }
+}
 
 void WebExternalTextureLayerImpl::setTextureId(unsigned id) {
   static_cast<TextureLayer*>(layer_->layer())->SetTextureId(id);
@@ -94,4 +107,33 @@ WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::Context3d() {
   return client_->context();
 }
 
-}  // namespace webkit
+bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
+    cc::TextureMailbox* mailbox) {
+  WebKit::WebExternalTextureMailbox client_mailbox;
+  if (!client_->prepareMailbox(&client_mailbox)) {
+    return false;
+  }
+  gpu::Mailbox name;
+  name.SetName(client_mailbox.name);
+  cc::TextureMailbox::ReleaseCallback callback =
+      base::Bind(&WebExternalTextureLayerImpl::DidReleaseMailbox,
+                 this->AsWeakPtr(),
+                 client_mailbox);
+  *mailbox = cc::TextureMailbox(name, callback, client_mailbox.syncPoint);
+  return true;
+}
+
+void WebExternalTextureLayerImpl::DidReleaseMailbox(
+    const WebKit::WebExternalTextureMailbox& mailbox,
+    unsigned sync_point,
+    bool lost_resource) {
+  if (lost_resource)
+    return;
+
+  WebKit::WebExternalTextureMailbox available_mailbox;
+  memcpy(available_mailbox.name, mailbox.name, sizeof(available_mailbox.name));
+  available_mailbox.syncPoint = sync_point;
+  client_->mailboxReleased(available_mailbox);
+}
+
+} // namespace webkit

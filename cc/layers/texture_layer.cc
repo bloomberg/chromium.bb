@@ -34,8 +34,9 @@ scoped_refptr<TextureLayer> TextureLayer::Create(TextureLayerClient* client) {
   return scoped_refptr<TextureLayer>(new TextureLayer(client, false));
 }
 
-scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox() {
-  return scoped_refptr<TextureLayer>(new TextureLayer(NULL, true));
+scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
+    TextureLayerClient* client) {
+  return scoped_refptr<TextureLayer>(new TextureLayer(client, true));
 }
 
 TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
@@ -70,7 +71,10 @@ TextureLayer::~TextureLayer() {
 
 void TextureLayer::ClearClient() {
   client_ = NULL;
-  SetTextureId(0);
+  if (uses_mailbox_)
+    SetTextureMailbox(TextureMailbox());
+  else
+    SetTextureId(0);
 }
 
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
@@ -167,7 +171,13 @@ void TextureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion,
                           RenderingStats* stats) {
   if (client_) {
-    texture_id_ = client_->PrepareTexture(queue);
+    if (uses_mailbox_) {
+      TextureMailbox mailbox;
+      if (client_->PrepareTextureMailbox(&mailbox))
+        SetTextureMailbox(mailbox);
+    } else {
+      texture_id_ = client_->PrepareTexture(queue);
+    }
     context_lost_ =
         client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
   }

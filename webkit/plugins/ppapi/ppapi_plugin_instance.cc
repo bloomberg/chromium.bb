@@ -2106,6 +2106,10 @@ WebKit::WebGraphicsContext3D* PluginInstance::Context3d() {
   return bound_graphics_3d_->platform_context()->GetParentContext();
 }
 
+bool PluginInstance::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
+  return false;
+}
+
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,
                                                 int32_t total,
                                                 PP_Bool final_result) {

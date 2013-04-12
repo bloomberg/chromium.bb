@@ -234,7 +234,7 @@ class TextureLayerWithMailboxTest : public TextureLayerTest {
 };
 
 TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox();
+  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
   ASSERT_TRUE(test_layer);
 
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
@@ -302,7 +302,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     root_->SetAnchorPoint(gfx::PointF());
     root_->SetBounds(bounds);
 
-    layer_ = TextureLayer::CreateForMailbox();
+    layer_ = TextureLayer::CreateForMailbox(NULL);
     layer_->SetIsDrawable(true);
     layer_->SetAnchorPoint(gfx::PointF());
     layer_->SetBounds(bounds);
@@ -519,6 +519,10 @@ class TextureLayerClientTest
 
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
     return context_;
+  }
+
+  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE {
+    return false;
   }
 
   virtual void SetupTree() OVERRIDE {

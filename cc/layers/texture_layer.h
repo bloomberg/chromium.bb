@@ -27,7 +27,8 @@ class CC_EXPORT TextureLayer : public Layer {
   static scoped_refptr<TextureLayer> Create(TextureLayerClient* client);
 
   // Used when mailbox names are specified instead of texture IDs.
-  static scoped_refptr<TextureLayer> CreateForMailbox();
+  static scoped_refptr<TextureLayer> CreateForMailbox(
+      TextureLayerClient* client);
 
   void ClearClient();
 

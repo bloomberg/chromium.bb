@@ -640,6 +640,10 @@ WebKit::WebGraphicsContext3D* Layer::Context3d() {
   return texture_->HostContext3D();
 }
 
+bool Layer::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
+  return false;
+}
+
 void Layer::SetForceRenderSurface(bool force) {
   if (force_render_surface_ == force)
     return;

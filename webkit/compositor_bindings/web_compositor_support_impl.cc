@@ -57,7 +57,13 @@ WebContentLayer* WebCompositorSupportImpl::createContentLayer(
 
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
     WebExternalTextureLayerClient* client) {
-  return new WebExternalTextureLayerImpl(client);
+  return new WebExternalTextureLayerImpl(client, false);
+}
+
+WebExternalTextureLayer*
+WebCompositorSupportImpl::createExternalTextureLayerForMailbox(
+    WebExternalTextureLayerClient* client) {
+  return new WebExternalTextureLayerImpl(client, true);
 }
 
 WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {

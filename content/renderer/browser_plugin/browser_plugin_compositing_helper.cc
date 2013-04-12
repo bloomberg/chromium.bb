@@ -220,7 +220,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   }
 
   if (!texture_layer_) {
-    texture_layer_ = cc::TextureLayer::CreateForMailbox();
+    texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
     texture_layer_->SetIsDrawable(true);
     texture_layer_->SetContentsOpaque(true);
 
