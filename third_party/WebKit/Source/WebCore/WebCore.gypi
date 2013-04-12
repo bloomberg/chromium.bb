@@ -1307,6 +1307,8 @@
             'rendering/InlineFlowBox.cpp',
             'rendering/InlineIterator.h',
             'rendering/InlineTextBox.cpp',
+            'rendering/ImageQualityController.h',
+            'rendering/ImageQualityController.cpp',
             'rendering/LayoutState.cpp',
             'rendering/LayoutRepainter.cpp',
             'rendering/PointerEventsHitRules.cpp',
