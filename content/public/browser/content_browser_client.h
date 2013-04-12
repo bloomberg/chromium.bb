@@ -125,9 +125,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents);
 
-  // Notifies that a new RenderHostView has been created.
-  virtual void RenderViewHostCreated(RenderViewHost* render_view_host) {}
-
   // Notifies that a <webview> guest WebContents has been created.
   virtual void GuestWebContentsCreated(WebContents* guest_web_contents,
                                        WebContents* embedder_web_contents) {}

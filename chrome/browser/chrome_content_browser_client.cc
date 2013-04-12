@@ -39,7 +39,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
-#include "chrome/browser/extensions/message_handler.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
@@ -61,7 +60,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -667,18 +665,6 @@ content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
   return chrome::CreateWebContentsViewDelegate(web_contents);
-}
-
-void ChromeContentBrowserClient::RenderViewHostCreated(
-    RenderViewHost* render_view_host) {
-
-  SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->GetBrowserContext());
-
-  new ChromeRenderViewHostObserver(render_view_host,
-                                   profile->GetNetworkPredictor());
-  new extensions::MessageHandler(render_view_host);
 }
 
 // Check if the extension activity log is enabled for the profile.

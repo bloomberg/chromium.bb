@@ -192,9 +192,6 @@ RenderViewHostImpl::RenderViewHostImpl(
 
   GetProcess()->EnableSendQueue();
 
-  // TODO(phajdan.jr): Convert users of this to RenderViewHost::CreatedCallback.
-  GetContentClient()->browser()->RenderViewHostCreated(this);
-
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
 
