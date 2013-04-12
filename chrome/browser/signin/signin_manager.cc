@@ -777,9 +777,11 @@ void SigninManager::TransferCredentialsToNewProfile() {
   DCHECK(policy_client_);
   // Create a new profile and have it call back when done so we can inject our
   // signin credentials.
+  size_t icon_index = g_browser_process->profile_manager()->
+      GetProfileInfoCache().ChooseAvatarIconIndexForNewProfile();
   ProfileManager::CreateMultiProfileAsync(
       UTF8ToUTF16(possibly_invalid_username_),
-      UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(1)),
+      UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
       base::Bind(&SigninManager::CompleteSigninForNewProfile,
                  weak_pointer_factory_.GetWeakPtr()),
       chrome::GetActiveDesktop(),
