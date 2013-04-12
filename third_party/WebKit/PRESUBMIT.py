@@ -111,6 +111,9 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
+  results.extend(input_api.canned_checks.CheckTreeIsOpen(
+      input_api, output_api,
+      json_url='http://blink-status.appspot.com/current?format=json'))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))
   results.extend(_CheckSubversionConfig(input_api, output_api))
