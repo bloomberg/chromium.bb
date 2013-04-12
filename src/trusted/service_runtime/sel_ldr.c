@@ -228,6 +228,16 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
   }
 
+  nap->enable_list_mappings = 0;
+  if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_LIST_MAPPINGS")) {
+    /*
+     * This syscall is not actually know to be dangerous, but is not yet
+     * exposed by our public API.
+     */
+    NaClLog(LOG_INFO, "DANGER: ENABLED LIST_MAPPINGS\n");
+    nap->enable_list_mappings = 1;
+  }
+
   if (!NaClMutexCtor(&nap->threads_mu)) {
     goto cleanup_name_service;
   }

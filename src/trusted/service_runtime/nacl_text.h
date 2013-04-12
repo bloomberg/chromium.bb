@@ -98,6 +98,11 @@ int32_t NaClSysDyncodeDelete(struct NaClAppThread *natp,
                              uint32_t             dest,
                              uint32_t             size) NACL_WUR;
 
+void NaClDyncodeVisit(
+    struct NaClApp *nap,
+    void           (*fn)(void *state, struct NaClDynamicRegion *region),
+    void           *state);
+
 EXTERN_C_END
 
 #endif

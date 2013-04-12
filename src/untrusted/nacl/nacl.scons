@@ -100,10 +100,17 @@ env.Requires('libnacl', header_install)
 libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
 env.AddLibraryToSdk(libnacl_dyncode)
 env.AddHeaderToSdk(['nacl_dyncode.h'])
+env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
+
+libnacl_list_mappings = env.NaClSdkLibrary(
+    'libnacl_list_mappings', ['list_mappings.c'])
+env.AddLibraryToSdk(libnacl_list_mappings)
+env.AddHeaderToSdk(['nacl_list_mappings.h'])
+env.ComponentLibrary(
+    'libnacl_list_mappings_private', ['list_mappings_private.c'])
 
 env.AddHeaderToSdk(['pnacl.h'])
 
-env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
 
 imc_syscalls = [
     'imc_accept.c',

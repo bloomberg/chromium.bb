@@ -1,0 +1,18 @@
+# -*- python -*-
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+list_mappings_test_nexe = env.ComponentProgram(
+    'list_mappings_test',
+    'list_mappings_test.cc',
+    EXTRA_LIBS=['${LIST_MAPPINGS_LIBS}', '${NONIRT_LIBS}'])
+
+env['ENV']['NACL_DANGEROUS_ENABLE_LIST_MAPPINGS'] = '1'
+node = env.CommandSelLdrTestNacl(
+    'list_mappings_test.out',
+    list_mappings_test_nexe)
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'sel_ldr_tests'], 'run_list_mappings_test')

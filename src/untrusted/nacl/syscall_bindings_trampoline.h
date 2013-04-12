@@ -23,6 +23,7 @@ extern "C" {
 
 struct NaClExceptionContext;
 struct NaClImcMsgHdr;
+struct NaClMemMappingInfo;
 struct stat;
 struct timespec;
 struct timeval;
@@ -200,6 +201,9 @@ typedef int (*TYPE_nacl_dyncode_modify) (void *dest, const void *src,
                                        size_t size);
 
 typedef int (*TYPE_nacl_dyncode_delete) (void *dest, size_t size);
+
+typedef int (*TYPE_nacl_list_mappings) (struct NaClMemMappingInfo *region,
+                                        size_t count);
 
 typedef int (*TYPE_nacl_exception_handler) (
     void (*handler)(struct NaClExceptionContext *context),

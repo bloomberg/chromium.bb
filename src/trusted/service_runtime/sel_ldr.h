@@ -354,6 +354,8 @@ struct NaClApp {
   int                       skip_validator;
   int                       validator_stub_out_mode;
 
+  int                       enable_list_mappings;
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uint16_t                  code_seg_sel;
   uint16_t                  data_seg_sel;

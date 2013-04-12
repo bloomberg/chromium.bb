@@ -142,6 +142,33 @@
       ],
     },
     {
+      'target_name': 'nacl_list_mappings_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libnacl_list_mappings.a',
+        'nso_target': 'libnacl_list_mappings.so',
+        'build_glibc': 1,
+        'build_newlib': 1,
+      },
+      'sources': ['list_mappings.c'],
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
+    {
+      'target_name': 'nacl_list_mappings_private_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libnacl_list_mappings_private.a',
+        'build_glibc': 0,
+        'build_newlib': 1,
+      },
+      'sources': ['list_mappings_private.c'],
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
+    {
       'target_name': 'imc_syscalls_lib',
       'type': 'none',
       'variables': {

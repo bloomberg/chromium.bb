@@ -18,6 +18,7 @@ struct dirent;
 struct PP_StartFunctions;
 struct PP_ThreadFunctions;
 struct NaClExceptionContext;
+struct NaClMemMappingInfo;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -199,6 +200,13 @@ struct nacl_irt_dev_exception_handling {
                            NaClExceptionHandler *old_handler);
   int (*exception_stack)(void *stack, size_t size);
   int (*exception_clear_flag)(void);
+};
+
+#define NACL_IRT_DEV_LIST_MAPPINGS_v0_1 \
+  "nacl-irt-dev-list-mappings-0.1"
+struct nacl_irt_dev_list_mappings {
+  int (*list_mappings)(struct NaClMemMappingInfo *regions,
+                       size_t count, size_t *result_count);
 };
 
 #if defined(__cplusplus)

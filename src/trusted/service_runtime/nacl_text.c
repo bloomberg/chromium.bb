@@ -994,3 +994,16 @@ int32_t NaClSysDyncodeDelete(struct NaClAppThread *natp,
   NaClXMutexUnlock(&nap->dynamic_load_mutex);
   return retval;
 }
+
+void NaClDyncodeVisit(
+    struct NaClApp *nap,
+    void           (*fn)(void *state, struct NaClDynamicRegion *region),
+    void           *state) {
+  int            i;
+
+  NaClXMutexLock(&nap->dynamic_load_mutex);
+  for (i = 0; i < nap->num_dynamic_regions; ++i) {
+    fn(state, &nap->dynamic_regions[i]);
+  }
+  NaClXMutexUnlock(&nap->dynamic_load_mutex);
+}

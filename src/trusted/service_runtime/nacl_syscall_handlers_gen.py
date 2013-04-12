@@ -123,6 +123,8 @@ SYSCALL_LIST = [
       'int flags', 'int d', 'nacl_abi_off_t *offp']),
     ('NACL_sys_mprotect', 'NaClSysMprotect',
      ['uint32_t start', 'size_t length', 'int prot']),
+    ('NACL_sys_list_mappings', 'NaClSysListMappings',
+     ['uint32_t regions', 'uint32_t count']),
     ('NACL_sys_munmap', 'NaClSysMunmap', ['void *start', 'size_t length']),
     ('NACL_sys_exit', 'NaClSysExit', ['int status']),
     ('NACL_sys_getpid', 'NaClSysGetpid', []),

@@ -2881,6 +2881,7 @@ nacl_env = MakeArchSpecificEnv().Clone(
     NONIRT_LIBS = ['nacl_sys_private'],
     PTHREAD_LIBS = ['pthread_private'],
     DYNCODE_LIBS = ['nacl_dyncode_private'],
+    LIST_MAPPINGS_LIBS = ['nacl_list_mappings_private'],
     )
 
 def IsNewLinker(env):
@@ -2990,6 +2991,10 @@ nacl_env.Replace(
     IRT_BLOB_CODE_START = '%#.8x' % irt_code_addr,
     IRT_BLOB_DATA_START = '%#.8x' % irt_data_addr,
     )
+
+def TestsUsePublicListMappingsLib(env):
+  """Use the public list_mappings library for in-tree tests."""
+  env.Replace(LIST_MAPPINGS_LIBS=['nacl_list_mappings'])
 
 def TestsUsePublicLibs(env):
   """Change the environment so it uses public libraries for in-tree tests."""
@@ -3219,6 +3224,7 @@ irt_variant_tests = [
     'tests/imc_shm_mmap/nacl.scons',
     'tests/infoleak/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
+    'tests/list_mappings/nacl.scons',
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
@@ -3596,6 +3602,7 @@ nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
 nacl_irt_test_env.AddChromeFilesFromGroup('irt_variant_test_scons_files')
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_only_tests)
 TestsUsePublicLibs(nacl_irt_test_env)
+TestsUsePublicListMappingsLib(nacl_irt_test_env)
 
 # If a tests/.../nacl.scons file builds a library, we will just use
 # the one already built in nacl_env instead.
