@@ -191,6 +191,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'content/test/data/rwhv_compositing_animation.html',
         'content/test/data/click-noreferrer-links.html',
         'content/test/data/browser_plugin_focus.html',
+        'content/test/data/media',
     ]
   return []
 
