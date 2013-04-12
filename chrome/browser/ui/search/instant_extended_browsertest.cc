@@ -1617,3 +1617,34 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TemporaryTextResetWhenPopupClosed) {
   EXPECT_FALSE(HasTemporaryText());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), GetOmniboxText());
 }
+
+// Test that autocomplete results aren't sent when the popup is closed.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       NoAutocompleteResultsWhenPopupClosed) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // Show the overlay and arrow-down to a suggestion (this sets temporary text).
+  SetOmniboxTextAndWaitForOverlayToShow("thangam");
+  SendDownArrow();
+  EXPECT_TRUE(HasTemporaryText());
+
+  EXPECT_TRUE(ExecuteScript("onChangeCalls = onNativeSuggestionsCalls = 0;"));
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(UpdateSearchState(overlay));
+  EXPECT_EQ(0, on_change_calls_);
+  EXPECT_EQ(0, on_native_suggestions_calls_);
+
+  // Click outside the omnibox (but not on the overlay), to make the omnibox
+  // lose focus. Close the popup explicitly, to workaround test/toolkit issues.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TOOLBAR);
+  omnibox()->CloseOmniboxPopup();
+  EXPECT_FALSE(HasTemporaryText());
+
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
+  EXPECT_TRUE(UpdateSearchState(overlay));
+  EXPECT_EQ(0, on_change_calls_);
+  EXPECT_EQ(0, on_native_suggestions_calls_);
+}

@@ -1167,6 +1167,12 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
 
   if (popup_->IsOpen()) {
     OnPopupBoundsChanged(popup_->view()->GetTargetBounds());
+
+    InstantController* instant = controller_->GetInstant();
+    if (instant && !in_revert_) {
+      instant->HandleAutocompleteResults(
+          *autocomplete_controller_->providers());
+    }
   } else if (was_open) {
     // Accepts the temporary text as the user text, because it makes little
     // sense to have temporary text when the popup is closed.
@@ -1176,10 +1182,6 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     OnPopupBoundsChanged(gfx::Rect());
     delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
   }
-
-  InstantController* instant = controller_->GetInstant();
-  if (instant && !in_revert_)
-    instant->HandleAutocompleteResults(*autocomplete_controller_->providers());
 }
 
 bool OmniboxEditModel::query_in_progress() const {
