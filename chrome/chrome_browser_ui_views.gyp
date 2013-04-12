@@ -9,9 +9,9 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../ui/ui.gyp:ui',
+        '../url/url.gyp:url',
       ],
       'conditions': [
         ['use_ash==1', {

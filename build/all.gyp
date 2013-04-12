@@ -27,8 +27,8 @@
         '../third_party/sqlite/sqlite.gyp:*',
         '../third_party/zlib/zlib.gyp:*',
         '../ui/ui.gyp:*',
+        '../url/url.gyp:*',
         '../webkit/support/webkit_support.gyp:*',
-        'temp_gyp/googleurl.gyp:*',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -203,7 +203,7 @@
         '../net/net.gyp:net_unittests',
         '../sql/sql.gyp:sql_unittests',
         '../ui/ui.gyp:ui_unittests',
-        'temp_gyp/googleurl.gyp:googleurl_unittests',
+        '../url/url.gyp:googleurl_unittests',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -458,8 +458,8 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../url/url.gyp:googleurl_unittests',
             '../webkit/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
           ],
         },
         {
@@ -489,8 +489,8 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../url/url.gyp:googleurl_unittests',
             '../webkit/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
           ],
         },
         {
@@ -500,15 +500,15 @@
             '../base/base.gyp:base_unittests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../crypto/crypto.gyp:crypto_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
-            '../net/net.gyp:net_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
             '../media/media.gyp:media_unittests',
+            '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../url/url.gyp:googleurl_unittests',
           ],
         },
         {
@@ -542,7 +542,7 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
+            '../url/url.gyp:googleurl_unittests',
           ],
         },
       ],  # targets
@@ -587,9 +587,9 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../ui/views/views.gyp:views_unittests',
+            '../url/url.gyp:googleurl_unittests',
             '../webkit/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
             '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
           ],
           'conditions': [
              ['target_arch!="x64"', {
@@ -644,7 +644,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
+            '../url/url.gyp:googleurl_unittests',
           ],
         },
         {
@@ -667,7 +667,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            'temp_gyp/googleurl.gyp:googleurl_unittests',
+            '../url/url.gyp:googleurl_unittests',
           ],
         },
         {

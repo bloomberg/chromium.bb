@@ -10,8 +10,8 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/url/url.gyp:url',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': ['WEBKIT_BASE_IMPLEMENTATION'],

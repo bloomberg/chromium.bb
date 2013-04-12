@@ -46,11 +46,11 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../crypto/crypto.gyp:crypto',
         '../skia/skia.gyp:skia',
         '../third_party/opus/opus.gyp:opus',
         '../ui/ui.gyp:ui',
+        '../url/url.gyp:url',
       ],
       'defines': [
         'MEDIA_IMPLEMENTATION',
