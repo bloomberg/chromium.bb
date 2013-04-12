@@ -1,13 +1,15 @@
 {
-  "name": "A browser action with no icon that makes the page red",
-  "version": "1.0",
-  "background": { "scripts": ["background.js"] },
+  "name": "Page Redder",
+  "version": "2.0",
   "permissions": [
-    "http://*/*"
+    "activeTab"
   ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "browser_action": {
-    "name": "Make this page red",
-    "icons": ["icon.png"]
+    "default_title": "Make this page red"
   },
   "manifest_version": 2
 }
