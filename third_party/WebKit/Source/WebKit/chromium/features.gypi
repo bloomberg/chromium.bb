@@ -167,7 +167,6 @@
       }],
       ['use_accelerated_compositing==1', {
         'feature_defines': [
-          'ENABLE_3D_RENDERING=1',
           'ENABLE_ACCELERATED_2D_CANVAS=1',
           'WTF_USE_ACCELERATED_COMPOSITING=1',
         ],

@@ -807,7 +807,6 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
 
     TransformationMatrix transform;
     style->applyTransform(transform, box.size(), RenderStyle::ExcludeTransformOrigin);
-    // Note that this does not flatten to an affine transform if ENABLE(3D_RENDERING) is off, by design.
 
     // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();

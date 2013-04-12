@@ -70,11 +70,6 @@
 #include "RenderTreeAsText.h"
 #endif
 
-#if ENABLE(3D_RENDERING)
-// This symbol is used to determine from a script whether 3D rendering is enabled (via 'nm').
-bool WebCoreHas3DRendering = true;
-#endif
-
 #define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1
 
 static const int canvasAreaThresholdRequiringCompositing = 50 * 100;

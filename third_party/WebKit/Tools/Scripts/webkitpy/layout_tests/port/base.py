@@ -1513,7 +1513,6 @@ class Port(object):
         return {
             "MathMLElement": ["mathml"],
             "GraphicsLayer": ["compositing"],
-            "WebCoreHas3DRendering": ["animations/3d", "transforms/3d"],
             "WebGLShader": ["fast/canvas/webgl", "compositing/webgl", "http/tests/canvas/webgl", "webgl"],
             "MHTMLArchive": ["mhtml"],
             "CSSVariableValue": ["fast/css/variables", "inspector/styles/variables"],

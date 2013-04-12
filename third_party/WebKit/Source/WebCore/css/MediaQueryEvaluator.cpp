@@ -47,16 +47,13 @@
 #include "NodeRenderStyle.h"
 #include "Page.h"
 #include "PlatformScreen.h"
+#include "RenderLayerCompositor.h"
 #include "RenderStyle.h"
 #include "RenderView.h"
 #include "Screen.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include <wtf/HashMap.h>
-
-#if ENABLE(3D_RENDERING)
-#include "RenderLayerCompositor.h"
-#endif
 
 namespace WebCore {
 
@@ -640,18 +637,12 @@ static bool transform_3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* f
     bool returnValueIfNoParameter;
     int have3dRendering;
 
-#if ENABLE(3D_RENDERING)
     bool threeDEnabled = false;
     if (RenderView* view = frame->contentRenderer())
         threeDEnabled = view->compositor()->canRender3DTransforms();
 
     returnValueIfNoParameter = threeDEnabled;
     have3dRendering = threeDEnabled ? 1 : 0;
-#else
-    UNUSED_PARAM(frame);
-    returnValueIfNoParameter = false;
-    have3dRendering = 0;
-#endif
 
     if (value) {
         float number;

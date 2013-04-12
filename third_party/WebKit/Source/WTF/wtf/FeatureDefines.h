@@ -64,10 +64,6 @@
 #define ENABLE_3D_PLUGIN 0
 #endif
 
-#if !defined(ENABLE_3D_RENDERING)
-#define ENABLE_3D_RENDERING 0
-#endif
-
 #if !defined(ENABLE_8BIT_TEXTRUN)
 #define ENABLE_8BIT_TEXTRUN 0
 #endif

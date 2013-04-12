@@ -2131,14 +2131,9 @@ void RenderObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformSt
 
 bool RenderObject::shouldUseTransformFromContainer(const RenderObject* containerObject) const
 {
-#if ENABLE(3D_RENDERING)
     // hasTransform() indicates whether the object has transform, transform-style or perspective. We just care about transform,
     // so check the layer's transform directly.
     return (hasLayer() && toRenderLayerModelObject(this)->layer()->transform()) || (containerObject && containerObject->style()->hasPerspective());
-#else
-    UNUSED_PARAM(containerObject);
-    return hasTransform();
-#endif
 }
 
 void RenderObject::getTransformFromContainer(const RenderObject* containerObject, const LayoutSize& offsetInContainer, TransformationMatrix& transform) const
@@ -2149,7 +2144,6 @@ void RenderObject::getTransformFromContainer(const RenderObject* containerObject
     if (hasLayer() && (layer = toRenderLayerModelObject(this)->layer()) && layer->transform())
         transform.multiply(layer->currentTransform());
     
-#if ENABLE(3D_RENDERING)
     if (containerObject && containerObject->hasLayer() && containerObject->style()->hasPerspective()) {
         // Perpsective on the container affects us, so we have to factor it in here.
         ASSERT(containerObject->hasLayer());
@@ -2162,9 +2156,6 @@ void RenderObject::getTransformFromContainer(const RenderObject* containerObject
         transform = perspectiveMatrix * transform;
         transform.translateRight3d(perspectiveOrigin.x(), perspectiveOrigin.y(), 0);
     }
-#else
-    UNUSED_PARAM(containerObject);
-#endif
 }
 
 FloatQuad RenderObject::localToContainerQuad(const FloatQuad& localQuad, const RenderLayerModelObject* repaintContainer, MapCoordinatesFlags mode, bool* wasFixed) const
