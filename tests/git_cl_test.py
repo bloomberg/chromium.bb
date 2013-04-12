@@ -171,7 +171,7 @@ class TestGitCl(TestCase):
     return [
       ((['git', 'config', 'rietveld.cc'],), ''),
       ((['git', 'config', 'branch.master.base-url'],), ''),
-      ((['git', 'config', '--get-regexp', '^svn-remote\\.'],),
+      ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
         (('', None), 0)),
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'svn', 'info'],), ''),
@@ -206,7 +206,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_1(cls):
     return [
-      ((['git', 'config', '--get-regexp', '^svn-remote\\.'],),
+      ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
        ((('svn-remote.svn.url svn://svn.chromium.org/chrome\n'
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),

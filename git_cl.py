@@ -278,7 +278,7 @@ class Settings(object):
     if self.is_git_svn is None:
       # If you have any "svn-remote.*" config keys, we think you're using svn.
       self.is_git_svn = RunGitWithCode(
-          ['config', '--get-regexp', r'^svn-remote\.'])[0] == 0
+          ['config', '--local', '--get-regexp', r'^svn-remote\.'])[0] == 0
     return self.is_git_svn
 
   def GetSVNBranch(self):
