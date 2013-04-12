@@ -45,10 +45,7 @@ string16 WebUI::GetJavascriptCall(
 }
 
 WebUIImpl::WebUIImpl(WebContents* contents)
-    : hide_favicon_(false),
-      focus_location_bar_by_default_(false),
-      should_hide_url_(false),
-      link_transition_type_(PAGE_TRANSITION_LINK),
+    : link_transition_type_(PAGE_TRANSITION_LINK),
       bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents) {
   DCHECK(contents);
@@ -109,30 +106,6 @@ WebContents* WebUIImpl::GetWebContents() const {
 
 ui::ScaleFactor WebUIImpl::GetDeviceScaleFactor() const {
   return GetScaleFactorForView(web_contents_->GetRenderWidgetHostView());
-}
-
-bool WebUIImpl::ShouldHideFavicon() const {
-  return hide_favicon_;
-}
-
-void WebUIImpl::HideFavicon() {
-  hide_favicon_ = true;
-}
-
-bool WebUIImpl::ShouldFocusLocationBarByDefault() const {
-  return focus_location_bar_by_default_;
-}
-
-void WebUIImpl::FocusLocationBarByDefault() {
-  focus_location_bar_by_default_ = true;
-}
-
-bool WebUIImpl::ShouldHideURL() const {
-  return should_hide_url_;
-}
-
-void WebUIImpl::HideURL() {
-  should_hide_url_ = true;
 }
 
 const string16& WebUIImpl::GetOverriddenTitle() const {

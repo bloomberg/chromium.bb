@@ -32,12 +32,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   virtual WebUIController* GetController() const OVERRIDE;
   virtual void SetController(WebUIController* controller) OVERRIDE;
   virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE;
-  virtual bool ShouldHideFavicon() const OVERRIDE;
-  virtual void HideFavicon() OVERRIDE;
-  virtual bool ShouldFocusLocationBarByDefault() const OVERRIDE;
-  virtual void FocusLocationBarByDefault() OVERRIDE;
-  virtual bool ShouldHideURL() const OVERRIDE;
-  virtual void HideURL() OVERRIDE;
   virtual const string16& GetOverriddenTitle() const OVERRIDE;
   virtual void OverrideTitle(const string16& title) OVERRIDE;
   virtual PageTransition GetLinkTransitionType() const OVERRIDE;
@@ -91,9 +85,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
-  bool hide_favicon_;
-  bool focus_location_bar_by_default_;
-  bool should_hide_url_;
   string16 overridden_title_;  // Defaults to empty string.
   PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for

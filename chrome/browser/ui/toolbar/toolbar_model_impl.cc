@@ -149,9 +149,9 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
   // - The WebUI test must come before the extension scheme test because there
   //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
   //   that case, we should prefer what the WebUI instance says.
-  // - The view-source test must come before the WebUI test because of the case
+  // - The view-source test must come before the NTP test because of the case
   //   of view-source:chrome://newtab, which should display its URL despite what
-  //   chrome://newtab's WebUI says.
+  //   chrome://newtab says.
   NavigationController* controller = GetNavigationController();
   NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
   if (entry) {
@@ -159,16 +159,21 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
         entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       return true;
     }
+
+    GURL url = entry->GetURL();
+    GURL virtual_url = entry->GetVirtualURL();
+    if (url.SchemeIs(chrome::kChromeUIScheme) ||
+        virtual_url.SchemeIs(chrome::kChromeUIScheme)) {
+      if (!url.SchemeIs(chrome::kChromeUIScheme))
+        url = virtual_url;
+      return url.host() != chrome::kChromeUINewTabHost;
+    }
+
+    if (url.SchemeIs(extensions::kExtensionScheme))
+      return false;
   }
 
-  WebContents* web_contents = delegate_->GetActiveWebContents();
-  if (web_contents && web_contents->GetWebUIForCurrentState())
-    return !web_contents->GetWebUIForCurrentState()->ShouldHideURL();
-
-  if (entry && entry->GetURL().SchemeIs(extensions::kExtensionScheme))
-    return false;
-
-  if (chrome::IsInstantNTP(web_contents))
+  if (chrome::IsInstantNTP(delegate_->GetActiveWebContents()))
     return false;
 
   return true;

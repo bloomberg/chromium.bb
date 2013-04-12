@@ -131,9 +131,6 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
   DCHECK(extension);
-  // Only hide the url for internal pages (e.g. chrome-extension or packaged
-  // component apps like bookmark manager.
-  bool should_hide_url = !extension->is_hosted_app();
 
   // The base class defaults to enabling WebUI bindings, but we don't need
   // those (this is also reflected in ChromeWebUIControllerFactory::
@@ -144,20 +141,6 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     bindings |= content::BINDINGS_POLICY_EXTERNAL_HOST;
-  // For chrome:// overrides, some of the defaults are a little different.
-  GURL effective_url = web_ui->GetWebContents()->GetURL();
-  if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {
-    if (effective_url.host() == chrome::kChromeUINewTabHost) {
-      web_ui->FocusLocationBarByDefault();
-    } else {
-      // Current behavior of other chrome:// pages is to display the URL.
-      should_hide_url = false;
-    }
-  }
-
-  if (should_hide_url)
-    web_ui->HideURL();
-
   web_ui->SetBindings(bindings);
 
   // Hack: A few things we specialize just for the bookmark manager.

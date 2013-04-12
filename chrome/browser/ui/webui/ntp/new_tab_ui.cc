@@ -78,11 +78,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       showing_sync_bubble_(false) {
   g_live_new_tabs.Pointer()->insert(this);
-  // Override some options on the Web UI.
-  web_ui->HideFavicon();
-
-  web_ui->FocusLocationBarByDefault();
-  web_ui->HideURL();
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more

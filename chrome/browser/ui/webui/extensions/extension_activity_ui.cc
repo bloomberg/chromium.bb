@@ -18,7 +18,6 @@
 
 ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
     : WebUIController(web_ui), extension_(NULL) {
-  web_ui->HideURL();
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(
       IDS_EXTENSION_ACTIVITY_TITLE));
 

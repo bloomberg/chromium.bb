@@ -1905,46 +1905,6 @@ int WebContentsImpl::GetContentRestrictions() const {
   return content_restrictions_;
 }
 
-WebUI* WebContentsImpl::GetWebUIForCurrentState() {
-  // When there is a pending navigation entry, we want to use the pending WebUI
-  // that goes along with it to control the basic flags. For example, we want to
-  // show the pending URL in the URL bar, so we want the display_url flag to
-  // be from the pending entry.
-  //
-  // The confusion comes because there are multiple possibilities for the
-  // initial load in a tab as a side effect of the way the RenderViewHostManager
-  // works.
-  //
-  //  - For the very first tab the load looks "normal". The new tab Web UI is
-  //    the pending one, and we want it to apply here.
-  //
-  //  - For subsequent new tabs, they'll get a new SiteInstance which will then
-  //    get switched to the one previously associated with the new tab pages.
-  //    This switching will cause the manager to commit the RVH/WebUI. So we'll
-  //    have a committed Web UI in this case.
-  //
-  // This condition handles all of these cases:
-  //
-  //  - First load in first tab: no committed nav entry + pending nav entry +
-  //    pending dom ui:
-  //    -> Use pending Web UI if any.
-  //
-  //  - First load in second tab: no committed nav entry + pending nav entry +
-  //    no pending Web UI:
-  //    -> Use the committed Web UI if any.
-  //
-  //  - Second navigation in any tab: committed nav entry + pending nav entry:
-  //    -> Use pending Web UI if any.
-  //
-  //  - Normal state with no load: committed nav entry + no pending nav entry:
-  //    -> Use committed Web UI.
-  if (controller_.GetPendingEntry() &&
-      (controller_.GetLastCommittedEntry() ||
-       render_manager_.pending_web_ui()))
-    return render_manager_.pending_web_ui();
-  return render_manager_.web_ui();
-}
-
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
   return GetRenderViewHost() ?
       GetRenderViewHostImpl()->GotResponseToLockMouseRequest(allowed) : false;
@@ -1978,9 +1938,6 @@ int WebContentsImpl::DownloadImage(const GURL& url,
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {
-  WebUI* web_ui = GetWebUIForCurrentState();
-  if (web_ui)
-    return web_ui->ShouldFocusLocationBarByDefault();
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
     return true;

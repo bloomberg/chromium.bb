@@ -173,8 +173,6 @@ class WebContents : public PageNavigator,
   virtual WebUI* CreateWebUI(const GURL& url) = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.
-  // Callers who want to use the pending WebUI for the pending navigation entry
-  // should use GetWebUIForCurrentState instead.
   virtual WebUI* GetWebUI() const = 0;
   virtual WebUI* GetCommittedWebUI() const = 0;
 
@@ -383,10 +381,6 @@ class WebContents : public PageNavigator,
 
   // Get the content restrictions (see content::ContentRestriction).
   virtual int GetContentRestrictions() const = 0;
-
-  // Returns the WebUI for the current state of the tab. This will either be
-  // the pending WebUI, the committed WebUI, or NULL.
-  virtual WebUI* GetWebUIForCurrentState()= 0;
 
   // Called when the reponse to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully

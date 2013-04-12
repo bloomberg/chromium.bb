@@ -245,18 +245,6 @@ class TestWebUI : public content::WebUI {
   virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE {
     return ui::SCALE_FACTOR_100P;
   }
-  virtual bool ShouldHideFavicon() const OVERRIDE {
-    return false;
-  }
-  virtual void HideFavicon() OVERRIDE {}
-  virtual bool ShouldFocusLocationBarByDefault() const OVERRIDE {
-    return false;
-  }
-  virtual void FocusLocationBarByDefault() OVERRIDE {}
-  virtual bool ShouldHideURL() const OVERRIDE {
-    return false;
-  }
-  virtual void HideURL() OVERRIDE {}
   virtual const string16& GetOverriddenTitle() const OVERRIDE {
     return temp_string_;
   }

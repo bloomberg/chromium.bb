@@ -57,21 +57,6 @@ class CONTENT_EXPORT WebUI {
   // Javascript.
   virtual ui::ScaleFactor GetDeviceScaleFactor() const = 0;
 
-  // Returns true if the favicon should be hidden for the current tab.
-  virtual bool ShouldHideFavicon() const = 0;
-  virtual void HideFavicon() = 0;
-
-  // Returns true if the location bar should be focused by default rather than
-  // the page contents. Some pages will want to use this to encourage the user
-  // to type in the URL bar.
-  virtual bool ShouldFocusLocationBarByDefault() const = 0;
-  virtual void FocusLocationBarByDefault() = 0;
-
-  // Returns true if the page's URL should be hidden. Some Web UI pages
-  // like the new tab page will want to hide it.
-  virtual bool ShouldHideURL() const = 0;
-  virtual void HideURL() = 0;
-
   // Gets a custom tab title provided by the Web UI. If there is no title
   // override, the string will be empty which should trigger the default title
   // behavior for the tab.
