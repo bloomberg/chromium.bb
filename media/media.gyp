@@ -511,8 +511,8 @@
           'defines': [
             '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
                 '--code "#include <libavcodec/avcodec.h>\n'
-                'int test() { return CODEC_ID_OPUS; }" '
-                '--on-failure CHROMIUM_OMIT_CODEC_ID_OPUS)',
+                'int test() { return AV_CODEC_ID_OPUS; }" '
+                '--on-failure CHROMIUM_OMIT_AV_CODEC_ID_OPUS)',
             '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
                 '--code "#include <libavcodec/avcodec.h>\n'
                 'int test() { return AV_CODEC_ID_VP9; }" '

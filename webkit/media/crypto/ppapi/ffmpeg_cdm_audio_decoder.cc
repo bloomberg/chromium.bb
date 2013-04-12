@@ -31,13 +31,13 @@ static CodecID CdmAudioCodecToCodecID(
     cdm::AudioDecoderConfig::AudioCodec audio_codec) {
   switch (audio_codec) {
     case cdm::AudioDecoderConfig::kCodecVorbis:
-      return CODEC_ID_VORBIS;
+      return AV_CODEC_ID_VORBIS;
     case cdm::AudioDecoderConfig::kCodecAac:
-      return CODEC_ID_AAC;
+      return AV_CODEC_ID_AAC;
     case cdm::AudioDecoderConfig::kUnknownAudioCodec:
     default:
       NOTREACHED() << "Unsupported cdm::AudioCodec: " << audio_codec;
-      return CODEC_ID_NONE;
+      return AV_CODEC_ID_NONE;
   }
 }
 
@@ -198,7 +198,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
   base::TimeDelta timestamp =
       base::TimeDelta::FromMicroseconds(input_timestamp);
 
-  bool is_vorbis = codec_context_->codec_id == CODEC_ID_VORBIS;
+  bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
   if (!is_end_of_stream) {
     if (last_input_timestamp_ == media::kNoTimestamp()) {
       if (is_vorbis && timestamp < base::TimeDelta()) {
@@ -266,7 +266,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       if (output_bytes_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
-        DCHECK_EQ(codec_context_->codec_id, CODEC_ID_VORBIS);
+        DCHECK_EQ(codec_context_->codec_id, AV_CODEC_ID_VORBIS);
         output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
       } else {
         output_timestamp_helper_->SetBaseTimestamp(timestamp);

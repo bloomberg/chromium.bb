@@ -59,33 +59,33 @@ int64 ConvertToTimeBase(const AVRational& time_base,
 
 AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
   switch (codec_id) {
-    case CODEC_ID_AAC:
+    case AV_CODEC_ID_AAC:
       return kCodecAAC;
-    case CODEC_ID_MP3:
+    case AV_CODEC_ID_MP3:
       return kCodecMP3;
-    case CODEC_ID_VORBIS:
+    case AV_CODEC_ID_VORBIS:
       return kCodecVorbis;
-    case CODEC_ID_PCM_U8:
-    case CODEC_ID_PCM_S16LE:
-    case CODEC_ID_PCM_S24LE:
-    case CODEC_ID_PCM_F32LE:
+    case AV_CODEC_ID_PCM_U8:
+    case AV_CODEC_ID_PCM_S16LE:
+    case AV_CODEC_ID_PCM_S24LE:
+    case AV_CODEC_ID_PCM_F32LE:
       return kCodecPCM;
-    case CODEC_ID_PCM_S16BE:
+    case AV_CODEC_ID_PCM_S16BE:
       return kCodecPCM_S16BE;
-    case CODEC_ID_PCM_S24BE:
+    case AV_CODEC_ID_PCM_S24BE:
       return kCodecPCM_S24BE;
-    case CODEC_ID_FLAC:
+    case AV_CODEC_ID_FLAC:
       return kCodecFLAC;
-    case CODEC_ID_AMR_NB:
+    case AV_CODEC_ID_AMR_NB:
       return kCodecAMR_NB;
-    case CODEC_ID_AMR_WB:
+    case AV_CODEC_ID_AMR_WB:
       return kCodecAMR_WB;
-    case CODEC_ID_GSM_MS:
+    case AV_CODEC_ID_GSM_MS:
       return kCodecGSM_MS;
-    case CODEC_ID_PCM_MULAW:
+    case AV_CODEC_ID_PCM_MULAW:
       return kCodecPCM_MULAW;
-#ifndef CHROMIUM_OMIT_CODEC_ID_OPUS
-    case CODEC_ID_OPUS:
+#ifndef CHROMIUM_OMIT_AV_CODEC_ID_OPUS
+    case AV_CODEC_ID_OPUS:
       return kCodecOpus;
 #endif
     default:
@@ -98,58 +98,58 @@ static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
                                    SampleFormat sample_format) {
   switch (audio_codec) {
     case kCodecAAC:
-      return CODEC_ID_AAC;
+      return AV_CODEC_ID_AAC;
     case kCodecMP3:
-      return CODEC_ID_MP3;
+      return AV_CODEC_ID_MP3;
     case kCodecPCM:
       switch (sample_format) {
         case kSampleFormatU8:
-          return CODEC_ID_PCM_U8;
+          return AV_CODEC_ID_PCM_U8;
         case kSampleFormatS16:
-          return CODEC_ID_PCM_S16LE;
+          return AV_CODEC_ID_PCM_S16LE;
         case kSampleFormatS32:
-          return CODEC_ID_PCM_S24LE;
+          return AV_CODEC_ID_PCM_S24LE;
         case kSampleFormatF32:
-          return CODEC_ID_PCM_F32LE;
+          return AV_CODEC_ID_PCM_F32LE;
         default:
           DVLOG(1) << "Unsupported sample format: " << sample_format;
       }
       break;
     case kCodecPCM_S16BE:
-      return CODEC_ID_PCM_S16BE;
+      return AV_CODEC_ID_PCM_S16BE;
     case kCodecPCM_S24BE:
-      return CODEC_ID_PCM_S24BE;
+      return AV_CODEC_ID_PCM_S24BE;
     case kCodecVorbis:
-      return CODEC_ID_VORBIS;
+      return AV_CODEC_ID_VORBIS;
     case kCodecFLAC:
-      return CODEC_ID_FLAC;
+      return AV_CODEC_ID_FLAC;
     case kCodecAMR_NB:
-      return CODEC_ID_AMR_NB;
+      return AV_CODEC_ID_AMR_NB;
     case kCodecAMR_WB:
-      return CODEC_ID_AMR_WB;
+      return AV_CODEC_ID_AMR_WB;
     case kCodecGSM_MS:
-      return CODEC_ID_GSM_MS;
+      return AV_CODEC_ID_GSM_MS;
     case kCodecPCM_MULAW:
-      return CODEC_ID_PCM_MULAW;
-#ifndef CHROMIUM_OMIT_CODEC_ID_OPUS
+      return AV_CODEC_ID_PCM_MULAW;
+#ifndef CHROMIUM_OMIT_AV_CODEC_ID_OPUS
     case kCodecOpus:
-      return CODEC_ID_OPUS;
+      return AV_CODEC_ID_OPUS;
 #endif
     default:
       DVLOG(1) << "Unknown AudioCodec: " << audio_codec;
   }
-  return CODEC_ID_NONE;
+  return AV_CODEC_ID_NONE;
 }
 
 VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
   switch (codec_id) {
-    case CODEC_ID_H264:
+    case AV_CODEC_ID_H264:
       return kCodecH264;
-    case CODEC_ID_THEORA:
+    case AV_CODEC_ID_THEORA:
       return kCodecTheora;
-    case CODEC_ID_MPEG4:
+    case AV_CODEC_ID_MPEG4:
       return kCodecMPEG4;
-    case CODEC_ID_VP8:
+    case AV_CODEC_ID_VP8:
       return kCodecVP8;
 #ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case AV_CODEC_ID_VP9:
@@ -164,13 +164,13 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
 static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
   switch (video_codec) {
     case kCodecH264:
-      return CODEC_ID_H264;
+      return AV_CODEC_ID_H264;
     case kCodecTheora:
-      return CODEC_ID_THEORA;
+      return AV_CODEC_ID_THEORA;
     case kCodecMPEG4:
-      return CODEC_ID_MPEG4;
+      return AV_CODEC_ID_MPEG4;
     case kCodecVP8:
-      return CODEC_ID_VP8;
+      return AV_CODEC_ID_VP8;
 #ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case kCodecVP9:
       return AV_CODEC_ID_VP9;
@@ -178,7 +178,7 @@ static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
     default:
       DVLOG(1) << "Unknown VideoCodec: " << video_codec;
   }
-  return CODEC_ID_NONE;
+  return AV_CODEC_ID_NONE;
 }
 
 static VideoCodecProfile ProfileIDToVideoCodecProfile(int profile) {

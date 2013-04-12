@@ -70,7 +70,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
   // Calculate the duration.
   duration_ = ConvertStreamTimestamp(stream->time_base, stream->duration);
 
-  if (stream_->codec->codec_id == CODEC_ID_H264) {
+  if (stream_->codec->codec_id == AV_CODEC_ID_H264) {
     bitstream_converter_.reset(
         new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
   }

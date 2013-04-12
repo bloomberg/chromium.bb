@@ -48,13 +48,13 @@ static CodecID CdmVideoCodecToCodecID(
     cdm::VideoDecoderConfig::VideoCodec video_codec) {
   switch (video_codec) {
     case cdm::VideoDecoderConfig::kCodecVp8:
-      return CODEC_ID_VP8;
+      return AV_CODEC_ID_VP8;
     case cdm::VideoDecoderConfig::kCodecH264:
-      return CODEC_ID_H264;
+      return AV_CODEC_ID_H264;
     case cdm::VideoDecoderConfig::kUnknownVideoCodec:
     default:
       NOTREACHED() << "Unsupported cdm::VideoCodec: " << video_codec;
-      return CODEC_ID_NONE;
+      return AV_CODEC_ID_NONE;
   }
 }
 

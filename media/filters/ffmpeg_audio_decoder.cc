@@ -190,7 +190,7 @@ void FFmpegAudioDecoder::BufferReady(
     return;
   }
 
-  bool is_vorbis = codec_context_->codec_id == CODEC_ID_VORBIS;
+  bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
   if (!input->IsEndOfStream()) {
     if (last_input_timestamp_ == kNoTimestamp()) {
       if (is_vorbis && (input->GetTimestamp() < base::TimeDelta())) {
@@ -388,7 +388,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
       if (output_bytes_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
-        DCHECK_EQ(codec_context_->codec_id, CODEC_ID_VORBIS);
+        DCHECK_EQ(codec_context_->codec_id, AV_CODEC_ID_VORBIS);
         output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
       } else {
         output_timestamp_helper_->SetBaseTimestamp(input->GetTimestamp());
