@@ -95,14 +95,15 @@ void OutputSurface::BindFramebuffer() {
   context3d_->bindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void OutputSurface::SwapBuffers() {
+void OutputSurface::SwapBuffers(const LatencyInfo& latency_info) {
   DCHECK(context3d_);
   // Note that currently this has the same effect as SwapBuffers; we should
   // consider exposing a different entry point on WebGraphicsContext3D.
   context3d_->prepareTexture();
 }
 
-void OutputSurface::PostSubBuffer(gfx::Rect rect) {
+void OutputSurface::PostSubBuffer(gfx::Rect rect,
+                                  const LatencyInfo& latency_info) {
   DCHECK(context3d_);
   context3d_->postSubBufferCHROMIUM(
       rect.x(), rect.y(), rect.width(), rect.height());

@@ -4,6 +4,7 @@
 //
 // IPC Messages sent between compositor instances.
 
+#include "cc/debug/latency_info.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -208,6 +209,14 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(filter)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::LatencyInfo)
+  IPC_STRUCT_TRAITS_MEMBER(renderer_main_frame_number)
+  IPC_STRUCT_TRAITS_MEMBER(renderer_impl_frame_number)
+  IPC_STRUCT_TRAITS_MEMBER(browser_main_frame_number)
+  IPC_STRUCT_TRAITS_MEMBER(browser_impl_frame_number)
+  IPC_STRUCT_TRAITS_MEMBER(swap_timestamp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)

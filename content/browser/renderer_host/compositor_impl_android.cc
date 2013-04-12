@@ -49,8 +49,8 @@ class DirectOutputSurface : public cc::OutputSurface {
       : cc::OutputSurface(context3d.Pass()) {}
 
   virtual void Reshape(gfx::Size size) OVERRIDE {}
-  virtual void PostSubBuffer(gfx::Rect rect) OVERRIDE {}
-  virtual void SwapBuffers() OVERRIDE {}
+  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE {}
+  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE {}
 };
 
 static bool g_initialized = false;

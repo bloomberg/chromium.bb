@@ -24,7 +24,7 @@ namespace content {
 class MailboxOutputSurface : public CompositorOutputSurface {
  public:
   MailboxOutputSurface(int32 routing_id,
-                       WebKit::WebGraphicsContext3D* context3d,
+                       WebGraphicsContext3DCommandBufferImpl* context3d,
                        cc::SoftwareOutputDevice* software);
   virtual ~MailboxOutputSurface();
 
@@ -34,8 +34,8 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   virtual void DiscardBackbuffer() OVERRIDE;
   virtual void Reshape(gfx::Size size) OVERRIDE;
   virtual void BindFramebuffer() OVERRIDE;
-  virtual void PostSubBuffer(gfx::Rect rect) OVERRIDE;
-  virtual void SwapBuffers() OVERRIDE;
+  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
+  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
 
  private:
   // CompositorOutputSurface overrides.

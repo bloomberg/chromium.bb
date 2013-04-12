@@ -1288,8 +1288,8 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(DiscardBackbuffer, void());
   MOCK_METHOD1(Reshape, void(gfx::Size size));
   MOCK_METHOD0(BindFramebuffer, void());
-  MOCK_METHOD1(PostSubBuffer, void(gfx::Rect rect));
-  MOCK_METHOD0(SwapBuffers, void());
+  MOCK_METHOD2(PostSubBuffer, void(gfx::Rect rect, const LatencyInfo&));
+  MOCK_METHOD1(SwapBuffers, void(const LatencyInfo&));
 };
 
 class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
@@ -1337,7 +1337,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame();
 
-  EXPECT_CALL(output_surface_, SwapBuffers()).Times(1);
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_.SwapBuffers();
 }
 
@@ -1353,7 +1353,7 @@ class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
 TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap) {
   DrawFrame();
 
-  EXPECT_CALL(output_surface_, PostSubBuffer(_)).Times(1);
+  EXPECT_CALL(output_surface_, PostSubBuffer(_, _)).Times(1);
   renderer_.SwapBuffers();
 }
 

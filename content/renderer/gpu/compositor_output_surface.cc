@@ -9,6 +9,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"
@@ -50,9 +52,9 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
-    WebGraphicsContext3D* context3D,
+    WebGraphicsContext3DCommandBufferImpl* context3D,
     cc::SoftwareOutputDevice* software_device)
-    : OutputSurface(make_scoped_ptr(context3D),
+    : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context3D),
                     make_scoped_ptr(software_device)),
       output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
@@ -96,6 +98,30 @@ void CompositorOutputSurface::SendFrameToParentCompositor(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
   Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
+}
+
+void CompositorOutputSurface::SwapBuffers(
+    const cc::LatencyInfo& latency_info) {
+  WebGraphicsContext3DCommandBufferImpl* command_buffer =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+  CommandBufferProxyImpl* command_buffer_proxy =
+      command_buffer->GetCommandBufferProxy();
+  DCHECK(command_buffer_proxy);
+  context3d()->shallowFlushCHROMIUM();
+  command_buffer_proxy->SetLatencyInfo(latency_info);
+  OutputSurface::SwapBuffers(latency_info);
+}
+
+void CompositorOutputSurface::PostSubBuffer(
+    gfx::Rect rect, const cc::LatencyInfo& latency_info) {
+  WebGraphicsContext3DCommandBufferImpl* command_buffer =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+  CommandBufferProxyImpl* command_buffer_proxy =
+      command_buffer->GetCommandBufferProxy();
+  DCHECK(command_buffer_proxy);
+  context3d()->shallowFlushCHROMIUM();
+  command_buffer_proxy->SetLatencyInfo(latency_info);
+  OutputSurface::PostSubBuffer(rect, latency_info);
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {

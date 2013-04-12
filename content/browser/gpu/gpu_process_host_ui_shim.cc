@@ -209,6 +209,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnVideoMemoryUsageStatsReceived);
     IPC_MESSAGE_HANDLER(GpuHostMsg_UpdateVSyncParameters,
                         OnUpdateVSyncParameters)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_FrameDrawn, OnFrameDrawn)
 
 #if defined(TOOLKIT_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
@@ -339,6 +340,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfaceBuffersSwapped(params, host_id_);
+}
+
+void GpuProcessHostUIShim::OnFrameDrawn(const cc::LatencyInfo& latency_info) {
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(

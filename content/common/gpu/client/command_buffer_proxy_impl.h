@@ -16,6 +16,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/debug/latency_info.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
@@ -112,6 +113,8 @@ class CommandBufferProxyImpl
 
   void SetOnConsoleMessageCallback(
       const GpuConsoleMessageCallback& callback);
+
+  void SetLatencyInfo(const cc::LatencyInfo& latency_info);
 
   // TODO(apatrick): this is a temporary optimization while skia is calling
   // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6

@@ -28,6 +28,10 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
+namespace cc {
+struct LatencyInfo;
+}
+
 namespace gfx {
 class Size;
 }
@@ -103,6 +107,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
   void OnUpdateVSyncParameters(int surface_id,
                                base::TimeTicks timebase,
                                base::TimeDelta interval);
+  void OnFrameDrawn(const cc::LatencyInfo& latency_info);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

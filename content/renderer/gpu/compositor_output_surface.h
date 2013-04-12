@@ -30,6 +30,8 @@ class CompositorFrameAck;
 
 namespace content {
 
+class WebGraphicsContext3DCommandBufferImpl;
+
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
 class CompositorOutputSurface
@@ -40,13 +42,15 @@ class CompositorOutputSurface
       base::TaskRunner* target_task_runner);
 
   CompositorOutputSurface(int32 routing_id,
-                          WebKit::WebGraphicsContext3D* context3d,
+                          WebGraphicsContext3DCommandBufferImpl* context3d,
                           cc::SoftwareOutputDevice* software);
   virtual ~CompositorOutputSurface();
 
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
+  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
+  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
 
   // TODO(epenner): This seems out of place here and would be a better fit
   // int CompositorThread after it is fully refactored (http://crbug/170828)

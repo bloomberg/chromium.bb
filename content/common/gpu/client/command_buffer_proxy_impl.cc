@@ -202,6 +202,13 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
                                           ++flush_count_));
 }
 
+void CommandBufferProxyImpl::SetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+  Send(new GpuCommandBufferMsg_SetLatencyInfo(route_id_, latency_info));
+}
+
 gpu::CommandBuffer::State CommandBufferProxyImpl::FlushSync(
     int32 put_offset,
     int32 last_known_get) {

@@ -52,6 +52,10 @@ ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
 }
 
 ImageTransportHelper::~ImageTransportHelper() {
+  if (stub_) {
+    stub_->SetLatencyInfoCallback(
+        base::Callback<void(const cc::LatencyInfo&)>());
+  }
   manager_->RemoveRoute(route_id_);
 }
 
@@ -63,6 +67,10 @@ bool ImageTransportHelper::Initialize() {
 
   decoder->SetResizeCallback(
        base::Bind(&ImageTransportHelper::Resize, base::Unretained(this)));
+
+  stub_->SetLatencyInfoCallback(
+      base::Bind(&ImageTransportHelper::SetLatencyInfo,
+                 base::Unretained(this)));
 
   return true;
 }
@@ -117,6 +125,11 @@ void ImageTransportHelper::SendUpdateVSyncParameters(
   manager_->Send(new GpuHostMsg_UpdateVSyncParameters(stub_->surface_id(),
                                                       timebase,
                                                       interval));
+}
+
+void ImageTransportHelper::SendLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  manager_->Send(new GpuHostMsg_FrameDrawn(latency_info));
 }
 
 void ImageTransportHelper::SetScheduled(bool is_scheduled) {
@@ -187,6 +200,11 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 #endif
 }
 
+void ImageTransportHelper::SetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  surface_->SetLatencyInfo(latency_info);
+}
+
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
@@ -223,11 +241,17 @@ bool PassThroughImageTransportSurface::DeferDraws() {
   return false;
 }
 
+void PassThroughImageTransportSurface::SetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  latency_info_ = latency_info;
+}
+
 bool PassThroughImageTransportSurface::SwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
+  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);
@@ -237,8 +261,11 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
     // SwapBuffers message.
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.surface_handle = 0;
+    params.latency_info = latency_info_;
     params.size = surface()->GetSize();
     helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  } else {
+    helper_->SendLatencyInfo(latency_info_);
   }
   return result;
 }
@@ -247,6 +274,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   SendVSyncUpdateIfAvailable();
   bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
+  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
 
   if (transport_) {
     DCHECK(!is_swap_buffers_pending_);
@@ -256,6 +284,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     // PostSubBuffer message.
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
     params.surface_handle = 0;
+    params.latency_info = latency_info_;
     params.surface_size = surface()->GetSize();
     params.x = x;
     params.y = y;
@@ -264,6 +293,8 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
     helper_->SetScheduled(false);
+  } else {
+    helper_->SendLatencyInfo(latency_info_);
   }
   return result;
 }

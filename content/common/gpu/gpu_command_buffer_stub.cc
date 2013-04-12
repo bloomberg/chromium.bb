@@ -168,7 +168,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Echo, RetireSyncPoint, or WaitSyncPoint).
   if (decoder_.get() &&
       message.type() != GpuCommandBufferMsg_Echo::ID &&
-      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID) {
+      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
+      message.type() != GpuCommandBufferMsg_SetLatencyInfo::ID) {
     if (!MakeCurrent())
       return false;
   }
@@ -188,6 +189,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetStateFast,
                                     OnGetStateFast);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetLatencyInfo, OnSetLatencyInfo);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
                         OnRegisterTransferBuffer);
@@ -562,6 +564,17 @@ void GpuCommandBufferStub::OnInitialize(
     gpu_channel_manager->Send(new GpuHostMsg_DidCreateOffscreenContext(
         active_url_));
   }
+}
+
+void GpuCommandBufferStub::OnSetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  if (!latency_info_callback_.is_null())
+    latency_info_callback_.Run(latency_info);
+}
+
+void GpuCommandBufferStub::SetLatencyInfoCallback(
+    const LatencyInfoCallback& callback) {
+  latency_info_callback_ = callback;
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(int32 shm_id,

@@ -576,7 +576,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
-  WebKit::WebGraphicsContext3D* context = CreateGraphicsContext3D(attributes);
+  WebGraphicsContext3DCommandBufferImpl* context =
+      CreateGraphicsContext3D(attributes);
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
 
@@ -2297,7 +2298,7 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;
 }
 
-WebKit::WebGraphicsContext3D* RenderWidget::CreateGraphicsContext3D(
+WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
     return NULL;

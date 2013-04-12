@@ -194,8 +194,14 @@ void TextureImageTransportSurface::OnWillDestroyStub(
   stub_destroyed_ = true;
 }
 
+void TextureImageTransportSurface::SetLatencyInfo(
+    const cc::LatencyInfo& latency_info) {
+  latency_info_ = latency_info;
+}
+
 bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_suggested_allocation_);
+
   if (!frontbuffer_suggested_allocation_)
     return true;
 
@@ -217,6 +223,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
   // so we do not leak a texture in the mailbox.
   AddRef();
 
+  params.latency_info = latency_info_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -258,6 +265,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
   // so we do not leak a texture in the mailbox.
   AddRef();
 
+  params.latency_info = latency_info_;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
   DCHECK(!is_swap_buffers_pending_);

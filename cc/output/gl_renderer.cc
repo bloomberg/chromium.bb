@@ -1870,9 +1870,10 @@ bool GLRenderer::SwapBuffers() {
     output_surface_->PostSubBuffer(gfx::Rect(swap_buffer_rect_.x(),
                                              flipped_y_pos_of_rect_bottom,
                                              swap_buffer_rect_.width(),
-                                             swap_buffer_rect_.height()));
+                                             swap_buffer_rect_.height()),
+                                   LatencyInfo());
   } else {
-    output_surface_->SwapBuffers();
+    output_surface_->SwapBuffers(LatencyInfo());
   }
 
   swap_buffer_rect_ = gfx::Rect();

@@ -55,6 +55,8 @@ class TextureImageTransportSurface
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual void SetLatencyInfo(
+      const cc::LatencyInfo& latency_info) OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) OVERRIDE;
@@ -117,6 +119,7 @@ class TextureImageTransportSurface
   // Holds a reference to the mailbox manager for cleanup.
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
 
+  cc::LatencyInfo latency_info_;
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };
 

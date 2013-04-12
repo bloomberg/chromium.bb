@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "cc/debug/latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -57,6 +58,9 @@ class GpuCommandBufferStub
    protected:
     virtual ~DestructionObserver() {}
   };
+
+  typedef base::Callback<void(const cc::LatencyInfo&)>
+      LatencyInfoCallback;
 
   GpuCommandBufferStub(
       GpuChannel* channel,
@@ -131,6 +135,8 @@ class GpuCommandBufferStub
 
   void SetPreemptByFlag(scoped_refptr<gpu::PreemptionFlag> flag);
 
+  void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
+
  private:
   GpuMemoryManager* GetMemoryManager();
   bool MakeCurrent();
@@ -177,6 +183,7 @@ class GpuCommandBufferStub
 
   void OnCommandProcessed();
   void OnParseError();
+  void OnSetLatencyInfo(const cc::LatencyInfo& latency_info);
 
   void ReportState();
 
@@ -244,6 +251,8 @@ class GpuCommandBufferStub
   base::TimeTicks last_idle_time_;
 
   scoped_refptr<gpu::PreemptionFlag> preemption_flag_;
+
+  LatencyInfoCallback latency_info_callback_;
 
   GURL active_url_;
   size_t active_url_hash_;

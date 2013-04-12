@@ -15,13 +15,12 @@
 using cc::CompositorFrame;
 using cc::GLFrameData;
 using gpu::Mailbox;
-using WebKit::WebGraphicsContext3D;
 
 namespace content {
 
 MailboxOutputSurface::MailboxOutputSurface(
     int32 routing_id,
-    WebGraphicsContext3D* context3D,
+    WebGraphicsContext3DCommandBufferImpl* context3D,
     cc::SoftwareOutputDevice* software_device)
     : CompositorOutputSurface(routing_id, context3D, software_device),
       fbo_(0),
@@ -198,10 +197,11 @@ void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
   CompositorOutputSurface::OnSwapAck(ack);
 }
 
-void MailboxOutputSurface::SwapBuffers() {
+void MailboxOutputSurface::SwapBuffers(const cc::LatencyInfo&) {
 }
 
-void MailboxOutputSurface::PostSubBuffer(gfx::Rect rect) {
+void MailboxOutputSurface::PostSubBuffer(gfx::Rect rect,
+                                         const cc::LatencyInfo&) {
   NOTIMPLEMENTED()
       << "Partial swap not supported with composite-to-mailbox yet.";
 
