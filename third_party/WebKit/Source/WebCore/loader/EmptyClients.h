@@ -279,6 +279,8 @@ public:
 
     virtual String userAgent(const KURL&) { return ""; }
 
+    virtual String doNotTrackValue() { return String(); }
+
     virtual void transitionToCommittedForNewPage() { }
 
     virtual bool shouldGoToHistoryItem(HistoryItem*) const { return false; }

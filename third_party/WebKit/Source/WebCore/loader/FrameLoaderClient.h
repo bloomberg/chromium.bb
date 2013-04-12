@@ -198,6 +198,8 @@ namespace WebCore {
 
         virtual String userAgent(const KURL&) = 0;
 
+        virtual String doNotTrackValue() = 0;
+
         virtual void transitionToCommittedForNewPage() = 0;
 
         virtual PassRefPtr<Frame> createFrame(const KURL& url, const String& name, HTMLFrameOwnerElement* ownerElement, const String& referrer, bool allowsScrolling, int marginWidth, int marginHeight) = 0;

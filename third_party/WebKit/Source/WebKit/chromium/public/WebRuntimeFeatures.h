@@ -166,6 +166,10 @@ public:
     WEBKIT_EXPORT static void enableNativeValidationMessage(bool);
     WEBKIT_EXPORT static bool isNativeValidationMessageEnabled();
 
+    // If the flag is set, blink provides the Navigator.doNotTrack accessor
+    // instead of the embedder.
+    WEBKIT_EXPORT static void enableDoNotTrack(bool);
+    WEBKIT_EXPORT static bool isDoNotTrackEnabled();
 private:
     WebRuntimeFeatures();
 };

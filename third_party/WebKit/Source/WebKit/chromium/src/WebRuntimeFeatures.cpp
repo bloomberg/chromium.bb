@@ -572,4 +572,14 @@ bool WebRuntimeFeatures::isRequestAutocompleteEnabled()
 #endif
 }
 
+void WebRuntimeFeatures::enableDoNotTrack(bool enable)
+{
+    RuntimeEnabledFeatures::setDoNotTrackEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isDoNotTrackEnabled()
+{
+    return RuntimeEnabledFeatures::doNotTrackEnabled();
+}
+
 } // namespace WebKit

@@ -135,6 +135,7 @@ public:
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
     virtual WTF::String userAgent(const WebCore::KURL&);
+    virtual WTF::String doNotTrackValue();
     virtual void transitionToCommittedForNewPage();
     virtual PassRefPtr<WebCore::Frame> createFrame(
         const WebCore::KURL& url, const WTF::String& name,

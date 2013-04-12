@@ -2,6 +2,7 @@
   'variables': {
     'modules_include_dirs': [
       'battery',
+      'donottrack',
       'filesystem',
       'filesystem/chromium',
       'gamepad',
@@ -23,6 +24,7 @@
     'modules_idl_files': [
       'battery/BatteryManager.idl',
       'battery/NavigatorBattery.idl',
+      'donottrack/NavigatorDoNotTrack.idl',
       'filesystem/DOMFileSystem.idl',
       'filesystem/DOMFileSystemSync.idl',
       'filesystem/DOMWindowFileSystem.idl',
@@ -188,6 +190,8 @@
       'battery/BatteryStatus.h',
       'battery/NavigatorBattery.cpp',
       'battery/NavigatorBattery.h',
+      'donottrack/NavigatorDoNotTrack.cpp',
+      'donottrack/NavigatorDoNotTrack.h',
       'filesystem/DOMFilePath.cpp',
       'filesystem/DOMFilePath.h',
       'filesystem/DOMFileSystem.cpp',

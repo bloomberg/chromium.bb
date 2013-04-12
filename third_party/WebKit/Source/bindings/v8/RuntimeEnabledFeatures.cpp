@@ -197,4 +197,6 @@ bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 #endif
 
+bool RuntimeEnabledFeatures::isDoNotTrackEnabled = false;
+
 } // namespace WebCore

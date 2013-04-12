@@ -27,4 +27,3 @@ crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Timeout ]
 # To be rebaselined
 # -----------------------------------------------------------------
 crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Text ]
-crbug.com/111316 fast/dom/navigator-detached-no-crash.html [ Text ]

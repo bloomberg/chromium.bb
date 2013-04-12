@@ -426,6 +426,10 @@ public:
     // Platform::current()->userAgent() will be called to provide one.
     virtual WebString userAgentOverride(WebFrame*, const WebURL& url) { return WebString(); }
 
+    // Asks the embedder what value the network stack will send for the DNT
+    // header. An empty string indicates that no DNT header will be send.
+    virtual WebString doNotTrackValue(WebFrame*) { return WebString(); }
+
     // WebGL ------------------------------------------------------
 
     // Asks the embedder whether WebGL is allowed for the given WebFrame.

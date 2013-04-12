@@ -1262,6 +1262,14 @@ String FrameLoaderClientImpl::userAgent(const KURL& url)
     return WebKit::Platform::current()->userAgent(url);
 }
 
+String FrameLoaderClientImpl::doNotTrackValue()
+{
+    WebString doNotTrack = m_webFrame->client()->doNotTrackValue(m_webFrame);
+    if (!doNotTrack.isEmpty())
+        return doNotTrack;
+    return String();
+}
+
 // Called when the FrameLoader goes into a state in which a new page load
 // will occur.
 void FrameLoaderClientImpl::transitionToCommittedForNewPage()
