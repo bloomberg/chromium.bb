@@ -175,6 +175,10 @@
           "output": "barnesszal"
         }, 
         {
+          "input": "⠃⠁⠗⠕⠍⠎⠈⠛⠹⠾⠚⠞⠑⠍⠡⠫", 
+          "output": "baromsággyűjtemény"
+        }, 
+        {
           "input": "⠃⠑⠩⠇⠡⠎⠱⠑⠗⠾⠑⠝", 
           "output": "becslésszerűen"
         }, 
@@ -329,6 +333,10 @@
         {
           "input": "⠩⠥⠅⠇⠈⠎⠱⠑⠗⠾", 
           "output": "csuklásszerű"
+        }, 
+        {
+          "input": "⠨⠙⠊⠪⠎⠱⠊⠇⠈⠹⠊", 
+          "output": "Diósszilágyi"
         }, 
         {
           "input": "⠙⠊⠱⠱⠑⠗⠞⠈⠉⠊⠪", 
@@ -959,6 +967,10 @@
           "output": "hentesszaktanfolyamát"
         }, 
         {
+          "input": "⠓⠊⠗⠙⠑⠞⠡⠎⠱⠁⠛⠬", 
+          "output": "hirdetésszagú"
+        }, 
+        {
           "input": "⠓⠊⠗⠙⠑⠞⠡⠎⠱⠟⠧⠑⠛", 
           "output": "hirdetésszöveg"
         }, 
@@ -1523,6 +1535,10 @@
           "output": "közsereg"
         }, 
         {
+          "input": "⠅⠕⠝⠞⠁⠅⠞⠥⠎⠱⠈⠍", 
+          "output": "kontaktusszám"
+        }, 
+        {
           "input": "⠅⠥⠙⠁⠗⠉⠎⠕⠗⠕⠣⠁⠞", 
           "output": "kudarcsorozat"
         }, 
@@ -1919,6 +1935,10 @@
           "output": "méreggyümölccsé "
         }, 
         {
+          "input": "⠍⠡⠗⠅⠻⠣⠡⠎⠱⠑⠗⠧⠑⠣⠻", 
+          "output": "mérkőzésszervező"
+        }, 
+        {
           "input": "⠍⠡⠗⠇⠑⠛⠹⠈⠗", 
           "output": "mérleggyár"
         }, 
@@ -1993,6 +2013,10 @@
         {
           "input": "⠍⠾⠅⠟⠙⠡⠎⠣⠁⠧⠁⠗ ", 
           "output": "működészavar "
+        }, 
+        {
+          "input": "⠍⠾⠧⠑⠇⠻⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻", 
+          "output": "művelődésszervező"
         }, 
         {
           "input": "⠝⠈⠱⠥⠞⠁⠣⠈⠎⠱⠑⠗⠾ ", 
@@ -2081,6 +2105,10 @@
         {
           "input": "⠫⠕⠍⠈⠎⠱⠑⠗⠾", 
           "output": "nyomásszerű"
+        }, 
+        {
+          "input": "⠫⠕⠍⠈⠎⠱⠊⠝⠞⠑⠝", 
+          "output": "nyomásszinten"
         }, 
         {
           "input": "⠕⠗⠙⠁⠎⠱⠻⠗⠾", 
@@ -2347,6 +2375,10 @@
           "output": "porcsérülés"
         }, 
         {
+          "input": "⠏⠕⠗⠉⠑⠇⠈⠝⠫⠬⠇", 
+          "output": "porcelánnyúl"
+        }, 
+        {
           "input": "⠏⠕⠗⠞⠈⠎⠱⠕⠃⠁", 
           "output": "portásszoba"
         }, 
@@ -2429,6 +2461,10 @@
         {
           "input": "⠗⠈⠝⠞⠈⠎⠱⠑⠗⠾ ", 
           "output": "rántásszerű "
+        }, 
+        {
+          "input": "⠗⠑⠁⠇⠊⠞⠈⠎⠱⠁⠛⠬", 
+          "output": "realitásszagú"
         }, 
         {
           "input": "⠗⠑⠁⠇⠊⠞⠽⠍⠾⠎⠕⠗⠁", 
@@ -2667,12 +2703,16 @@
           "output": "Szepesszombat"
         }, 
         {
+          "input": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠈⠍", 
+          "output": "szerződésszám"
+        }, 
+        {
           "input": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠡⠎", 
           "output": "szerződésszegés"
         }, 
         {
-          "input": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠻ ", 
-          "output": "szerződésszegő "
+          "input": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠻", 
+          "output": "szerződésszegő"
         }, 
         {
           "input": "⠱⠡⠞⠕⠱⠱⠁", 
@@ -2881,6 +2921,10 @@
         {
           "input": "⠞⠟⠇⠞⠡⠎⠱⠑⠗⠾⠑⠝", 
           "output": "töltésszerűen"
+        }, 
+        {
+          "input": "⠞⠟⠇⠞⠡⠎⠱⠁⠅⠁⠱", 
+          "output": "töltésszakasz"
         }, 
         {
           "input": "⠞⠟⠗⠇⠑⠱⠱⠑⠍", 
@@ -3139,6 +3183,10 @@
           "output": "versszerű"
         }, 
         {
+          "input": "⠧⠑⠗⠎⠱⠑⠗⠑⠞⠻", 
+          "output": "versszerető"
+        }, 
+        {
           "input": "⠧⠡⠗⠞⠑⠎⠱⠈⠣⠁⠙", 
           "output": "vértesszázad"
         }, 
@@ -3333,6 +3381,10 @@
         {
           "input": "⠣⠥⠓⠁⠝⠈⠎⠱⠑⠗⠾", 
           "output": "zuhanásszerű"
+        }, 
+        {
+          "input": "⠜⠁⠗⠕⠇⠈⠎⠱⠑⠗⠾", 
+          "output": "zsarolásszerű"
         }, 
         {
           "input": "⠜⠌⠗⠕⠎⠱⠡⠝", 
@@ -3575,6 +3627,10 @@
           "output": "⠃⠁⠗⠝⠑⠱⠱⠁⠇"
         }, 
         {
+          "input": "baromsággyűjtemény", 
+          "output": "⠃⠁⠗⠕⠍⠎⠈⠛⠹⠾⠚⠞⠑⠍⠡⠫"
+        }, 
+        {
           "input": "becslésszerűen", 
           "output": "⠃⠑⠩⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
@@ -3729,6 +3785,10 @@
         {
           "input": "csuklásszerű", 
           "output": "⠩⠥⠅⠇⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "diósszilágyi", 
+          "output": "⠙⠊⠪⠎⠱⠊⠇⠈⠹⠊"
         }, 
         {
           "input": "disszertáció", 
@@ -4359,6 +4419,10 @@
           "output": "⠓⠑⠝⠞⠑⠎⠱⠁⠅⠞⠁⠝⠋⠕⠸⠁⠍⠈⠞"
         }, 
         {
+          "input": "hirdetésszagú", 
+          "output": "⠓⠊⠗⠙⠑⠞⠡⠎⠱⠁⠛⠬"
+        }, 
+        {
           "input": "hirdetésszöveg", 
           "output": "⠓⠊⠗⠙⠑⠞⠡⠎⠱⠟⠧⠑⠛"
         }, 
@@ -4923,6 +4987,10 @@
           "output": "⠅⠟⠣⠎⠑⠗⠑⠛"
         }, 
         {
+          "input": "kontaktusszám", 
+          "output": "⠅⠕⠝⠞⠁⠅⠞⠥⠎⠱⠈⠍"
+        }, 
+        {
           "input": "kudarcsorozat", 
           "output": "⠅⠥⠙⠁⠗⠉⠎⠕⠗⠕⠣⠁⠞"
         }, 
@@ -5319,6 +5387,10 @@
           "output": "⠍⠡⠗⠑⠛⠹⠷⠍⠟⠇⠩⠩⠡ "
         }, 
         {
+          "input": "mérkőzésszervező", 
+          "output": "⠍⠡⠗⠅⠻⠣⠡⠎⠱⠑⠗⠧⠑⠣⠻"
+        }, 
+        {
           "input": "mérleggyár", 
           "output": "⠍⠡⠗⠇⠑⠛⠹⠈⠗"
         }, 
@@ -5393,6 +5465,10 @@
         {
           "input": "működészavar ", 
           "output": "⠍⠾⠅⠟⠙⠡⠎⠣⠁⠧⠁⠗ "
+        }, 
+        {
+          "input": "művelődésszervező", 
+          "output": "⠍⠾⠧⠑⠇⠻⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻"
         }, 
         {
           "input": "nászutazásszerű ", 
@@ -5481,6 +5557,10 @@
         {
           "input": "nyomásszerű", 
           "output": "⠫⠕⠍⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "nyomásszinten", 
+          "output": "⠫⠕⠍⠈⠎⠱⠊⠝⠞⠑⠝"
         }, 
         {
           "input": "ordasszőrű", 
@@ -5747,6 +5827,10 @@
           "output": "⠏⠕⠗⠉⠎⠡⠗⠷⠇⠡⠎"
         }, 
         {
+          "input": "porcelánnyúl", 
+          "output": "⠏⠕⠗⠉⠑⠇⠈⠝⠫⠬⠇"
+        }, 
+        {
           "input": "portásszoba", 
           "output": "⠏⠕⠗⠞⠈⠎⠱⠕⠃⠁"
         }, 
@@ -5829,6 +5913,10 @@
         {
           "input": "rántásszerű ", 
           "output": "⠗⠈⠝⠞⠈⠎⠱⠑⠗⠾ "
+        }, 
+        {
+          "input": "realitásszagú", 
+          "output": "⠗⠑⠁⠇⠊⠞⠈⠎⠱⠁⠛⠬"
         }, 
         {
           "input": "realityműsora", 
@@ -6067,12 +6155,16 @@
           "output": "⠨⠱⠑⠏⠑⠎⠱⠕⠍⠃⠁⠞"
         }, 
         {
+          "input": "szerződésszám", 
+          "output": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠈⠍"
+        }, 
+        {
           "input": "szerződésszegés", 
           "output": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠡⠎"
         }, 
         {
-          "input": "szerződésszegő ", 
-          "output": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠻ "
+          "input": "szerződésszegő", 
+          "output": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠻"
         }, 
         {
           "input": "szétossza", 
@@ -6281,6 +6373,10 @@
         {
           "input": "töltésszerűen", 
           "output": "⠞⠟⠇⠞⠡⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
+          "input": "töltésszakasz", 
+          "output": "⠞⠟⠇⠞⠡⠎⠱⠁⠅⠁⠱"
         }, 
         {
           "input": "törlesszem", 
@@ -6539,6 +6635,10 @@
           "output": "⠧⠑⠗⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "versszerető", 
+          "output": "⠧⠑⠗⠎⠱⠑⠗⠑⠞⠻"
+        }, 
+        {
           "input": "vértesszázad", 
           "output": "⠧⠡⠗⠞⠑⠎⠱⠈⠣⠁⠙"
         }, 
@@ -6733,6 +6833,10 @@
         {
           "input": "zuhanásszerű", 
           "output": "⠣⠥⠓⠁⠝⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "zsarolásszerű", 
+          "output": "⠜⠁⠗⠕⠇⠈⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "zsírosszén", 

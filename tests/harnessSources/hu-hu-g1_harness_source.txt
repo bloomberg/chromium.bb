@@ -210,6 +210,11 @@ barnesszal
 testmode: backtranslate
 barnesszal
 
+baromsággyűjtemény
+
+testmode: backtranslate
+baromsággyűjtemény
+
 becslésszerűen
 
 testmode: backtranslate
@@ -404,6 +409,11 @@ csuklásszerű
 
 testmode: backtranslate
 csuklásszerű
+
+diósszilágyi
+
+testmode: backtranslate
+Diósszilágyi
 
 disszertáció
 
@@ -1190,6 +1200,11 @@ hentesszaktanfolyamát
 testmode: backtranslate
 hentesszaktanfolyamát
 
+hirdetésszagú
+
+testmode: backtranslate
+hirdetésszagú
+
 hirdetésszöveg
 
 testmode: backtranslate
@@ -1894,6 +1909,11 @@ közsereg
 testmode: backtranslate
 közsereg
 
+kontaktusszám
+
+testmode: backtranslate
+kontaktusszám
+
 kudarcsorozat
 
 testmode: backtranslate
@@ -2389,6 +2409,11 @@ méreggyümölccsé
 testmode: backtranslate
 méreggyümölccsé 
 
+mérkőzésszervező
+
+testmode: backtranslate
+mérkőzésszervező
+
 mérleggyár
 
 testmode: backtranslate
@@ -2483,6 +2508,11 @@ működészavar
 
 testmode: backtranslate
 működészavar 
+
+művelődésszervező
+
+testmode: backtranslate
+művelődésszervező
 
 nászutazásszerű 
 
@@ -2593,6 +2623,11 @@ nyomásszerű
 
 testmode: backtranslate
 nyomásszerű
+
+nyomásszinten
+
+testmode: backtranslate
+nyomásszinten
 
 ordasszőrű
 
@@ -2924,6 +2959,11 @@ porcsérülés
 testmode: backtranslate
 porcsérülés
 
+porcelánnyúl
+
+testmode: backtranslate
+porcelánnyúl
+
 portásszoba
 
 testmode: backtranslate
@@ -3028,6 +3068,11 @@ rántásszerű
 
 testmode: backtranslate
 rántásszerű 
+
+realitásszagú
+
+testmode: backtranslate
+realitásszagú
 
 realityműsora
 
@@ -3324,15 +3369,20 @@ Szepesszombat
 testmode: backtranslate
 Szepesszombat
 
+szerződésszám
+
+testmode: backtranslate
+szerződésszám
+
 szerződésszegés
 
 testmode: backtranslate
 szerződésszegés
 
-szerződésszegő 
+szerződésszegő
 
 testmode: backtranslate
-szerződésszegő 
+szerződésszegő
 
 szétossza
 
@@ -3593,6 +3643,11 @@ töltésszerűen
 
 testmode: backtranslate
 töltésszerűen
+
+töltésszakasz
+
+testmode: backtranslate
+töltésszakasz
 
 törlesszem
 
@@ -3914,6 +3969,11 @@ versszerű
 testmode: backtranslate
 versszerű
 
+versszerető
+
+testmode: backtranslate
+versszerető
+
 vértesszázad
 
 testmode: backtranslate
@@ -4158,6 +4218,11 @@ zuhanásszerű
 
 testmode: backtranslate
 zuhanásszerű
+
+zsarolásszerű
+
+testmode: backtranslate
+zsarolásszerű
 
 zsírosszén
 

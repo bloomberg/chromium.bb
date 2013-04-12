@@ -199,6 +199,7 @@ partword tőzeggy 2345-12456-126-15-1245-1456	For example tőzeggyapot, tőzeggy
 always geggyár 1245-15-1245-1456-4-1235	For example geggyáros word
 partword dopping =	For example doppinggyanú word need this exception
 partword tehetség =	For example tehetséggyár word need this exception
+partword baromság =	For example baromsággyűjtemény word
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -262,6 +263,7 @@ partword óceán =	For example óceánnyi word need this general exception
 partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyaklánc word need this exception
 partword proton =	For example protonnyalábok word need this exception
 partword börtön =	For example börtönnyíláson, börtönnyitó words
+partword porcelán = for example porcelánnyúl word
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -338,6 +340,7 @@ partword kolbászos 13-135-123-12-4-156-135-234	For example kolbászoszsemle wor
 partword feldolgozás 124-15-123-145-135-123-1245-135-126-4-234	For example feldolgozászenekar, feldolgozásszerű words need this exception
 partword tojás =	For example tojászápor, tojászáporos words need this exception
 partword kérdés =	For example kérdészápor word need this exception
+partword kontaktus =	For example kontaktusszám-kutatás, kontaktusszerű words need this general exception
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -539,7 +542,7 @@ partword gondviseléssz 1245-135-1345-145-1236-24-234-15-123-16-234-156	For exam
 partword gyújtássz 1456-346-245-2345-4-234-156	For example gyújtásszabály word
 partword gyorsszűr 1456-135-1235-234-156-23456-1235	For example gyorsszűrő word
 partword tásszün 2345-4-234-156-12356-1345	For example hatásszünet word
-partword hirdetésszöv 125-24-1235-145-15-2345-16-234-156-12345-1236	For example hirdetésszöveg word
+partword hirdetés =	For example hirdetésszagú, hirdetésszöveg words need this exception
 partword hússzekr 125-346-234-156-15-13-1235	For example hússzekrény word
 partword jelenéssze 245-15-123-15-1345-16-234-156-15	For example jelenésszerű wordd
 partword jelzésszer 245-15-123-126-16-234-156-15-1235	For example jelzésszerű, hangjelzésszerű word
@@ -570,7 +573,7 @@ partword puskás =	For example puskásszázad, puskásszakasz, puskászászlóal
 partword kezésszer 13-15-126-16-234-156-15-1235	For example rendelkezésszerű word
 partword robbanás =	For example robbanásszerű, robbanászajt word
 partword sárgássz 234-4-1235-1245-4-234-156	For example sárgásszínű word
-partword szerződéssze 156-15-1235-126-12456-145-16-234-156-15	For example szerződésszegés, szerződésszegő words
+partword szerződéssz 156-15-1235-126-12456-145-16-234-156	For example szerződésszegés, szerződésszegő, szerződésszám words
 partword szokássz 156-135-13-4-234-156	For example szokásszerű word
 partword úrásszer 346-1235-4-234-156-15-1235	For example szúrásszerű word
 partword úrósszem 346-1235-246-234-156-15-134	For example szúrósszemű word
@@ -774,6 +777,14 @@ partword webes =	For example webesszolgáltatás word
 partword felsorolás =	For example felsorolásszerűen word
 begword kisszíne 13-24-234-156-34-1345-15	For example kisszínes word
 partword végzéssz 1236-16-1245-126-16-234-156	For example kivégzésszerű word need this exception
+begword diósszilá 145-24-246-234-156-24-123-4	For example Diósszilágyi Sámuel name related need this exception
+partword mérkőzéssz 134-16-1235-13-12456-126-16-234-156	For example mérkőzésszerű, mérkőzésszervező words need this exception
+partword művelődés =	For example művelődésszervező word need this exception
+partword nyomássz 1246-135-134-4-234-156	For example nyomásszinten word
+partword realitás =	For example realitásszagú word need this exception
+partword töltésszak 2345-12345-123-2345-16-234-156-1-13	For example töltésszakasz word need this exception
+begword verssz 1236-15-1235-234-156	For example versszerető word
+partword zsarolássz 345-1-1235-135-123-4-234-156	For example zsarolásszerű word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

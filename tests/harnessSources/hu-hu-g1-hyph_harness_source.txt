@@ -127,6 +127,9 @@ testmode: hyphenate
 barnesszal
 
 testmode: hyphenate
+baromsággyűjtemény
+
+testmode: hyphenate
 becslésszerűen
 
 testmode: hyphenate
@@ -252,6 +255,8 @@ csobbanásszerű
 testmode: hyphenate
 csuklásszerű
 
+testmode: hyphenate
+Diósszilágyi
 testmode: hyphenate
 disszertáció
 
@@ -739,6 +744,9 @@ testmode: hyphenate
 hentesszaktanfolyamát
 
 testmode: hyphenate
+hirdetésszagú
+
+testmode: hyphenate
 hirdetésszöveg
 
 testmode: hyphenate
@@ -1156,6 +1164,9 @@ testmode: hyphenate
 közsereg
 
 testmode: hyphenate
+kontaktusszám
+
+testmode: hyphenate
 kudarcsorozat
 
 testmode: hyphenate
@@ -1450,6 +1461,9 @@ testmode: hyphenate
 méreggyümölccsé
 
 testmode: hyphenate
+mérkőzésszervező
+
+testmode: hyphenate
 mérleggyár
 
 testmode: hyphenate
@@ -1505,6 +1519,9 @@ műjéggyár
 
 testmode: hyphenate
 működészavar
+
+testmode: hyphenate
+művelődésszervező
 
 testmode: hyphenate
 nászutazásszerű
@@ -1571,6 +1588,9 @@ nyomásszabályzó
 
 testmode: hyphenate
 nyomásszerű
+
+testmode: hyphenate
+nyomásszinten
 
 testmode: hyphenate
 ordasszőrű
@@ -1774,6 +1794,9 @@ testmode: hyphenate
 porcsérülés
 
 testmode: hyphenate
+porcelánnyúl
+
+testmode: hyphenate
 portásszoba
 
 testmode: hyphenate
@@ -1835,6 +1858,9 @@ rántásszag
 
 testmode: hyphenate
 rántásszerű
+
+testmode: hyphenate
+realitásszagú
 
 testmode: hyphenate
 recésszárú
@@ -2014,6 +2040,9 @@ testmode: hyphenate
 Szepesszombat
 
 testmode: hyphenate
+szerződésszám
+
+testmode: hyphenate
 szerződésszegés
 
 testmode: hyphenate
@@ -2171,6 +2200,9 @@ töltésszám
 
 testmode: hyphenate
 töltésszerűen
+
+testmode: hyphenate
+töltésszakasz
 
 testmode: hyphenate
 törlesszem
@@ -2365,6 +2397,9 @@ testmode: hyphenate
 versszerű
 
 testmode: hyphenate
+versszerető
+
+testmode: hyphenate
 vértesszázad
 
 testmode: hyphenate
@@ -2507,6 +2542,9 @@ zörgésszerű
 
 testmode: hyphenate
 zuhanásszerű
+
+testmode: hyphenate
+zsarolásszerű
 
 testmode: hyphenate
 zsírosszén

@@ -176,6 +176,10 @@
           "output": "bar-nes-szal"
         }, 
         {
+          "input": "baromsággyűjtemény", 
+          "output": "ba-rom-ság-gyűj-te-mény"
+        }, 
+        {
           "input": "becslésszerűen", 
           "output": "becs-lés-sze-rű-en"
         }, 
@@ -342,6 +346,10 @@
         {
           "input": "csuklásszerű", 
           "output": "csuk-lás-sze-rű"
+        }, 
+        {
+          "input": "Diósszilágyi", 
+          "output": "Di-ós-szil-ágyi"
         }, 
         {
           "input": "disszertáció", 
@@ -992,6 +1000,10 @@
           "output": "hen-tesszak-tan-fo-lya-mát"
         }, 
         {
+          "input": "hirdetésszagú", 
+          "output": "hir-de-tés-sza-gú"
+        }, 
+        {
           "input": "hirdetésszöveg", 
           "output": "hir-de-tés-szö-veg"
         }, 
@@ -1548,6 +1560,10 @@
           "output": "köz-se-reg"
         }, 
         {
+          "input": "kontaktusszám", 
+          "output": "kon-tak-tus-szám"
+        }, 
+        {
           "input": "kudarcsorozat", 
           "output": "ku-darc-so-ro-zat"
         }, 
@@ -1940,6 +1956,10 @@
           "output": "mé-reg-gyü-mölccsé"
         }, 
         {
+          "input": "mérkőzésszervező", 
+          "output": "mér-kő-zés-szer-ve-ző"
+        }, 
+        {
           "input": "mérleggyár", 
           "output": "mér-leg-gyár"
         }, 
@@ -2014,6 +2034,10 @@
         {
           "input": "működészavar", 
           "output": "mű-kö-dés-za-var"
+        }, 
+        {
+          "input": "művelődésszervező", 
+          "output": "mű-ve-lő-dés-szer-ve-ző"
         }, 
         {
           "input": "nászutazásszerű", 
@@ -2102,6 +2126,10 @@
         {
           "input": "nyomásszerű", 
           "output": "nyo-más-sze-rű"
+        }, 
+        {
+          "input": "nyomásszinten", 
+          "output": "nyo-más-szin-ten"
         }, 
         {
           "input": "ordasszőrű", 
@@ -2372,6 +2400,10 @@
           "output": "porc-sé-rü-lés"
         }, 
         {
+          "input": "porcelánnyúl", 
+          "output": "por-ce-lán-nyúl"
+        }, 
+        {
           "input": "portásszoba", 
           "output": "por-tás-szo-ba"
         }, 
@@ -2454,6 +2486,10 @@
         {
           "input": "rántásszerű", 
           "output": "rán-tás-sze-rű"
+        }, 
+        {
+          "input": "realitásszagú", 
+          "output": "re-a-li-tás-sza-gú"
         }, 
         {
           "input": "recésszárú", 
@@ -2692,6 +2728,10 @@
           "output": "Sze-pesszom-bat"
         }, 
         {
+          "input": "szerződésszám", 
+          "output": "szer-ző-dés-szám"
+        }, 
+        {
           "input": "szerződésszegés", 
           "output": "szer-ző-dés-sze-gés"
         }, 
@@ -2902,6 +2942,10 @@
         {
           "input": "töltésszerűen", 
           "output": "töl-tés-sze-rű-en"
+        }, 
+        {
+          "input": "töltésszakasz", 
+          "output": "töl-tés-sza-kasz"
         }, 
         {
           "input": "törlesszem", 
@@ -3160,6 +3204,10 @@
           "output": "vers-sze-rű"
         }, 
         {
+          "input": "versszerető", 
+          "output": "vers-sze-re-tő"
+        }, 
+        {
           "input": "vértesszázad", 
           "output": "vér-tesszá-zad"
         }, 
@@ -3350,6 +3398,10 @@
         {
           "input": "zuhanásszerű", 
           "output": "zu-ha-nás-sze-rű"
+        }, 
+        {
+          "input": "zsarolásszerű", 
+          "output": "zsa-ro-lás-sze-rű"
         }, 
         {
           "input": "zsírosszén", 
