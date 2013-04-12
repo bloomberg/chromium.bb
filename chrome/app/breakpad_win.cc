@@ -762,6 +762,11 @@ void SetCrashKeyValue(const base::StringPiece& key,
   entry->set(UTF8ToWide(key).data(), UTF8ToWide(value).data());
 }
 
+extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValue(
+    const char* key, const char* value) {
+  SetCrashKeyValue(base::StringPiece(key), base::StringPiece(value));
+}
+
 void ClearCrashKeyValue(const base::StringPiece& key) {
   DynamicEntriesMap::iterator it = g_dynamic_entries->find(key.as_string());
   if (it == g_dynamic_entries->end())
