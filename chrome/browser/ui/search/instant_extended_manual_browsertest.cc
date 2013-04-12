@@ -157,6 +157,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
+// TODO: http://crbug.com/230940
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromQueryToSameQueryAndSearch) {
   set_browser(browser());
@@ -180,6 +181,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
       ASCIIToUTF16("fac - Google Search")));
 }
 
+// TODO: http://crbug.com/230940
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromQueryToOtherQueryAndSearch) {
   set_browser(browser());
@@ -204,6 +206,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
       ASCIIToUTF16("fa - Google Search")));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromUrlToNonSelectedUrlAndSearch) {
   set_browser(browser());
@@ -235,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_BackspaceFromUrlToUrlAndNavigate) {
+                       MANUAL_BackspaceFromUrlToUrlAndNavigate) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -264,6 +267,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromQueryToSelectedUrlAndNavigate) {
   set_browser(browser());
@@ -291,6 +295,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("amazon.com"));
 }
 
+// TODO: http://crbug.com/230491
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromSelectedUrlToQueryAndSearch) {
   set_browser(browser());
@@ -321,8 +326,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
       ASCIIToUTF16("e.co - Google Search")));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_TypeURLAndPressEnter) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -342,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_TypeAutocompletedURLAndPressEnter) {
+                       MANUAL_TypeAutocompletedURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -362,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_PasteURLAndPressEnter) {
+                       MANUAL_PasteURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -387,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, DISABLED_PasteAndGo) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -402,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, DISABLED_PasteAndGo) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_TypeSearchAndPressControlEnter) {
+                       MANUAL_TypeSearchAndPressControlEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());

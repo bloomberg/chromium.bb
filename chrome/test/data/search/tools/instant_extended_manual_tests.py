@@ -41,10 +41,9 @@ def ReplayTests(replay_path, test_path, data_path, arg=None):
     [test_path,
      '--gtest_filter=InstantExtendedManualTest.*',
      '--run-manual',
-     '--instant-url=http://www.google.com/webhp?sourceid=chrome-instant' \
-       '&espv=2&es_sm=91&ie=UTF-8&fesp=1',
      '--enable-benchmarking',
-     '--enable-stats-table'])
+     '--enable-stats-table',
+     '--ignore-certificate-errors'])
 
   # Shut down web-page-replay and save the recorded session to |data_path|.
   p.send_signal(signal.SIGINT)

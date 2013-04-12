@@ -593,9 +593,10 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  DVLOG(1) << render_view << " GetAutocompleteResults";
   std::vector<InstantAutocompleteResultIDPair> results;
   SearchBox::Get(render_view)->GetAutocompleteResults(&results);
+
+  DVLOG(1) << render_view << " GetAutocompleteResults: " << results.size();
 
   v8::Handle<v8::Array> results_array = v8::Array::New(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
@@ -920,8 +921,9 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestion(
   content::RenderView* render_view = GetRenderView();
   if (!render_view || args.Length() < 2) return v8::Undefined();
 
-  DVLOG(1) << render_view << " SetSuggestion";
   string16 text = V8ValueToUTF16(args[0]);
+  DVLOG(1) << render_view << " SetSuggestion: " << text;
+
   InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
   InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
@@ -1035,14 +1037,14 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShowOverlay(
   content::RenderView* render_view = GetRenderView();
   if (!render_view || args.Length() < 1) return v8::Undefined();
 
-  DVLOG(1) << render_view << " ShowOverlay";
-
   int height = 100;
   InstantSizeUnits units = INSTANT_SIZE_PERCENT;
   if (args[0]->IsInt32()) {
     height = args[0]->Int32Value();
     units = INSTANT_SIZE_PIXELS;
   }
+  DVLOG(1) << render_view << " ShowOverlay: " << height << "/" << units;
+
   SearchBox::Get(render_view)->ShowInstantOverlay(height, units);
 
   return v8::Undefined();
