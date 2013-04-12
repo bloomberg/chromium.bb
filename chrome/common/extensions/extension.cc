@@ -27,8 +27,6 @@
 // TODO(rdevlin.cronin): Remove these once all references have been removed as
 // part of crbug.com/159265.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
@@ -40,8 +38,8 @@
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"

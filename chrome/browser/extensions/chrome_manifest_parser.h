@@ -32,10 +32,7 @@ class ChromeManifestParser : public ProfileKeyedAPI,
   friend class ProfileKeyedAPIFactory<ChromeManifestParser>;
 
   // ProfileKeyedAPI implementation.
-  static const char* service_name() {
-    return "ChromeManifestParser";
-  }
-  static const bool kServiceIsNULLWhileTesting = true;
+  static const char* service_name() { return "ChromeManifestParser"; }
 
   Profile* const profile_;
   content::NotificationRegistrar registrar_;

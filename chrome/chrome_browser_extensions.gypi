@@ -220,8 +220,6 @@
         'browser/extensions/api/history/history_api.cc',
         'browser/extensions/api/i18n/i18n_api.cc',
         'browser/extensions/api/i18n/i18n_api.h',
-        'browser/extensions/api/icons/icons_api.cc',
-        'browser/extensions/api/icons/icons_api.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
         'browser/extensions/api/identity/identity_signin_flow.cc',

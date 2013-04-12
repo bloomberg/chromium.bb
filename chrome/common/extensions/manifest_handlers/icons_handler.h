@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_ICONS_ICONS_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_API_ICONS_ICONS_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_ICONS_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_ICONS_HANDLER_H_
 
 #include <string>
 
@@ -82,4 +82,4 @@ class IconsHandler : public ManifestHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_ICONS_ICONS_HANDLER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_ICONS_HANDLER_H_

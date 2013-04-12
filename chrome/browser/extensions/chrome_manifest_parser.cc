@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
@@ -24,6 +25,7 @@ ChromeManifestParser::ChromeManifestParser(Profile* profile)
   (new DevToolsPageHandler)->Register();
   (new KioskEnabledHandler)->Register();
   (new HomepageURLHandler)->Register();
+  (new IconsHandler)->Register();
   (new OfflineEnabledHandler)->Register();
   (new OptionsPageHandler)->Register();
   (new RequirementsHandler)->Register();

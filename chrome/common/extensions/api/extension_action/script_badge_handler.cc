@@ -7,12 +7,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "extensions/common/install_warning.h"
 
 namespace errors = extension_manifest_errors;

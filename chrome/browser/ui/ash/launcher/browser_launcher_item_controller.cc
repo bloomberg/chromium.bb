@@ -19,15 +19,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
-
-using extensions::Extension;
 
 BrowserLauncherItemController::BrowserLauncherItemController(
     Type type,

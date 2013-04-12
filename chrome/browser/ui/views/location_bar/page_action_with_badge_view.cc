@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
 using content::WebContents;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
