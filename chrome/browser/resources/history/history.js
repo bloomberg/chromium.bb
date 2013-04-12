@@ -458,14 +458,9 @@ HistoryModel.prototype.addResults = function(info, results) {
   }
 
   if (loadTimeData.getBoolean('isUserSignedIn')) {
-    if (info.hasSyncedResults) {
-      this.view_.showNotification(loadTimeData.getString('hasSyncedResults'));
-    } else {
-      // TODO(dubroy): This resource should be renamed, since it's not just used
-      // when there are no results from the server.
-      this.view_.showNotification(
-          loadTimeData.getString('noResponseFromServer'));
-    }
+    var message = loadTimeData.getString(
+        info.hasSyncedResults ? 'hasSyncedResults' : 'noSyncedResults');
+    this.view_.showNotification(message);
   }
 
   this.updateSearch_();
