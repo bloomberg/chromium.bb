@@ -34,6 +34,9 @@
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -92,6 +95,11 @@ const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
 #else
 const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
 #endif
+
+// Identifiers for the type of device from which a history entry originated.
+static const char kDeviceTypeLaptop[] = "laptop";
+static const char kDeviceTypePhone[] = "phone";
+static const char kDeviceTypeTablet[] = "tablet";
 
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
@@ -230,6 +238,36 @@ bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {
   return entry.entry_type == BrowsingHistoryHandler::HistoryEntry::LOCAL_ENTRY;
 }
 
+// Gets the name and type of a device for the given sync client ID.
+// |name| and |type| are out parameters.
+void GetDeviceNameAndType(const ProfileSyncService* sync_service,
+                          const std::string& client_id,
+                          std::string* name,
+                          std::string* type) {
+  if (sync_service) {
+    scoped_ptr<browser_sync::DeviceInfo> device_info =
+        sync_service->GetDeviceInfo(client_id);
+    if (device_info.get()) {
+      *name = device_info->client_name();
+      switch (device_info->device_type()) {
+        case sync_pb::SyncEnums::TYPE_PHONE:
+          *type = kDeviceTypePhone;
+          break;
+        case sync_pb::SyncEnums::TYPE_TABLET:
+          *type = kDeviceTypeTablet;
+          break;
+        default:
+          *type = kDeviceTypeLaptop;
+      }
+      return;
+    }
+  } else {
+    NOTREACHED() << "Got a remote history entry but no ProfileSyncService.";
+  }
+  *name = l10n_util::GetStringUTF8(IDS_HISTORY_UNKNOWN_DEVICE);
+  *type = kDeviceTypeLaptop;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,13 +279,14 @@ bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
     BrowsingHistoryHandler::HistoryEntry::EntryType entry_type,
     const GURL& url, const string16& title, base::Time time,
-    const std::set<int64>& timestamps,
-    bool is_search_result, const string16& snippet)
-      : all_timestamps(timestamps) {
+    const std::string& client_id, bool is_search_result,
+    const string16& snippet) {
   this->entry_type = entry_type;
   this->url = url;
   this->title = title;
   this->time = time;
+  this->client_id = client_id;
+  all_timestamps.insert(time.ToInternalValue());
   this->is_search_result = is_search_result;
   this->snippet = snippet;
 }
@@ -285,7 +324,8 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
 
 scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
-    ManagedUserService* managed_user_service) const {
+    ManagedUserService* managed_user_service,
+    const ProfileSyncService* sync_service) const {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   SetUrlAndTitle(result.get());
   result->SetDouble("time", time.ToJsTime());
@@ -321,6 +361,13 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     result->SetString("dateTimeOfDay", base::TimeFormatTimeOfDay(time));
   }
   result->SetBoolean("starred", bookmark_model->IsBookmarked(url));
+
+  std::string device_name;
+  std::string device_type;
+  if (!client_id.empty())
+    GetDeviceNameAndType(sync_service, client_id, &device_name, &device_type);
+  result->SetString("deviceName", device_name);
+  result->SetString("deviceType", device_type);
 
 #if defined(ENABLE_MANAGED_USERS)
   DCHECK(managed_user_service);
@@ -834,6 +881,8 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
 #if defined(ENABLE_MANAGED_USERS)
   managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
 #endif
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Combine the local and remote results into |query_results_|, and remove
   // any duplicates.
@@ -870,7 +919,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
            query_results_.begin(); it != query_results_.end(); ++it) {
     scoped_ptr<base::Value> value(
-        it->ToValue(bookmark_model, managed_user_service));
+        it->ToValue(bookmark_model, managed_user_service, sync_service));
     results_value.Append(value.release());
   }
 
@@ -891,17 +940,14 @@ void BrowsingHistoryHandler::QueryComplete(
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
-
-    std::set<int64> timestamps;
-    timestamps.insert(page.visit_time().ToInternalValue());
-
+    // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
     query_results_.push_back(
         HistoryEntry(
             HistoryEntry::LOCAL_ENTRY,
             page.url(),
             page.title(),
             page.visit_time(),
-            timestamps,
+            std::string(),
             !search_text.empty(),
             page.snippet().text()));
   }
@@ -967,16 +1013,14 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         LOG(WARNING) << "Improperly formed JSON response from history server.";
         continue;
       }
-
       // Title is optional, so the return value is ignored here.
       result->GetString("title", &title);
 
       // Extract the timestamps of all the visits to this URL.
       // They are referred to as "IDs" by the server.
-      std::set<int64> timestamps;
       for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
         const DictionaryValue* id = NULL;
-        string16 timestamp_string;
+        std::string timestamp_string;
         int64 timestamp_usec;
 
         if (!(ids->GetDictionary(j, &id) &&
@@ -988,20 +1032,18 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         // The timestamp on the server is a Unix time.
         base::Time time = base::Time::UnixEpoch() +
                           base::TimeDelta::FromMicroseconds(timestamp_usec);
-        timestamps.insert(time.ToInternalValue());
 
-        // Use the first timestamp as the visit time for this result.
-        // TODO(dubroy): Use the sane time instead once it is available.
-        if (visit_time.is_null())
-          visit_time = time;
+        // Get the ID of the client that this visit came from.
+        std::string client_id;
+        id->GetString("client_id", &client_id);
 
         web_history_query_results_.push_back(
             HistoryEntry(
                 HistoryEntry::REMOTE_ENTRY,
                 GURL(url),
                 title,
-                visit_time,
-                timestamps,
+                time,
+                client_id,
                 !search_text.empty(),
                 string16()));
       }

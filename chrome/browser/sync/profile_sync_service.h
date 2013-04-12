@@ -268,6 +268,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Return value is an empty scoped_ptr if the device info is unavailable.
   virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo() const;
 
+  // Returns sync's representation of the device info for a client identified
+  // by |client_id|. Return value is an empty scoped ptr if the device info
+  // is unavailable.
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfo(
+      const std::string& client_id) const;
+
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
   void GetDataTypeControllerStates(

@@ -63,15 +63,17 @@ function Visit(result, continued, model) {
   this.url_ = result.url;
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || '';
+
+  // These identify the name and type of the device on which this visit
+  // occurred. They will be empty if the visit occurred on the current device.
+  this.deviceName = result.deviceName;
+  this.deviceType = result.deviceType;
+
   // The id will be set according to when the visit was displayed, not
   // received. Set to -1 to show that it has not been set yet.
   this.id_ = -1;
 
   this.isRendered = false;  // Has the visit already been rendered on the page?
-
-  // Holds the timestamps of duplicates of this visit (visits to the same URL on
-  // the same day).
-  this.duplicateTimestamps_ = [];
 
   // All the date information is public so that owners can compare properties of
   // two items easily.
@@ -102,14 +104,6 @@ function Visit(result, continued, model) {
 }
 
 // Visit, public: -------------------------------------------------------------
-
-/**
- * Records the timestamp of another visit to the same URL as this visit.
- * @param {number} timestamp The timestamp to add.
- */
-Visit.prototype.addDuplicateTimestamp = function(timestamp) {
-  this.duplicateTimestamps_.push(timestamp);
-};
 
 /**
  * Returns a dom structure for a browse page result or a search page result.
@@ -146,6 +140,9 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var self = this;
   var setActiveVisit = function(e) {
     activeVisit = self;
+    var menu = $('action-menu');
+    menu.dataset.devicename = self.deviceName;
+    menu.dataset.devicetype = self.deviceType;
   };
   domain.textContent = this.getDomainFromURL_(this.url_);
 

@@ -371,6 +371,17 @@ ProfileSyncService::GetLocalDeviceInfo() const {
     return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
+scoped_ptr<browser_sync::DeviceInfo>
+ProfileSyncService::GetDeviceInfo(const std::string& client_id) const {
+  DCHECK(sync_initialized());
+  browser_sync::SyncedDeviceTracker* device_tracker =
+      backend_->GetSyncedDeviceTracker();
+  if (device_tracker)
+    return device_tracker->ReadDeviceInfo(client_id);
+  else
+    return scoped_ptr<browser_sync::DeviceInfo>();
+}
+
 void ProfileSyncService::GetDataTypeControllerStates(
   browser_sync::DataTypeController::StateMap* state_map) const {
     for (browser_sync::DataTypeController::TypeMap::const_iterator iter =

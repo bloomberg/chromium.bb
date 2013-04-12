@@ -439,7 +439,7 @@ button.menu-button.drop-down {
   top: 0;
 }
 
-#action-menu > :not(hr) {
+#action-menu > [role=menuitem] {
   line-height: 29px;
   outline: none;
 }
@@ -486,4 +486,46 @@ html[dir='rtl'] #newer-button::after {
   display: block;
   height: 0;
   visibility: hidden;
+}
+
+/* Styles for the action menu of visits that come from other devices, triggered
+   by setting the "data-devicename" attribute of the menu. */
+
+#action-menu[data-devicename]:not([data-devicename='']) {
+  padding-top: 0;
+}
+
+#action-menu[data-devicename]::before {
+  background-color: rgb(245, 245, 245);
+  background-repeat: no-repeat;
+  background-size: 24px;
+  border-bottom: 1px solid rgb(232, 232, 232);
+  color: rgb(151, 156, 160);
+  content: attr(data-devicename);
+  display: block;
+  font-size: 11px;
+  line-height: 29px;
+  margin-bottom: 8px;
+  padding: 0 19px 0 51px;
+}
+
+#action-menu[data-devicename='']::before {
+  display: none;
+}
+
+#action-menu[data-devicetype='laptop']::before {
+  background-image: url(../../../../ui/webui/resources/images/laptop_small.png);
+  background-position: 18px center;
+}
+
+#action-menu[data-devicetype='phone']::before {
+  background-image: url(../../../../ui/webui/resources/images/phone_small.png);
+  background-position: 14px center;
+  padding-left: 43px;
+}
+
+#action-menu[data-devicetype='tablet']::before {
+  background-image: url(../../../../ui/webui/resources/images/tablet_small.png);
+  background-position: 17px center;
+  padding-left: 49px;
 }

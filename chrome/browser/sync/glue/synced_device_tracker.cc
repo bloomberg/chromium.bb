@@ -73,6 +73,24 @@ scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo(
                      specifics.device_type()));
 }
 
+scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadDeviceInfo(
+    const std::string& client_id) const {
+  syncer::ReadTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadNode node(&trans);
+  std::string lookup_string = DeviceInfoLookupString(client_id);
+  if (node.InitByClientTagLookup(syncer::DEVICE_INFO, lookup_string) !=
+      syncer::BaseNode::INIT_OK) {
+    return scoped_ptr<DeviceInfo>();
+  }
+
+  const sync_pb::DeviceInfoSpecifics& specifics = node.GetDeviceInfoSpecifics();
+  return scoped_ptr<DeviceInfo> (
+      new DeviceInfo(specifics.client_name(),
+                     specifics.chrome_version(),
+                     specifics.sync_user_agent(),
+                     specifics.device_type()));
+}
+
 void SyncedDeviceTracker::InitLocalDeviceInfo(const base::Closure& callback) {
   DeviceInfo::CreateLocalDeviceInfo(
       base::Bind(&SyncedDeviceTracker::InitLocalDeviceInfoContinuation,

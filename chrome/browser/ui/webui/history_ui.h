@@ -18,6 +18,7 @@
 
 class BookmarkModel;
 class ManagedUserService;
+class ProfileSyncService;
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
@@ -37,7 +38,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     };
 
     HistoryEntry(EntryType type, const GURL& url, const string16& title,
-                 base::Time time, const std::set<int64>& timestamps,
+                 base::Time time, const std::string& client_id,
                  bool is_search_result, const string16& snippet);
     HistoryEntry();
     virtual ~HistoryEntry();
@@ -48,7 +49,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     // Converts the entry to a DictionaryValue to be owned by the caller.
     scoped_ptr<DictionaryValue> ToValue(
         BookmarkModel* bookmark_model,
-        ManagedUserService* managed_user_service) const;
+        ManagedUserService* managed_user_service,
+        const ProfileSyncService* sync_service) const;
 
     // Comparison function for sorting HistoryEntries from newest to oldest.
     static bool SortByTimeDescending(
@@ -63,6 +65,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     // The time of the entry. Usually this will be the time of the most recent
     // visit to |url| on a particular day as defined in the local timezone.
     base::Time time;
+
+    // The sync ID of the client on which the most recent visit occurred.
+    std::string client_id;
 
     // Timestamps of all local or remote visits the same URL on the same day.
     std::set<int64> all_timestamps;

@@ -40,6 +40,8 @@ class SyncedDeviceTracker : public ChangeProcessor {
       const syncer::BaseTransaction &trans) const;
   virtual scoped_ptr<DeviceInfo> ReadLocalDeviceInfo() const;
   virtual void InitLocalDeviceInfo(const base::Closure& callback);
+  virtual scoped_ptr<DeviceInfo> ReadDeviceInfo(
+      const std::string& client_id) const;
 
  private:
   friend class SyncedDeviceTrackerTest;
