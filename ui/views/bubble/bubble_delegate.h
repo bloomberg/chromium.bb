@@ -55,9 +55,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
   bool close_on_deactivate() const { return close_on_deactivate_; }
-  void set_close_on_deactivate(bool close_on_deactivate) {
-    close_on_deactivate_ = close_on_deactivate;
-  }
+  void set_close_on_deactivate(bool close) { close_on_deactivate_ = close; }
 
   View* anchor_view() const { return anchor_view_; }
   Widget* anchor_widget() const { return anchor_widget_; }
@@ -81,38 +79,34 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
 
   const gfx::Insets& anchor_view_insets() const { return anchor_view_insets_; }
-  void set_anchor_view_insets(const gfx::Insets& insets) {
-    anchor_view_insets_ = insets;
-  }
+  void set_anchor_view_insets(const gfx::Insets& i) { anchor_view_insets_ = i; }
 
   gfx::NativeView parent_window() const { return parent_window_; }
   void set_parent_window(gfx::NativeView window) { parent_window_ = window; }
 
   bool use_focusless() const { return use_focusless_; }
-  void set_use_focusless(bool use_focusless) {
-    use_focusless_ = use_focusless;
-  }
+  void set_use_focusless(bool focusless) { use_focusless_ = focusless; }
 
   bool accept_events() const { return accept_events_; }
   void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
 
   bool border_accepts_events() const { return border_accepts_events_; }
-  void set_border_accepts_events(bool accept) {
-    border_accepts_events_ = accept;
-  }
+  void set_border_accepts_events(bool event) { border_accepts_events_ = event; }
 
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
+  bool move_with_anchor() const { return move_with_anchor_; }
+  void set_move_with_anchor(bool move) { move_with_anchor_ = move; }
+
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
 
-  // Fade the bubble in or out via Widget transparency.
-  // Fade in calls Widget::Show; fade out calls Widget::Close upon completion.
+  // Fade the bubble in or out by animation Widget transparency.
+  // Fade-in calls Widget::Show; fade-out calls Widget::Close upon completion.
   void StartFade(bool fade_in);
 
-  // Reset fade and opacity of bubble. Restore the opacity of the
-  // bubble to the setting before StartFade() was called.
+  // Restores bubble opacity to its value before StartFade() was called.
   void ResetFade();
 
   // Sets the bubble alignment relative to the anchor. This may only be called
@@ -134,20 +128,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
 
-  // Set the anchor view, this (or set_anchor_rect) must be done before
-  // calling CreateBubble or Show.
+  // Set the anchor view or rect; set these before CreateBubble or Show.
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
-  void set_anchor_rect(gfx::Rect anchor_rect) {
-    anchor_rect_ = anchor_rect;
-  }
+  void set_anchor_rect(const gfx::Rect& rect) { anchor_rect_ = rect; }
 
-  bool move_with_anchor() const { return move_with_anchor_; }
-  void set_move_with_anchor(bool move_with_anchor) {
-    move_with_anchor_ = move_with_anchor;
-  }
-
-  // Resizes and potentially moves the Bubble to best accommodate the
-  // contents preferred size.
+  // Resize and potentially move the bubble to fit the content's preferred size.
   void SizeToContents();
 
   BubbleFrameView* GetBubbleFrameView() const;
@@ -203,15 +188,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The widget hosting the border for this bubble (non-Aura Windows only).
   Widget* border_widget_;
 
-  // If true (defaults to false), the bubble does not take user focus upon
-  // display.
+  // If true, the bubble does not take focus on display; default is false.
   bool use_focusless_;
 
-  // Specifies whether the popup accepts events or lets them pass through.
+  // Specifies whether the bubble (or its border) handles mouse events, etc.
   bool accept_events_;
-
-  // Specifies whether the bubble border accepts events or lets them pass
-  // through.
   bool border_accepts_events_;
 
   // If true (defaults to true), the arrow may be mirrored and moved to fit the

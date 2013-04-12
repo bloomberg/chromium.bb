@@ -23,10 +23,13 @@ class BubbleExample : public ExampleBase, public ButtonListener {
  private:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
-  Button* round_;
-  Button* arrow_;
+  Button* shadow_;
+  Button* no_shadow_;
+  Button* big_shadow_;
+  Button* small_shadow_;
+  Button* align_to_edge_;
+  Button* persistent_;
   Button* fade_in_;
-  Button* fade_out_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleExample);
 };
