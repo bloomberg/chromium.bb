@@ -168,11 +168,6 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
   if (entry && entry->GetURL().SchemeIs(extensions::kExtensionScheme))
     return false;
 
-#if defined(OS_CHROMEOS)
-  if (entry && entry->GetURL().SchemeIs(chrome::kDriveScheme))
-    return false;
-#endif
-
   if (chrome::IsInstantNTP(web_contents))
     return false;
 
