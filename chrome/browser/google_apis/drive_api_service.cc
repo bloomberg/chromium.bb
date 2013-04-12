@@ -279,12 +279,17 @@ void DriveAPIService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  // The simplest way to fetch the all resources list looks files.list method,
+  // but it seems impossible to know the returned list's changestamp.
+  // Thus, instead, we use changes.list method with includeDeleted=false here.
+  // The returned list should contain only resources currently existing.
   runner_->StartOperationWithRetry(
-      new GetFilelistOperation(
+      new GetChangelistOperation(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          "",  // search query
+          false,  // include deleted
+          0,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
