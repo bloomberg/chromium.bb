@@ -35,7 +35,7 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 
-#if OS(DARWIN) && PLATFORM(CHROMIUM)
+#if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 

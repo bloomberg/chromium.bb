@@ -28,7 +28,7 @@
 #import <AppKit/NSFont.h>
 #import <wtf/text/WTFString.h>
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 #import "HarfBuzzFace.h"
 #endif
 
@@ -53,13 +53,13 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool isPrinterFon
     CGFontRef cgFont = 0;
     loadFont(nsFont, size, m_font, cgFont);
     
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
     // FIXME: Chromium: The following code isn't correct for the Chromium port since the sandbox might
     // have blocked font loading, in which case we'll only have the real loaded font file after the call to loadFont().
     {
         CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(m_font));
         m_isColorBitmapFont = traits & kCTFontColorGlyphsTrait;
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
         m_isCompositeFontReference = traits & kCTFontCompositeTrait;
 #endif
     }
@@ -84,7 +84,7 @@ void FontPlatformData::platformDataInit(const FontPlatformData& f)
     m_cgFont = f.m_cgFont;
     m_CTFont = f.m_CTFont;
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
 #endif
@@ -101,7 +101,7 @@ const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformD
         CFRelease(m_font);
     m_font = f.m_font;
     m_CTFont = f.m_CTFont;
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
 #endif
@@ -133,7 +133,7 @@ void FontPlatformData::setFont(NSFont *font)
     NSFont* loadedFont = 0;
     loadFont(m_font, m_size, loadedFont, cgFont);
     
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     // If loadFont replaced m_font with a fallback font, then release the
     // previous font to counter the retain above. Then retain the new font.
     if (loadedFont != m_font) {
@@ -144,11 +144,11 @@ void FontPlatformData::setFont(NSFont *font)
 #endif
     
     m_cgFont.adoptCF(cgFont);
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
     {
         CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(m_font));
         m_isColorBitmapFont = traits & kCTFontColorGlyphsTrait;
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
         m_isCompositeFontReference = traits & kCTFontCompositeTrait;
 #endif
     }
@@ -237,7 +237,7 @@ static CTFontDescriptorRef cascadeToLastResortAndDisableSwashesFontDescriptor()
 // Adding a cascade list breaks the font on Leopard
 static bool canSetCascadeListForCustomFont()
 {
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
     return true;
 #else
     return false;
@@ -283,7 +283,7 @@ CTFontRef FontPlatformData::ctFont() const
     return m_CTFont.get();
 }
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 static bool isAATFont(CTFontRef ctFont)
 {
     CFDataRef table = CTFontCopyTable(ctFont, kCTFontTableMort, 0);

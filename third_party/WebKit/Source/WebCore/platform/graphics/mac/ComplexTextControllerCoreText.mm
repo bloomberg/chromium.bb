@@ -33,15 +33,6 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#if !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED == 1050
-// The following symbols are SPI in 10.5.
-extern "C" {
-void CTRunGetAdvances(CTRunRef run, CFRange range, CGSize buffer[]);
-const CGSize* CTRunGetAdvancesPtr(CTRunRef run);
-extern const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel;
-}
-#endif
-
 @interface WebCascadeList : NSArray {
     @private
     const WebCore::Font* _font;
@@ -226,7 +217,7 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
         static CFDictionaryRef ltrTypesetterOptions = CFDictionaryCreate(kCFAllocatorDefault, optionKeys, ltrOptionValues, WTF_ARRAY_LENGTH(optionKeys), &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         static CFDictionaryRef rtlTypesetterOptions = CFDictionaryCreate(kCFAllocatorDefault, optionKeys, rtlOptionValues, WTF_ARRAY_LENGTH(optionKeys), &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
         ProviderInfo info = { cp, length, stringAttributes.get() };
         RetainPtr<CTTypesetterRef> typesetter(AdoptCF, wkCreateCTTypesetterWithUniCharProviderAndOptions(&provideStringAndAttributes, 0, &info, m_run.ltr() ? ltrTypesetterOptions : rtlTypesetterOptions));
 #else

@@ -1757,7 +1757,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     bool swallowMouseUpEvent = !dispatchMouseEvent(eventNames().mouseupEvent, mev.targetNode(), true, m_clickCount, mouseEvent, false);
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
     if (mouseEvent.button() == LeftButton && mouseEvent.modifiers() & PlatformEvent::CtrlKey)
         contextMenuEvent = true;

@@ -27,7 +27,7 @@
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 #include "HarfBuzzFace.h"
 #endif
 

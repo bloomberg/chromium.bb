@@ -26,7 +26,7 @@
 #include "config.h"
 #include "Hyphenation.h"
 
-#if (!PLATFORM(MAC) && !PLATFORM(CHROMIUM)) || PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 
 #include "AtomicStringKeyedMRUCache.h"
 #include "TextBreakIteratorInternalICU.h"

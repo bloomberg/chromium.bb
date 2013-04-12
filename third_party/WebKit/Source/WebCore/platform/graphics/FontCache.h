@@ -88,7 +88,7 @@ public:
     size_t inactiveFontDataCount();
     void purgeInactiveFontData(int count = INT_MAX);
 
-#if PLATFORM(CHROMIUM) && OS(WINDOWS)
+#if OS(WINDOWS)
     PassRefPtr<SimpleFontData> fontDataFromDescriptionAndLogFont(const FontDescription&, ShouldRetain, const LOGFONT&, wchar_t* outFontFamilyName);
 #endif
 
@@ -130,7 +130,7 @@ private:
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN)) || OS(ANDROID)
+#if OS(DARWIN) || OS(ANDROID)
     friend class ComplexTextController;
 #endif
     friend class SimpleFontData; // For getCachedFontData(const FontPlatformData*)

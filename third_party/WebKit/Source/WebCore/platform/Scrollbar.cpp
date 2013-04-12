@@ -44,7 +44,7 @@
 
 using namespace std;
 
-#if PLATFORM(CHROMIUM) && (OS(UNIX) && !OS(DARWIN))
+#if OS(UNIX) && !OS(DARWIN)
 // The position of the scrollbar thumb affects the appearance of the steppers, so
 // when the thumb moves, we have to invalidate them for painting.
 #define THUMB_POSITION_AFFECTS_BUTTONS

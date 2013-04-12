@@ -41,12 +41,8 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/text/StringHash.h>
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
 #include <wtf/RetainPtr.h>
-#endif
-
-#if PLATFORM(WIN) && !OS(WINCE)
-#include <usp10.h>
 #endif
 
 namespace WebCore {
@@ -172,16 +168,16 @@ public:
     virtual String description() const;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
     const SimpleFontData* getCompositeFontReferenceFontData(NSFont *key) const;
     NSFont* getNSFont() const { return m_platformData.font(); }
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
     CFDictionaryRef getCFStringAttributes(TypesettingFeatures, FontOrientation) const;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN)) || USE(HARFBUZZ)
+#if OS(DARWIN) || USE(HARFBUZZ)
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 #endif
 
@@ -208,13 +204,6 @@ private:
 
     PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&, float scaleFactor) const;
     PassRefPtr<SimpleFontData> platformCreateScaledFontData(const FontDescription&, float scaleFactor) const;
-
-#if PLATFORM(WIN) && !OS(WINCE)
-    void initGDIFont();
-    void platformCommonDestroy();
-    FloatRect boundsForGDIGlyph(Glyph glyph) const;
-    float widthForGDIGlyph(Glyph glyph) const;
-#endif
 
     FontMetrics m_fontMetrics;
     float m_maxCharWidth;
@@ -256,7 +245,7 @@ private:
         RefPtr<SimpleFontData> brokenIdeograph;
         RefPtr<SimpleFontData> verticalRightOrientation;
         RefPtr<SimpleFontData> uprightOrientation;
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
         mutable RetainPtr<CFMutableDictionaryRef> compositeFontReferences;
 #endif
         
@@ -273,11 +262,11 @@ private:
     float m_syntheticBoldOffset;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
     mutable HashMap<unsigned, RetainPtr<CFDictionaryRef> > m_CFStringAttributes;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN)) || USE(HARFBUZZ)
+#if OS(DARWIN) || USE(HARFBUZZ)
     mutable OwnPtr<HashMap<String, bool> > m_combiningCharacterSequenceSupport;
 #endif
 };

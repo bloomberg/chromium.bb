@@ -324,7 +324,7 @@ extern void (*wkCGPathAddRoundedRect)(CGMutablePathRef path, const CGAffineTrans
 extern void (*wkCFURLRequestAllowAllPostCaching)(CFURLRequestRef);
 #endif
 
-#if !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 extern CGFloat (*wkNSElasticDeltaForTimeDelta)(CGFloat initialPosition, CGFloat initialVelocity, CGFloat elapsedTime);
 extern CGFloat (*wkNSElasticDeltaForReboundDelta)(CGFloat delta);
 extern CGFloat (*wkNSReboundDeltaForElasticDelta)(CGFloat delta);

@@ -23,7 +23,7 @@
  */
 
 // FIXME: This is temporary until all ports switch to using this file.
-#if PLATFORM(CHROMIUM) && !OS(DARWIN)
+#if !OS(DARWIN)
 #include "chromium/FontPlatformData.h"
 #else
 
@@ -49,7 +49,7 @@ typedef const struct __CTFont* CTFontRef;
 #include <wtf/RetainPtr.h>
 #include <wtf/text/StringImpl.h>
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 #include "CrossProcessFontLoading.h"  
 #endif
 
@@ -68,7 +68,7 @@ namespace WebCore {
 class FontDescription;
 class SharedBuffer;
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 class HarfBuzzFace;
 #endif
 
@@ -126,7 +126,7 @@ public:
 
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     HarfBuzzFace* harfBuzzFace();
 #endif
 
@@ -201,7 +201,7 @@ private:
     mutable RetainPtr<CTFontRef> m_CTFont;
 #endif
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     RefPtr<MemoryActivatedFont> m_inMemoryFont;
     RefPtr<HarfBuzzFace> m_harfBuzzFace;
 #endif

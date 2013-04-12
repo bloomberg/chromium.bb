@@ -80,7 +80,7 @@ static NSString *webFallbackFontFamily(void)
 }
 
 #if !ERROR_DISABLED
-#if defined(__LP64__) || PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070 || (__MAC_OS_X_VERSION_MAX_ALLOWED >= 107 && __MAC_OS_X_VERSION_MIN_REQUIRED >= 106)
+#if defined(__LP64__) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070 || (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1070 && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060)
 static NSString* pathFromFont(NSFont*)
 {
     // FMGetATSFontRefFromFont is not available. As pathFromFont is only used for debugging purposes,

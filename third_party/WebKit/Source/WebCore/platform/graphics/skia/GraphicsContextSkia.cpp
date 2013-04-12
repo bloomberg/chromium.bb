@@ -59,7 +59,7 @@
 #include <wtf/MathExtras.h>
 #include <wtf/UnusedParam.h>
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -495,7 +495,7 @@ void GraphicsContext::drawFocusRing(const Path& path, int width, int offset, con
 
 static inline void drawOuterPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width)
 {
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     paint.setAlpha(64);
     paint.setStrokeWidth(width);
     paint.setPathEffect(new SkCornerPathEffect((width - 1) * 0.5f))->unref();
@@ -508,7 +508,7 @@ static inline void drawOuterPath(PlatformContextSkia* context, const SkPath& pat
 
 static inline void drawInnerPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width)
 {
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     paint.setAlpha(128);
     paint.setStrokeWidth(width * 0.5f);
     context->drawPath(path, paint);
@@ -517,7 +517,7 @@ static inline void drawInnerPath(PlatformContextSkia* context, const SkPath& pat
 
 static inline int getFocusRingOutset(int offset)
 {
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     return offset + 2;
 #else
     return 0;
@@ -616,7 +616,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
     static SkBitmap* misspellBitmap2x[2] = { 0, 0 };
     SkBitmap** misspellBitmap = deviceScaleFactor == 2 ? misspellBitmap2x : misspellBitmap1x;
     if (!misspellBitmap[index]) {
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
         // Match the artwork used by the Mac.
         const int rowPixels = 4 * deviceScaleFactor;
         const int colPixels = 3 * deviceScaleFactor;
@@ -691,7 +691,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
 #endif
     }
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
     SkScalar originX = WebCoreFloatToSkScalar(pt.x()) * deviceScaleFactor;
     SkScalar originY = WebCoreFloatToSkScalar(pt.y()) * deviceScaleFactor;
 
@@ -1200,7 +1200,7 @@ bool GraphicsContext::isAcceleratedContext() const
     return platformContext()->isAccelerated();
 }
 
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 CGColorSpaceRef deviceRGBColorSpaceRef()
 {
     static CGColorSpaceRef deviceSpace = CGColorSpaceCreateDeviceRGB();
