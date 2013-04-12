@@ -63,7 +63,19 @@ void MacSandboxedClipboardTestCase::SetTestData(const char* test_data) {
   clipboard_name_ = [base::SysUTF8ToNSString(test_data) retain];
 }
 
-TEST_F(MacSandboxTest, ClipboardAccess) {
+#if defined(ADDRESS_SANITIZER)
+// MacSandboxTest.{ClipboardAccess,FileAccess,UrandomAccess} fail under
+// AddressSanitizer on Mac. See http://crbug.com/196561.
+#define MAYBE_ClipboardAccess DISABLED_ClipboardAccess
+#define MAYBE_FileAccess DISABLED_FileAccess
+#define MAYBE_UrandomAccess DISABLED_UrandomAccess
+#else
+#define MAYBE_ClipboardAccess ClipboardAccess
+#define MAYBE_FileAccess FileAccess
+#define MAYBE_UrandomAccess UrandomAccess
+#endif  // ADDRESS_SANITIZER
+
+TEST_F(MacSandboxTest, MAYBE_ClipboardAccess) {
   NSPasteboard* pb = [NSPasteboard pasteboardWithUniqueName];
   EXPECT_EQ([[pb types] count], 0U);
 
@@ -90,7 +102,7 @@ bool MacSandboxedFileAccessTestCase::SandboxedTest() {
   return fdes == -1;
 }
 
-TEST_F(MacSandboxTest, FileAccess) {
+TEST_F(MacSandboxTest, MAYBE_FileAccess) {
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedFileAccessTestCase", NULL));
 }
 
@@ -120,7 +132,7 @@ bool MacSandboxedUrandomTestCase::SandboxedTest() {
   }
 }
 
-TEST_F(MacSandboxTest, UrandomAccess) {
+TEST_F(MacSandboxTest, MAYBE_UrandomAccess) {
   // Similar to RunTestInAllSandboxTypes(), except changing
   // |test_data| for the ppapi case.  Passing "" in the non-ppapi case
   // to overwrite the test data (NULL means not to change it).
