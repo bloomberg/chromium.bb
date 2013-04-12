@@ -151,18 +151,19 @@ void ExtensionUninstallDialog::Observe(
 bool ExtensionUninstallDialog::ShowAuthorizationDialog() {
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);
+  if (!service->ProfileIsManaged() || !browser_)
+    return false;
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
-  if (service->ProfileIsManaged() &&
-      !service->CanSkipPassphraseDialog(web_contents)) {
-    service->RequestAuthorization(
-        web_contents,
-        base::Bind(&ExtensionUninstallDialog::OnAuthorizationResult,
-                   base::Unretained(this)));
-    return true;
+  if (service->CanSkipPassphraseDialog(web_contents)) {
+    service->AddElevationForExtension(extension_->id());
+    return false;
   }
-  service->AddElevationForExtension(extension_->id());
-  return false;
+  service->RequestAuthorization(
+      web_contents,
+      base::Bind(&ExtensionUninstallDialog::OnAuthorizationResult,
+                 base::Unretained(this)));
+  return true;
 }
 
 void ExtensionUninstallDialog::OnAuthorizationResult(bool success) {
