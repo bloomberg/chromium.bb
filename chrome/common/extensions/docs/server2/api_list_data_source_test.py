@@ -7,6 +7,7 @@ import unittest
 from api_list_data_source import APIListDataSource
 from compiled_file_system import CompiledFileSystem
 from copy import deepcopy
+from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 
 def _ToTestData(obj):
@@ -51,7 +52,8 @@ _TEST_DATA = _ToTestData({
 class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._factory = APIListDataSource.Factory(
-        CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA))),
+        CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA)),
+                                   ObjectStoreCreator.Factory()),
         'api',
         'public')
 

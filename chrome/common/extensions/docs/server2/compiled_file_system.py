@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from object_store_creator import ObjectStoreCreator
-
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
     self._cache_data = cache_data
@@ -16,8 +14,12 @@ class CompiledFileSystem(object):
     """A class to build a CompiledFileSystem backed by |file_system|.
     Set an explicit |store_type| for tests.
     """
-    def __init__(self, file_system, store_type=None):
+    def __init__(self,
+                 file_system,
+                 object_store_creator_factory,
+                 store_type=None):
       self._file_system = file_system
+      self._object_store_creator_factory = object_store_creator_factory
       self._store_type = store_type
       self._identity_instance = None
 
@@ -45,8 +47,9 @@ class CompiledFileSystem(object):
       return self._identity_instance
 
     def _Create(self, populate_function, full_name, version=None):
-      object_store_creator = ObjectStoreCreator(CompiledFileSystem,
-                                                store_type=self._store_type)
+      object_store_creator = self._object_store_creator_factory.Create(
+          CompiledFileSystem,
+          store_type=self._store_type)
       return CompiledFileSystem(
           self._file_system,
           populate_function,

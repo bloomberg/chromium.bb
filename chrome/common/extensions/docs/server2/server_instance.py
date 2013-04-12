@@ -74,9 +74,12 @@ class ServerInstance(object):
     viewvc_url = svn_url.replace(url_constants.SVN_URL,
                                  url_constants.VIEWVC_URL)
 
+    object_store_creator_factory = ObjectStoreCreator.Factory(branch)
+
     svn_file_system = CachingFileSystem(
         SubversionFileSystem(AppEngineUrlFetcher(svn_url),
-                             AppEngineUrlFetcher(viewvc_url)))
+                             AppEngineUrlFetcher(viewvc_url)),
+        object_store_creator_factory)
 
     # Lazily create so we don't create github file systems unnecessarily in
     # tests.
@@ -86,19 +89,29 @@ class ServerInstance(object):
           AppEngineBlobstore())
 
     return ServerInstance(channel,
+                          object_store_creator_factory,
                           svn_file_system,
                           ServerInstance.github_file_system)
 
   @staticmethod
   def CreateForTest(file_system):
-    return ServerInstance('test', file_system, None)
+    return ServerInstance('test',
+                          ObjectStoreCreator.Factory('test'),
+                          file_system,
+                          None)
 
-  def __init__(self, channel, svn_file_system, github_file_system):
+  def __init__(self,
+               channel,
+               object_store_creator_factory,
+               svn_file_system,
+               github_file_system):
     self.svn_file_system = svn_file_system
 
     self.github_file_system = github_file_system
 
-    self.compiled_fs_factory = CompiledFileSystem.Factory(svn_file_system)
+    self.compiled_fs_factory = CompiledFileSystem.Factory(
+        svn_file_system,
+        object_store_creator_factory)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_fs_factory,
@@ -111,7 +124,8 @@ class ServerInstance(object):
 
     self.ref_resolver_factory = ReferenceResolver.Factory(
         self.api_data_source_factory,
-        self.api_list_data_source_factory)
+        self.api_list_data_source_factory,
+        object_store_creator_factory)
 
     self.api_data_source_factory.SetReferenceResolverFactory(
         self.ref_resolver_factory)
@@ -121,6 +135,7 @@ class ServerInstance(object):
         self.svn_file_system,
         ServerInstance.github_file_system,
         self.ref_resolver_factory,
+        object_store_creator_factory,
         svn_constants.EXAMPLES_PATH)
 
     self.api_data_source_factory.SetSamplesDataSourceFactory(

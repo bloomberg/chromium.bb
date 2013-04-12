@@ -6,6 +6,7 @@
 from compiled_file_system import CompiledFileSystem
 from copy import deepcopy
 from file_system import FileNotFoundError
+from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_object_store import TestObjectStore
 import unittest
@@ -27,6 +28,7 @@ _TEST_DATA = {
 
 def _CreateFactory():
   return CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA)),
+                                    ObjectStoreCreator.Factory(),
                                     store_type=TestObjectStore)
 
 class CompiledFileSystemTest(unittest.TestCase):

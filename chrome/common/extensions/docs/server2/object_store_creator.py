@@ -6,9 +6,18 @@ from in_memory_object_store import InMemoryObjectStore
 from memcache_object_store import MemcacheObjectStore
 
 class ObjectStoreCreator(object):
-  def __init__(self, cls, store_type=None):
-    '''Creates stores with a top-level namespace given by the name of |cls|.
-    Set an explicit |store_type| if necessary for tests.
+  class Factory(object):
+    def __init__(self, branch=None):
+      self._branch = branch
+
+    '''Creates ObjectStoreCreators (yes seriously) bound to an SVN branch.
+    '''
+    def Create(self, cls, store_type=None):
+      return ObjectStoreCreator(cls, branch=self._branch, store_type=store_type)
+
+  def __init__(self, cls, branch=None, store_type=None):
+    '''Creates stores with a top-level namespace given by the name of |cls|
+    combined with |branch|. Set an explicit |store_type| if necessary for tests.
 
     By convention this should be the name of the class which owns the object
     store. If a class needs multiple object store it should use Create with the
@@ -16,7 +25,10 @@ class ObjectStoreCreator(object):
     '''
     assert isinstance(cls, type)
     assert not cls.__name__[0].islower()  # guard against non-class types
-    self._name = cls.__name__
+    if branch is None:
+      self._name = cls.__name__
+    else:
+      self._name = '%s@%s' % (cls.__name__, branch)
     self._store_type = store_type
 
   def Create(self, version=None, category=None):

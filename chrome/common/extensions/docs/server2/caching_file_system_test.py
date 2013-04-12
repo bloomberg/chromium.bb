@@ -12,6 +12,7 @@ from file_system import FileSystem, StatInfo
 from future import Future
 from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
+from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 
 def _CreateLocalFs():
@@ -20,7 +21,8 @@ def _CreateLocalFs():
 
 class CachingFileSystemTest(unittest.TestCase):
   def testReadFiles(self):
-    file_system = CachingFileSystem(_CreateLocalFs())
+    file_system = CachingFileSystem(_CreateLocalFs(),
+                                    ObjectStoreCreator.Factory())
     expected = {
       './test1.txt': 'test1\n',
       './test2.txt': 'test2\n',
@@ -31,7 +33,8 @@ class CachingFileSystemTest(unittest.TestCase):
         file_system.Read(['./test1.txt', './test2.txt', './test3.txt']).Get())
 
   def testListDir(self):
-    file_system = CachingFileSystem(_CreateLocalFs())
+    file_system = CachingFileSystem(_CreateLocalFs(),
+                                    ObjectStoreCreator.Factory())
     expected = ['dir/'] + ['file%d.html' % i for i in range(7)]
     file_system._read_object_store.Set(
         'list/',
@@ -53,7 +56,7 @@ class CachingFileSystemTest(unittest.TestCase):
         'bob3': 'bob/bob3 contents',
       }
     })
-    file_system = CachingFileSystem(fake_fs)
+    file_system = CachingFileSystem(fake_fs, ObjectStoreCreator.Factory())
 
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
     self.assertTrue(fake_fs.CheckAndReset(read_count=1, stat_count=1))

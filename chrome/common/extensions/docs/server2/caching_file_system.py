@@ -4,7 +4,6 @@
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
-from object_store_creator import ObjectStoreCreator
 
 class _AsyncUncachedFuture(object):
   def __init__(self,
@@ -30,9 +29,10 @@ class _AsyncUncachedFuture(object):
 class CachingFileSystem(FileSystem):
   """FileSystem implementation which caches its results in an object store.
   """
-  def __init__(self, file_system):
+  def __init__(self, file_system, object_store_creator_factory):
     self._file_system = file_system
-    object_store_creator = ObjectStoreCreator(CachingFileSystem)
+    object_store_creator = object_store_creator_factory.Create(
+        CachingFileSystem)
     self._stat_object_store = object_store_creator.Create(
         category='stat')
     self._read_object_store = object_store_creator.Create(

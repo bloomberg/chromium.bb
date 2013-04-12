@@ -37,5 +37,13 @@ class ObjectStoreCreatorTest(unittest.TestCase):
     self.assertRaises(AssertionError, self.creator.Create, version='twenty')
     self.assertRaises(AssertionError, self.creator.Create, version='7a')
 
+  def testFactoryWithBranch(self):
+    store = ObjectStoreCreator.Factory().Create(
+        _FooClass, store_type=TestObjectStore).Create()
+    self.assertEqual('_FooClass', store.namespace)
+    store = ObjectStoreCreator.Factory(branch='dev').Create(
+        _FooClass, store_type=TestObjectStore).Create()
+    self.assertEqual('_FooClass@dev', store.namespace)
+
 if __name__ == '__main__':
   unittest.main()

@@ -30,6 +30,7 @@ class SamplesDataSource(object):
                  extensions_file_system,
                  apps_file_system,
                  ref_resolver_factory,
+                 object_store_creator_factory,
                  extension_samples_path):
       self._svn_file_system = extensions_file_system
       self._github_file_system = apps_file_system
@@ -37,10 +38,12 @@ class SamplesDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._extension_samples_path = extension_samples_path
       def create_compiled_fs(fs, fn, category):
-        return CompiledFileSystem.Factory(fs).Create(fn,
-                                                     SamplesDataSource,
-                                                     category=category,
-                                                     version=_VERSION)
+        return CompiledFileSystem.Factory(
+            fs,
+            object_store_creator_factory).Create(fn,
+                                                 SamplesDataSource,
+                                                 category=category,
+                                                 version=_VERSION)
       self._extensions_cache = create_compiled_fs(extensions_file_system,
                                                   self._MakeSamplesList,
                                                   'extensions')

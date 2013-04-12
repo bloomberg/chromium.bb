@@ -16,6 +16,7 @@ from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
 from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
+from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 import third_party.json_schema_compiler.model as model
 
@@ -57,7 +58,9 @@ class APIDataSourceTest(unittest.TestCase):
   def _CreateRefResolver(self, filename):
     data_source = FakeAPIAndListDataSource(
         self._LoadJSON(filename))
-    return ReferenceResolver.Factory(data_source, data_source).Create()
+    return ReferenceResolver.Factory(data_source,
+                                     data_source,
+                                     ObjectStoreCreator.Factory()).Create()
 
   def DISABLED_testSimple(self):
     compiled_fs_factory = CompiledFileSystem.Factory(

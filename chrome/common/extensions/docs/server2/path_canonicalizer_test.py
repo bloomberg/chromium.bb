@@ -6,6 +6,7 @@
 from compiled_file_system import CompiledFileSystem
 from path_canonicalizer import PathCanonicalizer
 import svn_constants
+from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 import unittest
 
@@ -23,7 +24,9 @@ _TEST_DATA = TestFileSystem.MoveTo(svn_constants.PUBLIC_TEMPLATE_PATH, {
 class PathCanonicalizerTest(unittest.TestCase):
   def setUp(self):
     test_fs = TestFileSystem(_TEST_DATA)
-    compiled_fs_factory = CompiledFileSystem.Factory(test_fs)
+    compiled_fs_factory = CompiledFileSystem.Factory(
+        test_fs,
+        ObjectStoreCreator.Factory())
     self._path_canonicalizer = PathCanonicalizer('stable', compiled_fs_factory)
 
   def _assertIdentity(self, path):

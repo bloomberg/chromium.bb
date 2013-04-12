@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from file_system import FileNotFoundError
-from object_store_creator import ObjectStoreCreator
 import logging
 import re
 import string
@@ -50,15 +49,19 @@ class ReferenceResolver(object):
   _bare_ref = re.compile('\w+(\.\w+)*')
 
   class Factory(object):
-    def __init__(self, api_data_source_factory, api_list_data_source_factory):
+    def __init__(self,
+                 api_data_source_factory,
+                 api_list_data_source_factory,
+                 object_store_creator_factory):
       self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source_factory = api_list_data_source_factory
+      self._object_store_creator_factory = object_store_creator_factory
 
     def Create(self):
       return ReferenceResolver(
           self._api_data_source_factory.Create(None, disable_refs=True),
           self._api_list_data_source_factory.Create(),
-          ObjectStoreCreator(ReferenceResolver).Create())
+          self._object_store_creator_factory.Create(ReferenceResolver).Create())
 
   def __init__(self, api_data_source, api_list_data_source, object_store):
     self._api_data_source = api_data_source
@@ -147,7 +150,7 @@ class ReferenceResolver(object):
     if ref_data is not None:
       return ref_data
     logging.error('$ref %s could not be resolved in namespace %s.' %
-                      (ref, namespace))
+        (ref, namespace))
     type_name = ref.rsplit('.', 1)[-1]
     return {
       'href': '#type-%s' % type_name,
