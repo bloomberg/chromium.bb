@@ -29,7 +29,7 @@ class PageCycler(page_benchmark.PageBenchmark):
     options.AppendExtraBrowserArg('--dom-automation')
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
-    # Temporarily enable force compositing mode on Mac on moz page set only.
+    # Temporarily enable threaded compositing on Mac on moz page set only.
     # This malignancy is to diagnose an issue where the bots are experiencing
     # a regression that isn't reproducing locally.
     # TODO(ccameron): delete this
@@ -37,6 +37,7 @@ class PageCycler(page_benchmark.PageBenchmark):
     if sys.platform == 'darwin':
       if sys.argv[-1].endswith('/moz.json'):
         options.AppendExtraBrowserArg('--force-compositing-mode')
+        options.AppendExtraBrowserArg('--enable-threaded-compositing')
       else:
         options.AppendExtraBrowserArg('--disable-force-compositing-mode')
 
