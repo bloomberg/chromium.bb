@@ -301,6 +301,12 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
 
+  // RVH-based agents disconnect from their clients when the app is terminating
+  // but shared worker-based agents do not.
+  // Disconnect explicitly to make sure that |this| observer is not leaked.
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+
   // Attach to debugger and tell it we are ready.
   DevToolsManager::GetInstance()->
       RegisterDevToolsClientHostFor(agent_host_, this);
@@ -386,7 +392,9 @@ void ExtensionDevToolsClientHost::Observe(
         content::Details<extensions::UnloadedExtensionInfo>(details)->
             extension->id();
     if (id == extension_id_)
-        Close();
+      Close();
+  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
+    Close();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
     if (content::Details<InfoBarRemovedDetails>(details)->first ==

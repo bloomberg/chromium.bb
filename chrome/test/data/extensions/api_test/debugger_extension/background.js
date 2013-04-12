@@ -51,5 +51,21 @@ chrome.test.runTests([
         chrome.test.fail("Cannot discover own background page");
       }
     });
+  },
+
+  function discoverWorker() {
+    var workerPort = new SharedWorker("worker.js").port;
+    workerPort.onmessage = function() {
+      chrome.debugger.getTargets(function(targets) {
+        var page = targets.filter(
+            function(t) { return t.type == 'worker' })[0];
+        if (page) {
+          chrome.debugger.attach({targetId: page.id}, protocolVersion, pass());
+        } else {
+          chrome.test.fail("Cannot discover a newly created worker");
+        }
+      });
+    };
+    workerPort.start();
   }
 ]);
