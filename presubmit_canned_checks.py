@@ -114,6 +114,14 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
                       '-readability/casting,-runtime/int,-runtime/virtual,'
                       '-whitespace/braces')
 
+  # Replace <hash_map> and <hash_set> as headers that need to be included
+  # with "base/hash_tables.h" instead.
+  cpplint._re_pattern_templates = [
+    (a, b, 'base/hash_tables.h')
+      if header in ('<hash_map>', '<hash_set>') else (a, b, header)
+    for (a, b, header) in cpplint._re_pattern_templates
+  ]
+
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through
   # --verbose=#. Hopefully, in the future, we can be more verbose.
