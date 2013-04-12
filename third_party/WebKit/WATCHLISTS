@@ -86,6 +86,17 @@
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/WebKit/chromium/.*Media.*' \
     },
+    'fileapi': {
+      'filepath': 'Source/modules/filesystem/' \
+                  '|Source/WebCore/fileapi/' \
+                  '|Source/WebKit/chromium/.*File.*' \
+                  '|Source/WebCore/platform/.*File.*' \
+                  '|LayoutTests/fast/file'
+    },
+    'quota': {
+      'filepath': 'Source/modules/quota/' \
+                  '|Source/WebKit/chromium/.*Quota.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -121,5 +132,7 @@
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': ['vcarbune@chromium.org'],
     'media': [ 'feature-media-reviews@chromium.org' ],
+    'fileapi': [ 'kinuko@chromium.org' ],
+    'quota': [ 'kinuko@chromium.org' ],
   },
 }
