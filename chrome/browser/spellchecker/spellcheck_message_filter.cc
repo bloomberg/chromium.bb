@@ -131,6 +131,6 @@ void SpellCheckMessageFilter::CallSpellingService(const string16& text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
                base::Unretained(this),
                route_id,
-               0));
+               identifier));
 }
 #endif
