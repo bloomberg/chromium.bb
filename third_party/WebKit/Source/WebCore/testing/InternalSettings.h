@@ -114,7 +114,6 @@ public:
     void setDialogElementEnabled(bool, ExceptionCode&);
     void setShouldDisplayTrackKind(const String& kind, bool enabled, ExceptionCode&);
     bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
-    void setStorageBlockingPolicy(const String&, ExceptionCode&);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setImagesEnabled(bool enabled, ExceptionCode&);
     void setMinimumTimerInterval(double intervalInSeconds, ExceptionCode&);

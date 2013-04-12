@@ -403,20 +403,6 @@ bool InternalSettings::shouldDisplayTrackKind(const String& kind, ExceptionCode&
 #endif
 }
 
-void InternalSettings::setStorageBlockingPolicy(const String& mode, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-
-    if (mode == "AllowAll")
-        settings()->setStorageBlockingPolicy(SecurityOrigin::AllowAllStorage);
-    else if (mode == "BlockThirdParty")
-        settings()->setStorageBlockingPolicy(SecurityOrigin::BlockThirdPartyStorage);
-    else if (mode == "BlockAll")
-        settings()->setStorageBlockingPolicy(SecurityOrigin::BlockAllStorage);
-    else
-        ec = SYNTAX_ERR;
-}
-
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(enabled);

@@ -974,20 +974,6 @@ void Page::collectPluginViews(Vector<RefPtr<PluginViewBase>, 32>& pluginViewBase
     }
 }
 
-void Page::storageBlockingStateChanged()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->document()->storageBlockingStateDidChange();
-
-    // Collect the PluginViews in to a vector to ensure that action the plug-in takes
-    // from below storageBlockingStateChanged does not affect their lifetime.
-    Vector<RefPtr<PluginViewBase>, 32> pluginViewBases;
-    collectPluginViews(pluginViewBases);
-
-    for (size_t i = 0; i < pluginViewBases.size(); ++i)
-        pluginViewBases[i]->storageBlockingStateChanged();
-}
-
 #if !ASSERT_DISABLED
 void Page::checkSubframeCountConsistency() const
 {

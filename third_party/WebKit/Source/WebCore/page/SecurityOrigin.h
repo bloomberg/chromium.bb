@@ -45,12 +45,6 @@ public:
         Ask
     };
 
-    enum StorageBlockingPolicy {
-        AllowAllStorage = 0,
-        BlockThirdPartyStorage,
-        BlockAllStorage
-    };
-
     static PassRefPtr<SecurityOrigin> create(const KURL&);
     static PassRefPtr<SecurityOrigin> createUnique();
 
@@ -140,8 +134,6 @@ public:
     // WARNING: This is an extremely powerful ability. Use with caution!
     void grantUniversalAccess();
 
-    void setStorageBlockingPolicy(StorageBlockingPolicy policy) { m_storageBlockingPolicy = policy; }
-
     bool canAccessDatabase(const SecurityOrigin* topOrigin = 0) const { return canAccessStorage(topOrigin); };
     bool canAccessLocalStorage(const SecurityOrigin* topOrigin) const { return canAccessStorage(topOrigin); };
     bool canAccessSharedWorkers(const SecurityOrigin* topOrigin) const { return canAccessStorage(topOrigin); }
@@ -228,7 +220,6 @@ private:
     bool m_universalAccess;
     bool m_domainWasSetInDOM;
     bool m_canLoadLocalResources;
-    StorageBlockingPolicy m_storageBlockingPolicy;
     bool m_enforceFilePathSeparation;
     bool m_needsDatabaseIdentifierQuirkForFiles;
 };

@@ -43,7 +43,6 @@ public:
     virtual PlatformLayer* platformLayer() const { return 0; }
 
     virtual NPObject* scriptableObject() { return 0; }
-    virtual void storageBlockingStateChanged() { }
     virtual bool getFormValue(String&) { return false; }
     virtual bool scroll(ScrollDirection, ScrollGranularity) { return false; }
 

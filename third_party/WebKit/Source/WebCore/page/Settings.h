@@ -31,7 +31,6 @@
 #include "FontRenderingMode.h"
 #include "IntSize.h"
 #include "KURL.h"
-#include "SecurityOrigin.h"
 #include "SettingsMacros.h"
 #include "Timer.h"
 #include <wtf/HashMap.h>
@@ -186,9 +185,6 @@ namespace WebCore {
         bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
 #endif
 
-        void setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy);
-        SecurityOrigin::StorageBlockingPolicy storageBlockingPolicy() const { return m_storageBlockingPolicy; }
-
         void setTimeWithoutMouseMovementBeforeHidingControls(double time) { m_timeWithoutMouseMovementBeforeHidingControls = time; }
         double timeWithoutMouseMovementBeforeHidingControls() const { return m_timeWithoutMouseMovementBeforeHidingControls; }
 
@@ -208,7 +204,6 @@ namespace WebCore {
         ScriptFontFamilyMap m_cursiveFontFamilyMap;
         ScriptFontFamilyMap m_fantasyFontFamilyMap;
         ScriptFontFamilyMap m_pictographFontFamilyMap;
-        SecurityOrigin::StorageBlockingPolicy m_storageBlockingPolicy;
         float m_textAutosizingFontScaleFactor;
         IntSize m_textAutosizingWindowSizeOverride;
         bool m_textAutosizingEnabled : 1;

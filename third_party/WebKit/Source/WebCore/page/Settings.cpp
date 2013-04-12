@@ -133,7 +133,6 @@ static const bool defaultSelectTrailingWhitespaceEnabled = false;
 Settings::Settings(Page* page)
     : m_page(0)
     , m_mediaTypeOverride("screen")
-    , m_storageBlockingPolicy(SecurityOrigin::AllowAllStorage)
     , m_textAutosizingFontScaleFactor(1)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
@@ -442,15 +441,6 @@ void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
 
     m_dnsPrefetchingEnabled = dnsPrefetchingEnabled;
     m_page->dnsPrefetchingStateChanged();
-}
-
-void Settings::setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy enabled)
-{
-    if (m_storageBlockingPolicy == enabled)
-        return;
-
-    m_storageBlockingPolicy = enabled;
-    m_page->storageBlockingStateChanged();
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)

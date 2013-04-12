@@ -4046,12 +4046,6 @@ void Document::unregisterForMediaVolumeCallbacks(Element* e)
     m_mediaVolumeCallbackElements.remove(e);
 }
 
-void Document::storageBlockingStateDidChange()
-{
-    if (Settings* settings = this->settings())
-        securityOrigin()->setStorageBlockingPolicy(settings->storageBlockingPolicy());
-}
-
 #if ENABLE(VIDEO_TRACK)
 void Document::registerForCaptionPreferencesChangedCallbacks(Element* e)
 {
@@ -4526,7 +4520,6 @@ void Document::initSecurityContext()
                 securityOrigin()->enforceFilePathSeparation();
             }
         }
-        securityOrigin()->setStorageBlockingPolicy(settings->storageBlockingPolicy());
     }
 
     Document* parentDocument = ownerElement() ? ownerElement()->document() : 0;

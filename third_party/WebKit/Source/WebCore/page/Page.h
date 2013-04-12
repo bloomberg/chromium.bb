@@ -267,7 +267,6 @@ public:
     const String& userStyleSheet() const;
 
     void dnsPrefetchingStateChanged();
-    void storageBlockingStateChanged();
 
     static void removeAllVisitedLinks();
 

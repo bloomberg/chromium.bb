@@ -944,8 +944,6 @@ public:
     void unregisterForMediaVolumeCallbacks(Element*);
     void mediaVolumeDidChange();
 
-    void storageBlockingStateDidChange();
-
 #if ENABLE(VIDEO_TRACK)
     void registerForCaptionPreferencesChangedCallbacks(Element*);
     void unregisterForCaptionPreferencesChangedCallbacks(Element*);
