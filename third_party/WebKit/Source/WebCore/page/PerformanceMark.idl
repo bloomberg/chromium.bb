@@ -23,7 +23,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=USER_TIMING,
-] interface PerformanceMark : PerformanceEntry {
+interface PerformanceMark : PerformanceEntry {
 };

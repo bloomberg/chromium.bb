@@ -26,8 +26,6 @@
 #ifndef PerformanceUserTiming_h
 #define PerformanceUserTiming_h
 
-#if ENABLE(USER_TIMING)
-
 #include "EventException.h"
 #include "ExceptionCode.h"
 #include "Performance.h"
@@ -72,7 +70,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(USER_TIMING)
 
 #endif // !defined(PerformanceUserTiming_h)

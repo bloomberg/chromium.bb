@@ -26,8 +26,6 @@
 #ifndef PerformanceMeasure_h
 #define PerformanceMeasure_h
 
-#if ENABLE(USER_TIMING)
-
 #include "PerformanceEntry.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
@@ -46,7 +44,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(USER_TIMING)
 
 #endif // !defined(PerformanceMeasure_h)

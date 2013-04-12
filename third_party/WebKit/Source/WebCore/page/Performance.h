@@ -78,13 +78,11 @@ public:
     using RefCounted<Performance>::ref;
     using RefCounted<Performance>::deref;
 
-#if ENABLE(USER_TIMING)
     void webkitMark(const String& markName, ExceptionCode&);
     void webkitClearMarks(const String& markName);
 
     void webkitMeasure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode&);
     void webkitClearMeasures(const String& measureName);
-#endif // ENABLE(USER_TIMING)
 
 private:
     explicit Performance(Frame*);
@@ -103,9 +101,7 @@ private:
     Vector<RefPtr<PerformanceEntry> > m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
 
-#if ENABLE(USER_TIMING)
     RefPtr<UserTiming> m_userTiming;
-#endif // ENABLE(USER_TIMING)
 };
 
 }

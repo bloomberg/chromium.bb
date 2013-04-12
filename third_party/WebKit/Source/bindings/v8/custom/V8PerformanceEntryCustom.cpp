@@ -51,13 +51,11 @@ v8::Handle<v8::Object> wrap(PerformanceEntry* impl, v8::Handle<v8::Object> creat
     if (impl->isResource())
         return wrap(static_cast<PerformanceResourceTiming*>(impl), creationContext, isolate);
 
-#if ENABLE(USER_TIMING)
     if (impl->isMark())
         return wrap(static_cast<PerformanceMark*>(impl), creationContext, isolate);
 
     if (impl->isMeasure())
         return wrap(static_cast<PerformanceMeasure*>(impl), creationContext, isolate);
-#endif
 
     return V8PerformanceEntry::createWrapper(impl, creationContext, isolate);
 }

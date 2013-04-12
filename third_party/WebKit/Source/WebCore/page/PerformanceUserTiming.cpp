@@ -26,8 +26,6 @@
 #include "config.h"
 #include "PerformanceUserTiming.h"
 
-#if ENABLE(USER_TIMING)
-
 #include "Performance.h"
 #include "PerformanceMark.h"
 #include "PerformanceMeasure.h"
@@ -207,5 +205,3 @@ Vector<RefPtr<PerformanceEntry> > UserTiming::getMeasures(const String& name) co
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(USER_TIMING)

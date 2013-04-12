@@ -52,9 +52,7 @@ static const size_t defaultResourceTimingBufferSize = 150;
 Performance::Performance(Frame* frame)
     : DOMWindowProperty(frame)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-#if ENABLE(USER_TIMING)
     , m_userTiming(0)
-#endif // ENABLE(USER_TIMING)
 {
     ScriptWrappable::init(this);
 }
@@ -102,12 +100,10 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntries() const
 
     entries->appendAll(m_resourceTimingBuffer);
 
-#if ENABLE(USER_TIMING)
     if (m_userTiming) {
         entries->appendAll(m_userTiming->getMarks());
         entries->appendAll(m_userTiming->getMeasures());
     }
-#endif // ENABLE(USER_TIMING)
 
     entries->sort();
     return entries;
@@ -121,14 +117,12 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByType(const Strin
         for (Vector<RefPtr<PerformanceEntry> >::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
             entries->append(*resource);
 
-#if ENABLE(USER_TIMING)
     if (m_userTiming) {
         if (equalIgnoringCase(entryType, "mark"))
             entries->appendAll(m_userTiming->getMarks());
         else if (equalIgnoringCase(entryType, "measure"))
             entries->appendAll(m_userTiming->getMeasures());
     }
-#endif // ENABLE(USER_TIMING)
 
     entries->sort();
     return entries;
@@ -143,14 +137,12 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const Strin
             if ((*resource)->name() == name)
                 entries->append(*resource);
 
-#if ENABLE(USER_TIMING)
     if (m_userTiming) {
         if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
             entries->appendAll(m_userTiming->getMarks(name));
         if (entryType.isNull() || equalIgnoringCase(entryType, "measure"))
             entries->appendAll(m_userTiming->getMeasures(name));
     }
-#endif // ENABLE(USER_TIMING)
 
     entries->sort();
     return entries;
@@ -196,7 +188,6 @@ EventTargetData* Performance::ensureEventTargetData()
     return &m_eventTargetData;
 }
 
-#if ENABLE(USER_TIMING)
 void Performance::webkitMark(const String& markName, ExceptionCode& ec)
 {
     ec = 0;
@@ -226,8 +217,6 @@ void Performance::webkitClearMeasures(const String& measureName)
         m_userTiming = UserTiming::create(this);
     m_userTiming->clearMeasures(measureName);
 }
-
-#endif // ENABLE(USER_TIMING)
 
 double Performance::now() const
 {
