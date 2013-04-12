@@ -606,5 +606,30 @@
         }],
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'chrome_run',
+          'type': 'none',
+          'dependencies': [
+            'chrome',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'chrome.isolate',
+          ],
+          'sources': [
+            'chrome.isolate',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                'chrome_nacl_win64',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
   ],
 }
