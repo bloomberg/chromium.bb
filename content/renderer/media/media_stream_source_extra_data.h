@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream_source_observer.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
@@ -37,6 +38,10 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
     local_audio_source_ = source;
   }
 
+  void SetSourceObserver(MediaStreamSourceObserver* observer) {
+    source_observer_.reset(observer);
+  }
+
   webrtc::VideoSourceInterface* video_source() { return video_source_; }
   media::AudioCapturerSource* audio_source() { return audio_source_; }
   webrtc::AudioSourceInterface* local_audio_source() {
@@ -53,6 +58,7 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   // TODO(hclam): This should be merged with |audio_source_| such that it
   // carries audio options.
   scoped_refptr<webrtc::AudioSourceInterface> local_audio_source_;
+  scoped_ptr<MediaStreamSourceObserver> source_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSourceExtraData);
 };
