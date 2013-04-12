@@ -992,7 +992,7 @@ internal_pre_cq.add_group('pre-cq-group',
                              boards=['parrot']),
   internal_pre_cq.add_config('stout-pre-cq', boards=['stout']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
-                             boards=['daisy_spring']),
+                             arm, boards=['daisy_spring']),
 )
 
 internal_incremental = internal.derive(
