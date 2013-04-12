@@ -180,6 +180,9 @@ void RequestFullScreen(FullScreenMode mode) {
     return;
 
   DCHECK_GE(g_full_screen_requests[mode], 0);
+  if (mode < 0)
+    return;
+
   g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] + 1, 1);
   SetUIMode();
 }
@@ -190,7 +193,10 @@ void ReleaseFullScreen(FullScreenMode mode) {
   if (mode >= kNumFullScreenModes)
     return;
 
-  DCHECK_GT(g_full_screen_requests[mode], 0);
+  DCHECK_GE(g_full_screen_requests[mode], 0);
+  if (mode < 0)
+    return;
+
   g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] - 1, 0);
   SetUIMode();
 }
