@@ -35,6 +35,9 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -550,10 +553,13 @@ void FirstRunBubbleLauncher::Observe(
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  // Suppress the first run bubble if a Gaia sign in page is showing.
-  if (SyncPromoUI::UseWebBasedSigninFlow() &&
-      gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin())) {
+  // Suppress the first run bubble if a Gaia sign in page or the continue
+  // URL for the sign in page is showing.
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
+    if (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
+        SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(contents->GetURL())) {
       return;
+    }
   }
 
   if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
@@ -565,11 +571,21 @@ void FirstRunBubbleLauncher::Observe(
     if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
       return;
 
-    // Suppress the first run bubble if the NTP sync promo bubble is showing.
+    // Suppress the first run bubble if the NTP sync promo bubble is showing
+    // or if sign in is in progress.
     if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
-      NewTabUI* new_tab_ui =
-          NewTabUI::FromWebUIController(contents->GetWebUI()->GetController());
-      if (new_tab_ui && new_tab_ui->showing_sync_bubble())
+      Profile* profile =
+          Profile::FromBrowserContext(contents->GetBrowserContext());
+      SigninManager* manager =
+          SigninManagerFactory::GetForProfile(profile);
+      bool signin_in_progress = manager &&
+          (!manager->GetAuthenticatedUsername().empty() &&
+              SigninTracker::GetSigninState(profile, NULL) !=
+                  SigninTracker::SIGNIN_COMPLETE);
+      bool is_promo_bubble_visible =
+          profile->GetPrefs()->GetBoolean(prefs::kSyncPromoShowNTPBubble);
+
+      if (is_promo_bubble_visible || signin_in_progress)
         return;
     }
   }

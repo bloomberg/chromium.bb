@@ -76,6 +76,11 @@ class SyncPromoUI : public content::WebUIController {
   // only for platforms where |ENABLE_ONE_CLICK_SIGNIN| is defined.
   static bool UseWebBasedSigninFlow();
 
+  // Returns true if the given URL is the standard continue URL used with the
+  // sync promo when the web-based flow is enabled.  The query parameters
+  // of the URL are ignored for this comparison.
+  static bool IsContinueUrlForWebBasedSigninFlow(const GURL& url);
+
   // Forces UseWebBasedSigninFlow() to return true when set; used in tests only.
   static void ForceWebBasedSigninFlowForTesting(bool force);
 

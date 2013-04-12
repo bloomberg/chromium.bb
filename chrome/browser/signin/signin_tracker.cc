@@ -133,40 +133,19 @@ void SigninTracker::HandleServiceStateChange() {
     return;
   }
 
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
-  if (signin->GetAuthenticatedUsername().empty()) {
-    // User is signed out, trigger a signin failure.
-    state_ = WAITING_FOR_GAIA_VALIDATION;
-    observer_->SigninFailed(
-        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
-    return;
-  }
-
-  // Wait until all of our services are logged in. For now this just means sync.
-  // Long term, we should separate out service auth failures from the signin
-  // process, but for the current UI flow we'll validate service signin status
-  // also.
-  ProfileSyncService* service = profile_->IsSyncAccessible() ?
-      ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
-  if (service && service->waiting_for_auth()) {
-    // Still waiting for an auth token to come in so stay in the INITIALIZING
-    // state (we do this to avoid triggering an early signin error in the case
-    // where there's a previous auth error in the sync service that hasn't
-    // been cleared yet).
-    return;
-  }
-
-  // If we haven't loaded all our service tokens yet, just exit (we'll be called
-  // again when another token is loaded, or will transition to SigninFailed if
-  // the loading fails).
-  if (!AreServiceTokensLoaded(profile_))
-    return;
-  if (!AreServicesSignedIn(profile_)) {
-    state_ = WAITING_FOR_GAIA_VALIDATION;
-    observer_->SigninFailed(signin->signin_global_error()->GetLastAuthError());
-  } else if (!service || service->sync_initialized()) {
-    state_ = SIGNIN_COMPLETE;
-    observer_->SigninSuccess();
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  state_ = GetSigninState(profile_, &error);
+  switch (state_) {
+    case WAITING_FOR_GAIA_VALIDATION:
+      observer_->SigninFailed(error);
+      break;
+    case SIGNIN_COMPLETE:
+      observer_->SigninSuccess();
+      break;
+    default:
+      // State has not changed, nothing to do.
+      DCHECK_EQ(state_, SERVICES_INITIALIZING);
+      break;
   }
 }
 
@@ -196,4 +175,47 @@ bool SigninTracker::AreServicesSignedIn(Profile* profile) {
           service->IsSyncTokenAvailable() &&
           service->GetAuthError().state() == GoogleServiceAuthError::NONE &&
           !service->HasUnrecoverableError());
+}
+
+// static
+SigninTracker::LoginState SigninTracker::GetSigninState(
+    Profile* profile,
+    GoogleServiceAuthError* error) {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  if (signin->GetAuthenticatedUsername().empty()) {
+    // User is signed out, trigger a signin failure.
+    if (error)
+      *error = GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
+    return WAITING_FOR_GAIA_VALIDATION;
+  }
+
+  // Wait until all of our services are logged in. For now this just means sync.
+  // Long term, we should separate out service auth failures from the signin
+  // process, but for the current UI flow we'll validate service signin status
+  // also.
+  ProfileSyncService* service = profile->IsSyncAccessible() ?
+      ProfileSyncServiceFactory::GetForProfile(profile) : NULL;
+  if (service && service->waiting_for_auth()) {
+    // Still waiting for an auth token to come in so stay in the INITIALIZING
+    // state (we do this to avoid triggering an early signin error in the case
+    // where there's a previous auth error in the sync service that hasn't
+    // been cleared yet).
+    return SERVICES_INITIALIZING;
+  }
+
+  // If we haven't loaded all our service tokens yet, just exit (we'll be called
+  // again when another token is loaded, or will transition to SigninFailed if
+  // the loading fails).
+  if (!AreServiceTokensLoaded(profile))
+    return SERVICES_INITIALIZING;
+  if (!AreServicesSignedIn(profile)) {
+    if (error)
+      *error = signin->signin_global_error()->GetLastAuthError();
+    return WAITING_FOR_GAIA_VALIDATION;
+  }
+
+  if (!service || service->sync_initialized())
+    return SIGNIN_COMPLETE;
+
+  return SERVICES_INITIALIZING;
 }

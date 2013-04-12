@@ -92,6 +92,14 @@ class SigninTracker : public ProfileSyncServiceObserver,
   // Returns true if the tokens are loaded for all signed-in services.
   static bool AreServiceTokensLoaded(Profile* profile);
 
+  // Returns the sign in state for |profile|.  If the profile is not signed in,
+  // or is authenticating with GAIA, WAITING_FOR_GAIA_VALIDATION is returned.
+  // If SigninManager in has completed but TokenService or
+  // ProfileSyncService are not ready, SERVICES_INITIALIZING is returned.
+  // Otherwise SIGNIN_COMPLETE is returned.
+  static LoginState GetSigninState(Profile* profile,
+                                   GoogleServiceAuthError* error);
+
  private:
   // Initializes this by adding notifications and observers.
   void Initialize();
