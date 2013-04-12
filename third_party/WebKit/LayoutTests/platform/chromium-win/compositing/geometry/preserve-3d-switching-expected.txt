@@ -27,6 +27,7 @@ The green box appear angled out from the yellow box and embedded in it.
                   (opacity 0.70)
                   (contentsOpaque 1)
                   (drawsContent 1)
+                  (backgroundColor #008000)
                   (transform [0.77 0.00 0.64 0.00] [0.00 1.00 0.00 0.00] [-0.64 0.00 0.77 0.00] [0.00 0.00 50.00 1.00])
                 )
               )

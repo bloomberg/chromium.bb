@@ -12,6 +12,7 @@ Test CSS clip with composited layers. Left and right sides should look the same.
           (bounds 100.00 100.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #808080)
           (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 1.00 1.00])
         )
         (GraphicsLayer

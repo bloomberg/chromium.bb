@@ -9,6 +9,7 @@
           (bounds 800.00 600.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #D3D3D3)
           (children 2
             (GraphicsLayer
               (position 8.00 8.00)

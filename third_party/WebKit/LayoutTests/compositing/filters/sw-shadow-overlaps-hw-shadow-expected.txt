@@ -10,10 +10,12 @@
           (anchor 0.60 0.60)
           (bounds 125.00 125.00)
           (drawsContent 1)
+          (backgroundColor #000000)
         )
         (GraphicsLayer
           (bounds 125.00 125.00)
           (drawsContent 1)
+          (backgroundColor #008000)
         )
       )
     )

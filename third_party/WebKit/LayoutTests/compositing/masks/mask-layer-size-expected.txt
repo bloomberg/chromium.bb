@@ -10,6 +10,7 @@
           (bounds 400.00 200.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #000000)
         )
       )
     )

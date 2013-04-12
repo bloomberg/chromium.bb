@@ -13,6 +13,7 @@ First (small layer):
           (bounds 502.00 502.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
           (children 2
             (GraphicsLayer
               (position 51.00 101.00)
@@ -45,6 +46,7 @@ Second (huge layer):
           (bounds 502.00 5002.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
           (children 2
             (GraphicsLayer
               (position 51.00 101.00)
@@ -77,6 +79,7 @@ Third (small layer):
           (bounds 502.00 502.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
           (children 2
             (GraphicsLayer
               (position 51.00 101.00)

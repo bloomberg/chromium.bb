@@ -16,6 +16,7 @@
           (bounds 122.00 462.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFFFF)
           (children 1
             (GraphicsLayer
               (position 1.00 1.00)

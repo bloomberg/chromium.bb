@@ -279,9 +279,9 @@ public:
     bool contentsAreVisible() const { return m_contentsVisible; }
     virtual void setContentsVisible(bool b) { m_contentsVisible = b; }
 
-    // The color used to paint the layer background. Pass an invalid color to remove it.
-    // Note that this covers the entire layer. Use setContentsToSolidColor() if the color should
-    // only cover the contentsRect.
+    // For special cases, e.g. drawing missing tiles on Android.
+    // The compositor should never paint this color in normal cases because the RenderLayer
+    // will paint background by itself.
     const Color& backgroundColor() const { return m_backgroundColor; }
     virtual void setBackgroundColor(const Color&);
 

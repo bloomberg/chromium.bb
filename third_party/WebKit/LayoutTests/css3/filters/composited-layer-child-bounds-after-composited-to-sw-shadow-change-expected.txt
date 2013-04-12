@@ -10,6 +10,7 @@
           (anchor 0.67 0.67)
           (bounds 150.00 150.00)
           (drawsContent 1)
+          (backgroundColor #FF0000)
           (children 1
             (GraphicsLayer
               (position 50.00 50.00)
@@ -34,6 +35,7 @@
           (anchor 0.67 0.67)
           (bounds 150.00 150.00)
           (drawsContent 1)
+          (backgroundColor #FF0000)
           (children 1
             (GraphicsLayer
               (position 50.00 50.00)

@@ -12,6 +12,7 @@ From https://bugs.webkit.org/show_bug.cgi?id=44629. The parent is a tiled layer.
           (bounds 502.00 5002.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
           (children 1
             (GraphicsLayer
               (position 51.00 101.00)

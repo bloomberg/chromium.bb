@@ -9,11 +9,13 @@
           (position 10.00 10.00)
           (bounds 120.00 120.00)
           (drawsContent 1)
+          (backgroundColor #008000)
           (children 1
             (GraphicsLayer
               (position 50.00 50.00)
               (bounds 220.00 120.00)
               (drawsContent 1)
+              (backgroundColor #FF000099)
             )
           )
         )

@@ -82,6 +82,7 @@
             'tests/PopupContainerTest.cpp',
             'tests/PrerenderingTest.cpp',
             'tests/RegionTest.cpp',
+            'tests/RenderLayerBackingTest.cpp',
             'tests/RenderTableCellTest.cpp',
             'tests/RenderTableRowTest.cpp',
             'tests/ScrollingCoordinatorChromiumTest.cpp',

@@ -11,6 +11,7 @@
           (bounds 206.00 126.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #CCCCCC)
           (children 3
             (GraphicsLayer
               (position 1.00 1.00)
@@ -39,6 +40,7 @@
           (bounds 206.00 126.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #CCCCCC)
           (children 3
             (GraphicsLayer
               (position 1.00 1.00)

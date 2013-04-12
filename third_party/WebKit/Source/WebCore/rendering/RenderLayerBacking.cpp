@@ -1178,12 +1178,15 @@ Color RenderLayerBacking::rendererBackgroundColor() const
 
 void RenderLayerBacking::updateBackgroundColor(bool isSimpleContainer)
 {
-    Color backgroundColor;
-    if (isSimpleContainer)
-        backgroundColor = rendererBackgroundColor();
-
-    // An unset (invalid) color will remove the solid color.
-    m_graphicsLayer->setContentsToSolidColor(backgroundColor);
+    Color backgroundColor = rendererBackgroundColor();
+    if (isSimpleContainer) {
+        m_graphicsLayer->setContentsToSolidColor(backgroundColor);
+        m_graphicsLayer->setBackgroundColor(Color());
+    } else {
+        // An unset (invalid) color will remove the solid color.
+        m_graphicsLayer->setContentsToSolidColor(Color());
+        m_graphicsLayer->setBackgroundColor(backgroundColor);
+    }
 }
 
 void RenderLayerBacking::updateRootLayerConfiguration()

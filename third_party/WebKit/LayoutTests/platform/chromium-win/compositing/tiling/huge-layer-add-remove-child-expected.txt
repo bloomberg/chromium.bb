@@ -13,6 +13,7 @@ First (no children):
           (bounds 502.00 5002.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
         )
       )
     )
@@ -33,6 +34,7 @@ Second (child added):
           (bounds 502.00 5002.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
           (children 1
             (GraphicsLayer
               (position 51.00 401.00)
@@ -60,6 +62,7 @@ Third (child removed):
           (bounds 502.00 5002.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #FFFF00)
         )
       )
     )

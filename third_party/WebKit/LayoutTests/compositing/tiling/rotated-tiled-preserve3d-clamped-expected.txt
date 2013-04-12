@@ -24,6 +24,7 @@
                       (bounds 2800.00 300.00)
                       (contentsOpaque 1)
                       (drawsContent 1)
+                      (backgroundColor #C0C0C0)
                       (transform [0.17 0.00 -0.98 0.00] [0.00 1.00 0.00 0.00] [0.98 0.00 0.17 0.00] [0.00 0.00 0.00 1.00])
                     )
                   )

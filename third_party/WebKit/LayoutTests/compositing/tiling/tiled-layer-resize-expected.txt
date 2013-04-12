@@ -11,6 +11,7 @@ Tiled layer
           (bounds 800.00 2100.00)
           (contentsOpaque 1)
           (drawsContent 1)
+          (backgroundColor #C0C0C0)
         )
       )
     )

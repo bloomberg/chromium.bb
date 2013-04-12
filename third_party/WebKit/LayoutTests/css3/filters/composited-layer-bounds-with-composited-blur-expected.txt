@@ -9,6 +9,7 @@
           (position 30.00 30.00)
           (bounds 240.00 240.00)
           (drawsContent 1)
+          (backgroundColor #008000)
         )
       )
     )
