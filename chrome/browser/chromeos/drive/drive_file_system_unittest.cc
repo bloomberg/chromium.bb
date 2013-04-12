@@ -14,7 +14,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -23,31 +22,24 @@
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
-#include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Eq;
-using ::testing::NotNull;
-using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
 namespace drive {
 namespace {
-
-const char kSymLinkToDevNull[] = "/dev/null";
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
 
@@ -97,7 +89,6 @@ class DriveFileSystemTest : public testing::Test {
  protected:
   DriveFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        expected_success_(true),
         // |root_feed_changestamp_| should be set to the largest changestamp in
         // account metadata feed. But we fake it by some non-zero positive
         // increasing value.  See |LoadFeed()|.
@@ -180,13 +171,9 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   bool LoadChangeFeed(const std::string& filename) {
-    return LoadFeed(filename, true);
-  }
-
-  bool LoadFeed(const std::string& filename, bool is_delta_feed) {
     if (!test_util::LoadChangeFeed(filename,
                                    file_system_->change_list_loader(),
-                                   is_delta_feed,
+                                   true,  // is_delta_feed
                                    fake_drive_service_->GetRootResourceId(),
                                    root_feed_changestamp_)) {
       return false;
@@ -266,7 +253,6 @@ class DriveFileSystemTest : public testing::Test {
   bool EntryExists(const base::FilePath& file_path) {
     return GetEntryInfoByPathSync(file_path).get();
   }
-
 
   // Gets the resource ID of |file_path|. Returns an empty string if not found.
   std::string GetResourceIdByPath(const base::FilePath& file_path) {
@@ -464,8 +450,6 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
-  bool expected_success_;
-  std::string expected_file_extension_;
   int root_feed_changestamp_;
 };
 
