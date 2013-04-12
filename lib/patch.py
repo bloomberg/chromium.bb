@@ -731,7 +731,7 @@ class GitRepoPatch(object):
     logging.debug('Checking for Gerrit dependencies for change %s', self)
 
     rev = self.Fetch(git_repo)
-    git.RunGit(git_repo, ['fetch', self.remote])
+    git.RunGit(git_repo, ['remote', 'update'])
 
     try:
       return_obj = git.RunGit(
