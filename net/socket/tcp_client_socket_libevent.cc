@@ -15,6 +15,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/string_util.h"
@@ -26,6 +27,11 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/socket_net_log_params.h"
+
+// If we don't have a definition for TCPI_OPT_SYN_DATA, create one.
+#ifndef TCPI_OPT_SYN_DATA
+#define TCPI_OPT_SYN_DATA 32
+#endif
 
 namespace net {
 
@@ -137,7 +143,8 @@ TCPClientSocketLibevent::TCPClientSocketLibevent(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
       previously_disconnected_(false),
       use_tcp_fastopen_(IsTCPFastOpenEnabled()),
-      tcp_fastopen_connected_(false) {
+      tcp_fastopen_connected_(false),
+      fast_open_status_(FAST_OPEN_STATUS_UNKNOWN) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
 }
@@ -145,6 +152,10 @@ TCPClientSocketLibevent::TCPClientSocketLibevent(
 TCPClientSocketLibevent::~TCPClientSocketLibevent() {
   Disconnect();
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
+  if (tcp_fastopen_connected_) {
+    UMA_HISTOGRAM_ENUMERATION("Net.TcpFastOpenSocketConnection",
+                              fast_open_status_, FAST_OPEN_MAX_VALUE);
+  }
 }
 
 int TCPClientSocketLibevent::AdoptSocket(int socket) {
@@ -432,6 +443,37 @@ int TCPClientSocketLibevent::Read(IOBuffer* buf,
   DCHECK(!callback.is_null());
   DCHECK_GT(buf_len, 0);
 
+  if (use_tcp_fastopen_ &&
+      (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ||
+       fast_open_status_ == FAST_OPEN_SLOW_CONNECT_RETURN)) {
+    DCHECK_NE(FAST_OPEN_STATUS_UNKNOWN, fast_open_status_);
+    bool getsockopt_success(false);
+    bool server_acked_data(false);
+#if defined(TCP_INFO)
+    // Probe to see the if the socket used TCP Fast Open.
+    tcp_info info;
+    socklen_t info_len = sizeof(tcp_info);
+    getsockopt_success =
+        getsockopt(socket_, IPPROTO_TCP, TCP_INFO, &info, &info_len) == 0 &&
+        info_len == sizeof(tcp_info);
+    server_acked_data = getsockopt_success &&
+        (info.tcpi_options & TCPI_OPT_SYN_DATA);
+#endif
+    if (getsockopt_success) {
+      if (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN) {
+        fast_open_status_ = (server_acked_data ? FAST_OPEN_SYN_DATA_ACK :
+                             FAST_OPEN_SYN_DATA_NACK);
+      } else {
+        fast_open_status_ = (server_acked_data ? FAST_OPEN_NO_SYN_DATA_ACK :
+                             FAST_OPEN_NO_SYN_DATA_NACK);
+      }
+    } else {
+      fast_open_status_ = (fast_open_status_ == FAST_OPEN_FAST_CONNECT_RETURN ?
+                           FAST_OPEN_SYN_DATA_FAILED :
+                           FAST_OPEN_NO_SYN_DATA_FAILED);
+    }
+  }
+
   int nread = HANDLE_EINTR(read(socket_, buf->data(), buf_len));
   if (nread >= 0) {
     base::StatsCounter read_bytes("tcp.read_bytes");
@@ -537,9 +579,14 @@ int TCPClientSocketLibevent::InternalWrite(IOBuffer* buf, int buf_len) {
       // Remap EINPROGRESS to EAGAIN so we treat this the same as our other
       // asynchronous cases. Note that the user buffer has not been copied to
       // kernel space.
-      if (errno == EINPROGRESS)
-         errno = EAGAIN;
-
+      if (errno == EINPROGRESS) {
+        errno = EAGAIN;
+        fast_open_status_ = FAST_OPEN_SLOW_CONNECT_RETURN;
+      } else {
+        fast_open_status_ = FAST_OPEN_ERROR;
+      }
+    } else {
+      fast_open_status_ = FAST_OPEN_FAST_CONNECT_RETURN;
     }
   } else {
     nwrite = HANDLE_EINTR(write(socket_, buf->data(), buf_len));
