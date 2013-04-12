@@ -762,7 +762,7 @@ void SetCrashKeyValue(const base::StringPiece& key,
   entry->set(UTF8ToWide(key).data(), UTF8ToWide(value).data());
 }
 
-extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValue(
+extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValuePair(
     const char* key, const char* value) {
   SetCrashKeyValue(base::StringPiece(key), base::StringPiece(value));
 }
