@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_STANDARD_MAPPINGS_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_STANDARD_MAPPINGS_H_
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace WebKit {
 class WebGamepad;

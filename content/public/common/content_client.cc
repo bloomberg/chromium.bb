@@ -5,7 +5,7 @@
 #include "content/public/common/content_client.h"
 
 #include "base/logging.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/user_agent/user_agent.h"
 

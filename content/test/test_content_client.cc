@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace content {
 

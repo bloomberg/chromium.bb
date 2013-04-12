@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
-
 #include "content/browser/host_zoom_map_impl.h"
 
-#include "base/string_piece.h"
+#include <cmath>
+
+#include "base/strings/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
