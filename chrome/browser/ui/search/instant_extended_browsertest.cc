@@ -1563,7 +1563,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
 // Test that the Bookmark provider is enabled, and returns results.
 // TODO(sreeram): Convert this to a unit test.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, HasBookmarkProvider) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_HasBookmarkProvider) {
   // No need to setup Instant.
   set_browser(browser());
 
