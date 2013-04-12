@@ -108,7 +108,9 @@ void NotificationList::UpdateNotificationMessage(
   notification->CopyState(*iter);
   // Do not use EraseNotification and PushNotification, since we don't want to
   // change unread counts nor to update is_read/shown_as_popup states.
+  Notification *old = *iter;
   notifications_.erase(iter);
+  delete old;
   notifications_.insert(notification.release());
 }
 
