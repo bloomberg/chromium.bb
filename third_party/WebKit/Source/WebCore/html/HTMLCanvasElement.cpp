@@ -164,12 +164,10 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             return 0;
         if (!m_context) {
             m_context = CanvasRenderingContext2D::create(this, document()->inQuirksMode());
-#if USE(IOSURFACE_CANVAS_BACKING_STORE) || ENABLE(ACCELERATED_2D_CANVAS)
             if (m_context) {
                 // Need to make sure a RenderLayer and compositing layer get created for the Canvas
                 setNeedsStyleRecalc(SyntheticStyleChange);
             }
-#endif
         }
         return m_context.get();
     }
@@ -464,7 +462,6 @@ StyleResolver* HTMLCanvasElement::styleResolver()
 
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 {
-#if ENABLE(ACCELERATED_2D_CANVAS)
     if (m_context && !m_context->is2d())
         return false;
 
@@ -480,10 +477,6 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
         return false;
 
     return true;
-#else
-    UNUSED_PARAM(size);
-    return false;
-#endif
 }
 
 void HTMLCanvasElement::createImageBuffer() const
@@ -520,11 +513,10 @@ void HTMLCanvasElement::createImageBuffer() const
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
-#if USE(IOSURFACE_CANVAS_BACKING_STORE) || ENABLE(ACCELERATED_2D_CANVAS)
-    if (m_context && m_context->is2d())
+    if (m_context && m_context->is2d()) {
         // Recalculate compositing requirements if acceleration state changed.
         const_cast<HTMLCanvasElement*>(this)->setNeedsStyleRecalc(SyntheticStyleChange);
-#endif
+    }
 }
 
 GraphicsContext* HTMLCanvasElement::drawingContext() const

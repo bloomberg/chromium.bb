@@ -321,9 +321,7 @@ private:
 
     virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
 
-#if ENABLE(ACCELERATED_2D_CANVAS)
     virtual PlatformLayer* platformLayer() const OVERRIDE;
-#endif
 
     Vector<State, 1> m_stateStack;
     unsigned m_unrealizedSaveCount;

@@ -148,14 +148,10 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D()
 
 bool CanvasRenderingContext2D::isAccelerated() const
 {
-#if USE(IOSURFACE_CANVAS_BACKING_STORE) || ENABLE(ACCELERATED_2D_CANVAS)
     if (!canvas()->hasCreatedImageBuffer())
         return false;
     GraphicsContext* context = drawingContext();
     return context && context->isAcceleratedContext();
-#else
-    return false;
-#endif
 }
 
 void CanvasRenderingContext2D::reset()
@@ -1381,16 +1377,12 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
 
     checkOrigin(sourceCanvas);
 
-#if ENABLE(ACCELERATED_2D_CANVAS)
     // If we're drawing from one accelerated canvas 2d to another, avoid calling sourceCanvas->makeRenderingResultsAvailable()
     // as that will do a readback to software.
     CanvasRenderingContext* sourceContext = sourceCanvas->renderingContext();
     // FIXME: Implement an accelerated path for drawing from a WebGL canvas to a 2d canvas when possible.
     if (!isAccelerated() || !sourceContext || !sourceContext->isAccelerated() || !sourceContext->is2d())
         sourceCanvas->makeRenderingResultsAvailable();
-#else
-    sourceCanvas->makeRenderingResultsAvailable();
-#endif
 
     if (rectContainsCanvas(dstRect)) {
         c->drawImageBuffer(buffer, ColorSpaceDeviceRGB, dstRect, srcRect, state().m_globalComposite, state().m_globalBlend);
@@ -1731,7 +1723,6 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& r, unsigned options)
     if (!state().m_invertibleCTM)
         return;
 
-#if ENABLE(ACCELERATED_2D_CANVAS)
     // If we are drawing to hardware and we have a composited layer, just call contentChanged().
     if (isAccelerated()) {
         RenderBox* renderBox = canvas()->renderBox();
@@ -1742,7 +1733,6 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& r, unsigned options)
             return;
         }
     }
-#endif
 
     FloatRect dirtyRect = r;
     if (options & CanvasDidDrawApplyTransform) {
@@ -2242,12 +2232,10 @@ const Font& CanvasRenderingContext2D::accessFont()
     return state().m_font;
 }
 
-#if ENABLE(ACCELERATED_2D_CANVAS)
 PlatformLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;
 }
-#endif
 
 bool CanvasRenderingContext2D::webkitImageSmoothingEnabled() const
 {
