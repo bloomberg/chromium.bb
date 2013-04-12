@@ -5,6 +5,7 @@
 #include "webkit/plugins/npapi/webplugin_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
@@ -487,6 +488,9 @@ WebPluginImpl::WebPluginImpl(
     arg_names_.push_back(params.attributeNames[i].utf8());
     arg_values_.push_back(params.attributeValues[i].utf8());
   }
+
+  // Set subresource URL for crash reporting.
+  base::debug::SetCrashKeyValue("subresource_url", plugin_url_.spec());
 }
 
 WebPluginImpl::~WebPluginImpl() {

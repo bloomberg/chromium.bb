@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/image_decoder.h"
@@ -32,6 +33,9 @@ ImageResourceFetcher::ImageResourceFetcher(
       image_url, frame, target_type,
       base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this))));
+
+  // Set subresource URL for crash reporting.
+  base::debug::SetCrashKeyValue("subresource_url", image_url.spec());
 }
 
 ImageResourceFetcher::~ImageResourceFetcher() {

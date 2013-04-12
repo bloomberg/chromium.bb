@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/debug/crash_logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -318,6 +319,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
 void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
   GURL gurl(url);
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(gurl), kMaxURLScheme);
+
+  // Set subresource URL for crash reporting.
+  base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
 
   // Handle any volume/preload changes that occurred before load().
   setVolume(GetClient()->volume());

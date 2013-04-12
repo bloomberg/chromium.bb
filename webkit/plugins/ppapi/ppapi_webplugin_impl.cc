@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/debug/crash_logging.h"
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -69,6 +70,9 @@ WebPluginImpl::WebPluginImpl(
     init_data_->arg_values.push_back(params.attributeValues[i].utf8());
   }
   init_data_->url = params.url;
+
+  // Set subresource URL for crash reporting.
+  base::debug::SetCrashKeyValue("subresource_url", init_data_->url.spec());
 }
 
 WebPluginImpl::~WebPluginImpl() {
