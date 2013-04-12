@@ -1592,9 +1592,6 @@ crbug.com/15270 fast/js/excessive-comma-usage.html [ Failure ]
 # New tests with WebKit merge 46288:46363
 crbug.com/18116 fast/dom/constructed-objects-prototypes.html [ Failure ]
 
-# Test failures from WebKit merge 46894 to 46977
-crbug.com/26737 fast/js/prototypes.html [ Failure ]
-
 # WebKit 47777:47790 - getOwnPropertyDescriptor
 crbug.com/20345 fast/js/getOwnPropertyDescriptor.html [ Failure ]
 
