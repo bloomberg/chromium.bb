@@ -32,9 +32,23 @@ MailboxOutputSurface::MailboxOutputSurface(
 
 MailboxOutputSurface::~MailboxOutputSurface() {
   DiscardBackbuffer();
+  DCHECK(!pending_textures_.empty());
+  bool cleared_errors = false;
   while (!pending_textures_.empty()) {
-    if (pending_textures_.front().texture_id)
+    TransferableFrame& frame = pending_textures_.front();
+    if (frame.texture_id) {
+      // TODO: crbug.com/230137 - make workaround obsolete with refcounting.
+      if (!cleared_errors) {
+        GLuint error;
+        while ((error = context3d_->getError()) != GL_NO_ERROR)
+          LOG(ERROR) << "Pending GL error during surface tear-down: " << error;
+        cleared_errors = true;
+      }
+      frame.sync_point = 0;
+      ConsumeTexture(frame);  // Don't let the texture leak in the mailbox.
+      context3d_->getError();  // Clear error if mailbox was empty.
       context3d_->deleteTexture(pending_textures_.front().texture_id);
+    }
     pending_textures_.pop_front();
   }
 }

@@ -225,6 +225,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The mailbox of the previously received frame.
   gpu::Mailbox current_mailbox_;
 
+  // The mailbox of the frame we last returned.
+  gpu::Mailbox last_mailbox_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 

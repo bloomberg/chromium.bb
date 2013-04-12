@@ -95,9 +95,18 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   SetContentViewCore(NULL);
-  if (texture_id_in_layer_) {
-    ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
-        texture_id_in_layer_);
+  if (texture_id_in_layer_ || !last_mailbox_.IsZero()) {
+    ImageTransportFactoryAndroid* factory =
+        ImageTransportFactoryAndroid::GetInstance();
+    // TODO: crbug.com/230137 - make workaround obsolete with refcounting.
+    // Don't let the last frame we sent leak in the mailbox.
+    if (!last_mailbox_.IsZero()) {
+      if (!texture_id_in_layer_)
+        texture_id_in_layer_ = factory->CreateTexture();
+      factory->AcquireTexture(texture_id_in_layer_, last_mailbox_.name);
+      factory->GetContext3D()->getError();  // Clear error if mailbox was empty.
+    }
+    factory->DeleteTexture(texture_id_in_layer_);
   }
 }
 
@@ -506,6 +515,8 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   ImageTransportFactoryAndroid::GetInstance()->WaitSyncPoint(
       frame->gl_frame_data->sync_point);
   const gfx::Size& texture_size = frame->gl_frame_data->size;
+
+  last_mailbox_ = current_mailbox_;
 
   // Calculate the content size.  This should be 0 if the texture_size is 0.
   float dp2px = frame->metadata.device_scale_factor;
