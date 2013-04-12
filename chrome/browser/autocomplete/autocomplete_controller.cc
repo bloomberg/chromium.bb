@@ -42,33 +42,78 @@
 
 namespace {
 
-// Converts the given type to an integer based on the AQS specification.
-// For more details, See http://goto.google.com/binary-clients-logging .
-int AutocompleteMatchToAssistedQueryType(const AutocompleteMatch::Type& type) {
-  switch (type) {
-    case AutocompleteMatch::SEARCH_SUGGEST:        return 0;
-    case AutocompleteMatch::NAVSUGGEST:            return 5;
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED: return 57;
-    case AutocompleteMatch::URL_WHAT_YOU_TYPED:    return 58;
-    case AutocompleteMatch::SEARCH_HISTORY:        return 59;
-    case AutocompleteMatch::HISTORY_URL:           return 60;
-    case AutocompleteMatch::HISTORY_TITLE:         return 61;
-    case AutocompleteMatch::HISTORY_BODY:          return 62;
-    case AutocompleteMatch::HISTORY_KEYWORD:       return 63;
-    case AutocompleteMatch::BOOKMARK_TITLE:        return 65;
-    // NOTE: Default must remain 64 for server-side compatability.
-    default:                                       return 64;
+// Converts the given match to a type (and possibly subtype) based on the AQS
+// specification. For more details, see
+// http://goto.google.com/binary-clients-logging.
+void AutocompleteMatchToAssistedQuery(
+    const AutocompleteMatch::Type& match, size_t* type, size_t* subtype) {
+  // This type indicates a native chrome suggestion.
+  *type = 69;
+  // Default value, indicating no subtype.
+  *subtype = string16::npos;
+
+  switch (match) {
+    case AutocompleteMatch::SEARCH_SUGGEST: {
+      *type = 0;
+      return;
+    }
+    case AutocompleteMatch::NAVSUGGEST: {
+      *type = 5;
+      return;
+    }
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED: {
+      *subtype = 57;
+      return;
+    }
+    case AutocompleteMatch::URL_WHAT_YOU_TYPED: {
+      *subtype = 58;
+      return;
+    }
+    case AutocompleteMatch::SEARCH_HISTORY: {
+      *subtype = 59;
+      return;
+    }
+    case AutocompleteMatch::HISTORY_URL: {
+      *subtype = 60;
+      return;
+    }
+    case AutocompleteMatch::HISTORY_TITLE: {
+      *subtype = 61;
+      return;
+    }
+    case AutocompleteMatch::HISTORY_BODY: {
+      *subtype = 62;
+      return;
+    }
+    case AutocompleteMatch::HISTORY_KEYWORD: {
+      *subtype = 63;
+      return;
+    }
+    case AutocompleteMatch::BOOKMARK_TITLE: {
+      *subtype = 65;
+      return;
+    }
+    default: {
+      // This value indicates a native chrome suggestion with no named subtype
+      // (yet).
+      *subtype = 64;
+    }
   }
 }
 
-// Appends available autocompletion of the given type and number to the existing
-// available autocompletions string, encoding according to the spec.
-void AppendAvailableAutocompletion(int type,
+// Appends available autocompletion of the given type, subtype, and number to
+// the existing available autocompletions string, encoding according to the
+// spec.
+void AppendAvailableAutocompletion(size_t type,
+                                   size_t subtype,
                                    int count,
                                    std::string* autocompletions) {
   if (!autocompletions->empty())
     autocompletions->append("j");
-  base::StringAppendF(autocompletions, "%d", type);
+  base::StringAppendF(autocompletions, "%" PRIuS, type);
+  // Subtype is optional - string16::npos indicates no subtype.
+  if (subtype != string16::npos)
+    base::StringAppendF(autocompletions, "i%" PRIuS, subtype);
   if (count > 1)
     base::StringAppendF(autocompletions, "l%d", count);
 }
@@ -432,20 +477,26 @@ void AutocompleteController::UpdateAssistedQueryStats(
   // Build the impressions string (the AQS part after ".").
   std::string autocompletions;
   int count = 0;
-  int last_type = -1;
+  size_t last_type = string16::npos;
+  size_t last_subtype = string16::npos;
   for (ACMatches::iterator match(result->begin()); match != result->end();
        ++match) {
-    int type = AutocompleteMatchToAssistedQueryType(match->type);
-    if (last_type != -1 && type != last_type) {
-      AppendAvailableAutocompletion(last_type, count, &autocompletions);
+    size_t type = string16::npos;
+    size_t subtype = string16::npos;
+    AutocompleteMatchToAssistedQuery(match->type, &type, &subtype);
+    if (last_type != string16::npos &&
+        (type != last_type || subtype != last_subtype)) {
+      AppendAvailableAutocompletion(
+          last_type, last_subtype, count, &autocompletions);
       count = 1;
     } else {
       count++;
     }
     last_type = type;
+    last_subtype = subtype;
   }
-  AppendAvailableAutocompletion(last_type, count, &autocompletions);
-
+  AppendAvailableAutocompletion(
+      last_type, last_subtype, count, &autocompletions);
   // Go over all matches and set AQS if the match supports it.
   for (size_t index = 0; index < result->size(); ++index) {
     AutocompleteMatch* match = result->match_at(index);

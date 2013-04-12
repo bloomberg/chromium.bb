@@ -537,7 +537,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.57" }
+      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.69i57" }
     };
     SCOPED_TRACE("One match");
     RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
@@ -545,14 +545,22 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::URL_WHAT_YOU_TYPED, "chrome.1.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::NAVSUGGEST, "chrome.2.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::NAVSUGGEST, "chrome.3.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.4.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.5.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.6.57j58j5l2j0l3j59" },
-      { AutocompleteMatch::SEARCH_HISTORY, "chrome.7.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+        "chrome.0.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::URL_WHAT_YOU_TYPED,
+        "chrome.1.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::NAVSUGGEST,
+        "chrome.2.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::NAVSUGGEST,
+        "chrome.3.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::SEARCH_SUGGEST,
+        "chrome.4.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::SEARCH_SUGGEST,
+        "chrome.5.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::SEARCH_SUGGEST,
+        "chrome.6.69i57j69i58j5l2j0l3j69i59" },
+      { AutocompleteMatch::SEARCH_HISTORY,
+        "chrome.7.69i57j69i58j5l2j0l3j69i59" },
     };
     SCOPED_TRACE("Multiple matches");
     RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
@@ -591,10 +599,11 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   EXPECT_TRUE(url.path().empty());
 
   // assisted_query_stats needs to have been previously set.
-  match.search_terms_args->assisted_query_stats = "chrome.0.57j58j5l2j0l3j59";
+  match.search_terms_args->assisted_query_stats =
+      "chrome.0.69i57j69i58j5l2j0l3j69i59";
   url = controller_->GetDestinationURL(match,
                                        base::TimeDelta::FromMilliseconds(2456));
-  EXPECT_EQ("//aqs=chrome.0.57j58j5l2j0l3j59.2456j0&", url.path());
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0&", url.path());
 
   // Test field trial triggered bit set.
   controller_->search_provider_->field_trial_triggered_in_session_ = true;
@@ -602,5 +611,5 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
       controller_->search_provider_->field_trial_triggered_in_session());
   url = controller_->GetDestinationURL(match,
                                        base::TimeDelta::FromMilliseconds(2456));
-  EXPECT_EQ("//aqs=chrome.0.57j58j5l2j0l3j59.2456j1&", url.path());
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1&", url.path());
 }
