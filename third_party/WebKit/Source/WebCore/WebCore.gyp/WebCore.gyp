@@ -31,6 +31,8 @@
 {
   'includes': [
     '../../WebKit/chromium/WinPrecompile.gypi',
+    # FIXME: Sense whether upstream or downstream build, and
+    # include the right features.gypi
     '../../WebKit/chromium/features.gypi',
     '../../modules/modules.gypi',
     '../../bindings/bindings.gypi',
@@ -134,7 +136,40 @@
       '../xml/parser',
     ],
 
+    'bindings_idl_files': [
+      '<@(webcore_bindings_idl_files)',
+      '<@(modules_idl_files)',
+    ],
+
+    'bindings_idl_files!': [
+      # Custom bindings in bindings/v8/custom exist for these.
+      '../dom/EventListener.idl',
+
+      # Bindings with custom Objective-C implementations.
+      '../page/AbstractView.idl',
+
+      # These bindings are excluded, as they're only used through inheritance and don't define constants that would need a constructor.
+      '../svg/ElementTimeControl.idl',
+      '../svg/SVGExternalResourcesRequired.idl',
+      '../svg/SVGFilterPrimitiveStandardAttributes.idl',
+      '../svg/SVGFitToViewBox.idl',
+      '../svg/SVGLangSpace.idl',
+      '../svg/SVGLocatable.idl',
+      '../svg/SVGTests.idl',
+      '../svg/SVGTransformable.idl',
+
+      # FIXME: I don't know why these are excluded, either.
+      # Someone (me?) should figure it out and add appropriate comments.
+      '../css/CSSUnknownRule.idl',
+    ],
+
     'conditions': [
+      # TODO(maruel): Move it in its own project or generate it anyway?
+      ['enable_svg!=0', {
+        'bindings_idl_files': [
+          '<@(webcore_svg_bindings_idl_files)',
+        ],
+      }],
       ['OS=="mac"', {
         'webcore_include_dirs': [
           # FIXME: Eliminate dependency on platform/mac and related
@@ -159,15 +194,58 @@
           '../platform/text/win',
           '../platform/win',
         ],
+        # Using native perl rather than cygwin perl cuts execution time of idl
+        # preprocessing rules by a bit more than 50%.
+        'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
+        'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
+        'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
+        # Using cl instead of cygwin gcc cuts the processing time from
+        # 1m58s to 0m52s.
+        'preprocessor': '--preprocessor "cl.exe -nologo -EP -TP"',
       },{
         # enable -Wall and -Werror, just for Mac and Linux builds for now
         # FIXME: Also enable this for Windows after verifying no warnings
         'chromium_code': 1,
+        'perl_exe': 'perl',
+        'gperf_exe': 'gperf',
+        'bison_exe': 'bison',
+
+        # We specify a preprocess so it happens locally and won't get distributed to goma.
+        # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to use /usr/bin/clang once we require Xcode 4.x.
+        'preprocessor': '--preprocessor "/usr/bin/gcc -E -P -x c++"'
       }],
       ['use_x11==1 or OS=="android"', {
         'webcore_include_dirs': [
           '../platform/graphics/harfbuzz',
           '../platform/graphics/harfbuzz/ng',
+        ],
+      }],
+      ['OS=="win" and buildtype=="Official"', {
+        # On windows official release builds, we try to preserve symbol space.
+        'derived_sources_aggregate_files': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSourcesAll.cpp',
+        ],
+      },{
+        'derived_sources_aggregate_files': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources01.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources02.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources03.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources04.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources05.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources06.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources07.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources08.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources09.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources10.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources11.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources12.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources13.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources14.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources15.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources16.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources17.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources18.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources19.cpp',
         ],
       }],
      ['OS=="android" and use_openmax_dl_fft!=0', {
@@ -401,10 +479,48 @@
       ]
     },
     {
+      'target_name': 'generate_supplemental_dependency',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'generateSupplementalDependency',
+          'variables': {
+            # Write sources into a file, so that the action command line won't
+            # exceed OS limits.
+            'idl_files_list': '<|(idl_files_list.tmp <@(bindings_idl_files))',
+          },
+          'inputs': [
+            '<(bindings_dir)/scripts/preprocess-idls.pl',
+            '<(idl_files_list)',
+            '<!@(cat <(idl_files_list))',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+          ],
+          'msvs_cygwin_shell': 0,
+          'action': [
+            '<(perl_exe)',
+            '-w',
+            '-I<(bindings_dir)/scripts',
+            '-I../scripts',
+            '<(bindings_dir)/scripts/preprocess-idls.pl',
+            '--defines',
+            '<(feature_defines)',
+            '--idlFilesList',
+            '<(idl_files_list)',
+            '--supplementalDependencyFile',
+            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+          ],
+          'message': 'Resolving [Supplemental=XXX] dependencies in all IDL files',
+        }
+      ]
+    },
+    {
       'target_name': 'webcore_bindings_sources',
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [
+        'generate_supplemental_dependency',
         'generate_settings',
       ],
       'sources': [
@@ -414,6 +530,10 @@
 
         # gperf rule
         '../platform/ColorData.gperf',
+
+        # idl rules
+        '<@(bindings_idl_files)',
+        '<@(webcore_test_support_idl_files)',
       ],
       'actions': [
         # Actions to build derived sources.
@@ -897,6 +1017,23 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'derived_sources_all_in_one',
+          'inputs': [
+            'scripts/action_derivedsourcesallinone.py',
+            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+          ],
+          'outputs': [
+            '<@(derived_sources_aggregate_files)',
+          ],
+          'action': [
+            'python',
+            'scripts/action_derivedsourcesallinone.py',
+            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+            '--',
+            '<@(derived_sources_aggregate_files)',
+          ],
+        },
+        {
           'action_name': 'preprocess_grammar',
           'inputs': [
             '../css/CSSGrammar.y.in',
@@ -958,6 +1095,80 @@
             '<(gperf_exe)',
           ],
         },
+        # Rule to build generated JavaScript (V8) bindings from .idl source.
+        {
+          'rule_name': 'binding',
+          'extension': 'idl',
+          'msvs_external_rule': 1,
+          'inputs': [
+            '<(bindings_dir)/scripts/generate-bindings.pl',
+            '<(bindings_dir)/scripts/CodeGenerator.pm',
+            '<(bindings_dir)/scripts/CodeGeneratorV8.pm',
+            '<(bindings_dir)/scripts/IDLParser.pm',
+            '<(bindings_dir)/scripts/IDLAttributes.txt',
+            '../scripts/preprocessor.pm',
+            '<!@pymod_do_main(supplemental_idl_files <@(bindings_idl_files))',
+          ],
+          'outputs': [
+            # FIXME:  The .cpp file should be in webkit/bindings once
+            # we coax GYP into supporting it (see 'action' below).
+            '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8<(RULE_INPUT_ROOT).cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).h',
+          ],
+          'variables': {
+            'generator_include_dirs': [
+              '--include', '../../modules/filesystem',
+              '--include', '../../modules/indexeddb',
+              '--include', '../../modules/mediasource',
+              '--include', '../../modules/mediastream',
+              '--include', '../../modules/navigatorcontentutils',
+              '--include', '../../modules/notifications',
+              '--include', '../../modules/webaudio',
+              '--include', '../../modules/webdatabase',
+              '--include', '../css',
+              '--include', '../dom',
+              '--include', '../fileapi',
+              '--include', '../html',
+              '--include', '../page',
+              '--include', '../plugins',
+              '--include', '../storage',
+              '--include', '../svg',
+              '--include', '../testing',
+              '--include', '../workers',
+              '--include', '../xml',
+              '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            ],
+          },
+          'msvs_cygwin_shell': 0,
+          # FIXME:  Note that we put the .cpp files in webcore/bindings
+          # but the .h files in webkit/bindings.  This is to work around
+          # the unfortunate fact that GYP strips duplicate arguments
+          # from lists.  When we have a better GYP way to suppress that
+          # behavior, change the output location.
+          'action': [
+            '<(perl_exe)',
+            '-w',
+            '-I<(bindings_dir)/scripts',
+            '-I../scripts',
+            '<(bindings_dir)/scripts/generate-bindings.pl',
+            '--outputHeadersDir',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+            '--outputDir',
+            '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings',
+            '--idlAttributesFile',
+            '<(bindings_dir)/scripts/IDLAttributes.txt',
+            '--defines',
+            '<(feature_defines)',
+            '<@(generator_include_dirs)',
+            '--supplementalDependencyFile',
+            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+            '--additionalIdlFiles',
+            '<(webcore_test_support_idl_files)',
+            '<(RULE_INPUT_PATH)',
+            '<@(preprocessor)',
+          ],
+          'message': 'Generating binding from <(RULE_INPUT_PATH)',
+        },
       ],
     },
     {
@@ -996,15 +1207,20 @@
         '<(SHARED_INTERMEDIATE_DIR)/webcore',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+        '<@(webcore_include_dirs)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<@(webcore_include_dirs)',
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         ],
       },
       'sources': [
+        # These files include all the .cpp files generated from the .idl files
+        # in webcore_files.
+        '<@(derived_sources_aggregate_files)',
+        '<@(bindings_files)',
+
         # Additional .cpp files for HashTools.h
         '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorData.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
@@ -1842,8 +2058,8 @@
         'webcore_platform_geometry',
         'webcore_remaining',
         'webcore_rendering',
-        'webcore_bindings',
         # Exported.
+        'webcore_bindings',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1852,6 +2068,7 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
+        'webcore_bindings',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1861,7 +2078,6 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '../../Platform/chromium',
           '<@(webcore_include_dirs)',
         ],
       },
