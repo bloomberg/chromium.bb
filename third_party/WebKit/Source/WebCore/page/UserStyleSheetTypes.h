@@ -26,7 +26,6 @@
 #ifndef UserStyleSheetTypes_h
 #define UserStyleSheetTypes_h
 
-#include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
@@ -34,11 +33,9 @@ namespace WebCore {
 enum UserStyleInjectionTime { InjectInExistingDocuments, InjectInSubsequentDocuments };
 enum UserStyleLevel { UserStyleUserLevel, UserStyleAuthorLevel };
 
-class DOMWrapperWorld;
 class UserStyleSheet;
 
 typedef Vector<OwnPtr<UserStyleSheet> > UserStyleSheetVector;
-typedef HashMap<RefPtr<DOMWrapperWorld>, OwnPtr<UserStyleSheetVector> > UserStyleSheetMap;
 
 } // namespace WebCore
  

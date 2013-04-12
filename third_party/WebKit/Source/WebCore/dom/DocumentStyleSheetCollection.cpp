@@ -160,30 +160,23 @@ void DocumentStyleSheetCollection::updateInjectedStyleSheetCache() const
     Page* owningPage = m_document->page();
     if (!owningPage)
         return;
-        
-    const PageGroup& pageGroup = owningPage->group();
-    const UserStyleSheetMap* sheetsMap = pageGroup.userStyleSheets();
-    if (!sheetsMap)
-        return;
 
-    UserStyleSheetMap::const_iterator end = sheetsMap->end();
-    for (UserStyleSheetMap::const_iterator it = sheetsMap->begin(); it != end; ++it) {
-        const UserStyleSheetVector* sheets = it->value.get();
-        for (unsigned i = 0; i < sheets->size(); ++i) {
-            const UserStyleSheet* sheet = sheets->at(i).get();
-            if (sheet->injectedFrames() == InjectInTopFrameOnly && m_document->ownerElement())
-                continue;
-            if (!UserContentURLPattern::matchesPatterns(m_document->url(), sheet->whitelist(), sheet->blacklist()))
-                continue;
-            RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(m_document), sheet->url());
-            bool isUserStyleSheet = sheet->level() == UserStyleUserLevel;
-            if (isUserStyleSheet)
-                m_injectedUserStyleSheets.append(groupSheet);
-            else
-                m_injectedAuthorStyleSheets.append(groupSheet);
-            groupSheet->contents()->setIsUserStyleSheet(isUserStyleSheet);
-            groupSheet->contents()->parseString(sheet->source());
-        }
+    const PageGroup& pageGroup = owningPage->group();
+    const UserStyleSheetVector& sheets = pageGroup.userStyleSheets();
+    for (unsigned i = 0; i < sheets.size(); ++i) {
+        const UserStyleSheet* sheet = sheets[i].get();
+        if (sheet->injectedFrames() == InjectInTopFrameOnly && m_document->ownerElement())
+            continue;
+        if (!UserContentURLPattern::matchesPatterns(m_document->url(), sheet->whitelist(), sheet->blacklist()))
+            continue;
+        RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(m_document), sheet->url());
+        bool isUserStyleSheet = sheet->level() == UserStyleUserLevel;
+        if (isUserStyleSheet)
+            m_injectedUserStyleSheets.append(groupSheet);
+        else
+            m_injectedAuthorStyleSheets.append(groupSheet);
+        groupSheet->contents()->setIsUserStyleSheet(isUserStyleSheet);
+        groupSheet->contents()->parseString(sheet->source());
     }
 }
 

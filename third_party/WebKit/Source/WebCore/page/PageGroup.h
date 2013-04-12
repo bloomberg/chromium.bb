@@ -86,15 +86,15 @@ namespace WebCore {
         StorageNamespace* localStorage();
         bool hasLocalStorage() { return m_localStorage; }
 
-        void addUserStyleSheetToWorld(DOMWrapperWorld*, const String& source, const KURL&,
-                                      const Vector<String>& whitelist, const Vector<String>& blacklist,
-                                      UserContentInjectedFrames,
-                                      UserStyleLevel level = UserStyleUserLevel,
-                                      UserStyleInjectionTime injectionTime = InjectInExistingDocuments);
+        void addUserStyleSheet(const String& source, const KURL&,
+                               const Vector<String>& whitelist, const Vector<String>& blacklist,
+                               UserContentInjectedFrames,
+                               UserStyleLevel level = UserStyleUserLevel,
+                               UserStyleInjectionTime injectionTime = InjectInExistingDocuments);
 
         void removeAllUserContent();
 
-        const UserStyleSheetMap* userStyleSheets() const { return m_userStyleSheets.get(); }
+        const UserStyleSheetVector& userStyleSheets() const { return m_userStyleSheets; }
 
         GroupSettings* groupSettings() const { return m_groupSettings.get(); }
 
@@ -119,7 +119,7 @@ namespace WebCore {
         unsigned m_identifier;
         RefPtr<StorageNamespace> m_localStorage;
 
-        OwnPtr<UserStyleSheetMap> m_userStyleSheets;
+        UserStyleSheetVector m_userStyleSheets;
 
         OwnPtr<GroupSettings> m_groupSettings;
 

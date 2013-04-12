@@ -256,21 +256,13 @@ StorageNamespace* PageGroup::localStorage()
     return m_localStorage.get();
 }
 
-void PageGroup::addUserStyleSheetToWorld(DOMWrapperWorld* world, const String& source, const KURL& url,
-                                         const Vector<String>& whitelist, const Vector<String>& blacklist,
-                                         UserContentInjectedFrames injectedFrames,
-                                         UserStyleLevel level,
-                                         UserStyleInjectionTime injectionTime)
+void PageGroup::addUserStyleSheet(const String& source, const KURL& url,
+                                  const Vector<String>& whitelist, const Vector<String>& blacklist,
+                                  UserContentInjectedFrames injectedFrames,
+                                  UserStyleLevel level,
+                                  UserStyleInjectionTime injectionTime)
 {
-    ASSERT_ARG(world, world);
-
-    OwnPtr<UserStyleSheet> userStyleSheet = adoptPtr(new UserStyleSheet(source, url, whitelist, blacklist, injectedFrames, level));
-    if (!m_userStyleSheets)
-        m_userStyleSheets = adoptPtr(new UserStyleSheetMap);
-    OwnPtr<UserStyleSheetVector>& styleSheetsInWorld = m_userStyleSheets->add(world, nullptr).iterator->value;
-    if (!styleSheetsInWorld)
-        styleSheetsInWorld = adoptPtr(new UserStyleSheetVector);
-    styleSheetsInWorld->append(userStyleSheet.release());
+    m_userStyleSheets.append(adoptPtr(new UserStyleSheet(source, url, whitelist, blacklist, injectedFrames, level)));
 
     if (injectionTime == InjectInExistingDocuments)
         invalidatedInjectedStyleSheetCacheInAllFrames();
@@ -278,10 +270,8 @@ void PageGroup::addUserStyleSheetToWorld(DOMWrapperWorld* world, const String& s
 
 void PageGroup::removeAllUserContent()
 {
-    if (m_userStyleSheets) {
-        m_userStyleSheets.clear();
-        invalidatedInjectedStyleSheetCacheInAllFrames();
-    }
+    m_userStyleSheets.clear();
+    invalidatedInjectedStyleSheetCacheInAllFrames();
 }
 
 void PageGroup::invalidatedInjectedStyleSheetCacheInAllFrames()
