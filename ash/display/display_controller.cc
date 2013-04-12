@@ -5,6 +5,7 @@
 #include "ash/display/display_controller.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 
 #include "ash/ash_root_window_transformer.h"
@@ -24,6 +25,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -123,6 +125,18 @@ internal::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
+// Round near zero value to zero.
+void RoundNearZero(gfx::Transform* transform) {
+  const float kEpsilon = 0.001f;
+  SkMatrix44& matrix = transform->matrix();
+  for (int x = 0; x < 4; ++x) {
+    for (int y = 0; y < 4; ++y) {
+      if (std::abs(SkMScalarToFloat(matrix.get(x, y))) < kEpsilon)
+        matrix.set(x, y, SkFloatToMScalar(0.0f));
+    }
+  }
+}
+
 void RotateRootWindow(aura::RootWindow* root_window,
                       const gfx::Display& display,
                       const internal::DisplayInfo& info) {
@@ -152,7 +166,6 @@ void RotateRootWindow(aura::RootWindow* root_window,
     case gfx::Display::ROTATE_90:
       rotate.Translate(display.bounds().height() - one_pixel, 0);
       rotate.Rotate(90);
-      // Rotate 270 instead of 90 as it will cause calcuration error.
       reverse_rotate.Rotate(270);
       reverse_rotate.Translate(-(display.bounds().height() - one_pixel), 0);
       break;
@@ -171,6 +184,9 @@ void RotateRootWindow(aura::RootWindow* root_window,
                                -(display.bounds().height() - one_pixel));
       break;
   }
+  RoundNearZero(&rotate);
+  RoundNearZero(&reverse_rotate);
+
   scoped_ptr<aura::RootWindowTransformer> transformer(
       new AshRootWindowTransformer(root_window,
                                    rotate,

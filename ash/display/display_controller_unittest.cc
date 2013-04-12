@@ -893,6 +893,38 @@ TEST_F(DisplayControllerTest, MAYBE_ConvertHostToRootCoords) {
   MoveMouseToInHostCoord(root_windows[0], 0, 399);
   EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
 
+  UpdateDisplay("600x400*2/u@1.5");
+  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
+  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
+
+  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  EXPECT_EQ("449,299", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 599, 0);
+  EXPECT_EQ("0,299", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 599, 399);
+  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 0, 399);
+  EXPECT_EQ("449,0", event_handler.GetLocationAndReset());
+
+  UpdateDisplay("600x400*2/l@1.5");
+  display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
+  EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
+
+  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 599, 0);
+  EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 599, 399);
+  EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
+  MoveMouseToInHostCoord(root_windows[0], 0, 399);
+  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
+
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
