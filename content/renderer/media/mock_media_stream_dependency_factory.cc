@@ -50,12 +50,20 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
     return true;
   }
   virtual bool RemoveTrack(AudioTrackInterface* track) OVERRIDE {
-    NOTIMPLEMENTED();
-    return false;
+    AudioTrackVector::iterator it = FindTrack(&audio_track_vector_,
+                                              track->id());
+    if (it == audio_track_vector_.end())
+      return false;
+    audio_track_vector_.erase(it);
+    return true;
   }
   virtual bool RemoveTrack(VideoTrackInterface* track) OVERRIDE {
-    NOTIMPLEMENTED();
-    return false;
+    VideoTrackVector::iterator it = FindTrack(&video_track_vector_,
+                                              track->id());
+    if (it == video_track_vector_.end())
+      return false;
+    video_track_vector_.erase(it);
+    return true;
   }
   virtual std::string label() const OVERRIDE { return label_; }
   virtual AudioTrackVector GetAudioTracks() OVERRIDE {

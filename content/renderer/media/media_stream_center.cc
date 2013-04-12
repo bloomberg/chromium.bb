@@ -32,7 +32,6 @@ static webrtc::MediaStreamInterface* GetNativeMediaStream(
   return extra_data->stream();
 }
 
-
 static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
       const WebKit::WebMediaStreamTrack& component) {
@@ -97,6 +96,24 @@ void MediaStreamCenter::didCreateMediaStream(
   if (!rtc_factory_)
     return;
   rtc_factory_->CreateNativeLocalMediaStream(&stream);
+}
+
+bool MediaStreamCenter::didAddMediaStreamTrack(
+    const WebKit::WebMediaStream& stream,
+    const WebKit::WebMediaStreamTrack& track) {
+  if (!rtc_factory_)
+    return false;
+
+  return rtc_factory_->AddNativeMediaStreamTrack(stream, track);
+}
+
+bool MediaStreamCenter::didRemoveMediaStreamTrack(
+    const WebKit::WebMediaStream& stream,
+    const WebKit::WebMediaStreamTrack& track) {
+  if (!rtc_factory_)
+    return false;
+
+  return rtc_factory_->RemoveNativeMediaStreamTrack(stream, track);
 }
 
 }  // namespace content

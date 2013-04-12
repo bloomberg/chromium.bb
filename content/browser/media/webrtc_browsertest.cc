@@ -47,7 +47,7 @@ class WebrtcBrowserTest: public ContentBrowserTest {
 // see that the success callback is called. If the error callback is called or
 // none of the callbacks are called the tests will simply time out and fail.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
-  GURL url(test_server()->GetURL("files/media/getusermedia_and_stop.html"));
+  GURL url(test_server()->GetURL("files/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
   EXPECT_TRUE(ExecuteJavascript("getUserMedia({video: true});"));
@@ -56,10 +56,19 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndStop) {
-  GURL url(test_server()->GetURL("files/media/getusermedia_and_stop.html"));
+  GURL url(test_server()->GetURL("files/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
   EXPECT_TRUE(ExecuteJavascript("getUserMedia({video: true, audio: true});"));
+
+  ExpectTitle("OK");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
+  GURL url(test_server()->GetURL("files/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("getUserMediaAndClone();"));
 
   ExpectTitle("OK");
 }
@@ -144,6 +153,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   NavigateToURL(shell(), url);
 
   EXPECT_TRUE(ExecuteJavascript("callWithDataAndLaterAddMedia();"));
+  ExpectTitle("OK");
+}
+
+// This test will make a PeerConnection-based call and send a new Video
+// MediaStream that has been created based on a MediaStream created with
+// getUserMedia.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithNewVideoMediaStream) {
+  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callWithNewVideoMediaStream();"));
   ExpectTitle("OK");
 }
 

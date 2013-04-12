@@ -1,0 +1,76 @@
+<html>
+<head>
+  <script type="text/javascript" src="webrtc_test_utilities.js"></script>
+  <script type="text/javascript">
+  $ = function(id) {
+    return document.getElementById(id);
+  };
+  
+  var gLocalStream = null;
+    
+  setAllEventsOccuredHandler(function() {
+    gLocalStream.stop();
+    document.title = 'OK';      
+  });
+  
+  // This test that a MediaStream can be created and a local preview 
+  // rendered.
+  function getUserMedia(constraints) {
+    navigator.webkitGetUserMedia(constraints, displayAndWaitForVideo,
+        failedCallback);
+  }
+  
+  // This test that a MediaStream can be cloned and that the clone can 
+  // be rendered.
+  function getUserMediaAndClone() {
+    navigator.webkitGetUserMedia({video: true, audio: true},
+        createAndRenderClone, failedCallback);
+  }
+    
+  function failedCallback(error) {
+    document.title = 'GetUserMedia call failed with code ' + error.code;
+  }
+
+  function displayAndWaitForVideo(stream) {
+    gLocalStream = stream;
+    var localStreamUrl = webkitURL.createObjectURL(stream);
+    $('local-view').src = localStreamUrl;
+    waitForVideo('local-view');   
+  }
+  
+  function createAndRenderClone(stream) {
+    gLocalStream = stream;
+    // TODO(perkj):  --use-fake-device-for-media-stream do not currently
+    // work with audio devices and not all bots has a microphone.    
+    new_stream = new webkitMediaStream();
+    new_stream.addTrack(stream.getVideoTracks()[0]);
+    expectEquals(new_stream.getVideoTracks().length, 1);
+    if (stream.getAudioTracks().length > 0) {
+      new_stream.addTrack(stream.getAudioTracks()[0]);
+      expectEquals(new_stream.getAudioTracks().length, 1);
+      new_stream.removeTrack(new_stream.getAudioTracks()[0]);
+      expectEquals(new_stream.getAudioTracks().length, 0);
+    }
+    
+    var newStreamUrl = webkitURL.createObjectURL(new_stream);
+    $('local-view').src = newStreamUrl;  
+    waitForVideo('local-view');
+  }
+  
+  </script>  
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view"
+          autoplay="autoplay"></video></td>      
+      <!-- Canvases are named after their corresponding video elements. -->
+      <td><canvas width="320" height="240" id="local-view-canvas"
+          style="display:none"></canvas></td>
+    </tr>
+  </table>
+</body>
+</html>

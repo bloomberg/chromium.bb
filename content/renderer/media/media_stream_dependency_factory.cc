@@ -66,7 +66,7 @@ class WebAudioConstraints : public RTCMediaConstraints {
     }
   }
 
-  virtual ~WebAudioConstraints() {};
+  virtual ~WebAudioConstraints() {}
 };
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
@@ -309,82 +309,30 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStream* description) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
   if (!EnsurePeerConnectionFactory()) {
-      DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
-      return;
+    DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
+    return;
   }
 
   std::string label = UTF16ToUTF8(description->label());
   scoped_refptr<webrtc::MediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
+  MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream,
+                                                              true);
+  description->setExtraData(extra_data);
 
   // Add audio tracks.
   WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
-  description->audioSources(audio_tracks);
-
-  bool start_stream = false;
+  description->audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    WebKit::WebMediaStreamSource source = audio_tracks[i].source();
-
-    // See if we're adding a WebAudio MediaStream.
-    if (source.requiresAudioConsumer()) {
-      // TODO(crogers, xians): In reality we should be able to send a unique
-      // audio stream to each PeerConnection separately.  But currently WebRTC
-      // is only able to handle a global audio stream sent to ALL peers.
-
-      // Create a special source where default WebAudio constraints are used.
-      if (!CreateWebAudioSource(&source)) {
-        LOG(ERROR) << "Failed to create WebAudio source";
-        continue;
-      }
-    }
-
-    MediaStreamSourceExtraData* source_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
-
-    if (!source_data) {
-      // TODO(perkj): Implement support for sources from
-      // remote MediaStreams.
-      NOTIMPLEMENTED();
-      continue;
-    }
-
-    scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-        CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
-                              source_data->local_audio_source()));
-    native_stream->AddTrack(audio_track);
-    audio_track->set_enabled(audio_tracks[i].isEnabled());
-    start_stream = true;
-  }
-
-  if (start_stream && GetWebRtcAudioDevice()) {
-    WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer();
-    capturer->Start();
+    AddNativeMediaStreamTrack(*description, audio_tracks[i]);
   }
 
   // Add video tracks.
   WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
-  description->videoSources(video_tracks);
+  description->videoTracks(video_tracks);
   for (size_t i = 0; i < video_tracks.size(); ++i) {
-    const WebKit::WebMediaStreamSource& source = video_tracks[i].source();
-    MediaStreamSourceExtraData* source_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    if (!source_data || !source_data->video_source()) {
-      // TODO(perkj): Implement support for sources from remote MediaStreams.
-      NOTIMPLEMENTED();
-      continue;
-    }
-
-    scoped_refptr<webrtc::VideoTrackInterface> video_track(
-        CreateLocalVideoTrack(UTF16ToUTF8(video_tracks[i].id()),
-                              source_data->video_source()));
-
-    native_stream->AddTrack(video_track);
-    video_track->set_enabled(video_tracks[i].isEnabled());
+    AddNativeMediaStreamTrack(*description, video_tracks[i]);
   }
-
-  MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream,
-                                                              true);
-  description->setExtraData(extra_data);
 }
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
@@ -395,6 +343,84 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   MediaStreamExtraData* extra_data =
      static_cast<MediaStreamExtraData*>(description->extraData());
   extra_data->SetLocalStreamStopCallback(stream_stop);
+}
+
+bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
+      const WebKit::WebMediaStream& stream,
+      const WebKit::WebMediaStreamTrack& track) {
+  MediaStreamExtraData* extra_data =
+     static_cast<MediaStreamExtraData*>(stream.extraData());
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  DCHECK(native_stream);
+
+  WebKit::WebMediaStreamSource source = track.source();
+  MediaStreamSourceExtraData* source_data =
+      static_cast<MediaStreamSourceExtraData*>(source.extraData());
+
+  if (!source_data) {
+    if (source.requiresAudioConsumer()) {
+      // We're adding a WebAudio MediaStream.
+      // TODO(crogers, xians): In reality we should be able to send a unique
+      // audio stream to each PeerConnection separately.
+      // Currently WebRTC is only able to handle a global audio stream sent to
+      // ALL peers. Create a special source where default WebAudio constraints
+      // are used.
+      if (CreateWebAudioSource(&source)) {
+        source_data =
+            static_cast<MediaStreamSourceExtraData*>(source.extraData());
+      } else {
+        LOG(ERROR) << "Failed to create WebAudio source";
+        return false;
+      }
+    } else {
+      // TODO(perkj): Implement support for sources from
+      // remote MediaStreams.
+      NOTIMPLEMENTED();
+      return false;
+    }
+  }
+
+  WebKit::WebMediaStreamSource::Type type = track.source().type();
+  DCHECK(type == WebKit::WebMediaStreamSource::TypeAudio ||
+         type == WebKit::WebMediaStreamSource::TypeVideo);
+
+  std::string track_id = UTF16ToUTF8(track.id());
+  if (source.type() == WebKit::WebMediaStreamSource::TypeAudio) {
+    // TODO(henrika,xians): Refactor how an audio track is created to harmonize
+    // with video tracks.
+    scoped_refptr<webrtc::AudioTrackInterface> audio_track(
+        CreateLocalAudioTrack(track_id, source_data->local_audio_source()));
+    audio_track->set_enabled(track.isEnabled());
+    if (GetWebRtcAudioDevice()) {
+      WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer();
+      if (!capturer->is_recording())
+        capturer->Start();
+    }
+    return native_stream->AddTrack(audio_track);
+  } else {
+    scoped_refptr<webrtc::VideoTrackInterface> video_track(
+        CreateLocalVideoTrack(track_id, source_data->video_source()));
+    video_track->set_enabled(track.isEnabled());
+    return native_stream->AddTrack(video_track);
+  }
+}
+
+bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
+    const WebKit::WebMediaStream& stream,
+    const WebKit::WebMediaStreamTrack& track) {
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(stream.extraData());
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  DCHECK(native_stream);
+
+  WebKit::WebMediaStreamSource::Type type = track.source().type();
+  DCHECK(type == WebKit::WebMediaStreamSource::TypeAudio ||
+         type == WebKit::WebMediaStreamSource::TypeVideo);
+
+  std::string track_id = UTF16ToUTF8(track.id());
+  return type == WebKit::WebMediaStreamSource::TypeAudio ?
+      native_stream->RemoveTrack(native_stream->FindAudioTrack(track_id)) :
+      native_stream->RemoveTrack(native_stream->FindVideoTrack(track_id));
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {

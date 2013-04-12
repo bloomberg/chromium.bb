@@ -42,6 +42,14 @@ class CONTENT_EXPORT MediaStreamCenter
   virtual void didCreateMediaStream(
       WebKit::WebMediaStream& stream) OVERRIDE;
 
+  virtual bool didAddMediaStreamTrack(
+      const WebKit::WebMediaStream& stream,
+      const WebKit::WebMediaStreamTrack& track) OVERRIDE;
+
+  virtual bool didRemoveMediaStreamTrack(
+      const WebKit::WebMediaStream& stream,
+      const WebKit::WebMediaStreamTrack& track) OVERRIDE;
+
  private:
   // |rtc_factory_| is a weak pointer and is owned by the RenderThreadImpl.
   // It is valid as long as  RenderThreadImpl exist.

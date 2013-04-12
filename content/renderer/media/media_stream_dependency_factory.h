@@ -89,6 +89,14 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       WebKit::WebMediaStream* description,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
+  // Adds a libjingle representation of a MediaStreamTrack to |stream| based
+  // on the source of |track|.
+  bool AddNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
+                                 const WebKit::WebMediaStreamTrack& track);
+
+  bool RemoveNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
+                                    const WebKit::WebMediaStreamTrack& track);
+
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.
