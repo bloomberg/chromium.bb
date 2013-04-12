@@ -50,6 +50,7 @@ void VideoCaptureHost::OnDestruct() const {
 
 // Implements VideoCaptureControllerEventHandler.
 void VideoCaptureHost::OnError(const VideoCaptureControllerID& controller_id) {
+  DVLOG(1) << "VideoCaptureHost::OnError";
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&VideoCaptureHost::DoHandleErrorOnIOThread,
@@ -88,10 +89,11 @@ void VideoCaptureHost::OnFrameInfo(
                  this, controller_id, width, height, frame_per_second));
 }
 
-void VideoCaptureHost::OnPaused(const VideoCaptureControllerID& controller_id) {
+void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {
+  DVLOG(1) << "VideoCaptureHost::OnEnded";
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureHost::DoPausedOnIOThread, this, controller_id));
+      base::Bind(&VideoCaptureHost::DoEndedOnIOThread, this, controller_id));
 }
 
 void VideoCaptureHost::DoSendNewBufferOnIOThread(
@@ -132,15 +134,15 @@ void VideoCaptureHost::DoHandleErrorOnIOThread(
   DeleteVideoCaptureControllerOnIOThread(controller_id);
 }
 
-void VideoCaptureHost::DoPausedOnIOThread(
+void VideoCaptureHost::DoEndedOnIOThread(
     const VideoCaptureControllerID& controller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
+  DVLOG(1) << "VideoCaptureHost::DoEndedOnIOThread";
   if (entries_.find(controller_id) == entries_.end())
     return;
 
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
-                                        VIDEO_CAPTURE_STATE_PAUSED));
+                                        VIDEO_CAPTURE_STATE_ENDED));
   DeleteVideoCaptureControllerOnIOThread(controller_id);
 }
 
@@ -241,6 +243,7 @@ void VideoCaptureHost::OnStopCapture(int device_id) {
 
 void VideoCaptureHost::OnPauseCapture(int device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureHost::OnPauseCapture, device_id " << device_id;
   // Not used.
   Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_ERROR));
 }

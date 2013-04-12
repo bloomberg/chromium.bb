@@ -45,8 +45,8 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
                            int height,
                            int frame_rate) = 0;
 
-  // The capture session has been paused. No more frame will be sent.
-  virtual void OnPaused(const VideoCaptureControllerID& id) = 0;
+  // The capture session has ended and no more frames will be sent.
+  virtual void OnEnded(const VideoCaptureControllerID& id) = 0;
 
  protected:
   virtual ~VideoCaptureControllerEventHandler() {}

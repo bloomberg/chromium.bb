@@ -71,7 +71,7 @@ class CONTENT_EXPORT VideoCaptureHost
                            int width,
                            int height,
                            int frame_per_second) OVERRIDE;
-  virtual void OnPaused(const VideoCaptureControllerID& id) OVERRIDE;
+  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
   friend class BrowserThread;
@@ -128,7 +128,7 @@ class CONTENT_EXPORT VideoCaptureHost
   // Handle error coming from VideoCaptureDevice.
   void DoHandleErrorOnIOThread(const VideoCaptureControllerID& controller_id);
 
-  void DoPausedOnIOThread(const VideoCaptureControllerID& controller_id);
+  void DoEndedOnIOThread(const VideoCaptureControllerID& controller_id);
 
   void DeleteVideoCaptureControllerOnIOThread(
       const VideoCaptureControllerID& controller_id);

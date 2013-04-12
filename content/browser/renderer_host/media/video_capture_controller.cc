@@ -211,7 +211,7 @@ void VideoCaptureController::StopSession(
 
   if (client) {
     client->session_closed = true;
-    client->event_handler->OnPaused(client->controller_id);
+    client->event_handler->OnEnded(client->controller_id);
   }
 }
 
@@ -259,9 +259,9 @@ void VideoCaptureController::OnIncomingCapturedFrame(
     int rotation,
     bool flip_vert,
     bool flip_horiz) {
-  DCHECK (frame_info_.color == media::VideoCaptureCapability::kI420 ||
-          frame_info_.color == media::VideoCaptureCapability::kYV12 ||
-          (rotation == 0 && !flip_vert && !flip_horiz));
+  DCHECK(frame_info_.color == media::VideoCaptureCapability::kI420 ||
+         frame_info_.color == media::VideoCaptureCapability::kYV12 ||
+         (rotation == 0 && !flip_vert && !flip_horiz));
 
   scoped_refptr<media::VideoFrame> dst;
   {

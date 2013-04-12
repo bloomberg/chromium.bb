@@ -61,7 +61,7 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD1(DoBufferCreated, void(const VideoCaptureControllerID&));
   MOCK_METHOD1(DoBufferReady, void(const VideoCaptureControllerID&));
   MOCK_METHOD1(DoFrameInfo, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoPaused, void(const VideoCaptureControllerID&));
+  MOCK_METHOD1(DoEnded, void(const VideoCaptureControllerID&));
 
   virtual void OnError(const VideoCaptureControllerID& id) OVERRIDE {}
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
@@ -86,9 +86,9 @@ class MockVideoCaptureControllerEventHandler
     EXPECT_EQ(id, controller_id_);
     DoFrameInfo(id);
   }
-  virtual void OnPaused(const VideoCaptureControllerID& id) OVERRIDE {
+  virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {
     EXPECT_EQ(id, controller_id_);
-    DoPaused(id);
+    DoEnded(id);
   }
 
   scoped_refptr<VideoCaptureController> controller_;
@@ -240,7 +240,7 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
                             vcm_->video_session_id_,
                             message_loop_.get()));
   EXPECT_CALL(*controller_handler_,
-              DoPaused(controller_handler_->controller_id_))
+              DoEnded(controller_handler_->controller_id_))
       .Times(1);
 
   controller_->StartCapture(controller_handler_->controller_id_,

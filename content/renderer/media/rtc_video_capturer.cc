@@ -113,6 +113,7 @@ void RtcVideoCapturer::OnFrameCaptured(
 void RtcVideoCapturer::OnStateChange(
     RtcVideoCaptureDelegate::CaptureState state) {
   cricket::CaptureState converted_state = cricket::CS_FAILED;
+  DVLOG(3) << " RtcVideoCapturer::OnStateChange " << state;
   switch (state) {
     case RtcVideoCaptureDelegate::CAPTURE_STOPPED:
       converted_state = cricket::CS_STOPPED;
@@ -121,6 +122,10 @@ void RtcVideoCapturer::OnStateChange(
       converted_state = cricket::CS_RUNNING;
       break;
     case RtcVideoCaptureDelegate::CAPTURE_FAILED:
+      // TODO(perkj): Update the comments in the the definition of
+      // cricket::CS_FAILED. According to the comments, cricket::CS_FAILED
+      // means that the capturer failed to start. But here and in libjingle it
+      // is also used if an error occur during capturing.
       converted_state = cricket::CS_FAILED;
       break;
     default:
