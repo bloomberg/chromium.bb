@@ -711,7 +711,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
 #if defined(OS_MACOSX)
-  host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac());
+  host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac(id));
 #endif
   host->GetChannel()->AddFilter(new ChromeNetBenchmarkingMessageFilter(
       id, profile, context));

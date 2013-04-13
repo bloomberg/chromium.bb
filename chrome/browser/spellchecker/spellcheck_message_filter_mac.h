@@ -7,15 +7,19 @@
 
 #include <map>
 
+#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "content/public/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
 // the Mac-specific spell checker requests from SpellCheckProvider.
 class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
  public:
-  explicit SpellCheckMessageFilterMac();
+  explicit SpellCheckMessageFilterMac(int render_process_id);
 
   // BrowserMessageFilter implementation.
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -36,6 +40,11 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);
   std::map<int,int> tag_map_;
+
+  int render_process_id_;
+
+  // A JSON-RPC client that calls the Spelling service in the background.
+  scoped_ptr<SpellingServiceClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterMac);
 };

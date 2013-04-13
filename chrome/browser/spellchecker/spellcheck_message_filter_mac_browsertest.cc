@@ -19,7 +19,7 @@
 class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
  public:
   explicit TestingSpellCheckMessageFilter(MessageLoopForUI* loop)
-      : SpellCheckMessageFilterMac(),
+      : SpellCheckMessageFilterMac(0),
         loop_(loop) { }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {

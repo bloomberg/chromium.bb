@@ -235,13 +235,11 @@ void CloseDocumentWithTag(int tag) {
   [SharedSpellChecker() closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
 }
 
-void RequestTextCheck(int route_id,
-                      int identifier,
-                      int document_tag,
-                      const string16& text, BrowserMessageFilter* destination) {
+void RequestTextCheck(int document_tag,
+                      const string16& text,
+                      TextCheckCompleteCallback callback) {
   NSString* text_to_check = base::SysUTF16ToNSString(text);
   NSRange range_to_check = NSMakeRange(0, [text_to_check length]);
-  destination->AddRef();
 
   [SharedSpellChecker()
       requestCheckingOfString:text_to_check
@@ -262,12 +260,8 @@ void RequestTextCheck(int route_id,
                 [result range].location,
                 [result range].length));
           }
-          destination->Send(
-              new SpellCheckMsg_RespondTextCheck(
-                  route_id,
-                  identifier,
-                  check_results));
-          destination->Release();
+          // TODO(groby): Verify we don't need to post from here.
+          callback.Run(check_results);
       }];
 }
 

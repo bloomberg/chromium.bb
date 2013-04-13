@@ -4,12 +4,168 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 
+#include "base/bind.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/spellcheck_result.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
-SpellCheckMessageFilterMac::SpellCheckMessageFilterMac() {}
+class SpellingRequest {
+ public:
+  SpellingRequest(SpellingServiceClient* client,
+                  content::BrowserMessageFilter* destination,
+                  int render_process_id);
+
+  void RequestCheck(const string16& text,
+                    int route_id,
+                    int identifier,
+                    int document_tag);
+ private:
+  // Request server-side checking.
+  void RequestRemoteCheck(const string16& text);
+
+  // Request a check from local spell checker.
+  void RequestLocalCheck(const string16& text, int document_tag);
+
+  // Check if all pending requests are done, send reply to render process if so.
+  void OnCheckCompleted();
+
+  // Called when server-side checking is complete.
+  void OnRemoteCheckCompleted(bool success,
+                              const string16& text,
+                              const std::vector<SpellCheckResult>& results);
+
+  // Called when local checking is complete.
+  void OnLocalCheckCompleted(const std::vector<SpellCheckResult>& results);
+
+  std::vector<SpellCheckResult> local_results_;
+  std::vector<SpellCheckResult> remote_results_;
+
+  bool local_pending_;
+  bool remote_pending_;
+  bool remote_success_;
+
+  SpellingServiceClient* client_;  // Owned by |destination|.
+  content::BrowserMessageFilter* destination_;  // ref-counted.
+  int render_process_id_;
+
+  int route_id_;
+  int identifier_;
+  int document_tag_;
+};
+
+SpellingRequest::SpellingRequest(SpellingServiceClient* client,
+                                 content::BrowserMessageFilter* destination,
+                                 int render_process_id)
+    : local_pending_(true),
+      remote_pending_(true),
+      client_(client),
+      destination_(destination),
+      render_process_id_(render_process_id),
+      route_id_(-1),
+      identifier_(-1),
+      document_tag_(-1) {
+  destination_->AddRef();
+}
+
+void SpellingRequest::RequestCheck(const string16& text,
+                                   int route_id,
+                                   int identifier,
+                                   int document_tag) {
+  DCHECK(!text.empty());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  route_id_ = route_id;
+  identifier_ = identifier;
+  document_tag_ = document_tag;
+
+  // Send the remote query out.
+  RequestRemoteCheck(text);
+  RequestLocalCheck(text, document_tag_);
+}
+
+void SpellingRequest::RequestRemoteCheck(const string16& text) {
+  Profile* profile = NULL;
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (host)
+    profile = Profile::FromBrowserContext(host->GetBrowserContext());
+
+  client_->RequestTextCheck(
+    profile,
+    SpellingServiceClient::SPELLCHECK,
+    text,
+    base::Bind(&SpellingRequest::OnRemoteCheckCompleted,
+               base::Unretained(this)));
+}
+
+void SpellingRequest::RequestLocalCheck(const string16& text,
+                                        int document_tag) {
+  spellcheck_mac::RequestTextCheck(
+      document_tag,
+      text,
+      base::Bind(&SpellingRequest::OnLocalCheckCompleted,
+                 base::Unretained(this)));
+}
+
+void SpellingRequest::OnCheckCompleted() {
+  // Final completion can happen on any thread - don't DCHECK thread.
+
+  if (local_pending_ || remote_pending_)
+    return;
+
+  const std::vector<SpellCheckResult>* check_results = &remote_results_;
+  if (!remote_success_)
+    check_results = &local_results_;
+
+  destination_->Send(
+      new SpellCheckMsg_RespondTextCheck(
+          route_id_,
+          identifier_,
+          *check_results));
+  destination_->Release();
+
+  // Object is self-managed - at this point, its life span is over.
+  delete this;
+}
+
+void SpellingRequest::OnRemoteCheckCompleted(
+    bool success,
+    const string16& text,
+    const std::vector<SpellCheckResult>& results) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  remote_success_ = success;
+  remote_results_ = results;
+  remote_pending_ = false;
+
+  OnCheckCompleted();
+}
+
+void SpellingRequest::OnLocalCheckCompleted(
+    const std::vector<SpellCheckResult>& results) {
+  // Local checking can happen on any thread - don't DCHECK thread.
+
+  local_results_ = results;
+  local_pending_ = false;
+
+  OnCheckCompleted();
+}
+
+
+SpellCheckMessageFilterMac::SpellCheckMessageFilterMac(int render_process_id)
+    : render_process_id_(render_process_id),
+      client_(new SpellingServiceClient) {
+}
+
+void SpellCheckMessageFilterMac::OverrideThreadForMessage(
+    const IPC::Message& message, BrowserThread::ID* thread) {
+  if (message.type() == SpellCheckHostMsg_RequestTextCheck::ID)
+    *thread = BrowserThread::UI;
+}
 
 bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
@@ -57,8 +213,10 @@ void SpellCheckMessageFilterMac::OnRequestTextCheck(
     int route_id,
     int identifier,
     const string16& text) {
-  spellcheck_mac::RequestTextCheck(
-      route_id, identifier, ToDocumentTag(route_id), text, this);
+  // SpellingRequest self-destructs.
+  SpellingRequest* request =
+    new SpellingRequest(client_.get(), this, render_process_id_);
+  request->RequestCheck(text, route_id, identifier, ToDocumentTag(route_id));
 }
 
 int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {
