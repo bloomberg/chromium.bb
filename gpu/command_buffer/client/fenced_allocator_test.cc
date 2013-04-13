@@ -464,7 +464,13 @@ TEST_F(FencedAllocatorWrapperTest, TestAllocZero) {
 }
 
 // Checks that allocation offsets are aligned to multiples of 16 bytes.
-TEST_F(FencedAllocatorWrapperTest, TestAlignment) {
+#if defined(OS_WIN)
+// See crbug/226750
+#define MAYBE_TestAlignment DISABLED_TestAlignment
+#else
+#define MAYBE_TestAlignment TestAlignment
+#endif
+TEST_F(FencedAllocatorWrapperTest, MAYBE_TestAlignment) {
   allocator_->CheckConsistency();
 
   const unsigned int kSize1 = 75;
