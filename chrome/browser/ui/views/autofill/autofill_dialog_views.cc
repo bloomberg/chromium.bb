@@ -1211,7 +1211,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
   // hide. If the controller tells us not to show it, likewise hide.
   save_in_chrome_checkbox_->SetVisible(
-      controller_->ShouldOfferToSaveInChrome() && AtLeastOneSectionIsEditing());
+      controller_->ShouldOfferToSaveInChrome());
 
   const bool has_suggestions =
       controller_->MenuModelForSection(group.section)->GetItemCount() > 0;
@@ -1225,16 +1225,6 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   }
 
   ContentsPreferredSizeChanged();
-}
-
-bool AutofillDialogViews::AtLeastOneSectionIsEditing() {
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
-       iter != detail_groups_.end(); ++iter) {
-    if (iter->second.manual_input && iter->second.manual_input->visible())
-      return true;
-  }
-
-  return false;
 }
 
 bool AutofillDialogViews::ValidateGroup(

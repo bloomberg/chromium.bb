@@ -11,9 +11,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "components/autofill/browser/autofill_manager_delegate.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class AutofillMetrics;
 class PrefService;
 
 namespace autofill {
@@ -110,7 +112,9 @@ class AccountChooserModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
   AccountChooserModel(AccountChooserModelDelegate* delegate,
-                      PrefService* prefs);
+                      PrefService* prefs,
+                      const AutofillMetrics& metric_logger,
+                      DialogType dialog_type);
   virtual ~AccountChooserModel();
 
   // ui::SimpleMenuModel::Delegate implementation.
@@ -147,6 +151,10 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Whether there has been a Wallet error while the owning dialog has been
   // open.
   bool had_wallet_error_;
+
+  // For logging UMA metrics.
+  const AutofillMetrics& metric_logger_;
+  const DialogType dialog_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserModel);
 };

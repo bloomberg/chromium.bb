@@ -68,6 +68,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Autocheckout.DismissalState"
+    enum="AutofillDialogDismissalState">
+  <summary>The state of the Autocheckout dialog when it was dismissed.</summary>
+</histogram>
+
 <histogram name="Autocheckout.FlowDuration" units="ms">
   <summary>
     Measures the time elapsed between when the user submitted the Autocheckout
@@ -130,6 +135,12 @@ other types of suffix sets.
   <summary>
     Measures the duration for which an Autocheckout dialog was shown, in cases
     where the user ended up accepting the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.UiEvents" enum="AutofillDialogUiEvents">
+  <summary>
+    Measures how users are interacting with the Autocheckout dialog UI.
   </summary>
 </histogram>
 
@@ -2831,6 +2842,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="RequestAutocomplete.DismissalState"
+    enum="AutofillDialogDismissalState">
+  <summary>
+    The state of the requestAutocomplete() dialog when it was dismissed.
+  </summary>
+</histogram>
+
 <histogram name="RequestAutocomplete.InitialUserState"
     enum="AutofillDialogInitialUserState">
   <summary>
@@ -2871,6 +2889,12 @@ other types of suffix sets.
   <summary>
     Measures the duration for which an requestAutocomplete() dialog was shown,
     in cases where the user ended up accepting the dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.UiEvents" enum="AutofillDialogUiEvents">
+  <summary>
+    Measures how users are interacting with the requestAutocomplete() dialog UI.
   </summary>
 </histogram>
 
@@ -3087,6 +3111,16 @@ other types of suffix sets.
   <int value="1" label="Includes type hints"/>
 </enum>
 
+<enum name="AutofillDialogDismissalState" type="int">
+  <int value="0" label="Submitted, existing data"/>
+  <int value="1" label="Submitted, saved to Wallet"/>
+  <int value="2" label="Submitted, saved locally"/>
+  <int value="3" label="Submitted, no save"/>
+  <int value="4" label="Canceled, no edits"/>
+  <int value="5" label="Canceled, no invalid fields"/>
+  <int value="6" label="Canceled, 1+ invalid fields"/>
+</enum>
+
 <enum name="AutofillDialogInitialUserState" type="int">
   <int value="0" label="Not signed in, no Autofill"/>
   <int value="1" label="Not signed in, has Autofill"/>
@@ -3105,6 +3139,31 @@ other types of suffix sets.
   <int value="0" label="Baseline: Dialog shown"/>
   <int value="1" label="Credit card over HTTP"/>
   <int value="2" label="Cross-origin frame"/>
+</enum>
+
+<enum name="AutofillDialogUiEvents" type="int">
+  <int value="0" label="Dialog shown"/>
+  <int value="1" label="Dialog submitted"/>
+  <int value="2" label="Dialog canceled"/>
+  <int value="3" label="Account switched: Wallet-&gt;Autofill"/>
+  <int value="4" label="Account switched: Autofill-&gt;Wallet"/>
+  <int value="5" label="Account switched: Wallet-&gt;Wallet"/>
+  <int value="6" label="Sign-in UI shown"/>
+  <int value="7" label="Selected different email suggestion"/>
+  <int value="8" label="Selected different billing suggestion"/>
+  <int value="9" label="Selected different cc+billing suggestion"/>
+  <int value="10" label="Selected different shipping suggestion"/>
+  <int value="11" label="Selected different cc suggestion"/>
+  <int value="12" label="Showed edit UI for email"/>
+  <int value="13" label="Showed edit UI for billing"/>
+  <int value="14" label="Showed edit UI for cc+billing"/>
+  <int value="15" label="Showed edit UI for shipping"/>
+  <int value="16" label="Showed edit UI for cc"/>
+  <int value="17" label="Selected 'Add email' suggestion"/>
+  <int value="18" label="Selected 'Add billing' suggestion"/>
+  <int value="19" label="Selected 'Add cc+billing' suggestion"/>
+  <int value="20" label="Selected 'Add shipping' suggestion"/>
+  <int value="21" label="Selected 'Add cc' suggestion"/>
 </enum>
 
 <enum name="AutofillExperimentId" type="int">

@@ -268,10 +268,12 @@ void AutofillDialogControllerImpl::Show() {
   const GURL& active_url = entry ? entry->GetURL() : contents_->GetURL();
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
-  // Log any relevant security exceptions.
+  // Log any relevant UI metrics and security exceptions.
+  GetMetricLogger().LogDialogUiEvent(
+      dialog_type_, AutofillMetrics::DIALOG_UI_SHOWN);
+
   GetMetricLogger().LogDialogSecurityMetric(
-      dialog_type_,
-      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+      dialog_type_, AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     GetMetricLogger().LogDialogSecurityMetric(
@@ -479,7 +481,7 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
-  return !IsPayingWithWallet();
+  return !IsPayingWithWallet() && IsManuallyEditingAnySection();
 }
 
 bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
@@ -851,6 +853,9 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   model->FillInputs(inputs);
   section_editing_state_[section] = true;
   view_->UpdateSection(section, CLEAR_USER_INPUT);
+
+  GetMetricLogger().LogDialogUiEvent(
+      dialog_type_, DialogSectionToUiEditEvent(section));
 }
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
@@ -910,7 +915,7 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 }
 
 bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
-                                                const string16& value) {
+                                                const string16& value) const {
   switch (type) {
     case EMAIL_ADDRESS:
       return IsValidEmailAddress(value);
@@ -951,7 +956,7 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
 }
 
 std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
-    const DetailOutputMap& inputs, ValidationType validation_type) {
+    const DetailOutputMap& inputs, ValidationType validation_type) const {
   std::vector<AutofillFieldType> invalid_fields;
   std::map<AutofillFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
@@ -1165,6 +1170,9 @@ void AutofillDialogControllerImpl::StartSignInFlow() {
 
   content::Source<content::NavigationController> source(view_->ShowSignIn());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+
+  GetMetricLogger().LogDialogUiEvent(
+      dialog_type_, AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
 }
 
 void AutofillDialogControllerImpl::EndSignInFlow() {
@@ -1213,10 +1221,7 @@ void AutofillDialogControllerImpl::OnCancel() {
   if (callback_.is_null())
     return;
 
-  GetMetricLogger().LogDialogUiDuration(
-      base::Time::Now() - dialog_shown_timestamp_,
-      dialog_type_,
-      AutofillMetrics::DIALOG_CANCELED);
+  LogOnCancelMetrics();
 
   callback_.Run(NULL, std::string());
   callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
@@ -1328,6 +1333,8 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
   const DialogSection section = SectionForSuggestionsMenuModel(model);
   EditCancelledForSection(section);
+
+  LogSuggestionItemSelectedMetric(model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1557,13 +1564,16 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
                               const std::string&)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
+      initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
+      dialog_type_(dialog_type),
       form_structure_(form_structure, std::string()),
       invoked_from_same_origin_(true),
       source_url_(source_url),
       ssl_status_(form_structure.ssl_status),
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          account_chooser_model_(this, profile_->GetPrefs())),
+          account_chooser_model_(this, profile_->GetPrefs(), metric_logger_,
+                                 dialog_type)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           wallet_client_(profile_->GetRequestContext(), this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
@@ -1573,8 +1583,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
       input_showing_popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
-      dialog_type_(dialog_type),
       is_first_run_(!profile_->GetPrefs()->HasPrefPath(
           ::prefs::kAutofillDialogPayWithoutWallet)),
       is_submitting_(false),
@@ -1801,6 +1809,14 @@ void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
     SuggestionsMenuModelForSection(DialogSection section) {
+  const AutofillDialogControllerImpl* const_this =
+      static_cast<const AutofillDialogControllerImpl*>(this);
+  return const_cast<SuggestionsMenuModel*>(
+      const_this->SuggestionsMenuModelForSection(section));
+}
+
+const SuggestionsMenuModel* AutofillDialogControllerImpl::
+    SuggestionsMenuModelForSection(DialogSection section) const {
   switch (section) {
     case SECTION_EMAIL:
       return &suggested_email_;
@@ -1882,10 +1898,38 @@ void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
 }
 
 bool AutofillDialogControllerImpl::IsManuallyEditingSection(
-    DialogSection section) {
-  return section_editing_state_[section] ||
+    DialogSection section) const {
+  std::map<DialogSection, bool>::const_iterator it =
+      section_editing_state_.find(section);
+  return (it != section_editing_state_.end() && it->second) ||
          SuggestionsMenuModelForSection(section)->
              GetItemKeyForCheckedItem().empty();
+}
+
+bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
+  for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
+    if (IsManuallyEditingSection(static_cast<DialogSection>(section)))
+      return true;
+  }
+  return false;
+}
+
+bool AutofillDialogControllerImpl::AllSectionsAreValid() const {
+  for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
+    if (!SectionIsValid(static_cast<DialogSection>(section)))
+      return false;
+  }
+  return true;
+}
+
+bool AutofillDialogControllerImpl::SectionIsValid(
+    DialogSection section) const {
+  if (!IsManuallyEditingSection(section))
+    return true;
+
+  DetailOutputMap detail_outputs;
+  view_->GetUserInput(SECTION_EMAIL, &detail_outputs);
+  return InputsAreValid(detail_outputs, VALIDATE_EDIT).empty();
 }
 
 bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
@@ -1902,7 +1946,9 @@ bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
   // It's possible that the user checked [X] Save details locally before
   // switching payment methods, so only ask the view whether to save details
   // locally if that checkbox is showing (currently if not paying with wallet).
-  return !IsPayingWithWallet() && view_->SaveDetailsLocally();
+  // Also, if the user isn't editing any sections, there's no data to save
+  // locally.
+  return ShouldOfferToSaveInChrome() && view_->SaveDetailsLocally();
 }
 
 void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
@@ -2038,10 +2084,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
       wallet_items_->google_transaction_id());
   callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
 
-  GetMetricLogger().LogDialogUiDuration(
-      base::Time::Now() - dialog_shown_timestamp_,
-      dialog_type_,
-      AutofillMetrics::DIALOG_ACCEPTED);
+  LogOnFinishSubmitMetrics();
 
   switch (dialog_type_) {
     case DIALOG_TYPE_AUTOCHECKOUT:
@@ -2058,6 +2101,65 @@ void AutofillDialogControllerImpl::FinishSubmit() {
       Hide();
       break;
   }
+}
+
+void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
+  GetMetricLogger().LogDialogUiDuration(
+      base::Time::Now() - dialog_shown_timestamp_,
+      dialog_type_,
+      AutofillMetrics::DIALOG_ACCEPTED);
+
+  GetMetricLogger().LogDialogUiEvent(
+      dialog_type_, AutofillMetrics::DIALOG_UI_ACCEPTED);
+
+  AutofillMetrics::DialogDismissalState dismissal_state;
+  if (!IsManuallyEditingAnySection())
+    dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_EXISTING_DATA;
+  else if (IsPayingWithWallet())
+    dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_WALLET;
+  else if (ShouldSaveDetailsLocally())
+    dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL;
+  else
+    dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_NO_SAVE;
+
+  GetMetricLogger().LogDialogDismissalState(dialog_type_, dismissal_state);
+}
+
+void AutofillDialogControllerImpl::LogOnCancelMetrics() {
+  GetMetricLogger().LogDialogUiEvent(
+      dialog_type_, AutofillMetrics::DIALOG_UI_CANCELED);
+
+  AutofillMetrics::DialogDismissalState dismissal_state;
+  if (!IsManuallyEditingAnySection())
+    dismissal_state = AutofillMetrics::DIALOG_CANCELED_NO_EDITS;
+  else if (AllSectionsAreValid())
+    dismissal_state = AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS;
+  else
+    dismissal_state = AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS;
+
+  GetMetricLogger().LogDialogDismissalState(dialog_type_, dismissal_state);
+
+  GetMetricLogger().LogDialogUiDuration(
+      base::Time::Now() - dialog_shown_timestamp_,
+      dialog_type_,
+      AutofillMetrics::DIALOG_CANCELED);
+}
+
+void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
+    const SuggestionsMenuModel& model) {
+  DialogSection section = SectionForSuggestionsMenuModel(model);
+
+  AutofillMetrics::DialogUiEvent dialog_ui_event;
+  if (model.GetItemKeyForCheckedItem().empty()) {
+    // Selected to add a new item.
+    dialog_ui_event = DialogSectionToUiItemAddedEvent(section);
+  } else {
+    // Selected an existing item.
+    DCHECK(!section_editing_state_[section]);
+    dialog_ui_event = DialogSectionToUiSelectionChangedEvent(section);
+  }
+
+  GetMetricLogger().LogDialogUiEvent(dialog_type_, dialog_ui_event);
 }
 
 AutofillMetrics::DialogInitialUserStateMetric

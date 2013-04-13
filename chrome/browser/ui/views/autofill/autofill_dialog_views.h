@@ -399,10 +399,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // Updates the visual state of the given group as per the model.
   void UpdateDetailsGroupState(const DetailsGroup& group);
 
-  // Returns true if at least one of the details sections is in manual input
-  // mode.
-  bool AtLeastOneSectionIsEditing();
-
   // Gets a pointer to the DetailsGroup that's associated with the given section
   // of the dialog.
   DetailsGroup* GroupForSection(DialogSection section);

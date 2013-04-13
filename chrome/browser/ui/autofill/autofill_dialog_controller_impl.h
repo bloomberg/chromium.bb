@@ -124,10 +124,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void EditCancelledForSection(DialogSection section) OVERRIDE;
   virtual gfx::Image IconForField(AutofillFieldType type,
                                   const string16& user_input) const OVERRIDE;
-  virtual bool InputIsValid(AutofillFieldType type, const string16& value)
-      OVERRIDE;
+  virtual bool InputIsValid(AutofillFieldType type,
+                            const string16& value) const OVERRIDE;
   virtual std::vector<AutofillFieldType> InputsAreValid(
-      const DetailOutputMap& inputs, ValidationType validation_type) OVERRIDE;
+      const DetailOutputMap& inputs,
+      ValidationType validation_type) const OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
@@ -311,6 +312,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
+  const SuggestionsMenuModel* SuggestionsMenuModelForSection(
+      DialogSection section) const;
   // And the reverse.
   DialogSection SectionForSuggestionsMenuModel(
       const SuggestionsMenuModel& model);
@@ -353,7 +356,18 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether the user has chosen to enter all new data in |section|. This
   // happens via choosing "Add a new X..." from a section's suggestion menu.
-  bool IsManuallyEditingSection(DialogSection section);
+  bool IsManuallyEditingSection(DialogSection section) const;
+
+  // Whether the user has chosen to enter all new data in at least one section.
+  bool IsManuallyEditingAnySection() const;
+
+  // Whether all of the input fields currently showing in the dialog have valid
+  // contents.
+  bool AllSectionsAreValid() const;
+
+  // Whether all of the input fields currently showing in the given |section| of
+  // the dialog have valid contents.
+  bool SectionIsValid(DialogSection section) const;
 
   // Whether the billing section should be used to fill in the shipping details.
   bool ShouldUseBillingForShipping();
@@ -381,6 +395,20 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // in order to fill |form_structure_| and pass data back to the invoking page.
   void FinishSubmit();
 
+  // Logs metrics when the dialog is submitted.
+  void LogOnFinishSubmitMetrics();
+
+  // Logs metrics when the dialog is canceled.
+  void LogOnCancelMetrics();
+
+  // Logs metrics when the edit ui is shown for the given |section|.
+  void LogEditUiShownMetric(DialogSection section);
+
+  // Logs metrics when a suggestion item from the given |model| is selected.
+  void LogSuggestionItemSelectedMetric(const SuggestionsMenuModel& model);
+
+  // Returns the metric corresponding to the user's initial state when
+  // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
 
   // The |profile| for |contents_|.
@@ -388,6 +416,15 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // The WebContents where the Autofill action originated.
   content::WebContents* const contents_;
+
+  // For logging UMA metrics.
+  const AutofillMetrics metric_logger_;
+  base::Time dialog_shown_timestamp_;
+  base::Time autocheckout_started_timestamp_;
+  AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
+
+  // Whether this is an Autocheckout or a requestAutocomplete dialog.
+  const DialogType dialog_type_;
 
   FormStructure form_structure_;
 
@@ -477,15 +514,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
-
-  // For logging UMA metrics.
-  const AutofillMetrics metric_logger_;
-  base::Time dialog_shown_timestamp_;
-  base::Time autocheckout_started_timestamp_;
-  AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
-
-  // Whether this is an Autocheckout or a requestAutocomplete dialog.
-  const DialogType dialog_type_;
 
   // Whether this is the first time this profile has seen the Autofill dialog.
   bool is_first_run_;

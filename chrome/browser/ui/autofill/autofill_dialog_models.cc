@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,13 +106,17 @@ AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 
 AccountChooserModel::AccountChooserModel(
     AccountChooserModelDelegate* delegate,
-    PrefService* prefs)
+    PrefService* prefs,
+    const AutofillMetrics& metric_logger,
+    DialogType dialog_type)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       account_delegate_(delegate),
       checked_item_(
           prefs->GetBoolean(::prefs::kAutofillDialogPayWithoutWallet) ?
           kAutofillItemId : kWalletItemId),
-      had_wallet_error_(false) {
+      had_wallet_error_(false),
+      metric_logger_(metric_logger),
+      dialog_type_(dialog_type) {
   AddCheckItem(kWalletItemId,
                l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_GOOGLE_WALLET));
   SetIcon(
@@ -144,6 +149,20 @@ bool AccountChooserModel::GetAcceleratorForCommandId(
 void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
   if (checked_item_ == command_id)
     return;
+
+  // Log metrics.
+  AutofillMetrics::DialogUiEvent chooser_event;
+  if (command_id == kAutofillItemId) {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_AUTOFILL;
+  } else if (checked_item_ == kAutofillItemId) {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_WALLET;
+  } else {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_WALLET_ACCOUNT;
+  }
+  metric_logger_.LogDialogUiEvent(dialog_type_, chooser_event);
 
   checked_item_ = command_id;
   account_delegate_->AccountChoiceChanged();

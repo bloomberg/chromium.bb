@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/string16.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
@@ -46,13 +47,19 @@ typedef base::Callback<bool(const DetailInput& input,
 // Sections of the dialog --- all fields that may be shown to the user fit under
 // one of these sections.
 enum DialogSection {
-  SECTION_EMAIL,
+  // Lower boundary value for looping over all sections.
+  SECTION_MIN,
+
+  SECTION_EMAIL = SECTION_MIN,
   // The Autofill-backed dialog uses separate CC and billing sections.
   SECTION_CC,
   SECTION_BILLING,
   // The wallet-backed dialog uses a combined CC and billing section.
   SECTION_CC_BILLING,
   SECTION_SHIPPING,
+
+  // Upper boundary value for looping over all sections.
+  SECTION_MAX = SECTION_SHIPPING
 };
 
 // Used by UpdateSection() to indicate what to do with data that the user has
@@ -139,6 +146,21 @@ struct SuggestionState {
 
 typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
+
+// Returns the AutofillMetrics::DIALOG_UI_*_EDIT_UI_SHOWN metric corresponding
+// to the |section|.
+AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
+    DialogSection section);
+
+// Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
+// to the |section|.
+AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
+    DialogSection section);
+
+// Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
+// to the |section|.
+AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
+    DialogSection section);
 
 }  // namespace autofill
 

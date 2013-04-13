@@ -6,12 +6,26 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
 
 namespace {
+
+class TestAccountChooserModel : public AccountChooserModel {
+ public:
+  TestAccountChooserModel(AccountChooserModelDelegate* delegate,
+                          PrefService* prefs,
+                          const AutofillMetrics& metric_logger)
+      : AccountChooserModel(delegate, prefs, metric_logger,
+                            DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {}
+  virtual ~TestAccountChooserModel() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAccountChooserModel);
+};
 
 class MockAccountChooserModelDelegate : public AccountChooserModelDelegate {
  public:
@@ -23,17 +37,20 @@ class MockAccountChooserModelDelegate : public AccountChooserModelDelegate {
 
 class AccountChooserModelTest : public testing::Test {
  public:
-  AccountChooserModelTest() : model_(&delegate_, profile_.GetPrefs()) {}
+  AccountChooserModelTest()
+      : model_(&delegate_, profile_.GetPrefs(), metric_logger_) {}
   virtual ~AccountChooserModelTest() {}
 
   Profile* profile() { return &profile_; }
   MockAccountChooserModelDelegate* delegate() { return &delegate_; }
-  AccountChooserModel* model() { return &model_; }
+  TestAccountChooserModel* model() { return &model_; }
+  const AutofillMetrics& metric_logger() { return metric_logger_; }
 
  private:
   TestingProfile profile_;
   MockAccountChooserModelDelegate delegate_;
-  AccountChooserModel model_;
+  TestAccountChooserModel model_;
+  AutofillMetrics metric_logger_;
 };
 
 }  // namespace
@@ -43,14 +60,16 @@ TEST_F(AccountChooserModelTest, ObeysPref) {
   {
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, false);
-    AccountChooserModel model(delegate(), profile()->GetPrefs());
+    TestAccountChooserModel model(delegate(), profile()->GetPrefs(),
+                                  metric_logger());
     EXPECT_TRUE(model.WalletIsSelected());
   }
   // When the user chose to "Pay without wallet", use Autofill.
   {
     profile()->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet, true);
-    AccountChooserModel model(delegate(), profile()->GetPrefs());
+    TestAccountChooserModel model(delegate(), profile()->GetPrefs(),
+                                  metric_logger());
     EXPECT_FALSE(model.WalletIsSelected());
   }
 }

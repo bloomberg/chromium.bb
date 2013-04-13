@@ -92,12 +92,13 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   virtual bool InputIsValid(AutofillFieldType type,
-                            const string16& value) OVERRIDE {
+                            const string16& value) const OVERRIDE {
     return true;
   }
 
   virtual std::vector<AutofillFieldType> InputsAreValid(
-      const DetailOutputMap& inputs, ValidationType validation_type) OVERRIDE {
+      const DetailOutputMap& inputs,
+      ValidationType validation_type) const OVERRIDE {
     return std::vector<AutofillFieldType>();
   }
 

@@ -353,6 +353,13 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
+void AutofillMetrics::LogDialogDismissalState(
+    autofill::DialogType dialog_type,
+    DialogDismissalState state) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".DismissalState";
+  LogUMAHistogramEnumeration(name, state, NUM_DIALOG_DISMISSAL_STATES);
+}
+
 void AutofillMetrics::LogDialogInitialUserState(
     autofill::DialogType dialog_type,
     DialogInitialUserStateMetric user_type) const {
@@ -393,6 +400,12 @@ void AutofillMetrics::LogDialogUiDuration(
 
   LogUMAHistogramLongTimes(prefix + ".UiDuration", duration);
   LogUMAHistogramLongTimes(prefix + ".UiDuration." + suffix, duration);
+}
+
+void AutofillMetrics::LogDialogUiEvent(autofill::DialogType dialog_type,
+                                       DialogUiEvent event) const {
+  std::string name = GetPrefixForDialogType(dialog_type) + ".UiEvents";
+  LogUMAHistogramEnumeration(name, event, NUM_DIALOG_UI_EVENTS);
 }
 
 void AutofillMetrics::LogWalletErrorMetric(autofill::DialogType dialog_type,
