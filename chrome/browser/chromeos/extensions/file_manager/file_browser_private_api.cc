@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -31,8 +31,8 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"

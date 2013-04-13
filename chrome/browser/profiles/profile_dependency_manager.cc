@@ -112,7 +112,7 @@
 #include "chrome/browser/chromeos/extensions/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #if defined(FILE_MANAGER_EXTENSION)
-#include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #endif
 #endif
 
