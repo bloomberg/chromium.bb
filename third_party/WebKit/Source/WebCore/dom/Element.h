@@ -277,6 +277,7 @@ public:
     void setIdAttribute(const AtomicString&);
 
     const AtomicString& getNameAttribute() const;
+    const AtomicString& getClassAttribute() const;
 
     // Call this to get the value of the id attribute for style resolution purposes.
     // The value will already be lowercased if the document is in compatibility mode,
@@ -840,6 +841,17 @@ inline const AtomicString& Element::getIdAttribute() const
 inline const AtomicString& Element::getNameAttribute() const
 {
     return hasName() ? fastGetAttribute(HTMLNames::nameAttr) : nullAtom;
+}
+
+inline const AtomicString& Element::getClassAttribute() const
+{
+    if (!hasClass())
+        return nullAtom;
+#if ENABLE(SVG)
+    if (isSVGElement())
+        return getAttribute(HTMLNames::classAttr);
+#endif
+    return fastGetAttribute(HTMLNames::classAttr);
 }
 
 inline void Element::setIdAttribute(const AtomicString& value)

@@ -616,6 +616,9 @@ sub GetterExpression
         } elsif ($contentAttributeName eq "WebCore::HTMLNames::nameAttr") {
             $functionName = "getNameAttribute";
             $contentAttributeName = "";
+        } elsif ($contentAttributeName eq "WebCore::HTMLNames::classAttr") {
+            $functionName = "getClassAttribute";
+            $contentAttributeName = "";
         } elsif ($generator->CanUseFastAttribute($attribute)) {
             $functionName = "fastGetAttribute";
         } else {
