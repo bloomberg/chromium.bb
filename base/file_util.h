@@ -269,12 +269,6 @@ BASE_EXPORT bool CreateDirectory(const base::FilePath& full_path);
 // Returns the file size. Returns true on success.
 BASE_EXPORT bool GetFileSize(const base::FilePath& file_path, int64* file_size);
 
-// Returns true if the given path's base name is ".".
-BASE_EXPORT bool IsDot(const base::FilePath& path);
-
-// Returns true if the given path's base name is "..".
-BASE_EXPORT bool IsDotDot(const base::FilePath& path);
-
 // Sets |real_path| to |path| with symbolic links and junctions expanded.
 // On windows, make sure the path starts with a lettered drive.
 // |path| must reference a file.  Function will fail if |path| points to

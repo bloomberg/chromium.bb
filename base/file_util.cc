@@ -186,14 +186,6 @@ bool GetFileSize(const FilePath& file_path, int64* file_size) {
   return true;
 }
 
-bool IsDot(const FilePath& path) {
-  return FILE_PATH_LITERAL(".") == path.BaseName().value();
-}
-
-bool IsDotDot(const FilePath& path) {
-  return FILE_PATH_LITERAL("..") == path.BaseName().value();
-}
-
 bool TouchFile(const FilePath& path,
                const base::Time& last_accessed,
                const base::Time& last_modified) {
@@ -291,7 +283,9 @@ int64 ComputeDirectorySize(const FilePath& root_path) {
 
 bool FileEnumerator::ShouldSkip(const FilePath& path) {
   FilePath::StringType basename = path.BaseName().value();
-  return IsDot(path) || (IsDotDot(path) && !(INCLUDE_DOT_DOT & file_type_));
+  return basename == FILE_PATH_LITERAL(".") ||
+         (basename == FILE_PATH_LITERAL("..") &&
+          !(INCLUDE_DOT_DOT & file_type_));
 }
 
 }  // namespace

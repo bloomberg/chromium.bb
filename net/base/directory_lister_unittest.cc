@@ -64,8 +64,9 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
             !file_util::FileEnumerator::IsDirectory(file_list_[current])) {
           continue;
         }
-        EXPECT_FALSE(file_util::IsDotDot(
-            file_util::FileEnumerator::GetFilename(file_list_[current])));
+        EXPECT_NE(FILE_PATH_LITERAL(".."),
+            file_util::FileEnumerator::GetFilename(
+                file_list_[current]).BaseName().value());
         EXPECT_EQ(file_util::FileEnumerator::IsDirectory(file_list_[previous]),
                   file_util::FileEnumerator::IsDirectory(file_list_[current]));
         EXPECT_TRUE(file_util::LocaleAwareCompareFilenames(

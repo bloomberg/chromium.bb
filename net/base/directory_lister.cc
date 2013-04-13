@@ -21,15 +21,19 @@ namespace {
 
 const int kFilesPerEvent = 8;
 
+bool IsDotDot(const base::FilePath& path) {
+  return FILE_PATH_LITERAL("..") == path.BaseName().value();
+}
+
 // Comparator for sorting lister results. This uses the locale aware filename
 // comparison function on the filenames for sorting in the user's locale.
 // Static.
 bool CompareAlphaDirsFirst(const DirectoryLister::DirectoryListerData& a,
                            const DirectoryLister::DirectoryListerData& b) {
   // Parent directory before all else.
-  if (file_util::IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
     return true;
-  if (file_util::IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
     return false;
 
   // Directories before regular files.
@@ -46,9 +50,9 @@ bool CompareAlphaDirsFirst(const DirectoryLister::DirectoryListerData& a,
 bool CompareDate(const DirectoryLister::DirectoryListerData& a,
                  const DirectoryLister::DirectoryListerData& b) {
   // Parent directory before all else.
-  if (file_util::IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(a.info)))
     return true;
-  if (file_util::IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
+  if (IsDotDot(file_util::FileEnumerator::GetFilename(b.info)))
     return false;
 
   // Directories before regular files.
