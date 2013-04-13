@@ -1,0 +1,44 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x167
+  RenderBlock {HTML} at (0,0) size 800x167
+    RenderBody {BODY} at (8,8) size 784x151
+      RenderBlock {INPUT} at (4,4) size 12x13
+      RenderText {#text} at (20,1) size 4x18
+        text run at (20,1) width 4: " "
+      RenderBlock {INPUT} at (28,4) size 12x13
+      RenderText {#text} at (44,1) size 4x18
+        text run at (44,1) width 4: " "
+      RenderBR {BR} at (48,1) size 0x18
+      RenderBlock {INPUT} at (4,25) size 12x13
+      RenderText {#text} at (20,22) size 4x18
+        text run at (20,22) width 4: " "
+      RenderBlock {INPUT} at (28,25) size 12x13
+      RenderText {#text} at (44,22) size 4x18
+        text run at (44,22) width 4: " "
+      RenderBR {BR} at (48,22) size 0x18
+      RenderBlock {INPUT} at (4,46) size 12x13
+      RenderText {#text} at (20,43) size 4x18
+        text run at (20,43) width 4: " "
+      RenderBR {BR} at (24,43) size 0x18
+      RenderBlock {INPUT} at (4,67) size 12x13
+      RenderText {#text} at (20,64) size 4x18
+        text run at (20,64) width 4: " "
+      RenderBR {BR} at (24,64) size 0x18
+      RenderBlock {INPUT} at (4,88) size 8x13
+      RenderText {#text} at (16,85) size 4x18
+        text run at (16,85) width 4: " "
+      RenderBlock {INPUT} at (24,88) size 16x13
+      RenderText {#text} at (44,85) size 4x18
+        text run at (44,85) width 4: " "
+      RenderBlock {INPUT} at (52,88) size 24x13
+      RenderText {#text} at (80,85) size 4x18
+        text run at (80,85) width 4: " "
+      RenderBR {BR} at (84,85) size 0x18
+      RenderBlock {INPUT} at (6,120) size 21x22
+      RenderText {#text} at (33,125) size 4x18
+        text run at (33,125) width 4: " "
+      RenderBlock {INPUT} at (45,113) size 28x30
+      RenderText {#text} at (81,125) size 4x18
+        text run at (81,125) width 4: " "
+      RenderBR {BR} at (85,125) size 0x18
