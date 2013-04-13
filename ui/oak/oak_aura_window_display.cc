@@ -40,7 +40,7 @@ ROW_COUNT
 };
 
 // aura::Window-specific pretty printing.
-string16 PropertyWithWindowType(int type) {
+base::string16 PropertyWithWindowType(int type) {
   std::string property = "Type: ";
   switch (type) {
     case aura::client::WINDOW_TYPE_UNKNOWN:
@@ -97,11 +97,11 @@ int OakAuraWindowDisplay::RowCount() {
   return ROW_COUNT;
 }
 
-string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
+base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
   if (!window_)
     return EmptyString16();
 
-  string16 text;
+  base::string16 text;
   switch (row) {
     case ROW_ID:
       return PropertyWithInteger("Id: ", window_->id());

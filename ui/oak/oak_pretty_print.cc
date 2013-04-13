@@ -14,28 +14,28 @@
 namespace oak {
 namespace internal {
 
-string16 PropertyWithInteger(const std::string& prefix, int value) {
+base::string16 PropertyWithInteger(const std::string& prefix, int value) {
   return ASCIIToUTF16(prefix) + base::IntToString16(value);
 }
 
-string16 PropertyWithVoidStar(const std::string& prefix, void* ptr) {
+base::string16 PropertyWithVoidStar(const std::string& prefix, void* ptr) {
   unsigned int cast_ptr =
       static_cast<unsigned int>(reinterpret_cast<intptr_t>(ptr));
   return ASCIIToUTF16(
       prefix + "0x" + (ptr ? base::StringPrintf("%x", cast_ptr) : "0"));
 }
 
-string16 PropertyWithBool(const std::string& prefix, bool value) {
+base::string16 PropertyWithBool(const std::string& prefix, bool value) {
   return ASCIIToUTF16(prefix + (value ? "true" : "false"));
 }
 
-string16 PropertyWithBounds(const std::string& prefix,
-                            const gfx::Rect& bounds) {
+base::string16 PropertyWithBounds(const std::string& prefix,
+                                  const gfx::Rect& bounds) {
   return ASCIIToUTF16(prefix + bounds.ToString());
 }
 
-string16 PropertyWithInsets(const std::string& prefix,
-                            const gfx::Insets& insets) {
+base::string16 PropertyWithInsets(const std::string& prefix,
+                                  const gfx::Insets& insets) {
   return ASCIIToUTF16(prefix + insets.ToString());
 }
 

@@ -22,7 +22,7 @@ class OakAuraWindowDisplay : public OakDetailsModel {
 
   // Overridden from ui::TableModel:
   virtual int RowCount() OVERRIDE;
-  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual base::string16 GetText(int row, int column_id) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
   ui::TableModelObserver* observer_;

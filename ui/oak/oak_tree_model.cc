@@ -12,7 +12,7 @@
 namespace oak {
 namespace internal {
 
-string16 GetNodeTitleForWindow(aura::Window* window) {
+base::string16 GetNodeTitleForWindow(aura::Window* window) {
   std::string window_name = window->name();
   if (window_name.empty())
     window_name.append("Unnamed window");

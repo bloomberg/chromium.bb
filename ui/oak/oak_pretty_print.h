@@ -17,12 +17,13 @@ namespace internal {
 
 // Functions that return a string consisting of a prefix and the supplied value
 // converted to a pretty string representation.
-string16 PropertyWithInteger(const std::string& prefix, int value);
-string16 PropertyWithVoidStar(const std::string& prefix, void* ptr);
-string16 PropertyWithBool(const std::string& prefix, bool value);
-string16 PropertyWithBounds(const std::string& prefix, const gfx::Rect& bounds);
-string16 PropertyWithInsets(const std::string& prefix,
-                            const gfx::Insets& insets);
+base::string16 PropertyWithInteger(const std::string& prefix, int value);
+base::string16 PropertyWithVoidStar(const std::string& prefix, void* ptr);
+base::string16 PropertyWithBool(const std::string& prefix, bool value);
+base::string16 PropertyWithBounds(const std::string& prefix,
+                                  const gfx::Rect& bounds);
+base::string16 PropertyWithInsets(const std::string& prefix,
+                                  const gfx::Insets& insets);
 
 }  // namespace internal
 }  // namespace oak
