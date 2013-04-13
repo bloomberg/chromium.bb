@@ -10,6 +10,7 @@ import os
 import sys
 
 from util import build_utils
+from util import md5_check
 
 
 def DoJavac(options):
@@ -31,17 +32,16 @@ def DoJavac(options):
   # crash... Sorted order works, so use that.
   # See https://code.google.com/p/guava-libraries/issues/detail?id=950
   java_files.sort()
-
   classpath = build_utils.ParseGypList(options.classpath)
 
-  # Delete the classes directory. This ensures that all .class files in the
-  # output are actually from the input .java files. For example, if a .java
-  # file is deleted or an inner class is removed, the classes directory should
-  # not contain the corresponding old .class file after running this action.
-  build_utils.DeleteDirectory(output_dir)
-  build_utils.MakeDirectory(output_dir)
+  jar_inputs = []
+  for path in classpath:
+    if os.path.exists(path + '.TOC'):
+      jar_inputs.append(path + '.TOC')
+    else:
+      jar_inputs.append(path)
 
-  cmd = [
+  javac_cmd = [
       'javac',
       '-g',
       '-source', '1.5',
@@ -50,10 +50,23 @@ def DoJavac(options):
       '-d', output_dir,
       '-Xlint:unchecked',
       '-Xlint:deprecation',
-      ]
+      ] + java_files
 
-  suppress_output = not options.chromium_code
-  build_utils.CheckCallDie(cmd + java_files, suppress_output=suppress_output)
+  md5_stamp = '%s/javac.md5' % options.output_dir
+  md5_checker = md5_check.Md5Checker(
+      stamp=md5_stamp,
+      inputs=java_files + jar_inputs,
+      command=javac_cmd)
+  if md5_checker.IsStale():
+    # Delete the classes directory. This ensures that all .class files in the
+    # output are actually from the input .java files. For example, if a .java
+    # file is deleted or an inner class is removed, the classes directory should
+    # not contain the corresponding old .class file after running this action.
+    build_utils.DeleteDirectory(output_dir)
+    build_utils.MakeDirectory(output_dir)
+    suppress_output = not options.chromium_code
+    build_utils.CheckCallDie(javac_cmd, suppress_output=suppress_output)
+    md5_checker.Write()
 
 def main(argv):
   parser = optparse.OptionParser()

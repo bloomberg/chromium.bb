@@ -231,6 +231,27 @@
       ]
     },
     {
+      'action_name': 'jar_toc_<(_target_name)',
+      'message': 'Creating <(_target_name) jar.TOC',
+      'inputs': [
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/md5_check.py',
+        '<(DEPTH)/build/android/gyp/jar_toc.py',
+        '<(jar_path)',
+      ],
+      'outputs': [
+        '<(jar_path).TOC',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/gyp/jar_toc.py',
+        '--jar-path=<(jar_path)',
+        '--toc-path=<(jar_path).TOC',
+
+        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+      ]
+    },
+    {
       'action_name': 'dex_<(_target_name)',
       'message': 'Dexing <(_target_name) jar',
       'inputs': [
