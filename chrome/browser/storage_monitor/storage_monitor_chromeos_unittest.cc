@@ -57,6 +57,35 @@ std::string GetDCIMDeviceId(const std::string& unique_id) {
       chrome::kFSUniqueIdPrefix + unique_id);
 }
 
+// A test version of StorageMonitorCros that exposes protected methods to tests.
+class TestStorageMonitorCros : public StorageMonitorCros {
+ public:
+  TestStorageMonitorCros() {}
+
+  virtual ~TestStorageMonitorCros() {}
+
+  virtual void OnMountEvent(
+      disks::DiskMountManager::MountEvent event,
+      MountError error_code,
+      const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE {
+    StorageMonitorCros::OnMountEvent(event, error_code, mount_info);
+  }
+
+  virtual bool GetStorageInfoForPath(
+      const base::FilePath& path,
+      chrome::StorageInfo* device_info) const OVERRIDE {
+    return StorageMonitorCros::GetStorageInfoForPath(path, device_info);
+  }
+  virtual void EjectDevice(
+      const std::string& device_id,
+      base::Callback<void(EjectStatus)> callback) OVERRIDE {
+    StorageMonitorCros::EjectDevice(device_id, callback);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorCros);
+};
+
 // Wrapper class to test StorageMonitorCros.
 class StorageMonitorCrosTest : public testing::Test {
  public:
@@ -100,7 +129,7 @@ class StorageMonitorCrosTest : public testing::Test {
 
   MessageLoop ui_loop_;
 
-  scoped_refptr<StorageMonitorCros> monitor_;
+  scoped_ptr<TestStorageMonitorCros> monitor_;
 
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
@@ -141,13 +170,13 @@ void StorageMonitorCrosTest::SetUp() {
   mock_storage_observer_.reset(new chrome::MockRemovableStorageObserver);
 
   // Initialize the test subject.
-  monitor_ = new StorageMonitorCros();
+  monitor_.reset(new TestStorageMonitorCros());
   monitor_->AddObserver(mock_storage_observer_.get());
 }
 
 void StorageMonitorCrosTest::TearDown() {
   monitor_->RemoveObserver(mock_storage_observer_.get());
-  monitor_ = NULL;
+  monitor_.reset();
 
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();

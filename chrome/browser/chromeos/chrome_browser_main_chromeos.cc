@@ -569,7 +569,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
                                   &tracker_);
 #endif
 
-  storage_monitor_ = new StorageMonitorCros();
+  storage_monitor_.reset(new StorageMonitorCros());
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
