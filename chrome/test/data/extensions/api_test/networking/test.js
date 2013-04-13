@@ -159,6 +159,19 @@ var availableTests = [
                   ], result);
       }));
   },
+  function requestNetworkScan() {
+    var network = "stub_wifi2";
+    var expected = ["stub_ethernet",
+                    "stub_wifi1",
+                    "stub_wifi2",
+                    "stub_cellular1",
+                    "stub_vpn1"];
+    var done = chrome.test.callbackAdded();
+    var listener = new privateHelpers.listListener(network, expected, done);
+    chrome.networkingPrivate.onNetworkListChanged.addListener(
+      listener.listenForChanges);
+    chrome.networkingPrivate.requestNetworkScan();
+  },
   function getProperties() {
     chrome.networkingPrivate.getProperties(
       "stub_wifi2",

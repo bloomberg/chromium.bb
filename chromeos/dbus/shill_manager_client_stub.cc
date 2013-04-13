@@ -108,11 +108,16 @@ void ShillManagerClientStub::RequestScan(const std::string& type,
                                      base::FundamentalValue(true));
   }
   const int kScanDurationSeconds = 3;
+  int scan_duration_seconds = kScanDurationSeconds;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableStubInteractive)) {
+    scan_duration_seconds = 0;
+  }
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillManagerClientStub::ScanCompleted,
                  weak_ptr_factory_.GetWeakPtr(), device_path, callback),
-      base::TimeDelta::FromSeconds(kScanDurationSeconds));
+      base::TimeDelta::FromSeconds(scan_duration_seconds));
 }
 
 void ShillManagerClientStub::EnableTechnology(
@@ -433,6 +438,12 @@ void ShillManagerClientStub::PassStubGeoNetworks(
 void ShillManagerClientStub::CallNotifyObserversPropertyChanged(
     const std::string& property,
     int delay_ms) {
+  // Don't actually delay unless we're interactive.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableStubInteractive)) {
+    delay_ms = 0;
+  }
+
   // Avoid unnecessary delayed task if we have no observers (e.g. during
   // initial setup).
   if (observer_list_.size() == 0)
@@ -527,6 +538,9 @@ void ShillManagerClientStub::ScanCompleted(const std::string& device_path,
                           flimflam::kScanningProperty,
                           base::FundamentalValue(false));
   }
+  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty,
+                                     0);
   if (!callback.is_null())
     MessageLoop::current()->PostTask(FROM_HERE, callback);
 }

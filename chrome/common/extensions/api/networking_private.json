@@ -133,6 +133,11 @@
         ]
       },
       {
+        "name": "requestNetworkScan",
+        "description": "Requests that the networking subsystem scan for new networks and update the list returned by getVisibleNetworks.  This is only a request: the network subsystem can choose to ignore it.  If the list is updated, then the onNetworkListChanged event will be fired.",
+        "parameters": []
+      },
+      {
         "name": "startConnect",
         "description": "Starts a connection to the network with networkGuid.",
         "parameters": [

@@ -176,6 +176,18 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateRequestNetworkScanFunction
+
+NetworkingPrivateRequestNetworkScanFunction::
+~NetworkingPrivateRequestNetworkScanFunction() {
+}
+
+bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
+  NetworkStateHandler::Get()->RequestScan();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateStartConnectFunction
 
 NetworkingPrivateStartConnectFunction::

@@ -92,6 +92,25 @@ class NetworkingPrivateGetVisibleNetworksFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetVisibleNetworksFunction);
 };
 
+// Implements the chrome.networkingPrivate.requestNetworkScan method.
+class NetworkingPrivateRequestNetworkScanFunction
+    : public SyncExtensionFunction {
+ public:
+  NetworkingPrivateRequestNetworkScanFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.requestNetworkScan",
+                             NETWORKINGPRIVATE_REQUESTNETWORKSCAN);
+
+ protected:
+  virtual ~NetworkingPrivateRequestNetworkScanFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);
+};
+
+
 // Implements the chrome.networkingPrivate.startConnect method.
 class NetworkingPrivateStartConnectFunction : public AsyncExtensionFunction {
  public:

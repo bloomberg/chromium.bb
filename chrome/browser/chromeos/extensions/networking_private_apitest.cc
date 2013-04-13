@@ -127,6 +127,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
+  EXPECT_TRUE(RunNetworkingSubtest("requestNetworkScan")) << message_;
+}
+
 // Properties are filtered and translated through
 // ShillToONCTranslator::TranslateWiFiWithState
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
