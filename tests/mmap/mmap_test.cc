@@ -269,21 +269,18 @@ bool test_mprotect() {
                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   assert(addr != MAP_FAILED);
   printf("mmap done\n");
-  /*
-   * Change the protection to make the page unreadable. TODO(phosek): use
-   * the mprotect() wrapper function once mprotect() is added to the IRT.
-   */
-  int rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_NONE);
+  /* Change the protection to make the page unreadable. */
+  int rc = mprotect(addr, map_size, PROT_NONE);
   assert(rc == 0);
   assert_addr_is_unreadable(addr);
   assert_addr_is_unreadable(addr + 0x1000);
   assert_addr_is_unreadable(addr + 0x10000);
   /* Change the protection to make the page accessible again. */
-  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_READ | PROT_WRITE);
+  rc = mprotect(addr, map_size, PROT_READ | PROT_WRITE);
   assert(rc == 0);
   addr[0] = '5';
   /* Change the protection to make the page read-only. */
-  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_READ);
+  rc = mprotect(addr, map_size, PROT_READ);
   assert(rc == 0);
   assert_addr_is_unwritable(addr, '9');
   assert('5' == addr[0]);
@@ -315,12 +312,9 @@ bool test_mprotect_unmapped_memory() {
   int rc = munmap(addr, map_size);
   assert(rc == 0);
   printf("munmap done\n");
-  /*
-   * Change the protection to make the page unreadable. TODO(phosek): use
-   * the mprotect() wrapper function once mprotect() is added to the IRT.
-   */
-  rc = NACL_SYSCALL(mprotect)(addr, map_size, PROT_NONE);
-  if (-EACCES == rc) {
+  /* Change the protection to make the page unreadable. */
+  rc = mprotect(addr, map_size, PROT_NONE);
+  if (-1 == rc && EACCES == errno) {
     printf("mprotect good (failed as expected)\n");
     return true;
   }
