@@ -450,7 +450,14 @@ const int BookmarkBarView::kMaxButtonWidth = 150;
 const int BookmarkBarView::kNewtabHorizontalPadding = 8;
 const int BookmarkBarView::kNewtabVerticalPadding = 12;
 
-// Returns the image to use for starred folders.
+static const gfx::ImageSkia& GetDefaultFavicon() {
+  if (!kDefaultFavicon) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    kDefaultFavicon = rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  }
+  return *kDefaultFavicon;
+}
+
 static const gfx::ImageSkia& GetFolderIcon() {
   if (!kFolderIcon) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1258,11 +1265,6 @@ void BookmarkBarView::Init() {
   // UpdateColors(), which will set the appropriate colors for all the objects
   // added in this function.
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  if (!kDefaultFavicon)
-    kDefaultFavicon = rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-
   // Child views are traversed in the order they are added. Make sure the order
   // they are added matches the visual order.
   overflow_button_ = CreateOverflowButton();
@@ -1414,7 +1416,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     if (!favicon.IsEmpty())
       button->SetIcon(*favicon.ToImageSkia());
     else
-      button->SetIcon(*kDefaultFavicon);
+      button->SetIcon(GetDefaultFavicon());
   }
   button->set_max_width(kMaxButtonWidth);
 }
