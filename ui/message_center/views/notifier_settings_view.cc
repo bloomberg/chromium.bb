@@ -343,6 +343,10 @@ bool NotifierSettingsView::OnKeyPressed(const ui::KeyEvent& event) {
   return scroller_->OnKeyPressed(event);
 }
 
+bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  return scroller_->OnMouseWheel(event);
+}
+
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   std::set<NotifierButton*>::iterator iter = buttons_.find(

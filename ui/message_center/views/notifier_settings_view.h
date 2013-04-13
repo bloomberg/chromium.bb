@@ -63,6 +63,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
