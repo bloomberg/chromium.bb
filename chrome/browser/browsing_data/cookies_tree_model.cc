@@ -219,7 +219,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitIndexedDB(
-    const BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info) {
+    const content::IndexedDBInfo* indexed_db_info) {
   Init(TYPE_INDEXED_DB);
   this->indexed_db_info = indexed_db_info;
   this->origin = indexed_db_info->origin;
@@ -406,7 +406,7 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
 // CookieTreeIndexedDBNode, public:
 
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
-    std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>::iterator
+    std::list<content::IndexedDBInfo>::iterator
         indexed_db_info)
     : CookieTreeNode(UTF8ToUTF16(
           indexed_db_info->origin.spec())),

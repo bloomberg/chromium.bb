@@ -8,14 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-
-class GURL;
-
-namespace base {
-class Time;
-}
+#include "content/public/browser/indexed_db_info.h"
 
 namespace content {
 
@@ -25,6 +21,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   // Methods used in response to QuotaManager requests.
   virtual std::vector<GURL> GetAllOrigins() = 0;
+  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() = 0;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) = 0;
   virtual base::Time GetOriginLastModified(const GURL& origin_url) = 0;
 

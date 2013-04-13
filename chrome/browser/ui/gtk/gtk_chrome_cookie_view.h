@@ -169,7 +169,7 @@ void gtk_chrome_cookie_view_display_app_cache(
 // Switches the display to showing the passed in IndexedDB data.
 void gtk_chrome_cookie_view_display_indexed_db(
     GtkChromeCookieView* widget,
-    const BrowsingDataIndexedDBHelper::IndexedDBInfo& info);
+    const content::IndexedDBInfo& info);
 
 // Switches the display to an individual storage item.
 void gtk_chrome_cookie_view_display_local_storage_item(

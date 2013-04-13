@@ -40,7 +40,7 @@ typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     LocalStorageInfoList;
 typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     SessionStorageInfoList;
-typedef std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>
+typedef std::list<content::IndexedDBInfo>
     IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;

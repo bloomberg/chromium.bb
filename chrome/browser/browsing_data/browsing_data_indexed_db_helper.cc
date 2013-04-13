@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -20,6 +22,7 @@
 
 using content::BrowserThread;
 using content::IndexedDBContext;
+using content::IndexedDBInfo;
 using webkit_database::DatabaseUtil;
 
 namespace {
@@ -103,17 +106,14 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDB(
 
 void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  std::vector<GURL> origins = indexed_db_context_->GetAllOrigins();
-  for (std::vector<GURL>::const_iterator iter = origins.begin();
+  std::vector<IndexedDBInfo> origins = indexed_db_context_->GetAllOriginsInfo();
+  for (std::vector<IndexedDBInfo>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
-    const GURL& origin = *iter;
-    if (!BrowsingDataHelper::HasWebScheme(origin))
+    const IndexedDBInfo& origin = *iter;
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
 
-    indexed_db_info_.push_back(IndexedDBInfo(
-        origin,
-        indexed_db_context_->GetOriginDiskUsage(origin),
-        indexed_db_context_->GetOriginLastModified(origin)));
+    indexed_db_info_.push_back(origin);
   }
 
   BrowserThread::PostTask(
@@ -137,16 +137,6 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBInWebKitThread(
 
 }  // namespace
 
-BrowsingDataIndexedDBHelper::IndexedDBInfo::IndexedDBInfo(
-    const GURL& origin,
-    int64 size,
-    base::Time last_modified)
-    : origin(origin),
-      size(size),
-      last_modified(last_modified) {
-}
-
-BrowsingDataIndexedDBHelper::IndexedDBInfo::~IndexedDBInfo() {}
 
 // static
 BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
@@ -239,12 +229,10 @@ void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
   indexed_db_info_.clear();
   for (std::set<PendingIndexedDBInfo>::const_iterator
-       info = pending_indexed_db_info_.begin();
-       info != pending_indexed_db_info_.end(); ++info) {
-    indexed_db_info_.push_back(IndexedDBInfo(
-        info->origin,
-        0,
-        base::Time()));
+       pending_info = pending_indexed_db_info_.begin();
+       pending_info != pending_indexed_db_info_.end(); ++pending_info) {
+    IndexedDBInfo info(pending_info->origin, 0, base::Time());
+    indexed_db_info_.push_back(info);
   }
 
  BrowserThread::PostTask(

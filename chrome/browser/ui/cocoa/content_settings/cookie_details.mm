@@ -240,7 +240,7 @@
 }
 
 - (id)initWithIndexedDBInfo:
-    (const BrowsingDataIndexedDBHelper::IndexedDBInfo*)indexedDBInfo {
+    (const content::IndexedDBInfo*)indexedDBInfo {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeTreeIndexedDB;
     canEditExpiration_ = NO;

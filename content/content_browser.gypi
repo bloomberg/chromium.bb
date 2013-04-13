@@ -95,6 +95,8 @@
     'public/browser/histogram_fetcher.h',
     'public/browser/host_zoom_map.h',
     'public/browser/indexed_db_context.h',
+    'public/browser/indexed_db_info.cc',
+    'public/browser/indexed_db_info.h',
     'public/browser/interstitial_page.h',
     'public/browser/invalidate_type.h',
     'public/browser/javascript_dialog_manager.cc',

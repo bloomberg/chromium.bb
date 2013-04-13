@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -120,6 +121,20 @@ std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
     origins.push_back(*iter);
   }
   return origins;
+}
+
+std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
+  std::vector<GURL> origins = GetAllOrigins();
+  std::vector<IndexedDBInfo> result;
+  for (std::vector<GURL>::const_iterator iter = origins.begin();
+       iter != origins.end(); ++iter) {
+    const GURL& origin = *iter;
+
+    result.push_back(IndexedDBInfo(origin,
+                                   GetOriginDiskUsage(origin),
+                                   GetOriginLastModified(origin)));
+  }
+  return result;
 }
 
 int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {

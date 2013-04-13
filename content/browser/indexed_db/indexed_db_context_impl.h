@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -59,6 +60,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // IndexedDBContext implementation:
   virtual std::vector<GURL> GetAllOrigins() OVERRIDE;
+  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() OVERRIDE;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
   virtual base::Time GetOriginLastModified(const GURL& origin_url) OVERRIDE;
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;

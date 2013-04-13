@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-typedef BrowsingDataHelperCallback<BrowsingDataIndexedDBHelper::IndexedDBInfo>
+typedef BrowsingDataHelperCallback<content::IndexedDBInfo>
     TestCompletionCallback;
 
 typedef InProcessBrowserTest BrowsingDataIndexedDBHelperTest;
@@ -39,11 +39,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
+  std::list<content::IndexedDBInfo> result =
       callback.result();
 
   ASSERT_EQ(2U, result.size());
-  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>::iterator info =
+  std::list<content::IndexedDBInfo>::iterator info =
       result.begin();
   EXPECT_EQ(origin1, info->origin);
   info++;
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
+  std::list<content::IndexedDBInfo> result =
       callback.result();
 
   ASSERT_EQ(1U, result.size());

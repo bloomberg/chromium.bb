@@ -197,7 +197,7 @@ enum CocoaCookieDetailsType {
 
 // Used for IndexedDB details in the cookie tree.
 - (id)initWithIndexedDBInfo:
-    (const BrowsingDataIndexedDBHelper::IndexedDBInfo*)indexedDB;
+    (const content::IndexedDBInfo*)indexedDB;
 
 // A factory method to create a configured instance given a node from
 // the cookie tree in |treeNode|.

@@ -6,6 +6,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
@@ -590,7 +591,7 @@ void gtk_chrome_cookie_view_display_app_cache(
 // Switches the display to showing the passed in IndexedDB data.
 void gtk_chrome_cookie_view_display_indexed_db(
     GtkChromeCookieView* self,
-    const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
+    const content::IndexedDBInfo& indexed_db_info) {
   UpdateVisibleDetailedInfo(self, self->indexed_db_details_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_origin_entry_),

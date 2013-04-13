@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -180,7 +181,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyType, "indexed_db");
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
-      const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info =
+      const content::IndexedDBInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
 
       dict->SetString(kKeyOrigin, indexed_db_info.origin.spec());

@@ -138,9 +138,9 @@ TEST_F(CookiesDetailsTest, CreateForTreeIndexedDB) {
   GURL origin("http://moose.org/");
   int64 size = 1234;
   base::Time last_modified = base::Time::Now();
-  BrowsingDataIndexedDBHelper::IndexedDBInfo info(origin,
-                                                  size,
-                                                  last_modified);
+  content::IndexedDBInfo info(origin,
+                              size,
+                              last_modified);
 
   details.reset([[CocoaCookieDetails alloc] initWithIndexedDBInfo:&info]);
 
