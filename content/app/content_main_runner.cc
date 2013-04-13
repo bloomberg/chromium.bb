@@ -81,6 +81,9 @@
 #if !defined(OS_MACOSX)
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #endif
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#include "content/zygote/zygote_main.h"
+#endif
 
 #endif  // OS_POSIX
 
@@ -100,10 +103,6 @@ extern int PpapiBrokerMain(const MainFunctionParams&);
 extern int RendererMain(const content::MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-extern int ZygoteMain(const MainFunctionParams&,
-                      ZygoteForkDelegate* forkdelegate);
-#endif
 }  // namespace content
 
 namespace {
