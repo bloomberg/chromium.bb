@@ -1215,8 +1215,8 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
       return model()->CanPasteAndGo(GetClipboardText());
     case IDS_SELECT_ALL:
       return !!CanSelectAll();
-    case IDS_EDIT_SEARCH_ENGINES:
-      return command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES);
+    case IDC_EDIT_SEARCH_ENGINES:
+      return command_updater()->IsCommandEnabled(command_id);
     default:
       NOTREACHED();
       return false;
@@ -1244,10 +1244,18 @@ string16 OmniboxViewWin::GetLabelForCommandId(int command_id) const {
 
 void OmniboxViewWin::ExecuteCommand(int command_id, int event_flags) {
   ScopedFreeze freeze(this, GetTextObjectModel());
+  // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
   if (command_id == IDS_PASTE_AND_GO) {
-    // This case is separate from the switch() below since we don't want to wrap
-    // it in OnBefore/AfterPossibleChange() calls.
     model()->PasteAndGo(GetClipboardText());
+    return;
+  } else if (command_id == IDC_EDIT_SEARCH_ENGINES) {
+    command_updater()->ExecuteCommand(command_id);
+    return;
+  } else if (command_id == IDC_COPY) {
+    Copy();
+    return;
+  } else if (command_id == IDC_COPY_URL) {
+    CopyURL();
     return;
   }
 
@@ -1261,24 +1269,12 @@ void OmniboxViewWin::ExecuteCommand(int command_id, int event_flags) {
       Cut();
       break;
 
-    case IDC_COPY:
-      Copy();
-      break;
-
-    case IDC_COPY_URL:
-      CopyURL();
-      break;
-
     case IDC_PASTE:
       Paste();
       break;
 
     case IDS_SELECT_ALL:
       SelectAll(false);
-      break;
-
-    case IDS_EDIT_SEARCH_ENGINES:
-      command_updater()->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
       break;
 
     default:
@@ -2819,7 +2815,7 @@ void OmniboxViewWin::BuildContextMenu() {
     context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDS_SELECT_ALL, IDS_SELECT_ALL);
     context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_contents_->AddItemWithStringId(IDS_EDIT_SEARCH_ENGINES,
+    context_menu_contents_->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
                                                 IDS_EDIT_SEARCH_ENGINES);
   }
 }

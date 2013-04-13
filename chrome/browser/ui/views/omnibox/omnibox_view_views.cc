@@ -794,18 +794,21 @@ bool OmniboxViewViews::HandlesCommand(int command_id) const {
 
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
+    // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
+    case IDS_PASTE_AND_GO:
+      model()->PasteAndGo(GetClipboardText());
+      break;
+    case IDC_EDIT_SEARCH_ENGINES:
+      command_updater()->ExecuteCommand(command_id);
+      break;
+    case IDC_COPY_URL:
+      CopyURL();
+      break;
+
     case IDS_APP_PASTE:
       OnBeforePossibleChange();
       OnPaste();
       OnAfterPossibleChange();
-      break;
-    case IDS_PASTE_AND_GO:
-      // This method call is not wrapped by OnBeforePossibleChange() and
-      // OnAfterPossibleChange() to avoid opening the omnibox popup.
-      model()->PasteAndGo(GetClipboardText());
-      break;
-    case IDC_COPY_URL:
-      CopyURL();
       break;
     default:
       OnBeforePossibleChange();

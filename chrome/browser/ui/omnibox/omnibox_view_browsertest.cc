@@ -1912,3 +1912,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyTextToClipboard) {
   EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 }
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_EDIT_SEARCH_ENGINES));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  const std::string target_url =
+      std::string(chrome::kChromeUISettingsURL) + chrome::kSearchEnginesSubPage;
+  EXPECT_EQ(ASCIIToUTF16(target_url), omnibox_view->GetText());
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+}
