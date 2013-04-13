@@ -43,6 +43,7 @@ CC_EXPORT extern const char kDisablePinchZoomScrollbars[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 
 // Switches for both the renderer and ui compositors.
+CC_EXPORT extern const char kUIDisablePartialSwap[];
 CC_EXPORT extern const char kEnablePerTilePainting[];
 CC_EXPORT extern const char kUIEnablePerTilePainting[];
 

@@ -87,6 +87,8 @@ const char kDisablePinchZoomScrollbars[]    = "disable-pinch-zoom-scrollbars";
 const char kCompositeToMailbox[] = "composite-to-mailbox";
 
 const char kEnablePartialSwap[] = "enable-partial-swap";
+// Disable partial swap which is needed for some OpenGL drivers / emulators.
+const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 
 const char kEnablePerTilePainting[] = "enable-per-tile-painting";
 const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";
