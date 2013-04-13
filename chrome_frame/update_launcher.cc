@@ -8,6 +8,7 @@
 #include <Shellapi.h>
 
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_comptr.h"
 #include "google_update/google_update_idl.h"
 
 namespace {
@@ -57,12 +58,10 @@ DWORD LaunchUpdateCommand(const std::wstring& command) {
 
   base::win::ScopedCOMInitializer com_initializer;
   if (com_initializer.succeeded()) {
-    IProcessLauncher* ipl = NULL;
+    base::win::ScopedComPtr<IProcessLauncher> ipl;
     HANDLE process = NULL;
 
-    HRESULT hr = ::CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
-                                    CLSCTX_ALL, __uuidof(IProcessLauncher),
-                                    reinterpret_cast<void**>(&ipl));
+    HRESULT hr = ipl.CreateInstance(__uuidof(ProcessLauncherClass));
 
     if (SUCCEEDED(hr)) {
       ULONG_PTR phandle = NULL;
@@ -78,8 +77,6 @@ DWORD LaunchUpdateCommand(const std::wstring& command) {
 
     if (process)
       ::CloseHandle(process);
-    if (ipl)
-      ipl->Release();
   }
 
   return exit_code;

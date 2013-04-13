@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <atlbase.h>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
@@ -89,7 +90,7 @@ class AccessibleChecker {
   void CheckAccessibleValue(IAccessible* accessible);
   void CheckAccessibleState(IAccessible* accessible);
   void CheckAccessibleChildren(IAccessible* accessible);
-  string16 RoleVariantToString(VARIANT* role_variant);
+  string16 RoleVariantToString(const base::win::ScopedVariant& role_variant);
 
  private:
   typedef vector<AccessibleChecker*> AccessibleCheckerVector;
@@ -98,7 +99,7 @@ class AccessibleChecker {
   wstring name_;
 
   // Expected accessible role. Checked against IAccessible::get_accRole.
-  CComVariant role_;
+  base::win::ScopedVariant role_;
 
   // Expected IAccessible2 role. Checked against IAccessible2::role.
   int32 ia2_role_;
@@ -114,31 +115,28 @@ class AccessibleChecker {
   AccessibleCheckerVector children_;
 };
 
-VARIANT CreateI4Variant(LONG value) {
-  VARIANT variant = {0};
-
-  V_VT(&variant) = VT_I4;
-  V_I4(&variant) = value;
-
-  return variant;
-}
-
-IAccessible* GetAccessibleFromResultVariant(IAccessible* parent, VARIANT *var) {
+base::win::ScopedComPtr<IAccessible> GetAccessibleFromResultVariant(
+    IAccessible* parent,
+    VARIANT *var) {
+  base::win::ScopedComPtr<IAccessible> ptr;
   switch (V_VT(var)) {
-    case VT_DISPATCH:
-      return CComQIPtr<IAccessible>(V_DISPATCH(var)).Detach();
+    case VT_DISPATCH: {
+      IDispatch* dispatch = V_DISPATCH(var);
+      if (dispatch)
+        ptr.QueryFrom(dispatch);
       break;
+    }
 
     case VT_I4: {
-      CComPtr<IDispatch> dispatch;
-      HRESULT hr = parent->get_accChild(CreateI4Variant(V_I4(var)), &dispatch);
+      base::win::ScopedComPtr<IDispatch> dispatch;
+      HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
       EXPECT_TRUE(SUCCEEDED(hr));
-      return CComQIPtr<IAccessible>(dispatch).Detach();
+      if (dispatch.get())
+        dispatch.QueryInterface(ptr.Receive());
       break;
     }
   }
-
-  return NULL;
+  return ptr;
 }
 
 HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
@@ -162,20 +160,22 @@ void RecursiveFindNodeInAccessibilityTree(
     const wstring& expected_name,
     int32 depth,
     bool* found) {
-  CComBSTR name_bstr;
-  node->get_accName(CreateI4Variant(CHILDID_SELF), &name_bstr);
-  wstring name(name_bstr.m_str, SysStringLen(name_bstr));
-  VARIANT role = {0};
-  node->get_accRole(CreateI4Variant(CHILDID_SELF), &role);
+  base::win::ScopedBstr name_bstr;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  node->get_accName(childid_self, name_bstr.Receive());
+  wstring name(name_bstr, name_bstr.Length());
+  base::win::ScopedVariant role;
+  node->get_accRole(childid_self, role.Receive());
+  ASSERT_EQ(VT_I4, role.type());
 
   // Print the accessibility tree as we go, because if this test fails
   // on the bots, this is really helpful in figuring out why.
   for (int i = 0; i < depth; i++) {
     printf("  ");
   }
-  printf("role=%d name=%s\n", role.lVal, WideToUTF8(name).c_str());
+  printf("role=%d name=%s\n", V_I4(&role), WideToUTF8(name).c_str());
 
-  if (expected_role == role.lVal && expected_name == name) {
+  if (expected_role == V_I4(&role) && expected_name == name) {
     *found = true;
     return;
   }
@@ -296,7 +296,7 @@ void AccessibleChecker::AppendExpectedChild(
 void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
   SCOPED_TRACE(base::StringPrintf(
       "while checking %s",
-      UTF16ToUTF8(RoleVariantToString(&role_)).c_str()));
+      UTF16ToUTF8(RoleVariantToString(role_)).c_str()));
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
   CheckIA2Role(accessible);
@@ -314,9 +314,9 @@ void AccessibleChecker::SetExpectedState(LONG expected_state) {
 }
 
 void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
-  CComBSTR name;
-  HRESULT hr =
-      accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
+  base::win::ScopedBstr name;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = accessible->get_accName(childid_self, name.Receive());
 
   if (name_.empty()) {
     // If the object doesn't have name S_FALSE should be returned.
@@ -325,20 +325,18 @@ void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
     // Test that the correct string was returned.
     EXPECT_EQ(S_OK, hr);
     EXPECT_STREQ(name_.c_str(),
-                 wstring(name.m_str, SysStringLen(name)).c_str());
+                 wstring(name, name.Length()).c_str());
   }
 }
 
 void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
-  VARIANT var_role = {0};
-  HRESULT hr =
-      accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
+  base::win::ScopedVariant var_role;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = accessible->get_accRole(childid_self, var_role.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(role_, var_role);
-  if (role_ != var_role) {
-    LOG(ERROR) << "Expected role: " << RoleVariantToString(&role_);
-    LOG(ERROR) << "Got role: " << RoleVariantToString(&var_role);
-  }
+  EXPECT_EQ(0, role_.Compare(var_role))
+      << "Expected role: " << RoleVariantToString(role_)
+      << "\nGot role: " << RoleVariantToString(var_role);
 }
 
 void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
@@ -361,34 +359,34 @@ void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
   // Don't check the value if if's a DOCUMENT role, because the value
   // is supposed to be the url (and we don't keep track of that in the
   // test expectations).
-  VARIANT var_role = {0};
-  HRESULT hr =
-      accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
+  base::win::ScopedVariant var_role;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = accessible->get_accRole(childid_self, var_role.Receive());
   ASSERT_EQ(S_OK, hr);
-  if (V_VT(&var_role) == VT_I4 &&
+  if (var_role.type() == VT_I4 &&
       V_I4(&var_role) == ROLE_SYSTEM_DOCUMENT) {
     return;
   }
 
   // Get the value.
-  CComBSTR value;
-  hr = accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
+  base::win::ScopedBstr value;
+  hr = accessible->get_accValue(childid_self, value.Receive());
   EXPECT_EQ(S_OK, hr);
 
   // Test that the correct string was returned.
   EXPECT_STREQ(value_.c_str(),
-               wstring(value.m_str, SysStringLen(value)).c_str());
+               wstring(value, value.Length()).c_str());
 }
 
 void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   if (state_ < 0)
     return;
 
-  VARIANT var_state = {0};
-  HRESULT hr =
-      accessible->get_accState(CreateI4Variant(CHILDID_SELF), &var_state);
+  base::win::ScopedVariant var_state;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = accessible->get_accState(childid_self, var_state.Receive());
   EXPECT_EQ(S_OK, hr);
-  ASSERT_EQ(VT_I4, V_VT(&var_state));
+  ASSERT_EQ(VT_I4, var_state.type());
   EXPECT_EQ(state_, V_I4(&var_state));
   if (state_ != V_I4(&var_state)) {
     LOG(ERROR) << "Expected state: " <<
@@ -415,18 +413,19 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   for (AccessibleCheckerVector::iterator child_checker = children_.begin();
        child_checker != children_.end();
        ++child_checker, ++child) {
-    base::win::ScopedComPtr<IAccessible> child_accessible;
-    child_accessible.Attach(GetAccessibleFromResultVariant(parent, child));
+    base::win::ScopedComPtr<IAccessible> child_accessible(
+        GetAccessibleFromResultVariant(parent, child));
     ASSERT_TRUE(child_accessible.get());
     (*child_checker)->CheckAccessible(child_accessible);
   }
 }
 
-string16 AccessibleChecker::RoleVariantToString(VARIANT* role_variant) {
-  if (V_VT(role_variant) == VT_I4)
-    return IAccessibleRoleToString(V_I4(role_variant));
-  else if (V_VT(role_variant) == VT_BSTR)
-    return string16(V_BSTR(role_variant), SysStringLen(V_BSTR(role_variant)));
+string16 AccessibleChecker::RoleVariantToString(
+    const base::win::ScopedVariant& role_variant) {
+  if (role_variant.type() == VT_I4)
+    return IAccessibleRoleToString(V_I4(&role_variant));
+  else if (role_variant.type() == VT_BSTR)
+    return string16(V_BSTR(&role_variant), SysStringLen(V_BSTR(&role_variant)));
   return string16();
 }
 
@@ -477,8 +476,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Verify that the IAccessible reference still points to a valid object and
   // that calls to its methods fail since the tree is no longer valid after
   // the page navagation.
-  CComBSTR name;
-  hr = document_accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
+  base::win::ScopedBstr name;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  hr = document_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(E_FAIL, hr);
 }
 
@@ -657,8 +657,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   base::win::ScopedComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
-  HRESULT hr = document_accessible->accSelect(
-    SELFLAG_TAKEFOCUS, CreateI4Variant(CHILDID_SELF));
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = document_accessible->accSelect(SELFLAG_TAKEFOCUS, childid_self);
   ASSERT_EQ(S_OK, hr);
   loop_runner->Run();
 
@@ -823,40 +823,44 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       reinterpret_cast<void**>(document_isimpledomnode.Receive()));
   ASSERT_EQ(S_OK, hr);
 
-  BSTR node_name;
+  base::win::ScopedBstr node_name;
   short name_space_id;  // NOLINT
-  BSTR node_value;
+  base::win::ScopedBstr node_value;
   unsigned int num_children;
   unsigned int unique_id;
   unsigned short node_type;  // NOLINT
   hr = document_isimpledomnode->get_nodeInfo(
-      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
-      &node_type);
+      node_name.Receive(), &name_space_id, node_value.Receive(), &num_children,
+      &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(NODETYPE_DOCUMENT, node_type);
   EXPECT_EQ(1, num_children);
+  node_name.Reset();
+  node_value.Reset();
 
   base::win::ScopedComPtr<ISimpleDOMNode> body_isimpledomnode;
   hr = document_isimpledomnode->get_firstChild(
       body_isimpledomnode.Receive());
   ASSERT_EQ(S_OK, hr);
   hr = body_isimpledomnode->get_nodeInfo(
-      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
-      &node_type);
+      node_name.Receive(), &name_space_id, node_value.Receive(), &num_children,
+      &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"body", wstring(node_name, SysStringLen(node_name)).c_str());
+  EXPECT_STREQ(L"body", wstring(node_name, node_name.Length()).c_str());
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(1, num_children);
+  node_name.Reset();
+  node_value.Reset();
 
   base::win::ScopedComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
   hr = body_isimpledomnode->get_firstChild(
       checkbox_isimpledomnode.Receive());
   ASSERT_EQ(S_OK, hr);
   hr = checkbox_isimpledomnode->get_nodeInfo(
-      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
-      &node_type);
+      node_name.Receive(), &name_space_id, node_value.Receive(), &num_children,
+      &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"input", wstring(node_name, SysStringLen(node_name)).c_str());
+  EXPECT_STREQ(L"input", wstring(node_name, node_name.Length()).c_str());
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(0, num_children);
 }

@@ -5,8 +5,10 @@
 #include <oleacc.h>
 
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -23,12 +25,6 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-VARIANT id_self = {VT_I4, CHILDID_SELF};
-
-}  // namespace
 
 class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
  public:
@@ -103,18 +99,16 @@ void BrowserViewsAccessibilityTest::TestAccessibilityInfo(IAccessible* acc_obj,
                                                           std::wstring name,
                                                           int32 role) {
   // Verify MSAA Name property.
-  BSTR acc_name;
-  ASSERT_EQ(S_OK, acc_obj->get_accName(id_self, &acc_name));
-  EXPECT_STREQ(name.c_str(), acc_name);
-  ::SysFreeString(acc_name);
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedBstr acc_name;
+  ASSERT_EQ(S_OK, acc_obj->get_accName(childid_self, acc_name.Receive()));
+  EXPECT_EQ(name, string16(acc_name));
 
   // Verify MSAA Role property.
-  VARIANT acc_role;
-  ::VariantInit(&acc_role);
-  ASSERT_EQ(S_OK, acc_obj->get_accRole(id_self, &acc_role));
-  EXPECT_EQ(VT_I4, acc_role.vt);
-  EXPECT_EQ(role, acc_role.lVal);
-  ::VariantClear(&acc_role);
+  base::win::ScopedVariant acc_role;
+  ASSERT_EQ(S_OK, acc_obj->get_accRole(childid_self, acc_role.Receive()));
+  EXPECT_EQ(VT_I4, acc_role.type());
+  EXPECT_EQ(role, V_I4(&acc_role));
 }
 
 // Retrieve accessibility object for main window and verify accessibility info.

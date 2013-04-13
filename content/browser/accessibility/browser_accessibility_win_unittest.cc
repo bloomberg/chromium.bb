@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -40,15 +42,6 @@ class CountedBrowserAccessibilityFactory
 };
 
 }  // anonymous namespace
-
-VARIANT CreateI4Variant(LONG value) {
-  VARIANT variant = {0};
-
-  V_VT(&variant) = VT_I4;
-  V_I4(&variant) = value;
-
-  return variant;
-}
 
 class BrowserAccessibilityTest : public testing::Test {
  public:
@@ -118,13 +111,11 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
       manager->GetRoot()->ToBrowserAccessibilityWin();
   IDispatch* root_iaccessible = NULL;
   IDispatch* child1_iaccessible = NULL;
-  VARIANT var_child;
-  var_child.vt = VT_I4;
-  var_child.lVal = CHILDID_SELF;
-  HRESULT hr = root_accessible->get_accChild(var_child, &root_iaccessible);
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  HRESULT hr = root_accessible->get_accChild(childid_self, &root_iaccessible);
   ASSERT_EQ(S_OK, hr);
-  var_child.lVal = 1;
-  hr = root_accessible->get_accChild(var_child, &child1_iaccessible);
+  base::win::ScopedVariant one(1);
+  hr = root_accessible->get_accChild(one, &child1_iaccessible);
   ASSERT_EQ(S_OK, hr);
 
   // Now delete the manager, and only one of the three nodes in the tree
@@ -170,19 +161,22 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
+  base::win::ScopedVariant one(1);
   base::win::ScopedComPtr<IDispatch> text_dispatch;
   HRESULT hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
-      CreateI4Variant(1), text_dispatch.Receive());
+      one, text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
   base::win::ScopedComPtr<IAccessible> text_accessible;
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  CComBSTR name;
-  hr = text_accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedBstr name;
+  hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"old text", name.m_str);
+  EXPECT_EQ(L"old text", string16(name));
+  name.Reset();
 
   text_dispatch.Release();
   text_accessible.Release();
@@ -200,16 +194,16 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
   hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
-      CreateI4Variant(1),
+      one,
       text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  hr = text_accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
+  hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"new text", name.m_str);
+  EXPECT_EQ(L"new text", string16(name));
 
   text_dispatch.Release();
   text_accessible.Release();
@@ -305,64 +299,65 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   BrowserAccessibilityWin* text1_obj =
       root_obj->GetChild(0)->ToBrowserAccessibilityWin();
 
-  BSTR text;
+  base::win::ScopedBstr text;
   long start;
   long end;
 
   long text1_len;
   ASSERT_EQ(S_OK, text1_obj->get_nCharacters(&text1_len));
 
-  ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, &text));
-  ASSERT_EQ(text, text1.value);
-  SysFreeString(text);
+  ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, text.Receive()));
+  ASSERT_EQ(string16(text), text1.value);
+  text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, &text));
-  ASSERT_EQ(text, string16(L"One "));
-  SysFreeString(text);
+  ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, text.Receive()));
+  ASSERT_STREQ(text, L"One ");
+  text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, &text));
+      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
   ASSERT_EQ(start, 1);
   ASSERT_EQ(end, 2);
-  ASSERT_EQ(text, string16(L"n"));
-  SysFreeString(text);
+  ASSERT_STREQ(text, L"n");
+  text.Reset();
 
   ASSERT_EQ(S_FALSE, text1_obj->get_textAtOffset(
-      text1_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, &text));
+      text1_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
   ASSERT_EQ(start, text1_len);
   ASSERT_EQ(end, text1_len);
+  text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
   ASSERT_EQ(start, 0);
   ASSERT_EQ(end, 3);
-  ASSERT_EQ(text, string16(L"One"));
-  SysFreeString(text);
+  ASSERT_STREQ(text, L"One");
+  text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
   ASSERT_EQ(start, 4);
   ASSERT_EQ(end, 7);
-  ASSERT_EQ(text, string16(L"two"));
-  SysFreeString(text);
+  ASSERT_STREQ(text, L"two");
+  text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      text1_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+      text1_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
   ASSERT_EQ(start, 25);
   ASSERT_EQ(end, 29);
-  ASSERT_EQ(text, string16(L"six."));
-  SysFreeString(text);
+  ASSERT_STREQ(text, L"six.");
+  text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, &text));
+      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
   ASSERT_EQ(start, 0);
   ASSERT_EQ(end, 15);
-  ASSERT_EQ(text, string16(L"One two three.\n"));
-  SysFreeString(text);
+  ASSERT_STREQ(text, L"One two three.\n");
+  text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, &text));
-  ASSERT_EQ(text, string16(L"One two three.\nFour five six."));
-  SysFreeString(text);
+  ASSERT_EQ(S_OK,
+            text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  ASSERT_STREQ(text, L"One two three.\nFour five six.");
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -400,14 +395,13 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
-  BSTR text;
+  base::win::ScopedBstr text;
 
   long text_len;
   ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
 
-  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, &text));
-  EXPECT_EQ(text, text1.name + text2.name);
-  SysFreeString(text);
+  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
+  EXPECT_EQ(string16(text), text1.name + text2.name);
 
   long hyperlink_count;
   ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
@@ -490,15 +484,15 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
-  BSTR text;
+  base::win::ScopedBstr text;
 
   long text_len;
   ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
 
-  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, &text));
+  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
   const string16 embed = BrowserAccessibilityWin::kEmbeddedCharacter;
-  EXPECT_EQ(text, text1.name + embed + text2.name + embed);
-  SysFreeString(text);
+  EXPECT_EQ(string16(text), text1.name + embed + text2.name + embed);
+  text.Reset();
 
   long hyperlink_count;
   ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
@@ -513,18 +507,18 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(0, hyperlink.Receive()));
   EXPECT_EQ(S_OK,
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
-  EXPECT_EQ(S_OK, hypertext->get_text(0, 3, &text));
-  EXPECT_EQ(text, string16(L"red"));
-  SysFreeString(text);
+  EXPECT_EQ(S_OK, hypertext->get_text(0, 3, text.Receive()));
+  EXPECT_STREQ(text, L"red");
+  text.Reset();
   hyperlink.Release();
   hypertext.Release();
 
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(1, hyperlink.Receive()));
   EXPECT_EQ(S_OK,
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
-  EXPECT_EQ(S_OK, hypertext->get_text(0, 4, &text));
-  EXPECT_EQ(text, string16(L"blue"));
-  SysFreeString(text);
+  EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
+  EXPECT_STREQ(text, L"blue");
+  text.Reset();
   hyperlink.Release();
   hypertext.Release();
 

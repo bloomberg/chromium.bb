@@ -72,6 +72,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -824,20 +825,16 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
   base::win::ScopedCOMInitializer com_initializer;
 
   // Temporarily create a shortcut for test
-  IShellLink* shell = NULL;
-  ASSERT_TRUE(SUCCEEDED(CoCreateInstance(
-      CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink,
-      reinterpret_cast<LPVOID*>(&shell))));
-  IPersistFile* persist = NULL;
-  ASSERT_TRUE(SUCCEEDED(shell->QueryInterface(
-      IID_IPersistFile, reinterpret_cast<LPVOID*>(&persist))));
-  EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
-  EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
-  EXPECT_TRUE(SUCCEEDED(persist->Save(lnk_path.c_str(), TRUE)));
-  if (persist)
-    persist->Release();
-  if (shell)
-    shell->Release();
+  {
+    base::win::ScopedComPtr<IShellLink> shell;
+    ASSERT_TRUE(SUCCEEDED(shell.CreateInstance(CLSID_ShellLink, NULL,
+                                               CLSCTX_INPROC_SERVER)));
+    base::win::ScopedComPtr<IPersistFile> persist;
+    ASSERT_TRUE(SUCCEEDED(shell.QueryInterface(persist.Receive())));
+    EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
+    EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
+    EXPECT_TRUE(SUCCEEDED(persist->Save(lnk_path.c_str(), TRUE)));
+  }
 
   TestDelegate d;
   {

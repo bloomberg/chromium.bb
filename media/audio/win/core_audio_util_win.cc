@@ -133,11 +133,8 @@ bool LoadAudiosesDll() {
 
 bool CanCreateDeviceEnumerator() {
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator),
-                                NULL,
-                                CLSCTX_INPROC_SERVER,
-                                __uuidof(IMMDeviceEnumerator),
-                                device_enumerator.ReceiveVoid());
+  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
+                                                NULL, CLSCTX_INPROC_SERVER);
 
   // If we hit CO_E_NOTINITIALIZED, CoInitialize has not been called and it
   // must be called at least once for each thread that uses the COM library.
@@ -224,11 +221,8 @@ int CoreAudioUtil::NumberOfActiveDevices(EDataFlow data_flow) {
 ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
   DCHECK(IsSupported());
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator),
-                                NULL,
-                                CLSCTX_INPROC_SERVER,
-                                __uuidof(IMMDeviceEnumerator),
-                                device_enumerator.ReceiveVoid());
+  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
+                                                NULL, CLSCTX_INPROC_SERVER);
   CHECK(SUCCEEDED(hr));
   return device_enumerator;
 }
