@@ -42,8 +42,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Cursor position calculation is now based on the same code that
      calculates inpos and outpos. This probably solves a number of
      bugs.
-   - Fixed nocross opcode processing.
-   - Fix buffer over/under runns in lou_translateString.c:hyphenate.
+   - Fix nocross opcode processing.
+   - Fix several buffer over/under runs in lou_translateString.c:hyphenate.
    - Fix the '=' problem, i.e. fix inputPositions calculation for the
      case where the equals sign is used as the dots operand. Thanks
      to Bert Frees

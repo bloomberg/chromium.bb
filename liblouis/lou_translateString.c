@@ -36,6 +36,8 @@ Library
 #include "louis.h"
 #include "transcommon.ci"
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 static int translateString ();
 static int compbrlStart = 0;
 static int compbrlEnd = 0;
@@ -332,7 +334,7 @@ static int
 hyphenate (const widechar * word, int wordSize, char *hyphens)
 {
   widechar *prepWord;
-  int i, k;
+  int i, k, limit;
   int stateNum;
   widechar ch;
   HyphenationState *statesArray = (HyphenationState *)
@@ -356,7 +358,9 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
 
   /* now, run the finite state machine */
   stateNum = 0;
-  for (i = 0; i < wordSize+3; i++)
+
+  // we need to walk all of ".hello."
+  for (i = 0; i < wordSize+2; i++)
     {
       ch = prepWord[i];
       while (1)
@@ -387,10 +391,17 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
 	  hyphenPattern =
 	    (char *) &table->ruleArea[currentState->hyphenPattern];
 	  patternOffset = i + 1 - strlen (hyphenPattern);
-	  for (k = 0; hyphenPattern[k]; k++)
-	    if (hyphens[patternOffset + k] < hyphenPattern[k])
-	      hyphens[patternOffset + k] = hyphenPattern[k];
-	}
+
+          /* Need to ensure that we don't overrun hyphens,
+          * in some cases hyphenPattern is longer than the remaining letters,
+          * and if we write out all of it we would have overshot our buffer. */
+          limit = MIN(strlen(hyphenPattern), wordSize-patternOffset);
+          for (k = 0; k<limit; k++)
+            {
+              if (hyphens[patternOffset + k] < hyphenPattern[k])
+                hyphens[patternOffset + k] = hyphenPattern[k];
+            }
+        }
     nextLetter:;
     }
   hyphens[wordSize] = 0;
