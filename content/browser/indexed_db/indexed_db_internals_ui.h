@@ -5,7 +5,16 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INTERNALS_UI_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INTERNALS_UI_H_
 
+#include <vector>
+
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
+
+namespace base {
+  class ListValue;
+}
 
 namespace content {
 
@@ -16,6 +25,10 @@ class IndexedDBInternalsUI : public WebUIController {
   virtual ~IndexedDBInternalsUI();
 
  private:
+  void GetAllOrigins(const base::ListValue* args);
+  void GetAllOriginsOnWebkitThread(scoped_refptr<IndexedDBContext> context);
+  void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins);
+
   DISALLOW_COPY_AND_ASSIGN(IndexedDBInternalsUI);
 };
 

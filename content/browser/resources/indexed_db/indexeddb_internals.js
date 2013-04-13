@@ -6,11 +6,21 @@ cr.define('indexeddb', function() {
   'use strict';
 
   function initialize() {
+    chrome.send('getAllOrigins');
+  }
 
+  function onOriginsReady(origins) {
+    console.log('Origins: ', origins);
+
+    var template = jstGetTemplate('indexeddb-list-template');
+    var container = $('indexeddb-list');
+    container.appendChild(template);
+    jstProcess(new JsEvalContext(origins), template);
   }
 
   return {
-    initialize: initialize,
+      initialize: initialize,
+      onOriginsReady: onOriginsReady,
   };
 });
 

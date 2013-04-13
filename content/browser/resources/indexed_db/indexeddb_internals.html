@@ -1,21 +1,45 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
 <head>
   <meta charset="utf-8">
-  <title>IndexedDB Status</title>
+  <title>IndexedDB</title>
   <link rel="stylesheet" href="chrome://resources/css/tabs.css">
   <link rel="stylesheet" href="chrome://resources/css/widgets.css">
   <link rel="stylesheet" href="indexeddb_internals.css">
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/load_time_data.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
-  <script src="strings.js"></script>
-  <script src="indexeddb_internals.js"></script>
 </head>
-<body>
-  <h1>IndexedDB Status</h1>
-  <p id="welcome-message">Welcome.</p>
- <script src="chrome://resources/js/i18n_template2.js"></script>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+    <!-- templates -->
+    <div style="display:none">
+        <div id="indexeddb-list-template">
+            <div class="indexeddb-summary">
+                <span>IndexedDB instances</span>
+                <span jscontent="'(' + $this.length + ')'"></span>
+            </div>
+            <div class="indexeddb-item" jsselect="$this">
+                <a class="indexeddb-url" jscontent="url" jsvalues="href:url"
+                   target="_blank"></a>
+                <div class="indexeddb-size">
+                    <span>Size:</span>
+                    <span jscontent="size + ' bytes'"></span>
+                </div>
+                <div class="indexeddb-last-modified">
+                    <span>Last modified:</span>
+                    <span jscontent="new Date(last_modified)"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>IndexedDB</h1>
+    <div class="content">
+        <div id="indexeddb-list">
+    </div>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="indexeddb_internals.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
+    <script src="strings.js"></script>
+    <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>
 
