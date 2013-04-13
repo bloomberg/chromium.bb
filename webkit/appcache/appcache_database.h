@@ -210,6 +210,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, NamespaceRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, GroupRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, LazyOpen);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ExperimentalFlags);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OnlineWhiteListRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, DeletableResponseIds);

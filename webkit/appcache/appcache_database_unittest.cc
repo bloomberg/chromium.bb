@@ -86,6 +86,36 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   EXPECT_FALSE(file_util::PathExists(kOtherFile));
 }
 
+TEST(AppCacheDatabaseTest, ExperimentalFlags) {
+  const char kExperimentFlagsKey[] = "ExperimentFlags";
+  std::string kInjectedFlags("exp1,exp2");
+
+  // Real files on disk for this test.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
+  const base::FilePath kOtherFile =  temp_dir.path().AppendASCII("other_file");
+  EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_TRUE(file_util::PathExists(kOtherFile));
+
+  AppCacheDatabase db(kDbFile);
+  EXPECT_TRUE(db.LazyOpen(true));
+
+  // Inject a non empty flags value, and verify it got there.
+  EXPECT_TRUE(db.meta_table_->SetValue(kExperimentFlagsKey, kInjectedFlags));
+  std::string flags;
+  EXPECT_TRUE(db.meta_table_->GetValue(kExperimentFlagsKey, &flags));
+  EXPECT_EQ(kInjectedFlags, flags);
+  db.CloseConnection();
+
+  // If flags don't match the expected value, empty string by default,
+  // the database should be recreated and other files should be cleared out.
+  EXPECT_TRUE(db.LazyOpen(false));
+  EXPECT_TRUE(db.meta_table_->GetValue(kExperimentFlagsKey, &flags));
+  EXPECT_TRUE(flags.empty());
+  EXPECT_FALSE(file_util::PathExists(kOtherFile));
+}
+
 TEST(AppCacheDatabaseTest, EntryRecords) {
   const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);

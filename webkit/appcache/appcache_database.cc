@@ -21,6 +21,13 @@ namespace {
 const int kCurrentVersion = 5;
 const int kCompatibleVersion = 5;
 
+// A mechanism to run experiments that may affect in data being persisted
+// in different ways such that when the experiment is toggled on/off via
+// cmd line flags, the database gets reset. The active flags are stored at
+// the time of database creation and compared when reopening. If different
+// the database is reset.
+const char kExperimentFlagsKey[] = "ExperimentFlags";
+
 const char kGroupsTable[] = "Groups";
 const char kCachesTable[] = "Caches";
 const char kEntriesTable[] = "Entries";
@@ -157,6 +164,10 @@ bool CreateIndex(sql::Connection* db, const IndexInfo& info) {
   sql += info.table_name;
   sql += info.columns;
   return db->Execute(sql.c_str());
+}
+
+std::string GetActiveExperimentFlags() {
+  return std::string();
 }
 
 }  // anon namespace
@@ -1013,6 +1024,11 @@ bool AppCacheDatabase::EnsureDatabaseVersion() {
     return false;
   }
 
+  std::string stored_flags;
+  meta_table_->GetValue(kExperimentFlagsKey, &stored_flags);
+  if (stored_flags != GetActiveExperimentFlags())
+    return false;
+
   if (meta_table_->GetVersionNumber() < kCurrentVersion)
     return UpgradeSchema();
 
@@ -1036,6 +1052,11 @@ bool AppCacheDatabase::CreateSchema() {
 
   if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
+
+  if (!meta_table_->SetValue(kExperimentFlagsKey,
+                             GetActiveExperimentFlags())) {
+    return false;
+  }
 
   for (int i = 0; i < kTableCount; ++i) {
     if (!CreateTable(db_.get(), kTables[i]))
