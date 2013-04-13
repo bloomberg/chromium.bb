@@ -574,4 +574,22 @@ bool WebRuntimeFeatures::isDoNotTrackEnabled()
     return RuntimeEnabledFeatures::doNotTrackEnabled();
 }
 
+void WebRuntimeFeatures::enableWebPInAcceptHeader(bool enable)
+{
+#if USE(WEBP)
+    RuntimeEnabledFeatures::setWebPInAcceptHeaderEnabled(enable);
+#else
+    UNUSED_PARAM(enable);
+#endif
+}
+
+bool WebRuntimeFeatures::isWebPInAcceptHeaderEnabled()
+{
+#if USE(WEBP)
+    return RuntimeEnabledFeatures::webPInAcceptHeaderEnabled();
+#else
+    return false;
+#endif
+}
+
 } // namespace WebKit

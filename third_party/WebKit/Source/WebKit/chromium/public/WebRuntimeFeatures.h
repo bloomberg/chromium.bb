@@ -170,6 +170,10 @@ public:
     // instead of the embedder.
     WEBKIT_EXPORT static void enableDoNotTrack(bool);
     WEBKIT_EXPORT static bool isDoNotTrackEnabled();
+
+    WEBKIT_EXPORT static void enableWebPInAcceptHeader(bool);
+    WEBKIT_EXPORT static bool isWebPInAcceptHeaderEnabled();
+
 private:
     WebRuntimeFeatures();
 };

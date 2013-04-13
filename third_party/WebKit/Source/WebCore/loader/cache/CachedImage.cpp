@@ -47,6 +47,10 @@
 #include "SVGImage.h"
 #endif
 
+#if USE(WEBP)
+#include "RuntimeEnabledFeatures.h"
+#endif
+
 using std::max;
 
 namespace WebCore {
@@ -56,6 +60,7 @@ CachedImage::CachedImage(const ResourceRequest& resourceRequest)
     , m_image(0)
 {
     setStatus(Unknown);
+    setCustomAcceptHeader();
 }
 
 CachedImage::CachedImage(Image* image)
@@ -64,6 +69,7 @@ CachedImage::CachedImage(Image* image)
 {
     setStatus(Cached);
     setLoading(false);
+    setCustomAcceptHeader();
 }
 
 CachedImage::~CachedImage()
@@ -291,6 +297,14 @@ void CachedImage::clear()
     clearImage();
     m_pendingContainerSizeRequests.clear();
     setEncodedSize(0);
+}
+
+void CachedImage::setCustomAcceptHeader()
+{
+#if USE(WEBP)
+    if (RuntimeEnabledFeatures::webPInAcceptHeaderEnabled())
+        setAccept("image/webp,*/*;q=0.8");
+#endif
 }
 
 inline void CachedImage::createImage()

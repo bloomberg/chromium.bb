@@ -99,6 +99,7 @@ public:
 private:
     void clear();
 
+    void setCustomAcceptHeader();
     void createImage();
     void clearImage();
     // If not null, changeRect is the changed part of the image.

@@ -193,4 +193,8 @@ bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 
 bool RuntimeEnabledFeatures::isDoNotTrackEnabled = false;
 
+#if USE(WEBP)
+bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
+#endif
+
 } // namespace WebCore

@@ -248,6 +248,11 @@ public:
     static bool requestAutocompleteEnabled() { return isRequestAutocompleteEnabled; }
     static void setRequestAutocompleteEnabled(bool isEnabled) { isRequestAutocompleteEnabled = isEnabled; }
 
+#if USE(WEBP)
+    static void setWebPInAcceptHeaderEnabled(bool isEnabled) { isWebPInAcceptHeaderEnabled = isEnabled; }
+    static bool webPInAcceptHeaderEnabled() { return isWebPInAcceptHeaderEnabled; }
+#endif
+
 private:
     // Never instantiate.
     RuntimeEnabledFeatures() { }
@@ -332,6 +337,10 @@ private:
 #endif
 
     static bool isDoNotTrackEnabled;
+
+#if USE(WEBP)
+    static bool isWebPInAcceptHeaderEnabled;
+#endif
 
 };
 
