@@ -429,7 +429,7 @@ MaximizeBubbleController::Bubble::Bubble(
     StartFade(true);
 
   ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-      ash::UMA_MAXIMIZE_BUTTON_SHOW_BUBBLE);
+      ash::UMA_WINDOW_MAXIMIZE_BUTTON_SHOW_BUBBLE);
 
   mouse_watcher_.reset(new views::MouseWatcher(
       new BubbleMouseWatcherHost(this),

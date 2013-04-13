@@ -377,6 +377,13 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == IDC_HELP_PAGE_VIA_MENU)
     content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
+  if (command_id == IDC_FULLSCREEN) {
+    // We issue the UMA command here and not in BrowserCommandController or even
+    // FullscreenController since we want to be able to distinguish this event
+    // and a menu which is under development.
+    content::RecordAction(UserMetricsAction("EnterFullScreenWithWrenchMenu"));
+  }
+
   chrome::ExecuteCommand(browser_, command_id);
 }
 

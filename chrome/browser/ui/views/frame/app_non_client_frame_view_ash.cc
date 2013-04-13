@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_ash.h"
 
+#include "ash/shell_delegate.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/ash_resources.h"
@@ -108,12 +110,17 @@ class AppNonClientFrameViewAsh::ControlView
 
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
+    ash::UserMetricsAction action = ash::UMA_WINDOW_APP_CLOSE_BUTTON_CLICK;
     if (sender == close_button_) {
       owner_->frame()->Close();
     } else if (sender == restore_button_) {
+      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
       restore_button_->SetState(views::CustomButton::STATE_NORMAL);
       owner_->frame()->Restore();
+    } else {
+      return;
     }
+    ChromeShellDelegate::instance()->RecordUserMetricsAction(action);
   }
 
   // Returns the insets of the control which are only covered by the shadow.

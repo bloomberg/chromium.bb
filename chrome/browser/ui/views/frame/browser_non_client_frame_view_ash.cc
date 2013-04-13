@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include "ash/shell_delegate.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -292,21 +294,32 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
         ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   }
 
+  ash::UserMetricsAction action =
+      ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
+
   if (sender == size_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
-    if (size_button_minimizes_)
+    if (size_button_minimizes_) {
       frame()->Minimize();
-    else if (frame()->IsFullscreen())  // Can be clicked in immersive mode.
+      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE;
+    } else if (frame()->IsFullscreen()) { // Can be clicked in immersive mode.
       frame()->SetFullscreen(false);
-    else if (frame()->IsMaximized())
+      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
+    } else if (frame()->IsMaximized()) {
       frame()->Restore();
-    else
+      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
+    } else {
       frame()->Maximize();
+    }
     // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame()->Close();
+    action = ash::UMA_WINDOW_CLOSE_BUTTON_CLICK;
+  } else {
+    return;
   }
+  ChromeShellDelegate::instance()->RecordUserMetricsAction(action);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -376,12 +376,14 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       NewIncognitoWindow(browser_);
       break;
     case IDC_CLOSE_WINDOW:
+      content::RecordAction(content::UserMetricsAction("CloseWindowByKey"));
       CloseWindow(browser_);
       break;
     case IDC_NEW_TAB:
       NewTab(browser_);
       break;
     case IDC_CLOSE_TAB:
+      content::RecordAction(content::UserMetricsAction("CloseTabByKey"));
       CloseTab(browser_);
       break;
     case IDC_SELECT_NEXT_TAB:

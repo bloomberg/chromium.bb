@@ -251,23 +251,8 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(
           content::UserMetricsAction("Accel_ShutDown_PowerButton"));
       break;
-    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Maximize"));
-      break;
-    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_LEFT:
-      content::RecordAction(content::UserMetricsAction("MaxButton_MaxLeft"));
-      break;
-    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
-      content::RecordAction(content::UserMetricsAction("MaxButton_MaxRight"));
-      break;
-    case ash::UMA_MAXIMIZE_BUTTON_MINIMIZE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Minimize"));
-      break;
-    case ash::UMA_MAXIMIZE_BUTTON_RESTORE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_Restore"));
-      break;
-    case ash::UMA_MAXIMIZE_BUTTON_SHOW_BUBBLE:
-      content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
+    case ash::UMA_CLOSE_THROUGH_CONTEXT_MENU:
+      content::RecordAction(content::UserMetricsAction("CloseFromContextMenu"));
       break;
     case ash::UMA_LAUNCHER_CLICK_ON_APP:
       content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
@@ -275,6 +260,9 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
       content::RecordAction(
           content::UserMetricsAction("Launcher_ClickOnApplistButton"));
+      break;
+    case ash::UMA_MINIMIZE_PER_KEY:
+      content::RecordAction(content::UserMetricsAction("Minimize_UsingKey"));
       break;
     case ash::UMA_MOUSE_DOWN:
       content::RecordAction(content::UserMetricsAction("Mouse_Down"));
@@ -298,6 +286,44 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       break;
     case ash::UMA_TRAY_SHUT_DOWN:
       content::RecordAction(content::UserMetricsAction("Tray_ShutDown"));
+      break;
+    case ash::UMA_WINDOW_APP_CLOSE_BUTTON_CLICK:
+      content::RecordAction(content::UserMetricsAction("AppCloseButton_Clk"));
+      break;
+    case ash::UMA_WINDOW_CLOSE_BUTTON_CLICK:
+      content::RecordAction(content::UserMetricsAction("CloseButton_Clk"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Clk_ExitFS"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE:
+      content::RecordAction(
+          content::UserMetricsAction("MaxButton_Clk_Restore"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE:
+      content::RecordAction(
+          content::UserMetricsAction("MaxButton_Clk_Maximize"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE:
+      content::RecordAction(content::UserMetricsAction("MinButton_Clk"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Maximize"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT:
+      content::RecordAction(content::UserMetricsAction("MaxButton_MaxLeft"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
+      content::RecordAction(content::UserMetricsAction("MaxButton_MaxRight"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Minimize"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Restore"));
+      break;
+    case ash::UMA_WINDOW_MAXIMIZE_BUTTON_SHOW_BUBBLE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
       break;
   }
 }

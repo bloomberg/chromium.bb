@@ -780,6 +780,8 @@ bool AcceleratorController::PerformAction(int action,
       // crbug.com/131709, which is a crashing issue related to minimizing
       // full screen pepper window.
       if (!wm::IsWindowFullscreen(window) && wm::CanMinimizeWindow(window)) {
+        ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+            ash::UMA_MINIMIZE_PER_KEY);
         wm::MinimizeWindow(window);
         return true;
       }

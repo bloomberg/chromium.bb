@@ -4,6 +4,7 @@
 
 #include "ash/wm/custom_frame_view_ash.h"
 
+#include "ash/shell_delegate.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "grit/ash_resources.h"
@@ -170,17 +171,28 @@ void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
     slow_duration_mode.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   }
+
+  ash::UserMetricsAction action =
+      ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
+
   if (sender == maximize_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
-    if (frame_->IsMaximized())
+    if (frame_->IsMaximized()) {
+      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
       frame_->Restore();
-    else
+    } else {
       frame_->Maximize();
+    }
     // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
+    action = ash::UMA_WINDOW_CLOSE_BUTTON_CLICK;
     frame_->Close();
+  } else {
+    return;
   }
+
+  ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(action);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

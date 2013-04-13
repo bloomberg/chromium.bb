@@ -9,6 +9,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/property_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -239,6 +241,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_CLOSE:
       controller_->Close(item_.id);
+      ChromeShellDelegate::instance()->RecordUserMetricsAction(
+          ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;
     case MENU_PIN:
       controller_->TogglePinned(item_.id);

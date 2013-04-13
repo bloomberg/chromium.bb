@@ -514,8 +514,9 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
       shell->delegate()->RecordUserMetricsAction(
-          snap_type_ == SNAP_LEFT ? ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
-                                    ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+          snap_type_ == SNAP_LEFT ?
+              ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
+              ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
       // Get the bounds in screen coordinates for restore purposes.
       gfx::Rect restore = widget->GetWindowBoundsInScreen();
       if (widget->IsMaximized() || widget->IsFullscreen()) {
@@ -558,17 +559,17 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
     case SNAP_MAXIMIZE:
       widget->Maximize();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE);
+          ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE);
       break;
     case SNAP_MINIMIZE:
       widget->Minimize();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_MAXIMIZE_BUTTON_MINIMIZE);
+          ash::UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE);
       break;
     case SNAP_RESTORE:
       widget->Restore();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_MAXIMIZE_BUTTON_RESTORE);
+          ash::UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE);
       break;
     case SNAP_NONE:
       NOTREACHED();
@@ -576,7 +577,7 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
 }
 
 MaximizeBubbleFrameState
-   FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
+FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
   // When there are no restore bounds, we are in normal mode.
   if (!ash::GetRestoreBoundsInScreen(
            frame_->GetWidget()->GetNativeWindow()))
