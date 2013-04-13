@@ -55,6 +55,8 @@ const char kInstantExtendedActivationName[] = "instant";
 const InstantExtendedDefault kInstantExtendedActivationDefault =
     INSTANT_DEFAULT_ON;
 
+const char kLocalOnlyFlagName[] = "local_only";
+
 // Key for specifying local NTP beahvior trials.
 const char kLocalNTPFlagName[] = "local_ntp";
 
@@ -238,13 +240,17 @@ bool IsInstantExtendedAPIEnabled() {
 #else
   // On desktop, query extraction is part of Instant extended, so if one is
   // enabled, the other is too.
-  return IsQueryExtractionEnabled();
+  return IsQueryExtractionEnabled() || IsLocalOnlyInstantExtendedAPIEnabled();
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion() {
+  // No server-side changes if the local-only Instant Extended is enabled.
+  if (IsLocalOnlyInstantExtendedAPIEnabled())
+    return kEmbeddedPageVersionDisabled;
+
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -273,6 +279,23 @@ uint64 EmbeddedSearchPageVersion() {
 
 bool IsQueryExtractionEnabled() {
   return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
+}
+
+bool IsLocalOnlyInstantExtendedAPIEnabled() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableLocalOnlyInstantExtendedAPI) ||
+      command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI))
+    return true;
+
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kLocalOnlyFlagName, false, flags);
+  }
+  return false;
 }
 
 string16 GetSearchTermsFromNavigationEntry(

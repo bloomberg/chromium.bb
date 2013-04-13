@@ -562,6 +562,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableInstantExtendedAPI)
   },
   {
+    "enable-local-only-instant-extended-api",
+    IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API,
+    IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLocalOnlyInstantExtendedAPI,
+                              switches::kDisableLocalOnlyInstantExtendedAPI)
+  },
+  {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,
     IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,

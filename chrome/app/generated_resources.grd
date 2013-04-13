@@ -6471,6 +6471,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
         Enable the Instant extended API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API" desc="Title for the flag to enable the local-only Instant extended API.">
+        Enable local-only Instant extended API
+      </message>
+      <message name="IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
+        Enable the Instant extended API using only local resources.
+      </message>
       <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
       </message>

@@ -231,6 +231,7 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
 
   bool instant_pref_enabled = chrome::IsInstantPrefEnabled(profile());
   bool use_local_overlay_only = profile()->IsOffTheRecord() ||
+      chrome::IsLocalOnlyInstantExtendedAPIEnabled() ||
       (!instant_pref_enabled &&
        !profile()->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
   instant_.SetInstantEnabled(instant_pref_enabled, use_local_overlay_only);

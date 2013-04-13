@@ -39,11 +39,15 @@ bool IsInstantExtendedAPIEnabled();
 
 // Returns the value to pass to the &espv CGI parameter when loading the
 // embedded search page from the user's default search provider. Will be
-// 0 if the Instant Extended API is not enabled.
+// 0 if the Instant Extended API is not enabled, or if the local-only Instant
+// Extended API is enabled.
 uint64 EmbeddedSearchPageVersion();
 
 // Returns whether query extraction is enabled.
 bool IsQueryExtractionEnabled();
+
+// Returns whether the local-only version of Instant Extended API is enabled.
+bool IsLocalOnlyInstantExtendedAPIEnabled();
 
 // Returns the search terms attached to a specific NavigationEntry, or empty
 // string otherwise. Does not consider IsQueryExtractionEnabled(), so most

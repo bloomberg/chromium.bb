@@ -338,6 +338,10 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
+// Disable local-only Instant extended API.
+const char kDisableLocalOnlyInstantExtendedAPI[] =
+    "disable-local-only-instant-extended-api";
+
 // Disables the native Autofill UI, which is part of the browser process rather
 // than part of the renderer process.  http://crbug.com/51644
 const char kDisableNativeAutofillUi[]       = "disable-new-autofill-ui";
@@ -556,6 +560,10 @@ const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 // is needed for a domain which shares an IP with an existing connection,
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
+
+// Enable Instant extended API, but use only the local omnibox popup and NTP.
+const char kEnableLocalOnlyInstantExtendedAPI[] =
+    "enable-local-only-instant-extended-api";
 
 // Enables support for user profiles that are managed by another user and can
 // have restrictions applied.

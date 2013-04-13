@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -73,6 +75,108 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
       "Group77 bar:1 baz:7 cat:dogs DISABLED", &flags, &group_number));
   EXPECT_EQ(ZERO, group_number);
   EXPECT_EQ(ZERO, flags.size());
+}
+
+class InstantExtendedAPIEnabledTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
+  }
+
+  virtual CommandLine* GetCommandLine() const {
+    return CommandLine::ForCurrentProcess();
+  }
+
+ private:
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+};
+
+TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
+  GetCommandLine()->AppendSwitch(switches::kEnableInstantExtendedAPI);
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
+#else
+  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
+#endif
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 espv:42/"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
+  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 espv:2/"));
+  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaCommandLineFlag) {
+  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaFinch) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 local_only:1/"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest,
+       LocalOnlyCommandLineTrumpedByCommandLine) {
+  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
+  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
+  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyCommandLineTrumpsFinch) {
+  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 espv:2/"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpedByCommandLine) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 local_only:1/"));
+  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
+  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpsFinch) {
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 espv:1 local_only:1/"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
+  GetCommandLine()->AppendSwitch(switches::kDisableLocalOnlyInstantExtendedAPI);
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 espv:2/"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
+  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
 class SearchTest : public BrowserWithTestWindowTest {

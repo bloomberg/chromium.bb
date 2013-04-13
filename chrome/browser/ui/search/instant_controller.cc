@@ -489,7 +489,8 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
 
   LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
 
-  if (ShouldSwitchToLocalNTP())
+  // Switch to the local NTP unless we're already using one.
+  if (!ntp_ || (ShouldSwitchToLocalNTP() && !ntp_->IsLocalNTP()))
     ResetNTP(false, true);
 
   scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
@@ -1316,9 +1317,10 @@ void InstantController::MaybeSwitchToRemoteOverlay() {
 }
 
 void InstantController::ResetInstantTab() {
-  // Do not wire up the InstantTab if Instant should only use local overlays, to
-  // prevent it from sending data to the page.
-  if (!search_mode_.is_origin_default() && !use_local_overlay_only_) {
+  // Do not wire up the InstantTab in Incognito, to prevent it from sending data
+  // to the page.
+  if (!search_mode_.is_origin_default() &&
+      !browser_->profile()->IsOffTheRecord()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
       instant_tab_.reset(new InstantTab(this));
@@ -1617,9 +1619,9 @@ bool InstantController::UseInstantTabToShowSuggestions() const {
 }
 
 bool InstantController::ShouldSwitchToLocalNTP() const {
-  // If there is no NTP, or no Instant URL or the NTP is stale, switch.
+  // If there is no Instant URL or the NTP is stale, switch.
   std::string instant_url;
-  if (!ntp_ || !GetInstantURL(browser_->profile(), false, &instant_url) ||
+  if (!GetInstantURL(browser_->profile(), false, &instant_url) ||
       !chrome::MatchesOriginAndPath(GURL(ntp_->instant_url()),
                                     GURL(instant_url))) {
     return true;
