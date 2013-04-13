@@ -52,9 +52,15 @@ class LinuxSandbox {
   void PreinitializeSandboxBegin();
   void PreinitializeSandboxFinish(const std::string& process_type);
 
-  // Returns the Status of the sandbox. Can only be queried if we went through
-  // PreinitializeSandbox() or PreinitializeSandboxBegin(). This is a bitmask
-  // and uses the constants defined in "enum LinuxSandboxStatus".
+  // Initialize the sandbox with the given pre-built configuration. Currently
+  // seccomp-legacy, seccomp-bpf, address space limitations (the setuid sandbox
+  // works differently and is set-up in the Zygote). This will instantiate the
+  // LinuxSandbox singleton if it doesn't already exist.
+  static bool InitializeSandbox();
+
+  // Returns the Status of the renderers' sandbox. Can only be queried if we
+  // went through PreinitializeSandbox() or PreinitializeSandboxBegin(). This
+  // is a bitmask and uses the constants defined in "enum LinuxSandboxStatus".
   // Since we need to provide the status before the sandboxes are actually
   // started, this returns what will actually happen once the various Start*
   // functions are called from inside a renderer.

@@ -42,7 +42,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //
   // The seccomp sandbox mode 1 (sandbox/linux/seccomp-legacy) and mode 2
   // (sandbox/linux/seccomp-bpf) are started in InitializeSandbox().
-  InitializeSandbox();
+  LinuxSandbox::InitializeSandbox();
   return true;
 }
 

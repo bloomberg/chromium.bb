@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/sandbox_linux.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/worker/worker_thread.h"
@@ -53,7 +54,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
 #elif defined(OS_LINUX)
   // On Linux, the sandbox must be initialized early, before any thread is
   // created.
-  InitializeSandbox();
+  LinuxSandbox::InitializeSandbox();
 #endif
 
   ChildProcess worker_process;

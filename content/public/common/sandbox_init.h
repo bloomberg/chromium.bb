@@ -78,19 +78,6 @@ CONTENT_EXPORT base::ProcessHandle StartSandboxedProcess(
 CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
                                       const base::FilePath& allowed_path);
 
-#elif defined(OS_LINUX)
-
-// Initialize the sandbox (currently seccomp-legacy or seccomp-bpf, the setuid
-// sandbox works differently and is set-up in the Zygote).
-// The process sandbox type is determined at run time via the command line
-// switches. TODO(jln): switch to a model where the caller chooses a sandbox
-// type.
-// This should be called before any additional thread has been created.
-//
-// Returns true if a sandbox has been initialized successfully, false
-// otherwise.
-CONTENT_EXPORT bool InitializeSandbox();
-
 #endif
 
 }  // namespace content

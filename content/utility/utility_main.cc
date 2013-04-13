@@ -8,6 +8,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/sandbox_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
@@ -30,7 +31,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_LINUX)
   // Initialize the sandbox before any thread is created.
-  InitializeSandbox();
+  LinuxSandbox::InitializeSandbox();
 #endif
 
   ChildProcess utility_process;

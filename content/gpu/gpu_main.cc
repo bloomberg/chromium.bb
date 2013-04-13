@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_config.h"
+#include "content/common/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_process.h"
@@ -242,7 +243,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     if (do_init_sandbox) {
       if (watchdog_thread.get())
         watchdog_thread->Stop();
-      gpu_info.sandboxed = InitializeSandbox();
+      gpu_info.sandboxed = LinuxSandbox::InitializeSandbox();
       if (watchdog_thread.get())
         watchdog_thread->Start();
     }

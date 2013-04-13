@@ -343,7 +343,6 @@
     'common/sandbox_init_mac.cc',
     'common/sandbox_init_mac.h',
     'common/sandbox_init_win.cc',
-    'common/sandbox_init_linux.cc',
     'common/sandbox_mac.h',
     'common/sandbox_mac.mm',
     'common/sandbox_linux.h',
