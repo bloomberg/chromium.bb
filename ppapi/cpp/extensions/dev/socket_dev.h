@@ -96,9 +96,7 @@ class ReadInfo_Dev : public internal::OutputObjectBase {
   static const char* const kData;
 
   DictField<int32_t> result_code;
-  // TODO(yzshen): It is more natural to use VarArrayBuffer, but it doesn't have
-  // a default constructor currently.
-  DictField<Var> data;
+  DictField<VarArrayBuffer> data;
 };
 
 class WriteInfo_Dev : public internal::OutputObjectBase {
@@ -130,7 +128,7 @@ class RecvFromInfo_Dev : public internal::OutputObjectBase {
   static const char* const kPort;
 
   DictField<int32_t> result_code;
-  DictField<Var> data;
+  DictField<VarArrayBuffer> data;
   DictField<std::string> address;
   DictField<int32_t> port;
 };
@@ -199,14 +197,14 @@ class Socket_Dev {
                const Optional<int32_t>& buffer_size,
                const CompletionCallbackWithOutput<ReadInfo_Dev>& callback);
   int32_t Write(int32_t socket_id,
-                const Var& data,
+                const VarArrayBuffer& data,
                 const CompletionCallbackWithOutput<WriteInfo_Dev>& callback);
   int32_t RecvFrom(
       int32_t socket_id,
       const Optional<int32_t>& buffer_size,
       const CompletionCallbackWithOutput<RecvFromInfo_Dev>& callback);
   int32_t SendTo(int32_t socket_id,
-                 const Var& data,
+                 const VarArrayBuffer& data,
                  const std::string& address,
                  int32_t port,
                  const CompletionCallbackWithOutput<WriteInfo_Dev>& callback);

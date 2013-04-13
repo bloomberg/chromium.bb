@@ -20,6 +20,10 @@ template <> const char* interface_name<PPB_VarArrayBuffer_1_0>() {
 
 }  // namespace
 
+VarArrayBuffer::VarArrayBuffer() {
+  ConstructWithSize(0);
+}
+
 VarArrayBuffer::VarArrayBuffer(const Var& var) : Var(var) {
   if (!var.is_array_buffer()) {
     PP_NOTREACHED();
@@ -28,13 +32,7 @@ VarArrayBuffer::VarArrayBuffer(const Var& var) : Var(var) {
 }
 
 VarArrayBuffer::VarArrayBuffer(uint32_t size_in_bytes) {
-  if (has_interface<PPB_VarArrayBuffer_1_0>()) {
-    var_ = get_interface<PPB_VarArrayBuffer_1_0>()->Create(size_in_bytes);
-  } else {
-    PP_NOTREACHED();
-    var_ = PP_MakeNull();
-  }
-  is_managed_ = true;
+  ConstructWithSize(size_in_bytes);
 }
 
 pp::VarArrayBuffer& VarArrayBuffer::operator=(const VarArrayBuffer& other) {
@@ -72,6 +70,19 @@ void VarArrayBuffer::Unmap() {
     get_interface<PPB_VarArrayBuffer_1_0>()->Unmap(var_);
   else
     PP_NOTREACHED();
+}
+
+
+void VarArrayBuffer::ConstructWithSize(uint32_t size_in_bytes) {
+  PP_DCHECK(is_undefined());
+
+  if (has_interface<PPB_VarArrayBuffer_1_0>()) {
+    var_ = get_interface<PPB_VarArrayBuffer_1_0>()->Create(size_in_bytes);
+  } else {
+    PP_NOTREACHED();
+    var_ = PP_MakeNull();
+  }
+  is_managed_ = true;
 }
 
 }  // namespace pp

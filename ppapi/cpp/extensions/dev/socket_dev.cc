@@ -374,7 +374,7 @@ int32_t Socket_Dev::Read(
 
 int32_t Socket_Dev::Write(
     int32_t socket_id,
-    const Var& data,
+    const VarArrayBuffer& data,
     const CompletionCallbackWithOutput<WriteInfo_Dev>& callback) {
   if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
@@ -410,7 +410,7 @@ int32_t Socket_Dev::RecvFrom(
 
 int32_t Socket_Dev::SendTo(
     int32_t socket_id,
-    const Var& data,
+    const VarArrayBuffer& data,
     const std::string& address,
     int32_t port,
     const CompletionCallbackWithOutput<WriteInfo_Dev>& callback) {

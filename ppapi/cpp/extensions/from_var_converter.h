@@ -13,6 +13,7 @@
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 
 namespace pp {
 namespace ext {
@@ -42,7 +43,7 @@ class FromVarConverter : public FromVarConverterBase<T> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -64,7 +65,7 @@ class FromVarConverter<Optional<T> >
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -87,7 +88,7 @@ class FromVarConverter<bool> : public FromVarConverterBase<bool> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -105,7 +106,7 @@ class FromVarConverter<int32_t> : public FromVarConverterBase<int32_t> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -123,7 +124,7 @@ class FromVarConverter<double> : public FromVarConverterBase<double> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -141,7 +142,7 @@ class FromVarConverter<std::string> : public FromVarConverterBase<std::string> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -159,7 +160,7 @@ class FromVarConverter<Var> : public FromVarConverterBase<Var> {
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -178,7 +179,7 @@ class FromVarConverter<VarArray_Dev>
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -197,7 +198,7 @@ class FromVarConverter<VarDictionary_Dev>
   FromVarConverter() {
   }
 
-  FromVarConverter(const PP_Var& var) {
+  explicit FromVarConverter(const PP_Var& var) {
     Set(var);
   }
 
@@ -206,6 +207,25 @@ class FromVarConverter<VarDictionary_Dev>
 
   void Set(const PP_Var& var) {
     FromVarConverterBase<VarDictionary_Dev>::value_ = Var(var);
+  }
+};
+
+template <>
+class FromVarConverter<VarArrayBuffer>
+    : public FromVarConverterBase<VarArrayBuffer> {
+ public:
+  FromVarConverter() {
+  }
+
+  explicit FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<VarArrayBuffer>::value_ = Var(var);
   }
 };
 
