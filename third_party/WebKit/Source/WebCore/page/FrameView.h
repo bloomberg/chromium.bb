@@ -158,8 +158,7 @@ public:
 
     virtual IntRect windowResizerRect() const;
 
-    virtual float visibleContentScaleFactor() const OVERRIDE { return m_visibleContentScaleFactor; }
-    void setVisibleContentScaleFactor(float);
+    virtual float visibleContentScaleFactor() const OVERRIDE;
 
     virtual void setFixedVisibleContentRect(const IntRect&) OVERRIDE;
     virtual void setScrollPosition(const IntPoint&) OVERRIDE;
@@ -561,8 +560,6 @@ private:
     // the viewport given by the window or viewing area of the UA.
     IntSize m_initialViewportSize;
 #endif
-
-    float m_visibleContentScaleFactor;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

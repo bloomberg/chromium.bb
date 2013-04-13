@@ -261,9 +261,6 @@ void Frame::setView(PassRefPtr<FrameView> view)
 
     m_view = view;
 
-    if (view && m_page && m_page->mainFrame() == this)
-        view->setVisibleContentScaleFactor(m_page->pageScaleFactor());
-
     // Only one form submission is allowed per view of a part.
     // Since this part may be getting reused as a result of being
     // pulled from the back/forward cache, reset this flag.
