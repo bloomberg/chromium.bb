@@ -186,15 +186,15 @@ TEST_F(MessageCenterViewTest, CallTest) {
   // Exercise (with size values that just need to be large enough).
   GetMessageCenterView()->SetBounds(0, 0, 100, 100);
 
-  // Verify that this didn't generate more than 1 Layout() call per descendant
-  // NotificationView or more than a total of 14 GetPreferredSize() and
-  // GetHeightForWidth() calls per descendant NotificationView. 14 is a very
+  // Verify that this didn't generate more than 2 Layout() call per descendant
+  // NotificationView or more than a total of 20 GetPreferredSize() and
+  // GetHeightForWidth() calls per descendant NotificationView. 20 is a very
   // large number corresponding to the current reality. That number will be
   // ratcheted down over time as the code improves.
-  EXPECT_LE(GetCallCount(LAYOUT), GetNotificationCount());
+  EXPECT_LE(GetCallCount(LAYOUT), GetNotificationCount() * 2);
   EXPECT_LE(GetCallCount(GET_PREFERRED_SIZE) +
             GetCallCount(GET_HEIGHT_FOR_WIDTH),
-            GetNotificationCount() * 14);
+            GetNotificationCount() * 20);
 }
 
 }  // namespace message_center

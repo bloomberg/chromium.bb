@@ -46,9 +46,9 @@ const int kButtonIconToTitlePadding = 16;
 const int kButtonTitleTopPadding = 0;
 
 // Line limits.
-const size_t kTitleLineLimit = 3;
-const size_t kMessageCollapsedLineLimit = 3;
-const size_t kMessageExpandedLineLimit = 7;
+const int kTitleLineLimit = 3;
+const int kMessageCollapsedLineLimit = 3;
+const int kMessageExpandedLineLimit = 7;
 
 // Character limits: Displayed text will be subject to the line limits above,
 // but we also remove trailing characters from text to reduce processing cost.
@@ -386,19 +386,19 @@ NotificationView::NotificationView(const Notification& notification,
   if (!notification.title().empty()) {
     title_view_ = new BoundedLabel(
         ui::TruncateString(notification.title(), kTitleCharacterLimit),
-        views::Label().font().DeriveFont(2), kTitleLineLimit);
+        views::Label().font().DeriveFont(2));
+    title_view_->SetLineLimit(kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->set_border(MakeTextBorder(3, 0));
     top_view_->AddChildView(title_view_);
   }
 
-  // Create the message view if appropriate. Its line limit is given a bogus
-  // value here, it will be reset in Layout() after this view's width is set.
+  // Create the message view if appropriate.
   message_view_ = NULL;
   if (!notification.message().empty()) {
     message_view_ = new BoundedLabel(
-        ui::TruncateString(notification.message(), kMessageCharacterLimit), 0);
+        ui::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(4, 1));
@@ -483,10 +483,26 @@ gfx::Size NotificationView::GetPreferredSize() {
 }
 
 int NotificationView::GetHeightForWidth(int width) {
-  gfx::Insets insets = GetInsets();
-  int top_height = top_view_->GetHeightForWidth(width - insets.width());
-  int bottom_height = bottom_view_->GetHeightForWidth(width - insets.width());
-  return std::max(top_height, kIconSize) + bottom_height + insets.height();
+  // Get the height assuming no line limit changes.
+  int content_width = width - GetInsets().width();
+  int top_height = top_view_->GetHeightForWidth(content_width);
+  int bottom_height = bottom_view_->GetHeightForWidth(content_width);
+  int total_height = std::max(top_height, kIconSize) +
+                     bottom_height + GetInsets().height();
+
+  // Fix for http://crbug.com/230448: Adjust the height when the message_view's
+  // line limit would be different for the specified width than it currently is.
+  // TODO(dharcourt): Avoid BoxLayout and directly compute the correct height.
+  if (message_view_ && title_view_) {
+    int used_limit = message_view_->line_limit();
+    int correct_limit = GetMessageLineLimit(width);
+    if (used_limit != correct_limit) {
+      total_height -= GetMessageHeight(content_width, used_limit);
+      total_height += GetMessageHeight(content_width, correct_limit);
+    }
+  }
+
+  return total_height;
 }
 
 void NotificationView::Layout() {
@@ -496,7 +512,7 @@ void NotificationView::Layout() {
 
   // Before any resizing, set or adjust the number of message lines.
   if (message_view_)
-    message_view_->SetLineLimit(GetMessageLineLimit());
+    message_view_->SetLineLimit(GetMessageLineLimit(width()));
 
   // Background.
   background_view_->SetBounds(insets.left(), insets.top(),
@@ -521,14 +537,11 @@ void NotificationView::Layout() {
                             close_size.width(), close_size.height());
 
   // Expand button.
-  if (!IsExpansionNeeded()) {
-    expand_button()->SetVisible(false);
-  } else {
-    gfx::Size expand_size(expand_button()->GetPreferredSize());
-    int expand_y = bottom_y - expand_size.height();
-    expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
-                               expand_size.width(), expand_size.height());
-  }
+  gfx::Size expand_size(expand_button()->GetPreferredSize());
+  int expand_y = bottom_y - expand_size.height();
+  expand_button()->SetVisible(IsExpansionNeeded(width()));
+  expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
+                             expand_size.width(), expand_size.height());
 }
 
 void NotificationView::ButtonPressed(views::Button* sender,
@@ -548,8 +561,6 @@ void NotificationView::ButtonPressed(views::Button* sender,
   if (sender == expand_button()) {
     if (message_view_ && item_views_.size())
       message_view_->SetVisible(false);
-    else if (message_view_)
-      message_view_->SetLineLimit(GetMessageLineLimit());
     for (size_t i = 0; i < item_views_.size(); ++i)
       item_views_[i]->SetVisible(true);
     if (image_view_)
@@ -560,28 +571,43 @@ void NotificationView::ButtonPressed(views::Button* sender,
   }
 }
 
-bool NotificationView::IsExpansionNeeded() {
-  if (is_expanded())
-    return false;
-  if (image_view_ || item_views_.size())
-    return true;
-  size_t title_lines = title_view_ ? title_view_->GetActualLines() : 0;
-  size_t message_lines = message_view_ ? message_view_->GetPreferredLines() : 0;
-  return (title_lines + message_lines > kMessageCollapsedLineLimit);
+bool NotificationView::IsExpansionNeeded(int width) {
+  return (!is_expanded() &&
+              (image_view_ ||
+                  item_views_.size() ||
+                  IsMessageExpansionNeeded(width)));
 }
 
-size_t NotificationView::GetMessageLineLimit() {
-  // Return limit for expanded notifications, except for image notifications
-  // that always have collapsed messages to leave room for the image.
+bool NotificationView::IsMessageExpansionNeeded(int width) {
+  int current = GetMessageLines(width, GetMessageLineLimit(width));
+  int expanded = GetMessageLines(width, kMessageExpandedLineLimit);
+  return current < expanded;
+}
+
+int NotificationView::GetMessageLineLimit(int width) {
+  // Expanded notifications get a larger limit, except for image notifications,
+  // whose images must be kept flush against their icons.
   if (is_expanded() && !image_view_)
     return kMessageExpandedLineLimit;
 
   // If there's a title ensure title + message lines <= collapsed line limit.
-  if (title_view_)
-    return kMessageCollapsedLineLimit - title_view_->GetLinesForWidth(width());
+  if (title_view_) {
+    int title_lines = title_view_->GetLinesForWidthAndLimit(width, -1);
+    return std::max(kMessageCollapsedLineLimit - title_lines, 0);
+  }
 
   // If there's no title we get an extra line because message lines are shorter.
   return kMessageCollapsedLineLimit + 1;
+}
+
+int NotificationView::GetMessageLines(int width, int limit) {
+  return message_view_ ?
+         message_view_->GetLinesForWidthAndLimit(width, limit) : 0;
+}
+
+int NotificationView::GetMessageHeight(int width, int limit) {
+  return message_view_ ?
+         message_view_->GetSizeForWidthAndLines(width, limit).height() : 0;
 }
 
 }  // namespace message_center

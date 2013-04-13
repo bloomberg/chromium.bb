@@ -24,30 +24,25 @@ namespace message_center {
 // InnerBoundedLabel ///////////////////////////////////////////////////////////
 
 // InnerBoundedLabel is a views::Label subclass that does all of the work for
-// BoundedLabel. It is kept private to BoundedLabel to prevent outside code from
-// calling a number of views::Label methods like SetFont() that would break
-// BoundedLabel caching but can't be fixed because they're not virtual.
+// BoundedLabel. It is kept private to prevent outside code from calling a
+// number of views::Label methods like setFont() that break BoundedLabel's
+// caching but can't be overridden.
 //
 // TODO(dharcourt): Move the line limiting functionality to views::Label to make
 // this unnecessary.
 
 class InnerBoundedLabel : public views::Label {
  public:
-  InnerBoundedLabel(const BoundedLabel& owner, size_t line_limit);
+  InnerBoundedLabel(const BoundedLabel& owner);
   virtual ~InnerBoundedLabel();
 
-  void SetLineLimit(size_t limit);
-  size_t GetLinesForWidth(int width);
-  size_t GetPreferredLines();
-  size_t GetActualLines();
+  void SetNativeTheme(const ui::NativeTheme* theme);
 
-  void ChangeNativeTheme(const ui::NativeTheme* theme);
+  // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
+  int GetLinesForWidthAndLimit(int width, int limit);
+  gfx::Size GetSizeForWidthAndLines(int width, int lines);
 
-  std::vector<string16> GetWrappedText(int width, size_t line_limit);
-
-  // Overridden from views::Label.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  std::vector<string16> GetWrappedText(int width, int lines);
 
  protected:
   // Overridden from views::Label.
@@ -55,107 +50,112 @@ class InnerBoundedLabel : public views::Label {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
-  gfx::Insets GetOwnerInsets();
-  size_t GetPreferredLinesForWidth(int width);
-  gfx::Size GetSizeForWidth(int width);
   int GetTextFlags();
 
   void ClearCaches();
-  size_t GetCachedLinesForWidth(int width);
-  void SetCachedLinesForWidth(int width, size_t lines);
-  gfx::Size GetCachedSizeForWidth(int width);
-  void SetCachedSizeForWidth(int width, gfx::Size size);
+  int GetCachedLines(int width);
+  void SetCachedLines(int width, int lines);
+  gfx::Size GetCachedSize(const std::pair<int, int>& width_and_lines);
+  void SetCachedSize(std::pair<int, int> width_and_lines, gfx::Size size);
 
   const BoundedLabel* owner_;  // Weak reference.
-  size_t line_limit_;
-  std::map<int,size_t> lines_cache_;
+  string16 wrapped_text_;
+  int wrapped_text_width_;
+  int wrapped_text_lines_;
+  std::map<int, int> lines_cache_;
   std::list<int> lines_widths_;  // Most recently used in front.
-  std::map<int,gfx::Size> size_cache_;
-  std::list<int> size_widths_;  // Most recently used in front.
+  std::map<std::pair<int, int>, gfx::Size> size_cache_;
+  std::list<std::pair<int, int> > size_widths_and_lines_;  // Recent in front.
 
   DISALLOW_COPY_AND_ASSIGN(InnerBoundedLabel);
 };
 
-InnerBoundedLabel::InnerBoundedLabel(const BoundedLabel& owner,
-                                     size_t line_limit) {
+InnerBoundedLabel::InnerBoundedLabel(const BoundedLabel& owner)
+    : owner_(&owner),
+      wrapped_text_width_(0),
+      wrapped_text_lines_(0) {
   SetMultiLine(true);
   SetAllowCharacterBreak(true);
   SetElideBehavior(views::Label::ELIDE_AT_END);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   set_collapse_when_hidden(true);
-  owner_ = &owner;
-  line_limit_ = line_limit;
 }
 
 InnerBoundedLabel::~InnerBoundedLabel() {
 }
 
-void InnerBoundedLabel::SetLineLimit(size_t limit) {
-  if (limit != line_limit_) {
-    std::swap(limit, line_limit_);
-    if (GetPreferredLines() > line_limit_ || GetPreferredLines() > limit) {
-      ClearCaches();
-      PreferredSizeChanged();
-    }
-  }
-}
-
-size_t InnerBoundedLabel::GetLinesForWidth(int width) {
-  return std::min(GetPreferredLinesForWidth(width), line_limit_);
-}
-
-size_t InnerBoundedLabel::GetPreferredLines() {
-  return GetPreferredLinesForWidth(width());
-}
-
-size_t InnerBoundedLabel::GetActualLines() {
-  return std::min(GetPreferredLinesForWidth(width()), line_limit_);
-}
-
-void InnerBoundedLabel::ChangeNativeTheme(const ui::NativeTheme* theme) {
+void InnerBoundedLabel::SetNativeTheme(const ui::NativeTheme* theme) {
   ClearCaches();
   OnNativeThemeChanged(theme);
 }
 
-std::vector<string16> InnerBoundedLabel::GetWrappedText(int width,
-                                                        size_t line_limit) {
+int InnerBoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {
+  if (width == 0 || limit == 0)
+    return 0;
+  int lines = GetCachedLines(width);
+  if (lines == std::numeric_limits<int>::max()) {
+    int text_width = std::max(width - owner_->GetInsets().width(), 0);
+    lines = GetWrappedText(text_width, lines).size();
+    SetCachedLines(width, lines);
+  }
+  return (limit < 0 || lines <= limit) ? lines : limit;
+}
+
+gfx::Size InnerBoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
+  if (width == 0 || lines == 0)
+    return gfx::Size();
+  std::pair<int, int> key(width, lines);
+  gfx::Size size = GetCachedSize(key);
+  if (size.height() == std::numeric_limits<int>::max()) {
+    gfx::Insets insets = owner_->GetInsets();
+    int text_width = (width < 0) ? std::numeric_limits<int>::max() :
+                                   std::max(width - insets.width(), 0);
+    int text_height = std::numeric_limits<int>::max();
+    std::vector<string16> wrapped = GetWrappedText(text_width, lines);
+    gfx::Canvas::SizeStringInt(JoinString(wrapped, '\n'), font(),
+                               &text_width, &text_height, GetTextFlags());
+    size.set_width(text_width + insets.width());
+    size.set_height(text_height + insets.height());
+    SetCachedSize(key, size);
+  }
+  return size;
+}
+
+std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
   // Short circuit simple case.
-  if (line_limit == 0)
+  if (width == 0 || lines == 0)
     return std::vector<string16>();
 
-  // Restrict line_limit to ensure (line_limit + 1) * line_height <= INT_MAX.
-  int line_height = std::max(font().GetHeight(), 2);  // At least 2 pixels.
-  unsigned int max_limit = std::numeric_limits<int>::max() / line_height - 1;
-  line_limit = (line_limit <= max_limit) ? line_limit : max_limit;
+  // Restrict line limit to ensure (lines + 1) * line_height <= INT_MAX and
+  // use it to calculate a reasonable text height.
+  int height = std::numeric_limits<int>::max();
+  if (lines > 0) {
+    int line_height = std::max(font().GetHeight(), 2);  // At least 2 pixels.
+    int max_lines = std::numeric_limits<int>::max() / line_height - 1;
+    lines = std::min(lines, max_lines);
+    height = (lines + 1) * line_height;
+  }
 
-  // Split, using ui::IGNORE_LONG_WORDS instead of ui::WRAP_LONG_WORDS to
+  // Wrap, using ui::IGNORE_LONG_WORDS instead of ui::WRAP_LONG_WORDS to
   // avoid an infinite loop in ui::ElideRectangleText() for small widths.
-  std::vector<string16> lines;
-  int height = static_cast<int>((line_limit + 1) * line_height);
-  ui::ElideRectangleText(text(), font(), width, height,
-                         ui::IGNORE_LONG_WORDS, &lines);
+  std::vector<string16> wrapped;
+  ui::ElideRectangleText(text(), font(),
+                         (width < 0) ? std::numeric_limits<int>::max() : width,
+                         height, ui::IGNORE_LONG_WORDS, &wrapped);
 
   // Elide if necessary.
-  if (lines.size() > line_limit) {
+  if (lines > 0 && wrapped.size() > static_cast<unsigned int>(lines)) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the ui::ElideText below,
     // so for example "ABC" could become "ABC..." and then "AB...".
-    string16 last = lines[line_limit - 1] + UTF8ToUTF16(ui::kEllipsis);
-    if (font().GetStringWidth(last) > width)
+    string16 last = wrapped[lines - 1] + UTF8ToUTF16(ui::kEllipsis);
+    if (width > 0 && font().GetStringWidth(last) > width)
       last = ui::ElideText(last, font(), width, ui::ELIDE_AT_END);
-    lines.resize(line_limit - 1);
-    lines.push_back(last);
+    wrapped.resize(lines - 1);
+    wrapped.push_back(last);
   }
 
-  return lines;
-}
-
-gfx::Size InnerBoundedLabel::GetPreferredSize() {
-  return GetSizeForWidth(std::numeric_limits<int>::max());
-}
-
-int InnerBoundedLabel::GetHeightForWidth(int width) {
-  return GetSizeForWidth(width).height();
+  return wrapped;
 }
 
 void InnerBoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -167,46 +167,18 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
   views::Label::OnPaintBackground(canvas);
   views::Label::OnPaintFocusBorder(canvas);
   views::Label::OnPaintBorder(canvas);
-  int height = GetSizeForWidth(width()).height() - GetOwnerInsets().height();
+  int lines = owner_->line_limit();
+  int height = GetSizeForWidthAndLines(width(), lines).height();
   if (height > 0) {
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(GetOwnerInsets());
-    bounds.set_y(bounds.y() + (bounds.height() - height) / 2);
-    bounds.set_height(height);
-    std::vector<string16> text = GetWrappedText(bounds.width(), line_limit_);
-    PaintText(canvas, JoinString(text, '\n'), bounds, GetTextFlags());
-  }
-}
-
-gfx::Insets InnerBoundedLabel::GetOwnerInsets() {
-  return owner_->GetInsets();
-}
-
-size_t InnerBoundedLabel::GetPreferredLinesForWidth(int width) {
-  size_t lines = GetCachedLinesForWidth(width);
-  if (lines == std::numeric_limits<size_t>::max()) {
-    int content_width = std::max(width - GetOwnerInsets().width(), 0);
-    lines = GetWrappedText(content_width, lines).size();
-    SetCachedLinesForWidth(width, lines);
-  }
-  return lines;
-}
-
-gfx::Size InnerBoundedLabel::GetSizeForWidth(int width) {
-  gfx::Size size = GetCachedSizeForWidth(width);
-  if (size.height() == std::numeric_limits<int>::max()) {
-    int text_width = std::max(width - GetOwnerInsets().width(), 0);
-    int text_height = 0;
-    if (line_limit_ > 0) {
-      std::vector<string16> text = GetWrappedText(text_width, line_limit_);
-      gfx::Canvas::SizeStringInt(JoinString(text, '\n'), font(),
-                                 &text_width, &text_height, GetTextFlags());
+    gfx::Rect bounds(width(), height);
+    bounds.Inset(owner_->GetInsets());
+    if (bounds.width() != wrapped_text_width_ || lines != wrapped_text_lines_) {
+      wrapped_text_ = JoinString(GetWrappedText(bounds.width(), lines), '\n');
+      wrapped_text_width_ = bounds.width();
+      wrapped_text_lines_ = lines;
     }
-    size.set_width(text_width + GetOwnerInsets().width());
-    size.set_height(text_height + GetOwnerInsets().height());
-    SetCachedSizeForWidth(width, size);
+    PaintText(canvas, wrapped_text_, bounds, GetTextFlags());
   }
-  return size;
 }
 
 int InnerBoundedLabel::GetTextFlags() {
@@ -230,23 +202,26 @@ int InnerBoundedLabel::GetTextFlags() {
 }
 
 void InnerBoundedLabel::ClearCaches() {
+  wrapped_text_width_ = 0;
+  wrapped_text_lines_ = 0;
   lines_cache_.clear();
   lines_widths_.clear();
   size_cache_.clear();
-  size_widths_.clear();
+  size_widths_and_lines_.clear();
 }
 
-size_t InnerBoundedLabel::GetCachedLinesForWidth(int width) {
-  size_t lines = std::numeric_limits<size_t>::max();
-  if (lines_cache_.find(width) != lines_cache_.end()) {
-    lines = lines_cache_[width];
+int InnerBoundedLabel::GetCachedLines(int width) {
+  int lines = std::numeric_limits<int>::max();
+  std::map<int, int>::const_iterator found;
+  if ((found = lines_cache_.find(width)) != lines_cache_.end()) {
+    lines = found->second;
     lines_widths_.remove(width);
     lines_widths_.push_front(width);
   }
   return lines;
 }
 
-void InnerBoundedLabel::SetCachedLinesForWidth(int width, size_t lines) {
+void InnerBoundedLabel::SetCachedLines(int width, int lines) {
   if (lines_cache_.size() >= kPreferredLinesCacheSize) {
     lines_cache_.erase(lines_widths_.back());
     lines_widths_.pop_back();
@@ -255,57 +230,43 @@ void InnerBoundedLabel::SetCachedLinesForWidth(int width, size_t lines) {
   lines_widths_.push_front(width);
 }
 
-gfx::Size InnerBoundedLabel::GetCachedSizeForWidth(int width) {
-  gfx::Size size(width, std::numeric_limits<int>::max());
-  if (size_cache_.find(width) != size_cache_.end()) {
-    size = size_cache_[width];
-    size_widths_.remove(width);
-    size_widths_.push_front(width);
+gfx::Size InnerBoundedLabel::GetCachedSize(
+    const std::pair<int, int>& width_and_lines) {
+  gfx::Size size(width_and_lines.first, std::numeric_limits<int>::max());
+  std::map<std::pair<int, int>, gfx::Size>::const_iterator found;
+  if ((found = size_cache_.find(width_and_lines)) != size_cache_.end()) {
+    size = found->second;
+    size_widths_and_lines_.remove(width_and_lines);
+    size_widths_and_lines_.push_front(width_and_lines);
   }
   return size;
 }
 
-void InnerBoundedLabel::SetCachedSizeForWidth(int width, gfx::Size size) {
+void InnerBoundedLabel::SetCachedSize(std::pair<int, int> width_and_lines,
+                                      gfx::Size size) {
   if (size_cache_.size() >= kPreferredLinesCacheSize) {
-    size_cache_.erase(size_widths_.back());
-    size_widths_.pop_back();
+    size_cache_.erase(size_widths_and_lines_.back());
+    size_widths_and_lines_.pop_back();
   }
-  size_cache_[width] = size;
-  size_widths_.push_front(width);
+  size_cache_[width_and_lines] = size;
+  size_widths_and_lines_.push_front(width_and_lines);
 }
 
 // BoundedLabel ///////////////////////////////////////////////////////////
 
-BoundedLabel::BoundedLabel(const string16& text,
-                           gfx::Font font,
-                           size_t line_limit) {
-  label_.reset(new InnerBoundedLabel(*this, line_limit));
+BoundedLabel::BoundedLabel(const string16& text, gfx::Font font)
+    : line_limit_(-1) {
+  label_.reset(new InnerBoundedLabel(*this));
   label_->SetFont(font);
   label_->SetText(text);
 }
 
-BoundedLabel::BoundedLabel(const string16& text, size_t line_limit) {
-  label_.reset(new InnerBoundedLabel(*this, line_limit));
+BoundedLabel::BoundedLabel(const string16& text) {
+  label_.reset(new InnerBoundedLabel(*this));
   label_->SetText(text);
 }
 
 BoundedLabel::~BoundedLabel() {
-}
-
-void BoundedLabel::SetLineLimit(size_t lines) {
-  label_->SetLineLimit(lines);
-}
-
-size_t BoundedLabel::GetLinesForWidth(int width) {
-  return visible() ? label_->GetLinesForWidth(width) : 0;
-}
-
-size_t BoundedLabel::GetPreferredLines() {
-  return visible() ? label_->GetPreferredLines() : 0;
-}
-
-size_t BoundedLabel::GetActualLines() {
-  return visible() ? label_->GetActualLines() : 0;
 }
 
 void BoundedLabel::SetColors(SkColor textColor, SkColor backgroundColor) {
@@ -313,16 +274,30 @@ void BoundedLabel::SetColors(SkColor textColor, SkColor backgroundColor) {
   label_->SetBackgroundColor(backgroundColor);
 }
 
+void BoundedLabel::SetLineLimit(int lines) {
+  line_limit_ = std::max(lines, -1);
+}
+
+int BoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {
+  return visible() ? label_->GetLinesForWidthAndLimit(width, limit) : 0;
+}
+
+gfx::Size BoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
+  return visible() ?
+         label_->GetSizeForWidthAndLines(width, lines) : gfx::Size();
+}
+
 int BoundedLabel::GetBaseline() const {
   return label_->GetBaseline();
 }
 
 gfx::Size BoundedLabel::GetPreferredSize() {
-  return visible() ? label_->GetPreferredSize() : gfx::Size();
+  return visible() ? label_->GetSizeForWidthAndLines(-1, -1) : gfx::Size();
 }
 
-int BoundedLabel::GetHeightForWidth(int weight) {
-  return visible() ? label_->GetHeightForWidth(weight) : 0;
+int BoundedLabel::GetHeightForWidth(int width) {
+  return visible() ?
+         label_->GetSizeForWidthAndLines(width, line_limit_).height() : 0;
 }
 
 void BoundedLabel::Paint(gfx::Canvas* canvas) {
@@ -344,11 +319,11 @@ void BoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void BoundedLabel::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  label_->ChangeNativeTheme(theme);
+  label_->SetNativeTheme(theme);
 }
 
-string16 BoundedLabel::GetWrappedTextForTest(int width, size_t line_limit) {
-  return JoinString(label_->GetWrappedText(width, line_limit), '\n');
+string16 BoundedLabel::GetWrappedTextForTest(int width, int lines) {
+  return JoinString(label_->GetWrappedText(width, lines), '\n');
 }
 
 }  // namespace message_center

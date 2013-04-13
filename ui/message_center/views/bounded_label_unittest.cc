@@ -15,18 +15,31 @@
 
 namespace message_center {
 
-/* Test fixture declaration ***************************************************/
+namespace test {
+
+/* Test fixture ***************************************************************/
 
 class BoundedLabelTest : public testing::Test {
  public:
-  BoundedLabelTest();
-  virtual ~BoundedLabelTest();
+  BoundedLabelTest() {
+    digit_pixels_ = font_.GetStringWidth(UTF8ToUTF16("0"));
+    space_pixels_ = font_.GetStringWidth(UTF8ToUTF16(" "));
+    ellipsis_pixels_ = font_.GetStringWidth(UTF8ToUTF16("\xE2\x80\xA6"));
+  }
+
+  virtual ~BoundedLabelTest() {}
 
   // Replaces all occurences of three periods ("...") in the specified string
   // with an ellipses character (UTF8 "\xE2\x80\xA6") and returns a string16
   // with the results. This allows test strings to be specified as ASCII const
   // char* strings, making tests more readable and easier to write.
-  string16 ToString(const char* string);
+  string16 ToString(const char* string) {
+    const string16 periods = UTF8ToUTF16("...");
+    const string16 ellipses = UTF8ToUTF16("\xE2\x80\xA6");
+    string16 result = UTF8ToUTF16(string);
+    ReplaceSubstringsAfterOffset(&result, 0, periods, ellipses);
+    return result;
+  }
 
   // Converts the specified elision width to pixels. To make tests somewhat
   // independent of the fonts of the platform on which they're run, the elision
@@ -36,18 +49,32 @@ class BoundedLabelTest : public testing::Test {
   // test plaform. It is assumed that all digits have the same width in that
   // font, that this width is greater than the width of spaces, and that the
   // width of 3 digits is greater than the width of ellipses.
-  int ToPixels(int width);
+  int ToPixels(int width) {
+    return digit_pixels_ * width / 100 +
+           space_pixels_ * (width % 100) / 10 +
+           ellipsis_pixels_ * (width % 10);
+  }
 
   // Exercise BounderLabel::GetWrappedText() using the fixture's test label.
-  string16 GetWrappedText(int width);
+  string16 GetWrappedText(int width) {
+    return label_->GetWrappedTextForTest(width, lines_);
+  }
 
-  // Exercise BounderLabel::GetPreferredLines() using the fixture's test label.
-  int GetPreferredLines(int width);
+  // Exercise BounderLabel::GetLinesForWidthAndLimit() using the test label.
+  int GetLinesForWidth(int width) {
+    label_->SetBounds(0, 0, width, font_.GetHeight() * lines_);
+    return label_->GetLinesForWidthAndLimit(width, lines_);
+  }
 
  protected:
   // Creates a label to test with. Returns this fixture, which can be used to
   // test the newly created label using the exercise methods above.
-  BoundedLabelTest& Label(string16 text, size_t lines);
+  BoundedLabelTest& Label(string16 text, int lines) {
+    lines_ = lines;
+    label_.reset(new BoundedLabel(text, font_));
+    label_->SetLineLimit(lines_);
+    return *this;
+  }
 
  private:
   gfx::Font font_;  // The default font, which will be used for tests.
@@ -55,58 +82,18 @@ class BoundedLabelTest : public testing::Test {
   int space_pixels_;
   int ellipsis_pixels_;
   scoped_ptr<BoundedLabel> label_;
-  size_t max_lines_;
+  int lines_;
 };
 
-/* Test fixture definition ****************************************************/
-
-BoundedLabelTest::BoundedLabelTest() {
-  digit_pixels_ = font_.GetStringWidth(UTF8ToUTF16("0"));
-  space_pixels_ = font_.GetStringWidth(UTF8ToUTF16(" "));
-  ellipsis_pixels_ = font_.GetStringWidth(UTF8ToUTF16("\xE2\x80\xA6"));
-}
-
-BoundedLabelTest::~BoundedLabelTest() {
-}
-
-string16 BoundedLabelTest::ToString(const char* string) {
-  const string16 periods = UTF8ToUTF16("...");
-  const string16 ellipses = UTF8ToUTF16("\xE2\x80\xA6");
-  string16 result = UTF8ToUTF16(string);
-  ReplaceSubstringsAfterOffset(&result, 0, periods, ellipses);
-  return result;
-}
-
-int BoundedLabelTest::ToPixels(int width) {
-  return digit_pixels_ * width / 100 +
-         space_pixels_ * (width % 100) / 10 +
-         ellipsis_pixels_ * (width % 10);
-}
-
-string16 BoundedLabelTest::GetWrappedText(int width) {
-  return label_->GetWrappedTextForTest(width, max_lines_);
-}
-
-int BoundedLabelTest::GetPreferredLines(int width) {
-  label_->SetBounds(0, 0, width, font_.GetHeight() * max_lines_);
-  return label_->GetPreferredLines();
-}
-
-BoundedLabelTest& BoundedLabelTest::Label(string16 text, size_t lines) {
-  max_lines_ = lines;
-  label_.reset(new BoundedLabel(text, font_, max_lines_));
-  return *this;
-}
-
-/* Test macro definitions *****************************************************/
+/* Test macro *****************************************************************/
 
 #define TEST_WRAP(expected, text, width, lines) \
   EXPECT_EQ(ToString(expected), \
             Label(ToString(text), lines).GetWrappedText(ToPixels(width)))
 
-#define TEST_PREFERRED_LINES(expected, text, width, lines) \
+#define TEST_LINES(expected, text, width, lines) \
   EXPECT_EQ(expected, \
-            Label(ToString(text), lines).GetPreferredLines(ToPixels(width)))
+            Label(ToString(text), lines).GetLinesForWidth(ToPixels(width)))
 
 /* Elision tests **************************************************************/
 
@@ -115,7 +102,7 @@ TEST_F(BoundedLabelTest, ElisionTest) {
   TEST_WRAP("123", "123", 301, 1);
   TEST_WRAP("123", "123", 301, 2);
   TEST_WRAP("123", "123", 301, 3);
-  TEST_WRAP("123\n456", "123 456", 0, 2);  // 301, 2);
+  TEST_WRAP("123\n456", "123 456", 301, 2);
   TEST_WRAP("123\n456", "123 456", 301, 3);
   TEST_WRAP("123\n456\n789", "123 456 789", 301, 3);
 
@@ -186,37 +173,42 @@ TEST_F(BoundedLabelTest, ElisionTest) {
 
   // TODO(dharcourt): Add test cases for:
   // - Empty and very large strings
-  // - Zero and very large max lines values
+  // - Zero, very large, and negative line limit values
   // - Other input boundary conditions
   // TODO(dharcourt): Add some randomly generated fuzz test cases.
 
 }
 
-/* GetPreferredLinesTest ******************************************************/
+/* GetLinesTest ***************************************************************/
 
-TEST_F(BoundedLabelTest, GetPreferredLinesTest) {
-  // Zero, small, and negative width values should yield one word per line.
-  TEST_PREFERRED_LINES(2, "123 456", 0, 1);
-  TEST_PREFERRED_LINES(2, "123 456", 1, 1);
-  TEST_PREFERRED_LINES(2, "123 456", 2, 1);
-  TEST_PREFERRED_LINES(2, "123 456", 3, 1);
-  TEST_PREFERRED_LINES(2, "123 456", -1, 1);
-  TEST_PREFERRED_LINES(2, "123 456", -2, 1);
-  TEST_PREFERRED_LINES(2, "123 456", std::numeric_limits<int>::min(), 1);
+TEST_F(BoundedLabelTest, GetLinesTest) {
+  // Zero and negative width values should yield zero lines.
+  TEST_LINES(0, "123 456", 0, 1);
+  TEST_LINES(0, "123 456", -1, 1);
+  TEST_LINES(0, "123 456", -2, 1);
+  TEST_LINES(0, "123 456", std::numeric_limits<int>::min(), 1);
+
+  // Small width values should yield one word per line.
+  TEST_LINES(1, "123 456", 1, 1);
+  TEST_LINES(2, "123 456", 1, 2);
+  TEST_LINES(1, "123 456", 2, 1);
+  TEST_LINES(2, "123 456", 2, 2);
+  TEST_LINES(1, "123 456", 3, 1);
+  TEST_LINES(2, "123 456", 3, 2);
 
   // Large width values should yield all words on one line.
-  TEST_PREFERRED_LINES(1, "123 456", 610, 1);
-  TEST_PREFERRED_LINES(1, "123 456", std::numeric_limits<int>::max(), 1);
+  TEST_LINES(1, "123 456", 610, 1);
+  TEST_LINES(1, "123 456", std::numeric_limits<int>::max(), 1);
 }
 
 /* Other tests ****************************************************************/
 
 // TODO(dharcourt): Add test cases to verify that:
-// - SetMaxLines() affects GetActualLines(), GetHeightForWidth(), GetTextSize(),
-//   and GetWrappedText() return values but not GetPreferredLines() or
-//   GetTextSize() ones.
+// - SetMaxLines() affects the return values of some methods but not others.
 // - Bound changes affects GetPreferredLines(), GetTextSize(), and
 //   GetWrappedText() return values.
 // - GetTextFlags are as expected.
+
+}  // namespace test
 
 }  // namespace message_center

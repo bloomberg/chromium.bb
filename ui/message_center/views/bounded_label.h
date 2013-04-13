@@ -14,37 +14,42 @@
 #include "ui/views/view.h"
 
 namespace gfx {
-
 class Font;
-
-}  // namespace gfx
+}
 
 namespace message_center {
 
 class InnerBoundedLabel;
 
+namespace test {
+class BoundedLabelTest;
+}
+
 // BoundedLabels display left aligned text up to a maximum number of lines, with
 // ellipsis at the end of the last line for any omitted text. BoundedLabel is a
 // direct subclass of views::Views rather than a subclass of views::Label
-// because of limitations in views::Label's implementation. See the description
-// of InnerBoundedLabel in the .cc file for details.
+// to avoid exposing some of views::Label's methods that can't be made to work
+// with BoundedLabel. See the description of InnerBoundedLabel in the
+// bounded_label.cc file for details.
 class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
  public:
-  BoundedLabel(const string16& text, gfx::Font font, size_t line_limit);
-  BoundedLabel(const string16& text, size_t line_limit);
+  BoundedLabel(const string16& text, gfx::Font font);
+  BoundedLabel(const string16& text);
   virtual ~BoundedLabel();
 
-  void SetLineLimit(size_t lines);
-  size_t GetLinesForWidth(int width);
-  size_t GetPreferredLines();
-  size_t GetActualLines();
-
   void SetColors(SkColor textColor, SkColor backgroundColor);
+  void SetLineLimit(int lines);  // Pass in -1 for no limit.
+
+  int line_limit() const { return line_limit_; }
+
+  // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
+  int GetLinesForWidthAndLimit(int width, int limit);
+  gfx::Size GetSizeForWidthAndLines(int width, int lines);
 
   // Overridden from views::View.
   virtual int GetBaseline() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -55,11 +60,12 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  private:
-  friend class BoundedLabelTest;
+  friend class test::BoundedLabelTest;
 
-  string16 GetWrappedTextForTest(int width, size_t line_limit);
+  string16 GetWrappedTextForTest(int width, int lines);
 
   scoped_ptr<InnerBoundedLabel> label_;
+  int line_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundedLabel);
 };
