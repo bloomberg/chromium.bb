@@ -189,6 +189,8 @@ public:
     bool handleMousePress();
     bool handleTouchEvent(Node*);
     void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags);
+    void inspect(Node*);
+    void focusNode();
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -221,8 +223,6 @@ private:
 
     Node* assertEditableNode(ErrorString*, int nodeId);
     Element* assertEditableElement(ErrorString*, int nodeId);
-
-    void inspect(Node*);
 
     int pushNodePathToFrontend(Node*);
     void pushChildNodesToFrontend(int nodeId, int depth = 1);
@@ -263,6 +263,7 @@ private:
     typedef HashMap<String, Vector<RefPtr<Node> > > SearchResults;
     SearchResults m_searchResults;
     OwnPtr<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
+    RefPtr<Node> m_nodeToFocus;
     bool m_searchingForNode;
     OwnPtr<HighlightConfig> m_inspectModeHighlightConfig;
     OwnPtr<InspectorHistory> m_history;
