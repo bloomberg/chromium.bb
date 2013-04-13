@@ -142,27 +142,14 @@ static void didOpen(AsyncFileStream* proxy, bool success)
         proxy->client()->didOpen(success);
 }
 
-void AsyncFileStream::openForRead(const String& path, long long offset, long long length)
+void AsyncFileStream::open(const String& path, long long offset, long long length)
 {
-    fileThread()->postTask(createFileThreadTask(this, &AsyncFileStream::openForReadOnFileThread, path, offset, length));
+    fileThread()->postTask(createFileThreadTask(this, &AsyncFileStream::openOnFileThread, path, offset, length));
 }
 
-void AsyncFileStream::openForReadOnFileThread(const String& path, long long offset, long long length)
+void AsyncFileStream::openOnFileThread(const String& path, long long offset, long long length)
 {
-    bool success = m_stream->openForRead(path, offset, length);
-    callOnMainThread(didOpen, AllowCrossThreadAccess(this), success);
-}
-
-void AsyncFileStream::openForWrite(const String& path)
-{
-    fileThread()->postTask(
-        createFileThreadTask(this,
-                             &AsyncFileStream::openForWriteOnFileThread, path));
-}
-
-void AsyncFileStream::openForWriteOnFileThread(const String& path)
-{
-    bool success = m_stream->openForWrite(path);
+    bool success = m_stream->open(path, offset, length);
     callOnMainThread(didOpen, AllowCrossThreadAccess(this), success);
 }
 
@@ -193,40 +180,6 @@ void AsyncFileStream::readOnFileThread(char* buffer, int length)
 {
     int bytesRead = m_stream->read(buffer, length);
     callOnMainThread(didRead, AllowCrossThreadAccess(this), bytesRead);
-}
-
-static void didWrite(AsyncFileStream* proxy, int bytesWritten)
-{
-    if (proxy->client())
-        proxy->client()->didWrite(bytesWritten);
-}
-
-void AsyncFileStream::write(const KURL& blobURL, long long position, int length)
-{
-    fileThread()->postTask(createFileThreadTask(this, &AsyncFileStream::writeOnFileThread, blobURL, position, length));
-}
-
-void AsyncFileStream::writeOnFileThread(const KURL& blobURL, long long position, int length)
-{
-    int bytesWritten = m_stream->write(blobURL, position, length);
-    callOnMainThread(didWrite, AllowCrossThreadAccess(this), bytesWritten);
-}
-
-static void didTruncate(AsyncFileStream* proxy, bool success)
-{
-    if (proxy->client())
-        proxy->client()->didTruncate(success);
-}
-
-void AsyncFileStream::truncate(long long position)
-{
-    fileThread()->postTask(createFileThreadTask(this, &AsyncFileStream::truncateOnFileThread, position));
-}
-
-void AsyncFileStream::truncateOnFileThread(long long position)
-{
-    bool success = m_stream->truncate(position);
-    callOnMainThread(didTruncate, AllowCrossThreadAccess(this), success);
 }
 
 } // namespace WebCore

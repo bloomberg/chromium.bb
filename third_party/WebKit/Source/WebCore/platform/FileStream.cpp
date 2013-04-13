@@ -78,7 +78,7 @@ long long FileStream::getSize(const String& path, double expectedModificationTim
     return length;
 }
 
-bool FileStream::openForRead(const String& path, long long offset, long long length)
+bool FileStream::open(const String& path, long long offset, long long length)
 {
     if (isHandleValid(m_handle))
         return true;
@@ -98,12 +98,6 @@ bool FileStream::openForRead(const String& path, long long offset, long long len
     m_bytesProcessed = 0;
 
     return true;
-}
-
-bool FileStream::openForWrite(const String&)
-{
-    // FIXME: to be implemented.
-    return false;
 }
 
 void FileStream::close()
@@ -130,18 +124,6 @@ int FileStream::read(char* buffer, int bufferSize)
         m_bytesProcessed += bytesRead;
 
     return bytesRead;
-}
-
-int FileStream::write(const KURL&, long long, int)
-{
-    // FIXME: to be implemented.
-    return -1;
-}
-
-bool FileStream::truncate(long long)
-{
-    // FIXME: to be implemented.
-    return false;
 }
 
 } // namespace WebCore

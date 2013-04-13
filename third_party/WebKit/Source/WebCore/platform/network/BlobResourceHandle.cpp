@@ -411,7 +411,7 @@ int BlobResourceHandle::readFileSync(const BlobDataItem& item, char* buf, int le
         long long bytesToRead = m_itemLengthList[m_readItemCount] - m_currentItemReadSize;
         if (bytesToRead > m_totalRemainingSize)
             bytesToRead = m_totalRemainingSize;
-        bool success = m_stream->openForRead(item.path, item.offset + m_currentItemReadSize, bytesToRead);
+        bool success = m_stream->open(item.path, item.offset + m_currentItemReadSize, bytesToRead);
         m_currentItemReadSize = 0;
         if (!success) {
             m_errorCode = notReadableError;
@@ -483,7 +483,7 @@ void BlobResourceHandle::readFileAsync(const BlobDataItem& item)
     long long bytesToRead = m_itemLengthList[m_readItemCount] - m_currentItemReadSize;
     if (bytesToRead > m_totalRemainingSize)
         bytesToRead = static_cast<int>(m_totalRemainingSize);
-    m_asyncStream->openForRead(item.path, item.offset + m_currentItemReadSize, bytesToRead);
+    m_asyncStream->open(item.path, item.offset + m_currentItemReadSize, bytesToRead);
     m_fileOpened = true;
     m_currentItemReadSize = 0;
 }

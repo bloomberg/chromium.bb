@@ -48,12 +48,9 @@ public:
     ~AsyncFileStream();
 
     void getSize(const String& path, double expectedModificationTime);
-    void openForRead(const String& path, long long offset, long long length);
-    void openForWrite(const String& path);
+    void open(const String& path, long long offset, long long length);
     void close();
     void read(char* buffer, int length);
-    void write(const KURL& blobURL, long long position, int length);
-    void truncate(long long position);
 
     // Stops the proxy and schedules it to be destructed. All the pending tasks will be aborted and the file stream will be closed.
     // Note: the caller should deref the instance immediately after calling stop().
@@ -69,12 +66,9 @@ private:
     void startOnFileThread();
     void stopOnFileThread();
     void getSizeOnFileThread(const String& path, double expectedModificationTime);
-    void openForReadOnFileThread(const String& path, long long offset, long long length);
-    void openForWriteOnFileThread(const String& path);
+    void openOnFileThread(const String& path, long long offset, long long length);
     void closeOnFileThread();
     void readOnFileThread(char* buffer, int length);
-    void writeOnFileThread(const KURL& blobURL, long long position, int length);
-    void truncateOnFileThread(long long position);
 
     RefPtr<FileStream> m_stream;
 

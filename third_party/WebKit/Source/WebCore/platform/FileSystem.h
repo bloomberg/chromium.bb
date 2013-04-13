@@ -36,60 +36,11 @@
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
-#if USE(CF)
-#include <wtf/RetainPtr.h>
-#endif
-
-#if USE(CF)
-typedef struct __CFBundle* CFBundleRef;
-typedef const struct __CFData* CFDataRef;
-#endif
-
-#if OS(WINDOWS)
-// These are to avoid including <winbase.h> in a header for Chromium
-typedef void *HANDLE;
-// Assuming STRICT
-typedef struct HINSTANCE__* HINSTANCE;
-typedef HINSTANCE HMODULE;
-#endif
-
-
 namespace WebCore {
-
-// PlatformModule
-#if OS(WINDOWS)
-typedef HMODULE PlatformModule;
-#elif USE(CF)
-typedef CFBundleRef PlatformModule;
-#else
-typedef void* PlatformModule;
-#endif
-
-// PlatformModuleVersion
-#if OS(WINDOWS)
-struct PlatformModuleVersion {
-    unsigned leastSig;
-    unsigned mostSig;
-
-    PlatformModuleVersion(unsigned)
-        : leastSig(0)
-        , mostSig(0)
-    {
-    }
-
-    PlatformModuleVersion(unsigned lsb, unsigned msb)
-        : leastSig(lsb)
-        , mostSig(msb)
-    {
-    }
-
-};
-#else
-typedef unsigned PlatformModuleVersion;
-#endif
 
 // PlatformFileHandle
 #if OS(WINDOWS)
+typedef void *HANDLE;
 typedef HANDLE PlatformFileHandle;
 // FIXME: -1 is INVALID_HANDLE_VALUE, defined in <winbase.h>. Chromium tries to
 // avoid using Windows headers in headers.  We'd rather move this into the .cpp.
@@ -110,12 +61,6 @@ enum FileSeekOrigin {
     SeekFromEnd
 };
 
-enum FileLockMode {
-    LockShared = 1,
-    LockExclusive = 2,
-    LockNonBlocking = 4
-};
-
 #if OS(WINDOWS)
 static const char PlatformFilePathSeparator = '\\';
 #else
@@ -132,24 +77,16 @@ bool getFileModificationTime(const String&, time_t& result);
 bool getFileMetadata(const String&, FileMetadata&);
 String pathByAppendingComponent(const String& path, const String& component);
 bool makeAllDirectories(const String& path);
-String homeDirectoryPath();
 String pathGetFileName(const String&);
 String directoryName(const String&);
 
-bool canExcludeFromBackup(); // Returns true if any file can ever be excluded from backup.
-bool excludeFromBackup(const String&); // Returns true if successful.
-
 Vector<String> listDirectory(const String& path, const String& filter = String());
-
-CString fileSystemRepresentation(const String&);
 
 inline bool isHandleValid(const PlatformFileHandle& handle) { return handle != invalidPlatformFileHandle; }
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
 inline bool isValidFileTime(double time) { return std::isfinite(time); }
 
-// Prefix is what the filename should be prefixed with, not the full path.
-String openTemporaryFile(const String& prefix, PlatformFileHandle&);
 PlatformFileHandle openFile(const String& path, FileOpenMode);
 void closeFile(PlatformFileHandle&);
 // Returns the resulting offset from the beginning of the file if successful, -1 otherwise.
@@ -159,23 +96,9 @@ bool truncateFile(PlatformFileHandle, long long offset);
 int writeToFile(PlatformFileHandle, const char* data, int length);
 // Returns number of bytes actually written if successful, -1 otherwise.
 int readFromFile(PlatformFileHandle, char* data, int length);
-#if USE(FILE_LOCK)
-bool lockFile(PlatformFileHandle, FileLockMode);
-bool unlockFile(PlatformFileHandle);
-#endif
-
-// Functions for working with loadable modules.
-bool unloadModule(PlatformModule);
 
 // Encode a string for use within a file name.
 String encodeForFileName(const String&);
-
-#if USE(CF)
-RetainPtr<CFURLRef> pathAsURL(const String&);
-#endif
-#if USE(SOUP)
-uint64_t getVolumeFreeSizeForPath(const char*);
-#endif
 
 } // namespace WebCore
 
