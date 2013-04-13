@@ -104,7 +104,7 @@ void ChromotingClient::OnConnectionState(
     protocol::ErrorCode error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
-  if (state == protocol::ConnectionToHost::CONNECTED)
+  if (state == protocol::ConnectionToHost::AUTHENTICATED)
     Initialize();
   user_interface_->OnConnectionState(state, error);
 }

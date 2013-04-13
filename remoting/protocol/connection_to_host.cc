@@ -192,6 +192,8 @@ void ConnectionToHost::OnSessionStateChange(
                        base::Unretained(this)));
         audio_reader_->set_audio_stub(audio_stub_);
       }
+
+      SetState(AUTHENTICATED, OK);
       break;
 
     case Session::CLOSED:

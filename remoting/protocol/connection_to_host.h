@@ -54,6 +54,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   enum State {
     INITIALIZING,
     CONNECTING,
+    AUTHENTICATED,
     CONNECTED,
     FAILED,
     CLOSED,

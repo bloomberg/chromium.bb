@@ -73,6 +73,10 @@ std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
       return "INITIALIZING";
     case protocol::ConnectionToHost::CONNECTING:
       return "CONNECTING";
+    case protocol::ConnectionToHost::AUTHENTICATED:
+      // Report the authenticated state as 'CONNECTING' to avoid changing
+      // the interface between the plugin and webapp.
+      return "CONNECTING";
     case protocol::ConnectionToHost::CONNECTED:
       return "CONNECTED";
     case protocol::ConnectionToHost::CLOSED:
