@@ -458,25 +458,25 @@ html[dir='rtl'] #older-button {
 }
 
 html[dir='ltr'] #newest-button::before {
-  -webkit-padding-end: 0.3em;
-  content: '\00AB';  /* Left-pointing double angle quotation mark. */
+  /* Left-pointing double angle quotation mark followed by '&nbsp;'. */
+  content: '\00AB\A0';
 }
 
 html[dir='rtl'] #newest-button::after {
-  -webkit-padding-start: 0.3em;
-  content: '\00BB';  /* Right-pointing double angle quotation mark. */
+  /* '&nbsp;' followed by right-pointing double angle quotation mark. */
+  content: '\A0\00BB';
 }
 
 html[dir='ltr'] #newer-button::before,
 html[dir='rtl'] #older-button::before {
-  -webkit-padding-end: 0.3em;
-  content: '\2039';  /* Single left-pointing angle quotation mark. */
+  /* Single left-pointing angle quotation mark followed by '&nbsp;'. */
+  content: '\2039\A0';
 }
 
 html[dir='ltr'] #older-button::after,
 html[dir='rtl'] #newer-button::after {
-  -webkit-padding-start: 0.3em;
-  content: '\203A';  /* Single right-pointing angle quotation mark. */
+  /* 'nbsp;' followed by single right-pointing angle quotation mark. */
+  content: '\A0\203A';
 }
 
 /* Clear the float to ensure that #results-pagination encloses its children. */
