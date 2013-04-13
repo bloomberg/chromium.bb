@@ -275,11 +275,12 @@ function requestNotificationCards(requestParameters, callback) {
   };
 
   request.open(
-      'GET',
-      NOTIFICATION_CARDS_URL + '/notifications' + requestParameters,
+      'POST',
+      NOTIFICATION_CARDS_URL + '/notifications',
       true);
+  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   tasks.debugSetStepName('requestNotificationCards-send-request');
-  request.send();
+  request.send(requestParameters);
 }
 
 /**
@@ -290,7 +291,7 @@ function requestNotificationCards(requestParameters, callback) {
 function requestNotificationCardsWithLocation(position, callback) {
   // TODO(vadimt): Should we use 'q' as the parameter name?
   var requestParameters =
-      '?q=' + position.coords.latitude +
+      'q=' + position.coords.latitude +
       ',' + position.coords.longitude +
       ',' + position.coords.accuracy;
 
@@ -351,7 +352,7 @@ function requestCardDismissal(notificationId, callbackBoolean) {
   console.log('requestDismissingCard ' + notificationId);
   recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
   // Send a dismiss request to the server.
-  var requestParameters = '?id=' + notificationId;
+  var requestParameters = 'id=' + notificationId;
   var request = new XMLHttpRequest();
   request.responseType = 'text';
   request.onloadend = function(event) {
@@ -363,11 +364,12 @@ function requestCardDismissal(notificationId, callbackBoolean) {
   };
 
   request.open(
-      'GET',
-      NOTIFICATION_CARDS_URL + '/dismiss' + requestParameters,
+      'POST',
+      NOTIFICATION_CARDS_URL + '/dismiss',
       true);
+  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   tasks.debugSetStepName('requestCardDismissal-send-request');
-  request.send();
+  request.send(requestParameters);
 }
 
 /**
