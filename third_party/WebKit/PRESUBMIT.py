@@ -45,6 +45,7 @@ def _CommonChecks(input_api, output_api):
       maxlen=250, license_header=license_header))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
+  results.extend(_CheckTestExpectations(input_api, output_api))
   return results
 
 
@@ -100,6 +101,23 @@ def _CheckPatchFiles(input_api, output_api):
         "Don't commit .rej and .orig files.", problems)]
   else:
     return []
+
+
+def _CheckTestExpectations(input_api, output_api):
+  local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
+  if any(path.endswith('TestExpectations') for path in local_paths):
+    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+        'Tools', 'Scripts', 'lint-test-expectations')
+    _, errs = input_api.subprocess.Popen(
+        [input_api.python_executable, lint_path],
+        stdout=input_api.subprocess.PIPE,
+        stderr=input_api.subprocess.PIPE).communicate()
+    if not errs:
+      return [output_api.PresubmitError("lint-test-expectations failed "
+                                        "to produce output; check by hand. ")]
+    if errs != 'Lint succeeded.\n':
+      return [output_api.PresubmitError(errs)]
+  return []
 
 
 def CheckChangeOnUpload(input_api, output_api):
