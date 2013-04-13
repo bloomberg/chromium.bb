@@ -1331,7 +1331,7 @@ const Experiment kExperiments[] = {
     "enable-tcp-fast-open",
     IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME,
     IDS_FLAGS_ENABLE_TCP_FAST_OPEN_DESCRIPTION,
-    kOsAll,
+    kOsLinux | kOsCrOS | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
   },
 };
