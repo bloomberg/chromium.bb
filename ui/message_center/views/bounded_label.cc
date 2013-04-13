@@ -261,7 +261,8 @@ BoundedLabel::BoundedLabel(const string16& text, gfx::Font font)
   label_->SetText(text);
 }
 
-BoundedLabel::BoundedLabel(const string16& text) {
+BoundedLabel::BoundedLabel(const string16& text)
+    : line_limit_(-1) {
   label_.reset(new InnerBoundedLabel(*this));
   label_->SetText(text);
 }
