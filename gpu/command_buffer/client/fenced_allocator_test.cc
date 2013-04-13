@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/aligned_memory.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
@@ -33,6 +34,7 @@ using testing::_;
 class BaseFencedAllocatorTest : public testing::Test {
  protected:
   static const unsigned int kBufferSize = 1024;
+  static const int kAllocAlignment = 16;
 
   virtual void SetUp() {
     api_mock_.reset(new AsyncAPIMock);
@@ -402,7 +404,8 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
     // Though allocating this buffer isn't strictly necessary, it makes
     // allocations point to valid addresses, so they could be used for
     // something.
-    buffer_.reset(new char[kBufferSize]);
+    buffer_.reset(static_cast<char*>(base::AlignedAlloc(
+        kBufferSize, kAllocAlignment)));
     allocator_.reset(new FencedAllocatorWrapper(kBufferSize, helper_.get(),
                                                 buffer_.get()));
   }
@@ -417,7 +420,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
   }
 
   scoped_ptr<FencedAllocatorWrapper> allocator_;
-  scoped_ptr<char[]> buffer_;
+  scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
 };
 
 // Checks basic alloc and free.
@@ -464,25 +467,19 @@ TEST_F(FencedAllocatorWrapperTest, TestAllocZero) {
 }
 
 // Checks that allocation offsets are aligned to multiples of 16 bytes.
-#if defined(OS_WIN)
-// See crbug/226750
-#define MAYBE_TestAlignment DISABLED_TestAlignment
-#else
-#define MAYBE_TestAlignment TestAlignment
-#endif
-TEST_F(FencedAllocatorWrapperTest, MAYBE_TestAlignment) {
+TEST_F(FencedAllocatorWrapperTest, TestAlignment) {
   allocator_->CheckConsistency();
 
   const unsigned int kSize1 = 75;
   void *pointer1 = allocator_->Alloc(kSize1);
   ASSERT_TRUE(pointer1);
-  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer1) & 15, 0);
+  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer1) & (kAllocAlignment - 1), 0);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   const unsigned int kSize2 = 43;
   void *pointer2 = allocator_->Alloc(kSize2);
   ASSERT_TRUE(pointer2);
-  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer2) & 15, 0);
+  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer2) & (kAllocAlignment - 1), 0);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   allocator_->Free(pointer2);
