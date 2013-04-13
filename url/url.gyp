@@ -56,23 +56,25 @@
         'FULL_FILESYSTEM_URL_SUPPORT=1',
       ],
       'conditions': [
-        ['component=="shared_library"', {
-          'defines': [
-            'GURL_DLL',
-            'GURL_IMPLEMENTATION=1',
-          ],
-          'direct_dependent_settings': {
+        ['component=="shared_library"',
+          {
             'defines': [
               'GURL_DLL',
+              'GURL_IMPLEMENTATION=1',
             ],
-          },
-        }],
+            'direct_dependent_settings': {
+              'defines': [
+                'GURL_DLL',
+              ],
+            },
+          }
+        ],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
     {
-      'target_name': 'googleurl_unittests',
+      'target_name': 'url_unittests',
       'type': 'executable',
       'dependencies': [
         'url',
@@ -92,18 +94,77 @@
         'FULL_FILESYSTEM_URL_SUPPORT=1',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
+        ['os_posix==1 and OS!="mac" and OS!="ios"',
+          {
+            'conditions': [
+              ['linux_use_tcmalloc==1',
+                {
+                  'dependencies': [
+                    '../base/allocator/allocator.gyp:allocator',
+                  ],
+                }
               ],
-            }],
-          ],
-        }],
+            ],
+          }
+        ],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      'target_name': 'googleurl_unittests',
+      'type': 'none',
+      'dependencies': [
+        'url_unittests',
+      ],
+      'conditions': [
+        ['OS != "ios"',
+          {
+            'actions': [
+              {
+                'message': 'TEMPORARY: Copying url_unittests to googleurl_unittests',
+                'variables': {
+                  'url_copy_target': '<(PRODUCT_DIR)/url_unittests<(EXECUTABLE_SUFFIX)',
+                  'url_copy_dest': '<(PRODUCT_DIR)/googleurl_unittests<(EXECUTABLE_SUFFIX)',
+                },
+                'inputs': ['<(url_copy_target)'],
+                'outputs': ['<(url_copy_dest)'],
+                'action_name': 'TEMP_copy_url_unittests',
+                'action': [
+                  'python', '-c',
+                  'import os, shutil, stat; ' \
+                  'shutil.copyfile(\'<(url_copy_target)\', \'<(url_copy_dest)\'); ' \
+                  'os.chmod(\'<(url_copy_dest)\', ' \
+                  'stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)'
+                ],
+              },
+            ],
+          }
+        ],
+        ['OS == "ios"',
+          {
+            'actions': [
+              {
+                'message': 'TEMPORARY: Copying url_unittests to googleurl_unittests',
+                'variables': {
+                  'url_copy_target': '<(PRODUCT_DIR)/url_unittests.app/url_unittests',
+                  'url_copy_dest': '<(PRODUCT_DIR)/googleurl_unittests.app/googleurl_unittests',
+                },
+                'inputs': ['<(url_copy_target)'],
+                'outputs': ['<(url_copy_dest)'],
+                'action_name': 'TEMP_copy_url_unittests',
+                'action': [
+                  'python', '-c',
+                  'import os, shutil, stat; ' \
+                  'shutil.copyfile(\'<(url_copy_target)\', \'<(url_copy_dest)\'); ' \
+                  'os.chmod(\'<(url_copy_dest)\', ' \
+                  'stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)'
+                ],
+              },
+            ],
+          }
+        ]
+      ],
     },
   ],
 }
