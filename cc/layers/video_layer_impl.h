@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_VIDEO_LAYER_IMPL_H_
 #define CC_LAYERS_VIDEO_LAYER_IMPL_H_
 
+#include <vector>
+
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/video_resource_updater.h"
@@ -52,6 +54,10 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   scoped_ptr<VideoResourceUpdater> updater_;
   VideoFrameExternalResources::ResourceType frame_resource_type_;
   std::vector<ResourceProvider::ResourceId> frame_resources_;
+
+  // TODO(danakj): Remove this when hardware frames come through a mailbox.
+  unsigned hardware_resource_;
+  TextureMailbox::ReleaseCallback hardware_release_callback_;
 
   // TODO(danakj): Remove these, hide software path inside ResourceProvider and
   // ExternalResource (aka TextureMailbox) classes.

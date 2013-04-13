@@ -47,6 +47,10 @@ class VideoFrameExternalResources {
   ResourceType type;
   std::vector<TextureMailbox> mailboxes;
 
+  // TODO(danakj): Remove these when we get a Mailbox from VideoFrame.
+  unsigned hardware_resource;
+  TextureMailbox::ReleaseCallback hardware_release_callback;
+
   // TODO(danakj): Remove these too.
   std::vector<unsigned> software_resources;
   TextureMailbox::ReleaseCallback software_release_callback;
@@ -64,8 +68,7 @@ class VideoResourceUpdater
   ~VideoResourceUpdater();
 
   VideoFrameExternalResources CreateForHardwarePlanes(
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      const TextureMailbox::ReleaseCallback& release_callback);
+      const scoped_refptr<media::VideoFrame>& video_frame);
 
   VideoFrameExternalResources CreateForSoftwarePlanes(
       const scoped_refptr<media::VideoFrame>& video_frame);
@@ -101,9 +104,7 @@ class VideoResourceUpdater
                               unsigned sync_point,
                               bool lost_resource);
   static void ReturnTexture(ResourceProvider* resource_provider,
-                            TextureMailbox::ReleaseCallback callback,
-                            unsigned texture_id,
-                            gpu::Mailbox mailbox,
+                            unsigned resource_id,
                             unsigned sync_point,
                             bool lost_resource);
 

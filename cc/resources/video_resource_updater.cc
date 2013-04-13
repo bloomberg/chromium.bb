@@ -19,7 +19,8 @@ const unsigned kRGBResourceFormat = GL_RGBA;
 
 namespace cc {
 
-VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
+VideoFrameExternalResources::VideoFrameExternalResources()
+    : type(NONE), hardware_resource(0) {}
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
@@ -289,8 +290,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
-    const scoped_refptr<media::VideoFrame>& video_frame,
-    const TextureMailbox::ReleaseCallback& release_callback) {
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   if (!VerifyFrame(video_frame))
     return VideoFrameExternalResources();
 
@@ -322,37 +322,25 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       return VideoFrameExternalResources();
   }
 
-  gpu::Mailbox mailbox;
-  GLC(context, context->genMailboxCHROMIUM(mailbox.name));
-  GLC(context, context->bindTexture(GL_TEXTURE_2D, video_frame->texture_id()));
-  GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
-  GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
+  external_resources.hardware_resource =
+      resource_provider_->CreateResourceFromExternalTexture(
+          video_frame->texture_id());
 
   TextureMailbox::ReleaseCallback callback_to_return_resource =
       base::Bind(&ReturnTexture,
                  base::Unretained(resource_provider_),
-                 release_callback,
-                 video_frame->texture_id(),
-                 mailbox);
-  external_resources.mailboxes.push_back(
-      TextureMailbox(mailbox, callback_to_return_resource));
+                 external_resources.hardware_resource);
+  external_resources.hardware_release_callback = callback_to_return_resource;
   return external_resources;
 }
 
 // static
 void VideoResourceUpdater::ReturnTexture(
     ResourceProvider* resource_provider,
-    TextureMailbox::ReleaseCallback callback,
-    unsigned texture_id,
-    gpu::Mailbox mailbox,
+    unsigned resource_id,
     unsigned sync_point,
     bool lost_resource) {
-  WebKit::WebGraphicsContext3D* context =
-      resource_provider->GraphicsContext3D();
-  GLC(context, context->bindTexture(GL_TEXTURE_2D, texture_id));
-  GLC(context, context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
-  GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
-  callback.Run(sync_point, lost_resource);
+  resource_provider->DeleteResource(resource_id);
 }
 
 // static
