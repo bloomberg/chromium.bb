@@ -398,7 +398,8 @@ class InstantController : public InstantPage::Delegate,
   string16 last_omnibox_text_;
 
   // The most recent user_text passed to Update(). Used to filter out-of-date
-  // URL suggestions from the Instant page.
+  // URL suggestions from the Instant page. Set in Update() and cleared when
+  // the page sets temporary text (SetSuggestions() with REPLACE behavior).
   string16 last_user_text_;
 
   // True if the last Update() had an inline autocompletion. Used only to make

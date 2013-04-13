@@ -1648,3 +1648,22 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(0, on_change_calls_);
   EXPECT_EQ(0, on_native_suggestions_calls_);
 }
+
+// Test that suggestions are not accepted when unexpected.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DeniesUnexpectedSuggestions) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+  SetOmniboxTextAndWaitForOverlayToShow("chip");
+  SendDownArrow();
+
+  EXPECT_EQ("result 1", GetOmniboxText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+
+  // Make the page send an unexpected suggestion.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'chippies';"
+                            "handleOnChange();"));
+
+  // Verify that the suggestion is ignored.
+  EXPECT_EQ("result 1", GetOmniboxText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+}

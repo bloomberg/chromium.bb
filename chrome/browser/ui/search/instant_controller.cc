@@ -1144,6 +1144,7 @@ void InstantController::SetSuggestions(
     // what it's showing, as the user arrows up/down through the page-provided
     // suggestions). So, update these state variables here.
     last_omnibox_text_ = suggestion.text;
+    last_user_text_.clear();
     last_suggestion_ = InstantSuggestion();
     last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
     LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
@@ -1556,6 +1557,11 @@ void InstantController::SendMostVisitedItems(
 }
 
 bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
+  // We only accept suggestions if the user has typed text. If the user is
+  // arrowing up/down (|last_user_text_| is empty), we reject suggestions.
+  if (last_user_text_.empty())
+    return false;
+
   // If the page is trying to set inline autocompletion in verbatim mode,
   // instead try suggesting the exact omnibox text. This makes the omnibox
   // interpret user text as an URL if possible while preventing unwanted
@@ -1630,4 +1636,3 @@ bool InstantController::ShouldSwitchToLocalNTP() const {
 
   return chrome::IsAggressiveLocalNTPFallbackEnabled();
 }
-
