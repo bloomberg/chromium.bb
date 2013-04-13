@@ -88,7 +88,7 @@ midnum . 2
 decpoint . 2
 always . 256
 always ; 23
-midnum : 6-25
+midnum : 3456
 always : 25
 endnum ! 6-235
 always ! 235
