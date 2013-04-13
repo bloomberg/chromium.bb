@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/observer_list.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEventListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
@@ -16,7 +15,6 @@
 namespace autofill {
 
 class PageClickListener;
-
 
 // This class is responsible for tracking clicks on elements in web pages and
 // notifiying the associated listener when a node is clicked.
@@ -33,15 +31,11 @@ class PageClickListener;
 class PageClickTracker : public content::RenderViewObserver,
                          public WebKit::WebDOMEventListener {
  public:
-  explicit PageClickTracker(content::RenderView* render_view);
+  // The |listener| will be notified when an element is clicked.  It must
+  // outlive this class.
+  PageClickTracker(content::RenderView* render_view,
+                   PageClickListener* listener);
   virtual ~PageClickTracker();
-
-  // Adds/removes a listener for getting notification when an element is
-  // clicked.  Note that the order of insertion is important as a listener when
-  // notified can decide to stop the propagation of the event (so that listeners
-  // inserted after don't get the notification).
-  void AddListener(PageClickListener* listener);
-  void RemoveListener(PageClickListener* listener);
 
  private:
   // RenderView::Observer implementation.
@@ -64,11 +58,10 @@ class PageClickTracker : public content::RenderViewObserver,
   bool was_focused_;
 
   // The frames we are listening to for mouse events.
-  typedef std::vector<WebKit::WebFrame*> FrameList;
-  FrameList tracked_frames_;
+  std::vector<WebKit::WebFrame*> tracked_frames_;
 
   // The listener getting the actual notifications.
-  ObserverList<PageClickListener> listeners_;
+  PageClickListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(PageClickTracker);
 };

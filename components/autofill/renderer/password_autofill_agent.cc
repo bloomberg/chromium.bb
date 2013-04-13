@@ -415,22 +415,6 @@ void PasswordAutofillAgent::FrameWillClose(WebKit::WebFrame* frame) {
   FrameClosing(frame);
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// PageClickListener implementation:
-
-bool PasswordAutofillAgent::InputElementClicked(
-    const WebKit::WebInputElement& element,
-    bool was_focused,
-    bool is_focused) {
-  // TODO(jcivelli): http://crbug.com/51644 Implement behavior.
-  return false;
-}
-
-bool PasswordAutofillAgent::InputElementLostFocus() {
-  return false;
-}
-
 void PasswordAutofillAgent::OnFillPasswordForm(
     const PasswordFormFillData& form_data,
     bool disable_popup) {

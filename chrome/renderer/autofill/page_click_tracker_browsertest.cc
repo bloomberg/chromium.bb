@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/renderer/page_click_listener.h"
 #include "components/autofill/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -23,23 +22,20 @@ class TestPageClickListener : public PageClickListener {
       : input_element_clicked_called_(false),
         input_element_lost_focus_called_(false),
         was_focused_(false),
-        is_focused_(false),
-        notification_response_(false) {
+        is_focused_(false) {
   }
 
-  virtual bool InputElementClicked(const WebKit::WebInputElement& element,
+  virtual void InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) OVERRIDE {
     input_element_clicked_called_ = true;
     element_clicked_ = element;
     was_focused_ = was_focused;
     is_focused_ = is_focused;
-    return notification_response_;
   }
 
-  virtual bool InputElementLostFocus() OVERRIDE {
+  virtual void InputElementLostFocus() OVERRIDE {
     input_element_lost_focus_called_ = true;
-    return notification_response_;
   }
 
   void ClearResults() {
@@ -55,19 +51,16 @@ class TestPageClickListener : public PageClickListener {
   WebKit::WebInputElement element_clicked_;
   bool was_focused_;
   bool is_focused_;
-  bool notification_response_;
 };
 
-class PageClickTrackerTest : public ChromeRenderViewTest {
+class PageClickTrackerTest : public content::RenderViewTest {
  protected:
-  virtual void SetUp() {
-    ChromeRenderViewTest::SetUp();
+  virtual void SetUp() OVERRIDE {
+    content::RenderViewTest::SetUp();
 
     // RenderView creates PageClickTracker but it doesn't keep it around.
     // Rather than make it do so for the test, we create a new object.
-    page_click_tracker_.reset(new PageClickTracker(view_));
-    page_click_tracker_->AddListener(&test_listener1_);
-    page_click_tracker_->AddListener(&test_listener2_);
+    page_click_tracker_.reset(new PageClickTracker(view_, &test_listener_));
 
     LoadHTML("<form>"
              "  <input type='text' id='text_1'></input><br>"
@@ -98,8 +91,7 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
   }
 
   scoped_ptr<PageClickTracker>  page_click_tracker_;
-  TestPageClickListener test_listener1_;
-  TestPageClickListener test_listener2_;
+  TestPageClickListener test_listener_;
   WebKit::WebElement text_;
 };
 
@@ -107,55 +99,23 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
 TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_TRUE(test_listener1_.input_element_clicked_called_);
-  EXPECT_TRUE(test_listener2_.input_element_clicked_called_);
-  EXPECT_FALSE(test_listener1_.was_focused_);
-  EXPECT_FALSE(test_listener2_.was_focused_);
-  EXPECT_TRUE(test_listener1_.is_focused_);
-  EXPECT_TRUE(test_listener2_.is_focused_);
-  EXPECT_TRUE(text_ == test_listener1_.element_clicked_);
-  EXPECT_TRUE(text_ == test_listener2_.element_clicked_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_TRUE(test_listener_.input_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(test_listener_.is_focused_);
+  EXPECT_TRUE(text_ == test_listener_.element_clicked_);
+  test_listener_.ClearResults();
 
   // Click the text field again to test that was_focused_ is set correctly.
   EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_TRUE(test_listener1_.input_element_clicked_called_);
-  EXPECT_TRUE(test_listener2_.input_element_clicked_called_);
-  EXPECT_TRUE(test_listener1_.was_focused_);
-  EXPECT_TRUE(test_listener2_.was_focused_);
-  EXPECT_TRUE(test_listener1_.is_focused_);
-  EXPECT_TRUE(test_listener2_.is_focused_);
-  EXPECT_TRUE(text_ == test_listener1_.element_clicked_);
-  EXPECT_TRUE(text_ == test_listener2_.element_clicked_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_TRUE(test_listener_.input_element_clicked_called_);
+  EXPECT_TRUE(test_listener_.was_focused_);
+  EXPECT_TRUE(test_listener_.is_focused_);
+  EXPECT_TRUE(text_ == test_listener_.element_clicked_);
+  test_listener_.ClearResults();
 
   // Click the button, no notification should happen (this is not a text-input).
   EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_FALSE(test_listener1_.input_element_clicked_called_);
-  EXPECT_FALSE(test_listener2_.input_element_clicked_called_);
-
-  // Make the first listener stop the event propagation, click the text field
-  // and make sure only the first listener is notified.
-  test_listener1_.notification_response_ = true;
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_TRUE(test_listener1_.input_element_clicked_called_);
-  EXPECT_FALSE(test_listener2_.input_element_clicked_called_);
-  test_listener1_.ClearResults();
-
-  // Make sure removing a listener work.
-  page_click_tracker_->RemoveListener(&test_listener1_);
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener1_.input_element_clicked_called_);
-  EXPECT_TRUE(test_listener2_.input_element_clicked_called_);
-  test_listener2_.ClearResults();
-
-  // Make sure we don't choke when no listeners are registered.
-  page_click_tracker_->RemoveListener(&test_listener2_);
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener1_.input_element_clicked_called_);
-  EXPECT_FALSE(test_listener2_.input_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.input_element_clicked_called_);
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
@@ -163,68 +123,35 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
   EXPECT_NE(text_, text_.document().focusedNode());
   SendKeyPress(ui::VKEY_TAB);
   EXPECT_EQ(text_, text_.document().focusedNode());
-  EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
+  EXPECT_FALSE(test_listener_.input_element_lost_focus_called_);
 
   // Click a button and ensure that the lost focus notification was sent,
   // even though focus was gained without the mouse.
   EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_TRUE(test_listener2_.input_element_lost_focus_called_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_TRUE(test_listener_.input_element_lost_focus_called_);
+  test_listener_.ClearResults();
 
   // Click a text field and test that no lost focus notifications are sent.
   EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_FALSE(test_listener_.input_element_lost_focus_called_);
+  test_listener_.ClearResults();
 
   // Select another text field to test that the notifcation for the
   // first text field losing focus is sent.
   EXPECT_TRUE(SimulateElementClick("text_2"));
-  EXPECT_TRUE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_TRUE(test_listener2_.input_element_lost_focus_called_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_TRUE(test_listener_.input_element_lost_focus_called_);
+  test_listener_.ClearResults();
 
   // Click the button, a notification should happen since a text field has
   // lost focus.
   EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_TRUE(test_listener2_.input_element_lost_focus_called_);
-  test_listener1_.ClearResults();
-  test_listener2_.ClearResults();
+  EXPECT_TRUE(test_listener_.input_element_lost_focus_called_);
+  test_listener_.ClearResults();
 
   // Click on a text field while the button has focus and ensure no lost focus
   // notification is sent.
   EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
-
-  // Make the first listener stop the event propagation, then click a button
-  // and make sure only the first listener is notified.
-  test_listener1_.notification_response_ = true;
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
-  test_listener1_.ClearResults();
-
-  // Make sure removing a listener work.
-  page_click_tracker_->RemoveListener(&test_listener1_);
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_TRUE(test_listener2_.input_element_lost_focus_called_);
-  test_listener2_.ClearResults();
-
-  // Make sure we don't choke when no listeners are registered.
-  page_click_tracker_->RemoveListener(&test_listener2_);
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_FALSE(test_listener1_.input_element_lost_focus_called_);
-  EXPECT_FALSE(test_listener2_.input_element_lost_focus_called_);
+  EXPECT_FALSE(test_listener_.input_element_lost_focus_called_);
 }
 
 }  // namespace autofill

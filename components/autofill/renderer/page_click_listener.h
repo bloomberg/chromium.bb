@@ -19,17 +19,13 @@ class PageClickListener {
   // Notification that |element| was clicked.
   // |was_focused| is true if |element| had focus BEFORE the click.
   // |is_focused| is true if |element| has focus AFTER the click was processed.
-  // If this method returns true, the notification will not be propagated to
-  // other listeners.
-  virtual bool InputElementClicked(const WebKit::WebInputElement& element,
+  virtual void InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) = 0;
 
   // If the previously focused element was an input field, listeners are
   // informed that the text field has lost its focus.
-  // If this method returns true, the notification will not be propagated to
-  // other listeners.
-  virtual bool InputElementLostFocus() = 0;
+  virtual void InputElementLostFocus() = 0;
 
  protected:
   virtual ~PageClickListener() {}

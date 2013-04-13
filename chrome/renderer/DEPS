@@ -29,17 +29,3 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/widevine",
 ]
-
-# TODO(joi): Remove these once Autofill code moves to //components/autofill.
-specific_include_rules = {
-  'page_click_listener\.h': [
-    "-chrome/renderer",
-  ],
-  'page_click_tracker\.(h|cc)': [
-    "-chrome/common",
-    "-chrome/renderer",
-    "+chrome/renderer/autofill",
-    "+chrome/renderer/page_click_listener.h",
-    "+chrome/renderer/page_click_tracker.h",
-  ],
-}

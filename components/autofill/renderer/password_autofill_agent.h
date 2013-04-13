@@ -10,7 +10,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/common/password_form_fill_data.h"
-#include "components/autofill/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
@@ -24,8 +23,7 @@ namespace autofill {
 
 // This class is responsible for filling password forms.
 // There is one PasswordAutofillAgent per RenderView.
-class PasswordAutofillAgent : public content::RenderViewObserver,
-                              public PageClickListener {
+class PasswordAutofillAgent : public content::RenderViewObserver {
  public:
   explicit PasswordAutofillAgent(content::RenderView* render_view);
   virtual ~PasswordAutofillAgent();
@@ -70,12 +68,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver,
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
-
-  // PageClickListener:
-  virtual bool InputElementClicked(const WebKit::WebInputElement& element,
-                                   bool was_focused,
-                                   bool is_focused) OVERRIDE;
-  virtual bool InputElementLostFocus() OVERRIDE;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data,

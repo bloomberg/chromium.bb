@@ -20,6 +20,7 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
 #include "components/autofill/renderer/form_autofill_util.h"
+#include "components/autofill/renderer/page_click_tracker.h"
 #include "components/autofill/renderer/password_autofill_agent.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
@@ -154,6 +155,10 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       ignore_text_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
+
+  // The PageClickTracker is a RenderViewObserver, and hence will be freed when
+  // the RenderView is destroyed.
+  new PageClickTracker(render_view, this);
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -347,19 +352,15 @@ void AutofillAgent::setIgnoreTextChanges(bool ignore) {
   ignore_text_changes_ = ignore;
 }
 
-bool AutofillAgent::InputElementClicked(const WebInputElement& element,
+void AutofillAgent::InputElementClicked(const WebInputElement& element,
                                         bool was_focused,
                                         bool is_focused) {
   if (was_focused)
     ShowSuggestions(element, true, false, true);
-
-  return false;
 }
 
-bool AutofillAgent::InputElementLostFocus() {
+void AutofillAgent::InputElementLostFocus() {
   HideHostAutofillUi();
-
-  return false;
 }
 
 void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,

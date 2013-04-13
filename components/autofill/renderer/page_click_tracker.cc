@@ -58,9 +58,11 @@ bool DidSelectedTextFieldLoseFocus(const WebNode& newly_clicked_node) {
 
 namespace autofill {
 
-PageClickTracker::PageClickTracker(content::RenderView* render_view)
+PageClickTracker::PageClickTracker(content::RenderView* render_view,
+                                   PageClickListener* listener)
     : content::RenderViewObserver(render_view),
-      was_focused_(false) {
+      was_focused_(false),
+      listener_(listener) {
 }
 
 PageClickTracker::~PageClickTracker() {
@@ -85,20 +87,7 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
     return;
 
   bool is_focused = (last_node_clicked_ == render_view()->GetFocusedNode());
-  ObserverListBase<PageClickListener>::Iterator it(listeners_);
-  PageClickListener* listener;
-  while ((listener = it.GetNext()) != NULL) {
-    if (listener->InputElementClicked(input_element, was_focused_, is_focused))
-      break;
-  }
-}
-
-void PageClickTracker::AddListener(PageClickListener* listener) {
-  listeners_.AddObserver(listener);
-}
-
-void PageClickTracker::RemoveListener(PageClickListener* listener) {
-  listeners_.RemoveObserver(listener);
+  listener_->InputElementClicked(input_element, was_focused_, is_focused);
 }
 
 void PageClickTracker::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
@@ -107,7 +96,7 @@ void PageClickTracker::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
 }
 
 void PageClickTracker::FrameDetached(WebKit::WebFrame* frame) {
-  FrameList::iterator iter =
+  std::vector<WebKit::WebFrame*>::iterator iter =
       std::find(tracked_frames_.begin(), tracked_frames_.end(), frame);
   if (iter == tracked_frames_.end()) {
     // Some frames might never load contents so we may not have a listener on
@@ -150,15 +139,8 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
 
 void PageClickTracker::HandleTextFieldMaybeLosingFocus(
     const WebNode& newly_clicked_node) {
-  if (!DidSelectedTextFieldLoseFocus(newly_clicked_node))
-    return;
-
-  ObserverListBase<PageClickListener>::Iterator it(listeners_);
-  PageClickListener* listener;
-  while ((listener = it.GetNext()) != NULL) {
-    if (listener->InputElementLostFocus())
-      break;
-  }
+  if (DidSelectedTextFieldLoseFocus(newly_clicked_node))
+    listener_->InputElementLostFocus();
 }
 
 }  // namespace autofill
