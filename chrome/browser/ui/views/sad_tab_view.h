@@ -18,7 +18,7 @@ class WebContents;
 
 namespace views {
 class Label;
-class TextButton;
+class LabelButton;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ class SadTabView : public chrome::SadTab,
   views::Label* message_;
   views::Link* help_link_;
   views::Link* feedback_link_;
-  views::TextButton* reload_button_;
+  views::LabelButton* reload_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };

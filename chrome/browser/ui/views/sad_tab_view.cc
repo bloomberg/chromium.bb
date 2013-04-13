@@ -21,7 +21,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -170,11 +170,10 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
 
   if (web_contents_) {
     layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-    reload_button_ = new views::TextButton(
+    reload_button_ = new views::LabelButton(
         this,
         l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
-    reload_button_->set_border(new views::TextButtonNativeThemeBorder(
-        reload_button_));
+    reload_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     layout->AddView(reload_button_);
 
     help_link_ = CreateLink(l10n_util::GetStringUTF16(
