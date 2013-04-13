@@ -1214,8 +1214,9 @@ void OneClickSigninHelper::DidStopLoading(
 
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
-      if (SyncPromoUI::UseWebBasedSigninFlow() && showing_signin_) {
-        LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
+      if (SyncPromoUI::UseWebBasedSigninFlow()) {
+        if (showing_signin_)
+          LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
       } else {
         OneClickInfoBarDelegateImpl::Create(
             InfoBarService::FromWebContents(contents), session_index_, email_,
