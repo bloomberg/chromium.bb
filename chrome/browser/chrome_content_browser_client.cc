@@ -1220,7 +1220,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
       switches::kNoJsRandomness,
-      switches::kPerformCrashAnalysis,
       switches::kPlaybackMode,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashInProcess,

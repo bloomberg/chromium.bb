@@ -1054,10 +1054,6 @@ const char kParentProfile[]                 = "parent-profile";
 // default interval is used).
 const char kPerformanceMonitorGathering[]   = "performance-monitor-gathering";
 
-// Enable the post crash analyzer which uploads detailed crash information in
-// situations where a crash is determined to be particularly interesting.
-const char kPerformCrashAnalysis[]          = "perform-crash-analysis";
-
 // Read previously recorded data from the cache. Only cached data is read.
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";

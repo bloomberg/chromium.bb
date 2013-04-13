@@ -8,6 +8,7 @@
 #include <tchar.h>
 #include <userenv.h>
 #include <windows.h>
+#include <winnt.h>
 
 #include <algorithm>
 #include <vector>
@@ -24,11 +25,11 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/breakpad_field_trial_win.h"
-#include "chrome/app/crash_analysis_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -40,9 +41,14 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "policy/policy_constants.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sidestep/preamble_patcher.h"
 
 // userenv.dll is required for GetProfileType().
 #pragma comment(lib, "userenv.lib")
+
+#pragma intrinsic(_AddressOfReturnAddress)
+#pragma intrinsic(_ReturnAddress)
 
 namespace breakpad_win {
 
@@ -95,7 +101,14 @@ const char kMinUpdateVersion[] = "1.3.21.115";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
-CrashAnalysis* g_crash_analysis = NULL;
+
+EXCEPTION_POINTERS g_surrogate_exception_pointers = {0};
+EXCEPTION_RECORD g_surrogate_exception_record = {0};
+CONTEXT g_surrogate_context = {0};
+
+typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
+                                                 NTSTATUS ExitStatus);
+char* g_real_terminate_process_stub = NULL;
 
 static size_t g_url_chunks_offset = 0;
 static size_t g_num_of_extensions_offset = 0;
@@ -854,9 +867,10 @@ extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
     g_breakpad->WriteMinidumpForException(info);
-    if (g_crash_analysis)
-      g_crash_analysis->Analyze(info);
-    ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+    NtTerminateProcessPtr real_terminate_proc =
+        reinterpret_cast<NtTerminateProcessPtr>(
+            static_cast<char*>(g_real_terminate_process_stub));
+    real_terminate_proc(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -871,6 +885,72 @@ static bool DeferredUploadsSupported(bool system_install) {
     return false;
 
   return true;
+}
+
+NTSTATUS WINAPI HookNtTerminateProcess(HANDLE ProcessHandle,
+                                       NTSTATUS ExitStatus) {
+  if (g_breakpad &&
+      (ProcessHandle == ::GetCurrentProcess() || ProcessHandle == NULL)) {
+    NT_TIB* tib = reinterpret_cast<NT_TIB*>(NtCurrentTeb());
+    void* address_on_stack = _AddressOfReturnAddress();
+    if (address_on_stack < tib->StackLimit ||
+        address_on_stack > tib->StackBase) {
+      g_surrogate_exception_record.ExceptionAddress = _ReturnAddress();
+      g_surrogate_exception_record.ExceptionCode = DBG_TERMINATE_PROCESS;
+      g_surrogate_exception_record.ExceptionFlags = EXCEPTION_NONCONTINUABLE;
+      CrashForException(&g_surrogate_exception_pointers);
+    }
+  }
+
+  NtTerminateProcessPtr real_proc =
+      reinterpret_cast<NtTerminateProcessPtr>(
+          static_cast<char*>(g_real_terminate_process_stub));
+  return real_proc(ProcessHandle, ExitStatus);
+}
+
+static void InitTerminateProcessHooks() {
+  NtTerminateProcessPtr terminate_process_func_address =
+      reinterpret_cast<NtTerminateProcessPtr>(::GetProcAddress(
+          ::GetModuleHandle(L"ntdll.dll"), "NtTerminateProcess"));
+  if (terminate_process_func_address == NULL)
+    return;
+
+  DWORD old_protect = 0;
+  if (!::VirtualProtect(terminate_process_func_address, 5,
+                        PAGE_EXECUTE_READWRITE, &old_protect))
+    return;
+
+  g_real_terminate_process_stub = reinterpret_cast<char*>(VirtualAllocEx(
+      ::GetCurrentProcess(), NULL, sidestep::kMaxPreambleStubSize,
+      MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  if (g_real_terminate_process_stub == NULL)
+    return;
+
+  g_surrogate_exception_pointers.ContextRecord = &g_surrogate_context;
+  g_surrogate_exception_pointers.ExceptionRecord =
+      &g_surrogate_exception_record;
+
+  sidestep::SideStepError patch_result =
+      sidestep::PreamblePatcher::Patch(
+          terminate_process_func_address, HookNtTerminateProcess,
+          g_real_terminate_process_stub, sidestep::kMaxPreambleStubSize);
+  if (patch_result != sidestep::SIDESTEP_SUCCESS) {
+    CHECK(::VirtualFreeEx(::GetCurrentProcess(), g_real_terminate_process_stub,
+                    0, MEM_RELEASE));
+    CHECK(::VirtualProtect(terminate_process_func_address, 5, old_protect,
+                           &old_protect));
+    return;
+  }
+
+  DWORD dummy = 0;
+  CHECK(::VirtualProtect(terminate_process_func_address,
+                         5,
+                         old_protect,
+                         &dummy));
+  CHECK(::VirtualProtect(g_real_terminate_process_stub,
+                         sidestep::kMaxPreambleStubSize,
+                         old_protect,
+                         &old_protect));
 }
 
 static void InitPipeNameEnvVar(bool is_per_user_install) {
@@ -1029,14 +1109,20 @@ void InitCrashReporter() {
       google_breakpad::ExceptionHandler::HANDLER_NONE,
       dump_type, pipe_name.c_str(), custom_info);
 
-  if (command.HasSwitch(switches::kPerformCrashAnalysis))
-    g_crash_analysis = new CrashAnalysis();
-
   if (g_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.
     // This might break JIT debuggers, but at least it will always
     // generate a crashdump for these exceptions.
     g_breakpad->set_handle_debug_exceptions(true);
+
+#ifndef _WIN64
+    std::string headless;
+    if (process_type != L"browser" && !GetEnvironmentVariable(
+            ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)) {
+      // Initialize the hook TerminateProcess to catch unexpected exits.
+      InitTerminateProcessHooks();
+    }
+#endif
   }
 }
 

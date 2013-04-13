@@ -2339,7 +2339,6 @@
         'app/delay_load_hook_win.cc',
         'app/delay_load_hook_win.h',
         'app/delay_load_hook_unittest_win.cc',
-        'app/crash_analysis_win.cc',
         'app/hard_error_handler_win.cc',
         'app/run_all_unittests.cc',
         'common/crash_keys.cc',

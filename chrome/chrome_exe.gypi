@@ -24,8 +24,6 @@
         'app/chrome_exe_resource.h',
         'app/client_util.cc',
         'app/client_util.h',
-        'app/crash_analysis_win.cc',
-        'app/crash_analysis_win.h',
         'app/hard_error_handler_win.cc',
         'app/hard_error_handler_win.h',
         'app/metro_driver_win.cc',
@@ -549,7 +547,6 @@
               'product_name': 'nacl64',
               'sources': [
                 'app/breakpad_win.cc',
-                'app/crash_analysis_win.cc',
                 'app/hard_error_handler_win.cc',
                 'common/crash_keys.cc',
                 'nacl/nacl_exe_win_64.cc',
