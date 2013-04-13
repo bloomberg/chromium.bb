@@ -68,7 +68,8 @@ def Dispatch(options):
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices,
                                         all_tests, options.build_type,
                                         setup_timeout=setup_timeout,
-                                        test_timeout=None)
+                                        test_timeout=None,
+                                        num_retries=options.num_retries)
   report_results.LogFull(
       results=test_results,
       test_type='Unit test',

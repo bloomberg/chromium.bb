@@ -116,7 +116,8 @@ class _TestCollection(object):
       yield r
 
 
-def _RunTestsFromQueue(runner, test_collection, out_results, watcher):
+def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
+    num_retries):
   """Runs tests from the test_collection until empty using the given runner.
 
   Adds TestRunResults objects to the out_results list and may add tests to the
@@ -127,6 +128,7 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher):
     test_collection: A _TestCollection from which to get _Test objects to run.
     out_results: A list to add TestRunResults to.
     watcher: A watchdog_timer.WatchdogTimer object, used as a shared timeout.
+    num_retries: Number of retries for a test.
   """
   for test in test_collection:
     watcher.Reset()
@@ -138,7 +140,7 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher):
         raise android_commands.errors.DeviceUnresponsiveError(msg)
       result, retry = runner.RunTest(test.test)
       test.tries += 1
-      if retry and test.tries <= 3:
+      if retry and test.tries <= num_retries:
         # Retry non-passing results, only record passing results.
         pass_results = base_test_result.TestRunResults()
         pass_results.AddResults(result.GetPass())
@@ -187,12 +189,13 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     logging.warning('Failed to create shard for %s: [%s]', device, e)
 
 
-def _RunAllTests(runners, tests, timeout=None):
+def _RunAllTests(runners, tests, num_retries, timeout=None):
   """Run all tests using the given TestRunners.
 
   Args:
     runners: a list of TestRunner objects.
     tests: a list of Tests to run using the given TestRunners.
+    num_retries: number of retries for a test.
     timeout: watchdog timeout in seconds, defaults to the default timeout.
 
   Returns:
@@ -204,9 +207,10 @@ def _RunAllTests(runners, tests, timeout=None):
   results = []
   watcher = watchdog_timer.WatchdogTimer(timeout)
   workers = reraiser_thread.ReraiserThreadGroup(
-      [reraiser_thread.ReraiserThread(_RunTestsFromQueue,
-                                      [r, tests_collection, results, watcher],
-                                      name=r.device[-4:])
+      [reraiser_thread.ReraiserThread(
+          _RunTestsFromQueue,
+          [r, tests_collection, results, watcher, num_retries],
+          name=r.device[-4:])
        for r in runners])
   workers.StartAll()
   workers.JoinAll(watcher)
@@ -259,7 +263,8 @@ def _TearDownRunners(runners, timeout=None):
 
 def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
                      test_timeout=DEFAULT_TIMEOUT,
-                     setup_timeout=DEFAULT_TIMEOUT):
+                     setup_timeout=DEFAULT_TIMEOUT,
+                     num_retries=2):
   """Run all tests on attached devices, retrying tests that don't pass.
 
   Args:
@@ -272,6 +277,7 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
       default timeout.
     setup_timeout: watchdog timeout in seconds for creating and cleaning up
       test runners, defaults to the default timeout.
+    num_retries: number of retries for a test.
 
   Returns:
     A base_test_result.TestRunResults object.
@@ -280,7 +286,7 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
   forwarder.Forwarder.KillHost(build_type)
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
-    return _RunAllTests(runners, tests, test_timeout)
+    return _RunAllTests(runners, tests, num_retries, test_timeout)
   finally:
     try:
       _TearDownRunners(runners, setup_timeout)

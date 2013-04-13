@@ -64,6 +64,10 @@ def AddTestRunnerOptions(option_parser, default_timeout=60):
   option_parser.add_option('-c', dest='cleanup_test_files',
                            help='Cleanup test files on the device after run',
                            action='store_true')
+  option_parser.add_option('--num_retries', dest='num_retries', type='int',
+                           default=2,
+                           help='Number of retries for a test before '
+                           'giving up.')
   option_parser.add_option('-v',
                            '--verbose',
                            dest='verbose_count',
@@ -117,9 +121,6 @@ def AddGTestOptions(option_parser):
                            help='Use Xvfb around tests (ignored if not Linux).')
   option_parser.add_option('--webkit', action='store_true',
                            help='Run the tests from a WebKit checkout.')
-  option_parser.add_option('--repeat', dest='repeat', type='int',
-                           default=2,
-                           help='Repeat count on test timeout.')
   option_parser.add_option('--exit_code', action='store_true',
                            help='If set, the exit code will be total number '
                            'of failures.')

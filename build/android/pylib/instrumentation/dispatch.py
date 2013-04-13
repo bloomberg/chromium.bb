@@ -55,4 +55,5 @@ def Dispatch(options):
         options, device, shard_index, test_pkg, [])
 
   return shard.ShardAndRunTests(TestRunnerFactory, attached_devices, tests,
-                                options.build_type)
+                                options.build_type,
+                                num_retries=options.num_retries)

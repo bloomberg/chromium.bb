@@ -165,7 +165,8 @@ def _RunATestSuite(options, suite_name):
 
   # Run tests.
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices, tests,
-                                        options.build_type, test_timeout=None)
+                                        options.build_type, test_timeout=None,
+                                        num_retries=options.num_retries)
 
   report_results.LogFull(
       results=test_results,
