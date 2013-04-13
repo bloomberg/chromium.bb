@@ -4,7 +4,7 @@
 
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/translate_helper.h"
+#include "chrome/renderer/translate/translate_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"

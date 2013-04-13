@@ -1602,7 +1602,7 @@
         'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
         'renderer/safe_browsing/phishing_thumbnailer_browsertest.cc',
-        'renderer/translate_helper_browsertest.cc',
+        'renderer/translate/translate_helper_browsertest.cc',
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
         'test/base/chrome_test_launcher.cc',

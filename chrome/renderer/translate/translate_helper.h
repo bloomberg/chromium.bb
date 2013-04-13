@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_TRANSLATE_HELPER_H_
-#define CHROME_RENDERER_TRANSLATE_HELPER_H_
+#ifndef CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
+#define CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
 
 #include <string>
 
@@ -152,4 +152,4 @@ class TranslateHelper : public content::RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };
 
-#endif  // CHROME_RENDERER_TRANSLATE_HELPER_H_
+#endif  // CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_H_
