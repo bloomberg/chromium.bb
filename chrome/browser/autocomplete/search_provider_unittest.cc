@@ -168,7 +168,9 @@ void SearchProviderTest::SetUpTestCase() {
   // Set up Suggest experiments.
   field_trial_list_ = new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo"));
-  OmniboxFieldTrial::ActivateStaticTrials();
+  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+      "AutocompleteDynamicTrial_0", "DefaultGroup");
+  trial->group();
 }
 
 // static

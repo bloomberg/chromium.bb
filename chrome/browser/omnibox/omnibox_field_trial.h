@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 
@@ -48,10 +49,10 @@ class OmniboxFieldTrial {
   // ---------------------------------------------------------
   // For the suggest field trial.
 
-  // Fills in |field_trial_hash| with a hash of the active suggest field trial
-  // name, if any.  Returns true if the suggest field trial was active and
-  // |field_trial_hash| was initialized.
-  static bool GetActiveSuggestFieldTrialHash(uint32* field_trial_hash);
+  // Populates |field_trial_hash| with hashes of the active suggest field trial
+  // names, if any.
+  static void GetActiveSuggestFieldTrialHashes(
+      std::vector<uint32>* field_trial_hash);
 
   // ---------------------------------------------------------
   // For the History Quick Provider new scoring field trial.

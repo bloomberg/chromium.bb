@@ -18,11 +18,6 @@ namespace {
 
 // Field trial names.
 const char kDisallowInlineHQPFieldTrialName[] = "OmniboxDisallowInlineHQP";
-// Because we regularly change the name of the suggest field trial in
-// order to shuffle users among groups, we use the date the current trial
-// was created as part of the name.
-const char kSuggestFieldTrialStarted2013Q1Name[] =
-    "OmniboxSearchSuggestTrialStarted2013Q1";
 const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoringMax1400";
 const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
@@ -44,11 +39,6 @@ const int kMaxAutocompleteDynamicFieldTrials = 5;
 const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kDisallowInlineHQPFieldTrialExperimentFraction = 0;
-
-// For the search suggestion field trial, divide the people in the
-// trial into 20 equally-sized buckets.  The suggest provider backend
-// will decide what behavior (if any) to change based on the group.
-const int kSuggestFieldTrialNumberOfGroups = 20;
 
 // For History Quick Provider new scoring field trial, put 0% ( = 0/100 )
 // of the users in the new scoring experiment group.
@@ -139,40 +129,6 @@ void OmniboxFieldTrial::ActivateStaticTrials() {
   trial->UseOneTimeRandomization();
   disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
       kDisallowInlineHQPFieldTrialExperimentFraction);
-
-  // Create the suggest field trial.
-  // Make it expire on September 1, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kSuggestFieldTrialStarted2013Q1Name, kSuggestFieldTrialNumberOfGroups,
-      "0", 2013, 9, 1, NULL);
-  trial->UseOneTimeRandomization();
-
-  // Mark this group in suggest requests to Google.
-  chrome_variations::AssociateGoogleVariationID(
-      chrome_variations::GOOGLE_WEB_PROPERTIES,
-      kSuggestFieldTrialStarted2013Q1Name, "0",
-      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN);
-  DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
-      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MAX -
-      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN + 1);
-
-  // We've already created one group; now just need to create
-  // kSuggestFieldTrialNumGroups - 1 more. Mark these groups in
-  // suggest requests to Google.
-  for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++) {
-    const std::string group_name = base::IntToString(i);
-    trial->AppendGroup(group_name, 1);
-    chrome_variations::AssociateGoogleVariationID(
-        chrome_variations::GOOGLE_WEB_PROPERTIES,
-        kSuggestFieldTrialStarted2013Q1Name, group_name,
-        static_cast<chrome_variations::VariationID>(
-            chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN + i));
-  }
-
-  // Make sure that we participate in the suggest experiment by calling group()
-  // on the newly created field trial.  This is necessary to activate the field
-  // trial group as there are no more references to it within the Chrome code.
-  trial->group();
 
   // Create inline History Quick Provider new scoring field trial.
   // Make it expire on April 14, 2013.
@@ -266,13 +222,14 @@ bool OmniboxFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
   return group == disallow_inline_hqp_experiment_group;
 }
 
-bool OmniboxFieldTrial::GetActiveSuggestFieldTrialHash(
-    uint32* field_trial_hash) {
-  if (!base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2013Q1Name))
-    return false;
-
-  *field_trial_hash = metrics::HashName(kSuggestFieldTrialStarted2013Q1Name);
-  return true;
+void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
+    std::vector<uint32>* field_trial_hashes) {
+  field_trial_hashes->clear();
+  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
+    const std::string& trial_name = DynamicFieldTrialName(i);
+    if (base::FieldTrialList::TrialExists(trial_name))
+      field_trial_hashes->push_back(metrics::HashName(trial_name));
+  }
 }
 
 bool OmniboxFieldTrial::InHQPNewScoringFieldTrial() {

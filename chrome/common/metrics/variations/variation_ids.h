@@ -99,9 +99,9 @@ enum VariationID {
 
   // Add new variation IDs below.
 
+  // DEPRECATED - DO NOT USE
   // Name: OmniboxSearchSuggest
   // Range: 3310000 - 3310019
-  // Suggest (Autocomplete) field trial, 20 IDs.
   // Now retired.  But please don't reuse these IDs; they may taint
   // your experiment results.
   SUGGEST_ID_MIN = 3310000,
@@ -121,13 +121,11 @@ enum VariationID {
   DUMMY_INSTANT_ID_EXPERIMENT_2 = 3310028,
   DUMMY_INSTANT_ID_EXPERIMENT_3 = 3310049,
 
+  // DEPRECATED - DO NOT USE
   // Name: OmniboxSearchSuggestStarted2012Q4
   // Range: 3310029 - 3310048
-  // Suggest (Autocomplete) field trial, 20 IDs.  This differs from
-  // the earlier omnibox suggest field trial in this file because
-  // we created a new trial (with a new name) in order to shuffle IDs.
-  // We assign new experiment IDs because it's a good practice not to
-  // reuse experiment IDs.
+  // Now retired.  But please don't reuse these IDs; they may taint
+  // your experiment results.
   SUGGEST_TRIAL_STARTED_2012_Q4_ID_MIN = 3310029,
   SUGGEST_TRIAL_STARTED_2012_Q4_ID_MAX = 3310048,
 
@@ -141,13 +139,11 @@ enum VariationID {
   EXTENDED_INSTANT_ID_DEV_GROUP_1    = 3310055,
   EXTENDED_INSTANT_ID_DEV_CONTROL    = 3310056,
 
+  // DEPRECATED - DO NOT USE
   // Name: OmniboxSearchSuggestTrialStarted2013Q1
   // Range: 3310060 - 3310079
-  // Suggest (Autocomplete) field trial, 20 IDs.  This differs from
-  // the earlier omnibox suggest field trials in this file because
-  // we created a new trial (with a new name) in order to shuffle IDs.
-  // We assign new experiment IDs because it's a good practice not to
-  // reuse experiment IDs.
+  // Now retired.  But please don't reuse these IDs; they may taint
+  // your experiment results.
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN = 3310060,
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MAX = 3310079,
 
