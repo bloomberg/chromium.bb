@@ -141,19 +141,48 @@ function recordEvent(event) {
  * Shows a notification and remembers information associated with it.
  * @param {Object} card Google Now card represented as a set of parameters for
  *     showing a Chrome notification.
- * @param {Object} notificationsUrlInfo Map from notification id to the
- *     notification's set of URLs.
+ * @param {Object} notificationsData Map from notification id to the data
+ *     associated with a notification.
+ * @param {number} previousVersion The version of the shown card with this id,
+ *     if it exists, undefined otherwise.
  */
-function createNotification(card, notificationsUrlInfo) {
-  console.log('createNotification ' + JSON.stringify(card));
-  // Create a notification or quietly update if it already exists.
-  // TODO(vadimt): Implement non-quiet updates.
-  chrome.notifications.create(
-      card.notificationId,
-      card.notification,
-      function() {});
+function showNotification(card, notificationsData, previousVersion) {
+  console.log('showNotification ' + JSON.stringify(card));
 
-  notificationsUrlInfo[card.notificationId] = card.actionUrls;
+  if (typeof card.version != 'number') {
+    recordEvent('ERROR:version-is-not-number');
+
+    // Fix card version.
+    card.version = previousVersion !== undefined ? previousVersion : 0;
+  }
+
+  if (previousVersion !== card.version) {
+    try {
+      // Delete a notification with the specified id if it already exists, and
+      // then create a notification.
+      chrome.notifications.create(
+          card.notificationId,
+          card.notification,
+          function() {});
+    } catch (error) {
+      console.error('Error in notifications.create', error);
+    }
+  } else {
+    try {
+      // Update existing notification.
+      chrome.notifications.update(
+          card.notificationId,
+          card.notification,
+          function() {});
+    } catch (error) {
+      console.error('Error in notifications.update', error);
+    }
+  }
+
+  notificationsData[card.notificationId] = {
+    actionUrls: card.actionUrls,
+    version: card.version
+  };
 }
 
 /**
@@ -187,11 +216,11 @@ function parseAndShowNotificationCards(response, callback) {
   tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
   storage.get(['activeNotifications', 'recentDismissals'], function(items) {
     console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
+
     // Build a set of non-expired recent dismissals. It will be used for
     // client-side filtering of cards.
     var updatedRecentDismissals = {};
     var currentTimeMs = Date.now();
-
     for (var notificationId in items.recentDismissals) {
       if (currentTimeMs - items.recentDismissals[notificationId] <
           DISMISS_RETENTION_TIME_MS) {
@@ -225,16 +254,14 @@ function parseAndShowNotificationCards(response, callback) {
     recordEvent(DiagnosticEvent.CARDS_PARSE_SUCCESS);
 
     // Create/update notifications and store their new properties.
-    var notificationsUrlInfo = {};
-
+    var notificationsData = {};
     for (var i = 0; i < cards.length; ++i) {
       var card = cards[i];
       if (!(card.notificationId in updatedRecentDismissals)) {
-        try {
-          createNotification(card, notificationsUrlInfo);
-        } catch (error) {
-          console.error('Error in createNotification: ' + error);
-        }
+        var activeNotification = items.activeNotifications[card.notificationId];
+        showNotification(card,
+                         notificationsData,
+                         activeNotification && activeNotification.version);
       }
     }
 
@@ -245,7 +272,7 @@ function parseAndShowNotificationCards(response, callback) {
     // fail to get the server-provided period.
     storage.set({
       retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS,
-      activeNotifications: notificationsUrlInfo,
+      activeNotifications: notificationsData,
       recentDismissals: updatedRecentDismissals
     });
     callback();
@@ -439,7 +466,7 @@ function onNotificationClicked(notificationId, selector) {
   tasks.add(CARD_CLICKED_TASK_NAME, function(callback) {
     tasks.debugSetStepName('onNotificationClicked-get-activeNotifications');
     storage.get('activeNotifications', function(items) {
-      var actionUrls = items.activeNotifications[notificationId];
+      var actionUrls = items.activeNotifications[notificationId].actionUrls;
       if (typeof actionUrls != 'object') {
         callback();
         return;
