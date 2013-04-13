@@ -11,7 +11,7 @@
 #include <deque>
 
 #include "base/hash_tables.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"

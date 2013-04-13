@@ -4,7 +4,7 @@
 
 #include "net/base/url_util.h"
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 

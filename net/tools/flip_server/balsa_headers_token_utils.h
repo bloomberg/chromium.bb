@@ -8,8 +8,8 @@
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
 
+#include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_headers.h"
-#include "base/string_piece.h"
 
 namespace net {
 

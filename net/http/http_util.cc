@@ -12,9 +12,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time.h"
 

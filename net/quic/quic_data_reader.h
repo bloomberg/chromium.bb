@@ -6,7 +6,7 @@
 #define NET_QUIC_QUIC_DATA_READER_H_
 
 #include "base/basictypes.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/net_export.h"
 

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/balsa_headers.h"
 

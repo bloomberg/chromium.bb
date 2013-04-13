@@ -11,7 +11,7 @@
 
 #include <set>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {

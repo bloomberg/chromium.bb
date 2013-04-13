@@ -15,7 +15,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sha1.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
 #include "crypto/nss_util.h"

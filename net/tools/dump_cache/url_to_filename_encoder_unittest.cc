@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;

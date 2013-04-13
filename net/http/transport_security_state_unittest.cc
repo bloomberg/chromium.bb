@@ -11,7 +11,7 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/sha1.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"

@@ -5,7 +5,7 @@
 #include "net/spdy/spdy_credential_builder.h"
 
 #include "base/logging.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/net_errors.h"

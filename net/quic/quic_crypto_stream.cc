@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_session.h"

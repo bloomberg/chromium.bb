@@ -46,8 +46,8 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
 
 namespace net {

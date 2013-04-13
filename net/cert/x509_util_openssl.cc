@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/cert/x509_cert_types.h"
 
 namespace net {

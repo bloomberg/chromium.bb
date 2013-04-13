@@ -4,7 +4,7 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_crypto_client_stream.h"

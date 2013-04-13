@@ -6,7 +6,7 @@
 #define NET_TOOLS_FLIP_SERVER_SPLIT_H_
 
 #include <vector>
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace net {
 

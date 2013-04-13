@@ -14,7 +14,7 @@
 
 #include <deque>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 #include "net/tools/dump_cache/url_utilities.h"
 #include "net/tools/flip_server/balsa_frame.h"

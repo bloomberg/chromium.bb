@@ -9,7 +9,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/singleton.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_frame.h"
 #include "net/tools/flip_server/balsa_headers.h"
 

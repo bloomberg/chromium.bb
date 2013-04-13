@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "googleurl/src/gurl.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"

@@ -5,7 +5,7 @@
 #include "net/quic/crypto/curve25519_key_exchange.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/crypto/quic_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

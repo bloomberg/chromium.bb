@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <string>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/tools/flip_server/balsa_frame.h"

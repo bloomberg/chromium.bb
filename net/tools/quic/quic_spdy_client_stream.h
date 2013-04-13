@@ -5,7 +5,7 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 #define NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/tools/quic/quic_reliable_client_stream.h"
 

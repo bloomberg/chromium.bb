@@ -18,7 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "crypto/cssm_init.h"

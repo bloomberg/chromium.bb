@@ -6,7 +6,7 @@
 #define NET_SOCKET_SSL_SOCKET_H_
 
 #include "base/basictypes.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {

@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"

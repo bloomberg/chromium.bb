@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verifier.h"
