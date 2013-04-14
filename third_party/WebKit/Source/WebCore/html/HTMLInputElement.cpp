@@ -394,11 +394,6 @@ bool HTMLInputElement::isMouseFocusable() const
     return m_inputType->isMouseFocusable();
 }
 
-bool HTMLInputElement::isTextFormControlFocusable() const
-{
-    return HTMLTextFormControlElement::isFocusable();
-}
-
 bool HTMLInputElement::isTextFormControlKeyboardFocusable(KeyboardEvent* event) const
 {
     return HTMLTextFormControlElement::isKeyboardFocusable(event);

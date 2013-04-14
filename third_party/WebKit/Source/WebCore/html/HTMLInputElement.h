@@ -253,7 +253,6 @@ public:
 
     // Functions for InputType classes.
     void setValueInternal(const String&, TextFieldEventBehavior);
-    bool isTextFormControlFocusable() const;
     bool isTextFormControlKeyboardFocusable(KeyboardEvent*) const;
     bool isTextFormControlMouseFocusable() const;
     bool valueAttributeWasUpdatedAfterParsing() const { return m_valueAttributeWasUpdatedAfterParsing; }
