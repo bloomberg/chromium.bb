@@ -58,11 +58,9 @@ public:
     // Path prefixes that are used in the filesystem URLs (that can be obtained by toURL()).
     // http://www.w3.org/TR/file-system-api/#widl-Entry-toURL
     static const char persistentPathPrefix[];
-    static const size_t persistentPathPrefixLength;
     static const char temporaryPathPrefix[];
-    static const size_t temporaryPathPrefixLength;
     static const char isolatedPathPrefix[];
-    static const size_t isolatedPathPrefixLength;
+    static const char externalPathPrefix[];
 
     static PassRefPtr<DOMFileSystemBase> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
     {

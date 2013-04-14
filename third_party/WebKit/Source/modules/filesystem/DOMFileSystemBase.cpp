@@ -45,15 +45,15 @@
 #include "ScriptExecutionContext.h"
 #include "VoidCallback.h"
 #include <wtf/OwnPtr.h>
+#include <wtf/text/StringBuilder.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
 const char DOMFileSystemBase::persistentPathPrefix[] = "persistent";
-const size_t DOMFileSystemBase::persistentPathPrefixLength = sizeof(DOMFileSystemBase::persistentPathPrefix) - 1;
 const char DOMFileSystemBase::temporaryPathPrefix[] = "temporary";
-const size_t DOMFileSystemBase::temporaryPathPrefixLength = sizeof(DOMFileSystemBase::temporaryPathPrefix) - 1;
 const char DOMFileSystemBase::isolatedPathPrefix[] = "isolated";
-const size_t DOMFileSystemBase::isolatedPathPrefixLength = sizeof(DOMFileSystemBase::isolatedPathPrefix) - 1;
+const char DOMFileSystemBase::externalPathPrefix[] = "external";
 
 DOMFileSystemBase::DOMFileSystemBase(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
     : m_context(context)
@@ -74,9 +74,67 @@ SecurityOrigin* DOMFileSystemBase::securityOrigin() const
     return m_context->securityOrigin();
 }
 
+bool DOMFileSystemBase::isValidType(FileSystemType type)
+{
+    return type == FileSystemTypeTemporary || type == FileSystemTypePersistent || type == FileSystemTypeIsolated || type == FileSystemTypeExternal;
+}
+
+bool DOMFileSystemBase::crackFileSystemURL(const KURL& url, FileSystemType& type, String& filePath)
+{
+    if (!url.protocolIs("filesystem"))
+        return false;
+
+    if (!url.innerURL())
+        return false;
+
+    String typeString = url.innerURL()->path().substring(1);
+    if (typeString == temporaryPathPrefix)
+        type = FileSystemTypeTemporary;
+    else if (typeString == persistentPathPrefix)
+        type = FileSystemTypePersistent;
+    else if (typeString == externalPathPrefix)
+        type = FileSystemTypeExternal;
+    else
+        return false;
+
+    filePath = decodeURLEscapeSequences(url.path());
+    return true;
+}
+
+bool DOMFileSystemBase::supportsToURL() const
+{
+    ASSERT(isValidType(m_type));
+    return m_type != FileSystemTypeIsolated;
+}
+
 KURL DOMFileSystemBase::createFileSystemURL(const EntryBase* entry) const
 {
     return createFileSystemURL(entry->fullPath());
+}
+
+KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
+{
+    ASSERT(DOMFilePath::isAbsolute(fullPath));
+
+    if (type() == FileSystemTypeExternal) {
+        // For external filesystem originString could be different from what we have in m_filesystemRootURL.
+        StringBuilder result;
+        result.append("filesystem:");
+        result.append(securityOrigin()->toString());
+        result.append("/");
+        result.append(externalPathPrefix);
+        result.append(m_filesystemRootURL.path());
+        // Remove the extra leading slash.
+        result.append(encodeWithURLEscapeSequences(fullPath.substring(1)));
+        return KURL(ParsedURLString, result.toString());
+    }
+
+    // For regular types we can just append the entry's fullPath to the m_filesystemRootURL that should look like 'filesystem:<origin>/<typePrefix>'.
+    ASSERT(!m_filesystemRootURL.isEmpty());
+    KURL url = m_filesystemRootURL;
+    // Remove the extra leading slash.
+    url.setPath(url.path() + encodeWithURLEscapeSequences(fullPath.substring(1)));
+    return url;
 }
 
 bool DOMFileSystemBase::getMetadata(const EntryBase* entry, PassRefPtr<MetadataCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
