@@ -161,8 +161,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    if (length > ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)))
-        CRASH();
+    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
     StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
 
@@ -180,8 +179,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one 
     // heap allocation from this call.
-    if (length > ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)))
-        CRASH();
+    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(UChar);
     StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
 
@@ -201,8 +199,7 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     }
 
     // Same as createUninitialized() except here we use fastRealloc.
-    if (length > ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)))
-        CRASH();
+    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
     originalString->~StringImpl();
     StringImpl* string = static_cast<StringImpl*>(fastRealloc(originalString.leakRef(), size));
@@ -223,8 +220,7 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     }
 
     // Same as createUninitialized() except here we use fastRealloc.
-    if (length > ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)))
-        CRASH();
+    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
     size_t size = sizeof(StringImpl) + length * sizeof(UChar);
     originalString->~StringImpl();
     StringImpl* string = static_cast<StringImpl*>(fastRealloc(originalString.leakRef(), size));
@@ -277,8 +273,7 @@ PassRefPtr<StringImpl> StringImpl::create(const LChar* string)
     if (!string)
         return empty();
     size_t length = strlen(reinterpret_cast<const char*>(string));
-    if (length > numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(length <= numeric_limits<unsigned>::max());
     return create(string, length);
 }
 
@@ -388,8 +383,7 @@ PassRefPtr<StringImpl> StringImpl::lower()
         if (noUpper && !(ored & ~0x7F))
             return this;
 
-        if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-            CRASH();
+        RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<int32_t>::max()));
         int32_t length = m_length;
 
         LChar* data8;
@@ -419,8 +413,7 @@ PassRefPtr<StringImpl> StringImpl::lower()
     if (noUpper && !(ored & ~0x7F))
         return this;
 
-    if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-        CRASH();
+    RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<int32_t>::max()));
     int32_t length = m_length;
 
     if (!(ored & ~0x7F)) {
@@ -456,8 +449,7 @@ PassRefPtr<StringImpl> StringImpl::upper()
     // but in empirical testing, few actual calls to upper() are no-ops, so
     // it wouldn't be worth the extra time for pre-scanning.
 
-    if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-        CRASH();
+    RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<int32_t>::max()));
     int32_t length = m_length;
 
     if (is8Bit()) {
@@ -562,8 +554,7 @@ PassRefPtr<StringImpl> StringImpl::fill(UChar character)
 
 PassRefPtr<StringImpl> StringImpl::foldCase()
 {
-    if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-        CRASH();
+    RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<int32_t>::max()));
     int32_t length = m_length;
 
     if (is8Bit()) {
@@ -879,8 +870,7 @@ size_t StringImpl::find(const LChar* matchString, unsigned index)
     if (!matchString)
         return notFound;
     size_t matchStringLength = strlen(reinterpret_cast<const char*>(matchString));
-    if (matchStringLength > numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(matchStringLength <= numeric_limits<unsigned>::max());
     unsigned matchLength = matchStringLength;
     if (!matchLength)
         return min(index, length());
@@ -927,8 +917,7 @@ size_t StringImpl::findIgnoringCase(const LChar* matchString, unsigned index)
     if (!matchString)
         return notFound;
     size_t matchStringLength = strlen(reinterpret_cast<const char*>(matchString));
-    if (matchStringLength > numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(matchStringLength <= numeric_limits<unsigned>::max());
     unsigned matchLength = matchStringLength;
     if (!matchLength)
         return min(index, length());
@@ -1340,8 +1329,7 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
     if (!lengthToReplace && !lengthToInsert)
         return this;
 
-    if ((length() - lengthToReplace) >= (numeric_limits<unsigned>::max() - lengthToInsert))
-        CRASH();
+    RELEASE_ASSERT((length() - lengthToReplace) < (numeric_limits<unsigned>::max() - lengthToInsert));
 
     if (is8Bit() && (!str || str->is8Bit())) {
         LChar* data;
@@ -1407,13 +1395,11 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, const LChar* replaceme
     if (!matchCount)
         return this;
 
-    if (repStrLength && matchCount > numeric_limits<unsigned>::max() / repStrLength)
-        CRASH();
+    RELEASE_ASSERT(!repStrLength || matchCount <= numeric_limits<unsigned>::max() / repStrLength);
 
     unsigned replaceSize = matchCount * repStrLength;
     unsigned newSize = m_length - matchCount;
-    if (newSize >= (numeric_limits<unsigned>::max() - replaceSize))
-        CRASH();
+    RELEASE_ASSERT(newSize < (numeric_limits<unsigned>::max() - replaceSize));
 
     newSize += replaceSize;
 
@@ -1484,13 +1470,11 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, const UChar* replaceme
     if (!matchCount)
         return this;
 
-    if (repStrLength && matchCount > numeric_limits<unsigned>::max() / repStrLength)
-        CRASH();
+    RELEASE_ASSERT(!repStrLength || matchCount <= numeric_limits<unsigned>::max() / repStrLength);
 
     unsigned replaceSize = matchCount * repStrLength;
     unsigned newSize = m_length - matchCount;
-    if (newSize >= (numeric_limits<unsigned>::max() - replaceSize))
-        CRASH();
+    RELEASE_ASSERT(newSize < (numeric_limits<unsigned>::max() - replaceSize));
 
     newSize += replaceSize;
 
@@ -1571,11 +1555,9 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
         return this;
     
     unsigned newSize = m_length - matchCount * patternLength;
-    if (repStrLength && matchCount > numeric_limits<unsigned>::max() / repStrLength)
-        CRASH();
+    RELEASE_ASSERT(!repStrLength || matchCount <= numeric_limits<unsigned>::max() / repStrLength);
 
-    if (newSize > (numeric_limits<unsigned>::max() - matchCount * repStrLength))
-        CRASH();
+    RELEASE_ASSERT(newSize <= (numeric_limits<unsigned>::max() - matchCount * repStrLength));
 
     newSize += matchCount * repStrLength;
 
@@ -1894,8 +1876,7 @@ PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const Stri
     // Use createUninitialized instead of 'new StringImpl' so that the string and its buffer
     // get allocated in a single memory block.
     unsigned length = string.m_length;
-    if (length >= numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(length < numeric_limits<unsigned>::max());
     RefPtr<StringImpl> terminatedString;
     if (string.is8Bit()) {
         LChar* data;

@@ -396,8 +396,7 @@ public:
     {
         if (size_t size = vector.size()) {
             ASSERT(vector.data());
-            if (size > std::numeric_limits<unsigned>::max())
-                CRASH();
+            RELEASE_ASSERT(size <= std::numeric_limits<unsigned>::max());
             return adoptRef(new StringImpl(vector.releaseBuffer(), size));
         }
         return empty();

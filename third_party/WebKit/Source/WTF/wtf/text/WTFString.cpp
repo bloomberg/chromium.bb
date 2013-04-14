@@ -59,8 +59,7 @@ String::String(const UChar* str)
     while (str[len] != UChar(0))
         ++len;
 
-    if (len > numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(len <= numeric_limits<unsigned>::max());
     
     m_impl = StringImpl::create(str, len);
 }
@@ -105,8 +104,7 @@ void String::append(const String& str)
         if (m_impl) {
             if (m_impl->is8Bit() && str.m_impl->is8Bit()) {
                 LChar* data;
-                if (str.length() > numeric_limits<unsigned>::max() - m_impl->length())
-                    CRASH();
+                RELEASE_ASSERT(str.length() <= numeric_limits<unsigned>::max() - m_impl->length());
                 RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + str.length(), data);
                 memcpy(data, m_impl->characters8(), m_impl->length() * sizeof(LChar));
                 memcpy(data + m_impl->length(), str.characters8(), str.length() * sizeof(LChar));
@@ -114,8 +112,7 @@ void String::append(const String& str)
                 return;
             }
             UChar* data;
-            if (str.length() > numeric_limits<unsigned>::max() - m_impl->length())
-                CRASH();
+            RELEASE_ASSERT(str.length() <= numeric_limits<unsigned>::max() - m_impl->length());
             RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + str.length(), data);
             memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
             memcpy(data + m_impl->length(), str.characters(), str.length() * sizeof(UChar));
@@ -133,8 +130,7 @@ void String::append(LChar c)
     // call to fastMalloc every single time.
     if (m_impl) {
         UChar* data;
-        if (m_impl->length() >= numeric_limits<unsigned>::max())
-            CRASH();
+        RELEASE_ASSERT(m_impl->length() < numeric_limits<unsigned>::max());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + 1, data);
         memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
         data[m_impl->length()] = c;
@@ -151,8 +147,7 @@ void String::append(UChar c)
     // call to fastMalloc every single time.
     if (m_impl) {
         UChar* data;
-        if (m_impl->length() >= numeric_limits<unsigned>::max())
-            CRASH();
+        RELEASE_ASSERT(m_impl->length() < numeric_limits<unsigned>::max());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + 1, data);
         memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
         data[m_impl->length()] = c;
@@ -195,8 +190,7 @@ void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
     unsigned strLength = m_impl->length();
 
     if (m_impl->is8Bit()) {
-        if (lengthToAppend > numeric_limits<unsigned>::max() - strLength)
-            CRASH();
+        RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
         LChar* data;
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
         StringImpl::copyChars(data, m_impl->characters8(), strLength);
@@ -205,8 +199,7 @@ void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
         return;
     }
 
-    if (lengthToAppend > numeric_limits<unsigned>::max() - strLength)
-        CRASH();
+    RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
     UChar* data;
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(length() + lengthToAppend, data);
     StringImpl::copyChars(data, m_impl->characters16(), strLength);
@@ -229,8 +222,7 @@ void String::append(const UChar* charactersToAppend, unsigned lengthToAppend)
     unsigned strLength = m_impl->length();
     
     ASSERT(charactersToAppend);
-    if (lengthToAppend > numeric_limits<unsigned>::max() - strLength)
-        CRASH();
+    RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
     UChar* data;
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
     if (m_impl->is8Bit())
@@ -256,8 +248,7 @@ void String::insert(const UChar* charactersToInsert, unsigned lengthToInsert, un
 
     ASSERT(charactersToInsert);
     UChar* data;
-    if (lengthToInsert > numeric_limits<unsigned>::max() - length())
-        CRASH();
+    RELEASE_ASSERT(lengthToInsert <= numeric_limits<unsigned>::max() - length());
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(length() + lengthToInsert, data);
     memcpy(data, characters(), position * sizeof(UChar));
     memcpy(data + position, charactersToInsert, lengthToInsert * sizeof(UChar));
@@ -872,8 +863,7 @@ String String::make16BitFrom8BitSource(const LChar* source, size_t length)
 
 String String::fromUTF8(const LChar* stringStart, size_t length)
 {
-    if (length > numeric_limits<unsigned>::max())
-        CRASH();
+    RELEASE_ASSERT(length <= numeric_limits<unsigned>::max());
 
     if (!stringStart)
         return String();

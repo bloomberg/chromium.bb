@@ -42,8 +42,7 @@ public:
     explicit StringBuffer(unsigned length)
         : m_length(length)
     {
-        if (m_length > std::numeric_limits<unsigned>::max() / sizeof(CharType))
-            CRASH();
+        RELEASE_ASSERT(m_length <= std::numeric_limits<unsigned>::max() / sizeof(CharType));
         m_data = static_cast<CharType*>(fastMalloc(m_length * sizeof(CharType)));
     }
 
@@ -61,8 +60,7 @@ public:
     void resize(unsigned newLength)
     {
         if (newLength > m_length) {
-            if (newLength > std::numeric_limits<unsigned>::max() / sizeof(UChar))
-                CRASH();
+            RELEASE_ASSERT(newLength <= std::numeric_limits<unsigned>::max() / sizeof(UChar));
             m_data = static_cast<UChar*>(fastRealloc(m_data, newLength * sizeof(UChar)));
         }
         m_length = newLength;

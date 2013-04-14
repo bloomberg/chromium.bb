@@ -198,8 +198,7 @@ ALWAYS_INLINE CharType* StringBuilder::appendUninitialized(unsigned length)
 
     // Calculate the new size of the builder after appending.
     unsigned requiredLength = length + m_length;
-    if (requiredLength < length)
-        CRASH();
+    RELEASE_ASSERT(requiredLength >= length);
 
     if ((m_buffer) && (requiredLength <= m_buffer->length())) {
         // If the buffer is valid it must be at least as long as the current builder contents!
@@ -252,8 +251,7 @@ void StringBuilder::append(const UChar* characters, unsigned length)
 
         // Calculate the new size of the builder after appending.
         unsigned requiredLength = length + m_length;
-        if (requiredLength < length)
-            CRASH();
+        RELEASE_ASSERT(requiredLength >= length);
         
         if (m_buffer) {
             // If the buffer is valid it must be at least as long as the current builder contents!

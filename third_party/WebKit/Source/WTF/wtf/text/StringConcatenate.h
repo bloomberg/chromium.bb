@@ -184,8 +184,7 @@ public:
         while (m_buffer[len] != UChar(0))
             ++len;
 
-        if (len > std::numeric_limits<unsigned>::max())
-            CRASH();
+        RELEASE_ASSERT(len <= std::numeric_limits<unsigned>::max());
 
         m_length = len;
     }
@@ -196,7 +195,7 @@ public:
 
     NO_RETURN_DUE_TO_CRASH void writeTo(LChar*)
     {
-        CRASH();
+        RELEASE_ASSERT(false);
     }
 
     void writeTo(UChar* destination)
@@ -916,8 +915,7 @@ template<typename StringType1, typename StringType2>
 String makeString(StringType1 string1, StringType2 string2)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -925,8 +923,7 @@ template<typename StringType1, typename StringType2, typename StringType3>
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -934,8 +931,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -943,8 +939,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -952,8 +947,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -961,8 +955,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6, string7);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -970,8 +963,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7, StringType8 string8)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6, string7, string8);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
@@ -979,8 +971,7 @@ template<typename StringType1, typename StringType2, typename StringType3, typen
 String makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7, StringType8 string8, StringType9 string9)
 {
     RefPtr<StringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6, string7, string8, string9);
-    if (!resultImpl)
-        CRASH();
+    RELEASE_ASSERT(resultImpl);
     return resultImpl.release();
 }
 
