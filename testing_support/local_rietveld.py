@@ -139,7 +139,10 @@ class LocalRietveld(object):
 
   def stop_server(self):
     if self.test_server:
-      self.test_server.kill()
+      try:
+        self.test_server.kill()
+      except OSError:
+        pass
       self.test_server.wait()
       self.test_server = None
       self.port = None
