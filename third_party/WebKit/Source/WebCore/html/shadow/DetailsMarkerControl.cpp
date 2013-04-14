@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(DETAILS_ELEMENT)
 #include "DetailsMarkerControl.h"
 
 #include "HTMLNames.h"
@@ -69,5 +68,3 @@ HTMLSummaryElement* DetailsMarkerControl::summaryElement()
 }
 
 }
-
-#endif

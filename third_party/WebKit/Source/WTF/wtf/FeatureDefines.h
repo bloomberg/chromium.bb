@@ -144,10 +144,6 @@
 #define ENABLE_DELETION_UI 0
 #endif
 
-#if !defined(ENABLE_DETAILS_ELEMENT)
-#define ENABLE_DETAILS_ELEMENT 1
-#endif
-
 #if !defined(ENABLE_DIALOG_ELEMENT)
 #define ENABLE_DIALOG_ELEMENT 0
 #endif

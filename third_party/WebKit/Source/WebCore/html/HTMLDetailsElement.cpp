@@ -21,7 +21,6 @@
 #include "config.h"
 #include "HTMLDetailsElement.h"
 
-#if ENABLE(DETAILS_ELEMENT)
 #include "HTMLContentElement.h"
 #include "HTMLNames.h"
 #include "HTMLSummaryElement.h"
@@ -158,5 +157,3 @@ void HTMLDetailsElement::toggleOpen()
 }
 
 }
-
-#endif

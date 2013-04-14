@@ -19,7 +19,6 @@
  */
 
 #include "config.h"
-#if ENABLE(DETAILS_ELEMENT) || ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "RenderDetailsMarker.h"
 
 #include "Element.h"
@@ -152,5 +151,3 @@ bool RenderDetailsMarker::isOpen() const
 }
 
 }
-
-#endif
