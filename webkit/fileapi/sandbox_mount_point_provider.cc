@@ -472,13 +472,16 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
       base_path.Append(FileSystemUsageCache::kUsageFileName);
 
   bool is_valid = file_system_usage_cache_->IsValid(usage_file_path);
-  int32 dirty_status = file_system_usage_cache_->GetDirty(usage_file_path);
-  bool visited = (visited_origins_.find(origin_url) != visited_origins_.end());
-  visited_origins_.insert(origin_url);
-  if (is_valid && (dirty_status == 0 || (dirty_status > 0 && visited))) {
+  uint32 dirty_status = 0;
+  bool dirty_status_available =
+      file_system_usage_cache_->GetDirty(usage_file_path, &dirty_status);
+  bool visited = !visited_origins_.insert(origin_url).second;
+  if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
-    return file_system_usage_cache_->GetUsage(usage_file_path);
+    int64 usage = 0;
+    return file_system_usage_cache_->GetUsage(usage_file_path, &usage) ?
+        usage : -1;
   }
   // The usage cache has not been initialized or the cache is dirty.
   // Get the directory size now and update the cache.

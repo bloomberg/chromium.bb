@@ -46,80 +46,103 @@ TEST_F(FileSystemUsageCacheTest, CreateTest) {
 TEST_F(FileSystemUsageCacheTest, SetSizeTest) {
   static const int64 size = 240122;
   base::FilePath usage_file_path = GetUsageFilePath();
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
-  EXPECT_EQ(size, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, SetLargeSizeTest) {
   static const int64 size = kint64max;
   base::FilePath usage_file_path = GetUsageFilePath();
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
-  EXPECT_EQ(size, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
+  uint32 dirty = 0;
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 98214));
   ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
-  EXPECT_EQ(1, usage_cache()->GetDirty(usage_file_path));
-  EXPECT_EQ(98214, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetDirty(usage_file_path, &dirty));
+  EXPECT_EQ(1u, dirty);
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(98214, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
   static const int64 size = 71839;
   base::FilePath usage_file_path = GetUsageFilePath();
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
   ASSERT_FALSE(usage_cache()->DecrementDirty(usage_file_path));
-  EXPECT_EQ(size, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
   static const int64 size = 198491;
   base::FilePath usage_file_path = GetUsageFilePath();
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   ASSERT_TRUE(usage_cache()->DecrementDirty(usage_file_path));
-  EXPECT_EQ(size, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
+  uint32 dirty = 0;
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 854238));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
   ASSERT_FALSE(usage_cache()->DecrementDirty(usage_file_path));
   ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   // It tests DecrementDirty (which returns false) has no effect, i.e
   // does not make dirty = -1 after DecrementDirty.
-  EXPECT_EQ(1, usage_cache()->GetDirty(usage_file_path));
-  EXPECT_EQ(854238, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetDirty(usage_file_path, &dirty));
+  EXPECT_EQ(1u, dirty);
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(854238, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
   static const int64 size = 82412;
   base::FilePath usage_file_path = GetUsageFilePath();
+  int64 usage = 0;
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, size));
   for (int i = 0; i < 20; i++)
     ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   for (int i = 0; i < 20; i++)
     ASSERT_TRUE(usage_cache()->DecrementDirty(usage_file_path));
-  EXPECT_EQ(size, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(size, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
+  uint32 dirty = 0;
+  int64 usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
   ASSERT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 19319));
   for (int i = 0; i < 20; i++)
     ASSERT_TRUE(usage_cache()->IncrementDirty(usage_file_path));
   for (int i = 0; i < 19; i++)
     ASSERT_TRUE(usage_cache()->DecrementDirty(usage_file_path));
-  EXPECT_EQ(1, usage_cache()->GetDirty(usage_file_path));
-  EXPECT_EQ(19319, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_TRUE(usage_cache()->GetDirty(usage_file_path, &dirty));
+  EXPECT_EQ(1u, dirty);
+  EXPECT_TRUE(usage_cache()->GetUsage(usage_file_path, &usage));
+  EXPECT_EQ(19319, usage);
 }
 
 TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
+  int64 usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
-  EXPECT_EQ(-1, usage_cache()->GetUsage(usage_file_path));
+  EXPECT_FALSE(usage_cache()->GetUsage(usage_file_path, &usage));
 }
 
 TEST_F(FileSystemUsageCacheTest, IncrementDirtyWithoutCacheFileTest) {

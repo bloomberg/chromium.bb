@@ -246,7 +246,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   int64 SizeInUsageFile() {
     MessageLoop::current()->RunUntilIdle();
-    return usage_cache()->GetUsage(test_helper_.GetUsageCachePath());
+    int64 usage = 0;
+    return usage_cache()->GetUsage(test_helper_.GetUsageCachePath(), &usage) ?
+        usage : -1;
   }
 
   bool PathExists(const FileSystemURL& url) {

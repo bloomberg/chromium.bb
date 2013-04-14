@@ -23,13 +23,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
   ~FileSystemUsageCache();
 
   // Gets the size described in the .usage file even if dirty > 0 or
-  // is_valid == false.  Returns less than zero if the .usage file is not
-  // available.
-  int64 GetUsage(const base::FilePath& usage_file_path);
+  // is_valid == false.  Returns true if the .usage file is available.
+  bool GetUsage(const base::FilePath& usage_file_path, int64* usage);
 
   // Gets the dirty count in the .usage file.
-  // Returns less than zero if the .usage file is not available.
-  int32 GetDirty(const base::FilePath& usage_file_path);
+  // Returns true if the .usage file is available.
+  bool GetDirty(const base::FilePath& usage_file_path, uint32* dirty);
 
   // Increments or decrements the "dirty" entry in the .usage file.
   // Returns false if no .usage is available.
@@ -64,13 +63,14 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
 
   // Read the size, validity and the "dirty" entry described in the .usage file.
   // Returns less than zero if no .usage file is available.
-  int64 Read(const base::FilePath& usage_file_path,
-             bool* is_valid,
-             uint32* dirty);
+  bool Read(const base::FilePath& usage_file_path,
+            bool* is_valid,
+            uint32* dirty,
+            int64* usage);
 
   bool Write(const base::FilePath& usage_file_path,
              bool is_valid,
-             uint32 dirty,
+             int32 dirty,
              int64 fs_usage);
 
   bool GetPlatformFile(const base::FilePath& file_path,
