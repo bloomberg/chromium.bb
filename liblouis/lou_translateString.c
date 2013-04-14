@@ -480,10 +480,11 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 static int
 syllableBreak ()
 {
-  int wordStart;
-  int wordEnd;
-  int k;
-  char hyphens[100];
+  int wordStart=0;
+  int wordEnd=0;
+  int wordSize=0;
+  int k=0;
+  char *hyphens = NULL;
   for (wordStart = src; wordStart >= 0; wordStart--)
     if (!((findCharOrDots (currentInput[wordStart], 0))->attributes &
 	  CTC_Letter))
@@ -501,15 +502,23 @@ syllableBreak ()
 	break;
       }
   if (wordEnd == srcmax) wordEnd--;
-/* At this stage wordStart is the 0 based index of the first letter in the word,
-* wordEnd is the 0 based index of the last letter in the word.
-* therefore if we want the complete word its: wordEnd-wordStart+1 */
-  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart+1, 
-  hyphens))
+  /* At this stage wordStart is the 0 based index of the first letter in the word,
+  * wordEnd is the 0 based index of the last letter in the word.
+  * example: "hello" wordstart=0, wordEnd=4. */
+  wordSize=wordEnd-wordStart+1;
+  hyphens = (char *) calloc(wordSize+1, sizeof(char));
+  if (!hyphenate (&currentInput[wordStart], wordSize, hyphens))
+  {
+    free(hyphens);
     return 0;
+  }
   for (k = src - wordStart+1; k < (src - wordStart + transCharslen); k++) 
     if (hyphens[k] & 1)
+    {
+      free(hyphens);
       return 1;
+  }
+  free(hyphens);
   return 0;
 }
 
