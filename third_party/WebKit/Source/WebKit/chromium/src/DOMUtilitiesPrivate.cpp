@@ -33,10 +33,7 @@
 
 #include "Element.h"
 #include "HTMLInputElement.h"
-#include "HTMLLinkElement.h"
-#include "HTMLMetaElement.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
 #include "Node.h"
 
 using namespace WebCore;
@@ -60,21 +57,6 @@ namespace WebKit {
 HTMLInputElement* toHTMLInputElement(Node* node)
 {
     return toHTMLElement<HTMLInputElement>(node, HTMLNames::inputTag);
-}
-
-HTMLLinkElement* toHTMLLinkElement(Node* node)
-{
-    return toHTMLElement<HTMLLinkElement>(node, HTMLNames::linkTag);
-}
-
-HTMLMetaElement* toHTMLMetaElement(Node* node)
-{
-    return toHTMLElement<HTMLMetaElement>(node, HTMLNames::metaTag);
-}
-
-HTMLOptionElement* toHTMLOptionElement(Node* node)
-{
-    return toHTMLElement<HTMLOptionElement>(node, HTMLNames::optionTag);
 }
 
 bool elementHasLegalLinkAttribute(const Element* element,
