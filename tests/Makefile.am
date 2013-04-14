@@ -69,16 +69,25 @@ squash_space_SOURCES =				\
 	brl_checks.h				\
 	squash_space.c
 
-hyphenate_crash_SOURCES  =		\
+hyphenate_achena_SOURCES  = 		\
 	brl_checks.c			\
 	brl_checks.h			\
-	hyphenate.c
+	hyphenate_achena.c
 
-hyphenate_SOURCES =				\
+hyphenate_alderen_SOURCES  = 		\
+	brl_checks.c			\
+	brl_checks.h			\
+	hyphenate_alderen.c
+
+hyphenate_straightforward_SOURCES  =		\
+	brl_checks.c			\
+	brl_checks.h			\
+	hyphenate_straightforward.c
+
+hyphenate_xxx_SOURCES =				\
 	brl_checks.c				\
 	brl_checks.h				\
-	hyphenate.c
-
+	hyphenate_xxx.c
 
 pass1Only_SOURCES =				\
 	brl_checks.c				\
@@ -114,8 +123,10 @@ check_PROGRAMS =				\
 	en_gb_g1_italics			\
 	letterDefTest				\
 	squash_space				\
-	hyphenate				\
-	hyphenate_crash				\
+	hyphenate_achena				\
+	hyphenate_alderen				\
+	hyphenate_straightforward				\
+	hyphenate_xxx				\
 	pass1Only				\
 	outpos				\
 	getTable \
