@@ -193,7 +193,6 @@ public:
 
     FeatureObserver* featureObserver() { return &m_featureObserver; }
 
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
     enum ViewMode {
         ViewModeInvalid,
         ViewModeWindowed,
@@ -206,7 +205,6 @@ public:
 
     ViewMode viewMode() const { return m_viewMode; }
     void setViewMode(ViewMode);
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
@@ -420,9 +418,7 @@ private:
 
     RefPtr<StorageNamespace> m_sessionStorage;
 
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
     ViewMode m_viewMode;
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
     double m_minimumTimerInterval;
 

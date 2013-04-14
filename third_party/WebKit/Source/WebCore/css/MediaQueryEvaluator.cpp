@@ -651,7 +651,6 @@ static bool transform_3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* f
     return returnValueIfNoParameter;
 }
 
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
 static bool view_modeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
     UNUSED_PARAM(op);
@@ -684,7 +683,6 @@ static bool view_modeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fram
 
     return result;
 }
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
 enum PointerDeviceType { TouchPointer, MousePointer, NoPointer, UnknownPointer };
 

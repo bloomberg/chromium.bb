@@ -366,10 +366,6 @@
 #define ENABLE_VIEWSOURCE_ATTRIBUTE 1
 #endif
 
-#if !defined(ENABLE_VIEW_MODE_CSS_MEDIA)
-#define ENABLE_VIEW_MODE_CSS_MEDIA 1
-#endif
-
 #if !defined(ENABLE_WEBGL)
 #define ENABLE_WEBGL 0
 #endif

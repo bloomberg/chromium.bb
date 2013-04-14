@@ -45,9 +45,7 @@ static inline bool featureWithCSSValueID(const AtomicString& mediaFeature, const
         return false;
 
     return mediaFeature == MediaFeatureNames::orientationMediaFeature
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
         || mediaFeature == MediaFeatureNames::view_modeMediaFeature
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
         || mediaFeature == MediaFeatureNames::pointerMediaFeature;
 }
 
@@ -143,9 +141,7 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
         || mediaFeature == MediaFeatureNames::transform_3dMediaFeature
         || mediaFeature == MediaFeatureNames::transitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
         || mediaFeature == MediaFeatureNames::view_modeMediaFeature
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
         || mediaFeature == MediaFeatureNames::pointerMediaFeature
         || mediaFeature == MediaFeatureNames::device_pixel_ratioMediaFeature
         || mediaFeature == MediaFeatureNames::resolutionMediaFeature;

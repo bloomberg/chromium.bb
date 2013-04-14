@@ -151,9 +151,7 @@ Page::Page(PageClients& pageClients)
     , m_customHTMLTokenizerTimeDelay(-1)
     , m_customHTMLTokenizerChunkSize(-1)
     , m_canStartMedia(true)
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
     , m_viewMode(ViewModeWindowed)
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
     , m_minimumTimerInterval(Settings::defaultMinDOMTimerInterval())
     , m_timerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval())
     , m_isEditable(false)
@@ -268,7 +266,6 @@ PassRefPtr<ClientRectList> Page::nonFastScrollableRects(const Frame* frame)
     return ClientRectList::create(quads);
 }
 
-#if ENABLE(VIEW_MODE_CSS_MEDIA)
 struct ViewModeInfo {
     const char* name;
     Page::ViewMode type;
@@ -307,7 +304,6 @@ void Page::setViewMode(ViewMode viewMode)
     if (m_mainFrame->document())
         m_mainFrame->document()->styleResolverChanged(RecalcStyleImmediately);
 }
-#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
 void Page::setMainFrame(PassRefPtr<Frame> mainFrame)
 {
