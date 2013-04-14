@@ -193,7 +193,7 @@ void ViewHttpCacheJob::Core::OnIOComplete(int result) {
 // Static.
 bool ViewHttpCacheJobFactory::IsSupportedURL(const GURL& url) {
   return url.SchemeIs(chrome::kChromeUIScheme) &&
-         url.host() == chrome::kChromeUINetworkViewCacheHost;
+         url.host() == kChromeUINetworkViewCacheHost;
 }
 
 // Static.

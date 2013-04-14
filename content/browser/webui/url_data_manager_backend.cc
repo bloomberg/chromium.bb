@@ -379,7 +379,7 @@ class ChromeProtocolHandler
 
     // Next check for chrome://appcache-internals/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
-        request->url().host() == chrome::kChromeUIAppCacheInternalsHost) {
+        request->url().host() == kChromeUIAppCacheInternalsHost) {
       return appcache::ViewAppCacheInternalsJobFactory::CreateJobForRequest(
           request, network_delegate, appcache_service_);
     }
@@ -393,14 +393,14 @@ class ChromeProtocolHandler
 #if defined(USE_TCMALLOC)
     // Next check for chrome://tcmalloc/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
-        request->url().host() == chrome::kChromeUITcmallocHost) {
+        request->url().host() == kChromeUITcmallocHost) {
       return new TcmallocInternalsRequestJob(request, network_delegate);
     }
 #endif
 
     // Next check for chrome://histograms/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
-        request->url().host() == chrome::kChromeUIHistogramHost) {
+        request->url().host() == kChromeUIHistogramHost) {
       return new HistogramInternalsRequestJob(request, network_delegate);
     }
 

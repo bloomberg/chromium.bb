@@ -42,7 +42,7 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
   if (!(transition & PAGE_TRANSITION_FROM_ADDRESS_BAR))
     return false;
 
-  if (url.host() == chrome::kChromeUIBrowserCrashHost) {
+  if (url.host() == kChromeUIBrowserCrashHost) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
     return true;

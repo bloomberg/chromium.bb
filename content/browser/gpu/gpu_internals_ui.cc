@@ -43,7 +43,7 @@ struct GpuFeatureInfo {
 };
 
 WebUIDataSource* CreateGpuHTMLSource() {
-  WebUIDataSource* source = WebUIDataSource::Create(chrome::kChromeUIGpuHost);
+  WebUIDataSource* source = WebUIDataSource::Create(kChromeUIGpuHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);

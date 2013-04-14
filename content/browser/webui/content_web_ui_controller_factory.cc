@@ -18,14 +18,14 @@ namespace content {
 
 WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       BrowserContext* browser_context, const GURL& url) const {
-  if (url.host() == chrome::kChromeUIWebRTCInternalsHost ||
+  if (url.host() == kChromeUIWebRTCInternalsHost ||
 #if !defined(OS_ANDROID)
-      url.host() == chrome::kChromeUITracingHost ||
+      url.host() == kChromeUITracingHost ||
 #endif
-      url.host() == chrome::kChromeUIGpuHost ||
-      url.host() == chrome::kChromeUIIndexedDBInternalsHost ||
-      url.host() == chrome::kChromeUIMediaInternalsHost ||
-      url.host() == chrome::kChromeUIAccessibilityHost) {
+      url.host() == kChromeUIGpuHost ||
+      url.host() == kChromeUIIndexedDBInternalsHost ||
+      url.host() == kChromeUIMediaInternalsHost ||
+      url.host() == kChromeUIAccessibilityHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
   return WebUI::kNoWebUI;
@@ -43,18 +43,18 @@ bool ContentWebUIControllerFactory::UseWebUIBindingsForURL(
 
 WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     WebUI* web_ui, const GURL& url) const {
-  if (url.host() == chrome::kChromeUIWebRTCInternalsHost)
+  if (url.host() == kChromeUIWebRTCInternalsHost)
     return new WebRTCInternalsUI(web_ui);
-  if (url.host() == chrome::kChromeUIGpuHost)
+  if (url.host() == kChromeUIGpuHost)
     return new GpuInternalsUI(web_ui);
-  if (url.host() == chrome::kChromeUIIndexedDBInternalsHost)
+  if (url.host() == kChromeUIIndexedDBInternalsHost)
     return new IndexedDBInternalsUI(web_ui);
-  if (url.host() == chrome::kChromeUIMediaInternalsHost)
+  if (url.host() == kChromeUIMediaInternalsHost)
     return new MediaInternalsUI(web_ui);
-  if (url.host() == chrome::kChromeUIAccessibilityHost)
+  if (url.host() == kChromeUIAccessibilityHost)
     return new AccessibilityUI(web_ui);
 #if !defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUITracingHost)
+  if (url.host() == kChromeUITracingHost)
     return new TracingUI(web_ui);
 #endif
 

@@ -28,7 +28,7 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
                  base::Unretained(this)));
 
   WebUIDataSource* source =
-      WebUIDataSource::Create(chrome::kChromeUIIndexedDBInternalsHost);
+      WebUIDataSource::Create(kChromeUIIndexedDBInternalsHost);
   source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("indexeddb_internals.js",
@@ -96,4 +96,5 @@ void IndexedDBInternalsUI::OnOriginsReady(
   }
   web_ui()->CallJavascriptFunction("indexeddb.onOriginsReady", urls);
 }
-}
+
+}  // namespace content

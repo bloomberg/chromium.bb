@@ -16,7 +16,7 @@ namespace {
 
 WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
   WebUIDataSource* source =
-      WebUIDataSource::Create(chrome::kChromeUIWebRTCInternalsHost);
+      WebUIDataSource::Create(kChromeUIWebRTCInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("webrtc_internals.js", IDR_WEBRTC_INTERNALS_JS);

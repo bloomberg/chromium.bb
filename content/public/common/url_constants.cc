@@ -32,6 +32,11 @@ const char kViewSourceScheme[] = "view-source";
 
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutSrcDocURL[] = "about:srcdoc";
+
+}  // namespace chrome
+
+namespace content {
+
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";
 const char kChromeUIAccessibilityHost[] = "accessibility";
@@ -45,10 +50,6 @@ const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUITcmallocHost[] = "tcmalloc";
 const char kChromeUITracingHost[] = "tracing";
 const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
-
-}  // namespace chrome
-
-namespace content {
 
 const char kChromeUICrashURL[] = "chrome://crash";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";

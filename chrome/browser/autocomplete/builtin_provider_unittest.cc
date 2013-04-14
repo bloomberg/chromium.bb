@@ -144,7 +144,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.
-  const string16 kHostM1 = ASCIIToUTF16(chrome::kChromeUIMediaInternalsHost);
+  const string16 kHostM1 = ASCIIToUTF16(content::kChromeUIMediaInternalsHost);
   const string16 kHostM2 = ASCIIToUTF16(chrome::kChromeUIMemoryHost);
   const GURL kURLM1 = GURL(kChrome + kSeparator3 + kHostM1);
   const GURL kURLM2 = GURL(kChrome + kSeparator3 + kHostM2);

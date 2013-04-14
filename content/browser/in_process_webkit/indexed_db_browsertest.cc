@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
   NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part2",
                           "pass - part2 - crash me");
-  NavigateToURL(shell(), GURL(chrome::kChromeUIBrowserCrashHost));
+  NavigateToURL(shell(), GURL(kChromeUIBrowserCrashHost));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, VersionChangeCrashResilience) {

@@ -35,7 +35,7 @@ SharedResourcesDataSource::~SharedResourcesDataSource() {
 }
 
 std::string SharedResourcesDataSource::GetSource() {
-  return chrome::kChromeUIResourcesHost;
+  return content::kChromeUIResourcesHost;
 }
 
 void SharedResourcesDataSource::StartDataRequest(

@@ -1918,7 +1918,7 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
 
   GURL kAboutHistograms = GURL(std::string(chrome::kAboutScheme) +
                                std::string(content::kStandardSchemeSeparator) +
-                               std::string(chrome::kChromeUIHistogramHost));
+                               std::string(content::kChromeUIHistogramHost));
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

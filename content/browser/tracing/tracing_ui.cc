@@ -40,8 +40,7 @@ namespace content {
 namespace {
 
 WebUIDataSource* CreateTracingHTMLSource() {
-  WebUIDataSource* source =
-      WebUIDataSource::Create(chrome::kChromeUITracingHost);
+  WebUIDataSource* source = WebUIDataSource::Create(kChromeUITracingHost);
 
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
