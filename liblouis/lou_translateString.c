@@ -364,33 +364,34 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
     {
       ch = prepWord[i];
       while (1)
-	{
-	  if (stateNum == 0xffff)
-	    {
-	      stateNum = 0;
-	      goto nextLetter;
-	    }
-	  currentState = &statesArray[stateNum];
-	  if (currentState->trans.offset)
-	    {
-	      transitionsArray = (HyphenationTrans *) &
-		table->ruleArea[currentState->trans.offset];
-	      for (k = 0; k < currentState->numTrans; k++)
-		if (transitionsArray[k].ch == ch)
-		  {
-		    stateNum = transitionsArray[k].newState;
-		    goto stateFound;
-		  }
-	    }
-	  stateNum = currentState->fallbackState;
-	}
+        {
+          if (stateNum == 0xffff)
+            {
+              stateNum = 0;
+              goto nextLetter;
+            }
+          currentState = &statesArray[stateNum];
+          if (currentState->trans.offset)
+            {
+              transitionsArray = (HyphenationTrans *) &
+                table->ruleArea[currentState->trans.offset];
+              for (k = 0; k < currentState->numTrans; k++)
+                {
+                  if (transitionsArray[k].ch == ch)
+                    {
+                      stateNum = transitionsArray[k].newState;
+                      goto stateFound;
+                    }
+                }
+            }
+            stateNum = currentState->fallbackState;
+        }
     stateFound:
       currentState = &statesArray[stateNum];
       if (currentState->hyphenPattern)
-	{
-	  hyphenPattern =
-	    (char *) &table->ruleArea[currentState->hyphenPattern];
-	  patternOffset = i + 1 - strlen (hyphenPattern);
+        {
+          hyphenPattern = (char *) &table->ruleArea[currentState->hyphenPattern];
+          patternOffset = i+1 - strlen(hyphenPattern);
 
           /* Need to ensure that we don't overrun hyphens,
           * in some cases hyphenPattern is longer than the remaining letters,
@@ -487,19 +488,19 @@ syllableBreak ()
   char *hyphens = NULL;
   for (wordStart = src; wordStart >= 0; wordStart--)
     if (!((findCharOrDots (currentInput[wordStart], 0))->attributes &
-	  CTC_Letter))
+          CTC_Letter))
       {
-	wordStart++;
-	break;
+        wordStart++;
+        break;
       }
   if (wordStart < 0)
     wordStart = 0;
   for (wordEnd = src; wordEnd < srcmax; wordEnd++)
     if (!((findCharOrDots (currentInput[wordEnd], 0))->attributes &
-	  CTC_Letter))
+          CTC_Letter))
       {
-	wordEnd--;
-	break;
+        wordEnd--;
+        break;
       }
   if (wordEnd == srcmax) wordEnd--;
   /* At this stage wordStart is the 0 based index of the first letter in the word,
@@ -508,16 +509,16 @@ syllableBreak ()
   wordSize=wordEnd-wordStart+1;
   hyphens = (char *) calloc(wordSize+1, sizeof(char));
   if (!hyphenate (&currentInput[wordStart], wordSize, hyphens))
-  {
-    free(hyphens);
-    return 0;
-  }
-  for (k = src - wordStart+1; k < (src - wordStart + transCharslen); k++) 
-    if (hyphens[k] & 1)
     {
       free(hyphens);
-      return 1;
-  }
+      return 0;
+    }
+  for (k = src - wordStart+1; k < (src - wordStart + transCharslen); k++) 
+    if (hyphens[k] & 1)
+      {
+        free(hyphens);
+        return 1;
+    }
   free(hyphens);
   return 0;
 }
