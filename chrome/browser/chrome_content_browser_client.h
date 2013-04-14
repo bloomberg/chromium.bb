@@ -221,6 +221,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual base::FilePath GetHyphenDictionaryDirectory() OVERRIDE;
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void GetAdditionalAllowedSchemesForFileSystem(
+      std::vector<std::string>* additional_schemes) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(

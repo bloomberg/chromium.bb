@@ -12,7 +12,10 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -22,28 +25,26 @@
 #include "webkit/quota/quota_manager.h"
 
 namespace content {
-namespace {
 
-const char kChromeScheme[] = "chrome";
-const char kExtensionScheme[] = "chrome-extension";
+namespace {
 
 using fileapi::FileSystemOptions;
 
 FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
-  std::vector<std::string> additional_allowed_schemes;
-  additional_allowed_schemes.push_back(kChromeScheme);
-  additional_allowed_schemes.push_back(kExtensionScheme);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowFileAccessFromFiles)) {
-    additional_allowed_schemes.push_back("file");
-  }
   FileSystemOptions::ProfileMode profile_mode =
       is_incognito ? FileSystemOptions::PROFILE_MODE_INCOGNITO
                    : FileSystemOptions::PROFILE_MODE_NORMAL;
+  std::vector<std::string> additional_allowed_schemes;
+  GetContentClient()->browser()->GetAdditionalAllowedSchemesForFileSystem(
+      &additional_allowed_schemes);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowFileAccessFromFiles)) {
+    additional_allowed_schemes.push_back(chrome::kFileScheme);
+  }
   return FileSystemOptions(profile_mode, additional_allowed_schemes);
 }
 
-}  // anonymous namespace
+}  // namespace
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const base::FilePath& profile_path, bool is_incognito,

@@ -490,6 +490,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       WebContents* web_contents);
 
+  // Returns additional allowed scheme set which can access files in
+  // FileSystem API.
+  virtual void GetAdditionalAllowedSchemesForFileSystem(
+      std::vector<std::string>* additional_schemes) {}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
