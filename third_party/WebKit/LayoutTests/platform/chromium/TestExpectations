@@ -3710,17 +3710,7 @@ webkit.org/b/113114 media/video-controls-captions.html [ Timeout ]
 
 webkit.org/b/113474 http/tests/cache/subresource-failover-to-network.html [ Pass Failure ]
 
-# Need rebaseline
-crbug.com/92547 fast/forms/checkbox/checkbox-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/radio/radio-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/range/range-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/search/search-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/select/listbox-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/select/menulist-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/submit/submit-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/text/text-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/forms/textarea/textarea-appearance-basic.html [ Missing ]
-crbug.com/92547 fast/dom/HTMLMeterElement/meter-styles.html [ Failure ]
+crbug.com/231154 fast/forms/textarea/textarea-appearance-basic.html [ Pass Failure ]
 
 # pending CSS grammar refactoring
 webkit.org/b/113483 [ Debug ] inspector/console/console-css-warnings.html [ Skip ]
