@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2008 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,7 +79,18 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/RefPtr.h>
 
+#if OS(WINDOWS)
+#include <windows.h>
+#endif
+
 namespace WebCore {
+
+const int DragController::LinkDragBorderInset = 2;
+const int DragController::MaxOriginalImageArea = 1500 * 1500;
+const int DragController::DragIconRightInset = 7;
+const int DragController::DragIconBottomInset = 3;
+
+const float DragController::DragImageAlpha = 0.75f;
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
 {
@@ -917,6 +929,41 @@ void DragController::placeDragCaret(const IntPoint& windowPoint)
     IntPoint framePoint = frameView->windowToContents(windowPoint);
 
     m_page->dragCaretController()->setCaretPosition(frame->visiblePositionForPoint(framePoint));
+}
+
+DragOperation DragController::dragOperation(DragData* dragData)
+{
+    // FIXME: To match the MacOS behaviour we should return DragOperationNone
+    // if we are a modal window, we are the drag source, or the window is an
+    // attached sheet If this can be determined from within WebCore
+    // operationForDrag can be pulled into WebCore itself
+    ASSERT(dragData);
+    return dragData->containsURL(0) && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
+}
+
+bool DragController::isCopyKeyDown(DragData*)
+{
+    // FIXME: This should not be OS specific.  Delegate to the embedder instead.
+#if OS(WINDOWS)
+    return ::GetAsyncKeyState(VK_CONTROL);
+#else
+    return false;
+#endif
+}
+
+const IntSize& DragController::maxDragImageSize()
+{
+#if OS(DARWIN)
+    // Match Safari's drag image size.
+    static const IntSize maxDragImageSize(400, 400);
+#else
+    static const IntSize maxDragImageSize(200, 200);
+#endif
+    return maxDragImageSize;
+}
+
+void DragController::cleanupAfterSystemDrag()
+{
 }
 
 } // namespace WebCore

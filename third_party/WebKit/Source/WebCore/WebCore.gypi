@@ -1244,7 +1244,6 @@
             'page/animation/ImplicitAnimation.h',
             'page/animation/KeyframeAnimation.cpp',
             'page/animation/KeyframeAnimation.h',
-            'page/chromium/DragControllerChromium.cpp',
             'page/scrolling/ScrollingConstraints.cpp',
             'page/scrolling/ScrollingConstraints.h',
             'page/scrolling/ScrollingCoordinator.cpp',
