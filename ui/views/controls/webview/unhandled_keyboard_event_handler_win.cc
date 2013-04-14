@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 
 #include "base/logging.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -11,13 +11,15 @@
 
 using content::NativeWebKeyboardEvent;
 
+namespace views {
+
 UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() {
   ignore_next_char_event_ = false;
 }
 
 void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
-    views::FocusManager* focus_manager) {
+    FocusManager* focus_manager) {
   if (!focus_manager) {
     NOTREACHED();
     return;
@@ -64,3 +66,5 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
 #endif
   DefWindowProc(message.hwnd, message.message, message.wParam, message.lParam);
 }
+
+}  // namespace views

@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
+
+namespace views {
 
 UnhandledKeyboardEventHandler::~UnhandledKeyboardEventHandler() {
 }
+
+}  // namespace views

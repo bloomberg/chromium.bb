@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
-#define CHROME_BROWSER_UI_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
+#ifndef UI_VIEWS_CONTROLS_WEBVIEW_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
+#define UI_VIEWS_CONTROLS_WEBVIEW_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "ui/views/controls/webview/webview_export.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -13,17 +14,16 @@ struct NativeWebKeyboardEvent;
 
 namespace views {
 class FocusManager;
-}
 
 // This class handles unhandled keyboard messages coming back from the renderer
 // process.
-class UnhandledKeyboardEventHandler {
+class WEBVIEW_EXPORT UnhandledKeyboardEventHandler {
  public:
   UnhandledKeyboardEventHandler();
   ~UnhandledKeyboardEventHandler();
 
   void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
-                           views::FocusManager* focus_manager);
+                           FocusManager* focus_manager);
 
  private:
 #if defined(OS_WIN)
@@ -39,4 +39,6 @@ class UnhandledKeyboardEventHandler {
   DISALLOW_COPY_AND_ASSIGN(UnhandledKeyboardEventHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
+}  // namespace views
+
+#endif  // UI_VIEWS_CONTROLS_WEBVIEW_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
