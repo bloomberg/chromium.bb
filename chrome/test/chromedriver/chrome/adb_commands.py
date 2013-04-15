@@ -20,10 +20,11 @@ import traceback
 
 
 PackageInfo = collections.namedtuple('PackageInfo', ['activity', 'socket'])
-CHROME_INFO = PackageInfo('Main', 'chrome_devtools_remote')
+CHROME_INFO = PackageInfo('com.google.android.apps.chrome.Main',
+                          'chrome_devtools_remote')
 PACKAGE_INFO = {
     'org.chromium.chrome.testshell':
-        PackageInfo('ChromiumTestShellActivity',
+        PackageInfo('.ChromiumTestShellActivity',
                     'chromium_testshell_devtools_remote'),
     'com.google.android.apps.chrome': CHROME_INFO,
     'com.chrome.dev': CHROME_INFO,
@@ -55,7 +56,7 @@ def RunAdbCommand(args):
   Raises:
     AdbError: if exit code is non-zero.
   """
-  args = ['adb', '-d'] + args
+  args = ['adb'] + args
   try:
     p = subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -112,7 +113,7 @@ def StartActivity(package):
   """
   cmd = [
       'shell',
-      'am start -a android.intent.action.VIEW -S -W -n %s/.%s '
+      'am start -a android.intent.action.VIEW -S -W -n %s/%s '
       '-d "data:text/html;charset=utf-8,"' %
       (package, PACKAGE_INFO[package].activity)]
   out = RunAdbCommand(cmd)
