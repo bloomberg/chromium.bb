@@ -30,10 +30,10 @@
 // Provides shared functions used by the internals of the parser and
 // canonicalizer for file URLs. Do not use outside of these modules.
 
-#ifndef URL_URL_FILE_H_
-#define URL_URL_FILE_H_
+#ifndef GOOGLEURL_SRC_URL_FILE_H__
+#define GOOGLEURL_SRC_URL_FILE_H__
 
-#include "url/url_parse_internal.h"
+#include "googleurl/src/url_parse_internal.h"
 
 namespace url_parse {
 
@@ -105,4 +105,4 @@ inline bool DoesBeginUNCPath(const CHAR* text,
 
 }  // namespace url_parse
 
-#endif  // URL_URL_FILE_H_
+#endif  // GOOGLEURL_SRC_URL_FILE_H__

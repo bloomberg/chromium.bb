@@ -30,8 +30,8 @@
 // Functions to canonicalize "standard" URLs, which are ones that have an
 // authority section including a host name.
 
-#include "url/url_canon.h"
-#include "url/url_canon_internal.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_canon_internal.h"
 
 namespace url_canon {
 

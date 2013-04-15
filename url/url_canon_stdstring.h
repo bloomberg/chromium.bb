@@ -31,14 +31,11 @@
 // strings. Because the canonicalizer tries not to be dependent on the STL,
 // we have segregated it here.
 
-#ifndef URL_URL_CANON_STDSTRING_H_
-#define URL_URL_CANON_STDSTRING_H_
+#ifndef GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
+#define GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
 
 #include <string>
-
-#include "base/compiler_specific.h"
-#include "url/url_canon.h"
-#include "url/url_common.h"
+#include "googleurl/src/url_canon.h"
 
 namespace url_canon {
 
@@ -58,7 +55,7 @@ namespace url_canon {
 //
 // Therefore, the user should call Complete() before using the string that
 // this class wrote into.
-class GURL_API StdStringCanonOutput : public CanonOutput {
+class StdStringCanonOutput : public CanonOutput {
  public:
   StdStringCanonOutput(std::string* str)
       : CanonOutput(),
@@ -78,7 +75,11 @@ class GURL_API StdStringCanonOutput : public CanonOutput {
     buffer_len_ = cur_len_;
   }
 
-  virtual void Resize(int sz) OVERRIDE;
+  virtual void Resize(int sz) {
+    str_->resize(sz);
+    buffer_ = str_->empty() ? NULL : &(*str_)[0];
+    buffer_len_ = sz;
+  }
 
  protected:
   std::string* str_;
@@ -129,4 +130,5 @@ class StdStringReplacements :
 
 }  // namespace url_canon
 
-#endif  // URL_URL_CANON_STDSTRING_H_
+#endif  // GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
+

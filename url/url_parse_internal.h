@@ -29,10 +29,10 @@
 
 // Contains common inline helper functions used by the URL parsing routines.
 
-#ifndef URL_URL_PARSE_INTERNAL_H_
-#define URL_URL_PARSE_INTERNAL_H_
+#ifndef GOOGLEURL_SRC_URL_PARSE_INTERNAL_H__
+#define GOOGLEURL_SRC_URL_PARSE_INTERNAL_H__
 
-#include "url/url_parse.h"
+#include "googleurl/src/url_parse.h"
 
 namespace url_parse {
 
@@ -109,4 +109,4 @@ void ParseAfterScheme(const char16* spec,
 
 }  // namespace url_parse
 
-#endif  // URL_URL_PARSE_INTERNAL_H_
+#endif  // GOOGLEURL_SRC_URL_PARSE_INTERNAL_H__

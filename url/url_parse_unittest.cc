@@ -30,6 +30,7 @@
 #include "url/url_parse.h"
 
 #include "base/basictypes.h"
+#include "googleurl/src/url_parse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Some implementations of base/basictypes.h may define ARRAYSIZE.

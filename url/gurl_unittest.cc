@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "googleurl/src/gurl.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
-#include "url/url_canon.h"
-#include "url/url_test_utils.h"
 
 // Some implementations of base/basictypes.h may define ARRAYSIZE.
 // If it's not defined, we define it to the ARRAYSIZE_UNSAFE macro

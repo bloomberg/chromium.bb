@@ -27,13 +27,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef URL_URL_CANON_IP_H_
-#define URL_URL_CANON_IP_H_
+#ifndef GOOGLEURL_SRC_URL_CANON_IP_H__
+#define GOOGLEURL_SRC_URL_CANON_IP_H__
 
 #include "base/string16.h"
-#include "url/url_canon.h"
-#include "url/url_common.h"
-#include "url/url_parse.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_common.h"
+#include "googleurl/src/url_parse.h"
 
 namespace url_canon {
 
@@ -106,4 +106,4 @@ GURL_API bool IPv6AddressToNumber(const char16* spec,
 
 }  // namespace url_canon
 
-#endif  // URL_URL_CANON_IP_H_
+#endif  // GOOGLEURL_SRC_URL_CANON_IP_H__

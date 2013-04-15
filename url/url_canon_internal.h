@@ -32,13 +32,13 @@
 // templace bloat because everything is inlined when anybody calls any of our
 // functions.
 
-#ifndef URL_URL_CANON_INTERNAL_H_
-#define URL_URL_CANON_INTERNAL_H_
+#ifndef GOOGLEURL_SRC_URL_CANON_INTERNAL_H__
+#define GOOGLEURL_SRC_URL_CANON_INTERNAL_H__
 
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "url/url_canon.h"
+#include "googleurl/src/url_canon.h"
 
 namespace url_canon {
 
@@ -458,4 +458,4 @@ inline unsigned long long _strtoui64(const char* nptr,
 
 }  // namespace url_canon
 
-#endif  // URL_URL_CANON_INTERNAL_H_
+#endif  // GOOGLEURL_SRC_URL_CANON_INTERNAL_H__

@@ -27,17 +27,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef URL_GURL_H_
-#define URL_GURL_H_
+#ifndef GOOGLEURL_SRC_GURL_H__
+#define GOOGLEURL_SRC_GURL_H__
 
 #include <iosfwd>
 #include <string>
 
 #include "base/string16.h"
-#include "url/url_canon.h"
-#include "url/url_canon_stdstring.h"
-#include "url/url_common.h"
-#include "url/url_parse.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_canon_stdstring.h"
+#include "googleurl/src/url_common.h"
+#include "googleurl/src/url_parse.h"
 
 class GURL {
  public:
@@ -389,4 +389,4 @@ class GURL {
 // Stream operator so GURL can be used in assertion statements.
 GURL_API std::ostream& operator<<(std::ostream& out, const GURL& url);
 
-#endif  // URL_GURL_H_
+#endif  // GOOGLEURL_SRC_GURL_H__

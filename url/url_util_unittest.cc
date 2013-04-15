@@ -27,12 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_canon_stdstring.h"
+#include "googleurl/src/url_parse.h"
+#include "googleurl/src/url_test_utils.h"
+#include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_canon.h"
-#include "url/url_canon_stdstring.h"
-#include "url/url_parse.h"
-#include "url/url_test_utils.h"
-#include "url/url_util.h"
 
 TEST(URLUtilTest, FindAndCompareScheme) {
   url_parse::Component found_scheme;

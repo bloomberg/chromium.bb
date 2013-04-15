@@ -28,8 +28,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "base/logging.h"
-#include "url/url_canon.h"
-#include "url/url_canon_internal.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_canon_internal.h"
 
 namespace url_canon {
 

@@ -29,11 +29,10 @@
 
 // ICU integration functions.
 
-#ifndef URL_URL_CANON_ICU_H_
-#define URL_URL_CANON_ICU_H_
+#ifndef GOOGLEURL_SRC_URL_CANON_ICU_H__
+#define GOOGLEURL_SRC_URL_CANON_ICU_H__
 
-#include "base/compiler_specific.h"
-#include "url/url_canon.h"
+#include "googleurl/src/url_canon.h"
 
 typedef struct UConverter UConverter;
 
@@ -52,7 +51,7 @@ class ICUCharsetConverter : public CharsetConverter {
 
   GURL_API virtual void ConvertFromUTF16(const char16* input,
                                          int input_len,
-                                         CanonOutput* output) OVERRIDE;
+                                         CanonOutput* output);
 
  private:
   // The ICU converter, not owned by this class.
@@ -61,4 +60,4 @@ class ICUCharsetConverter : public CharsetConverter {
 
 }  // namespace url_canon
 
-#endif  // URL_URL_CANON_ICU_H_
+#endif  // GOOGLEURL_SRC_URL_CANON_ICU_H__

@@ -27,14 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef URL_URL_PARSE_H_
-#define URL_URL_PARSE_H_
+#ifndef GOOGLEURL_SRC_URL_PARSE_H__
+#define GOOGLEURL_SRC_URL_PARSE_H__
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "url/url_common.h"
+#include "googleurl/src/url_common.h"
 
 namespace url_parse {
 
@@ -370,4 +370,4 @@ GURL_API bool ExtractQueryKeyValue(const char16* url,
 
 }  // namespace url_parse
 
-#endif  // URL_URL_PARSE_H_
+#endif  // GOOGLEURL_SRC_URL_PARSE_H__

@@ -30,14 +30,14 @@
 // Convenience functions for string conversions.
 // These are mostly intended for use in unit tests.
 
-#ifndef URL_URL_TEST_UTILS_H_
-#define URL_URL_TEST_UTILS_H_
+#ifndef GOOGLEURL_SRC_URL_TEST_UTILS_H__
+#define GOOGLEURL_SRC_URL_TEST_UTILS_H__
 
 #include <string>
 
 #include "base/string16.h"
+#include "googleurl/src/url_canon_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_canon_internal.h"
 
 namespace url_test_utils {
 
@@ -75,4 +75,4 @@ inline std::string ConvertUTF16ToUTF8(const string16& src) {
 
 }  // namespace url_test_utils
 
-#endif  // URL_URL_TEST_UTILS_H_
+#endif  // GOOGLEURL_SRC_URL_TEST_UTILS_H__
