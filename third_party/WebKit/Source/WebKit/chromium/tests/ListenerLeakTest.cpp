@@ -58,8 +58,10 @@ const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node, v8::HeapGrap
 
 int GetNumObjects(const char* constructor)
 {
-    v8::HandleScope scope;
-    const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(v8::String::New(""), v8::HeapSnapshot::kFull);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::New(""));
     if (!snapshot)
         return -1;
     int count = 0;
