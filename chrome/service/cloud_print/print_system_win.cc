@@ -528,6 +528,28 @@ class PrintSystemWin : public PrintSystem {
       }
 
      private:
+      // Helper class to allow PrintXPSDocument() to have multiple exits.
+      class PrintJobCanceler {
+       public:
+        explicit PrintJobCanceler(
+            base::win::ScopedComPtr<IXpsPrintJob>* job_ptr)
+            : job_ptr_(job_ptr) {
+        }
+        ~PrintJobCanceler() {
+          if (job_ptr_ && *job_ptr_) {
+            (*job_ptr_)->Cancel();
+            job_ptr_->Release();
+          }
+        }
+
+        void reset() { job_ptr_ = NULL; }
+
+       private:
+        base::win::ScopedComPtr<IXpsPrintJob>* job_ptr_;
+
+        DISALLOW_COPY_AND_ASSIGN(PrintJobCanceler);
+      };
+
       void PrintJobDone() {
         // If there is no delegate, then there is nothing pending to process.
         if (!delegate_)
@@ -591,57 +613,48 @@ class PrintSystemWin : public PrintSystem {
                             const std::string& print_ticket) {
         if (!printing::XPSPrintModule::Init())
           return false;
+
         job_progress_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
         if (!job_progress_event_.Get())
           return false;
+
         scoped_ptr<base::win::ScopedCOMInitializer> com_initializer(
             new base::win::ScopedCOMInitializer(
                 base::win::ScopedCOMInitializer::kMTA));
+        PrintJobCanceler job_canceler(&xps_print_job_);
         base::win::ScopedComPtr<IXpsPrintJobStream> doc_stream;
         base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
-        bool ret = false;
-        // Use nested SUCCEEDED checks because we want a common return point.
-        if (SUCCEEDED(printing::XPSPrintModule::StartXpsPrintJob(
-                UTF8ToWide(printer_name).c_str(),
-                UTF8ToWide(job_title).c_str(),
-                NULL,
-                job_progress_event_.Get(),
-                NULL,
-                NULL,
-                NULL,
-                xps_print_job_.Receive(),
-                doc_stream.Receive(),
-                print_ticket_stream.Receive()))) {
-          ULONG bytes_written = 0;
-          if (SUCCEEDED(print_ticket_stream->Write(print_ticket.c_str(),
-                                                   print_ticket.length(),
-                                                   &bytes_written))) {
-            DCHECK(bytes_written == print_ticket.length());
-            if (SUCCEEDED(print_ticket_stream->Close())) {
-              std::string document_data;
-              file_util::ReadFileToString(print_data_file_path, &document_data);
-              bytes_written = 0;
-              if (SUCCEEDED(doc_stream->Write(document_data.c_str(),
-                                              document_data.length(),
-                                              &bytes_written))) {
-                DCHECK(bytes_written == document_data.length());
-                if (SUCCEEDED(doc_stream->Close())) {
-                  job_progress_watcher_.StartWatching(job_progress_event_.Get(),
-                                                      this);
-                  com_initializer_.swap(com_initializer);
-                  ret = true;
-                }
-              }
-            }
-          }
-        }
-        if (!ret) {
-          if (xps_print_job_) {
-            xps_print_job_->Cancel();
-            xps_print_job_.Release();
-          }
-        }
-        return ret;
+        if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
+                UTF8ToWide(printer_name).c_str(), UTF8ToWide(job_title).c_str(),
+                NULL, job_progress_event_.Get(), NULL, NULL, NULL,
+                xps_print_job_.Receive(), doc_stream.Receive(),
+                print_ticket_stream.Receive())))
+          return false;
+
+        ULONG print_bytes_written = 0;
+        if (FAILED(print_ticket_stream->Write(print_ticket.c_str(),
+                                              print_ticket.length(),
+                                              &print_bytes_written)))
+          return false;
+        DCHECK_EQ(print_ticket.length(), print_bytes_written);
+        if (FAILED(print_ticket_stream->Close()))
+          return false;
+
+        std::string document_data;
+        file_util::ReadFileToString(print_data_file_path, &document_data);
+        ULONG doc_bytes_written = 0;
+        if (FAILED(doc_stream->Write(document_data.c_str(),
+                                     document_data.length(),
+                                     &doc_bytes_written)))
+          return false;
+        DCHECK_EQ(document_data.length(), doc_bytes_written);
+        if (FAILED(doc_stream->Close()))
+          return false;
+
+        job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
+        com_initializer_.swap(com_initializer);
+        job_canceler.reset();
+        return true;
       }
 
       // Some Cairo-generated PDFs from Chrome OS result in huge metafiles.
