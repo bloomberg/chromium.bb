@@ -139,6 +139,9 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
 
     string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
     CHECK(!name.empty());  // Make sure this isn't an update.
+    // Note: Truncation is also performed in WriteNode::SetTitle(..). But this
+    // call is still necessary to handle any title changes that might originate
+    // elsewhere, or already be persisted in the directory.
     TruncateUTF8ToByteSize(name, 255, &name);
     sync_entry->set_name(name);
 

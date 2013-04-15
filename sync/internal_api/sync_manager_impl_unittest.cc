@@ -2679,6 +2679,57 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   }
 }
 
+// Ensure that titles are truncated to 255 bytes, and attempting to reset
+// them to their longer version does not set IS_UNSYNCED.
+TEST_F(SyncManagerTest, SetLongTitle) {
+  const int kNumChars = 512;
+  const std::string kClientTag = "tag";
+  std::string title(kNumChars, '0');
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_preference()->set_name("name");
+  entity_specifics.mutable_preference()->set_value("value");
+  MakeServerNode(sync_manager_.GetUserShare(),
+                 PREFERENCES,
+                 "short_title",
+                 syncable::GenerateSyncableHash(PREFERENCES,
+                                                kClientTag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
+
+  // Manually change to the long title. Should set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(PREFERENCES, kClientTag));
+    node.SetTitle(UTF8ToWide(title));
+    EXPECT_EQ(node.GetTitle(), title.substr(0, 255));
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
+
+  // Manually change to the same title. Should not set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(PREFERENCES, kClientTag));
+    node.SetTitle(UTF8ToWide(title));
+    EXPECT_EQ(node.GetTitle(), title.substr(0, 255));
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
+
+  // Manually change to new title. Should set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(PREFERENCES, kClientTag));
+    node.SetTitle(UTF8ToWide("title2"));
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
+}
+
 // Create an encrypted entry when the cryptographer doesn't think the type is
 // marked for encryption. Ensure reads/writes don't break and don't unencrypt
 // the data.

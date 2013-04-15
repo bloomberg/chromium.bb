@@ -88,12 +88,13 @@ IconSize GetIconSizeBinFromBitmapResult(const gfx::Size& pixel_size) {
   int max_size =
       (pixel_size.width() > pixel_size.height() ?
        pixel_size.width() : pixel_size.height());
+  // TODO(zea): re-enable 64p and 32p resolutions once we support them.
   if (max_size > 64)
     return SIZE_INVALID;
   else if (max_size > 32)
-    return SIZE_64;
+    return SIZE_INVALID;
   else if (max_size > 16)
-    return SIZE_32;
+    return SIZE_INVALID;
   else
     return SIZE_16;
 }
