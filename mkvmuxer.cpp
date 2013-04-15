@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <limits>
 #include <new>
 
 #include "mkvmuxerutil.hpp"
@@ -1466,7 +1465,7 @@ bool Cluster::DoWriteBlock(
   if (rel_timecode < 0)
     return false;
 
-  if (rel_timecode > std::numeric_limits<int16>::max())
+  if (rel_timecode > kMaxBlockTimecode)
     return false;
 
   if (write_block == NULL)
@@ -2347,7 +2346,7 @@ int Segment::TestFrame(uint64 track_number,
 
   const int64 delta_timecode = frame_timecode - last_cluster_timecode;
 
-  if (delta_timecode > std::numeric_limits<int16>::max())
+  if (delta_timecode > kMaxBlockTimecode)
     return 2;
 
   // We decide to create a new cluster when we have a video keyframe.

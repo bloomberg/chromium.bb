@@ -16,6 +16,7 @@ namespace mkvmuxer {
 class IMkvWriter;
 
 const uint64 kEbmlUnknownValue = 0x01FFFFFFFFFFFFFFULL;
+const int64 kMaxBlockTimecode = 0x07FFFLL;
 
 // Writes out |value| in Big Endian order. Returns 0 on success.
 int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size);

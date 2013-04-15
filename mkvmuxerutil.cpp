@@ -21,7 +21,6 @@
 #include <cstring>
 #include <ctime>
 
-#include <limits>
 #include <new>
 
 #include "mkvwriter.hpp"
@@ -335,7 +334,7 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
   //  is a signed, 16-bit integer).  However, as a simplification we
   //  only permit non-negative cluster-relative timestamps for blocks.
 
-  if (timecode < 0 || timecode > std::numeric_limits<int16>::max())
+  if (timecode < 0 || timecode > kMaxBlockTimecode)
     return false;
 
   if (WriteID(writer, kMkvSimpleBlock))
