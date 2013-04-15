@@ -10,12 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/extensions/drive_test_util.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -68,9 +67,8 @@ namespace {
 
 // Root dirs for file systems expected by the test extensions.
 // NOTE: Root dir for drive file system is set by Chrome's drive implementation,
-// but the test will have to make sure the mount point is mounted before
-// starting a test extension.
-const char kDriveMountPointName[] = "drive";
+// but the test will have to make sure the mount point is added before
+// starting a test extension using WaitUntilDriveMountPointIsAdded().
 const char kLocalMountPointName[] = "local";
 const char kRestrictedMountPointName[] = "restricted";
 
@@ -157,36 +155,6 @@ bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
 
   return true;
 }
-
-// Helper class used to wait for |OnFileSystemMounted| event from a drive file
-// system.
-class DriveMountPointWaiter : public drive::DriveFileSystemObserver {
- public:
-  explicit DriveMountPointWaiter(drive::DriveFileSystemInterface* file_system)
-      : file_system_(file_system) {
-    file_system_->AddObserver(this);
-  }
-
-  virtual ~DriveMountPointWaiter() {
-    file_system_->RemoveObserver(this);
-  }
-
-  // DriveFileSystemObserver override.
-  virtual void OnFileSystemMounted() OVERRIDE {
-    // Note that it is OK for |run_loop_.Quit| to be called before
-    // |run_loop_.Run|. In this case |Run| will return immediately.
-    run_loop_.Quit();
-  }
-
-  // Runs loop until the file_system_ gets mounted.
-  void Wait() {
-    run_loop_.Run();
-  }
-
- private:
-  drive::DriveFileSystemInterface* file_system_;
-  base::RunLoop run_loop_;
-};
 
 // Helper class to wait for a background page to load or close again.
 class BackgroundObserver {
@@ -368,29 +336,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void AddTestMountPoint() OVERRIDE {
-    // Drive mount point is added by the browser when the drive system service
-    // is first initialized. It is done asynchronously after some other parts of
-    // the service are initialized (e.g. resource metadata and cache), thus racy
-    // with the test start. To handle this raciness, the test verifies that
-    // drive mount point is added before continuing. If this is not the case,
-    // drive file system is observed for FileSystemMounted event (by
-    // |mount_point_waiter|) and test continues once the event is encountered.
-    drive::DriveSystemService* system_service =
-        drive::DriveSystemServiceFactory::FindForProfileRegardlessOfStates(
-            browser()->profile());
-    ASSERT_TRUE(system_service && system_service->file_system());
-
-    DriveMountPointWaiter mount_point_waiter(system_service->file_system());
-
-    base::FilePath ignored;
-    // GetRegisteredPath succeeds iff the mount point exists.
-    if (!content::BrowserContext::GetMountPoints(browser()->profile())->
-            GetRegisteredPath(kDriveMountPointName, &ignored)) {
-      LOG(WARNING) << "Waiting for drive mount point to get mounted.";
-      mount_point_waiter.Wait();
-      LOG(WARNING) << "Drive mount point found.";
-    }
-
+    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
 
  protected:

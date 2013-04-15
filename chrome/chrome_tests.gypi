@@ -1164,6 +1164,8 @@
         'browser/chromeos/drive/drive_system_service_browsertest.cc',
         'browser/chromeos/drive/drive_test_util.cc',
         'browser/chromeos/drive/drive_test_util.h',
+        'browser/chromeos/extensions/drive_test_util.cc',
+        'browser/chromeos/extensions/drive_test_util.h',
         'browser/chromeos/extensions/echo_private_apitest.cc',
         'browser/chromeos/extensions/external_filesystem_apitest.cc',
         'browser/chromeos/extensions/file_manager/file_browser_handler_api_test.cc',

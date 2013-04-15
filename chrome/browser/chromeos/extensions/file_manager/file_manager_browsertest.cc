@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/extensions/drive_test_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -704,18 +705,21 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestFileDisplay) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   StartFileManager("/drive/root");
 
   DoTestFileDisplay();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   StartFileManager("/drive/root");
 
   DoTestKeyboardCopy();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   StartFileManager("/drive/root");
 
   DoTestKeyboardDelete();
