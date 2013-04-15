@@ -531,7 +531,7 @@ bool SVGElement::childShouldCreateRenderer(const NodeRenderingContext& childCont
     return false;
 }
 
-void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue)
+void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
     StyledElement::attributeChanged(name, newValue);
 

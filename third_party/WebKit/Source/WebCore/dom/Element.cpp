@@ -831,7 +831,7 @@ static bool checkNeedsStyleInvalidationForIdChange(const AtomicString& oldId, co
     return false;
 }
 
-void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue)
+void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
     if (ElementShadow* parentElementShadow = shadowOfParentForDistribution(this)) {
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
@@ -874,7 +874,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         cache->handleAttributeChanged(name, this);
 }
 
-inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue)
+inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
 #if ENABLE(CUSTOM_ELEMENTS)
     if (name == isAttr) {
@@ -882,7 +882,7 @@ inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& 
             registry->didGiveTypeExtension(this);
     }
 #endif
-    attributeChanged(name, newValue);
+    attributeChanged(name, newValue, reason);
 }
 
 template <typename CharacterType>
@@ -1060,7 +1060,7 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
 
     // Use attributeVector instead of m_elementData because attributeChanged might modify m_elementData.
     for (unsigned i = 0; i < attributeVector.size(); ++i)
-        attributeChangedFromParserOrByCloning(attributeVector[i].name(), attributeVector[i].value());
+        attributeChangedFromParserOrByCloning(attributeVector[i].name(), attributeVector[i].value(), ModifiedDirectly);
 }
 
 bool Element::hasAttributes() const
@@ -2859,7 +2859,7 @@ void Element::cloneAttributesFromElement(const Element& other)
 
     for (unsigned i = 0; i < m_elementData->length(); ++i) {
         const Attribute* attribute = const_cast<const ElementData*>(m_elementData.get())->attributeItem(i);
-        attributeChangedFromParserOrByCloning(attribute->name(), attribute->value());
+        attributeChangedFromParserOrByCloning(attribute->name(), attribute->value(), ModifiedByCloning);
     }
 }
 
