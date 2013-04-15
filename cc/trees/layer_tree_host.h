@@ -164,6 +164,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual void SetNeedsCommit();
   virtual void SetNeedsFullTreeSync();
   void SetNeedsRedraw();
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   bool CommitRequested() const;
 
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,

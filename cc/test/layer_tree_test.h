@@ -111,6 +111,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetNeedsCommitToMainThread();
   void PostAcquireLayerTextures();
   void PostSetNeedsRedrawToMainThread();
+  void PostSetNeedsRedrawRectToMainThread(const gfx::Rect& damage_rect);
   void PostSetVisibleToMainThread(bool visible);
 
   void DoBeginTest();
@@ -130,6 +131,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetNeedsCommit();
   void DispatchAcquireLayerTextures();
   void DispatchSetNeedsRedraw();
+  void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void DispatchSetVisible(bool visible);
   void DispatchComposite();
   void DispatchDidAddAnimation();

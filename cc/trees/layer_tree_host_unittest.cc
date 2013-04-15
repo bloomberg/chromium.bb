@@ -179,6 +179,68 @@ class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedraw);
 
+// After setNeedsRedrawRect(invalid_rect) the final damage_rect
+// must contain invalid_rect.
+class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestSetNeedsRedrawRect()
+      : num_draws_(0),
+        bounds_(50, 50),
+        invalid_rect_(10, 10, 20, 20),
+        root_layer_(ContentLayer::Create(&client_)) {
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    root_layer_->SetIsDrawable(true);
+    root_layer_->SetBounds(bounds_);
+    layer_tree_host()->SetRootLayer(root_layer_);
+    layer_tree_host()->SetViewportSize(bounds_);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+
+    gfx::RectF root_damage_rect;
+    if (!frame_data->render_passes.empty())
+      root_damage_rect = frame_data->render_passes.back()->damage_rect;
+
+    if (!num_draws_) {
+      // If this is the first frame, expect full frame damage.
+      EXPECT_RECT_EQ(root_damage_rect, gfx::Rect(bounds_));
+    } else {
+      // Check that invalid_rect_ is indeed repainted.
+      EXPECT_TRUE(root_damage_rect.Contains(invalid_rect_));
+    }
+
+    return result;
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (!num_draws_) {
+      PostSetNeedsRedrawRectToMainThread(invalid_rect_);
+    } else {
+      EndTest();
+    }
+    num_draws_++;
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(2, num_draws_);
+  }
+
+ private:
+  int num_draws_;
+  const gfx::Size bounds_;
+  const gfx::Rect invalid_rect_;
+  FakeContentLayerClient client_;
+  scoped_refptr<ContentLayer> root_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
+
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
   LayerTreeHostTestNoExtraCommitFromInvalidate()
@@ -472,39 +534,39 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
 // Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
 class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
-public:
- LayerTreeHostTestStartPageScaleAnimation() {}
+ public:
+  LayerTreeHostTestStartPageScaleAnimation() {}
 
- virtual void BeginTest() OVERRIDE {
-   layer_tree_host()->root_layer()->SetScrollable(true);
-   layer_tree_host()->root_layer()->SetScrollOffset(gfx::Vector2d());
-   layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
-   layer_tree_host()->StartPageScaleAnimation(
-       gfx::Vector2d(), false, 1.25f, base::TimeDelta());
-   PostSetNeedsCommitToMainThread();
-   PostSetNeedsRedrawToMainThread();
- }
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->root_layer()->SetScrollable(true);
+    layer_tree_host()->root_layer()->SetScrollOffset(gfx::Vector2d());
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
+    layer_tree_host()->StartPageScaleAnimation(
+        gfx::Vector2d(), false, 1.25f, base::TimeDelta());
+    PostSetNeedsCommitToMainThread();
+    PostSetNeedsRedrawToMainThread();
+  }
 
- virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float scale)
-     OVERRIDE {
-   gfx::Vector2d offset = layer_tree_host()->root_layer()->scroll_offset();
-   layer_tree_host()->root_layer()->SetScrollOffset(offset + scroll_delta);
-   layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
- }
+  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float scale)
+      OVERRIDE {
+    gfx::Vector2d offset = layer_tree_host()->root_layer()->scroll_offset();
+    layer_tree_host()->root_layer()->SetScrollOffset(offset + scroll_delta);
+    layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
+  }
 
- virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-   impl->ProcessScrollDeltas();
-   // We get one commit before the first draw, and the animation doesn't happen
-   // until the second draw.
-   if (impl->active_tree()->source_frame_number() == 1) {
-     EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
-     EndTest();
-   } else {
-     PostSetNeedsRedrawToMainThread();
-   }
- }
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    impl->ProcessScrollDeltas();
+    // We get one commit before the first draw, and the animation doesn't happen
+    // until the second draw.
+    if (impl->active_tree()->source_frame_number() == 1) {
+      EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
+      EndTest();
+    } else {
+      PostSetNeedsRedrawToMainThread();
+    }
+  }
 
- virtual void AfterTest() OVERRIDE {}
+  virtual void AfterTest() OVERRIDE {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);

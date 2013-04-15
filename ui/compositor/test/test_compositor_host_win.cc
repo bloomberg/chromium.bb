@@ -47,7 +47,7 @@ class TestCompositorHostWin : public TestCompositorHost,
   END_MSG_MAP()
 
   void OnPaint(HDC dc) {
-    compositor_->Draw(false);
+    compositor_->Draw();
     ValidateRect(hwnd(), NULL);
   }
 

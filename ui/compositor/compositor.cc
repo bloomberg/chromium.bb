@@ -574,7 +574,7 @@ void Compositor::SetHostHasTransparentBackground(
   host_->set_has_transparent_background(host_has_transparent_background);
 }
 
-void Compositor::Draw(bool force_clear) {
+void Compositor::Draw() {
   DCHECK(!g_compositor_thread);
 
   if (!root_layer_)
@@ -604,8 +604,12 @@ void Compositor::Draw(bool force_clear) {
     NotifyEnd();
 }
 
-void Compositor::ScheduleFullDraw() {
+void Compositor::ScheduleFullRedraw() {
   host_->SetNeedsRedraw();
+}
+
+void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
+  host_->SetNeedsRedrawRect(damage_rect);
 }
 
 bool Compositor::ReadPixels(SkBitmap* bitmap,

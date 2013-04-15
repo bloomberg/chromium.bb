@@ -455,11 +455,12 @@ void ThreadProxy::SendManagedMemoryStats() {
 
 bool ThreadProxy::IsInsideDraw() { return inside_draw_; }
 
-void ThreadProxy::SetNeedsRedraw() {
+void ThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   DCHECK(IsMainThread());
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedraw");
   Proxy::ImplThread()->PostTask(base::Bind(
-      &ThreadProxy::SetFullRootLayerDamageOnImplThread, impl_thread_weak_ptr_));
+      &ThreadProxy::SetViewportDamageOnImplThread,
+      impl_thread_weak_ptr_, damage_rect));
   Proxy::ImplThread()->PostTask(base::Bind(
       &ThreadProxy::SetNeedsRedrawOnImplThread, impl_thread_weak_ptr_));
 }
@@ -1161,9 +1162,9 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::SetFullRootLayerDamageOnImplThread() {
+void ThreadProxy::SetViewportDamageOnImplThread(const gfx::Rect& damage_rect) {
   DCHECK(IsImplThread());
-  layer_tree_host_impl_->SetFullRootLayerDamage();
+  layer_tree_host_impl_->SetViewportDamage(damage_rect);
 }
 
 size_t ThreadProxy::MaxPartialTextureUpdates() const {

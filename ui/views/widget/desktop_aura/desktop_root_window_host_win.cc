@@ -809,7 +809,7 @@ bool DesktopRootWindowHostWin::HandlePaintAccelerated(
 }
 
 void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
-  root_window_host_delegate_->OnHostPaint();
+  root_window_host_delegate_->OnHostPaint(gfx::Rect());
 }
 
 bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,

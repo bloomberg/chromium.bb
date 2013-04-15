@@ -437,7 +437,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
     if (compositor_) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&Compositor::Draw, compositor_->AsWeakPtr(), false));
+          base::Bind(&Compositor::Draw, compositor_->AsWeakPtr()));
     }
   }
 

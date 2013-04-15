@@ -136,7 +136,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void Draw();
 
   // Draw the whole screen.
-  void ScheduleFullDraw();
+  void ScheduleFullRedraw();
+
+  // Draw the damage_rect.
+  void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
   // Returns a target window for the given gesture event.
   Window* GetGestureTarget(ui::GestureEvent* event);
@@ -369,7 +372,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void OnHostActivated() OVERRIDE;
   virtual void OnHostLostWindowCapture() OVERRIDE;
   virtual void OnHostLostMouseGrab() OVERRIDE;
-  virtual void OnHostPaint() OVERRIDE;
+  virtual void OnHostPaint(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
   virtual float GetDeviceScaleFactor() OVERRIDE;

@@ -371,6 +371,13 @@ void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(
+    const gfx::Rect& damage_rect) {
+  proxy()->MainThread()->PostTask(
+      base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
+                 main_thread_weak_ptr_, damage_rect));
+}
+
 void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
   proxy()->MainThread()->PostTask(
       base::Bind(&LayerTreeTest::DispatchSetVisible,
@@ -493,6 +500,13 @@ void LayerTreeTest::DispatchSetNeedsRedraw() {
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsRedraw();
+}
+
+void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
 void LayerTreeTest::DispatchSetVisible(bool visible) {

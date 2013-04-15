@@ -142,6 +142,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                        base::Time wall_clock_time);
   virtual void UpdateAnimationState(bool start_ready_animations);
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
+  void SetViewportDamage(const gfx::Rect& damage_rect);
 
   void ManageTiles();
   void SetAnticipatedDrawTime(base::TimeTicks time);
@@ -461,7 +462,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   size_t last_sent_memory_visible_and_nearby_bytes_;
   size_t last_sent_memory_use_bytes_;
 
-  bool next_frame_damages_full_device_viewport_;
+  gfx::Rect viewport_damage_rect_;
 
   base::TimeTicks current_frame_time_;
 

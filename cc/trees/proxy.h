@@ -76,7 +76,7 @@ class CC_EXPORT Proxy {
 
   virtual void SetNeedsAnimate() = 0;
   virtual void SetNeedsCommit() = 0;
-  virtual void SetNeedsRedraw() = 0;
+  virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) = 0;
 
   // Defers commits until it is reset. It is only supported when in threaded
   // mode. It's an error to make a sync call like CompositeAndReadback while

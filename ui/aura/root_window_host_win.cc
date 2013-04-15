@@ -305,7 +305,11 @@ void RootWindowHostWin::OnMove(const CPoint& point) {
 }
 
 void RootWindowHostWin::OnPaint(HDC dc) {
-  delegate_->OnHostPaint();
+  gfx::Rect damage_rect;
+  RECT update_rect = {0};
+  if (GetUpdateRect(hwnd(), &update_rect, FALSE))
+    damage_rect = gfx::Rect(update_rect);
+  delegate_->OnHostPaint(damage_rect);
   ValidateRect(hwnd(), NULL);
 }
 

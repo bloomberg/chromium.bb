@@ -282,15 +282,17 @@ class COMPOSITOR_EXPORT Compositor
   // compositing layers on.
   float device_scale_factor() const { return device_scale_factor_; }
 
-  // Draws the scene created by the layer tree and any visual effects. If
-  // |force_clear| is true, this will cause the compositor to clear before
-  // compositing.
-  void Draw(bool force_clear);
+  // Draws the scene created by the layer tree and any visual effects.
+  void Draw();
 
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
   // the whole frame needs to be drawn.
-  void ScheduleFullDraw();
+  void ScheduleFullRedraw();
+
+  // Schedule redraw and append damage_rect to the damage region calculated
+  // from changes to layer properties.
+  void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
   // Reads the region |bounds_in_pixel| of the contents of the last rendered
   // frame into the given bitmap.

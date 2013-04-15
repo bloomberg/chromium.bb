@@ -27,7 +27,7 @@ class FakeProxy : public Proxy {
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE {}
   virtual void SetNeedsCommit() OVERRIDE {}
-  virtual void SetNeedsRedraw() OVERRIDE {}
+  virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE {}
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}
   virtual bool CommitRequested() const OVERRIDE;

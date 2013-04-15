@@ -444,9 +444,12 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       TranslateAndDispatchMouseEvent(&mouseenter_event);
       break;
     }
-    case Expose:
-      delegate_->AsRootWindow()->ScheduleFullDraw();
+    case Expose: {
+      gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
+                            xev->xexpose.width, xev->xexpose.height);
+      delegate_->AsRootWindow()->ScheduleRedrawRect(damage_rect);
       break;
+    }
     case KeyPress: {
       ui::KeyEvent keydown_event(xev, false);
       delegate_->OnHostKeyEvent(&keydown_event);

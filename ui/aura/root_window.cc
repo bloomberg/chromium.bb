@@ -320,11 +320,15 @@ void RootWindow::Draw() {
   TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw",
                            compositor_->last_started_frame() + 1);
 
-  compositor_->Draw(false);
+  compositor_->Draw();
 }
 
-void RootWindow::ScheduleFullDraw() {
-  compositor_->ScheduleFullDraw();
+void RootWindow::ScheduleFullRedraw() {
+  compositor_->ScheduleFullRedraw();
+}
+
+void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
+  compositor_->ScheduleRedrawRect(damage_rect);
 }
 
 Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
@@ -998,8 +1002,8 @@ void RootWindow::OnHostLostMouseGrab() {
   ClearMouseHandlers();
 }
 
-void RootWindow::OnHostPaint() {
-  Draw();
+void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
+  compositor_->ScheduleRedrawRect(damage_rect);
 }
 
 void RootWindow::OnHostMoved(const gfx::Point& origin) {

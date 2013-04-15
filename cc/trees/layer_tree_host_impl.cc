@@ -183,7 +183,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
-      next_frame_damages_full_device_viewport_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
   DCHECK(proxy_->IsImplThread());
@@ -715,6 +714,10 @@ void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
   time_source_client_adapter_->SetActive(enabled);
 }
 
+void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
+  viewport_damage_rect_.Union(damage_rect);
+}
+
 static inline RenderPass* FindRenderPassById(
     RenderPass::Id render_pass_id,
     const LayerTreeHostImpl::FrameData& frame) {
@@ -862,13 +865,12 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   frame->has_no_damage = false;
 
   if (active_tree_->root_layer()) {
-    if (next_frame_damages_full_device_viewport_)
-      device_viewport_damage_rect.Union(gfx::Rect(device_viewport_size_));
+    device_viewport_damage_rect.Union(viewport_damage_rect_);
+    viewport_damage_rect_ = gfx::Rect();
 
     active_tree_->root_layer()->render_surface()->damage_tracker()->
         AddDamageNextUpdate(device_viewport_damage_rect);
   }
-  next_frame_damages_full_device_viewport_ = false;
 
   if (!CalculateRenderPasses(frame))
     return false;
@@ -1800,7 +1802,7 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullRootLayerDamage() {
-  next_frame_damages_full_device_viewport_ = true;
+  SetViewportDamage(gfx::Rect(device_viewport_size_));
 }
 
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {

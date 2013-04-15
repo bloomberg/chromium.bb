@@ -729,7 +729,7 @@ void DesktopRootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   if (size_changed)
     root_window_host_delegate_->OnHostResized(bounds.size());
   else
-    root_window_host_delegate_->OnHostPaint();
+    root_window_host_delegate_->OnHostPaint(gfx::Rect(bounds.size()));
 }
 
 gfx::Insets DesktopRootWindowHostX11::GetInsets() const {
@@ -893,10 +893,12 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   // May want to factor CheckXEventForConsistency(xev); into a common location
   // since it is called here.
   switch (xev->type) {
-    case Expose:
-      // TODO(erg): Can we only redraw the affected areas?
-      root_window_host_delegate_->OnHostPaint();
+    case Expose: {
+      gfx::Rect damage_rect(xev->xexpose.x, xev->xexpose.y,
+                            xev->xexpose.width, xev->xexpose.height);
+      root_window_host_delegate_->OnHostPaint(damage_rect);
       break;
+    }
     case KeyPress: {
       ui::KeyEvent keydown_event(xev, false);
       root_window_host_delegate_->OnHostKeyEvent(&keydown_event);

@@ -555,7 +555,11 @@ void LayerTreeHost::SetNeedsFullTreeSync() {
 }
 
 void LayerTreeHost::SetNeedsRedraw() {
-  proxy_->SetNeedsRedraw();
+  SetNeedsRedrawRect(gfx::Rect(device_viewport_size_));
+}
+
+void LayerTreeHost::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+  proxy_->SetNeedsRedraw(damage_rect);
   if (!proxy_->ImplThread())
     client_->ScheduleComposite();
 }

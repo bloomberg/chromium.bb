@@ -96,7 +96,7 @@ void TestCompositorHostLinux::ScheduleDraw() {
 
 void TestCompositorHostLinux::Draw() {
   if (compositor_.get())
-    compositor_->Draw(false);
+    compositor_->Draw();
 }
 
 // static
