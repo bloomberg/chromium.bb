@@ -499,6 +499,7 @@
         'common',
         'test_support_ui',
         '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
@@ -506,7 +507,6 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../url/url.gyp:url',
       ],
       'include_dirs': [
         '..',
@@ -741,11 +741,11 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui',
-        '../url/url.gyp:url',
       ],
       'include_dirs': [
         '..',
@@ -1057,11 +1057,11 @@
         'chromedriver2_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:http_server',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
-        '../url/url.gyp:url',
       ],
       'include_dirs': [
         '..,'
@@ -3102,20 +3102,20 @@
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
                 # We need to build this during compile step, so enabling here.
-                '../content/content.gyp:content_browsertests',
+                'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
+                'chromedriver_unittests',
+                '../build/temp_gyp/googleurl.gyp:googleurl_unittests',
+                'gpu_tests',
                 '../jingle/jingle.gyp:jingle_unittests',
                 '../net/net.gyp:net_perftests',
-                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
-                '../url/url.gyp:googleurl_unittests',
-                'browser_tests',
-                'chromedriver_unittests',
-                'gpu_tests',
                 'performance_ui_tests',
-                'pyautolib',
                 'reliability_tests',
                 'sync_integration_tests',
+                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
+                'pyautolib',
+                '../content/content.gyp:content_browsertests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [

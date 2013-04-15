@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../build/temp_gyp/googleurl.gyp:googleurl',
     '../components/tracing.gyp:tracing',
     '../media/media.gyp:media',
     '../net/net.gyp:net',
@@ -12,7 +13,6 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/ui.gyp:shell_dialogs',
     '../ui/ui.gyp:ui',
-    '../url/url.gyp:url',
     '../webkit/support/webkit_support.gyp:user_agent',
   ],
   'include_dirs': [

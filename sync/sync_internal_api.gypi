@@ -11,8 +11,8 @@
   ],
   'dependencies': [
     '../base/base.gyp:base',
+    '../build/temp_gyp/googleurl.gyp:googleurl',
     '../net/net.gyp:net',
-    '../url/url.gyp:url',
   ],
   'sources': [
     'internal_api/base_node.cc',

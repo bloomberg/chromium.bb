@@ -30,8 +30,9 @@
         'safe_browsing_report_proto',
         'feedback_proto',
         'variations_seed_proto',
-        '../components/components.gyp:auto_login_parser',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../components/components.gyp:autofill_risk_proto',
+        '../components/components.gyp:auto_login_parser',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -51,7 +52,6 @@
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../url/url.gyp:url',
         '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'include_dirs': [

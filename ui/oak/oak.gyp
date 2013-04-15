@@ -14,8 +14,8 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
+        '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../skia/skia.gyp:skia',
-        '../../url/url.gyp:url',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',

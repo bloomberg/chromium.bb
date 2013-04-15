@@ -83,8 +83,8 @@
             ],
           },
           'dependencies': [
+            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../net/net.gyp:net',
-            '../url/url.gyp:url',
           ],
         }, {
           'defines': [
