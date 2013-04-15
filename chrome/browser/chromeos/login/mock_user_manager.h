@@ -102,7 +102,7 @@ class MockUserManager : public UserManager {
   virtual UserFlow* GetUserFlow(const std::string&) const OVERRIDE;
 
   // Sets a new User instance.
-  void SetLoggedInUser(const std::string& email);
+  void SetActiveUser(const std::string& email);
 
   // Creates a new public session user.
   User* CreatePublicAccountUser(const std::string& email);

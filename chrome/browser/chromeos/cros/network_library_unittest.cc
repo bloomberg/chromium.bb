@@ -167,7 +167,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
                                 onc::ONCSource source,
                                 bool expect_successful_import) {
     ScopedMockUserManagerEnabler mock_user_manager;
-    mock_user_manager.user_manager()->SetLoggedInUser("madmax@my.domain.com");
+    mock_user_manager.user_manager()->SetActiveUser("madmax@my.domain.com");
     EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));

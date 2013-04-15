@@ -80,9 +80,11 @@ class ProfileManager : public base::NonThreadSafe,
                           const string16& icon_url,
                           bool is_managed);
 
-  // Initiates default profile creation. If default profile has already been
-  // created then the callback is called immediately. Should be called on the
-  // UI thread.
+  // Initiates profile creation identified by |active_profile_username_hash_|.
+  // If profile has already been created then the callback is called
+  // immediately. Should be called on the UI thread.
+  // This method is only used on Chrome OS where every user profile
+  // has username_hash associated with it.
   static void CreateDefaultProfileAsync(const CreateCallback& callback);
 
   // Returns true if the profile pointer is known to point to an existing
@@ -355,6 +357,11 @@ class ProfileManager : public base::NonThreadSafe,
   // during the last run. This is why they are kept in a list, not in a set.
   std::vector<Profile*> active_profiles_;
   bool closing_all_browsers_;
+
+#if defined(OS_CHROMEOS)
+  // Identifies active profile on Chrome OS.
+  std::string active_profile_username_hash_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

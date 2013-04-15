@@ -39,6 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -175,9 +176,13 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   EXPECT_EQ(expected_default.value(),
             profile_manager->GetInitialProfileDir().value());
 
+  scoped_ptr<chromeos::MockUserManager> mock_user_manager;
+  mock_user_manager.reset(new chromeos::MockUserManager());
+  mock_user_manager->SetActiveUser("user@gmail.com");
+  chromeos::User* active_user = mock_user_manager->GetActiveUser();
   profile_manager->Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                            content::NotificationService::AllSources(),
-                           content::NotificationService::NoDetails());
+                           content::Details<const chromeos::User>(active_user));
   base::FilePath expected_logged_in(profile_dir);
   EXPECT_EQ(expected_logged_in.value(),
             profile_manager->GetInitialProfileDir().value());

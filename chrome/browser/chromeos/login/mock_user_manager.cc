@@ -34,7 +34,7 @@ UserImageManager* MockUserManager::GetUserImageManager() {
 }
 
 // Creates a new User instance.
-void MockUserManager::SetLoggedInUser(const std::string& email) {
+void MockUserManager::SetActiveUser(const std::string& email) {
   delete user_;
   user_ = User::CreateRegularUser(email);
 }
