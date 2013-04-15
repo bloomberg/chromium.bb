@@ -14,12 +14,11 @@
 /* We want the .gnu.warning.SYMBOL section to be unallocated.
    Tacking on "\n\t#" to the section name makes gcc put it's bogus
    section attributes on what looks like a comment to the assembler.  */
-/* NOTE: this hack will likely break or have weird results with systems
-   that produce code that does not go through a regular assembler,
-   e.g. pnacl's llvm mc based code generation
-   c.f. http://code.google.com/p/nativeclient/issues/detail?id=1215
+/* This hack does not work with PNaCl, and section attributes are not
+   allowed on globals in the bitcode ABI, so we just define it away.
 */
 
+#ifndef __pnacl__
 #define link_warning(symbol, msg) \
   static const char __evoke_link_warning_##symbol[] \
     __attribute__((__used__, section (".gnu.warning." #symbol "\n\t#"))) = msg
@@ -28,5 +27,9 @@
 #define stub_warning(name) \
   link_warning(name, \
   "the `" #name "\' function is not implemented and will always fail")
+#else
+#define link_warning(symbol, msg)
+#define stub_warning(symbol)
+#endif
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_NOSYS_WARNING_H_ */
