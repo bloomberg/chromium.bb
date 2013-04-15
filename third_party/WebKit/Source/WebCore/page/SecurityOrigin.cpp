@@ -60,7 +60,6 @@ bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
         return true;
     if (url.protocolIs("filesystem"))
         return true;
-    UNUSED_PARAM(url);
     return false;
 }
 
