@@ -416,6 +416,7 @@ class Isolate(unittest.TestCase):
       for i in os.listdir(os.path.join(ROOT_DIR, 'tests', 'isolate'))
       if i.endswith('.isolate')
     )
+    files.remove('simple')
     self.assertEquals(sorted(RELATIVE_CWD), files)
     self.assertEquals(sorted(DEPENDENCIES), files)
 
@@ -1103,6 +1104,61 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'isolate.py'),
     ])
     self.assertEquals(files, list_files_tree(self.tempdir))
+
+
+class IsolateOther(IsolateBase):
+  def test_run_mixed(self):
+    # Test when a user mapped from a directory and then replay from another
+    # directory. It's a specific use-case of the builder/tester setup of the
+    # chromium CI setup.
+    indir = os.path.join(self.tempdir, 'input')
+    os.mkdir(indir)
+    for i in ('simple.py', 'simple.isolate'):
+      shutil.copy(
+          os.path.join(ROOT_DIR, 'tests', 'isolate', i),
+          os.path.join(indir, i))
+    proc = subprocess.Popen(
+        [
+          sys.executable, 'isolate.py',
+          'check',
+          '-i', os.path.join(indir, 'simple.isolate'),
+          '-s', os.path.join(indir, 'simple.isolated'),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=ROOT_DIR)
+    stdout = proc.communicate()[0]
+    self.assertEqual('', stdout)
+    self.assertEqual(0, proc.returncode)
+    expected = [
+      'simple.isolate', 'simple.isolated', 'simple.isolated.state', 'simple.py',
+    ]
+    self.assertEqual(expected, sorted(os.listdir(indir)))
+
+    # Remove the original directory.
+    indir2 = indir + '2'
+    os.rename(indir, indir2)
+
+    # simple.isolated.state is required; it contains the variables.
+    # This should still work.
+    proc = subprocess.Popen(
+        [
+          sys.executable, 'isolate.py', 'run',
+          '-s', os.path.join(indir2, 'simple.isolated'),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=ROOT_DIR)
+    stdout = proc.communicate()[0]
+    # TODO(maruel): It ran in a third temporary directory created by "isolate.py
+    # run" and was only containing simple.py and nothing else.
+    # Right now it just fails, it shouldn't.
+    # Expected:
+    #self.assertEqual('Simply works.\n', stdout)
+    #self.assertEqual(0, proc.returncode)
+    # Actual:
+    self.assertEqual('\nError: A .isolate file is required.\n', stdout)
+    self.assertEqual(1, proc.returncode)
 
 
 if __name__ == '__main__':
