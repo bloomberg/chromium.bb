@@ -215,10 +215,6 @@ deps_os = {
             None,
         'src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage':
             None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers':
-            None,
         'src/content/test/data/layout_tests/LayoutTests/storage/domstorage':
             None,
         'src/content/test/data/layout_tests/LayoutTests/storage/indexeddb':
