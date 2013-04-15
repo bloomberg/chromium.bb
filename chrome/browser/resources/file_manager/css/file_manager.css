@@ -83,6 +83,10 @@ body[new-ui] ::-webkit-scrollbar-thumb {
   z-index: 2;
 }
 
+body[new-ui] #butter-bar {
+  -webkit-app-region: no-drag;
+}
+
 #butter-bar:not(.visible) {
   opacity: 0;
   pointer-events: none;
@@ -398,12 +402,31 @@ body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
 
 body[new-ui] .dialog-header {
   -webkit-app-region: drag;
+  -webkit-margin-start: 7px;
 }
 
 body[new-ui] .dialog-header #search-box,
 body[new-ui] .dialog-header #autocomplete-list,
-body[new-ui] .dialog-header .buttonbar {
+body[new-ui] .dialog-header .buttonbar button {
   -webkit-app-region: no-drag;
+}
+
+body[new-ui] .dialog-header #gear-button {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/topbar_button_settings.png') 1x,
+    url('../images/files/ui/new-ui/2x/topbar_button_settings.png') 2x);
+}
+
+body[new-ui] .dialog-header #maximize-button {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/topbar_button_maximize.png') 1x,
+    url('../images/files/ui/new-ui/2x/topbar_button_maximize.png') 2x);
+}
+
+body[new-ui] .dialog-header #close-button {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/topbar_button_close.png') 1x,
+    url('../images/files/ui/new-ui/2x/topbar_button_close.png') 2x);
 }
 
 body[maximized][type='full-page'] .dialog-header {
@@ -554,31 +577,18 @@ body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
   width: 25px;
 }
 
-.dialog-header div[role=button] {
-  -webkit-border-radius: 2px;
-  -webkit-transition: border-color 130ms linear;
-  background-color: transparent;
-  background-position: center center;
+body[new-ui] .dialog-header button {
+  background-image: none;
+  background-position: center;
   background-repeat: no-repeat;
-  border: 1px solid transparent;
-  height: 29px;
+  min-width: 29px;
+  padding: 0;
   width: 29px;
 }
 
-.dialog-header div[role=button]:focus {
-  -webkit-transition: border-color 200ms;
-  border-color: rgb(77, 144, 254);
-  outline: none;
-}
-
-.dialog-header div[role=button][disabled],
-.dialog-header div[role=button]:hover,
-.dialog-header div[role=button]:active {
-  border-color: #ddd;
-}
-
-.dialog-header div[role=button][disabled] {
-  background-color: #f1f1f1;
+body[new-ui] .dialog-header button:not(:hover):not(focus) {
+  background-color: transparent;
+  border-color: transparent;
 }
 
 #search-box,
@@ -606,13 +616,22 @@ body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
   width: 150px;
 }
 
+body[new-ui] #search-box {
+  border-color: white;
+}
+
 #search-box:hover {
   border: 1px solid #b9b9b9;
   border-top: 1px solid #a0a0a0;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-#search-box:focus {
+body[new-ui] #search-box:hover {
+  border-color: white;
+}
+
+#search-box:focus,
+body[new-ui] #search-box:focus {
   border: 1px solid rgb(77, 144, 254);
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
   outline: none;
@@ -1067,6 +1086,7 @@ body[new-ui] #default-actions-list:focus > [selected]:hover {
 /* Text box used for renaming in the detail list. */
 .table-row-cell input.rename {
   -webkit-margin-start: -3px;
+  border-width: 0;
   line-height: 20px;
 }
 
@@ -1697,7 +1717,7 @@ body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   display: none;
 }
 
-#gear-button::before {
+body:not([new-ui]) #gear-button::before {
   background-image: url('../images/files/ui/settings.svg');
   background-position: 20px center;
   background-repeat: no-repeat;
@@ -1710,17 +1730,17 @@ body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   top: 0;
 }
 
-#gear-button:hover::before {
+body:not([new-ui]) #gear-button:hover::before {
   opacity: 1;
 }
 
-#gear-button {
+body:not([new-ui]) #gear-button {
   overflow: hidden;
   text-align: left;
   width: 54px;
 }
 
-#gear-button span.disclosureindicator {
+body:not([new-ui]) #gear-button span.disclosureindicator {
   float: none;
   margin-left: 42px;
 }

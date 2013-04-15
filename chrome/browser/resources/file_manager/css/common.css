@@ -118,7 +118,8 @@ input.common[type='checkbox']::after {
 }
 
 .buttonbar.right {
-  float: right;
+  -webkit-box-flex: 1.0;
+  -webkit-box-pack: end;
 }
 
 .buttonbar button:first-child {
@@ -153,7 +154,6 @@ input.common[type='checkbox']::after {
   box-sizing: content-box;
   color: #444;
   cursor: default;
-  display: inline-block;
   font-size: 13px;
   height: 27px;
   line-height: 27px;

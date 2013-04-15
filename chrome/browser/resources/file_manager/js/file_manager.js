@@ -515,7 +515,8 @@ DialogType.isModal = function(type) {
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
     controller.attachTreeDropTarget(this.directoryTree_);
-    controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
+    if (!util.platform.newUI())
+      controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -553,9 +554,24 @@ DialogType.isModal = function(type) {
         this.refreshRemainingSpace_.bind(this,
                                          false /* Without loading caption. */));
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
-
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
       'menuitem, hr';
+
+    if (util.platform.newUI() && this.dialogType == DialogType.FULL_PAGE) {
+      var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
+      maximizeButton.addEventListener('click', function() {
+        var appWindow = chrome.app.window.current();
+        if (appWindow.isMaximized())
+          appWindow.restore();
+        else
+          appWindow.maximize();
+      });
+
+      var closeButton = this.dialogDom_.querySelector('#close-button');
+      closeButton.addEventListener('click', function() {
+        window.close();
+      });
+    }
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -709,10 +725,12 @@ DialogType.isModal = function(type) {
     this.spinner_ = dom.querySelector('#spinner-with-text');
     this.showSpinner_(false);
 
-    this.breadcrumbs_ = new BreadcrumbsController(
-         dom.querySelector('#dir-breadcrumbs'));
-    this.breadcrumbs_.addEventListener(
-         'pathclick', this.onBreadcrumbClick_.bind(this));
+    if (!util.platform.newUI()) {
+      this.breadcrumbs_ = new BreadcrumbsController(
+           dom.querySelector('#dir-breadcrumbs'));
+      this.breadcrumbs_.addEventListener(
+           'pathclick', this.onBreadcrumbClick_.bind(this));
+    }
     this.searchBreadcrumbs_ = new BreadcrumbsController(
          dom.querySelector('#search-breadcrumbs'));
     this.searchBreadcrumbs_.addEventListener(
@@ -761,10 +779,13 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('div.sidebar-splitter'));
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
-    this.dialogDom_.querySelector('#detail-view').addEventListener(
-        'click', this.onDetailViewButtonClick_.bind(this));
-    this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
-        'click', this.onThumbnailViewButtonClick_.bind(this));
+
+    if (!util.platform.newUI()) {
+      this.dialogDom_.querySelector('#detail-view').addEventListener(
+          'click', this.onDetailViewButtonClick_.bind(this));
+      this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
+          'click', this.onThumbnailViewButtonClick_.bind(this));
+    }
 
     this.syncButton = this.dialogDom_.querySelector('#drive-sync-settings');
     this.syncButton.addEventListener('activate', this.onDrivePrefClick_.bind(
@@ -1082,8 +1103,10 @@ DialogType.isModal = function(type) {
       this.table_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
-      this.dialogDom_.querySelector('#detail-view').disabled = true;
-      this.dialogDom_.querySelector('#thumbnail-view').disabled = false;
+      if (!util.platform.newUI()) {
+        this.dialogDom_.querySelector('#detail-view').disabled = true;
+        this.dialogDom_.querySelector('#thumbnail-view').disabled = false;
+      }
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
       this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
@@ -1094,8 +1117,10 @@ DialogType.isModal = function(type) {
       this.grid_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
-      this.dialogDom_.querySelector('#thumbnail-view').disabled = true;
-      this.dialogDom_.querySelector('#detail-view').disabled = false;
+      if (!util.platform.newUI()) {
+        this.dialogDom_.querySelector('#thumbnail-view').disabled = true;
+        this.dialogDom_.querySelector('#detail-view').disabled = false;
+      }
     } else {
       throw new Error('Unknown list type: ' + type);
     }
@@ -1299,7 +1324,9 @@ DialogType.isModal = function(type) {
       this.table_.redraw();
     }
 
-    this.breadcrumbs_.truncate();
+    if (!util.platform.newUI())
+      this.breadcrumbs_.truncate();
+
     this.searchBreadcrumbs_.truncate();
 
     this.updateWindowState_();
@@ -2355,9 +2382,11 @@ DialogType.isModal = function(type) {
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
 
-    this.breadcrumbs_.update(
-        this.directoryModel_.getCurrentRootPath(),
-        this.directoryModel_.getCurrentDirPath());
+    if (!util.platform.newUI()) {
+      this.breadcrumbs_.update(
+          this.directoryModel_.getCurrentRootPath(),
+          this.directoryModel_.getCurrentDirPath());
+    }
 
     this.scanUpdatedAtLeastOnceOrCompleted_ = false;
     if (this.scanCompletedTimer_) {
