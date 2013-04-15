@@ -65,9 +65,9 @@ def RemoveBuildCruft(outdir):
     for f in files:
       path = os.path.join(root, f)
       ext = os.path.splitext(path)[1]
-      if ext in ('.d', '.o'):
-        buildbot_common.RemoveFile(path)
-      elif f == 'dir.stamp':
+      if (ext in ('.d', '.o') or
+          f == 'dir.stamp' or
+          re.search(r'_unstripped_.*?\.nexe', f)):
         buildbot_common.RemoveFile(path)
 
 
@@ -126,8 +126,9 @@ def main(args):
       os.path.join(sdk_resources_dir, 'manifest.json.template'),
       os.path.join(app_examples_dir, 'manifest.json'),
       {'version': build_utils.ChromeVersionNoTrunk()})
-  buildbot_common.CopyFile(os.path.join(sdk_resources_dir, 'background.js'),
-                           os.path.join(app_examples_dir, 'background.js'))
+  for filename in ['background.js', 'icon128.png']:
+    buildbot_common.CopyFile(os.path.join(sdk_resources_dir, filename),
+                             os.path.join(app_examples_dir, filename))
 
   os.environ['NACL_SDK_ROOT'] = pepperdir
   build_sdk.BuildStepMakeAll(app_dir, platform, 'examples', 'Build Examples',
