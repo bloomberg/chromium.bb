@@ -1788,8 +1788,6 @@ const StyleResolver::MatchedPropertiesCacheItem* StyleResolver::findFromMatchedP
     size_t size = matchResult.matchedProperties.size();
     if (size != cacheItem.matchedProperties.size())
         return 0;
-    if (cacheItem.renderStyle->insideLink() != m_state.style()->insideLink())
-        return 0;
     for (size_t i = 0; i < size; ++i) {
         if (matchResult.matchedProperties[i] != cacheItem.matchedProperties[i])
             return 0;
