@@ -10,11 +10,13 @@ It makes sure Google AppEngine SDK is found, download Rietveld and Django code
 if necessary and starts the server on a free inbound TCP port.
 """
 
+import logging
 import optparse
 import os
 import shutil
 import socket
 import sys
+import tempfile
 import time
 
 try:
@@ -61,6 +63,7 @@ class LocalRietveld(object):
     self.rietveld = os.path.join(self.base_dir, '_rietveld')
     self.test_server = None
     self.port = None
+    self.tempdir = None
 
     # Find the GAE SDK
     previous_dir = ''
@@ -105,19 +108,23 @@ class LocalRietveld(object):
 
   def start_server(self, verbose=False):
     self.install_prerequisites()
+    assert not self.tempdir
+    self.tempdir = tempfile.mkdtemp(prefix='rietveld_test')
     self.port = find_free_port()
     if verbose:
-      pipe = None
+      stdout = stderr = None
     else:
-      pipe = subprocess2.VOID
+      stdout = subprocess2.PIPE
+      stderr = subprocess2.STDOUT
     cmd = [
         sys.executable,
         self.dev_app,
-        '--skip_sdk_update_check',
         '.',
-        '--port=%d' % self.port,
-        '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'),
-        '-c']
+        '--port', str(self.port),
+        '--storage', self.tempdir,
+        '--clear_search_indexes',
+        '--skip_sdk_update_check',
+    ]
 
     # CHEAP TRICK
     # By default you only want to bind on loopback but I'm testing over a
@@ -125,16 +132,20 @@ class LocalRietveld(object):
     # remotely.
     if os.environ.get('GAE_LISTEN_ALL', '') == 'true':
       cmd.extend(('-a', '0.0.0.0'))
-
+    logging.info(' '.join(cmd))
     self.test_server = subprocess2.Popen(
-        cmd, stdout=pipe, stderr=pipe, cwd=self.rietveld)
+        cmd, stdout=stdout, stderr=stderr, cwd=self.rietveld)
     # Loop until port 127.0.0.1:port opens or the process dies.
     while not test_port(self.port):
       self.test_server.poll()
       if self.test_server.returncode is not None:
+        if not verbose:
+          out = self.test_server.communicate()[0]
+        shutil.rmtree(self.tempdir)
+        self.tempdir = None
         raise Failure(
-            'Test rietveld instance failed early on port %s' %
-            self.port)
+            'Test rietveld instance failed early on port %s\n%s' %
+              (self.port, out))
       time.sleep(0.01)
 
   def stop_server(self):
@@ -146,6 +157,9 @@ class LocalRietveld(object):
       self.test_server.wait()
       self.test_server = None
       self.port = None
+    if self.tempdir:
+      shutil.rmtree(self.tempdir)
+      self.tempdir = None
 
 
 def main():
