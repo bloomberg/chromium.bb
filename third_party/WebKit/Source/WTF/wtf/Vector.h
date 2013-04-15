@@ -253,8 +253,7 @@ namespace WTF {
         void allocateBuffer(size_t newCapacity)
         {
             ASSERT(newCapacity);
-            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
-            RELEASE_ASSERT(newCapacity <= std::numeric_limits<unsigned>::max() / sizeof(T));
+            RELEASE_ASSERT(newCapacity <= std::numeric_limits<size_t>::max() / sizeof(T));
             size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
             m_capacity = sizeToAllocate / sizeof(T);
             m_buffer = static_cast<T*>(fastMalloc(sizeToAllocate));
@@ -263,8 +262,7 @@ namespace WTF {
         bool tryAllocateBuffer(size_t newCapacity)
         {
             ASSERT(newCapacity);
-            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
-            if (newCapacity > std::numeric_limits<unsigned>::max() / sizeof(T))
+            if (newCapacity > std::numeric_limits<size_t>::max() / sizeof(T))
                 return false;
 
             size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
@@ -285,8 +283,7 @@ namespace WTF {
         void reallocateBuffer(size_t newCapacity)
         {
             ASSERT(shouldReallocateBuffer(newCapacity));
-            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
-            RELEASE_ASSERT(newCapacity <= std::numeric_limits<unsigned>::max() / sizeof(T));
+            RELEASE_ASSERT(newCapacity <= std::numeric_limits<size_t>::max() / sizeof(T));
             size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
             m_capacity = sizeToAllocate / sizeof(T);
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
@@ -336,7 +333,7 @@ namespace WTF {
         }
 
         T* m_buffer;
-        unsigned m_capacity;  // Must come last so that it packs cleanly with Vector::m_size on 64-bit.
+        size_t m_capacity;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -440,7 +437,7 @@ namespace WTF {
         bool shouldReallocateBuffer(size_t newCapacity) const
         {
             // We cannot reallocate the inline buffer.
-            return Base::shouldReallocateBuffer(newCapacity) && std::min(static_cast<size_t>(m_capacity), newCapacity) > inlineCapacity;
+            return Base::shouldReallocateBuffer(newCapacity) && std::min(m_capacity, newCapacity) > inlineCapacity;
         }
 
         void reallocateBuffer(size_t newCapacity)
@@ -500,10 +497,10 @@ namespace WTF {
     };
 
     template<typename T, size_t inlineCapacity = 0>
-    class Vector : private VectorBuffer<T, inlineCapacity> {
+    class Vector {
         WTF_MAKE_FAST_ALLOCATED;
     private:
-        typedef VectorBuffer<T, inlineCapacity> Base;
+        typedef VectorBuffer<T, inlineCapacity> Buffer;
         typedef VectorTypeOperations<T> TypeOperations;
 
     public:
@@ -520,8 +517,8 @@ namespace WTF {
         }
         
         explicit Vector(size_t size) 
-            : Base(size)
-            , m_size(size)
+            : m_size(size)
+            , m_buffer(size)
         {
             if (begin())
                 TypeOperations::initialize(begin(), end());
@@ -547,25 +544,25 @@ namespace WTF {
 #endif
 
         size_t size() const { return m_size; }
-        size_t capacity() const { return Base::capacity(); }
+        size_t capacity() const { return m_buffer.capacity(); }
         bool isEmpty() const { return !size(); }
 
         T& at(size_t i) 
         { 
             RELEASE_ASSERT(i < size());
-            return Base::buffer()[i];
+            return m_buffer.buffer()[i]; 
         }
         const T& at(size_t i) const 
         {
             RELEASE_ASSERT(i < size());
-            return Base::buffer()[i];
+            return m_buffer.buffer()[i]; 
         }
 
         T& operator[](size_t i) { return at(i); }
         const T& operator[](size_t i) const { return at(i); }
 
-        T* data() { return Base::buffer(); }
-        const T* data() const { return Base::buffer(); }
+        T* data() { return m_buffer.buffer(); }
+        const T* data() const { return m_buffer.buffer(); }
 
         iterator begin() { return data(); }
         iterator end() { return begin() + m_size; }
@@ -622,8 +619,8 @@ namespace WTF {
         }
 
         Vector(size_t size, const T& val)
-            : Base(size)
-            , m_size(size)
+            : m_size(size)
+            , m_buffer(size)
         {
             if (begin())
                 TypeOperations::uninitializedFill(begin(), end(), val);
@@ -639,7 +636,7 @@ namespace WTF {
         void swap(Vector<T, inlineCapacity>& other)
         {
             std::swap(m_size, other.m_size);
-            Base::swap(other);
+            m_buffer.swap(other.m_buffer);
         }
 
         void reverse();
@@ -654,24 +651,14 @@ namespace WTF {
         template<typename U> U* expandCapacity(size_t newMinCapacity, U*); 
         template<typename U> void appendSlowCase(const U&);
 
-        unsigned m_size;
-
-        using Base::buffer;
-        using Base::capacity;
-        using Base::swap;
-        using Base::allocateBuffer;
-        using Base::deallocateBuffer;
-        using Base::tryAllocateBuffer;
-        using Base::shouldReallocateBuffer;
-        using Base::reallocateBuffer;
-        using Base::restoreInlineBufferIfNeeded;
-        using Base::releaseBuffer;
+        size_t m_size;
+        Buffer m_buffer;
     };
 
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>::Vector(const Vector& other)
-        : Base(other.capacity())
-        , m_size(other.size())
+        : m_size(other.size())
+        , m_buffer(other.capacity())
     {
         if (begin())
             TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
@@ -680,8 +667,8 @@ namespace WTF {
     template<typename T, size_t inlineCapacity>
     template<size_t otherCapacity> 
     Vector<T, inlineCapacity>::Vector(const Vector<T, otherCapacity>& other)
-        : Base(other.capacity())
-        , m_size(other.size())
+        : m_size(other.size())
+        , m_buffer(other.capacity())
     {
         if (begin())
             TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
@@ -911,10 +898,10 @@ namespace WTF {
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
-        Base::allocateBuffer(newCapacity);
+        m_buffer.allocateBuffer(newCapacity);
         if (begin())
             TypeOperations::move(oldBuffer, oldEnd, begin());
-        Base::deallocateBuffer(oldBuffer);
+        m_buffer.deallocateBuffer(oldBuffer);
     }
     
     template<typename T, size_t inlineCapacity>
@@ -924,11 +911,11 @@ namespace WTF {
             return true;
         T* oldBuffer = begin();
         T* oldEnd = end();
-        if (!Base::tryAllocateBuffer(newCapacity))
+        if (!m_buffer.tryAllocateBuffer(newCapacity))
             return false;
         ASSERT(begin());
         TypeOperations::move(oldBuffer, oldEnd, begin());
-        Base::deallocateBuffer(oldBuffer);
+        m_buffer.deallocateBuffer(oldBuffer);
         return true;
     }
     
@@ -938,7 +925,7 @@ namespace WTF {
         ASSERT(!m_size);
         ASSERT(capacity() == inlineCapacity);
         if (initialCapacity > inlineCapacity)
-            Base::allocateBuffer(initialCapacity);
+            m_buffer.allocateBuffer(initialCapacity);
     }
     
     template<typename T, size_t inlineCapacity>
@@ -952,19 +939,19 @@ namespace WTF {
 
         T* oldBuffer = begin();
         if (newCapacity > 0) {
-            if (Base::shouldReallocateBuffer(newCapacity)) {
-                Base::reallocateBuffer(newCapacity);
+            if (m_buffer.shouldReallocateBuffer(newCapacity)) {
+                m_buffer.reallocateBuffer(newCapacity);
                 return;
             }
 
             T* oldEnd = end();
-            Base::allocateBuffer(newCapacity);
+            m_buffer.allocateBuffer(newCapacity);
             if (begin() != oldBuffer)
                 TypeOperations::move(oldBuffer, oldEnd, begin());
         }
 
-        Base::deallocateBuffer(oldBuffer);
-        Base::restoreInlineBufferIfNeeded();
+        m_buffer.deallocateBuffer(oldBuffer);
+        m_buffer.restoreInlineBufferIfNeeded();
     }
 
     // Templatizing these is better than just letting the conversion happen implicitly,
@@ -1149,7 +1136,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity>
     inline T* Vector<T, inlineCapacity>::releaseBuffer()
     {
-        T* buffer = Base::releaseBuffer();
+        T* buffer = m_buffer.releaseBuffer();
         if (inlineCapacity && !buffer && m_size) {
             // If the vector had some data, but no buffer to release,
             // that means it was using the inline buffer. In that case,
