@@ -583,8 +583,9 @@
                         '../../bindings/bindings.gyp:bindings',
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
-                        '<(DEPTH)/testing/gmock.gyp:gmock',
+                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
+                        '<(DEPTH)/testing/gmock.gyp:gmock',
                         '<(DEPTH)/third_party/icu/icu.gyp:*',
                         '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
@@ -593,7 +594,6 @@
                         '<(DEPTH)/third_party/modp_b64/modp_b64.gyp:modp_b64',
                         '<(DEPTH)/third_party/ots/ots.gyp:ots',
                         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
-                        '<(DEPTH)/url/url.gyp:url',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                         # We must not add webkit_support here because of cyclic dependency.
                     ],
@@ -603,7 +603,7 @@
                         ],
                     },
                     'export_dependent_settings': [
-                        '<(DEPTH)/url/url.gyp:url',
+                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
                     'include_dirs': [
