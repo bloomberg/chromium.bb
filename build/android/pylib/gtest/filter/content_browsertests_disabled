@@ -97,3 +97,11 @@ WebRTCInternalsBrowserTest.UpdatePeerConnection
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
+
+# http://crbug.com/231568
+IndexedDBLayoutTest.IndexTests
+IndexedDBLayoutTest.IntVersionTests1
+IndexedDBLayoutTest.IntVersionTests2
+IndexedDBLayoutTest.KeyTests
+IndexedDBLayoutTest.TransactionTests
+IndexedDBLayoutTest.ComplexTests
