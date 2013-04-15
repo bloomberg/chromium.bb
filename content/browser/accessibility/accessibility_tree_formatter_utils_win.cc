@@ -183,6 +183,7 @@ AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
   IA_STATE_MAP(MIXED)
   IA_STATE_MAP(MOVEABLE)
   IA_STATE_MAP(MULTISELECTABLE)
+  IA_STATE_MAP(OFFSCREEN)
   IA_STATE_MAP(PRESSED)
   IA_STATE_MAP(PROTECTED)
   IA_STATE_MAP(READONLY)
@@ -192,10 +193,6 @@ AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
   IA_STATE_MAP(SIZEABLE)
   IA_STATE_MAP(TRAVERSED)
   IA_STATE_MAP(UNAVAILABLE)
-
-  // Untested states include those that would be repeated on nearly every node,
-  // or would vary based on window size.
-  // IA_STATE_MAP(OFFSCREEN) // Untested.
 
   // IAccessible2 states.
   IA2_STATE_MAP(IA2_STATE_ACTIVE)
