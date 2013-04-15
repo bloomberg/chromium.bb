@@ -44,10 +44,8 @@ test('loading steps', 1, function() {
         resourceLoader.load();
     }
 
-    try {
-        resourceLoader._loadingSteps = [loadingStep1, loadingStep2];
-        resourceLoader.load();
-    } 
+    resourceLoader._loadingSteps = [loadingStep1, loadingStep2];
+    resourceLoader.load();
 });
 
 // Total number of assertions is 1 for the deepEqual of the builder lists
@@ -84,7 +82,8 @@ test('results files loading', 11, function() {
 test('expectations files loading', 1, function() {
     resetGlobals();
     g_history.parseCrossDashboardParameters();
-    var expectedLoadedPlatforms = ["chromium", "chromium-android", "efl", "efl-wk1", "efl-wk2", "gtk",
+    // FIXME: re-enable once added back in flakiness_dashboard.js
+    var expectedLoadedPlatforms = [/* "chromium", "chromium-android", */"efl", "efl-wk1", "efl-wk2", "gtk",
                                    "gtk-wk2", "mac", "mac-lion", "mac-snowleopard", "qt", "win", "wk2"];
     var loadedPlatforms = [];
     var resourceLoader = new loader.Loader();

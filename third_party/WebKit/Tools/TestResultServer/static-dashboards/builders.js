@@ -94,7 +94,6 @@ CHROMIUM_GPU_FYI_BUILDER_MASTER = 'ChromiumGPUFYI';
 CHROMIUM_FYI_BUILDER_MASTER = 'ChromiumFYI';
 CHROMIUM_PERF_AV_BUILDER_MASTER = 'ChromiumPerfAv';
 CHROMIUM_WEBKIT_BUILDER_MASTER = 'ChromiumWebkit';
-WEBKIT_BUILDER_MASTER = 'webkit.org';
 
 var LEGACY_BUILDER_MASTERS_TO_GROUPS = {
     'Chromium': '@DEPS - chromium.org',
@@ -105,8 +104,7 @@ var LEGACY_BUILDER_MASTERS_TO_GROUPS = {
     'ChromiumGPU': '@DEPS - chromium.org',
     'ChromiumGPUFYI': '@DEPS FYI - chromium.org',
     'ChromiumPerfAv': '@DEPS - chromium.org',
-    'ChromiumWebkit': '@ToT - chromium.org',
-    'webkit.org': '@ToT - webkit.org'
+    'ChromiumWebkit': '@ToT - chromium.org'
 };
 
 function BuilderGroup(isToTWebKit)
@@ -210,11 +208,6 @@ function loadBuildersList(groupName, testType) {
             requestBuilderList(LAYOUT_TESTS_BUILDER_GROUPS, CHROMIUM_WEBKIT_BUILDER_MASTER, groupName, builderGroup, testType, isChromiumWebkitTipOfTreeTestRunner);
             break;
 
-        case '@ToT - webkit.org':
-            var builderGroup = new BuilderGroup(BuilderGroup.TOT_WEBKIT);
-            requestBuilderList(LAYOUT_TESTS_BUILDER_GROUPS, WEBKIT_BUILDER_MASTER, groupName, builderGroup, testType);
-            break;
-
         case '@DEPS - chromium.org':
             var builderGroup = new BuilderGroup(BuilderGroup.DEPS_WEBKIT);
             requestBuilderList(LAYOUT_TESTS_BUILDER_GROUPS, CHROMIUM_WEBKIT_BUILDER_MASTER, groupName, builderGroup, testType, isChromiumWebkitDepsTestRunner);
@@ -300,7 +293,6 @@ var TEST_SHELL_TESTS_BUILDER_GROUPS = {
 
 var LAYOUT_TESTS_BUILDER_GROUPS = {
     '@ToT - chromium.org': null,
-    '@ToT - webkit.org': null,
     '@DEPS - chromium.org': null,
     'Content Shell @ToT - chromium.org': null,
 };

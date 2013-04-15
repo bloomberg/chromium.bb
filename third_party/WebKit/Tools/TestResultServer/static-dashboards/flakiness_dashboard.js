@@ -369,31 +369,6 @@ function matchingElement(stringToMatch, elementsMap)
     }
 }
 
-function determineWKPlatform(builderName, basePlatform)
-{
-    var isWK2Builder = string.contains(builderName, 'WK2') || string.contains(builderName, 'WEBKIT2');
-    return basePlatform + (isWK2Builder ? '_WK2' : '_WK1');
-}
-
-function nonChromiumPlatform(builderNameUpperCase)
-{
-    if (string.contains(builderNameUpperCase, 'WINDOWS 7'))
-        return 'APPLE_WIN_WIN7';
-    if (string.contains(builderNameUpperCase, 'WINDOWS XP'))
-        return 'APPLE_WIN_XP';
-    if (string.contains(builderNameUpperCase, 'QT LINUX'))
-        return 'QT_LINUX';
-
-    if (string.contains(builderNameUpperCase, 'LION'))
-        return determineWKPlatform(builderNameUpperCase, 'APPLE_MAC_LION');
-    if (string.contains(builderNameUpperCase, 'SNOWLEOPARD'))
-        return determineWKPlatform(builderNameUpperCase, 'APPLE_MAC_SNOWLEOPARD');
-    if (string.contains(builderNameUpperCase, 'GTK LINUX'))
-        return determineWKPlatform(builderNameUpperCase, 'GTK_LINUX');
-    if (string.contains(builderNameUpperCase, 'EFL'))
-        return determineWKPlatform(builderNameUpperCase, 'EFL_LINUX');
-}
-
 function chromiumPlatform(builderNameUpperCase)
 {
     if (string.contains(builderNameUpperCase, 'MAC')) {
@@ -423,11 +398,7 @@ function platformAndBuildType(builderName)
     if (!g_perBuilderPlatformAndBuildType[builderName]) {
         var builderNameUpperCase = builderName.toUpperCase();
         
-        var platform = '';
-        if (g_history.isLayoutTestResults() && currentBuilderGroupName() == '@ToT - webkit.org' && !string.contains(builderNameUpperCase, 'CHROMIUM'))
-            platform = nonChromiumPlatform(builderNameUpperCase);
-        else
-            platform = chromiumPlatform(builderNameUpperCase);
+        var platform = chromiumPlatform(builderNameUpperCase);
         
         if (!platform)
             console.error('Could not resolve platform for builder: ' + builderName);
@@ -1165,7 +1136,6 @@ function processMissingAndExtraExpectations(resultsForTest)
     resultsForTest.extra = extraExpectations.sort().join(' ');
 }
 
-
 var BUG_URL_PREFIX = '<a href="http://';
 var BUG_URL_POSTFIX = '/$1">crbug.com/$1</a> ';
 var WEBKIT_BUG_URL_POSTFIX = '/$1">webkit.org/b/$1</a> ';
@@ -1240,19 +1210,12 @@ function showPopupForBuild(e, builder, index, opt_testName)
     html += '<ul><li>' + linkHTMLToOpenWindow(buildBasePath, 'Build log') +
         '</li><li>Blink: ' + ui.html.blinkRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
-    if (master.name == WEBKIT_BUILDER_MASTER) {
-        var revision = g_resultsByBuilder[builder].webkitRevision[index];
-        html += '<li><span class=link onclick="g_history.setQueryParameter(\'revision\',' +
-            revision + ')">Show results for WebKit r' + revision +
-            '</span></li>';
-    } else {
-        html += '</li><li>Chromium: ' + ui.html.chromiumRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
+    html += '</li><li>Chromium: ' + ui.html.chromiumRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
-        var chromeRevision = g_resultsByBuilder[builder].chromeRevision[index];
-        if (chromeRevision && g_history.isLayoutTestResults()) {
-            html += '<li><a href="' + TEST_RESULTS_BASE_PATH + currentBuilders()[builder] +
-                '/' + chromeRevision + '/layout-test-results.zip">layout-test-results.zip</a></li>';
-        }
+    var chromeRevision = g_resultsByBuilder[builder].chromeRevision[index];
+    if (chromeRevision && g_history.isLayoutTestResults()) {
+        html += '<li><a href="' + TEST_RESULTS_BASE_PATH + currentBuilders()[builder] +
+            '/' + chromeRevision + '/layout-test-results.zip">layout-test-results.zip</a></li>';
     }
 
     if (!g_history.isLayoutTestResults() && opt_testName && isFailure(builder, opt_testName, index))
@@ -1305,7 +1268,7 @@ function htmlForTestResults(test)
         var extraClassNames = '';
         var webkitRevision = g_resultsByBuilder[builder].webkitRevision;
         var isWebkitMerge = webkitRevision[i + 1] && webkitRevision[i] != webkitRevision[i + 1];
-        if (isWebkitMerge && master.name != WEBKIT_BUILDER_MASTER)
+        if (isWebkitMerge)
             extraClassNames += ' merge';
 
         html += '<td title="' + (resultString || 'NO DATA') + '. Click for more info." class="results ' + currentResult +
@@ -1836,13 +1799,6 @@ function htmlForIndividualTestOnAllBuildersWithResultsLinks(test)
     if (g_history.isLayoutTestResults() || g_history.isGPUTestResults()) {
         if (g_history.isLayoutTestResults())
             html += ' | ' + linkHTMLToToggleState('showLargeExpectations', 'large thumbnails');
-        if (testResults && currentBuilderGroup().master().name == WEBKIT_BUILDER_MASTER) {
-            var revision = g_history.dashboardSpecificState.revision || '';
-            html += '<form onsubmit="g_history.setQueryParameter(\'revision\', revision.value);' +
-                'return false;">Show results for WebKit revision: ' +
-                '<input name=revision placeholder="e.g. 65540" value="' + revision +
-                '" id=revision-input></form>';
-        } else
             html += ' | <b>Only shows actual results/diffs from the most recent *failure* on each bot.</b>';
     } else {
       html += ' | <span>Results height:<input ' +
@@ -2270,32 +2226,13 @@ function loadExpectationsLayoutTests(test, expectationsContainer)
     var revisionContainer = document.createElement('div');
     revisionContainer.textContent = "Showing results for: "
     expectationsContainer.appendChild(revisionContainer);
-    for (var builder in currentBuilders()) {
-        if (builderMaster(builder).name == WEBKIT_BUILDER_MASTER) {
-            var latestRevision = g_history.dashboardSpecificState.revision || g_resultsByBuilder[builder].webkitRevision[0];
-            var buildInfo = buildInfoForRevision(builder, latestRevision);
-            var revisionInfo = document.createElement('div');
-            revisionInfo.style.cssText = 'background:lightgray;margin:0 3px;padding:0 2px;display:inline-block;';
-            revisionInfo.innerHTML = builder + ' r' + buildInfo.revisionEnd +
-                ':r' + buildInfo.revisionStart + ', build ' + buildInfo.buildNumber;
-            revisionContainer.appendChild(revisionInfo);
-        }
-    }
-
     loadBaselinesForTest(expectationsContainers, expectationsContainer, test);
         
     var testWithoutSuffix = test.substring(0, test.lastIndexOf('.'));
     var actualResultSuffixes = ['-actual.txt', '-actual.png', '-crash-log.txt', '-diff.txt', '-wdiff.html', '-diff.png'];
 
     for (var builder in currentBuilders()) {
-        var actualResultsBase;
-        if (builderMaster(builder).name == WEBKIT_BUILDER_MASTER) {
-            var latestRevision = g_history.dashboardSpecificState.revision || g_resultsByBuilder[builder].webkitRevision[0];
-            var buildInfo = buildInfoForRevision(builder, latestRevision);
-            actualResultsBase = 'http://build.webkit.org/results/' + builder +
-                '/r' + buildInfo.revisionStart + ' (' + buildInfo.buildNumber + ')/';
-        } else
-            actualResultsBase = TEST_RESULTS_BASE_PATH + currentBuilders()[builder] + '/results/layout-test-results/';
+        var actualResultsBase = TEST_RESULTS_BASE_PATH + currentBuilders()[builder] + '/results/layout-test-results/';
 
         for (var i = 0; i < actualResultSuffixes.length; i++) {
             addExpectationItem(expectationsContainers, expectationsContainer, null,

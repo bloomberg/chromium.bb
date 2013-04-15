@@ -47,11 +47,6 @@ function resetGlobals()
         name: 'ChromiumWebkit',
         url: 'dummyurl', 
         tests: {'layout-tests': {'builders': ['WebKit Linux', 'WebKit Linux (dbg)', 'WebKit Mac10.7', 'WebKit Win', 'WebKit Win (dbg)']}}
-    },
-    {
-        name: 'webkit.org',
-        url: 'dummyurl',
-        tests: {'layout-tests': {'builders': ['Apple SnowLeopard Tests', 'Qt Linux Tests', 'Chromium Mac10.7 Tests', 'GTK Win']}}
     }]);
  
     for (var group in LAYOUT_TESTS_BUILDER_GROUPS)
@@ -144,7 +139,7 @@ test('overrideJustBuildType', 12, function() {
     runExpectationsTest('WebKit Mac10.7 (dbg)(3)', test, 'FAIL', 'MAC WONTFIX');
 });
 
-test('platformAndBuildType', 78, function() {
+test('platformAndBuildType', 42, function() {
     var historyInstance = new history.History(flakinessConfig);
     // FIXME(jparent): Change to use the flakiness_db's history object
     // once it exists, rather than tracking global.
@@ -178,31 +173,6 @@ test('platformAndBuildType', 78, function() {
     runPlatformAndBuildTypeTest('WebKit Mac10.6 (dbg)', 'CHROMIUM_SNOWLEOPARD', 'DEBUG');
     runPlatformAndBuildTypeTest('XP Tests', 'CHROMIUM_XP', 'RELEASE');
     runPlatformAndBuildTypeTest('Interactive Tests (dbg)', 'CHROMIUM_XP', 'DEBUG');
-    
-    historyInstance.crossDashboardState.group = '@ToT - webkit.org';
-    historyInstance.crossDashboardState.testType = 'layout-tests';
-    runPlatformAndBuildTypeTest('Chromium Win Release (Tests)', 'CHROMIUM_XP', 'RELEASE');
-    runPlatformAndBuildTypeTest('Chromium Linux Release (Tests)', 'CHROMIUM_LUCID', 'RELEASE');
-    runPlatformAndBuildTypeTest('Chromium Mac Release (Tests)', 'CHROMIUM_SNOWLEOPARD', 'RELEASE');
-    
-    // FIXME: These platforms should match whatever we use in the TestExpectations format.
-    runPlatformAndBuildTypeTest('Lion Release (Tests)', 'APPLE_MAC_LION_WK1', 'RELEASE');
-    runPlatformAndBuildTypeTest('Lion Debug (Tests)', 'APPLE_MAC_LION_WK1', 'DEBUG');
-    runPlatformAndBuildTypeTest('SnowLeopard Intel Release (Tests)', 'APPLE_MAC_SNOWLEOPARD_WK1', 'RELEASE');
-    runPlatformAndBuildTypeTest('SnowLeopard Intel Leaks', 'APPLE_MAC_SNOWLEOPARD_WK1', 'RELEASE');
-    runPlatformAndBuildTypeTest('SnowLeopard Intel Debug (Tests)', 'APPLE_MAC_SNOWLEOPARD_WK1', 'DEBUG');
-    runPlatformAndBuildTypeTest('GTK Linux 32-bit Release', 'GTK_LINUX_WK1', 'RELEASE');
-    runPlatformAndBuildTypeTest('GTK Linux 32-bit Debug', 'GTK_LINUX_WK1', 'DEBUG');
-    runPlatformAndBuildTypeTest('GTK Linux 64-bit Debug', 'GTK_LINUX_WK1', 'DEBUG');
-    runPlatformAndBuildTypeTest('GTK Linux 64-bit Debug WK2', 'GTK_LINUX_WK2', 'DEBUG');
-    runPlatformAndBuildTypeTest('Qt Linux Release', 'QT_LINUX', 'RELEASE');
-    runPlatformAndBuildTypeTest('Windows 7 Release (Tests)', 'APPLE_WIN_WIN7', 'RELEASE');
-    runPlatformAndBuildTypeTest('Windows XP Debug (Tests)', 'APPLE_WIN_XP', 'DEBUG');
-    
-    // FIXME: Should WebKit2 be it's own platform?
-    runPlatformAndBuildTypeTest('SnowLeopard Intel Release (WebKit2 Tests)', 'APPLE_MAC_SNOWLEOPARD_WK2', 'RELEASE');
-    runPlatformAndBuildTypeTest('SnowLeopard Intel Debug (WebKit2 Tests)', 'APPLE_MAC_SNOWLEOPARD_WK2', 'DEBUG');
-    runPlatformAndBuildTypeTest('Windows 7 Release (WebKit2 Tests)', 'APPLE_WIN_WIN7', 'RELEASE');    
 });
 
 test('realModifiers', 3, function() {
@@ -379,7 +349,7 @@ test('htmlForTestTypeSwitcherGroup', 6, function() {
     equal(selects.length, 2);
     var group = selects[1];
     equal(group.parentNode.textContent.indexOf('Group:'), 0);
-    equal(group.children.length, 4);
+    equal(group.children.length, 3);
 });
 
 test('htmlForIndividualTestOnAllBuilders', 1, function() {
@@ -429,39 +399,6 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
             '<div><span class=link onclick="g_history.setQueryParameter(\'showExpectations\', true)">Show results</span> | ' +
             '<span class=link onclick="g_history.setQueryParameter(\'showLargeExpectations\', true)">Show large thumbnails</span> | ' +
             '<b>Only shows actual results/diffs from the most recent *failure* on each bot.</b></div>' +
-        '</div>');
-});
-
-test('htmlForIndividualTestOnAllBuildersWithResultsLinksWebkitMaster', 1, function() {
-    var historyInstance = resetGlobals();
-    historyInstance.crossDashboardState.group = '@ToT - webkit.org';
-    loadBuildersList('@ToT - webkit.org', 'layout-tests');
-
-    var builderName = 'Apple SnowLeopard Tests';
-    var test = 'dummytest.html';
-    g_testToResultsMap[test] = [createResultsObjectForTest(test, builderName)];
-
-    equal(htmlForIndividualTestOnAllBuildersWithResultsLinks(test),
-        '<table class=test-table><thead><tr>' +
-                '<th sortValue=test><div class=table-header-content><span></span><span class=header-text>test</span></div></th>' +
-                '<th sortValue=bugs><div class=table-header-content><span></span><span class=header-text>bugs</span></div></th>' +
-                '<th sortValue=modifiers><div class=table-header-content><span></span><span class=header-text>modifiers</span></div></th>' +
-                '<th sortValue=expectations><div class=table-header-content><span></span><span class=header-text>expectations</span></div></th>' +
-                '<th sortValue=slowest><div class=table-header-content><span></span><span class=header-text>slowest run</span></div></th>' +
-                '<th sortValue=flakiness colspan=10000><div class=table-header-content><span></span><span class=header-text>flakiness (numbers are runtimes in seconds)</span></div></th>' +
-            '</tr></thead>' +
-            '<tbody></tbody>' +
-        '</table>' +
-        '<div>The following builders either don\'t run this test (e.g. it\'s skipped) or all runs passed:</div>' +
-        '<div class=skipped-builder-list>' +
-            '<div class=skipped-builder>Qt Linux Tests</div><div class=skipped-builder>Chromium Mac10.7 Tests</div><div class=skipped-builder>GTK Win</div>' +
-        '</div>' +
-        '<div class=expectations test=dummytest.html>' +
-            '<div><span class=link onclick="g_history.setQueryParameter(\'showExpectations\', true)">Show results</span> | ' +
-            '<span class=link onclick="g_history.setQueryParameter(\'showLargeExpectations\', true)">Show large thumbnails</span>' +
-            '<form onsubmit="g_history.setQueryParameter(\'revision\', revision.value);return false;">' +
-                'Show results for WebKit revision: <input name=revision placeholder="e.g. 65540" value="" id=revision-input>' +
-            '</form></div>' +
         '</div>');
 });
 
