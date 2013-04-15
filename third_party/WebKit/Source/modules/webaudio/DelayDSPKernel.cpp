@@ -164,6 +164,8 @@ void DelayDSPKernel::reset()
 
 double DelayDSPKernel::tailTime() const
 {
+    // Account for worst case delay.
+    // Don't try to track actual delay time which can change dynamically.
     return m_maxDelayTime;
 }
 
