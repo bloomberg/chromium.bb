@@ -70,7 +70,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
     , m_originalShadowDOMEnabled(RuntimeEnabledFeatures::shadowDOMEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
-    , m_originalExperimentalShadowDOMEnabled(RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
@@ -101,7 +100,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
     RuntimeEnabledFeatures::setShadowDOMEnabled(m_originalShadowDOMEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
-    RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(m_originalExperimentalShadowDOMEnabled);
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
@@ -210,11 +208,6 @@ void InternalSettings::setShadowDOMEnabled(bool enabled, ExceptionCode& ec)
 void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 {
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(isEnabled);
-}
-
-void InternalSettings::setExperimentalShadowDOMEnabled(bool isEnabled)
-{
-    RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(isEnabled);
 }
 
 void InternalSettings::setStyleScopedEnabled(bool enabled)
