@@ -96,9 +96,6 @@ public:
     static bool fontLoadEventsEnabled() { return false; }
 #endif
 
-    static void setDoNotTrackEnabled(bool isEnabled) { isDoNotTrackEnabled = isEnabled; }
-    static bool doNotTrackEnabled() { return isDoNotTrackEnabled; }
-
     // Mozilla version
     static bool webkitFullScreenAPIEnabled() { return isFullScreenAPIEnabled; }
     static void setWebkitFullScreenAPIEnabled(bool isEnabled) { isFullScreenAPIEnabled = isEnabled; }
@@ -336,8 +333,6 @@ private:
 #if ENABLE(FONT_LOAD_EVENTS)
     static bool isFontLoadEventsEnabled;
 #endif
-
-    static bool isDoNotTrackEnabled;
 
 #if USE(WEBP)
     static bool isWebPInAcceptHeaderEnabled;

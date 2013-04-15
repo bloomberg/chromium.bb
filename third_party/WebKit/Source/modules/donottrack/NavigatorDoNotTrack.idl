@@ -31,6 +31,6 @@
 [
     Supplemental=Navigator
 ] interface NavigatorDoNotTrack {
-    [EnabledAtRuntime,TreatReturnedNullStringAs=Null] readonly attribute DOMString doNotTrack;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString doNotTrack;
 };
 

@@ -556,16 +556,6 @@ bool WebRuntimeFeatures::isRequestAutocompleteEnabled()
     return RuntimeEnabledFeatures::requestAutocompleteEnabled();
 }
 
-void WebRuntimeFeatures::enableDoNotTrack(bool enable)
-{
-    RuntimeEnabledFeatures::setDoNotTrackEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isDoNotTrackEnabled()
-{
-    return RuntimeEnabledFeatures::doNotTrackEnabled();
-}
-
 void WebRuntimeFeatures::enableWebPInAcceptHeader(bool enable)
 {
 #if USE(WEBP)
