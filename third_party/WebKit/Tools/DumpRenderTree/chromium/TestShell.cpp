@@ -134,9 +134,7 @@ void TestShell::initialize(MockPlatform* platformSupport)
     m_testInterfaces = adoptPtr(new WebTestInterfaces());
     platformSupport->setInterfaces(m_testInterfaces.get());
     m_devToolsTestInterfaces = adoptPtr(new WebTestInterfaces());
-#if ENABLE(LINK_PRERENDER)
     m_prerenderingSupport = adoptPtr(new MockWebPrerenderingSupport());
-#endif
 #if !defined(USE_DEFAULT_RENDER_THEME) && (OS(WINDOWS) || OS(MAC_OS_X))
     // Set theme engine.
     webkit_support::SetThemeEngine(m_testInterfaces->themeEngine());

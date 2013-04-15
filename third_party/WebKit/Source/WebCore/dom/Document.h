@@ -125,6 +125,7 @@ class NodeFilter;
 class NodeIterator;
 class Page;
 class PlatformMouseEvent;
+class Prerenderer;
 class ProcessingInstruction;
 class Range;
 class RegisteredEventListener;
@@ -169,10 +170,6 @@ struct AnnotatedRegionValue;
 #if ENABLE(TOUCH_EVENTS)
 class Touch;
 class TouchList;
-#endif
-
-#if ENABLE(LINK_PRERENDER)
-class Prerenderer;
 #endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
@@ -1103,9 +1100,7 @@ public:
     IntSize initialViewportSize() const;
 #endif
 
-#if ENABLE(LINK_PRERENDER)
     Prerenderer* prerenderer() { return m_prerenderer.get(); }
-#endif
 
     TextAutosizer* textAutosizer() { return m_textAutosizer.get(); }
 
@@ -1482,9 +1477,7 @@ private:
     Timer<Document> m_pendingTasksTimer;
     Vector<OwnPtr<Task> > m_pendingTasks;
 
-#if ENABLE(LINK_PRERENDER)
     OwnPtr<Prerenderer> m_prerenderer;
-#endif
 
     OwnPtr<TextAutosizer> m_textAutosizer;
 

@@ -42,8 +42,6 @@
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(LINK_PRERENDER)
-
 namespace WebKit {
 class WebPrerender;
 }
@@ -94,7 +92,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(LINK_PRERENDER)
 
 #endif // Prerender_h

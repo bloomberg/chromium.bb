@@ -216,10 +216,6 @@
 #define ENABLE_LEGACY_NOTIFICATIONS 0
 #endif
 
-#if !defined(ENABLE_LINK_PRERENDER)
-#define ENABLE_LINK_PRERENDER 0
-#endif
-
 #if !defined(ENABLE_MATHML)
 #define ENABLE_MATHML 1
 #endif

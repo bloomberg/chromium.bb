@@ -32,8 +32,6 @@
 #include "config.h"
 #include "Prerenderer.h"
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -154,5 +152,3 @@ void Prerenderer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 }
 
 }
-
-#endif // ENABLE(LINK_PRERENDER)

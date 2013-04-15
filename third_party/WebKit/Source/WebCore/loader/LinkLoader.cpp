@@ -42,13 +42,10 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "LinkRelAttribute.h"
-#include "Settings.h"
-#include "StyleResolver.h"
-
-#if ENABLE(LINK_PRERENDER)
 #include "PrerenderHandle.h"
 #include "Prerenderer.h"
-#endif
+#include "Settings.h"
+#include "StyleResolver.h"
 
 namespace WebCore {
 
@@ -63,10 +60,8 @@ LinkLoader::~LinkLoader()
 {
     if (m_cachedLinkResource)
         m_cachedLinkResource->removeClient(this);
-#if ENABLE(LINK_PRERENDER)
     if (m_prerenderHandle)
         m_prerenderHandle->removeClient();
-#endif
 }
 
 void LinkLoader::linkLoadTimerFired(Timer<LinkLoader>* timer)
@@ -94,8 +89,6 @@ void LinkLoader::notifyFinished(CachedResource* resource)
     m_cachedLinkResource = 0;
 }
 
-#if ENABLE(LINK_PRERENDER)
-
 void LinkLoader::didStartPrerender()
 {
     m_client->didStartLinkPrerender();
@@ -115,8 +108,6 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
 {
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
-
-#endif
 
 bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type,
                           const String& sizes, const KURL& href, Document* document)
@@ -158,7 +149,6 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             m_cachedLinkResource->addClient(this);
     }
 
-#if ENABLE(LINK_PRERENDER)
     if (relAttribute.m_isLinkPrerender) {
         if (!m_prerenderHandle) {
             m_prerenderHandle = document->prerenderer()->render(this, href);
@@ -170,7 +160,6 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
         m_prerenderHandle->cancel();
         m_prerenderHandle = 0;
     }
-#endif
     return true;
 }
 
@@ -178,13 +167,11 @@ void LinkLoader::released()
 {
     // Only prerenders need treatment here; other links either use the CachedResource interface, or are notionally
     // atomic (dns prefetch).
-#if ENABLE(LINK_PRERENDER)
     if (m_prerenderHandle) {
         m_prerenderHandle->cancel();
         m_prerenderHandle->removeClient();
         m_prerenderHandle.clear();
     }
-#endif
 }
 
 }

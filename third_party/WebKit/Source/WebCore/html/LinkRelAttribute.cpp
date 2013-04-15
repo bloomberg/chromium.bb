@@ -41,9 +41,7 @@ LinkRelAttribute::LinkRelAttribute()
     , m_isDNSPrefetch(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
-#if ENABLE(LINK_PRERENDER)
     , m_isLinkPrerender(false)
-#endif
 {
 }
 
@@ -54,9 +52,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isDNSPrefetch(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
-#if ENABLE(LINK_PRERENDER)
     , m_isLinkPrerender(false)
-#endif
 {
     if (equalIgnoringCase(rel, "stylesheet"))
         m_isStyleSheet = true;
@@ -97,10 +93,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
               m_isLinkPrefetch = true;
             else if (equalIgnoringCase(*it, "subresource"))
               m_isLinkSubresource = true;
-#if ENABLE(LINK_PRERENDER)
             else if (equalIgnoringCase(*it, "prerender"))
               m_isLinkPrerender = true;
-#endif
         }
     }
 }

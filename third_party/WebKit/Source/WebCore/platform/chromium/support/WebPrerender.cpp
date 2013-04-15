@@ -32,8 +32,6 @@
 #include <public/WebPrerender.h>
 #include <wtf/PassRefPtr.h>
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "Prerender.h"
 
 namespace WebKit {
@@ -133,5 +131,3 @@ void WebPrerender::didSendDOMContentLoadedForPrerender()
 }
 
 } // namespace WebKit
-
-#endif // ENABLED(LINK_PRERENDER)

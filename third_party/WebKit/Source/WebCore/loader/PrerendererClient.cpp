@@ -35,8 +35,6 @@
 #include "Page.h"
 #include "Supplementable.h"
 
-#if ENABLE(LINK_PRERENDER)
-
 namespace WebCore {
 
 // static
@@ -58,5 +56,3 @@ void providePrerendererClientTo(Page* page, PrerendererClient* client)
 }
 
 }
-
-#endif

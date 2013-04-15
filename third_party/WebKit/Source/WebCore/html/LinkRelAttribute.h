@@ -44,9 +44,7 @@ public:
     bool m_isDNSPrefetch;
     bool m_isLinkPrefetch;
     bool m_isLinkSubresource;
-#if ENABLE(LINK_PRERENDER)
     bool m_isLinkPrerender;
-#endif
 
     LinkRelAttribute();
     explicit LinkRelAttribute(const String&);

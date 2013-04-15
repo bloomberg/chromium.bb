@@ -365,7 +365,6 @@ void HTMLLinkElement::linkLoadingErrored()
     dispatchEvent(Event::create(eventNames().errorEvent, false, false));
 }
 
-#if ENABLE(LINK_PRERENDER)
 void HTMLLinkElement::didStartLinkPrerender()
 {
     dispatchEvent(Event::create(eventNames().webkitprerenderstartEvent, false, false));
@@ -385,7 +384,6 @@ void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender()
 {
     dispatchEvent(Event::create(eventNames().webkitprerenderdomcontentloadedEvent, false, false));
 }
-#endif
 
 bool HTMLLinkElement::sheetLoaded()
 {

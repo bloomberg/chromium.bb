@@ -43,9 +43,7 @@
 namespace WebCore {
 
 struct LinkRelAttribute;
-#if ENABLE(LINK_PRERENDER)
 class PrerenderHandle;
-#endif
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
 class LinkLoader : public CachedResourceClient, public PrerenderClient {
@@ -56,14 +54,12 @@ public:
 
     // from CachedResourceClient
     virtual void notifyFinished(CachedResource*);
-    
-#if ENABLE(LINK_PRERENDER)
+
     // from PrerenderClient
     virtual void didStartPrerender() OVERRIDE;
     virtual void didStopPrerender() OVERRIDE;
     virtual void didSendLoadForPrerender() OVERRIDE;
     virtual void didSendDOMContentLoadedForPrerender() OVERRIDE;
-#endif
 
     void released();
     bool loadLink(const LinkRelAttribute&, const String& type, const String& sizes, const KURL&, Document*);
@@ -78,11 +74,9 @@ private:
     Timer<LinkLoader> m_linkLoadTimer;
     Timer<LinkLoader> m_linkLoadingErrorTimer;
 
-#if ENABLE(LINK_PRERENDER)
     RefPtr<PrerenderHandle> m_prerenderHandle;
-#endif
 };
-    
+
 }
 
 #endif

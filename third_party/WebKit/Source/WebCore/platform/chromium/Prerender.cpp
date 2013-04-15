@@ -40,8 +40,6 @@
 #include <public/WebString.h>
 #include <public/WebURL.h>
 
-#if ENABLE(LINK_PRERENDER)
-
 namespace WebCore {
 
 Prerender::Prerender(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
@@ -120,5 +118,3 @@ void Prerender::didSendDOMContentLoadedForPrerender()
 }
 
 }
-
-#endif // ENABLE(LINK_PRERENDER)

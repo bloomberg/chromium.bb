@@ -132,6 +132,7 @@
 #include "PluginDocument.h"
 #include "PointerLockController.h"
 #include "PopStateEvent.h"
+#include "Prerenderer.h"
 #include "ProcessingInstruction.h"
 #include "QualifiedName.h"
 #include "RegisteredEventListener.h"
@@ -219,10 +220,6 @@
 #include "MathMLElement.h"
 #include "MathMLElementFactory.h"
 #include "MathMLNames.h"
-#endif
-
-#if ENABLE(LINK_PRERENDER)
-#include "Prerenderer.h"
 #endif
 
 #include "CaptionUserPreferences.h"
@@ -490,9 +487,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
         m_cachedResourceLoader = CachedResourceLoader::create(0);
     m_cachedResourceLoader->setDocument(this);
 
-#if ENABLE(LINK_PRERENDER)
     m_prerenderer = Prerenderer::create(this);
-#endif
     m_textAutosizer = TextAutosizer::create(this);
     m_visuallyOrdered = false;
     m_bParsing = false;
@@ -5821,9 +5816,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_eventQueue, "eventQueue");
     info.addMember(m_mediaCanStartListeners, "mediaCanStartListeners");
     info.addMember(m_pendingTasks, "pendingTasks");
-#if ENABLE(LINK_PRERENDER)
     info.addMember(m_prerenderer, "prerenderer");
-#endif
     info.addMember(m_listsInvalidatedAtDocument, "listsInvalidatedAtDocument");
     info.addMember(m_styleResolverThrowawayTimer, "styleResolverThrowawayTimer");
     info.addMember(m_domWindow, "domWindow");

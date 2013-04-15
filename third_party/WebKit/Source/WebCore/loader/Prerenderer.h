@@ -32,8 +32,6 @@
 #ifndef Prerenderer_h
 #define Prerenderer_h
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "ActiveDOMObject.h"
 #include "KURL.h"
 #include <wtf/OwnPtr.h>
@@ -84,7 +82,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(LINK_PRERENDER)
 
 #endif // Prerenderer_h

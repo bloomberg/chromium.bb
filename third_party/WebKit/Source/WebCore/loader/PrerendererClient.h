@@ -32,8 +32,6 @@
 #ifndef PrerendererClient_h
 #define PrerendererClient_h
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "Supplementable.h"
 #include <wtf/PassRefPtr.h>
 
@@ -59,7 +57,5 @@ protected:
 void providePrerendererClientTo(Page*, PrerendererClient*);
 
 } // namespace WebCore
-
-#endif // ENABLED(LINK_PRERENDER)
 
 #endif // PrerendererClient_h

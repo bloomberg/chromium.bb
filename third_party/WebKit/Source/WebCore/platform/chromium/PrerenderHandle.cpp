@@ -32,8 +32,6 @@
 #include "config.h"
 #include "PrerenderHandle.h"
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "KURL.h"
 #include "Prerender.h"
 #include "ReferrerPolicy.h"
@@ -108,5 +106,3 @@ ReferrerPolicy PrerenderHandle::referrerPolicy() const
 }
 
 }
-
-#endif // ENABLE(LINK_PRERENDER)

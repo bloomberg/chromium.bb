@@ -32,8 +32,6 @@
 #ifndef PrerenderHandle_h
 #define PrerenderHandle_h
 
-#if ENABLE(LINK_PRERENDER)
-
 #include "ReferrerPolicy.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -82,7 +80,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(LINK_PRERENDER)
 
 #endif // PrerenderHandle_h

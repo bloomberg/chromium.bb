@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class PrerenderClient {
-#if ENABLE(LINK_PRERENDER)
 public:
     virtual ~PrerenderClient() { }
 
@@ -43,7 +42,6 @@ public:
     virtual void didStopPrerender() = 0;
     virtual void didSendLoadForPrerender() = 0;
     virtual void didSendDOMContentLoadedForPrerender() = 0;
-#endif
 };
 
 }

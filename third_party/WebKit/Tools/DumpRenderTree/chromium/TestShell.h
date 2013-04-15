@@ -200,9 +200,7 @@ private:
     // It's important that this thread is destroyed after the WebViewHost.
     OwnPtr<WebKit::WebThread> m_webCompositorThread;
     OwnPtr<WebViewHost> m_webViewHost;
-#if ENABLE(LINK_PRERENDER)
     OwnPtr<MockWebPrerenderingSupport> m_prerenderingSupport;
-#endif
 
     TestParams m_params;
     bool m_dumpPixelsForCurrentTest;
