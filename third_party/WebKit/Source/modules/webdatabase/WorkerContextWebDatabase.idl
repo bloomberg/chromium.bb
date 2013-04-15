@@ -27,8 +27,8 @@
 [
     Supplemental=WorkerContext
 ] interface WorkerContextWebDatabase {
-    [EnabledAtRuntime, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback);
+    [EnabledAtRuntime, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback] optional DatabaseCallback creationCallback);
 
-    [EnabledAtRuntime, RaisesException] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback);
+    [EnabledAtRuntime, RaisesException] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback] optional DatabaseCallback creationCallback);
 };
 

@@ -34,22 +34,22 @@
     [InitializedByEventConstructor, CachedAttribute, CustomGetter] readonly attribute any data;
     [InitializedByEventConstructor, CustomGetter] readonly attribute Array ports;
 
-    [Custom] void initMessageEvent([Optional=DefaultIsUndefined] DOMString typeArg, 
-                                   [Optional=DefaultIsUndefined] boolean canBubbleArg, 
-                                   [Optional=DefaultIsUndefined] boolean cancelableArg, 
-                                   [Optional=DefaultIsUndefined] any dataArg, 
-                                   [Optional=DefaultIsUndefined] DOMString originArg, 
-                                   [Optional=DefaultIsUndefined] DOMString lastEventIdArg, 
-                                   [Optional=DefaultIsUndefined] DOMWindow sourceArg, 
-                                   [Optional=DefaultIsUndefined] Array messagePorts);
+    [Custom] void initMessageEvent([Default=Undefined] optional DOMString typeArg, 
+                                   [Default=Undefined] optional boolean canBubbleArg, 
+                                   [Default=Undefined] optional boolean cancelableArg, 
+                                   [Default=Undefined] optional any dataArg, 
+                                   [Default=Undefined] optional DOMString originArg, 
+                                   [Default=Undefined] optional DOMString lastEventIdArg, 
+                                   [Default=Undefined] optional DOMWindow sourceArg, 
+                                   [Default=Undefined] optional Array messagePorts);
 
-    [Custom] void webkitInitMessageEvent([Optional=DefaultIsUndefined] DOMString typeArg,
-                                         [Optional=DefaultIsUndefined] boolean canBubbleArg,
-                                         [Optional=DefaultIsUndefined] boolean cancelableArg,
-                                         [Optional=DefaultIsUndefined] any dataArg,
-                                         [Optional=DefaultIsUndefined] DOMString originArg,
-                                         [Optional=DefaultIsUndefined] DOMString lastEventIdArg,
-                                         [Optional=DefaultIsUndefined] DOMWindow sourceArg,
-                                         [Optional=DefaultIsUndefined] Array transferables);
+    [Custom] void webkitInitMessageEvent([Default=Undefined] optional DOMString typeArg,
+                                         [Default=Undefined] optional boolean canBubbleArg,
+                                         [Default=Undefined] optional boolean cancelableArg,
+                                         [Default=Undefined] optional any dataArg,
+                                         [Default=Undefined] optional DOMString originArg,
+                                         [Default=Undefined] optional DOMString lastEventIdArg,
+                                         [Default=Undefined] optional DOMWindow sourceArg,
+                                         [Default=Undefined] optional Array transferables);
 };
 

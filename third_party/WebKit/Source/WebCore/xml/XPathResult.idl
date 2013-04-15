@@ -44,6 +44,6 @@
     [GetterRaisesException] readonly attribute unsigned long   snapshotLength;
         
     [RaisesException] Node iterateNext();
-    [RaisesException] Node snapshotItem([Optional=DefaultIsUndefined] unsigned long index);
+    [RaisesException] Node snapshotItem([Default=Undefined] optional unsigned long index);
 };
 

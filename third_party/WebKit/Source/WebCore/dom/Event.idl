@@ -60,9 +60,9 @@
 
     void               stopPropagation();
     void               preventDefault();
-     void initEvent([Optional=DefaultIsUndefined] DOMString eventTypeArg, 
-                                  [Optional=DefaultIsUndefined] boolean canBubbleArg, 
-                                  [Optional=DefaultIsUndefined] boolean cancelableArg);
+     void initEvent([Default=Undefined] optional DOMString eventTypeArg, 
+                                  [Default=Undefined] optional boolean canBubbleArg, 
+                                  [Default=Undefined] optional boolean cancelableArg);
 
     // DOM Level 3 Additions.
     readonly attribute boolean defaultPrevented;

@@ -44,6 +44,7 @@ CustomNamedGetter
 CustomNamedSetter
 CustomSetter
 CustomToJSObject
+Default=NullString|Undefined
 DeliverCustomElementCallbacks
 DependentLifetime
 DoNotCheckConstants
@@ -73,7 +74,6 @@ NamedGetter
 NoWrapperCache
 NotEnumerable
 NumericIndexedGetter
-Optional=|DefaultIsNullString|DefaultIsUndefined
 PerWorldBindings
 RaisesException
 ReadOnly

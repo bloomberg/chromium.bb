@@ -26,5 +26,5 @@
 
 interface StyleMedia {
     readonly attribute DOMString type;
-    boolean matchMedium([Optional=DefaultIsUndefined] DOMString mediaquery);
+    boolean matchMedium([Default=Undefined] optional DOMString mediaquery);
 };

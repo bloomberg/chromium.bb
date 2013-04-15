@@ -36,9 +36,9 @@
     const unsigned long BYTES_PER_ELEMENT = 2;
 
     readonly attribute unsigned long length;
-    Uint16Array subarray([Optional=DefaultIsUndefined] long start, [Optional] long end);
+    Uint16Array subarray([Default=Undefined] optional long start, optional long end);
 
-    // void set(Uint16Array array, [Optional] in unsigned long offset);
-    // void set(sequence<long> array, [Optional] in unsigned long offset);
+    // void set(Uint16Array array, optional in unsigned long offset);
+    // void set(sequence<long> array, optional in unsigned long offset);
     void set();
 };

@@ -59,8 +59,8 @@
     [SetterRaisesException] attribute Date valueAsDate;
     [SetterRaisesException] attribute double valueAsNumber;
 
-    [RaisesException] void stepUp([Optional] long n);
-    [RaisesException] void stepDown([Optional] long n);
+    [RaisesException] void stepUp(optional long n);
+    [RaisesException] void stepDown(optional long n);
 
     attribute unsigned long width;
     readonly attribute boolean willValidate;
@@ -80,11 +80,11 @@
     [RaisesException] void setRangeText(DOMString replacement,
                         unsigned long start,
                         unsigned long end,
-                        [Optional=DefaultIsNullString] DOMString selectionMode);
+                        [Default=NullString] optional DOMString selectionMode);
 
-    [Custom] void setSelectionRange([Optional=DefaultIsUndefined] long start, 
-                                    [Optional=DefaultIsUndefined] long end, 
-                                    [Optional] DOMString direction);
+    [Custom] void setSelectionRange([Default=Undefined] optional long start, 
+                                    [Default=Undefined] optional long end, 
+                                    optional DOMString direction);
 
     // Non-standard attributes
     [Reflect] attribute DOMString align;

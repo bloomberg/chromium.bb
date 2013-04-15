@@ -35,14 +35,14 @@
     [Custom, RaisesException] any getInt8();
     [Custom, RaisesException] any getUint8();
 
-    [StrictTypeChecking, RaisesException] short getInt16(unsigned long byteOffset, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] unsigned short getUint16(unsigned long byteOffset, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] long getInt32(unsigned long byteOffset, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] unsigned long getUint32(unsigned long byteOffset, [Optional] boolean littleEndian);
+    [StrictTypeChecking, RaisesException] short getInt16(unsigned long byteOffset, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] unsigned short getUint16(unsigned long byteOffset, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] long getInt32(unsigned long byteOffset, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] unsigned long getUint32(unsigned long byteOffset, optional boolean littleEndian);
 
     // Use custom code to handle NaN case for JSC.
-    [StrictTypeChecking, RaisesException] float getFloat32(unsigned long byteOffset, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] double getFloat64(unsigned long byteOffset, [Optional] boolean littleEndian);
+    [StrictTypeChecking, RaisesException] float getFloat32(unsigned long byteOffset, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] double getFloat64(unsigned long byteOffset, optional boolean littleEndian);
 
     // We have to use custom code because our code generator does not support uint8_t type.
     // void setInt8(unsigned long byteOffset, int8_t value);
@@ -50,11 +50,11 @@
     [Custom, RaisesException] void setInt8();
     [Custom, RaisesException] void setUint8();
 
-    [StrictTypeChecking, RaisesException] void setInt16(unsigned long byteOffset, short value, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] void setUint16(unsigned long byteOffset, unsigned short value, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] void setInt32(unsigned long byteOffset, long value, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] void setUint32(unsigned long byteOffset, unsigned long value, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] void setFloat32(unsigned long byteOffset, float value, [Optional] boolean littleEndian);
-    [StrictTypeChecking, RaisesException] void setFloat64(unsigned long byteOffset, double value, [Optional] boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setInt16(unsigned long byteOffset, short value, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setUint16(unsigned long byteOffset, unsigned short value, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setInt32(unsigned long byteOffset, long value, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setUint32(unsigned long byteOffset, unsigned long value, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setFloat32(unsigned long byteOffset, float value, optional boolean littleEndian);
+    [StrictTypeChecking, RaisesException] void setFloat64(unsigned long byteOffset, double value, optional boolean littleEndian);
 };
 

@@ -31,16 +31,16 @@
     readonly attribute boolean          altGraphKey;
 
     // FIXME: this does not match the version in the DOM spec.
-    void initKeyboardEvent([Optional=DefaultIsUndefined] DOMString type, 
-                           [Optional=DefaultIsUndefined] boolean canBubble, 
-                           [Optional=DefaultIsUndefined] boolean cancelable, 
-                           [Optional=DefaultIsUndefined] DOMWindow view, 
-                           [Optional=DefaultIsUndefined] DOMString keyIdentifier,
-                           [Optional=DefaultIsUndefined] unsigned long keyLocation,
-                           [Optional=DefaultIsUndefined] boolean ctrlKey,
-                           [Optional=DefaultIsUndefined] boolean altKey,
-                           [Optional=DefaultIsUndefined] boolean shiftKey,
-                           [Optional=DefaultIsUndefined] boolean metaKey,
-                           [Optional=DefaultIsUndefined] boolean altGraphKey);
+    void initKeyboardEvent([Default=Undefined] optional DOMString type, 
+                           [Default=Undefined] optional boolean canBubble, 
+                           [Default=Undefined] optional boolean cancelable, 
+                           [Default=Undefined] optional DOMWindow view, 
+                           [Default=Undefined] optional DOMString keyIdentifier,
+                           [Default=Undefined] optional unsigned long keyLocation,
+                           [Default=Undefined] optional boolean ctrlKey,
+                           [Default=Undefined] optional boolean altKey,
+                           [Default=Undefined] optional boolean shiftKey,
+                           [Default=Undefined] optional boolean metaKey,
+                           [Default=Undefined] optional boolean altGraphKey);
 };
 

@@ -33,7 +33,7 @@
 
     attribute EventListener onmessage;
 
-    [Custom, RaisesException] void postMessage(SerializedScriptValue message, [Optional] Array messagePorts);
+    [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional Array messagePorts);
     void terminate();
 };
 

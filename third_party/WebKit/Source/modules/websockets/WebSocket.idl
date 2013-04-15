@@ -66,14 +66,14 @@
     [RaisesException] boolean send(Blob data);
     [RaisesException] boolean send(DOMString data);
 
-    [RaisesException] void close([Clamp, Optional] unsigned short code, [Optional] DOMString reason);
+    [RaisesException] void close([Clamp] optional unsigned short code, optional DOMString reason);
 
     // EventTarget interface
     void addEventListener(DOMString type,
                           EventListener listener,
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type,
                              EventListener listener,
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 };

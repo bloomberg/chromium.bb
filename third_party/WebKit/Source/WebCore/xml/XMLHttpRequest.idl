@@ -68,7 +68,7 @@ enum XMLHttpRequestResponseType {
 
     [SetterRaisesException] attribute boolean withCredentials;
 
-    [Custom, RaisesException] void open(DOMString method, DOMString url, [Optional] boolean async, [Optional] DOMString user, [Optional] DOMString password);
+    [Custom, RaisesException] void open(DOMString method, DOMString url, optional boolean async, optional DOMString user, optional DOMString password);
 
     [RaisesException] void setRequestHeader(DOMString header, DOMString value);
 
@@ -96,9 +96,9 @@ enum XMLHttpRequestResponseType {
     // EventTarget interface
     void addEventListener(DOMString type, 
                           EventListener listener, 
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type, 
                              EventListener listener, 
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 };

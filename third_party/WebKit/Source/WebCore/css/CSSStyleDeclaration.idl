@@ -29,20 +29,20 @@
 ] interface CSSStyleDeclaration {
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString        cssText;
 
-    [TreatReturnedNullStringAs=Null] DOMString          getPropertyValue([Optional=DefaultIsUndefined] DOMString propertyName);
-    CSSValue           getPropertyCSSValue([Optional=DefaultIsUndefined] DOMString propertyName);
-    [TreatReturnedNullStringAs=Null, RaisesException] DOMString          removeProperty([Optional=DefaultIsUndefined] DOMString propertyName);
-    [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority([Optional=DefaultIsUndefined] DOMString propertyName);
-     [RaisesException] void setProperty([Optional=DefaultIsUndefined] DOMString propertyName, 
-                                    [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString value, 
-                                    [Optional=DefaultIsUndefined] DOMString priority);
+    [TreatReturnedNullStringAs=Null] DOMString          getPropertyValue([Default=Undefined] optional DOMString propertyName);
+    CSSValue           getPropertyCSSValue([Default=Undefined] optional DOMString propertyName);
+    [TreatReturnedNullStringAs=Null, RaisesException] DOMString          removeProperty([Default=Undefined] optional DOMString propertyName);
+    [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority([Default=Undefined] optional DOMString propertyName);
+     [RaisesException] void setProperty([Default=Undefined] optional DOMString propertyName, 
+                                    [TreatNullAs=NullString,Default=Undefined] optional DOMString value, 
+                                    [Default=Undefined] optional DOMString priority);
 
     readonly attribute unsigned long    length;
-    DOMString          item([Optional=DefaultIsUndefined] unsigned long index);
+    DOMString          item([Default=Undefined] optional unsigned long index);
     readonly attribute CSSRule          parentRule;
 
     // Extensions
-    [TreatReturnedNullStringAs=Null] DOMString          getPropertyShorthand([Optional=DefaultIsUndefined] DOMString propertyName);
-    boolean            isPropertyImplicit([Optional=DefaultIsUndefined] DOMString propertyName);
+    [TreatReturnedNullStringAs=Null] DOMString          getPropertyShorthand([Default=Undefined] optional DOMString propertyName);
+    boolean            isPropertyImplicit([Default=Undefined] optional DOMString propertyName);
 };
 

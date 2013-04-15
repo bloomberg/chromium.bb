@@ -31,7 +31,7 @@
 
 [
     Conditional=SHARED_WORKERS,
-    Constructor(DOMString scriptURL, [Optional=DefaultIsNullString] DOMString name),
+    Constructor(DOMString scriptURL, [Default=NullString] optional DOMString name),
     CallWith=ScriptExecutionContext,
     RaisesException
 ] interface SharedWorker : AbstractWorker {

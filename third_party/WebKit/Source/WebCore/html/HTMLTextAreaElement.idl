@@ -55,9 +55,9 @@ interface HTMLTextAreaElement : HTMLElement {
     [RaisesException] void setRangeText(DOMString replacement,
                         unsigned long start,
                         unsigned long end,
-                        [Optional=DefaultIsNullString] DOMString selectionMode);
+                        [Default=NullString] optional DOMString selectionMode);
 
-    void setSelectionRange([Optional=DefaultIsUndefined] long start,
-                           [Optional=DefaultIsUndefined] long end,
-                           [Optional] DOMString direction);
+    void setSelectionRange([Default=Undefined] optional long start,
+                           [Default=Undefined] optional long end,
+                           optional DOMString direction);
 };

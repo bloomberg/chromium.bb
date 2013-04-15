@@ -23,6 +23,6 @@
 ] interface NavigatorMediaStream {
     [EnabledAtRuntime, RaisesException] void webkitGetUserMedia(Dictionary options,
                                                  [Callback] NavigatorUserMediaSuccessCallback successCallback,
-                                                 [Callback, Optional] NavigatorUserMediaErrorCallback errorCallback);
+                                                 [Callback] optional NavigatorUserMediaErrorCallback errorCallback);
 };
 

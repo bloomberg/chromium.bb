@@ -34,8 +34,8 @@
 
     [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void back();
     [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void forward();
-    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void go([Optional=DefaultIsUndefined] long distance);
+    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void go([Default=Undefined] optional long distance);
 
-    [Custom, EnabledPerContext=pushState, RaisesException] void pushState(any data, DOMString title, [Optional] DOMString url);
-    [Custom, EnabledPerContext=pushState, RaisesException] void replaceState(any data, DOMString title, [Optional] DOMString url);
+    [Custom, EnabledPerContext=pushState, RaisesException] void pushState(any data, DOMString title, optional DOMString url);
+    [Custom, EnabledPerContext=pushState, RaisesException] void replaceState(any data, DOMString title, optional DOMString url);
 };

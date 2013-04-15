@@ -31,24 +31,24 @@
 [
     Conditional=MEDIA_STREAM,
     ActiveDOMObject,
-    Constructor(Dictionary rtcIceServers, [Optional] Dictionary mediaConstraints),
+    Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
     RaisesException,
     CallWith=ScriptExecutionContext,
     EventTarget
 ] interface RTCPeerConnection {
-    [RaisesException] void createOffer([Callback] RTCSessionDescriptionCallback successCallback, [Callback,Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints);
+    [RaisesException] void createOffer([Callback] RTCSessionDescriptionCallback successCallback, [Callback,Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 
-    [RaisesException] void createAnswer([Callback] RTCSessionDescriptionCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints);
+    [RaisesException] void createAnswer([Callback] RTCSessionDescriptionCallback successCallback, [Callback, Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 
-    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback);
+    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Callback, Default=Undefined] optional VoidCallback successCallback, [Callback, Default=Undefined] optional RTCErrorCallback failureCallback);
     [GetterRaisesException] readonly attribute RTCSessionDescription localDescription;
 
-    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback);
+    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Callback, Default=Undefined] optional VoidCallback successCallback, [Callback, Default=Undefined] optional RTCErrorCallback failureCallback);
     [GetterRaisesException] readonly attribute RTCSessionDescription remoteDescription;
 
     readonly attribute DOMString signalingState;
 
-    [RaisesException] void updateIce([Optional] Dictionary configuration, [Optional] Dictionary mediaConstraints);
+    [RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
 
     [RaisesException] void addIceCandidate(RTCIceCandidate candidate);
 
@@ -59,12 +59,12 @@
     sequence<MediaStream> getRemoteStreams();
     MediaStream getStreamById(DOMString streamId);
 
-    [StrictTypeChecking, RaisesException] void addStream(MediaStream stream, [Optional] Dictionary mediaConstraints);
+    [StrictTypeChecking, RaisesException] void addStream(MediaStream stream, optional Dictionary mediaConstraints);
     [StrictTypeChecking, RaisesException] void removeStream(MediaStream stream);
 
-    void getStats([Callback] RTCStatsCallback successCallback, [Optional=DefaultIsUndefined] MediaStreamTrack selector);
+    void getStats([Callback] RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
 
-    [RaisesException] RTCDataChannel createDataChannel([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString label, [Optional] Dictionary options);
+    [RaisesException] RTCDataChannel createDataChannel([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString label, optional Dictionary options);
 
     [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
 
@@ -81,10 +81,10 @@
     // EventTarget interface
     void addEventListener(DOMString type,
                           EventListener listener,
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type,
                              EventListener listener,
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event event);
 };
 

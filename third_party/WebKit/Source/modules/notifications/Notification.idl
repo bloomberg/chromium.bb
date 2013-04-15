@@ -34,7 +34,7 @@
     ActiveDOMObject,
     EventTarget,
 #if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
-    Constructor(DOMString title, [Optional=DefaultIsUndefined] Dictionary options),
+    Constructor(DOMString title, [Default=Undefined] optional Dictionary options),
     CallWith=ScriptExecutionContext,
 #else
 #endif
@@ -50,7 +50,7 @@
 
 #if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
     [CallWith=ScriptExecutionContext] static readonly attribute DOMString permission;
-    [CallWith=ScriptExecutionContext] static void requestPermission([Optional, Callback] NotificationPermissionCallback callback);
+    [CallWith=ScriptExecutionContext] static void requestPermission([Callback] optional NotificationPermissionCallback callback);
 #endif
 
     attribute EventListener onshow;
@@ -72,10 +72,10 @@
     // EventTarget interface
     void addEventListener(DOMString type, 
                           EventListener listener, 
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type, 
                              EventListener listener, 
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 };
 

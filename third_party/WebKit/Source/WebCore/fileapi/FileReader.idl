@@ -44,7 +44,7 @@
     // async read methods
     [RaisesException] void readAsArrayBuffer(Blob blob);
     [RaisesException] void readAsBinaryString(Blob blob);
-    [RaisesException] void readAsText(Blob blob, [Optional] DOMString encoding);
+    [RaisesException] void readAsText(Blob blob, optional DOMString encoding);
     [RaisesException] void readAsDataURL(Blob blob);
 
     void abort();
@@ -57,10 +57,10 @@
     // EventTarget interface
     void addEventListener(DOMString type,
                           EventListener listener,
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type,
                              EventListener listener,
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 
     attribute EventListener onloadstart;

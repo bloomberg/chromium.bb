@@ -35,6 +35,6 @@
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
 
-    Blob slice([Optional] long long start, [Optional] long long end, [Optional, TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString contentType);
+    Blob slice(optional long long start, optional long long end, [TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString contentType);
 };
 

@@ -31,6 +31,6 @@
     readonly attribute SVGAnimatedString className;
     readonly attribute CSSStyleDeclaration style;
 
-    CSSValue getPresentationAttribute([Optional=DefaultIsUndefined] DOMString name);
+    CSSValue getPresentationAttribute([Default=Undefined] optional DOMString name);
 };
 

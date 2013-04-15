@@ -39,7 +39,7 @@
 
     PerformanceEntryList webkitGetEntries();
     PerformanceEntryList webkitGetEntriesByType(DOMString entryType);
-    PerformanceEntryList webkitGetEntriesByName(DOMString name, [Optional=DefaultIsNullString] DOMString entryType);
+    PerformanceEntryList webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned long maxSize);
@@ -48,10 +48,10 @@
 
     // See http://www.w3.org/TR/2012/CR-user-timing-20120726/
     [RaisesException] void webkitMark(DOMString markName);
-    void webkitClearMarks([Optional=DefaultIsNullString]  DOMString markName);
+    void webkitClearMarks([Default=NullString] optional  DOMString markName);
 
-    [RaisesException] void webkitMeasure(DOMString measureName, [Optional=DefaultIsNullString] DOMString startMark, [Optional=DefaultIsNullString] DOMString endMark);
-    void webkitClearMeasures([Optional=DefaultIsNullString] DOMString measureName);
+    [RaisesException] void webkitMeasure(DOMString measureName, [Default=NullString] optional DOMString startMark, [Default=NullString] optional DOMString endMark);
+    void webkitClearMeasures([Default=NullString] optional DOMString measureName);
 
     // See http://www.w3.org/TR/hr-time/ for details.
     double now();

@@ -23,19 +23,19 @@ interface CharacterData : Node {
 
     readonly attribute unsigned long length;
     
-    [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, [IsIndex,Optional=DefaultIsUndefined] unsigned long length);
+    [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData([IsIndex,Default=Undefined] optional unsigned long offset, [IsIndex,Default=Undefined] optional unsigned long length);
 
-    [RaisesException] void appendData([Optional=DefaultIsUndefined] DOMString data);
+    [RaisesException] void appendData([Default=Undefined] optional DOMString data);
 
-     [RaisesException] void insertData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
-                                   [Optional=DefaultIsUndefined] DOMString data);
+     [RaisesException] void insertData([IsIndex,Default=Undefined] optional unsigned long offset, 
+                                   [Default=Undefined] optional DOMString data);
 
-     [RaisesException] void deleteData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
-                                   [IsIndex,Optional=DefaultIsUndefined] unsigned long length);
+     [RaisesException] void deleteData([IsIndex,Default=Undefined] optional unsigned long offset, 
+                                   [IsIndex,Default=Undefined] optional unsigned long length);
 
-     [RaisesException] void replaceData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
-                                    [IsIndex,Optional=DefaultIsUndefined] unsigned long length,
-                                    [Optional=DefaultIsUndefined] DOMString data);
+     [RaisesException] void replaceData([IsIndex,Default=Undefined] optional unsigned long offset, 
+                                    [IsIndex,Default=Undefined] optional unsigned long length,
+                                    [Default=Undefined] optional DOMString data);
 
     // DOM 4
     [RaisesException] void remove();

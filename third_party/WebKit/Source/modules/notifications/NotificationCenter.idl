@@ -39,6 +39,6 @@
    [MeasureAs=LegacyTextNotifications, RaisesException] Notification createNotification(DOMString iconUrl, DOMString title, DOMString body);
 
    int checkPermission();
-   void requestPermission([Optional, Callback] VoidCallback callback);
+   void requestPermission([Callback] optional VoidCallback callback);
 };
 

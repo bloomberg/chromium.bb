@@ -31,5 +31,5 @@
 [
     ImplementationLacksVTable
 ] interface DirectoryReader {
-    void readEntries([Callback] EntriesCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void readEntries([Callback] EntriesCallback successCallback, [Callback] optional ErrorCallback errorCallback);
 };

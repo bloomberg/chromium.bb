@@ -59,12 +59,12 @@
 
     boolean            hasChildNodes();
     [DeliverCustomElementCallbacks, PerWorldBindings]
-    Node               cloneNode([Optional=DefaultIsUndefined] boolean deep);
+    Node               cloneNode([Default=Undefined] optional boolean deep);
     void               normalize();
 
     // Introduced in DOM Level 2:
-     boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
-                                       [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
+     boolean isSupported([Default=Undefined] optional DOMString feature, 
+                                       [TreatNullAs=NullString,Default=Undefined] optional DOMString version);
 
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        namespaceURI;
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        prefix;
@@ -76,11 +76,11 @@
              // FIXME: the spec says this can also raise on retrieval.
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString       textContent;
 
-    boolean            isSameNode([Optional=DefaultIsUndefined] Node other);
-    boolean            isEqualNode([Optional=DefaultIsUndefined] Node other);
-    [TreatReturnedNullStringAs=Null] DOMString          lookupPrefix([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
-    boolean            isDefaultNamespace([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
-    [TreatReturnedNullStringAs=Null] DOMString          lookupNamespaceURI([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString prefix);
+    boolean            isSameNode([Default=Undefined] optional Node other);
+    boolean            isEqualNode([Default=Undefined] optional Node other);
+    [TreatReturnedNullStringAs=Null] DOMString          lookupPrefix([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI);
+    boolean            isDefaultNamespace([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI);
+    [TreatReturnedNullStringAs=Null] DOMString          lookupNamespaceURI([TreatNullAs=NullString,Default=Undefined] optional DOMString prefix);
 
     // DocumentPosition
     const unsigned short      DOCUMENT_POSITION_DISCONNECTED = 0x01;
@@ -90,19 +90,19 @@
     const unsigned short      DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const unsigned short      DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    unsigned short     compareDocumentPosition([Optional=DefaultIsUndefined] Node other);
+    unsigned short     compareDocumentPosition([Default=Undefined] optional Node other);
 
     // Introduced in DOM4
-    boolean contains([Optional=DefaultIsUndefined] Node other);
+    boolean contains([Default=Undefined] optional Node other);
 
     // IE extensions
     [PerWorldBindings] readonly attribute Element          parentElement;
 
     void addEventListener(DOMString type, 
                           EventListener listener, 
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type, 
                              EventListener listener, 
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event event);
 };

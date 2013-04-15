@@ -31,8 +31,8 @@
     const unsigned short PERSISTENT = 1;
 
     [EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
-            [Callback] FileSystemCallback successCallback, [Callback, Optional] ErrorCallback errorCallback);
+            [Callback] FileSystemCallback successCallback, [Callback] optional ErrorCallback errorCallback);
     [EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
-            [Callback] EntryCallback successCallback, [Callback, Optional] ErrorCallback errorCallback);
+            [Callback] EntryCallback successCallback, [Callback] optional ErrorCallback errorCallback);
 };
 

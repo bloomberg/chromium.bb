@@ -32,7 +32,7 @@
 ] interface DatabaseSync {
     readonly attribute DOMString version;
     readonly attribute DOMString lastErrorMessage;
-    [RaisesException] void changeVersion(DOMString oldVersion, DOMString newVersion, [Callback, Optional] SQLTransactionSyncCallback callback);
+    [RaisesException] void changeVersion(DOMString oldVersion, DOMString newVersion, [Callback] optional SQLTransactionSyncCallback callback);
     [RaisesException] void transaction([Callback] SQLTransactionSyncCallback callback);
     [RaisesException] void readTransaction([Callback] SQLTransactionSyncCallback callback);
 };

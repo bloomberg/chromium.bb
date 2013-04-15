@@ -35,9 +35,9 @@
 
     [SetterRaisesException] attribute DOMString channelInterpretation;
 
-    [RaisesException] void connect(AudioNode? destination, [Optional=DefaultIsUndefined] unsigned long output, [Optional=DefaultIsUndefined] unsigned long input);
+    [RaisesException] void connect(AudioNode? destination, [Default=Undefined] optional unsigned long output, [Default=Undefined] optional unsigned long input);
 
-    [RaisesException] void connect(AudioParam? destination, [Optional=DefaultIsUndefined] unsigned long output);
+    [RaisesException] void connect(AudioParam? destination, [Default=Undefined] optional unsigned long output);
 
-    [RaisesException] void disconnect([Optional=DefaultIsUndefined] unsigned long output);
+    [RaisesException] void disconnect([Default=Undefined] optional unsigned long output);
 };

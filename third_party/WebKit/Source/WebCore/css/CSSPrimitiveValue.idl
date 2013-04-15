@@ -55,11 +55,11 @@
     
     readonly attribute unsigned short primitiveType;
 
-     [RaisesException] void setFloatValue([Optional=DefaultIsUndefined] unsigned short unitType,
-                                      [Optional=DefaultIsUndefined] float floatValue);
-    [RaisesException] float getFloatValue([Optional=DefaultIsUndefined] unsigned short unitType);
-     [RaisesException] void setStringValue([Optional=DefaultIsUndefined] unsigned short stringType, 
-                                       [Optional=DefaultIsUndefined] DOMString stringValue);
+     [RaisesException] void setFloatValue([Default=Undefined] optional unsigned short unitType,
+                                      [Default=Undefined] optional float floatValue);
+    [RaisesException] float getFloatValue([Default=Undefined] optional unsigned short unitType);
+     [RaisesException] void setStringValue([Default=Undefined] optional unsigned short stringType, 
+                                       [Default=Undefined] optional DOMString stringValue);
     [RaisesException] DOMString getStringValue();
     [RaisesException] Counter getCounterValue();
     [RaisesException] Rect getRectValue();

@@ -32,8 +32,8 @@
     readonly attribute CSSRuleList cssRules;
     readonly attribute DOMString conditionText;
 
-    [RaisesException] unsigned long insertRule([Optional=DefaultIsUndefined] DOMString rule,
-                             [Optional=DefaultIsUndefined] unsigned long index);
-    [RaisesException] void deleteRule([Optional=DefaultIsUndefined] unsigned long index);
+    [RaisesException] unsigned long insertRule([Default=Undefined] optional DOMString rule,
+                             [Default=Undefined] optional unsigned long index);
+    [RaisesException] void deleteRule([Default=Undefined] optional unsigned long index);
 };
 

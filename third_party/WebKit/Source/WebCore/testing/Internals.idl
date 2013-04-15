@@ -102,7 +102,7 @@
 
     [RaisesException] void setScrollViewPosition(Document document, long x, long y);
 
-    [RaisesException] void setPagination(Document document, DOMString mode, long gap, [Optional] long pageLength);
+    [RaisesException] void setPagination(Document document, DOMString mode, long gap, optional long pageLength);
 
     [RaisesException] DOMString configurationForViewport(Document document,
                                        float devicePixelRatio,
@@ -174,7 +174,7 @@
     const unsigned short LAYER_TREE_INCLUDES_TILE_CACHES = 2;
     const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 4;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 8;
-    [RaisesException] DOMString layerTreeAsText(Document document, [Optional] unsigned short flags);
+    [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
@@ -206,10 +206,10 @@
     [RaisesException] void setJavaScriptProfilingEnabled(boolean creates);
 
     DOMString counterValue(Element element);
-    long pageNumber(Element element, [Optional] float pageWidth, [Optional] float pageHeight);
+    long pageNumber(Element element, optional float pageWidth, optional float pageHeight);
     DOMString[] shortcutIconURLs(Document document);
     DOMString[] allIconURLs(Document document);
-    long numberOfPages([Optional] double pageWidthInPixels, [Optional] double pageHeightInPixels);
+    long numberOfPages(optional double pageWidthInPixels, optional double pageHeightInPixels);
     [RaisesException] DOMString pageProperty(DOMString propertyName, long pageNumber);
     [RaisesException] DOMString pageSizeAndMarginsInPixels(long pageIndex, long width, long height, long marginTop, long marginRight, long marginBottom, long marginLeft);
 

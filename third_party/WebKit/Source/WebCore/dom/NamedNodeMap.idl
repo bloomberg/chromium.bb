@@ -26,13 +26,13 @@
     ImplementationLacksVTable
 ] interface NamedNodeMap {
 
-    Node getNamedItem([Optional=DefaultIsUndefined] DOMString name);
+    Node getNamedItem([Default=Undefined] optional DOMString name);
 
-    [RaisesException] Node setNamedItem([Optional=DefaultIsUndefined] Node node);
+    [RaisesException] Node setNamedItem([Default=Undefined] optional Node node);
 
-    [RaisesException] Node removeNamedItem([Optional=DefaultIsUndefined] DOMString name);
+    [RaisesException] Node removeNamedItem([Default=Undefined] optional DOMString name);
 
-    Node item([Optional=DefaultIsUndefined] unsigned long index);
+    Node item([Default=Undefined] optional unsigned long index);
     
     readonly attribute unsigned long length;
 
@@ -40,13 +40,13 @@
     // Introduced in DOM Level 2:
 
     // FIXME: the implementation does take an exceptioncode parameter.
-    /*[RaisesException]*/ Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                              [Optional=DefaultIsUndefined] DOMString localName);
+    /*[RaisesException]*/ Node getNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI, 
+                                              [Default=Undefined] optional DOMString localName);
 
-    [RaisesException] Node setNamedItemNS([Optional=DefaultIsUndefined] Node node);
+    [RaisesException] Node setNamedItemNS([Default=Undefined] optional Node node);
 
-     [RaisesException] Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                          [Optional=DefaultIsUndefined] DOMString localName);
+     [RaisesException] Node removeNamedItemNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI, 
+                                          [Default=Undefined] optional DOMString localName);
 
 };
 

@@ -36,9 +36,9 @@
     ImplementationLacksVTable
 ] interface XSLTProcessor {
     
-    void importStylesheet([Optional=DefaultIsUndefined] Node stylesheet);
-    DocumentFragment transformToFragment([Optional=DefaultIsUndefined] Node source, [Optional=DefaultIsUndefined] Document docVal);
-    Document transformToDocument([Optional=DefaultIsUndefined] Node source);
+    void importStylesheet([Default=Undefined] optional Node stylesheet);
+    DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
+    Document transformToDocument([Default=Undefined] optional Node source);
 
     [Custom] void setParameter(DOMString namespaceURI, DOMString localName, DOMString value);
     [Custom, TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString namespaceURI, DOMString localName);

@@ -29,6 +29,6 @@
  */
 
 interface FileEntry : Entry {
-    void createWriter([Callback] FileWriterCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
-    void file([Callback] FileCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void createWriter([Callback] FileWriterCallback successCallback, [Callback] optional ErrorCallback errorCallback);
+    void file([Callback] FileCallback successCallback, [Callback] optional ErrorCallback errorCallback);
 };

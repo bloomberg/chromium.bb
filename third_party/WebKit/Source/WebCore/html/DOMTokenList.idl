@@ -32,7 +32,7 @@
     [RaisesException] boolean contains(DOMString token);
     [RaisesException] void add(DOMString... tokens);
     [RaisesException] void remove(DOMString... tokens);
-    [RaisesException] boolean toggle(DOMString token, [Optional] boolean force);
+    [RaisesException] boolean toggle(DOMString token, optional boolean force);
     [NotEnumerable] DOMString toString();
 };
 

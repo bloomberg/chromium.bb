@@ -34,15 +34,15 @@
     // WebKit Extension
     readonly attribute boolean webkitDirectionInvertedFromDevice;
 
-    void initWebKitWheelEvent([Optional=DefaultIsUndefined] long wheelDeltaX,
-                              [Optional=DefaultIsUndefined] long wheelDeltaY, 
-                              [Optional=DefaultIsUndefined] DOMWindow view, 
-                              [Optional=DefaultIsUndefined] long screenX,
-                              [Optional=DefaultIsUndefined] long screenY,
-                              [Optional=DefaultIsUndefined] long clientX,
-                              [Optional=DefaultIsUndefined] long clientY,
-                              [Optional=DefaultIsUndefined] boolean ctrlKey,
-                              [Optional=DefaultIsUndefined] boolean altKey,
-                              [Optional=DefaultIsUndefined] boolean shiftKey,
-                              [Optional=DefaultIsUndefined] boolean metaKey);
+    void initWebKitWheelEvent([Default=Undefined] optional long wheelDeltaX,
+                              [Default=Undefined] optional long wheelDeltaY, 
+                              [Default=Undefined] optional DOMWindow view, 
+                              [Default=Undefined] optional long screenX,
+                              [Default=Undefined] optional long screenY,
+                              [Default=Undefined] optional long clientX,
+                              [Default=Undefined] optional long clientY,
+                              [Default=Undefined] optional boolean ctrlKey,
+                              [Default=Undefined] optional boolean altKey,
+                              [Default=Undefined] optional boolean shiftKey,
+                              [Default=Undefined] optional boolean metaKey);
 };

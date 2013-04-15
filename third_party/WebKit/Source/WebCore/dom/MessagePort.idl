@@ -31,7 +31,7 @@
 ] interface MessagePort {
 // We need to have something as an ObjC binding, because MessagePort is used in MessageEvent, which already has one,
 // but we don't want to actually expose the API while it is in flux.
-    [Custom, RaisesException] void postMessage(any message, [Optional] Array messagePorts);
+    [Custom, RaisesException] void postMessage(any message, optional Array messagePorts);
 
     void start();
     void close();
@@ -42,10 +42,10 @@
     // EventTarget interface
     void addEventListener(DOMString type, 
                           EventListener listener, 
-                          [Optional] boolean useCapture);
+                          optional boolean useCapture);
     void removeEventListener(DOMString type, 
                              EventListener listener, 
-                             [Optional] boolean useCapture);
+                             optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 };
 

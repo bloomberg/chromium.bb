@@ -24,7 +24,7 @@ interface HTMLTableSectionElement : HTMLElement {
     [Reflect=charoff] attribute DOMString chOff;
     [Reflect] attribute DOMString vAlign;
     readonly attribute HTMLCollection rows;
-    [RaisesException] HTMLElement insertRow([Optional=DefaultIsUndefined] long index);
-    [RaisesException] void deleteRow([Optional=DefaultIsUndefined] long index);
+    [RaisesException] HTMLElement insertRow([Default=Undefined] optional long index);
+    [RaisesException] void deleteRow([Default=Undefined] optional long index);
 };
 

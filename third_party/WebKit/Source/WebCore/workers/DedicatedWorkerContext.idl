@@ -32,7 +32,7 @@
     IsWorkerContext,
 ] interface DedicatedWorkerContext : WorkerContext {
 
-    [Custom, RaisesException] void postMessage(any message, [Optional] Array messagePorts);
+    [Custom, RaisesException] void postMessage(any message, optional Array messagePorts);
 
     attribute EventListener onmessage;
 };

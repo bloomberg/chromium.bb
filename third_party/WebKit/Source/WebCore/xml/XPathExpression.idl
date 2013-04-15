@@ -20,8 +20,8 @@
 [
      ImplementationLacksVTable
 ] interface XPathExpression {
-     [RaisesException] XPathResult evaluate([Optional=DefaultIsUndefined] Node contextNode, 
-                                        [Optional=DefaultIsUndefined] unsigned short type, 
-                                        [Optional=DefaultIsUndefined] XPathResult inResult);
+     [RaisesException] XPathResult evaluate([Default=Undefined] optional Node contextNode, 
+                                        [Default=Undefined] optional unsigned short type, 
+                                        [Default=Undefined] optional XPathResult inResult);
 };
 

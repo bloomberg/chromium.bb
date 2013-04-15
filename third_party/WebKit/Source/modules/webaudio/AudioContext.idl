@@ -48,7 +48,7 @@
     [RaisesException] AudioBuffer createBuffer(ArrayBuffer? buffer, boolean mixToMono);
 
     // Asynchronous audio file data decoding.
-    [RaisesException] void decodeAudioData(ArrayBuffer audioData, [Callback] AudioBufferCallback successCallback, [Optional, Callback] AudioBufferCallback errorCallback);
+    [RaisesException] void decodeAudioData(ArrayBuffer audioData, [Callback] AudioBufferCallback successCallback, [Callback] optional AudioBufferCallback errorCallback);
 
     // Sources
     AudioBufferSourceNode createBufferSource();
@@ -64,20 +64,20 @@
 
     // Processing nodes
     GainNode createGain();
-    [RaisesException] DelayNode createDelay([Optional] double maxDelayTime);
+    [RaisesException] DelayNode createDelay(optional double maxDelayTime);
     BiquadFilterNode createBiquadFilter();
     WaveShaperNode createWaveShaper();
     PannerNode createPanner();
     ConvolverNode createConvolver();
     DynamicsCompressorNode createDynamicsCompressor();
     AnalyserNode createAnalyser();
-    [RaisesException] ScriptProcessorNode createScriptProcessor(unsigned long bufferSize, [Optional] unsigned long numberOfInputChannels, [Optional] unsigned long numberOfOutputChannels);
+    [RaisesException] ScriptProcessorNode createScriptProcessor(unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
     OscillatorNode createOscillator();
     [RaisesException] WaveTable createWaveTable(Float32Array real, Float32Array imag);
 
     // Channel splitting and merging
-    [RaisesException] ChannelSplitterNode createChannelSplitter([Optional] unsigned long numberOfOutputs);
-    [RaisesException] ChannelMergerNode createChannelMerger([Optional] unsigned long numberOfInputs);
+    [RaisesException] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
+    [RaisesException] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
 
     // Offline rendering
     // void prepareOfflineBufferRendering(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
@@ -86,9 +86,9 @@
 
 #if defined(ENABLE_LEGACY_WEB_AUDIO) && ENABLE_LEGACY_WEB_AUDIO
     [MeasureAs=LegacyWebAudio, ImplementedAs=createGain] GainNode createGainNode();
-    [MeasureAs=LegacyWebAudio, ImplementedAs=createDelay, RaisesException] DelayNode createDelayNode([Optional] double maxDelayTime);
+    [MeasureAs=LegacyWebAudio, ImplementedAs=createDelay, RaisesException] DelayNode createDelayNode(optional double maxDelayTime);
 
-    [MeasureAs=LegacyWebAudio, ImplementedAs=createScriptProcessor, RaisesException] ScriptProcessorNode createJavaScriptNode(unsigned long bufferSize, [Optional] unsigned long numberOfInputChannels, [Optional] unsigned long numberOfOutputChannels);
+    [MeasureAs=LegacyWebAudio, ImplementedAs=createScriptProcessor, RaisesException] ScriptProcessorNode createJavaScriptNode(unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
 #endif
 
 };

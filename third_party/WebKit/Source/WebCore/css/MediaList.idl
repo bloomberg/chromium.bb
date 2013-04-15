@@ -32,9 +32,9 @@
              [TreatNullAs=NullString, TreatReturnedNullStringAs=Null, SetterRaisesException] attribute DOMString mediaText;
     readonly attribute unsigned long length;
 
-    [TreatReturnedNullStringAs=Null] DOMString item([Optional=DefaultIsUndefined] unsigned long index);
-    [RaisesException] void deleteMedium([Optional=DefaultIsUndefined] DOMString oldMedium);
-    [RaisesException] void appendMedium([Optional=DefaultIsUndefined] DOMString newMedium);
+    [TreatReturnedNullStringAs=Null] DOMString item([Default=Undefined] optional unsigned long index);
+    [RaisesException] void deleteMedium([Default=Undefined] optional DOMString oldMedium);
+    [RaisesException] void appendMedium([Default=Undefined] optional DOMString newMedium);
 
 };
 

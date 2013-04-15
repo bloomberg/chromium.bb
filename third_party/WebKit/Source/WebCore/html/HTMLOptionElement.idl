@@ -19,7 +19,7 @@
  */
 
 [
-    NamedConstructor=Option([Optional=DefaultIsNullString] DOMString data, [Optional=DefaultIsNullString] DOMString value, [Optional=DefaultIsUndefined] boolean defaultSelected, [Optional=DefaultIsUndefined] boolean selected),
+    NamedConstructor=Option([Default=NullString] optional DOMString data, [Default=NullString] optional DOMString value, [Default=Undefined] optional boolean defaultSelected, [Default=Undefined] optional boolean selected),
     RaisesException
 ] interface HTMLOptionElement : HTMLElement {
     [Reflect] attribute boolean disabled;

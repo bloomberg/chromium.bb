@@ -27,13 +27,13 @@
 // changes in its ouput.
 [
     Conditional=Condition1|Condition2,
-    Constructor(DOMString hello, [TransferList=transferList] SerializedScriptValue data, [Optional=DefaultIsUndefined] Array transferList),
+    Constructor(DOMString hello, [TransferList=transferList] SerializedScriptValue data, [Default=Undefined] optional Array transferList),
 ] interface TestSerializedScriptValueInterface {
     attribute SerializedScriptValue value;
     readonly attribute SerializedScriptValue readonlyValue;
     [CachedAttribute] attribute SerializedScriptValue cachedValue;
     readonly attribute MessagePortArray ports;
     [CachedAttribute] readonly attribute SerializedScriptValue cachedReadonlyValue;
-    void acceptTransferList([TransferList=transferList] SerializedScriptValue data, [Optional] Array transferList);
-    void multiTransferList([Optional, TransferList=tx] SerializedScriptValue first, [Optional] Array tx, [Optional, TransferList=txx] SerializedScriptValue second, [Optional] Array txx);
+    void acceptTransferList([TransferList=transferList] SerializedScriptValue data, optional Array transferList);
+    void multiTransferList([TransferList=tx] optional SerializedScriptValue first, optional Array tx, [TransferList=txx] optional SerializedScriptValue second, optional Array txx);
 };

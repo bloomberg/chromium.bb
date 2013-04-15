@@ -1559,7 +1559,7 @@ sub GenerateFunctionParametersCheck
     my $hasVariadic = 0;
     my $numMandatoryParams = @{$function->parameters};
     foreach my $parameter (@{$function->parameters}) {
-        if ($parameter->extendedAttributes->{"Optional"}) {
+        if ($parameter->isOptional) {
             push(@orExpression, GenerateParametersCheckExpression($numParameters, $function));
             $numMandatoryParams--;
         }
@@ -1818,7 +1818,7 @@ sub GenerateArgumentsCountCheck
     my $numMandatoryParams = 0;
     my $allowNonOptional = 1;
     foreach my $param (@{$function->parameters}) {
-        if ($param->extendedAttributes->{"Optional"} or $param->isVariadic) {
+        if ($param->isOptional or $param->isVariadic) {
             $allowNonOptional = 0;
         } else {
             die "An argument must not be declared to be optional unless all subsequent arguments to the operation are also optional." if !$allowNonOptional;
@@ -1862,11 +1862,10 @@ sub GenerateParametersCheck
     foreach my $parameter (@{$function->parameters}) {
         my $nativeType = GetNativeTypeFromSignature($parameter, $paramIndex);
 
-        # Optional arguments with [Optional] should generate an early call with fewer arguments.
+        # Optional arguments without [Default=...] should generate an early call with fewer arguments.
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
-        my $optional = $parameter->extendedAttributes->{"Optional"};
-        if ($optional && $optional ne "DefaultIsUndefined" && $optional ne "DefaultIsNullString" && $nativeType ne "Dictionary" && !$parameter->extendedAttributes->{"Callback"}) {
+        if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !$parameter->extendedAttributes->{"Callback"}) {
             $parameterCheckString .= "    if (args.Length() <= $paramIndex) {\n";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interfaceName, $forMainWorldSuffix, %replacements);
             $parameterCheckString .= $functionCall;
@@ -1874,7 +1873,8 @@ sub GenerateParametersCheck
         }
 
         my $parameterDefaultPolicy = "DefaultIsUndefined";
-        if ($optional and $optional eq "DefaultIsNullString") {
+        my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
+        if ($parameter->isOptional and $default eq "NullString") {
             $parameterDefaultPolicy = "DefaultIsNullString";
         }
 
@@ -1889,7 +1889,7 @@ sub GenerateParametersCheck
         if ($parameter->extendedAttributes->{"Callback"}) {
             my $v8InterfaceName = "V8" . $parameter->type;
             AddToImplIncludes("$v8InterfaceName.h");
-            if ($optional) {
+            if ($parameter->isOptional) {
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName;\n";
                 $parameterCheckString .= "    if (args.Length() > $paramIndex && !args[$paramIndex]->IsNull() && !args[$paramIndex]->IsUndefined()) {\n";
                 $parameterCheckString .= "        if (!args[$paramIndex]->IsFunction())\n";
@@ -1970,7 +1970,8 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    V8TRYCATCH(Vector<$nativeElementType>, $parameterName, toNativeArguments<$nativeElementType>(args, $paramIndex));\n";
             }
         } elsif ($nativeType =~ /^V8StringResource/) {
-            my $value = JSValueToNative($parameter, $optional && $optional eq "DefaultIsNullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
+            my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
+            my $value = JSValueToNative($parameter, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value) . "\n";
             if ($codeGenerator->IsEnumType($parameter->type)) {
                 my @enumValues = $codeGenerator->ValidEnumValues($parameter->type);
@@ -1998,7 +1999,8 @@ sub GenerateParametersCheck
                     $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
                 }
             }
-            my $value = JSValueToNative($parameter, $optional && $optional eq "DefaultIsNullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
+            my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
+            my $value = JSValueToNative($parameter, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             if ($parameter->extendedAttributes->{"EnforceRange"}) {
                 $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK($nativeType, $parameterName, $value, args.GetIsolate());\n";
             } else {
@@ -2089,8 +2091,7 @@ END
         push(@implContentInternals, "    ExceptionCode ec = 0;\n");
     }
 
-    # FIXME: Currently [Constructor(...)] does not yet support [Optional] arguments.
-    # It just supports [Optional=DefaultIsUndefined] or [Optional=DefaultIsNullString].
+    # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interfaceName, "");
     push(@implContentInternals, $parameterCheckString);
 
@@ -4307,8 +4308,7 @@ sub RequiresCustomSignature
       return 0;
     }
     foreach my $parameter (@{$function->parameters}) {
-        my $optional = $parameter->extendedAttributes->{"Optional"};
-        if (($optional && $optional ne "DefaultIsUndefined" && $optional ne "DefaultIsNullString") || $parameter->extendedAttributes->{"Callback"}) {
+        if (($parameter->isOptional && !$parameter->extendedAttributes->{"Default"}) || $parameter->extendedAttributes->{"Callback"}) {
             return 0;
         }
     }

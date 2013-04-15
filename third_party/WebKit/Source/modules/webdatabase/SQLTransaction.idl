@@ -31,6 +31,6 @@
 ] interface SQLTransaction {
     [Custom] void executeSql(DOMString sqlStatement,
                              ObjectArray arguments,
-                             [Optional, Callback] SQLStatementCallback callback,
-                             [Optional, Callback] SQLStatementErrorCallback errorCallback);
+                             [Callback] optional SQLStatementCallback callback,
+                             [Callback] optional SQLStatementErrorCallback errorCallback);
 };

@@ -34,17 +34,17 @@
     readonly attribute boolean altKey;
     readonly attribute boolean metaKey;
 
-    void initTouchEvent([Optional=DefaultIsUndefined] TouchList touches,
-                        [Optional=DefaultIsUndefined] TouchList targetTouches,
-                        [Optional=DefaultIsUndefined] TouchList changedTouches,
-                        [Optional=DefaultIsUndefined] DOMString type,
-                        [Optional=DefaultIsUndefined] DOMWindow view,
-                        [Optional=DefaultIsUndefined] long screenX, 
-                        [Optional=DefaultIsUndefined] long screenY, 
-                        [Optional=DefaultIsUndefined] long clientX, 
-                        [Optional=DefaultIsUndefined] long clientY,
-                        [Optional=DefaultIsUndefined] boolean ctrlKey,
-                        [Optional=DefaultIsUndefined] boolean altKey,
-                        [Optional=DefaultIsUndefined] boolean shiftKey,
-                        [Optional=DefaultIsUndefined] boolean metaKey);
+    void initTouchEvent([Default=Undefined] optional TouchList touches,
+                        [Default=Undefined] optional TouchList targetTouches,
+                        [Default=Undefined] optional TouchList changedTouches,
+                        [Default=Undefined] optional DOMString type,
+                        [Default=Undefined] optional DOMWindow view,
+                        [Default=Undefined] optional long screenX, 
+                        [Default=Undefined] optional long screenY, 
+                        [Default=Undefined] optional long clientX, 
+                        [Default=Undefined] optional long clientY,
+                        [Default=Undefined] optional boolean ctrlKey,
+                        [Default=Undefined] optional boolean altKey,
+                        [Default=Undefined] optional boolean shiftKey,
+                        [Default=Undefined] optional boolean metaKey);
 };

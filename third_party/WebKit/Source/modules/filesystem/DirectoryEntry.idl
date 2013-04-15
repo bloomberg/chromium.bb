@@ -30,7 +30,7 @@
 
 interface DirectoryEntry : Entry {
     DirectoryReader createReader();
-    void getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
-    void getDirectory([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
-    void removeRecursively([Callback] VoidCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, optional Dictionary options, [Callback] optional EntryCallback successCallback, [Callback] optional ErrorCallback errorCallback);
+    void getDirectory([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, optional Dictionary options, [Callback] optional EntryCallback successCallback, [Callback] optional ErrorCallback errorCallback);
+    void removeRecursively([Callback] VoidCallback successCallback, [Callback] optional ErrorCallback errorCallback);
 };

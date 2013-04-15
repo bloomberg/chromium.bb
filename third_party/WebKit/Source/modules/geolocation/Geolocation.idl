@@ -27,12 +27,12 @@
 [
 ] interface Geolocation {
     [Custom] void getCurrentPosition(PositionCallback successCallback,
-                                     [Optional] PositionErrorCallback errorCallback,
-                                     [Optional] PositionOptions options);
+                                     optional PositionErrorCallback errorCallback,
+                                     optional PositionOptions options);
 
     [Custom] long watchPosition(PositionCallback successCallback,
-                                [Optional] PositionErrorCallback errorCallback,
-                                [Optional] PositionOptions options);
+                                optional PositionErrorCallback errorCallback,
+                                optional PositionOptions options);
 
     void clearWatch(long watchID);
 };

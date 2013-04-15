@@ -28,10 +28,10 @@
     attribute long selectedIndex;
     [CustomSetter, SetterRaisesException] attribute unsigned long length;
 
-    [Custom] Node namedItem([Optional=DefaultIsUndefined] DOMString name);
+    [Custom] Node namedItem([Default=Undefined] optional DOMString name);
 
-    [Custom, RaisesException] void add([Optional=DefaultIsUndefined] HTMLOptionElement option, 
-                      [Optional] unsigned long index);
-    [Custom] void remove([Optional=DefaultIsUndefined] unsigned long index);
+    [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, 
+                      optional unsigned long index);
+    [Custom] void remove([Default=Undefined] optional unsigned long index);
 };
 
