@@ -70,7 +70,6 @@ struct( domAttribute => {
 
 # Used to represent a map of 'variable name' <-> 'variable type'
 struct( domSignature => {
-    direction => '$', # Variable direction (in or out)
     name => '$',      # Variable name
     type => '$',      # Variable type
     extendedAttributes => '$', # Extended attributes
@@ -300,7 +299,7 @@ sub typeHasNullableSuffix
 sub typeRemoveNullableSuffix
 {
     my $type = shift;
-    $type =~ s/\?//g;
+    $type =~ s/\?$//g;
     return $type;
 }
 
@@ -1132,11 +1131,7 @@ sub parseAttributeRest
         $self->assertTokenValue($self->getToken(), "attribute", __LINE__);
         $newDataNode->signature(domSignature->new());
         my $type = $self->parseType();
-        if (typeHasNullableSuffix($type)) {
-            $newDataNode->signature->isNullable(1);
-        } else {
-            $newDataNode->signature->isNullable(0);
-        }
+        $newDataNode->signature->isNullable(typeHasNullableSuffix($type));
         # Remove all "?" in the type declaration, e.g. "double?" -> "double".
         $newDataNode->signature->type(typeRemoveNullableSuffix($type));
         my $token = $self->getToken();
@@ -1377,10 +1372,8 @@ sub parseArgument
     my $self = shift;
     my $next = $self->nextToken();
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextArgumentList_1/) {
-        my $in = $self->parseIn();
         my $extendedAttributeList = $self->parseExtendedAttributeListAllowEmpty();
         my $argument = $self->parseOptionalOrRequiredArgument($extendedAttributeList);
-        $argument->direction($self->parseIn());
         return $argument;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
@@ -1399,11 +1392,7 @@ sub parseOptionalOrRequiredArgument
         $self->assertTokenValue($self->getToken(), "optional", __LINE__);
         my $type = $self->parseType();
         # domDataNode can only consider last "?".
-        if (typeHasNullableSuffix($type)) {
-            $paramDataNode->isNullable(1);
-        } else {
-            $paramDataNode->isNullable(0);
-        }
+        $paramDataNode->isNullable(typeHasNullableSuffix($type));
         # Remove all "?" if exists, e.g. "object?[]?" -> "object[]".
         $paramDataNode->type(typeRemoveNullableSuffix($type));
         $paramDataNode->isOptional(1);
@@ -1414,11 +1403,7 @@ sub parseOptionalOrRequiredArgument
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextExceptionField_1/) {
         my $type = $self->parseType();
         # domDataNode can only consider last "?".
-        if (typeHasNullableSuffix($type)) {
-            $paramDataNode->isNullable(1);
-        } else {
-            $paramDataNode->isNullable(0);
-        }
+        $paramDataNode->isNullable(typeHasNullableSuffix($type));
         # Remove all "?" if exists, e.g. "object?[]?" -> "object[]".
         $paramDataNode->type(typeRemoveNullableSuffix($type));
         $paramDataNode->isOptional(0);
@@ -2043,17 +2028,6 @@ sub parseRaises
         return $self->parseExceptionList();
     }
     return [];
-}
-
-sub parseIn
-{
-    my $self = shift;
-    my $next = $self->nextToken();
-    if ($next->value() eq "in") {
-        $self->assertTokenValue($self->getToken(), "in", __LINE__);
-        return "in";
-    }
-    return "";
 }
 
 sub parseOptionalSemicolon

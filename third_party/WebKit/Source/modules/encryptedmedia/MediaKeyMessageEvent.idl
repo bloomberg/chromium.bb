@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface [
+[
     Conditional=ENCRYPTED_MEDIA_V2,
     EnabledAtRuntime=encryptedMedia,
     ConstructorTemplate=Event 
-] MediaKeyMessageEvent : Event {
+] interface MediaKeyMessageEvent : Event {
     readonly attribute Uint8Array message;
     [InitializedByEventConstructor] readonly attribute DOMString destinationURL;
 };
