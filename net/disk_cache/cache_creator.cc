@@ -11,6 +11,10 @@
 #include "net/disk_cache/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 
+#ifdef USE_TRACING_CACHE_BACKEND
+#include "net/disk_cache/tracing_cache_backend.h"
+#endif
+
 namespace {
 
 // Builds an instance of the backend depending on platform, type, experiments
@@ -102,9 +106,13 @@ int CacheCreator::Run() {
 
 void CacheCreator::DoCallback(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  if (result == net::OK)
+  if (result == net::OK) {
+#ifndef USE_TRACING_CACHE_BACKEND
     *backend_ = created_cache_;
-  else {
+#else
+    *backend_ = new disk_cache::TracingCacheBackend(created_cache_);
+#endif
+  } else {
     LOG(ERROR) << "Unable to create cache";
     *backend_ = NULL;
     delete created_cache_;

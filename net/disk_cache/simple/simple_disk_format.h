@@ -27,6 +27,7 @@ const uint32 kSimpleVersion = 1;
 static const int kSimpleEntryFileCount = 3;
 
 struct SimpleFileHeader {
+  SimpleFileHeader();
   uint64 initial_magic_number;
   uint32 version;
   uint32 key_length;

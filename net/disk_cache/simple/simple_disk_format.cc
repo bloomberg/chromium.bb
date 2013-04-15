@@ -12,6 +12,11 @@
 
 namespace disk_cache {
 
+SimpleFileHeader::SimpleFileHeader() {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  memset(this, 0, sizeof(*this));
+}
+
 std::string GetEntryHashForKey(const std::string& key) {
   const std::string sha_hash = base::SHA1HashString(key);
   const std::string key_hash = base::StringPrintf(
