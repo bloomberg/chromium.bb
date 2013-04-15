@@ -224,9 +224,9 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
 // static
 void TranslateManager::SetSupportedLanguages(const std::string& language_list) {
   // The format is:
-  // sl({'sl': {'XX': 'LanguageName', ...}, 'tl': {'XX': 'LanguageName', ...}})
+  // sl({"sl": {"XX": "LanguageName", ...}, "tl": {"XX": "LanguageName", ...}})
   // Where "sl(" is set in kLanguageListCallbackName
-  // and 'tl' is kTargetLanguagesKey
+  // and "tl" is kTargetLanguagesKey
   if (!StartsWithASCII(language_list, kLanguageListCallbackName, false) ||
       !EndsWith(language_list, ")", false)) {
     // We don't have a NOTREACHED here since this can happen in ui_tests, even
@@ -239,9 +239,6 @@ void TranslateManager::SetSupportedLanguages(const std::string& language_list) {
   std::string languages_json = language_list.substr(
       kLanguageListCallbackNameLength,
       language_list.size() - kLanguageListCallbackNameLength - 1);
-  // JSON doesn't support single quotes though this is what is used on the
-  // translate server so we must replace them with double quotes.
-  ReplaceSubstringsAfterOffset(&languages_json, 0, "'", "\"");
   scoped_ptr<Value> json_value(
       base::JSONReader::Read(languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
   if (json_value == NULL || !json_value->IsType(Value::TYPE_DICTIONARY)) {

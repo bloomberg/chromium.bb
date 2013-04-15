@@ -279,13 +279,13 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
     std::string data;
     if (success) {
-      data = base::StringPrintf("%s{'sl': {'bla': 'bla'}, '%s': {",
+      data = base::StringPrintf("%s{\"sl\": {\"bla\": \"bla\"}, \"%s\": {",
                                 TranslateManager::kLanguageListCallbackName,
                                 TranslateManager::kTargetLanguagesKey);
       const char* comma = "";
       for (size_t i = 0; i < languages.size(); ++i) {
         data += base::StringPrintf(
-            "%s'%s': 'UnusedFullName'", comma, languages[i].c_str());
+            "%s\"%s\": \"UnusedFullName\"", comma, languages[i].c_str());
         if (i == 0)
           comma = ",";
       }
