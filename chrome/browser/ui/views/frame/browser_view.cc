@@ -2008,14 +2008,10 @@ int BrowserView::GetOTRIconResourceID() const {
   return otr_resource_id;
 }
 
-views::LayoutManager* BrowserView::CreateLayoutManager() const {
-  return new BrowserViewLayout;
-}
-
 void BrowserView::Init() {
   GetWidget()->AddObserver(this);
 
-  SetLayoutManager(CreateLayoutManager());
+  SetLayoutManager(new BrowserViewLayout);
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);

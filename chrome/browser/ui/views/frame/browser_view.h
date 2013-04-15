@@ -127,7 +127,7 @@ class BrowserView : public BrowserWindow,
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
   // horizontally. Note that this returns the bounds for the toolbar area.
-  virtual gfx::Rect GetToolbarBounds() const;
+  gfx::Rect GetToolbarBounds() const;
 
   // Returns the bounds of the content area, in the coordinates of the
   // BrowserView's parent.
@@ -142,7 +142,7 @@ class BrowserView : public BrowserWindow,
 
   // Returns the preferred height of the TabStrip. Used to position the OTR
   // avatar icon.
-  virtual int GetTabStripHeight() const;
+  int GetTabStripHeight() const;
 
   // Takes some view's origin (relative to this BrowserView) and offsets it such
   // that it can be used as the source origin for seamlessly tiling the toolbar
@@ -166,7 +166,7 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container() { return infobar_container_; }
 
   // Returns true if various window components are visible.
-  virtual bool IsTabStripVisible() const;
+  bool IsTabStripVisible() const;
 
   // Returns true if the profile associated with this Browser window is
   // incognito.
@@ -208,9 +208,6 @@ class BrowserView : public BrowserWindow,
   // Returns true if the specified point(BrowserView coordinates) is in
   // in the window caption area of the browser window.
   bool IsPositionInWindowCaption(const gfx::Point& point);
-
-  // Returns whether the fullscreen bubble is visible or not.
-  virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
 
   // Invoked from the frame when the full screen state changes. This is only
   // used on Linux.
@@ -286,6 +283,7 @@ class BrowserView : public BrowserWindow,
       FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual bool ShouldHideUIForFullscreen() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
+  virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) OVERRIDE;
   virtual bool IsInMetroSnapMode() const OVERRIDE;
@@ -441,23 +439,13 @@ class BrowserView : public BrowserWindow,
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.
   // Abstracted here so that it can be extended for Chrome OS.
-  virtual void GetAccessiblePanes(
-      std::vector<views::AccessiblePaneView*>* panes);
-
-  int last_focused_view_storage_id() const {
-    return last_focused_view_storage_id_;
-  }
-
-  // Factory Method.
-  // Returns a new LayoutManager for this browser view. A subclass may
-  // override to implement different layout policy.
-  virtual views::LayoutManager* CreateLayoutManager() const;
+  void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
 
   // Browser window related initializations.
-  virtual void Init();
+  void Init();
 
   // Callback for the loading animation(s) associated with this view.
-  virtual void LoadingAnimationCallback();
+  void LoadingAnimationCallback();
 
   // LoadCompleteListener::Delegate implementation. Creates and initializes the
   // |jumplist_| after the first page load.
