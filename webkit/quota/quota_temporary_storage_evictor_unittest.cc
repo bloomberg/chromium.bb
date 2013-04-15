@@ -54,8 +54,8 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
     }
     if (!task_for_get_usage_and_quota_.is_null())
       task_for_get_usage_and_quota_.Run();
-    QuotaAndUsage quota_and_usage = {
-        GetUsage(), unlimited_usage_, quota_, available_space_ };
+    QuotaAndUsage quota_and_usage(
+        GetUsage(), unlimited_usage_, quota_, available_space_);
     callback.Run(quota::kQuotaStatusOk, quota_and_usage);
   }
 

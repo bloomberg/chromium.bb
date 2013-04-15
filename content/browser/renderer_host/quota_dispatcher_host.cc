@@ -64,7 +64,7 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
   virtual ~QueryUsageAndQuotaDispatcher() {}
 
   void QueryStorageUsageAndQuota(const GURL& origin, StorageType type) {
-    quota_manager()->GetUsageAndQuota(
+    quota_manager()->GetUsageAndQuotaForWebApps(
         origin, type,
         base::Bind(&QueryUsageAndQuotaDispatcher::DidQueryStorageUsageAndQuota,
                    weak_factory_.GetWeakPtr()));
@@ -117,7 +117,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
           base::Bind(&self_type::DidGetHostQuota,
                      weak_factory_.GetWeakPtr(), host_, type_));
     } else {
-      quota_manager()->GetUsageAndQuota(
+      quota_manager()->GetUsageAndQuotaForWebApps(
           origin_, type_,
           base::Bind(&self_type::DidGetTemporaryUsageAndQuota,
                      weak_factory_.GetWeakPtr()));

@@ -246,6 +246,29 @@ void CallQuotaCallback(
   callback.Run(status, quota_and_usage.quota);
 }
 
+QuotaAndUsage::QuotaAndUsage()
+    : usage(0),
+      unlimited_usage(0),
+      quota(0),
+      available_disk_space(0) {
+}
+
+QuotaAndUsage::QuotaAndUsage(
+    int64 usage,
+    int64 unlimited_usage,
+    int64 quota,
+    int64 available_disk_space)
+    : usage(usage),
+      unlimited_usage(unlimited_usage),
+      quota(quota),
+      available_disk_space(available_disk_space) {
+}
+
+// static
+QuotaAndUsage QuotaAndUsage::CreateForUnlimitedStorage() {
+  return QuotaAndUsage(0, 0, QuotaManager::kNoLimit, QuotaManager::kNoLimit);
+}
+
 // This class is for posting GetUsage/GetQuota tasks, gathering
 // results and dispatching GetAndQuota callbacks.
 // This class is self-destructed.
@@ -354,7 +377,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
       QuotaStatusCode status,
       int64 usage, int64 unlimited_usage, int64 quota,
       int64 available_space) {
-    QuotaAndUsage qau = { usage, unlimited_usage, quota, available_space };
+    QuotaAndUsage qau(usage, unlimited_usage, quota, available_space);
     for (CallbackList::iterator iter = callbacks_.begin();
          iter != callbacks_.end(); ++iter) {
       (*iter).Run(status, qau);
@@ -942,14 +965,30 @@ void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
   get_usage_info->Start();
 }
 
-void QuotaManager::GetUsageAndQuota(
-    const GURL& origin, StorageType type,
+void QuotaManager::GetUsageAndQuotaForWebApps(
+    const GURL& origin,
+    StorageType type,
     const GetUsageAndQuotaCallback& callback) {
   DCHECK(origin == origin.GetOrigin());
   GetUsageAndQuotaInternal(
       origin, type, false /* global */,
       base::Bind(&CallGetUsageAndQuotaCallback, callback,
                  IsStorageUnlimited(origin, type), IsInstalledApp(origin)));
+}
+
+void QuotaManager::GetUsageAndQuota(
+    const GURL& origin, StorageType type,
+    const GetUsageAndQuotaCallback& callback) {
+  DCHECK(origin == origin.GetOrigin());
+
+  if (IsStorageUnlimited(origin, type)) {
+    CallGetUsageAndQuotaCallback(
+        callback, false, IsInstalledApp(origin),
+        kQuotaStatusOk, QuotaAndUsage::CreateForUnlimitedStorage());
+    return;
+  }
+
+  GetUsageAndQuotaForWebApps(origin, type, callback);
 }
 
 void QuotaManager::NotifyStorageAccessed(

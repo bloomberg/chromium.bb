@@ -386,7 +386,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      Bind(&quota::QuotaManager::GetUsageAndQuota,
+      Bind(&quota::QuotaManager::GetUsageAndQuotaForWebApps,
            quota_manager,
            source_url().GetOrigin(),
            fileapi::FileSystemTypeToQuotaStorageType(file_system_url.type()),
