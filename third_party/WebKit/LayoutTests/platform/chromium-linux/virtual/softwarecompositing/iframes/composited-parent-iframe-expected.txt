@@ -42,6 +42,7 @@
                 (GraphicsLayer
                   (position 285.00 0.00)
                   (bounds 15.00 150.00)
+                  (drawsContent 1)
                 )
               )
             )

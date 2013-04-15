@@ -226,15 +226,16 @@ WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(ScrollableArea* sc
 
 void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
 {
+// FIXME: Instead of hardcode here, we should make a setting flag.
 #if OS(DARWIN)
     static const bool platformSupportsCoordinatedScrollbar = false;
     static const bool platformSupportsMainFrameOnly = false; // Don't care.
-#elif OS(WINDOWS)
-    static const bool platformSupportsCoordinatedScrollbar = true;
-    static const bool platformSupportsMainFrameOnly = true;
-#else
+#elif OS(ANDROID)
     static const bool platformSupportsCoordinatedScrollbar = true;
     static const bool platformSupportsMainFrameOnly = false;
+#else
+    static const bool platformSupportsCoordinatedScrollbar = true;
+    static const bool platformSupportsMainFrameOnly = true;
 #endif
     if (!platformSupportsCoordinatedScrollbar)
         return;

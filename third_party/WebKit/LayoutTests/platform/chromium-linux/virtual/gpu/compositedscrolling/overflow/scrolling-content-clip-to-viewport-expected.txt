@@ -20,10 +20,12 @@
             (GraphicsLayer
               (position 0.00 325.00)
               (bounds 305.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 305.00 0.00)
               (bounds 15.00 325.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 305.00 325.00)
