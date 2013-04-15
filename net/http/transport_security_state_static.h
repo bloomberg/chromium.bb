@@ -406,8 +406,8 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {16, true, "\012googleplex\003com", true, kGooglePins, DOMAIN_GOOGLEPLEX_COM },
   {19, true, "\006groups\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {17, true, "\004apis\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
-  {38, true, "\030chrome-devtools-frontend\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {32, true, "\022chromiumcodereview\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
+  {38, true, "\030chrome-devtools-frontend\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {24, true, "\012codereview\007appspot\003com", true, kGooglePins, DOMAIN_APPSPOT_COM },
   {25, true, "\012codereview\010chromium\003org", true, kGooglePins, DOMAIN_CHROMIUM_ORG },
   {17, true, "\004code\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
@@ -797,6 +797,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {16, false, "\003www\006simple\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, false, "\002fj\006simple\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {16, false, "\003api\006simple\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\005bassh\003net", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
