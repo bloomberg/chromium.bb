@@ -1740,12 +1740,11 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!frame)
         return;
 
-    if (experimentalFeaturesEnabled()) {
-        // FIXME: This code means that we're gathering information like line numbers twice. We should reuse the data gathered here when generating the JSON report below.
-        SecurityPolicyViolationEventInit init;
-        gatherSecurityPolicyViolationEventData(init, document, directiveText, effectiveDirective, blockedURL, header);
-        document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(eventNames().securitypolicyviolationEvent, init));
-    }
+    SecurityPolicyViolationEventInit violationData;
+    gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header);
+
+    if (experimentalFeaturesEnabled())
+        document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(eventNames().securitypolicyviolationEvent, violationData));
 
     if (reportURIs.isEmpty())
         return;
@@ -1761,23 +1760,16 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     // harmless information.
 
     RefPtr<InspectorObject> cspReport = InspectorObject::create();
-    cspReport->setString("document-uri", document->url().strippedForUseAsReferrer());
-    cspReport->setString("referrer", document->referrer());
-    cspReport->setString("violated-directive", directiveText);
+    cspReport->setString("document-uri", violationData.documentURI);
+    cspReport->setString("referrer", violationData.referrer);
+    cspReport->setString("violated-directive", violationData.violatedDirective);
     if (experimentalFeaturesEnabled())
-        cspReport->setString("effective-directive", effectiveDirective);
-    cspReport->setString("original-policy", header);
-    cspReport->setString("blocked-uri", stripURLForUseInReport(document, blockedURL));
-
-    RefPtr<ScriptCallStack> stack = createScriptCallStack(2, false);
-    if (stack) {
-        const ScriptCallFrame& callFrame = getFirstNonNativeFrame(stack);
-
-        if (callFrame.lineNumber()) {
-            KURL source = KURL(ParsedURLString, callFrame.sourceURL());
-            cspReport->setString("source-file", stripURLForUseInReport(document, source));
-            cspReport->setNumber("line-number", callFrame.lineNumber());
-        }
+        cspReport->setString("effective-directive", violationData.effectiveDirective);
+    cspReport->setString("original-policy", violationData.originalPolicy);
+    cspReport->setString("blocked-uri", violationData.blockedURI);
+    if (!violationData.sourceFile.isEmpty() && violationData.lineNumber) {
+        cspReport->setString("source-file", violationData.sourceFile);
+        cspReport->setNumber("line-number", violationData.lineNumber);
     }
 
     RefPtr<InspectorObject> reportObject = InspectorObject::create();
