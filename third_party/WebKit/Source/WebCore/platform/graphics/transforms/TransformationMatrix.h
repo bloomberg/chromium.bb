@@ -29,10 +29,9 @@
 #include "FloatPoint.h"
 #include "FloatPoint3D.h"
 #include "IntPoint.h"
+#include <SkMatrix.h>
 #include <string.h> //for memcpy
 #include <wtf/FastAllocBase.h>
-
-#include <SkMatrix.h>
 
 namespace WebCore {
 

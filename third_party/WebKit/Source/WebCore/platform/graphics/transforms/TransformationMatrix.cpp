@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2005, 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2009 Torch Mobile, Inc.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +33,7 @@
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "LayoutRect.h"
+#include "SkiaUtils.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>
@@ -1364,6 +1366,26 @@ AffineTransform TransformationMatrix::toAffineTransform() const
 {
     return AffineTransform(m_matrix[0][0], m_matrix[0][1], m_matrix[1][0],
                            m_matrix[1][1], m_matrix[3][0], m_matrix[3][1]);
+}
+
+TransformationMatrix::operator SkMatrix() const
+{
+    SkMatrix result;
+
+    result.setScaleX(WebCoreDoubleToSkScalar(a()));
+    result.setSkewX(WebCoreDoubleToSkScalar(c()));
+    result.setTranslateX(WebCoreDoubleToSkScalar(e()));
+
+    result.setScaleY(WebCoreDoubleToSkScalar(d()));
+    result.setSkewY(WebCoreDoubleToSkScalar(b()));
+    result.setTranslateY(WebCoreDoubleToSkScalar(f()));
+
+    // FIXME: Set perspective properly.
+    result.setPerspX(0);
+    result.setPerspY(0);
+    result.set(SkMatrix::kMPersp2, SK_Scalar1);
+
+    return result;
 }
 
 static inline void blendFloat(double& from, double to, double progress)

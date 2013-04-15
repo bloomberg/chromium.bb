@@ -3016,7 +3016,6 @@
             'platform/graphics/skia/SkiaFontWin.h',
             'platform/graphics/skia/SkiaUtils.cpp',
             'platform/graphics/skia/SkiaUtils.h',
-            'platform/graphics/skia/TransformationMatrixSkia.cpp',
             'platform/graphics/transforms/IdentityTransformOperation.h',
             'platform/graphics/transforms/Matrix3DTransformOperation.cpp',
             'platform/graphics/transforms/Matrix3DTransformOperation.h',

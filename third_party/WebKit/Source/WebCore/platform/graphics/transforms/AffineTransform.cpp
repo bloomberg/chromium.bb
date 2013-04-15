@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2005, 2006 Apple Computer, Inc.  All rights reserved.
  *               2010 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +32,7 @@
 #include "FloatQuad.h"
 #include "FloatRect.h"
 #include "IntRect.h"
+#include "SkiaUtils.h"
 
 #include <wtf/MathExtras.h>
 
@@ -345,6 +347,26 @@ TransformationMatrix AffineTransform::toTransformationMatrix() const
 {
     return TransformationMatrix(m_transform[0], m_transform[1], m_transform[2],
                                 m_transform[3], m_transform[4], m_transform[5]);
+}
+
+AffineTransform::operator SkMatrix() const
+{
+    SkMatrix result;
+
+    result.setScaleX(WebCoreDoubleToSkScalar(a()));
+    result.setSkewX(WebCoreDoubleToSkScalar(c()));
+    result.setTranslateX(WebCoreDoubleToSkScalar(e()));
+
+    result.setScaleY(WebCoreDoubleToSkScalar(d()));
+    result.setSkewY(WebCoreDoubleToSkScalar(b()));
+    result.setTranslateY(WebCoreDoubleToSkScalar(f()));
+
+    // FIXME: Set perspective properly.
+    result.setPerspX(0);
+    result.setPerspY(0);
+    result.set(SkMatrix::kMPersp2, SK_Scalar1);
+
+    return result;
 }
 
 bool AffineTransform::decompose(DecomposedType& decomp) const
