@@ -133,7 +133,7 @@ void BaseChooserOnlyDateAndTimeInputType::accessKeyAction(bool sendMouseEvents)
 
 bool BaseChooserOnlyDateAndTimeInputType::isMouseFocusable() const
 {
-    return element()->isTextFormControlFocusable();
+    return element()->isFocusable();
 }
 
 }
