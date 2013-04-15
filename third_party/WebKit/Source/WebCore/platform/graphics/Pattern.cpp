@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,6 +29,10 @@
 #include "Pattern.h"
 
 #include "Image.h"
+#include "SkCanvas.h"
+#include "SkColorShader.h"
+#include "SkShader.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -43,13 +48,61 @@ Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
 
 Pattern::~Pattern()
 {
-    platformDestroy();
+    SkSafeUnref(m_pattern);
+    m_pattern = 0;
+    if (m_externalMemoryAllocated) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(-m_externalMemoryAllocated);
+        m_externalMemoryAllocated = 0;
+    }
+}
+
+SkShader* Pattern::shader()
+{
+    if (m_pattern)
+        return m_pattern;
+
+    RefPtr<NativeImageSkia> image = m_tileImage->nativeImageForCurrentFrame();
+    // If we don't have a bitmap, return a transparent shader.
+    if (!image)
+        m_pattern = new SkColorShader(SkColorSetARGB(0, 0, 0, 0));
+    else if (m_repeatX && m_repeatY)
+        m_pattern = SkShader::CreateBitmapShader(image->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+    else {
+        // Skia does not have a "draw the tile only once" option. Clamp_TileMode
+        // repeats the last line of the image after drawing one tile. To avoid
+        // filling the space with arbitrary pixels, this workaround forces the
+        // image to have a line of transparent pixels on the "repeated" edge(s),
+        // thus causing extra space to be transparent filled.
+        SkShader::TileMode tileModeX = m_repeatX ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
+        SkShader::TileMode tileModeY = m_repeatY ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
+        int expandW = m_repeatX ? 0 : 1;
+        int expandH = m_repeatY ? 0 : 1;
+
+        // Create a transparent bitmap 1 pixel wider and/or taller than the
+        // original, then copy the orignal into it.
+        // FIXME: Is there a better way to pad (not scale) an image in skia?
+        SkBitmap bm2;
+        bm2.setConfig(image->bitmap().config(), image->bitmap().width() + expandW, image->bitmap().height() + expandH);
+        bm2.allocPixels();
+        bm2.eraseARGB(0x00, 0x00, 0x00, 0x00);
+        SkCanvas canvas(bm2);
+        canvas.drawBitmap(image->bitmap(), 0, 0);
+        bm2.setImmutable();
+        m_pattern = SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY);
+
+        // Clamp to int, since that's what the adjust function takes.
+        m_externalMemoryAllocated = static_cast<int>(std::min(static_cast<size_t>(INT_MAX), bm2.getSafeSize()));
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(m_externalMemoryAllocated);
+    }
+    m_pattern->setLocalMatrix(m_patternSpaceTransformation);
+    return m_pattern;
 }
 
 void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation)
 {
     m_patternSpaceTransformation = patternSpaceTransformation;
-    setPlatformPatternSpaceTransform();
+    if (m_pattern)
+        m_pattern->setLocalMatrix(m_patternSpaceTransformation);
 }
 
 }

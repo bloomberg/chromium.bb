@@ -2,6 +2,7 @@
  * Copyright (C) 2006, 2007, 2008 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2007-2008 Torch Mobile, Inc.
+ * Copyright (C) 2013 Google, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,13 +31,11 @@
 
 #include "AffineTransform.h"
 #include "Image.h"
+#include "SkShader.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-
-class SkShader;
-typedef SkShader* PlatformPatternPtr;
 
 namespace WebCore {
 
@@ -52,14 +51,10 @@ public:
 
     Image* tileImage() const { return m_tileImage.get(); }
 
-    void platformDestroy();
-
-    // Pattern space is an abstract space that maps to the default user space by the transformation 'userSpaceTransformation' 
-    PlatformPatternPtr platformPattern(const AffineTransform& userSpaceTransformation);
+    SkShader* shader();
 
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
     const AffineTransform& getPatternSpaceTransform() { return m_patternSpaceTransformation; };
-    void setPlatformPatternSpaceTransform();
 
     bool repeatX() const { return m_repeatX; }
     bool repeatY() const { return m_repeatY; }
@@ -71,7 +66,7 @@ private:
     bool m_repeatX;
     bool m_repeatY;
     AffineTransform m_patternSpaceTransformation;
-    PlatformPatternPtr m_pattern;
+    SkShader* m_pattern;
     int m_externalMemoryAllocated;
 };
 

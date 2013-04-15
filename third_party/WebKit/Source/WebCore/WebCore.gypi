@@ -3008,7 +3008,6 @@
             'platform/graphics/skia/NativeImageSkia.h',
             'platform/graphics/skia/OpaqueRegionSkia.cpp',
             'platform/graphics/skia/OpaqueRegionSkia.h',
-            'platform/graphics/skia/PatternSkia.cpp',
             'platform/graphics/skia/PlatformContextSkia.cpp',
             'platform/graphics/skia/PlatformContextSkia.h',
             'platform/graphics/skia/PlatformGraphics.h',
