@@ -819,12 +819,10 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueStretch || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline)
             return true;
         break;
-#if ENABLE(CSS_BOX_DECORATION_BREAK)
     case CSSPropertyWebkitBoxDecorationBreak:
          if (valueID == CSSValueClone || valueID == CSSValueSlice)
              return true;
          break;
-#endif
     case CSSPropertyWebkitBoxDirection:
         if (valueID == CSSValueNormal || valueID == CSSValueReverse)
             return true;
@@ -1069,9 +1067,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitBorderFit:
     case CSSPropertyWebkitBorderStartStyle:
     case CSSPropertyWebkitBoxAlign:
-#if ENABLE(CSS_BOX_DECORATION_BREAK)
     case CSSPropertyWebkitBoxDecorationBreak:
-#endif
     case CSSPropertyWebkitBoxDirection:
     case CSSPropertyWebkitBoxLines:
     case CSSPropertyWebkitBoxOrient:
@@ -2910,9 +2906,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitBorderFit:
     case CSSPropertyWebkitBorderStartStyle:
     case CSSPropertyWebkitBoxAlign:
-#if ENABLE(CSS_BOX_DECORATION_BREAK)
     case CSSPropertyWebkitBoxDecorationBreak:
-#endif
     case CSSPropertyWebkitBoxDirection:
     case CSSPropertyWebkitBoxLines:
     case CSSPropertyWebkitBoxOrient:

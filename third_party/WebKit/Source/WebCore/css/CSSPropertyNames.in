@@ -270,9 +270,7 @@ z-index
 -webkit-column-span
 -webkit-column-width
 -webkit-columns
-#if defined(ENABLE_CSS_BOX_DECORATION_BREAK) && ENABLE_CSS_BOX_DECORATION_BREAK
 -webkit-box-decoration-break
-#endif
 #if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
 -webkit-blend-mode
 -webkit-background-blend-mode

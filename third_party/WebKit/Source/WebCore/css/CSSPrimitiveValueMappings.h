@@ -784,7 +784,6 @@ template<> inline CSSPrimitiveValue::operator EBoxAlignment() const
     return BSTRETCH;
 }
 
-#if ENABLE(CSS_BOX_DECORATION_BREAK)
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxDecorationBreak e)
     : CSSValue(PrimitiveClass)
 {
@@ -811,7 +810,6 @@ template<> inline CSSPrimitiveValue::operator EBoxDecorationBreak() const
     ASSERT_NOT_REACHED();
     return DSLICE;
 }
-#endif
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(BackgroundEdgeOrigin e)
     : CSSValue(PrimitiveClass)
