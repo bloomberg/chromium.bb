@@ -113,6 +113,18 @@ void WebMediaStream::videoTracks(WebVector<WebMediaStreamTrack>& webTracks) cons
     webTracks.swap(result);
 }
 
+void WebMediaStream::addTrack(const WebMediaStreamTrack& track)
+{
+    ASSERT(!isNull());
+    m_private->addRemoteTrack(track);
+}
+
+void WebMediaStream::removeTrack(const WebMediaStreamTrack& track)
+{
+    ASSERT(!isNull());
+    m_private->removeRemoteTrack(track);
+}
+
 WebMediaStream& WebMediaStream::operator=(const PassRefPtr<WebCore::MediaStreamDescriptor>& mediaStreamDescriptor)
 {
     m_private = mediaStreamDescriptor;

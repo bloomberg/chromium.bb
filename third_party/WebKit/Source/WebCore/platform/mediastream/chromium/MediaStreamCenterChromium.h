@@ -67,8 +67,6 @@ public:
 
     // WebKit::WebMediaStreamCenterClient
     virtual void stopLocalMediaStream(const WebKit::WebMediaStream&) OVERRIDE;
-    virtual void addMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual void removeMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
 
 private:
     OwnPtr<WebKit::WebMediaStreamCenter> m_private;

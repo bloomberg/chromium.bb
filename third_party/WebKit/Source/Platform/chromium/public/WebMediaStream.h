@@ -76,6 +76,9 @@ public:
     WEBKIT_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
     WEBKIT_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
 
+    WEBKIT_EXPORT void addTrack(const WebMediaStreamTrack&);
+    WEBKIT_EXPORT void removeTrack(const WebMediaStreamTrack&);
+
     // DEPRECATED
     void audioSources(WebVector<WebMediaStreamTrack>& tracks) const { audioTracks(tracks); }
     void videoSources(WebVector<WebMediaStreamTrack>& tracks) const { videoTracks(tracks); }

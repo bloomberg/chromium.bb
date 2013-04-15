@@ -40,8 +40,6 @@ public:
     virtual ~WebMediaStreamCenterClient() { }
 
     virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
-    virtual void addMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
-    virtual void removeMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
 };
 
 } // namespace WebKit

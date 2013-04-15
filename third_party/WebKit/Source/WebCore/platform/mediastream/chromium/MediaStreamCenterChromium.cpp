@@ -116,16 +116,6 @@ void MediaStreamCenterChromium::stopLocalMediaStream(const WebKit::WebMediaStrea
     endLocalMediaStream(stream);
 }
 
-void MediaStreamCenterChromium::addMediaStreamTrack(const WebKit::WebMediaStream& stream, const WebKit::WebMediaStreamTrack& component)
-{
-    MediaStreamCenter::addMediaStreamTrack(stream, component);
-}
-
-void MediaStreamCenterChromium::removeMediaStreamTrack(const WebKit::WebMediaStream& stream, const WebKit::WebMediaStreamTrack& component)
-{
-    MediaStreamCenter::removeMediaStreamTrack(stream, component);
-}
-
 } // namespace WebCore
 
 #endif // ENABLE(MEDIA_STREAM)
