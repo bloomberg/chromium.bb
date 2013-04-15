@@ -65,8 +65,6 @@
         'pipe.c',
         'popen.c',
         'pselect.c',
-        'pthread_cleanup_push.c',
-        'pthread_cleanup_pop.c',
         'readlink.c',
         'remove.c',
         'rename.c',

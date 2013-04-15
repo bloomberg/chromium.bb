@@ -57,6 +57,14 @@ static const uint32_t kStackAlignment = 1;
 static const uint32_t kStackPadBelowAlign = 0;
 #endif
 
+typedef struct nc_thread_cleanup_handler {
+  struct nc_thread_cleanup_handler *previous;
+  void (*handler_function)(void *arg);
+  void *handler_arg;
+} nc_thread_cleanup_handler;
+
+static __thread nc_thread_cleanup_handler *__nc_cleanup_handlers = NULL;
+
 #define TDB_SIZE (sizeof(struct nc_combined_tdb))
 
 static inline char *align(uint32_t offset, uint32_t alignment) {
@@ -111,6 +119,16 @@ static void nc_thread_starter(void) {
   g_is_irt_internal_thread = 1;
 #endif
   void *retval = tdb->start_func(tdb->state);
+
+  /*
+   * Free handler list to prevent memory leak in case function returns
+   * without calling pthread_cleanup_pop(), although doing that is unspecified
+   * behaviour.
+   */
+  while (NULL != __nc_cleanup_handlers) {
+    pthread_cleanup_pop(0);
+  }
+
   /* If the function returns, terminate the thread. */
   pthread_exit(retval);
   /* NOTREACHED */
@@ -463,6 +481,25 @@ static int wait_for_threads(void) {
   return 0;
 }
 
+void pthread_cleanup_push(void (*routine)(void *), void *arg) {
+  nc_thread_cleanup_handler *handler =
+      (nc_thread_cleanup_handler *)malloc(sizeof(*handler));
+  handler->handler_function = routine;
+  handler->handler_arg = arg;
+  handler->previous = __nc_cleanup_handlers;
+  __nc_cleanup_handlers = handler;
+}
+
+void pthread_cleanup_pop(int execute) {
+  if (NULL != __nc_cleanup_handlers) {
+    nc_thread_cleanup_handler *handler = __nc_cleanup_handlers;
+    __nc_cleanup_handlers = handler->previous;
+    if (execute)
+      handler->handler_function(handler->handler_arg);
+    free(handler);
+  }
+}
+
 void pthread_exit(void *retval) {
   /* Get all we need from the tdb before releasing it. */
   nc_thread_descriptor_t    *tdb = nc_get_tdb();
@@ -470,6 +507,11 @@ void pthread_exit(void *retval) {
   int32_t                   *is_used = &stack_node->is_used;
   nc_basic_thread_data_t    *basic_data = tdb->basic_data;
   int                       joinable = tdb->joinable;
+
+  /* Call cleanup handlers. */
+  while (NULL != __nc_cleanup_handlers) {
+    pthread_cleanup_pop(1);
+  }
 
   /* Call the destruction functions for TSD. */
   __nc_tsd_exit();
