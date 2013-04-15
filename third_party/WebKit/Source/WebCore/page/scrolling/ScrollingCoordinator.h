@@ -89,7 +89,6 @@ public:
         HasSlowRepaintObjects = 1 << 0,
         HasViewportConstrainedObjectsWithoutSupportingFixedLayers = 1 << 1,
         HasNonLayerViewportConstrainedObjects = 1 << 2,
-        IsImageDocument = 1 << 3
     };
 
     MainThreadScrollingReasons mainThreadScrollingReasons() const;

@@ -600,8 +600,6 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
         mainThreadScrollingReasons |= HasViewportConstrainedObjectsWithoutSupportingFixedLayers;
     if (supportsFixedPositionLayers() && hasVisibleSlowRepaintViewportConstrainedObjects(frameView))
         mainThreadScrollingReasons |= HasNonLayerViewportConstrainedObjects;
-    if (m_page->mainFrame()->document()->isImageDocument())
-        mainThreadScrollingReasons |= IsImageDocument;
 
     return mainThreadScrollingReasons;
 }
@@ -621,8 +619,6 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
         stringBuilder.append("Has viewport constrained objects without supporting fixed layers, ");
     if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
         stringBuilder.append("Has non-layer viewport-constrained objects, ");
-    if (reasons & ScrollingCoordinator::IsImageDocument)
-        stringBuilder.append("Is image document, ");
 
     if (stringBuilder.length())
         stringBuilder.resize(stringBuilder.length() - 2);
