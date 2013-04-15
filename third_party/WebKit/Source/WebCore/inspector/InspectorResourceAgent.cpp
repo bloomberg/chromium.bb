@@ -264,8 +264,6 @@ void InspectorResourceAgent::didReceiveResponse(unsigned long identifier, Docume
         type = InspectorPageAgent::XHRResource;
     else if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
         type = InspectorPageAgent::ScriptResource;
-    else if (equalIgnoringFragmentIdentifier(response.url(), loader->frameLoader()->icon()->url()))
-        type = InspectorPageAgent::ImageResource;
     else if (equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
         type = InspectorPageAgent::DocumentResource;
 

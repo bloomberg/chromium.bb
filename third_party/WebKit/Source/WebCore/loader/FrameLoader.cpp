@@ -461,8 +461,6 @@ void FrameLoader::stop()
         parser->stopParsing();
         parser->finish();
     }
-    
-    icon()->stopLoader();
 }
 
 bool FrameLoader::closeURL()

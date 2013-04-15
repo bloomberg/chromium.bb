@@ -2303,17 +2303,9 @@ void Document::implicitClose()
     // onLoad event handler, as in Radar 3206524.
     detachParser();
 
-    // FIXME: We kick off the icon loader when the Document is done parsing.
-    // There are earlier opportunities we could start it:
-    //  -When the <head> finishes parsing
-    //  -When any new HTMLLinkElement is inserted into the document
-    // But those add a dynamic component to the favicon that has UI 
-    // ramifications, and we need to decide what is the Right Thing To Do(tm)
     Frame* f = frame();
-    if (f) {
-        f->loader()->icon()->startLoader();
+    if (f)
         f->animation()->resumeAnimationsForDocument(this);
-    }
 
     ImageLoader::dispatchPendingBeforeLoadEvents();
     ImageLoader::dispatchPendingLoadEvents();
