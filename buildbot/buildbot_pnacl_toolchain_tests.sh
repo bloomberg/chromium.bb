@@ -32,7 +32,7 @@ ARCHIVED_TOOLCHAIN_REV=11078
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
-readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
+readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
 readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.sh"
 
 # build.sh, llvm test suite and torture tests all use this value
@@ -409,7 +409,7 @@ tc-test-bot() {
   # for both test sets
   for arch in ${archset}; do
     echo "@@@BUILD_STEP torture_tests $arch @@@"
-    ${TORTURE_TEST} trybot-pnacl-torture ${arch} \
+    ${TORTURE_TEST} pnacl ${arch} --bot --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
