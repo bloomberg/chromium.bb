@@ -40,7 +40,7 @@ using base::WritePlatformFile;
 namespace {
 
 std::string GetFilenameForKeyAndIndex(const std::string& key, int index) {
-  return disk_cache::GetEntryHashForKey(key) +
+  return disk_cache::GetEntryHashKeyAsHexString(key) +
       base::StringPrintf("_%1d", index);
 }
 

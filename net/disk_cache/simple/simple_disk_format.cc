@@ -4,10 +4,12 @@
 
 #include "net/disk_cache/simple/simple_disk_format.h"
 
+#include "base/format_macros.h"
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/sha1.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 
 namespace disk_cache {
@@ -17,17 +19,32 @@ SimpleFileHeader::SimpleFileHeader() {
   memset(this, 0, sizeof(*this));
 }
 
-std::string GetEntryHashForKey(const std::string& key) {
+std::string ConvertEntryHashKeyToHexString(uint64 hash_key) {
+  const std::string hash_key_str = base::StringPrintf("%016" PRIx64, hash_key);
+  DCHECK_EQ(kEntryHashKeyAsHexStringSize, hash_key_str.size());
+  return hash_key_str;
+}
+
+std::string GetEntryHashKeyAsHexString(const std::string& key) {
+  std::string hash_key_str =
+      ConvertEntryHashKeyToHexString(GetEntryHashKey(key));
+  DCHECK_EQ(kEntryHashKeyAsHexStringSize, hash_key_str.size());
+  return hash_key_str;
+}
+
+bool GetEntryHashKeyFromHexString(const std::string& hash_key,
+                                  uint64* hash_key_out) {
+  if (hash_key.size() != kEntryHashKeyAsHexStringSize) {
+    return false;
+  }
+  return base::HexStringToUInt64(hash_key, hash_key_out);
+}
+
+uint64 GetEntryHashKey(const std::string& key) {
   const std::string sha_hash = base::SHA1HashString(key);
-  const std::string key_hash = base::StringPrintf(
-      "%02x%02x%02x%02x%02x",
-      implicit_cast<unsigned char>(sha_hash[0]),
-      implicit_cast<unsigned char>(sha_hash[1]),
-      implicit_cast<unsigned char>(sha_hash[2]),
-      implicit_cast<unsigned char>(sha_hash[3]),
-      implicit_cast<unsigned char>(sha_hash[4]));
-  DCHECK_EQ(static_cast<size_t>(kEntryHashKeySize), key_hash.size());
-  return key_hash;
+  uint64 hash_key = 0;
+  sha_hash.copy(reinterpret_cast<char*>(&hash_key), sizeof(hash_key));
+  return hash_key;
 }
 
 namespace SimpleIndexFile {
@@ -47,21 +64,20 @@ EntryMetadata::EntryMetadata() {
   memset(this, 0, sizeof(*this));
 }
 
-EntryMetadata::EntryMetadata(const std::string& hash_key_p,
+EntryMetadata::EntryMetadata(uint64 hash_key_p,
                              base::Time last_used_time_p,
                              uint64 entry_size_p) {
   // Make hashing repeatable: leave no padding bytes untouched.
   memset(this, 0, sizeof(*this));
 
   // Proceed with field initializations.
+  hash_key = hash_key_p;
   entry_size = entry_size_p;
   last_used_time = last_used_time_p.ToInternalValue();
-  DCHECK_EQ(kEntryHashKeySize, implicit_cast<int>(hash_key_p.size()));
-  hash_key_p.copy(hash_key, kEntryHashKeySize);
 }
 
-std::string EntryMetadata::GetHashKey() const {
-  return std::string(hash_key, kEntryHashKeySize);
+uint64 EntryMetadata::GetHashKey() const {
+  return hash_key;
 }
 
 base::Time EntryMetadata::GetLastUsedTime() const {

@@ -34,10 +34,6 @@ struct SimpleFileHeader {
   uint32 key_hash;
 };
 
-// kHashKeySize must conform to the pattern in the GetHashForKey function.
-const int kEntryHashKeySize = 10;
-std::string GetEntryHashForKey(const std::string& key);
-
 // Simple Index File sketch:
 // This is based on the struct Header and Footer as seem below, and the struct
 // alignment is platform dependent.
@@ -67,12 +63,12 @@ namespace SimpleIndexFile {
   // We must keep this struct a POD.
   struct EntryMetadata {
     EntryMetadata();
-    EntryMetadata(const std::string& hash_key_p,
+    EntryMetadata(uint64 hash_key_p,
                   base::Time last_used_time_p,
                   uint64 entry_size_p);
 
     base::Time GetLastUsedTime() const;
-    std::string GetHashKey() const;
+    uint64 GetHashKey() const;
     void SetLastUsedTime(const base::Time& last_used_time_p);
 
     // Serialize the data from |in_entry_metadata| and appends the bytes in
@@ -89,7 +85,7 @@ namespace SimpleIndexFile {
     static void Merge(const EntryMetadata& entry_metadata,
                       EntryMetadata* out_entry_metadata);
 
-    char hash_key[kEntryHashKeySize];  // Not a c_string, not null terminated.
+    uint64 hash_key;
 
     // This is the serialized format from Time::ToInternalValue().
     // If you want to make calculations/comparisons, you should use the
@@ -107,6 +103,24 @@ namespace SimpleIndexFile {
   };
 
 }  // namespace SimpleIndexFile
+
+// Size of the uint64 hash_key number in Hex format in a string.
+const size_t kEntryHashKeyAsHexStringSize = 2 * sizeof(uint64);
+
+std::string ConvertEntryHashKeyToHexString(uint64 hash_key);
+
+// |key| is the regular HTTP Cache key, which is a URL.
+// Returns the Hex ascii representation of the uint64 hash_key.
+std::string GetEntryHashKeyAsHexString(const std::string& key);
+
+// |key| is the regular HTTP Cache key, which is a URL.
+// Returns the hash of the key as uint64.
+uint64 GetEntryHashKey(const std::string& key);
+
+// Parses the |hash_key| string into a uint64 buffer.
+// |hash_key| string must be of the form: FFFFFFFFFFFFFFFF .
+bool GetEntryHashKeyFromHexString(const std::string& hash_key,
+                                  uint64* hash_key_out);
 
 }  // namespace disk_cache
 

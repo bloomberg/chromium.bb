@@ -53,11 +53,10 @@ class SimpleIndex
   bool UpdateEntrySize(const std::string& key, uint64 entry_size);
 
  private:
-  // TODO(felipeg): This way we are storing the hash_key string twice (as the
+  // TODO(felipeg): This way we are storing the hash_key twice (as the
   // hash_map::key and as a member of EntryMetadata. We could save space if we
-  // redefine the hash_map::operators and make the hash_map::key be part of the
-  // EntryMetadata itself.
-  typedef base::hash_map<std::string, SimpleIndexFile::EntryMetadata> EntrySet;
+  // use a hash_set.
+  typedef base::hash_map<uint64, SimpleIndexFile::EntryMetadata> EntrySet;
 
   typedef base::Callback<void(scoped_ptr<EntrySet>)> MergeCallback;
 
@@ -96,7 +95,7 @@ class SimpleIndex
 
   // This stores all the hash_key of entries that are removed during
   // initialization.
-  base::hash_set<std::string> removed_entries_;
+  base::hash_set<uint64> removed_entries_;
   bool initialized_;
 
   base::FilePath index_filename_;

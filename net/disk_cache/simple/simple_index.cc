@@ -18,18 +18,6 @@ namespace {
 
 const uint64 kMaxEntiresInIndex = 100000000;
 
-bool WriteHashKeyToFile(const base::PlatformFile& file,
-                        size_t offset,
-                        const std::string& hash_key) {
-  // Append the hash_key to the index file.
-  if (base::WritePlatformFile(file, offset, hash_key.data(), hash_key.size()) !=
-      implicit_cast<int>(hash_key.size())) {
-    LOG(ERROR) << "Failed to write index file.";
-    return false;
-  }
-  return true;
-}
-
 bool CheckHeader(disk_cache::SimpleIndexFile::Header header) {
   return header.number_of_entries <= kMaxEntiresInIndex &&
       header.initial_magic_number ==
@@ -64,6 +52,7 @@ SimpleIndex::SimpleIndex(
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
 }
 
 void SimpleIndex::Initialize() {
@@ -165,7 +154,7 @@ void SimpleIndex::Insert(const std::string& key) {
   // Upon insert we don't know yet the size of the entry.
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
-  const std::string hash_key = GetEntryHashForKey(key);
+  const uint64 hash_key = GetEntryHashKey(key);
   InsertInternal(&entries_set_, SimpleIndexFile::EntryMetadata(
       hash_key,
       base::Time::Now(), 0));
@@ -176,7 +165,7 @@ void SimpleIndex::Insert(const std::string& key) {
 void SimpleIndex::Remove(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   UpdateEntrySize(key, 0);
-  const std::string hash_key = GetEntryHashForKey(key);
+  const uint64 hash_key = GetEntryHashKey(key);
   entries_set_.erase(hash_key);
 
   if (!initialized_)
@@ -186,14 +175,14 @@ void SimpleIndex::Remove(const std::string& key) {
 bool SimpleIndex::Has(const std::string& key) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // If not initialized, always return true, forcing it to go to the disk.
-  return !initialized_ || entries_set_.count(GetEntryHashForKey(key)) != 0;
+  return !initialized_ || entries_set_.count(GetEntryHashKey(key)) != 0;
 }
 
 bool SimpleIndex::UseIfExists(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Always update the last used time, even if it is during initialization.
   // It will be merged later.
-  EntrySet::iterator it = entries_set_.find(GetEntryHashForKey(key));
+  EntrySet::iterator it = entries_set_.find(GetEntryHashKey(key));
   if (it == entries_set_.end())
     // If not initialized, always return true, forcing it to go to the disk.
     return !initialized_;
@@ -203,7 +192,7 @@ bool SimpleIndex::UseIfExists(const std::string& key) {
 
 bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(GetEntryHashForKey(key));
+  EntrySet::iterator it = entries_set_.find(GetEntryHashKey(key));
   if (it == entries_set_.end())
     return false;
 
@@ -221,7 +210,8 @@ void SimpleIndex::InsertInternal(
     const SimpleIndexFile::EntryMetadata& entry_metadata) {
   // TODO(felipeg): Use a hash_set instead of a hash_map.
   DCHECK(entry_set);
-  entry_set->insert(make_pair(entry_metadata.GetHashKey(), entry_metadata));
+  entry_set->insert(
+      std::make_pair(entry_metadata.GetHashKey(), entry_metadata));
 }
 
 // static
@@ -249,7 +239,15 @@ void SimpleIndex::RestoreFromDisk(
     // Converting to std::string is OK since we never use UTF8 wide chars in our
     // file names.
     const std::string hash_name(base_name.begin(), base_name.end());
-    const std::string hash_key = hash_name.substr(0, kEntryHashKeySize);
+    const std::string hash_key_string =
+        hash_name.substr(0, kEntryHashKeyAsHexStringSize);
+    uint64 hash_key = 0;
+    if (!GetEntryHashKeyFromHexString(hash_key_string, &hash_key)) {
+      LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
+                   << "Simple Index from disk: " << hash_name;
+      // TODO(felipeg): Should we delete the invalid file here ?
+      continue;
+    }
 
     FileEnumerator::FindInfo find_info = {};
     enumerator.GetFindInfo(&find_info);
@@ -283,7 +281,7 @@ void SimpleIndex::MergeInitializingSet(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // First, remove the entries that are in the |removed_entries_| from both
   // sets.
-  for (base::hash_set<std::string>::const_iterator it =
+  for (base::hash_set<uint64>::const_iterator it =
            removed_entries_.begin(); it != removed_entries_.end(); ++it) {
     entries_set_.erase(*it);
     index_file_entries->erase(*it);
@@ -320,9 +318,10 @@ void SimpleIndex::Serialize(std::string* out_buffer) {
   header.version = kSimpleVersion;
   header.number_of_entries = entries_set_.size();
 
-  out_buffer->reserve(sizeof(header) +
-                      kEntryHashKeySize * entries_set_.size() +
-                      sizeof(footer));
+  out_buffer->reserve(
+      sizeof(header) +
+      sizeof(SimpleIndexFile::EntryMetadata) * entries_set_.size() +
+      sizeof(footer));
 
   // The Header goes first.
   out_buffer->append(reinterpret_cast<const char*>(&header),
