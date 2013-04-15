@@ -241,6 +241,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |stream|. |stream| is guaranteed to be activated before the
   // producer is used to produce its frame.
   void EnqueueStreamWrite(SpdyStream* stream,
+                          SpdyFrameType frame_type,
                           scoped_ptr<SpdyFrameProducer> producer);
 
   // Creates and returns a SYN frame for |stream_id|.
@@ -422,6 +423,26 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   int GetProtocolVersion() const;
 
+  size_t GetDataFrameMinimumSize() const {
+    return buffered_spdy_framer_->GetDataFrameMinimumSize();
+  }
+
+  size_t GetControlFrameHeaderSize() const {
+    return buffered_spdy_framer_->GetControlFrameHeaderSize();
+  }
+
+  size_t GetFrameMinimumSize() const {
+    return buffered_spdy_framer_->GetFrameMinimumSize();
+  }
+
+  size_t GetFrameMaximumSize() const {
+    return buffered_spdy_framer_->GetFrameMaximumSize();
+  }
+
+  size_t GetDataFrameMaximumPayload() const {
+    return buffered_spdy_framer_->GetDataFrameMaximumPayload();
+  }
+
  private:
   friend class base::RefCounted<SpdySession>;
   friend class SpdyStreamRequest;
@@ -540,11 +561,13 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Pushes the given frame with the given priority into the write
   // queue for the session.
   void EnqueueSessionWrite(RequestPriority priority,
+                           SpdyFrameType frame_type,
                            scoped_ptr<SpdyFrame> frame);
 
   // Puts |producer| associated with |stream| onto the write queue
   // with the given priority.
   void EnqueueWrite(RequestPriority priority,
+                    SpdyFrameType frame_type,
                     scoped_ptr<SpdyFrameProducer> producer,
                     const scoped_refptr<SpdyStream>& stream);
 
@@ -736,6 +759,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // The packet we are currently sending.
   bool write_pending_;            // Will be true when a write is in progress.
   SpdyIOBuffer in_flight_write_;  // This is the write buffer in progress.
+  SpdyFrameType in_flight_write_frame_type_;
 
   // Flag if we have a pending message scheduled for WriteSocket.
   bool delayed_write_pending_;

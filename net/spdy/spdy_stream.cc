@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_stream.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -132,7 +134,9 @@ SpdyStream::SpdyStream(SpdySession* session,
       net_log_(net_log),
       send_bytes_(0),
       recv_bytes_(0),
-      domain_bound_cert_type_(CLIENT_CERT_INVALID_TYPE) {
+      domain_bound_cert_type_(CLIENT_CERT_INVALID_TYPE),
+      just_completed_frame_type_(DATA),
+      just_completed_frame_size_(0) {
 }
 
 SpdyStream::~SpdyStream() {
@@ -500,13 +504,18 @@ void SpdyStream::OnDataReceived(const char* data, size_t length) {
   }
 }
 
-// This function is only called when an entire frame is written.
-void SpdyStream::OnWriteComplete(int bytes) {
-  DCHECK_LE(0, bytes);
-  send_bytes_ += bytes;
+void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
+                                      size_t frame_size) {
+  if (frame_size < session_->GetFrameMinimumSize() ||
+      frame_size > session_->GetFrameMaximumSize()) {
+    NOTREACHED();
+    return;
+  }
   if (cancelled() || closed())
     return;
-  DoLoop(bytes);
+  just_completed_frame_type_ = frame_type;
+  just_completed_frame_size_ = frame_size;
+  DoLoop(OK);
 }
 
 int SpdyStream::GetProtocolVersion() const {
@@ -547,14 +556,15 @@ void SpdyStream::Close() {
 }
 
 int SpdyStream::SendRequest(bool has_upload_data) {
-  // Pushed streams do not send any data, and should always be in STATE_OPEN or
-  // STATE_DONE. However, we still want to return IO_PENDING to mimic non-push
-  // behavior.
+  // Pushed streams do not send any data, and should always be
+  // idle. However, we still want to return IO_PENDING to mimic
+  // non-push behavior.
   has_upload_data_ = has_upload_data;
   if (pushed_) {
-    send_time_ = base::TimeTicks::Now();
+    DCHECK(is_idle());
     DCHECK(!has_upload_data_);
     DCHECK(response_received());
+    send_time_ = base::TimeTicks::Now();
     return ERR_IO_PENDING;
   }
   CHECK_EQ(STATE_NONE, io_state_);
@@ -568,10 +578,8 @@ void SpdyStream::QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
 
-  waiting_completions_.push_back(TYPE_HEADERS);
-
   session_->EnqueueStreamWrite(
-      this,
+      this, HEADERS,
       scoped_ptr<SpdyFrameProducer>(
           new HeaderFrameProducer(
               weak_ptr_factory_.GetWeakPtr(), headers.Pass())));
@@ -591,10 +599,8 @@ void SpdyStream::QueueStreamData(IOBuffer* data,
   if (!data_frame)
     return;
 
-  waiting_completions_.push_back(TYPE_DATA);
-
   session_->EnqueueStreamWrite(
-      this,
+      this, DATA,
       scoped_ptr<SpdyFrameProducer>(
           new SimpleFrameProducer(data_frame.Pass())));
 }
@@ -646,32 +652,35 @@ int SpdyStream::DoLoop(int result) {
     switch (state) {
       // State machine 1: Send headers and body.
       case STATE_GET_DOMAIN_BOUND_CERT:
-        CHECK_EQ(OK, result);
+        CHECK_EQ(result, OK);
         result = DoGetDomainBoundCert();
         break;
       case STATE_GET_DOMAIN_BOUND_CERT_COMPLETE:
         result = DoGetDomainBoundCertComplete(result);
         break;
       case STATE_SEND_DOMAIN_BOUND_CERT:
-        CHECK_EQ(OK, result);
+        CHECK_EQ(result, OK);
         result = DoSendDomainBoundCert();
         break;
       case STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE:
-        result = DoSendDomainBoundCertComplete(result);
+        CHECK_EQ(result, OK);
+        result = DoSendDomainBoundCertComplete();
         break;
       case STATE_SEND_HEADERS:
-        CHECK_EQ(OK, result);
+        CHECK_EQ(result, OK);
         result = DoSendHeaders();
         break;
       case STATE_SEND_HEADERS_COMPLETE:
-        result = DoSendHeadersComplete(result);
+        CHECK_EQ(result, OK);
+        result = DoSendHeadersComplete();
         break;
       case STATE_SEND_BODY:
-        CHECK_EQ(OK, result);
+        CHECK_EQ(result, OK);
         result = DoSendBody();
         break;
       case STATE_SEND_BODY_COMPLETE:
-        result = DoSendBodyComplete(result);
+        CHECK_EQ(result, OK);
+        result = DoSendBodyComplete();
         break;
       // This is an intermediary waiting state. This state is reached when all
       // data has been sent, but no data has been received.
@@ -681,20 +690,21 @@ int SpdyStream::DoLoop(int result) {
         break;
       // State machine 2: connection is established.
       // In STATE_OPEN, OnResponseReceived has already been called.
-      // OnDataReceived, OnClose and OnWriteComplete can be called.
-      // Only OnWriteComplete calls DoLoop(().
+      // OnDataReceived, OnClose and OnFrameWriteComplete can be called.
+      // Only OnFrameWriteComplete calls DoLoop().
       //
       // For HTTP streams, no data is sent from the client while in the OPEN
-      // state, so OnWriteComplete is never called here.  The HTTP body is
+      // state, so OnFrameWriteComplete is never called here.  The HTTP body is
       // handled in the OnDataReceived callback, which does not call into
       // DoLoop.
       //
       // For WebSocket streams, which are bi-directional, we'll send and
       // receive data once the connection is established.  Received data is
-      // handled in OnDataReceived.  Sent data is handled in OnWriteComplete,
-      // which calls DoOpen().
+      // handled in OnDataReceived.  Sent data is handled in
+      // OnFrameWriteComplete, which calls DoOpen().
       case STATE_OPEN:
-        result = DoOpen(result);
+        CHECK_EQ(result, OK);
+        result = DoOpen();
         break;
 
       case STATE_DONE:
@@ -765,30 +775,21 @@ int SpdyStream::DoSendDomainBoundCert() {
   }
 
   DCHECK(frame);
-  // TODO(akalin): Fix a couple of race conditions:
+  // TODO(akalin): Fix the following race condition:
   //
-  // 1) Since this counts as a write for this stream, the stream will
-  // be activated (and hence allocated a stream ID) before this frame
-  // is sent, even though the ID should only be activated for the
-  // SYN_STREAM frame. This can be solved by signalling to the session
-  // when we're sending a SYN_STREAM frame, and have it only activate
-  // the stream then.
-  //
-  // 2) Since this is decoupled from sending the SYN_STREAM frame, it
-  // is possible that other domain-bound cert frames will clobber ours
+  // Since this is decoupled from sending the SYN_STREAM frame, it is
+  // possible that other domain-bound cert frames will clobber ours
   // before our SYN_STREAM frame gets sent. This can be solved by
   // immediately enqueueing the SYN_STREAM frame here and adjusting
   // the state machine appropriately.
   session_->EnqueueStreamWrite(
-      this,
+      this, CREDENTIAL,
       scoped_ptr<SpdyFrameProducer>(new SimpleFrameProducer(frame.Pass())));
   return ERR_IO_PENDING;
 }
 
-int SpdyStream::DoSendDomainBoundCertComplete(int result) {
-  if (result < 0)
-    return result;
-
+int SpdyStream::DoSendDomainBoundCertComplete() {
+  DCHECK_EQ(just_completed_frame_type_, CREDENTIAL);
   io_state_ = STATE_SEND_HEADERS;
   return OK;
 }
@@ -798,28 +799,22 @@ int SpdyStream::DoSendHeaders() {
   io_state_ = STATE_SEND_HEADERS_COMPLETE;
 
   session_->EnqueueStreamWrite(
-      this,
+      this, SYN_STREAM,
       scoped_ptr<SpdyFrameProducer>(
           new SynStreamFrameProducer(weak_ptr_factory_.GetWeakPtr())));
   return ERR_IO_PENDING;
 }
 
-int SpdyStream::DoSendHeadersComplete(int result) {
-  if (result < 0)
-    return result;
-
-  CHECK_GT(result, 0);
-
+int SpdyStream::DoSendHeadersComplete() {
+  DCHECK_EQ(just_completed_frame_type_, SYN_STREAM);
+  DCHECK_NE(stream_id_, 0u);
   if (!delegate_)
     return ERR_UNEXPECTED;
 
-  // There is no body, skip that state.
-  if (delegate_->OnSendHeadersComplete(result)) {
-    io_state_ = STATE_WAITING_FOR_RESPONSE;
-    return OK;
-  }
+  io_state_ =
+      (delegate_->OnSendHeadersComplete() == MORE_DATA_TO_SEND) ?
+      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
 
-  io_state_ = STATE_SEND_BODY;
   return OK;
 }
 
@@ -837,36 +832,72 @@ int SpdyStream::DoSendBody() {
   return delegate_->OnSendBody();
 }
 
-int SpdyStream::DoSendBodyComplete(int result) {
-  if (result < 0)
-    return result;
-
-  if (!delegate_)
+int SpdyStream::DoSendBodyComplete() {
+  if (just_completed_frame_type_ != DATA) {
+    NOTREACHED();
     return ERR_UNEXPECTED;
+  }
 
-  bool eof = false;
-  result = delegate_->OnSendBodyComplete(result, &eof);
-  if (!eof)
-    io_state_ = STATE_SEND_BODY;
-  else
-    io_state_ = STATE_WAITING_FOR_RESPONSE;
+  if (just_completed_frame_size_ < session_->GetDataFrameMinimumSize()) {
+    NOTREACHED();
+    return ERR_UNEXPECTED;
+  }
 
-  return result;
+  size_t frame_payload_size =
+      just_completed_frame_size_ - session_->GetDataFrameMinimumSize();
+  if (frame_payload_size > session_->GetDataFrameMaximumPayload()) {
+    NOTREACHED();
+    return ERR_UNEXPECTED;
+  }
+
+  if (!delegate_) {
+    NOTREACHED();
+    return ERR_UNEXPECTED;
+  }
+
+  send_bytes_ += frame_payload_size;
+
+  io_state_ =
+      (delegate_->OnSendBodyComplete(frame_payload_size) == MORE_DATA_TO_SEND) ?
+      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
+
+  return OK;
 }
 
-int SpdyStream::DoOpen(int result) {
-  if (delegate_) {
-    FrameType type = waiting_completions_.front();
-    waiting_completions_.pop_front();
-    if (type == TYPE_DATA) {
-      delegate_->OnDataSent(result);
-    } else {
-      DCHECK(type == TYPE_HEADERS);
-      delegate_->OnHeadersSent();
-    }
-  }
+int SpdyStream::DoOpen() {
   io_state_ = STATE_OPEN;
-  return result;
+
+  switch (just_completed_frame_type_) {
+    case DATA: {
+      if (just_completed_frame_size_ < session_->GetDataFrameMinimumSize()) {
+        NOTREACHED();
+        return ERR_UNEXPECTED;
+      }
+
+      size_t frame_payload_size =
+          just_completed_frame_size_ - session_->GetDataFrameMinimumSize();
+      if (frame_payload_size > session_->GetDataFrameMaximumPayload()) {
+        NOTREACHED();
+        return ERR_UNEXPECTED;
+      }
+
+      send_bytes_ += frame_payload_size;
+      if (delegate_)
+        delegate_->OnDataSent(frame_payload_size);
+      break;
+    }
+
+    case HEADERS:
+      if (delegate_)
+        delegate_->OnHeadersSent();
+      break;
+
+    default:
+      NOTREACHED();
+      return ERR_UNEXPECTED;
+  }
+
+  return OK;
 }
 
 void SpdyStream::UpdateHistograms() {

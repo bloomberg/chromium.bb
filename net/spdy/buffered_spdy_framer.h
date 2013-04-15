@@ -183,10 +183,24 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                              SpdyDataFlags flags);
   SpdyPriority GetHighestPriority() const;
 
-  // Returns the (minimum) size of control frames (sans variable-length
-  // portions).
+  size_t GetDataFrameMinimumSize() const {
+    return spdy_framer_.GetDataFrameMinimumSize();
+  }
+
   size_t GetControlFrameHeaderSize() const {
     return spdy_framer_.GetControlFrameHeaderSize();
+  }
+
+  size_t GetFrameMinimumSize() const {
+    return spdy_framer_.GetFrameMinimumSize();
+  }
+
+  size_t GetFrameMaximumSize() const {
+    return spdy_framer_.GetFrameMaximumSize();
+  }
+
+  size_t GetDataFrameMaximumPayload() const {
+    return spdy_framer_.GetDataFrameMaximumPayload();
   }
 
   int frames_received() const { return frames_received_; }

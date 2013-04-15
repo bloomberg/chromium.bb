@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
@@ -25,19 +26,21 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   SpdyWriteQueue();
   ~SpdyWriteQueue();
 
-  // Enqueues the given frame producer at the given priority
-  // associated with the given stream, which may be NULL if the frame
-  // producer is not associated with a stream. If |stream| is
-  // non-NULL, its priority must be equal to |priority|.
+  // Enqueues the given frame producer of the given type at the given
+  // priority associated with the given stream, which may be NULL if
+  // the frame producer is not associated with a stream. If |stream|
+  // is non-NULL, its priority must be equal to |priority|.
   void Enqueue(RequestPriority priority,
+               SpdyFrameType frame_type,
                scoped_ptr<SpdyFrameProducer> frame_producer,
                const scoped_refptr<SpdyStream>& stream);
 
   // Dequeues the frame producer with the highest priority that was
   // enqueued the earliest and its associated stream. Returns true and
-  // fills in |frame_producer| and |stream| if successful --
-  // otherwise, just returns false.
-  bool Dequeue(scoped_ptr<SpdyFrameProducer>* frame_producer,
+  // fills in |frame_type|, |frame_producer|, and |stream| if
+  // successful -- otherwise, just returns false.
+  bool Dequeue(SpdyFrameType* frame_type,
+               scoped_ptr<SpdyFrameProducer>* frame_producer,
                scoped_refptr<SpdyStream>* stream);
 
   // Removes all pending writes for the given stream, which must be
@@ -50,13 +53,15 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
  private:
   // A struct holding a frame producer and its associated stream.
   struct PendingWrite {
+    SpdyFrameType frame_type;
     // This has to be a raw pointer since we store this in an STL
     // container.
     SpdyFrameProducer* frame_producer;
     scoped_refptr<SpdyStream> stream;
 
     PendingWrite();
-    PendingWrite(SpdyFrameProducer* frame_producer,
+    PendingWrite(SpdyFrameType frame_type,
+                 SpdyFrameProducer* frame_producer,
                  const scoped_refptr<SpdyStream>& stream);
     ~PendingWrite();
   };

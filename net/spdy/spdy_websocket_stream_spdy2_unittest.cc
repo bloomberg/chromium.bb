@@ -85,11 +85,11 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_created_.is_null())
       on_created_.Run(&events_.back());
   }
-  virtual void OnSentSpdyHeaders(int result) OVERRIDE {
+  virtual void OnSentSpdyHeaders() OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
                                  SpdyHeaderBlock(),
-                                 result,
+                                 OK,
                                  std::string()));
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
@@ -106,12 +106,12 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
       on_received_header_.Run(&events_.back());
     return status;
   }
-  virtual void OnSentSpdyData(int amount_sent) OVERRIDE {
+  virtual void OnSentSpdyData(size_t bytes_sent) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_SENT_DATA,
             SpdyHeaderBlock(),
-            amount_sent,
+            static_cast<int>(bytes_sent),
             std::string()));
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
@@ -359,7 +359,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, Basic) {
 
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
             events[0].event_type);
-  EXPECT_LT(0, events[0].result);
+  EXPECT_EQ(OK, events[0].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
             events[1].event_type);
   EXPECT_EQ(OK, events[1].result);
@@ -431,7 +431,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionBeforeClose) {
 
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
             events[0].event_type);
-  EXPECT_LT(0, events[0].result);
+  EXPECT_EQ(OK, events[0].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
             events[1].event_type);
   EXPECT_EQ(OK, events[1].result);
@@ -493,7 +493,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionAfterExplicitClose) {
 
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
             events[0].event_type);
-  EXPECT_LT(0, events[0].result);
+  EXPECT_EQ(OK, events[0].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
             events[1].event_type);
   EXPECT_EQ(OK, events[1].result);
@@ -585,7 +585,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, IOPending) {
   EXPECT_EQ(0, events[0].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_SENT_HEADERS,
             events[1].event_type);
-  EXPECT_LT(0, events[1].result);
+  EXPECT_EQ(OK, events[1].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
             events[2].event_type);
   EXPECT_EQ(OK, events[2].result);

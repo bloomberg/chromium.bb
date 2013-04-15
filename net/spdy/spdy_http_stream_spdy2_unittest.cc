@@ -414,7 +414,7 @@ TEST_F(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPost) {
   // Complete the initial request write and the first chunk.
   deterministic_data()->RunFor(2);
   ASSERT_TRUE(callback.have_result());
-  EXPECT_GT(callback.WaitForResult(), 0);
+  EXPECT_EQ(OK, callback.WaitForResult());
 
   // Now append the final two chunks which will enqueue two more writes.
   upload_stream.AppendChunk(kUploadData1, kUploadData1Size, false);

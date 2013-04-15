@@ -88,10 +88,10 @@ void SpdyWebSocketStream::Close() {
     stream_->Close();
 }
 
-bool SpdyWebSocketStream::OnSendHeadersComplete(int status) {
+SpdySendStatus SpdyWebSocketStream::OnSendHeadersComplete() {
   DCHECK(delegate_);
-  delegate_->OnSentSpdyHeaders(status);
-  return true;
+  delegate_->OnSentSpdyHeaders();
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyWebSocketStream::OnSendBody() {
@@ -99,10 +99,9 @@ int SpdyWebSocketStream::OnSendBody() {
   return ERR_UNEXPECTED;
 }
 
-int SpdyWebSocketStream::OnSendBodyComplete(int status, bool* eof) {
+SpdySendStatus SpdyWebSocketStream::OnSendBodyComplete(size_t bytes_sent) {
   NOTREACHED();
-  *eof = true;
-  return ERR_UNEXPECTED;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyWebSocketStream::OnResponseReceived(
@@ -123,9 +122,9 @@ int SpdyWebSocketStream::OnDataReceived(const char* data, int length) {
   return OK;
 }
 
-void SpdyWebSocketStream::OnDataSent(int length) {
+void SpdyWebSocketStream::OnDataSent(size_t bytes_sent) {
   DCHECK(delegate_);
-  delegate_->OnSentSpdyData(length);
+  delegate_->OnSentSpdyData(bytes_sent);
 }
 
 void SpdyWebSocketStream::OnClose(int status) {

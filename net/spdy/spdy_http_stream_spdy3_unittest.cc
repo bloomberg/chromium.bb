@@ -4,7 +4,10 @@
 
 #include "net/spdy/spdy_http_stream.h"
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
@@ -147,6 +150,12 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
   scoped_refptr<HttpNetworkSession> http_session_;
   scoped_refptr<SpdySession> session_;
   scoped_refptr<TransportSocketParams> transport_params_;
+
+  // The SendChunkedPost test is run with SPDY/3 and SPDY/4.
+  //
+  // TODO(akalin): Find a less clunky way to do this once we unfork
+  // the SPDY tests.
+  void RunSendChunkedPostTest(int spdy_version);
 
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
@@ -304,24 +313,38 @@ TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
   TestLoadTimingReused(*http_stream2);
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
-  scoped_ptr<SpdyFrame> req(ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
-  MockWrite writes[] = {
-    CreateMockWrite(*req.get(), 0),
-    CreateMockWrite(*body, 1),  // POST upload frame
-  };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
-  MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    CreateMockRead(*body, 3),
-    MockRead(SYNCHRONOUS, 0, 4)  // EOF
-  };
+void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(int spdy_version) {
+  BufferedSpdyFramer framer(spdy_version, false);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      framer.CreateWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  scoped_ptr<SpdyFrame> req(
+      ConstructChunkedSpdyPostWithVersion(spdy_version, NULL, 0));
+  scoped_ptr<SpdyFrame> body(
+      framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
+  std::vector<MockWrite> writes;
+  int seq = 0;
+  if (spdy_version == kSpdyVersion4) {
+    writes.push_back(CreateMockWrite(*initial_window_update, seq++));
+  }
+  writes.push_back(CreateMockWrite(*req, seq++));
+  writes.push_back(CreateMockWrite(*body, seq++));  // POST upload frame
+
+  scoped_ptr<SpdyFrame> resp(
+      ConstructSpdyPostSynReplyWithVersion(spdy_version, NULL, 0));
+  std::vector<MockRead> reads;
+  reads.push_back(CreateMockRead(*resp, seq++));
+  reads.push_back(CreateMockRead(*body, seq++));
+  reads.push_back(MockRead(SYNCHRONOUS, 0, seq++));  // EOF
 
   HostPortPair host_port_pair("www.google.com", 80);
   HostPortProxyPair pair(host_port_pair, ProxyServer::Direct());
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads), writes, arraysize(writes),
+  EXPECT_EQ(OK, InitSession(vector_as_array(&reads), reads.size(),
+                            vector_as_array(&writes), writes.size(),
                             host_port_pair));
+  EXPECT_EQ(spdy_version, session_->GetProtocolVersion());
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
   const int kFirstChunkSize = kUploadDataSize/2;
@@ -363,6 +386,15 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
   EXPECT_FALSE(http_session_->spdy_session_pool()->HasSession(pair));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
+}
+
+TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
+  RunSendChunkedPostTest(kSpdyVersion3);
+}
+
+TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost4) {
+  session_deps_.enable_spdy_4 = true;
+  RunSendChunkedPostTest(kSpdyVersion4);
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
@@ -425,7 +457,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPost) {
   // Complete the initial request write and the first chunk.
   deterministic_data()->RunFor(2);
   ASSERT_TRUE(callback.have_result());
-  EXPECT_GT(callback.WaitForResult(), 0);
+  EXPECT_EQ(OK, callback.WaitForResult());
 
   // Now append the final two chunks which will enqueue two more writes.
   upload_stream.AppendChunk(kUploadData1, kUploadData1Size, false);
@@ -552,7 +584,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
   // Complete the initial request write and first chunk.
   data.RunFor(2);
   ASSERT_TRUE(callback.have_result());
-  EXPECT_GT(callback.WaitForResult(), 0);
+  EXPECT_EQ(OK, callback.WaitForResult());
 
   // Verify that the window size has decreased.
   ASSERT_TRUE(http_stream->stream() != NULL);

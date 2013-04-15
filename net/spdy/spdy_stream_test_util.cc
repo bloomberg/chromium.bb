@@ -17,17 +17,18 @@ ClosingDelegate::ClosingDelegate(
 
 ClosingDelegate::~ClosingDelegate() {}
 
-bool ClosingDelegate::OnSendHeadersComplete(int status) {
-  return true;
+SpdySendStatus ClosingDelegate::OnSendHeadersComplete() {
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int ClosingDelegate::OnSendBody() {
   return OK;
 }
 
-int ClosingDelegate::OnSendBodyComplete(int status, bool* eof) {
-  return OK;
+SpdySendStatus ClosingDelegate::OnSendBodyComplete(size_t /*bytes_sent*/) {
+  return NO_MORE_DATA_TO_SEND;
 }
+
 int ClosingDelegate::OnResponseReceived(const SpdyHeaderBlock& response,
                                         base::Time response_time,
                                         int status) {
@@ -40,7 +41,7 @@ int ClosingDelegate::OnDataReceived(const char* data, int length) {
   return OK;
 }
 
-void ClosingDelegate::OnDataSent(int length) {}
+void ClosingDelegate::OnDataSent(size_t bytes_sent) {}
 
 void ClosingDelegate::OnClose(int status) {
   if (stream_)
@@ -59,9 +60,9 @@ StreamDelegateBase::StreamDelegateBase(
 StreamDelegateBase::~StreamDelegateBase() {
 }
 
-bool StreamDelegateBase::OnSendHeadersComplete(int status) {
+SpdySendStatus StreamDelegateBase::OnSendHeadersComplete() {
   send_headers_completed_ = true;
-  return true;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int StreamDelegateBase::OnResponseReceived(const SpdyHeaderBlock& response,
@@ -81,8 +82,8 @@ int StreamDelegateBase::OnDataReceived(const char* buffer, int bytes) {
   return OK;
 }
 
-void StreamDelegateBase::OnDataSent(int length) {
-  data_sent_ += length;
+void StreamDelegateBase::OnDataSent(size_t bytes_sent) {
+  data_sent_ += bytes_sent;
 }
 
 void StreamDelegateBase::OnClose(int status) {
@@ -119,11 +120,10 @@ int StreamDelegateSendImmediate::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
   return ERR_UNEXPECTED;
 }
-int StreamDelegateSendImmediate::OnSendBodyComplete(
-    int /*status*/,
-    bool* /*eof*/) {
+SpdySendStatus StreamDelegateSendImmediate::OnSendBodyComplete(
+    size_t /*bytes_sent*/) {
   ADD_FAILURE() << "OnSendBodyComplete should not be called";
-  return ERR_UNEXPECTED;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int StreamDelegateSendImmediate::OnResponseReceived(
@@ -159,23 +159,17 @@ int StreamDelegateWithBody::OnSendBody() {
   return ERR_IO_PENDING;
 }
 
-int StreamDelegateWithBody::OnSendBodyComplete(int status, bool* eof) {
-  EXPECT_GE(status, 0);
+SpdySendStatus StreamDelegateWithBody::OnSendBodyComplete(size_t bytes_sent) {
+  EXPECT_GT(bytes_sent, 0u);
 
-  *eof = false;
-
-  if (status > 0) {
-    buf_->DidConsume(status);
-    body_data_sent_ += status;
-    if (buf_->BytesRemaining() > 0) {
-      // Go back to OnSendBody() to send the remaining data.
-      return OK;
-    }
+  buf_->DidConsume(bytes_sent);
+  body_data_sent_ += bytes_sent;
+  if (buf_->BytesRemaining() > 0) {
+    // Go back to OnSendBody() to send the remaining data.
+    return MORE_DATA_TO_SEND;
   }
 
-  // Check if the entire body data has been sent.
-  *eof = (buf_->BytesRemaining() == 0);
-  return status;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 } // namespace test

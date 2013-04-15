@@ -79,10 +79,10 @@ class NET_EXPORT WebSocketJob
 
   // SpdyWebSocketStream::Delegate methods.
   virtual void OnCreatedSpdyStream(int status) OVERRIDE;
-  virtual void OnSentSpdyHeaders(int status) OVERRIDE;
+  virtual void OnSentSpdyHeaders() OVERRIDE;
   virtual int OnReceivedSpdyResponseHeader(
       const SpdyHeaderBlock& headers, int status) OVERRIDE;
-  virtual void OnSentSpdyData(int amount_sent) OVERRIDE;
+  virtual void OnSentSpdyData(size_t bytes_sent) OVERRIDE;
   virtual void OnReceivedSpdyData(const char* data, int length) OVERRIDE;
   virtual void OnCloseSpdyStream() OVERRIDE;
 

@@ -488,6 +488,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetWindowUpdateSize() const;
   size_t GetCredentialMinimumSize() const;
 
+  // Returns the minimum size a frame can be (data or control).
+  size_t GetFrameMinimumSize() const;
+
+  // Returns the maximum size a frame can be (data or control).
+  size_t GetFrameMaximumSize() const;
+
   // Returns the maximum payload size of a DATA frame.
   size_t GetDataFrameMaximumPayload() const;
 

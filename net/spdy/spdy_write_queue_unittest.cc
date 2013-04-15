@@ -78,25 +78,32 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   scoped_refptr<SpdyStream> stream_medium(MakeTestStream(MEDIUM));
   scoped_refptr<SpdyStream> stream_highest(MakeTestStream(HIGHEST));
 
-  write_queue.Enqueue(LOW, producer_low.Pass(), stream_low);
-  write_queue.Enqueue(MEDIUM, producer_medium.Pass(), stream_medium);
-  write_queue.Enqueue(HIGHEST, producer_highest.Pass(), stream_highest);
+  write_queue.Enqueue(
+      LOW, SYN_STREAM, producer_low.Pass(), stream_low);
+  write_queue.Enqueue(
+      MEDIUM, SYN_REPLY, producer_medium.Pass(), stream_medium);
+  write_queue.Enqueue(
+      HIGHEST, RST_STREAM, producer_highest.Pass(), stream_highest);
 
+  SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyFrameProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(RST_STREAM, frame_type);
   EXPECT_EQ("HIGHEST", ProducerToString(frame_producer.Pass()));
   EXPECT_EQ(stream_highest, stream);
 
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(SYN_REPLY, frame_type);
   EXPECT_EQ("MEDIUM", ProducerToString(frame_producer.Pass()));
   EXPECT_EQ(stream_medium, stream);
 
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ("LOW", ProducerToString(frame_producer.Pass()));
   EXPECT_EQ(stream_low, stream);
 
-  EXPECT_FALSE(write_queue.Dequeue(&frame_producer, &stream));
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
 // Add some frame producers with the same priority. The producers
@@ -112,25 +119,29 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   scoped_refptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
   scoped_refptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
 
-  write_queue.Enqueue(DEFAULT_PRIORITY, producer1.Pass(), stream1);
-  write_queue.Enqueue(DEFAULT_PRIORITY, producer2.Pass(), stream2);
-  write_queue.Enqueue(DEFAULT_PRIORITY, producer3.Pass(), stream3);
+  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, producer1.Pass(), stream1);
+  write_queue.Enqueue(DEFAULT_PRIORITY, SYN_REPLY, producer2.Pass(), stream2);
+  write_queue.Enqueue(DEFAULT_PRIORITY, RST_STREAM, producer3.Pass(), stream3);
 
+  SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyFrameProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ(1, ProducerToInt(frame_producer.Pass()));
   EXPECT_EQ(stream1, stream);
 
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(SYN_REPLY, frame_type);
   EXPECT_EQ(2, ProducerToInt(frame_producer.Pass()));
   EXPECT_EQ(stream2, stream);
 
-  ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+  EXPECT_EQ(RST_STREAM, frame_type);
   EXPECT_EQ(3, ProducerToInt(frame_producer.Pass()));
   EXPECT_EQ(stream3, stream);
 
-  EXPECT_FALSE(write_queue.Dequeue(&frame_producer, &stream));
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
 // Enqueue a bunch of writes and then call
@@ -144,22 +155,25 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 
   for (int i = 0; i < 100; ++i) {
     scoped_refptr<SpdyStream> stream = ((i % 3) == 0) ? stream1 : stream2;
-    write_queue.Enqueue(DEFAULT_PRIORITY, IntToProducer(i), stream);
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), stream);
   }
 
   write_queue.RemovePendingWritesForStream(stream2);
 
   for (int i = 0; i < 100; i += 3) {
+    SpdyFrameType frame_type = DATA;
     scoped_ptr<SpdyFrameProducer> frame_producer;
     scoped_refptr<SpdyStream> stream;
-    ASSERT_TRUE(write_queue.Dequeue(&frame_producer, &stream));
+    ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+    EXPECT_EQ(SYN_STREAM, frame_type);
     EXPECT_EQ(i, ProducerToInt(frame_producer.Pass()));
     EXPECT_EQ(stream1, stream);
   }
 
+  SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyFrameProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
-  EXPECT_FALSE(write_queue.Dequeue(&frame_producer, &stream));
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
 // Enqueue a bunch of writes and then call Clear(). The write queue
@@ -169,14 +183,15 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   SpdyWriteQueue write_queue;
 
   for (int i = 0; i < 100; ++i) {
-    write_queue.Enqueue(DEFAULT_PRIORITY, IntToProducer(i), NULL);
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), NULL);
   }
 
   write_queue.Clear();
 
+  SpdyFrameType frame_type = DATA;
   scoped_ptr<SpdyFrameProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
-  EXPECT_FALSE(write_queue.Dequeue(&frame_producer, &stream));
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
 }

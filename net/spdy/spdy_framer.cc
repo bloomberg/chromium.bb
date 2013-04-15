@@ -253,11 +253,16 @@ size_t SpdyFramer::GetCredentialMinimumSize() const {
   return GetControlFrameHeaderSize() + 2;
 }
 
+size_t SpdyFramer::GetFrameMinimumSize() const {
+  return std::min(GetDataFrameMinimumSize(), GetControlFrameHeaderSize());
+}
+
+size_t SpdyFramer::GetFrameMaximumSize() const {
+  return (protocol_version() < 4) ? 0xffffff : 0xffff;
+}
+
 size_t SpdyFramer::GetDataFrameMaximumPayload() const {
-  if (protocol_version() < 4) {
-    return 0xffffff - GetDataFrameMinimumSize();
-  }
-  return 0xffff - GetDataFrameMinimumSize();
+  return GetFrameMaximumSize() - GetDataFrameMinimumSize();
 }
 
 const char* SpdyFramer::StateToString(int state) {

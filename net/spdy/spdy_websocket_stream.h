@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
 
     // Called on corresponding to OnSendHeadersComplete() or SPDY's SYN frame
     // has been sent.
-    virtual void OnSentSpdyHeaders(int status) = 0;
+    virtual void OnSentSpdyHeaders() = 0;
 
     // Called on corresponding to OnResponseReceived() or SPDY's SYN_STREAM,
     // SYN_REPLY, or HEADERS frames are received. This callback may be called
@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
         int status) = 0;
 
     // Called when data is sent.
-    virtual void OnSentSpdyData(int amount_sent) = 0;
+    virtual void OnSentSpdyData(size_t bytes_sent) = 0;
 
     // Called when data is received.
     virtual void OnReceivedSpdyData(const char* data, int length) = 0;
@@ -74,15 +74,15 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   void Close();
 
   // SpdyStream::Delegate
-  virtual bool OnSendHeadersComplete(int status) OVERRIDE;
+  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual int OnSendBody() OVERRIDE;
-  virtual int OnSendBodyComplete(int status, bool* eof) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
   virtual int OnDataReceived(const char* data, int length) OVERRIDE;
-  virtual void OnDataSent(int length) OVERRIDE;
+  virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
  private:

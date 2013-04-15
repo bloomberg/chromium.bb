@@ -311,6 +311,7 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
       read_pending_(false),
       stream_hi_water_mark_(kFirstStreamId),
       write_pending_(false),
+      in_flight_write_frame_type_(DATA),
       delayed_write_pending_(false),
       is_secure_(false),
       certificate_error_code_(OK),
@@ -633,8 +634,13 @@ int SpdySession::GetProtocolVersion() const {
 
 void SpdySession::EnqueueStreamWrite(
     SpdyStream* stream,
+    SpdyFrameType frame_type,
     scoped_ptr<SpdyFrameProducer> producer) {
-  EnqueueWrite(stream->priority(), producer.Pass(), stream);
+  DCHECK(frame_type == HEADERS ||
+         frame_type == DATA ||
+         frame_type == CREDENTIAL ||
+         frame_type == SYN_STREAM);
+  EnqueueWrite(stream->priority(), frame_type, producer.Pass(), stream);
 }
 
 scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
@@ -843,7 +849,7 @@ void SpdySession::ResetStream(SpdyStreamId stream_id,
     scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
     priority = stream->priority();
   }
-  EnqueueSessionWrite(priority, rst_frame.Pass());
+  EnqueueSessionWrite(priority, RST_STREAM, rst_frame.Pass());
   RecordProtocolErrorHistogram(
       static_cast<SpdyProtocolErrorDetails>(status + STATUS_CODE_INVALID));
   DeleteStream(stream_id, ERR_SPDY_PROTOCOL_ERROR);
@@ -923,6 +929,7 @@ void SpdySession::OnWriteComplete(int result) {
 
   if (result < 0) {
     in_flight_write_.Release();
+    in_flight_write_frame_type_ = DATA;
     CloseSessionOnError(static_cast<net::Error>(result), true, "Write error");
     return;
   }
@@ -942,21 +949,15 @@ void SpdySession::OnWriteComplete(int result) {
     // It is possible that the stream was cancelled while we were writing
     // to the socket.
     if (stream && !stream->cancelled()) {
-      // Report the number of bytes written to the caller, but exclude the
-      // frame size overhead.  NOTE: if this frame was compressed the
-      // reported bytes written is the compressed size, not the original
-      // size.
-      result = in_flight_write_.buffer()->size();
-      DCHECK_GE(result,
-                static_cast<int>(
-                    buffered_spdy_framer_->GetControlFrameHeaderSize()));
-      result -= buffered_spdy_framer_->GetControlFrameHeaderSize();
-
-      stream->OnWriteComplete(result);
+      DCHECK_GT(in_flight_write_.buffer()->size(), 0);
+      stream->OnFrameWriteComplete(
+          in_flight_write_frame_type_,
+          static_cast<size_t>(in_flight_write_.buffer()->size()));
     }
 
     // Cleanup the write which just completed.
     in_flight_write_.Release();
+    in_flight_write_frame_type_ = DATA;
   }
 
   // Write more data.  We're already in a continuation, so we can go
@@ -1038,9 +1039,10 @@ void SpdySession::WriteSocket() {
       DCHECK_GT(in_flight_write_.buffer()->BytesRemaining(), 0);
     } else {
       // Grab the next frame to send.
+      SpdyFrameType frame_type = DATA;
       scoped_ptr<SpdyFrameProducer> producer;
       scoped_refptr<SpdyStream> stream;
-      if (!write_queue_.Dequeue(&producer, &stream))
+      if (!write_queue_.Dequeue(&frame_type, &producer, &stream))
         break;
 
       // It is possible that a stream had data to write, but a
@@ -1051,8 +1053,16 @@ void SpdySession::WriteSocket() {
       if (stream.get() && stream->cancelled())
         continue;
 
-      if (stream.get() && stream->stream_id() == 0)
-        ActivateStream(stream);
+      // Activate the stream only when sending the SYN_STREAM frame to
+      // guarantee monotonically-increasing stream IDs.
+      if (frame_type == SYN_STREAM) {
+        if (stream.get() && stream->stream_id() == 0) {
+          ActivateStream(stream);
+        } else {
+          NOTREACHED();
+          continue;
+        }
+      }
 
       scoped_ptr<SpdyFrame> frame = producer->ProduceFrame();
       if (!frame) {
@@ -1066,6 +1076,7 @@ void SpdySession::WriteSocket() {
           new IOBufferWithSize(frame->size());
       memcpy(buffer->data(), frame->data(), frame->size());
       in_flight_write_ = SpdyIOBuffer(buffer, frame->size(), stream);
+      in_flight_write_frame_type_ = frame_type;
     }
 
     write_pending_ = true;
@@ -1250,17 +1261,23 @@ int SpdySession::GetLocalAddress(IPEndPoint* address) const {
 }
 
 void SpdySession::EnqueueSessionWrite(RequestPriority priority,
+                                      SpdyFrameType frame_type,
                                       scoped_ptr<SpdyFrame> frame) {
+  DCHECK(frame_type == RST_STREAM ||
+         frame_type == SETTINGS ||
+         frame_type == WINDOW_UPDATE ||
+         frame_type == PING);
   EnqueueWrite(
-      priority,
+      priority, frame_type,
       scoped_ptr<SpdyFrameProducer>(new SimpleFrameProducer(frame.Pass())),
       NULL);
 }
 
 void SpdySession::EnqueueWrite(RequestPriority priority,
+                               SpdyFrameType frame_type,
                                scoped_ptr<SpdyFrameProducer> producer,
                                const scoped_refptr<SpdyStream>& stream) {
-  write_queue_.Enqueue(priority, producer.Pass(), stream);
+  write_queue_.Enqueue(priority, frame_type, producer.Pass(), stream);
   WriteSocketLater();
 }
 
@@ -1885,7 +1902,7 @@ void SpdySession::SendSettings(const SettingsMap& settings) {
   scoped_ptr<SpdyFrame> settings_frame(
       buffered_spdy_framer_->CreateSettings(settings));
   sent_settings_ = true;
-  EnqueueSessionWrite(HIGHEST, settings_frame.Pass());
+  EnqueueSessionWrite(HIGHEST, SETTINGS, settings_frame.Pass());
 }
 
 void SpdySession::HandleSetting(uint32 id, uint32 value) {
@@ -1973,14 +1990,14 @@ void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> window_update_frame(
       buffered_spdy_framer_->CreateWindowUpdate(stream_id, delta_window_size));
-  EnqueueSessionWrite(priority, window_update_frame.Pass());
+  EnqueueSessionWrite(priority, WINDOW_UPDATE, window_update_frame.Pass());
 }
 
 void SpdySession::WritePingFrame(uint32 unique_id) {
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> ping_frame(
       buffered_spdy_framer_->CreatePingFrame(unique_id));
-  EnqueueSessionWrite(HIGHEST, ping_frame.Pass());
+  EnqueueSessionWrite(HIGHEST, PING, ping_frame.Pass());
 
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(

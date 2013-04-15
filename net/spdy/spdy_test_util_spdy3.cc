@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -117,9 +118,11 @@ scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
   return header_block.Pass();
 }
 
-SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
-                              scoped_ptr<SpdyHeaderBlock> headers) {
-  BufferedSpdyFramer framer(kSpdyVersion3, header_info.compressed);
+SpdyFrame* ConstructSpdyFrameWithVersion(int spdy_version,
+                                         const SpdyHeaderInfo& header_info,
+                                         scoped_ptr<SpdyHeaderBlock> headers) {
+  DCHECK(spdy_version == kSpdyVersion3 || spdy_version == kSpdyVersion4);
+  BufferedSpdyFramer framer(spdy_version, header_info.compressed);
   SpdyFrame* frame = NULL;
   switch (header_info.kind) {
     case DATA:
@@ -150,6 +153,12 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
       break;
   }
   return frame;
+}
+
+SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
+                              scoped_ptr<SpdyHeaderBlock> headers) {
+  return ConstructSpdyFrameWithVersion(
+      kSpdyVersion3, header_info, headers.Pass());
 }
 
 SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
@@ -251,6 +260,42 @@ int ConstructSpdyHeader(const char* const extra_headers[],
   return n;
 }
 
+SpdyFrame* ConstructSpdyControlFrameWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count,
+    bool compressed,
+    int stream_id,
+    RequestPriority request_priority,
+    SpdyFrameType type,
+    SpdyControlFlags flags,
+    const char* const* kHeaders,
+    int kHeadersSize,
+    SpdyStreamId associated_stream_id) {
+  EXPECT_GE(type, FIRST_CONTROL_TYPE);
+  EXPECT_LE(type, LAST_CONTROL_TYPE);
+  const SpdyHeaderInfo kSynStartHeader = {
+    type,                         // Kind = Syn
+    stream_id,                    // Stream ID
+    associated_stream_id,         // Associated stream ID
+    ConvertRequestPriorityToSpdyPriority(request_priority, 3),
+                                  // Priority
+    0,                            // Credential Slot
+    flags,                        // Control Flags
+    compressed,                   // Compressed
+    RST_STREAM_INVALID,           // Status
+    NULL,                         // Data
+    0,                            // Length
+    DATA_FLAG_NONE                // Data Flags
+  };
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
+  AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
+  if (kHeaders && kHeadersSize)
+    AppendToHeaderBlock(kHeaders, kHeadersSize / 2, headers.get());
+  return ConstructSpdyFrameWithVersion(
+      spdy_version, kSynStartHeader, headers.Pass());
+}
+
 SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      int extra_header_count,
                                      bool compressed,
@@ -284,27 +329,17 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      const char* const* kHeaders,
                                      int kHeadersSize,
                                      SpdyStreamId associated_stream_id) {
-  EXPECT_GE(type, FIRST_CONTROL_TYPE);
-  EXPECT_LE(type, LAST_CONTROL_TYPE);
-  const SpdyHeaderInfo kSynStartHeader = {
-    type,                         // Kind = Syn
-    stream_id,                    // Stream ID
-    associated_stream_id,         // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(request_priority, 3),
-                                  // Priority
-    0,                            // Credential Slot
-    flags,                        // Control Flags
-    compressed,                   // Compressed
-    RST_STREAM_INVALID,           // Status
-    NULL,                         // Data
-    0,                            // Length
-    DATA_FLAG_NONE                // Data Flags
-  };
-  return ConstructSpdyFrame(kSynStartHeader,
-                            extra_headers,
-                            extra_header_count,
-                            kHeaders,
-                            kHeadersSize / 2);
+  return ConstructSpdyControlFrameWithVersion(kSpdyVersion3,
+                                              extra_headers,
+                                              extra_header_count,
+                                              compressed,
+                                              stream_id,
+                                              request_priority,
+                                              type,
+                                              flags,
+                                              kHeaders,
+                                              kHeadersSize,
+                                              associated_stream_id);
 }
 
 // Constructs a standard SPDY GET SYN frame, optionally compressed
@@ -591,12 +626,10 @@ SpdyFrame* ConstructSpdyPost(const char* url,
       kSynStartHeader, ConstructPostHeaderBlock(url, content_length));
 }
 
-// Constructs a chunked transfer SPDY POST SYN frame.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
-                                    int extra_header_count) {
+SpdyFrame* ConstructChunkedSpdyPostWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count) {
   const char* post_headers[] = {
     ":method", "POST",
     ":path", "/",
@@ -604,38 +637,55 @@ SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
     ":scheme", "http",
     ":version", "HTTP/1.1"
   };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   false,
-                                   1,
-                                   LOWEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   post_headers,
-                                   arraysize(post_headers));
+  return ConstructSpdyControlFrameWithVersion(spdy_version,
+                                              extra_headers,
+                                              extra_header_count,
+                                              false,
+                                              1,
+                                              LOWEST,
+                                              SYN_STREAM,
+                                              CONTROL_FLAG_NONE,
+                                              post_headers,
+                                              arraysize(post_headers),
+                                              0);
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
-                                     int extra_header_count) {
+SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
+                                    int extra_header_count) {
+  return ConstructChunkedSpdyPostWithVersion(kSpdyVersion3,
+                                             extra_headers,
+                                             extra_header_count);
+}
+
+SpdyFrame* ConstructSpdyPostSynReplyWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count) {
   static const char* const kStandardGetHeaders[] = {
     "hello", "bye",
     ":status", "200",
     "url", "/index.php",
     ":version", "HTTP/1.1"
   };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   false,
-                                   1,
-                                   LOWEST,
-                                   SYN_REPLY,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
+  return ConstructSpdyControlFrameWithVersion(
+      spdy_version,
+      extra_headers,
+      extra_header_count,
+      false,
+      1,
+      LOWEST,
+      SYN_REPLY,
+      CONTROL_FLAG_NONE,
+      kStandardGetHeaders,
+      arraysize(kStandardGetHeaders),
+      0);
+}
+
+SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
+                                     int extra_header_count) {
+  return ConstructSpdyPostSynReplyWithVersion(kSpdyVersion3,
+                                              extra_headers,
+                                              extra_header_count);
 }
 
 // Constructs a single SPDY data frame with the default contents.

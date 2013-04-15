@@ -34,6 +34,13 @@ class IPEndPoint;
 class SSLCertRequestInfo;
 class SSLInfo;
 
+// Returned by some SpdyStream::Delegate functions to indicate whether
+// there's more data to send.
+enum SpdySendStatus {
+  MORE_DATA_TO_SEND,
+  NO_MORE_DATA_TO_SEND
+};
+
 // The SpdyStream is used by the SpdySession to represent each stream known
 // on the SpdySession.  This class provides interfaces for SpdySession to use.
 // Streams can be created either by the client or by the server.  When they
@@ -51,18 +58,17 @@ class NET_EXPORT_PRIVATE SpdyStream
 
     // Called when SYN frame has been sent.
     // Returns true if no more data to be sent after SYN frame.
-    virtual bool OnSendHeadersComplete(int status) = 0;
+    virtual SpdySendStatus OnSendHeadersComplete() = 0;
 
     // Called when stream is ready to send data.
     // Returns network error code. OK when it successfully sent data.
     // ERR_IO_PENDING when performing operation asynchronously.
     virtual int OnSendBody() = 0;
 
-    // Called when data has been sent. |status| indicates network error
-    // or number of bytes that has been sent. On return, |eof| is set to true
-    // if no more data is available to send in the request body.
-    // Returns network error code. OK when it successfully sent data.
-    virtual int OnSendBodyComplete(int status, bool* eof) = 0;
+    // Called when body data has been sent. |bytes_sent| is the number
+    // of bytes that has been sent (may be zero). Must return whether
+    // there's more body data to send.
+    virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) = 0;
 
     // Called when the SYN_STREAM, SYN_REPLY, or HEADERS frames are received.
     // Normal streams will receive a SYN_REPLY and optional HEADERS frames.
@@ -82,7 +88,7 @@ class NET_EXPORT_PRIVATE SpdyStream
     virtual int OnDataReceived(const char* data, int length) = 0;
 
     // Called when data is sent.
-    virtual void OnDataSent(int length) = 0;
+    virtual void OnDataSent(size_t bytes_sent) = 0;
 
     // Called when SpdyStream is closed. No other delegate functions
     // will be called after this is called, and the delegate must not
@@ -94,12 +100,6 @@ class NET_EXPORT_PRIVATE SpdyStream
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  // Indicates pending frame type.
-  enum FrameType {
-    TYPE_HEADERS,
-    TYPE_DATA
   };
 
   // SpdyStream constructor
@@ -220,11 +220,10 @@ class NET_EXPORT_PRIVATE SpdyStream
   //          the stream is being closed.
   void OnDataReceived(const char* buffer, size_t length);
 
-  // Called by the SpdySession when a write has completed.  This callback
-  // will be called multiple times for each write which completes.  Writes
-  // include the SYN_STREAM write and also DATA frame writes.
-  // |result| is the number of bytes written or a net error code.
-  void OnWriteComplete(int bytes);
+  // Called by the SpdySession when a frame has been successfully and
+  // completely written. |frame_size| is the total size of the frame
+  // in bytes, including framing overhead.
+  void OnFrameWriteComplete(SpdyFrameType frame_type, size_t frame_size);
 
   // Called by the SpdySession when the request is finished.  This callback
   // will always be called at the end of the request and signals to the
@@ -321,14 +320,14 @@ class NET_EXPORT_PRIVATE SpdyStream
   int DoGetDomainBoundCert();
   int DoGetDomainBoundCertComplete(int result);
   int DoSendDomainBoundCert();
-  int DoSendDomainBoundCertComplete(int result);
+  int DoSendDomainBoundCertComplete();
   int DoSendHeaders();
-  int DoSendHeadersComplete(int result);
+  int DoSendHeadersComplete();
   int DoSendBody();
-  int DoSendBodyComplete(int result);
+  int DoSendBodyComplete();
   int DoReadHeaders();
   int DoReadHeadersComplete(int result);
-  int DoOpen(int result);
+  int DoOpen();
 
   // Update the histograms.  Can safely be called repeatedly, but should only
   // be called after the stream has completed.
@@ -391,14 +390,6 @@ class NET_EXPORT_PRIVATE SpdyStream
   scoped_ptr<SpdyHeaderBlock> response_;
   base::Time response_time_;
 
-  // An in order list of sending frame types. Used communicate to the
-  // delegate which type of frame was sent in DoOpen().
-  //
-  // TODO(akalin): We can remove the need for this queue if we add an
-  // OnFrameSent() callback to SpdyFrameProducer and have the session
-  // call that instead of SpdyStream::OnWriteComplete().
-  std::deque<FrameType> waiting_completions_;
-
   State io_state_;
 
   // Since we buffer the response, we also buffer the response status.
@@ -413,8 +404,12 @@ class NET_EXPORT_PRIVATE SpdyStream
   base::TimeTicks send_time_;
   base::TimeTicks recv_first_byte_time_;
   base::TimeTicks recv_last_byte_time_;
+
+  // Number of data bytes that have been sent/received on this stream, not
+  // including frame overhead. Note that this does not count headers.
   int send_bytes_;
   int recv_bytes_;
+
   // Data received before delegate is attached.
   std::vector<scoped_refptr<IOBufferWithSize> > pending_buffers_;
 
@@ -422,6 +417,10 @@ class NET_EXPORT_PRIVATE SpdyStream
   std::string domain_bound_private_key_;
   std::string domain_bound_cert_;
   ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;
+
+  // When OnFrameWriteComplete() is called, these variables are set.
+  SpdyFrameType just_completed_frame_type_;
+  size_t just_completed_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStream);
 };

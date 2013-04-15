@@ -3516,6 +3516,9 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
     EXPECT_EQ(6u, framer.GetCredentialMinimumSize());
+    EXPECT_EQ(4u, framer.GetFrameMinimumSize());
+    EXPECT_EQ(65535u, framer.GetFrameMaximumSize());
+    EXPECT_EQ(65527u, framer.GetDataFrameMaximumPayload());
   } else {
     EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
     EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
@@ -3527,6 +3530,9 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(16u, framer.GetWindowUpdateSize());
     EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
+    EXPECT_EQ(8u, framer.GetFrameMinimumSize());
+    EXPECT_EQ(16777215u, framer.GetFrameMaximumSize());
+    EXPECT_EQ(16777207u, framer.GetDataFrameMaximumPayload());
   }
 }
 

@@ -295,7 +295,7 @@ void WebSocketJob::OnCreatedSpdyStream(int result) {
   CompleteIO(result);
 }
 
-void WebSocketJob::OnSentSpdyHeaders(int result) {
+void WebSocketJob::OnSentSpdyHeaders() {
   DCHECK_NE(INITIALIZED, state_);
   if (state_ != CONNECTING)
     return;
@@ -320,14 +320,14 @@ int WebSocketJob::OnReceivedSpdyResponseHeader(
   return OK;
 }
 
-void WebSocketJob::OnSentSpdyData(int amount_sent) {
+void WebSocketJob::OnSentSpdyData(size_t bytes_sent) {
   DCHECK_NE(INITIALIZED, state_);
   DCHECK_NE(CONNECTING, state_);
   if (state_ == CLOSED)
     return;
   if (!spdy_websocket_stream_.get())
     return;
-  OnSentData(socket_, amount_sent);
+  OnSentData(socket_, static_cast<int>(bytes_sent));
 }
 
 void WebSocketJob::OnReceivedSpdyData(const char* data, int length) {

@@ -477,14 +477,14 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 // SpdyStream::Delegate methods:
 // Called when SYN frame has been sent.
 // Returns true if no more data to be sent after SYN frame.
-bool SpdyProxyClientSocket::OnSendHeadersComplete(int status) {
+SpdySendStatus SpdyProxyClientSocket::OnSendHeadersComplete() {
   DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
 
-  OnIOComplete(status);
+  OnIOComplete(OK);
 
   // We return true here so that we send |spdy_stream_| into
   // STATE_OPEN (ala WebSockets).
-  return true;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyProxyClientSocket::OnSendBody() {
@@ -494,11 +494,12 @@ int SpdyProxyClientSocket::OnSendBody() {
   return ERR_UNEXPECTED;
 }
 
-int SpdyProxyClientSocket::OnSendBodyComplete(int /*status*/, bool* /*eof*/) {
+SpdySendStatus SpdyProxyClientSocket::OnSendBodyComplete(
+    size_t /*bytes_sent*/) {
   // Because we use |spdy_stream_| via STATE_OPEN (ala WebSockets)
   // OnSendBodyComplete() should never be called.
   NOTREACHED();
-  return ERR_UNEXPECTED;
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyProxyClientSocket::OnResponseReceived(
@@ -547,12 +548,11 @@ int SpdyProxyClientSocket::OnDataReceived(const char* data, int length) {
   return OK;
 }
 
-void SpdyProxyClientSocket::OnDataSent(int length)  {
+void SpdyProxyClientSocket::OnDataSent(size_t bytes_sent)  {
   DCHECK(!write_callback_.is_null());
 
-  write_bytes_outstanding_ -= length;
-
-  DCHECK_GE(write_bytes_outstanding_, 0);
+  DCHECK_LE(static_cast<int>(bytes_sent), write_bytes_outstanding_);
+  write_bytes_outstanding_ -= static_cast<int>(bytes_sent);
 
   if (write_bytes_outstanding_ == 0) {
     int rv = write_buffer_len_;

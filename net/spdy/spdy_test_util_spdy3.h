@@ -38,6 +38,10 @@ namespace test_spdy3 {
 
 // NOTE: In GCC, on a Mac, this can't be in an anonymous namespace!
 // This struct holds information used to construct spdy control and data frames.
+//
+// TODO(akalin): Combine this struct with
+// test_spdy2::SpdyHeaderInfo. (This only adds the |credential_slot|
+// field).
 struct SpdyHeaderInfo {
   SpdyFrameType kind;
   SpdyStreamId id;
@@ -91,6 +95,15 @@ scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url);
 scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(base::StringPiece url,
                                                      int64 content_length);
 
+// Construct a SPDY frame. |spdy_version| must be kSpdyVersion3 or
+// kSpdyVersion4.
+//
+// TODO(akalin): Move this to a common area once the SpdyHeaderInfo
+// struct is shared between the SPDY2 and SPDY3 tests.
+SpdyFrame* ConstructSpdyFrameWithVersion(int spdy_version,
+                                         const SpdyHeaderInfo& header_info,
+                                         scoped_ptr<SpdyHeaderBlock> headers);
+
 // Construct a SPDY frame.
 SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
                               scoped_ptr<SpdyHeaderBlock> headers);
@@ -106,7 +119,25 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
                               const char* const tail[],
                               int tail_header_count);
 
-// Construct a generic SpdyControlFrame.
+// Construct a SPDY control frame. |spdy_version| must be
+// kSpdyVersion3 or kSpdyVersion4.
+//
+// TODO(akalin): Move this to a common area once
+// ConstructSpdyFrameWithVersion() is also moved.
+SpdyFrame* ConstructSpdyControlFrameWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count,
+    bool compressed,
+    int stream_id,
+    RequestPriority request_priority,
+    SpdyFrameType type,
+    SpdyControlFlags flags,
+    const char* const* kHeaders,
+    int kHeadersSize,
+    SpdyStreamId associated_stream_id);
+
+// Construct a generic SPDY control frame.
 SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      int extra_header_count,
                                      bool compressed,
@@ -278,11 +309,37 @@ SpdyFrame* ConstructSpdyPost(const char* url,
                              int extra_header_count);
 
 // Constructs a chunked transfer SPDY POST SYN frame.
+// |spdy_version| must be kSpdyVersion3 or kSpdyVersion4.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+//
+// TODO(akalin): Move this to a common area once
+// ConstructSpdyControlFrame() is also moved.
+SpdyFrame* ConstructChunkedSpdyPostWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count);
+
+// Constructs a chunked transfer SPDY POST SYN frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                     int extra_header_count);
+
+// Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
+// |spdy_version| must be kSpdyVersion3 or kSpdyVersion4.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+//
+// TODO(akalin): Move this to a common area once
+// ConstructSpdyControlFrame() is also moved.
+SpdyFrame* ConstructSpdyPostSynReplyWithVersion(
+    int spdy_version,
+    const char* const extra_headers[],
+    int extra_header_count);
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
 // |extra_headers| are the extra header-value pairs, which typically

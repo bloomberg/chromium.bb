@@ -329,10 +329,10 @@ int SpdyHttpStream::SendData() {
   return OnRequestBodyReadCompleted(bytes_read);
 }
 
-bool SpdyHttpStream::OnSendHeadersComplete(int status) {
+SpdySendStatus SpdyHttpStream::OnSendHeadersComplete() {
   if (!callback_.is_null())
-    DoCallback(status);
-  return !has_upload_data_;
+    DoCallback(OK);
+  return has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyHttpStream::OnSendBody() {
@@ -353,23 +353,20 @@ int SpdyHttpStream::OnSendBody() {
   return SendData();
 }
 
-int SpdyHttpStream::OnSendBodyComplete(int status, bool* eof) {
+SpdySendStatus SpdyHttpStream::OnSendBodyComplete(size_t bytes_sent) {
   // |status| is the number of bytes written to the SPDY stream.
   CHECK(request_info_ && request_info_->upload_data_stream);
-  *eof = false;
+  DCHECK_GE(static_cast<int>(bytes_sent), 0);
+  DCHECK_LE(static_cast<int>(bytes_sent), request_body_buf_->BytesRemaining());
 
-  if (status > 0) {
-    request_body_buf_->DidConsume(status);
-    if (request_body_buf_->BytesRemaining()) {
-      // Go back to OnSendBody() to send the remaining data.
-      return OK;
-    }
-  }
+  request_body_buf_->DidConsume(static_cast<int>(bytes_sent));
 
-  // Check if the entire body data has been sent.
-  *eof = (request_info_->upload_data_stream->IsEOF() &&
-          !request_body_buf_->BytesRemaining());
-  return OK;
+  // Check for more data to send.
+  if (!request_info_->upload_data_stream->IsEOF() ||
+      (request_body_buf_->BytesRemaining() > 0))
+    return MORE_DATA_TO_SEND;
+
+  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
@@ -464,7 +461,7 @@ int SpdyHttpStream::OnDataReceived(const char* data, int length) {
   return OK;
 }
 
-void SpdyHttpStream::OnDataSent(int length) {
+void SpdyHttpStream::OnDataSent(size_t /*bytes_sent*/) {
   // For HTTP streams, no data is sent from the client while in the OPEN state,
   // so it is never called.
   NOTREACHED();
