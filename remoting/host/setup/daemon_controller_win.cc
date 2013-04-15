@@ -4,8 +4,6 @@
 
 #include "remoting/host/setup/daemon_controller.h"
 
-#include <objbase.h>
-
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
