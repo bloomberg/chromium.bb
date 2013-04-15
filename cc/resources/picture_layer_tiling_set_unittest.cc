@@ -19,9 +19,11 @@ namespace {
 
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
-  gfx::Size layer_bounds(1000, 800);
-  PictureLayerTilingSet set(&client, layer_bounds);
+  PictureLayerTilingSet set(&client);
   client.SetTileSize(gfx::Size(256, 256));
+
+  gfx::Size layer_bounds(1000, 800);
+  set.SetLayerBounds(layer_bounds);
 
   set.AddTiling(1.0);
   set.AddTiling(1.5);
@@ -65,13 +67,14 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
 
     FakePictureLayerTilingClient client;
     client.SetTileSize(gfx::Size(256, 256));
+    PictureLayerTilingSet set(&client);
+
     gfx::Size layer_bounds(1000, 800);
-    PictureLayerTilingSet set(&client, layer_bounds);
+    set.SetLayerBounds(layer_bounds);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
       PictureLayerTiling* tiling = set.AddTiling(scale);
-      tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       for (size_t i = 0; i < tiles.size(); ++i) {
         EXPECT_FALSE(tiles[i]->drawing_info().GetResourceForTesting());

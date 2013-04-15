@@ -54,14 +54,14 @@ class CC_EXPORT PictureLayerImpl
                                          gfx::Rect content_rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
   virtual gfx::Size CalculateTileSize(
+      gfx::Size current_tile_size,
       gfx::Size content_bounds) OVERRIDE;
-  virtual const Region* GetInvalidation() OVERRIDE;
-  virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree
   void SyncFromActiveLayer();
-  void SyncTiling(const PictureLayerTiling* tiling);
+  void SyncTiling(
+      const PictureLayerTiling* tiling,
+      const Region& pending_layer_invalidation);
 
   void CreateTilingSet();
   void TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings);

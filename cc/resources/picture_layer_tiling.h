@@ -32,10 +32,8 @@ class PictureLayerTilingClient {
     gfx::Rect content_rect) = 0;
   virtual void UpdatePile(Tile* tile) = 0;
   virtual gfx::Size CalculateTileSize(
+    gfx::Size current_tile_size,
     gfx::Size content_bounds) = 0;
-  virtual const Region* GetInvalidation() = 0;
-  virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -46,17 +44,17 @@ class CC_EXPORT PictureLayerTiling {
   ~PictureLayerTiling();
 
   // Create a tiling with no tiles.  CreateTiles must be called to add some.
-  static scoped_ptr<PictureLayerTiling> Create(
-      float contents_scale,
-      gfx::Size layer_bounds,
-      PictureLayerTilingClient* client);
-  scoped_ptr<PictureLayerTiling> Clone(gfx::Size layer_bounds,
-                                       PictureLayerTilingClient* client) const;
+  static scoped_ptr<PictureLayerTiling> Create(float contents_scale);
+  scoped_ptr<PictureLayerTiling> Clone() const;
+
   gfx::Size layer_bounds() const { return layer_bounds_; }
+  void SetLayerBounds(gfx::Size layer_bounds);
+  void Invalidate(const Region& layer_invalidation);
   void InvalidateTilesWithText();
 
   // Add any tiles that intersect with |layer_rect|.  If any tiles already
   // exist, then this leaves them as-is.
+  void CreateTilesFromLayerRect(gfx::Rect layer_rect);
 
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
@@ -66,10 +64,6 @@ class CC_EXPORT PictureLayerTiling {
   gfx::SizeF ContentSizeF() const;
   float contents_scale() const { return contents_scale_; }
 
-  void CreateAllTilesForTesting() {
-    SetLiveTilesRect(gfx::Rect(tiling_data_.total_size()));
-  }
-
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
     for (TileMap::const_iterator it = tiles_.begin();
@@ -77,6 +71,11 @@ class CC_EXPORT PictureLayerTiling {
       all_tiles.push_back(it->second);
     return all_tiles;
   }
+
+  static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
+      gfx::Rect starting_rect,
+      int64 target_area,
+      gfx::Rect bounding_rect);
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
@@ -126,7 +125,7 @@ class CC_EXPORT PictureLayerTiling {
 
   Region OpaqueRegionInContentRect(const gfx::Rect&) const;
 
-  void Reset();
+  void Reset() { return tiles_.clear(); }
 
   void UpdateTilePriorities(
       WhichTree tree,
@@ -150,34 +149,23 @@ class CC_EXPORT PictureLayerTiling {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
-      gfx::Rect starting_rect,
-      int64 target_area,
-      gfx::Rect bounding_rect);
-
  protected:
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
 
-  PictureLayerTiling(float contents_scale,
-                     gfx::Size layer_bounds,
-                     PictureLayerTilingClient* client);
-  void SetLiveTilesRect(gfx::Rect live_tiles_rect);
-  void CreateTile(int i, int j);
+  explicit PictureLayerTiling(float contents_scale);
   Tile* TileAt(int, int) const;
+  void CreateTilesFromContentRect(gfx::Rect layer_rect);
+  void CreateTile(int i, int j);
 
-  // Given properties.
+  PictureLayerTilingClient* client_;
   float contents_scale_;
   gfx::Size layer_bounds_;
-  TileResolution resolution_;
-  PictureLayerTilingClient* client_;
-
-  // Internal data.
+  gfx::Rect last_prioritized_rect_;
+  // It is not legal to have a NULL tile in the tiles_ map.
+  TileMap tiles_;
   TilingData tiling_data_;
-  TileMap tiles_;  // It is not legal to have a NULL tile in the tiles_ map.
-  gfx::Rect live_tiles_rect_;
-
-  // State saved for computing velocities based upon finite differences.
+  TileResolution resolution_;
   int last_source_frame_number_;
   double last_impl_frame_time_;
 

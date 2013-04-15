@@ -14,8 +14,7 @@ namespace cc {
 
 class CC_EXPORT PictureLayerTilingSet {
  public:
-  PictureLayerTilingSet(PictureLayerTilingClient* client,
-                        gfx::Size layer_bounds);
+  explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
   ~PictureLayerTilingSet();
 
   void SetClient(PictureLayerTilingClient* client);
@@ -23,11 +22,14 @@ class CC_EXPORT PictureLayerTilingSet {
   // Shallow copies all data (except client and bounds from other).
   void CloneAll(
      const PictureLayerTilingSet& other,
+     const Region& invalidation,
      float minimum_contents_scale);
-  void Clone(const PictureLayerTiling* tiling);
+  void Clone(const PictureLayerTiling* tiling, const Region& invalidation);
 
-  gfx::Size layer_bounds() const { return layer_bounds_; }
+  void SetLayerBounds(gfx::Size layer_bounds);
+  gfx::Size LayerBounds() const;
 
+  void Invalidate(const Region& layer_invalidation);
   void InvalidateTilesWithText();
 
   PictureLayerTiling* AddTiling(float contents_scale);
@@ -45,6 +47,9 @@ class CC_EXPORT PictureLayerTilingSet {
 
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
+
+  // For all tilings, create any tile that intersects |layer_rect|.
+  void CreateTilesFromLayerRect(gfx::Rect layer_rect);
 
   void UpdateTilePriorities(
       WhichTree tree,

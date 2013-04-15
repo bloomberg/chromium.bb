@@ -25,15 +25,12 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
       PictureLayerTiling* tiling, gfx::Rect rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE {}
   virtual gfx::Size CalculateTileSize(
+      gfx::Size current_tile_size,
       gfx::Size content_bounds) OVERRIDE;
 
   void SetTileSize(gfx::Size tile_size);
   gfx::Size TileSize() const { return tile_size_; }
   scoped_refptr<PicturePileImpl> pile() { return pile_; }
-
-  virtual const Region* GetInvalidation() OVERRIDE;
-  virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) OVERRIDE;
 
  protected:
   FakeTileManagerClient tile_manager_client_;

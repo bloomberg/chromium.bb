@@ -21,10 +21,8 @@ class LargestToSmallestScaleFunctor {
 
 
 PictureLayerTilingSet::PictureLayerTilingSet(
-    PictureLayerTilingClient* client,
-    gfx::Size layer_bounds)
-    : client_(client),
-      layer_bounds_(layer_bounds) {
+    PictureLayerTilingClient * client)
+    : client_(client) {
 }
 
 PictureLayerTilingSet::~PictureLayerTilingSet() {
@@ -38,24 +36,49 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
 
 void PictureLayerTilingSet::CloneAll(
     const PictureLayerTilingSet& other,
+    const Region& invalidation,
     float minimum_contents_scale) {
   tilings_.clear();
   tilings_.reserve(other.tilings_.size());
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
-    const PictureLayerTiling* tiling = other.tilings_[i];
-    if (tiling->contents_scale() < minimum_contents_scale)
+    if (other.tilings_[i]->contents_scale() < minimum_contents_scale)
       continue;
-    tilings_.push_back(tiling->Clone(layer_bounds_, client_));
+    Clone(other.tilings_[i], invalidation);
   }
-  tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
-void PictureLayerTilingSet::Clone(const PictureLayerTiling* tiling) {
+void PictureLayerTilingSet::Clone(
+    const PictureLayerTiling* tiling,
+    const Region& invalidation) {
+
   for (size_t i = 0; i < tilings_.size(); ++i)
     DCHECK_NE(tilings_[i]->contents_scale(), tiling->contents_scale());
 
-  tilings_.push_back(tiling->Clone(layer_bounds_, client_));
+  tilings_.push_back(tiling->Clone());
+  gfx::Size size = tilings_.back()->layer_bounds();
+  tilings_.back()->SetClient(client_);
+  tilings_.back()->Invalidate(invalidation);
+  // Intentionally use this set's layer bounds, as it may have changed.
+  tilings_.back()->SetLayerBounds(layer_bounds_);
+
   tilings_.sort(LargestToSmallestScaleFunctor());
+}
+
+void PictureLayerTilingSet::SetLayerBounds(gfx::Size layer_bounds) {
+  if (layer_bounds_ == layer_bounds)
+    return;
+  layer_bounds_ = layer_bounds;
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->SetLayerBounds(layer_bounds);
+}
+
+gfx::Size PictureLayerTilingSet::LayerBounds() const {
+  return layer_bounds_;
+}
+
+void PictureLayerTilingSet::Invalidate(const Region& layer_invalidation) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->Invalidate(layer_invalidation);
 }
 
 void PictureLayerTilingSet::InvalidateTilesWithText() {
@@ -64,10 +87,10 @@ void PictureLayerTilingSet::InvalidateTilesWithText() {
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
-  tilings_.push_back(PictureLayerTiling::Create(contents_scale,
-                                                layer_bounds_,
-                                                client_));
+  tilings_.push_back(PictureLayerTiling::Create(contents_scale));
   PictureLayerTiling* appended = tilings_.back();
+  appended->SetClient(client_);
+  appended->SetLayerBounds(layer_bounds_);
 
   tilings_.sort(LargestToSmallestScaleFunctor());
   return appended;
@@ -88,6 +111,11 @@ void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
 void PictureLayerTilingSet::RemoveAllTiles() {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->Reset();
+}
+
+void PictureLayerTilingSet::CreateTilesFromLayerRect(gfx::Rect layer_rect) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->CreateTilesFromLayerRect(layer_rect);
 }
 
 PictureLayerTilingSet::CoverageIterator::CoverageIterator(
