@@ -1,10 +1,6 @@
-<h1 id="lab_6_lifecycle">Lab 6 - Lifecycle</h1>
+<h1 id="lab_6_lifecycle">Manage App Lifecycle</h1>
 
 <p>Like everything in this world, apps have a lifecycle.  They are installed, launched, restarted, suspended when the system needs to free up resources and uninstalled.  This lab will show you the basics of the Chrome app lifecycle and how its heart, the event page (aka background script), is used.</p>
-
-<h2 id="you_should_also_read">You should also read</h2>
-
-<p><a href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App Lifecycle</a> in Chrome app docs</p>
 
 <h2 id="the_event_page">The event page</h2>
 
@@ -14,42 +10,72 @@ For example, if your app is an instant messenger, you might want your event page
 <p>For simpler apps, the event page listens to the app lifecycle events and reacts appropriately.
 There are two important lifecycle events, $ref:app.runtime.onLaunched and $ref:app.runtime.onRestarted.</p>
 
-<h2 id="the_onlaunched_event_and_the_chrome_app_window_create_method">The onLaunched event and the chrome.app.window.create method</h2>
+<h2 id="the_onlaunched">The onLaunched event</h2>
 
-<p>$ref:app.runtime.onLaunched is the most important event. It fires when the user clicks on your app&#39;s icon with the intent of launching it. For most simpler apps, the event page will listen for this event and open a window when it fires. See our <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">main.js</a> for the most common usage.</p>
+<p>The $ref:app.runtime.onLaunched event is the most important event.
+It fires when the user clicks on your app&#39;s icon with the intent of launching it.
+For most simpler apps,
+the event page will listen for this event and open a window when it fires.
+See
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">AngularJS main.js</a> or
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/javascript/main.js">JavaScript main.js</a>
+for the most common usage.</p>
 
 <h3 id="windows_with_ids">Windows with IDs</h3>
 
 <p>The $ref:app.window.create method can associate an ID to the window being opened. Currently, the most interesting use for this is to restore a window&#39;s width, height and location and its associated Developer Tools window, if opened, when the app is launched. </p>
 
-<p>Execute your app as it is now, move and resize the window, close and restart it. The app will reopen in the original location, right? Now add a property <code>id</code> to the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">main.js</a>, reload the app and test again:</p>
+<p>Execute your app as it is now, move and resize the window,
+close and restart it.
+The app will reopen in the original location, right?
+Now add a property <code>id</code> to the event page,
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">Angular main.js</a> or
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/javascript/main.js">JavaScript main.js</a>,
+reload the app and test again:</p>
 
-<pre><code><pre>
+<pre>
 chrome.app.runtime.onLaunched.addListener(function() {
     chrome.app.window.create(&#39;index.html&#39;,
       {id: &#39;mainwindow&#39;, bounds: {width: 500, height: 309} });
   });
-</pre></code></pre>
+</pre>
 
 <p>If your application requires, you can open more than one window.</p>
 
 <h2 id="the_onrestarted_event">The onRestarted event</h2>
 
-<p>The $ref:app.runtime.onRestarted event is not as essential as <code>onLaunched</code>, but it might be relevant to certain types of apps.
-This event is executed when the app is restarted, for example, when Chrome quits, restarts, and the app is launched again.
-You can use this event to restore a transient state. </p>
+<p>The $ref:app.runtime.onRestarted event is not as essential as <code>onLaunched</code>,
+but it might be relevant to certain types of apps.
+This event is executed when the app is restarted, for example,
+when Chrome quits, restarts, and the app is launched again.
+You can use this event to restore a transient state.</p>
 
-<p>For example, if your app has a form with several fields, you won&#39;t always want to save the partial form while the user is typing.
+<p>For example, if your app has a form with several fields,
+you won&#39;t always want to save the partial form while the user is typing.
 If the user quits the app on purpose, she might not be interested keeping the partial data.
-If the Chrome runtime restarted for some reason other than by a user&#39;s intention, the user will want that data when the app is restarted.</p>
+If the Chrome runtime restarted for some reason other than by a user&#39;s intention,
+the user will want that data when the app is restarted.</p>
 
-<p>Let&#39;s change our code to save the Todo input field in $ref:storage as the user types, only restoring it if the <code>onRestarted</code> event is triggered.</p>
+<p>Let&#39;s change our code to save the Todo input field in $ref:storage as the user types,
+only restoring it if the <code>onRestarted</code> event is triggered.</p>
 
-<p class="note"><b>Note:</b>  We learned about <code>chrome.storage.sync</code> before, but <a href="http://developer.chrome.com/trunk/apps/storage.html#using-sync">chrome.storage.local</a> wasn&#39;t mentioned until now. Both have exactly the same syntax, but the semantics of <code>chrome.storage.local</code> is, as the name says, completely local.
+<p class="note"><b>Note:</b>
+We learned about <code>chrome.storage.sync</code> before, but
+<a href="http://developer.chrome.com/trunk/apps/storage.html#using-sync">chrome.storage.local</a>
+wasn&#39;t mentioned until now.
+Both have exactly the same syntax,
+but the semantics of <code>chrome.storage.local</code> is, as the name says, completely local.
 There&#39;s no attempt to synchronize or to save the data in the cloud.</p>
 
-<ul>
-<li>Event page: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">main.js</a>
+<h3 id="event-page">Update event page</h3>
+
+<p>Update the event page to include the
+<code>onLaunched</code> and <code>onRestarted</code> events.
+Events are handled the same in
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/main.js">AngularJS main.js</a> and
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/javascript/main.js">JavaScript main.js</a>:
+</p>
+
 <pre>
 chrome.app.runtime.onLaunched.addListener(function() {
   // normal launch initiated by the user, let&#39;s start clean.
@@ -79,8 +105,22 @@ function runApp(readInitialState) {
       });
     });
 }
-</pre></li><li>Controller: add to existing <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/controller.js">controller.js</a>
-<pre>
+</pre>
+
+<h3 id="controller">Update controller</h3>
+
+<p>Add to existing
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/angularjs/controller.js">AngularJS controller.js</a> or
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab6_lifecycle/javascript/controller.js">JavaScript controller.js</a>:
+</p>
+
+<tabs data-group="source">
+
+  <header tabindex="0" data-value="angular">Angular</header>
+  <header tabindex="0" data-value="js">JavaScript</header>
+  
+  <content>
+    <pre>
 var newTodoInput = null;
 
 var clearInitialState = function() {
@@ -105,24 +145,71 @@ window.addEventListener(&#39;load&#39;, function() {
     saveTransientState();<br>
   })
 })
-</pre></p></li><li><p>Save the changes by reloading the app: open the app, right-click and select Reload.</p></li>
-</ul>
+    </pre>
+  </content>
+  <content>
+    <pre>
+  var newTodoInput = document.querySelector('input[type="text"]');
+ 
+  window.clearInitialState = function() {
+    chrome.storage.local.set({'newtodo': null});
+  }
+   
+  window.setInitialState = function() {
+    chrome.storage.local.get('newtodo', function(data) {
+      if (newTodoInput && data && data.newtodo) {
+        newTodoInput.value = data.newtodo;
+        newTodoInput.focus();
+      }
+    });
+  };
+     
+  var saveTransientState = function() {
+    chrome.storage.local.set({'newtodo': newTodoInput.value});
+  };
 
-<p>If Chrome and the app shuts down for any reason (other than a user-gesture), the <code>onRestarted</code> event is fired.
-Any text entered in the input field (but not yet saved as a Todo item) will reappear when Chrome and the app are reopened.</p>
+  newTodoInput.addEventListener('keypress' , function() {
+    saveTransientState();    
+  })
+    </pre>
 
-<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action, go to <code>chrome://extensions</code>,
-load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab6_lifecycle">lab6 app</a>, and launch the app from a new tab.</p>
+</tabs>
 
-<h1 id="takeaways_">Takeaways:</h1>
+<h3 id="results">Check the results</h3>
+
+<p>Save the changes by reloading the app:
+open the app, right-click and select Reload.</p>
+
+<p>If Chrome and the app shuts down for any reason (other than a user-gesture),
+the <code>onRestarted</code> event is fired.
+Any text entered in the input field (but not yet saved as a Todo item)
+will reappear when Chrome and the app are reopened.</p>
+
+<p>If you get stuck and want to see the app in action,
+go to <code>chrome://extensions</code>,
+load the unpacked
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab6_lifecycle/angularjs">AngularJS app</a> or
+<a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab6_lifecycle/javascript">JavaScript app</a>,
+and launch the app from a new tab.</p>
+
+<h2 id="takeaways_">Takeaways</h2>
 
 <ul>
-<li>The event page may continue to run even when your windows are closed. You can move logic that is shared among windows to the event page, as we will see in <a href="app_codelab9_multipleviews.html">lab9</a>.</li>
+<li>The event page may continue to run even when your windows are closed;
+you can move logic that is shared amoung windows to the event page.</li>
 </ul>
 
-<h1 id="what_39_s_next_">What&#39;s next?</h1>
+<h2 id="you_should_also_read">You should also read</h2>
 
-<p>In <a href="app_codelab7_useridentification.html">lab7_useridentification</a>,
+<p><a href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App Lifecycle</a> tutorial</p>
+
+<h2 id="what_39_s_next_">What's next?</h2>
+
+<p>In <a href="app_codelab7_useridentification.html">6 - Access User's Data</a>,
 you will learn how to identify users and use OAuth2.0 to access Google and other third party services.</p>
 
-<p class="note"><b>Note:</b>  The <a href="http://developer.chrome.com/trunk/apps/app_identity.html">identify API</a> covered in lab 7 is still experimental.</p>
+<p class="note"><b>Note:</b>
+The next chapter covers a still experimental API.
+If you don't want to play with experimental APIs, feel free to skip it - the
+rest of the codelab is independent from it.
+</p>

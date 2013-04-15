@@ -46,6 +46,49 @@
         ]
       },
       {
+	"title": "Learn with a Codelab",
+	"toggleable": true,
+	"items": [
+	  {
+	    "title": "About this Codelab",
+	    "fileName": "app_codelab.html"
+	  },
+	  {
+	    "title": "1 - Set Up Development Environment",
+	    "fileName": "app_codelab1_setup.html"
+	  },
+	  {
+	    "title": "2 -  Create Basic App",
+	    "fileName": "app_codelab2_basic.html"
+	  },
+	  {
+	    "title": "3 - Create MVC",
+	    "fileName": "app_codelab3_mvc.html"
+	  },
+	  {
+	    "title": "4 - Save and Fetch Data",
+	    "fileName": "app_codelab5_data.html"
+	  },
+	  {
+	    "title": "5 - Manage App Lifecycle",
+	    "fileName": "app_codelab6_lifecycle.html"
+	  },
+	   
+	  {
+            "title": "6 - Access User's Data",
+	    "fileName": "app_codelab7_useridentification.html"
+	  },
+	  {
+	    "title": "7 - Access Web Resources",
+	    "fileName": "app_codelab8_webresources.html"
+	  },
+	  {
+	    "title": "8 - Publish App",
+	    "fileName": "app_codelab_10_publishing.html"
+	  }
+	]
+      },
+      {
         "title": "Security & Privacy",
         "toggleable": true,
         "items": [
@@ -109,11 +152,11 @@
         "title": "MVC Architecture",
         "toggleable": true,
         "items": [
-          {
-            "title": "About MVC Architecture",
-            "fileName": "app_frameworks.html"
-          },
-          {
+	  {
+	    "title": "About MVC Architecture",
+	    "fileName": "app_frameworks.html"
+	  },
+	  {
             "title": "Build Apps with AngularJS",
             "fileName": "angular_framework.html"
           },
