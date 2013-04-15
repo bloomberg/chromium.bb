@@ -1828,3 +1828,39 @@
   ...
   fun:OneClickSigninHelperTest*
 }
+{
+   bug_230366c
+   Heapcheck:Leak
+   fun:InitializeGlobalPools
+   fun:InitThread
+   fun:ShCompile
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
+   fun:cc::ProgramBindingBase::LoadShader
+   fun:cc::ProgramBindingBase::Init
+   fun:ProgramBinding
+   fun:AcceleratedTextureCopier
+   fun:cc::AcceleratedTextureCopier::Create
+   fun:cc::ResourceProvider::Initialize
+   fun:cc::ResourceProvider::Create
+   fun:cc::LayerTreeHostImpl::InitializeRenderer
+   fun:cc::ThreadProxy::InitializeRendererOnImplThread
+}
+{
+   bug_230366d
+   Heapcheck:Leak
+   fun:InitializeGlobalParseContext
+   fun:InitThread
+   fun:ShCompile
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
+   fun:cc::ProgramBindingBase::LoadShader
+   fun:cc::ProgramBindingBase::Init
+   fun:ProgramBinding
+   fun:AcceleratedTextureCopier
+   fun:cc::AcceleratedTextureCopier::Create
+   fun:cc::ResourceProvider::Initialize
+   fun:cc::ResourceProvider::Create
+   fun:cc::LayerTreeHostImpl::InitializeRenderer
+   fun:cc::ThreadProxy::InitializeRendererOnImplThread
+}
