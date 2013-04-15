@@ -136,19 +136,15 @@ void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList& list,
 void EventDispatcher::DispatchEvent(EventHandler* handler, Event* event) {
   // If the target has been invalidated or deleted, don't dispatch the event.
   if (!delegate_->CanDispatchToTarget(event->target())) {
-    event->StopPropagation();
+    if (event->cancelable())
+      event->StopPropagation();
     return;
   }
 
   base::AutoReset<Event*> event_reset(&current_event_, event);
-  DispatchEventToSingleHandler(handler, event);
-  if (!delegate_)
-    event->StopPropagation();
-}
-
-void EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                   Event* event) {
   handler->OnEvent(event);
+  if (!delegate_ && event->cancelable())
+    event->StopPropagation();
 }
 
 }  // namespace ui

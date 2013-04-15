@@ -5,6 +5,8 @@
 #include "ui/base/events/event_dispatcher.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 
 namespace ui {
 
@@ -28,6 +30,7 @@ class TestTarget : public EventTarget {
 
   void Reset() {
     handler_list_.clear();
+    valid_ = true;
   }
 
  private:
@@ -80,27 +83,8 @@ class TestEventHandler : public EventHandler {
 
  private:
   // Overridden from EventHandler:
-  virtual void OnKeyEvent(KeyEvent* event) OVERRIDE {
-    ReceivedEvent(event);
-    SetStatusOnEvent(event);
-  }
-
-  virtual void OnMouseEvent(MouseEvent* event) OVERRIDE {
-    ReceivedEvent(event);
-    SetStatusOnEvent(event);
-  }
-
-  virtual void OnScrollEvent(ScrollEvent* event) OVERRIDE {
-    ReceivedEvent(event);
-    SetStatusOnEvent(event);
-  }
-
-  virtual void OnTouchEvent(TouchEvent* event) OVERRIDE {
-    ReceivedEvent(event);
-    SetStatusOnEvent(event);
-  }
-
-  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE {
+  virtual void OnEvent(Event* event) OVERRIDE {
+    ui::EventHandler::OnEvent(event);
     ReceivedEvent(event);
     SetStatusOnEvent(event);
   }
@@ -119,6 +103,19 @@ class TestEventHandler : public EventHandler {
   bool received_pre_target_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
+};
+
+class NonCancelableEvent : public Event {
+ public:
+  NonCancelableEvent()
+      : Event(ui::ET_CANCEL_MODE, ui::EventTimeForNow(), 0) {
+    set_cancelable(false);
+  }
+
+  virtual ~NonCancelableEvent() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NonCancelableEvent);
 };
 
 // Destroys the dispatcher-delegate when it receives any event.
@@ -363,6 +360,31 @@ TEST(EventDispatcherTest, EventDispatcherDestroyedDuringDispatch) {
     EXPECT_EQ(5, target.handler_list()[1]);
   }
 
+  // Test for non-cancelable event.
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    EventHandlerDestroyDispatcherDelegate handler(dispatcher, 5);
+    TestEventHandler h1(1), h2(2);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&handler);
+    target.AddPreTargetHandler(&h2);
+
+    h1.set_expect_pre_target(true);
+    handler.set_expect_pre_target(true);
+    // |h2| should not receive any events at all since |handler| will have
+    // destroyed the dispatcher.
+    h2.set_expect_pre_target(false);
+
+    NonCancelableEvent event;
+    Event::DispatcherApi event_mod(&event);
+    dispatcher->ProcessEvent(&target, &event);
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(5, target.handler_list()[1]);
+  }
+
   // Now test for post-target.
   {
     TestEventDispatcher* dispatcher = new TestEventDispatcher();
@@ -385,6 +407,31 @@ TEST(EventDispatcherTest, EventDispatcherDestroyedDuringDispatch) {
     Event::DispatcherApi event_mod(&mouse);
     dispatcher->ProcessEvent(&target, &mouse);
     EXPECT_EQ(ER_CONSUMED, mouse.result());
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(5, target.handler_list()[1]);
+  }
+
+  // Test for non-cancelable event.
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    EventHandlerDestroyDispatcherDelegate handler(dispatcher, 5);
+    TestEventHandler h1(1), h2(2);
+
+    target.AddPostTargetHandler(&h1);
+    target.AddPostTargetHandler(&handler);
+    target.AddPostTargetHandler(&h2);
+
+    h1.set_expect_post_target(true);
+    handler.set_expect_post_target(true);
+    // |h2| should not receive any events at all since |handler| will have
+    // destroyed the dispatcher.
+    h2.set_expect_post_target(false);
+
+    NonCancelableEvent event;
+    Event::DispatcherApi event_mod(&event);
+    dispatcher->ProcessEvent(&target, &event);
     EXPECT_EQ(2U, target.handler_list().size());
     EXPECT_EQ(1, target.handler_list()[0]);
     EXPECT_EQ(5, target.handler_list()[1]);
@@ -416,60 +463,124 @@ TEST(EventDispatcherTest, EventDispatcherInvalidateTarget) {
   EXPECT_EQ(2U, target.handler_list().size());
   EXPECT_EQ(1, target.handler_list()[0]);
   EXPECT_EQ(2, target.handler_list()[1]);
-}
 
-// Tests that if an event-handler gets destroyed during event-dispatch, it does
-// not cause a crash.
-TEST(EventDispatcherTest, EventHandlerDestroyedDuringDispatch) {
-  TestEventDispatcher dispatcher;
-  TestTarget target;
-  TestEventHandler h1(1);
-  TestEventHandler* h3 = new TestEventHandler(3);
-  EventHandlerDestroyer handle_destroyer(2, h3);
-
-  target.AddPreTargetHandler(&h1);
-  target.AddPreTargetHandler(&handle_destroyer);
-  target.AddPreTargetHandler(h3);
-
-  h1.set_expect_pre_target(true);
-  handle_destroyer.set_expect_pre_target(true);
-  // |h3| should not receive events since |handle_destroyer| will have destroyed
-  // it.
-  h3->set_expect_pre_target(false);
-
-  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
-  dispatcher.ProcessEvent(&target, &mouse);
-  EXPECT_FALSE(mouse.stopped_propagation());
-  EXPECT_EQ(2U, target.handler_list().size());
-  EXPECT_EQ(1, target.handler_list()[0]);
-  EXPECT_EQ(2, target.handler_list()[1]);
-}
-
-// Tests that things work correctly if an event-handler destroys both the
-// dispatcher and a handler.
-TEST(EventDispatcherTest, EventHandlerAndDispatcherDestroyedDuringDispatch) {
-  TestEventDispatcher* dispatcher = new TestEventDispatcher();
-  TestTarget target;
-  TestEventHandler h1(1);
-  TestEventHandler* h3 = new TestEventHandler(3);
-  EventHandlerDestroyer destroyer(2, h3);
-
-  target.AddPreTargetHandler(&h1);
-  target.AddPreTargetHandler(&destroyer);
-  target.AddPreTargetHandler(h3);
-
-  h1.set_expect_pre_target(true);
-  destroyer.set_expect_pre_target(true);
-  destroyer.set_dispatcher_delegate(dispatcher);
-  // |h3| should not receive events since |destroyer| will have destroyed
-  // it.
-  h3->set_expect_pre_target(false);
-
-  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
-  dispatcher->ProcessEvent(&target, &mouse);
+  // Test for non-cancelable event.
+  target.Reset();
+  NonCancelableEvent event;
+  dispatcher.ProcessEvent(&target, &event);
+  EXPECT_FALSE(target.valid());
   EXPECT_TRUE(mouse.stopped_propagation());
   EXPECT_EQ(2U, target.handler_list().size());
   EXPECT_EQ(1, target.handler_list()[0]);
   EXPECT_EQ(2, target.handler_list()[1]);
 }
+
+// Tests that if an event-handler gets destroyed during event-dispatch, it does
+// not cause a crash.
+TEST(EventDispatcherTest, EventHandlerDestroyedDuringDispatch) {
+  {
+    TestEventDispatcher dispatcher;
+    TestTarget target;
+    TestEventHandler h1(1);
+    TestEventHandler* h3 = new TestEventHandler(3);
+    EventHandlerDestroyer handle_destroyer(2, h3);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&handle_destroyer);
+    target.AddPreTargetHandler(h3);
+
+    h1.set_expect_pre_target(true);
+    handle_destroyer.set_expect_pre_target(true);
+    // |h3| should not receive events since |handle_destroyer| will have
+    // destroyed it.
+    h3->set_expect_pre_target(false);
+
+    MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
+    dispatcher.ProcessEvent(&target, &mouse);
+    EXPECT_FALSE(mouse.stopped_propagation());
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(2, target.handler_list()[1]);
+  }
+
+  // Test for non-cancelable events.
+  {
+    TestEventDispatcher dispatcher;
+    TestTarget target;
+    TestEventHandler h1(1);
+    TestEventHandler* h3 = new TestEventHandler(3);
+    EventHandlerDestroyer handle_destroyer(2, h3);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&handle_destroyer);
+    target.AddPreTargetHandler(h3);
+
+    h1.set_expect_pre_target(true);
+    handle_destroyer.set_expect_pre_target(true);
+    h3->set_expect_pre_target(false);
+
+    NonCancelableEvent event;
+    dispatcher.ProcessEvent(&target, &event);
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(2, target.handler_list()[1]);
+  }
+}
+
+// Tests that things work correctly if an event-handler destroys both the
+// dispatcher and a handler.
+TEST(EventDispatcherTest, EventHandlerAndDispatcherDestroyedDuringDispatch) {
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    TestEventHandler h1(1);
+    TestEventHandler* h3 = new TestEventHandler(3);
+    EventHandlerDestroyer destroyer(2, h3);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&destroyer);
+    target.AddPreTargetHandler(h3);
+
+    h1.set_expect_pre_target(true);
+    destroyer.set_expect_pre_target(true);
+    destroyer.set_dispatcher_delegate(dispatcher);
+    // |h3| should not receive events since |destroyer| will have destroyed
+    // it.
+    h3->set_expect_pre_target(false);
+
+    MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
+    dispatcher->ProcessEvent(&target, &mouse);
+    EXPECT_TRUE(mouse.stopped_propagation());
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(2, target.handler_list()[1]);
+  }
+
+  // Test for non-cancelable events.
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    TestEventHandler h1(1);
+    TestEventHandler* h3 = new TestEventHandler(3);
+    EventHandlerDestroyer destroyer(2, h3);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&destroyer);
+    target.AddPreTargetHandler(h3);
+
+    h1.set_expect_pre_target(true);
+    destroyer.set_expect_pre_target(true);
+    destroyer.set_dispatcher_delegate(dispatcher);
+    // |h3| should not receive events since |destroyer| will have destroyed
+    // it.
+    h3->set_expect_pre_target(false);
+
+    NonCancelableEvent event;
+    dispatcher->ProcessEvent(&target, &event);
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(2, target.handler_list()[1]);
+  }
+}
+
 }  // namespace ui

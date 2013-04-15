@@ -66,8 +66,6 @@ class UI_EXPORT EventDispatcher {
   // dispatching the event to the event handler.
   void DispatchEvent(EventHandler* handler, Event* event);
 
-  void DispatchEventToSingleHandler(EventHandler* handler, Event* event);
-
   EventDispatcherDelegate* delegate_;
 
   Event* current_event_;
