@@ -2,6 +2,7 @@
  * Copyright (C) 2006, 2007, 2008, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Alp Toker <alp@atoker.com>
  * Copyright (C) 2008 Torch Mobile, Inc.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,12 +33,9 @@
 #include "FloatPoint.h"
 #include "Generator.h"
 #include "GraphicsTypes.h"
+#include "SkShader.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
-
-class SkShader;
-typedef class SkShader* PlatformGradient;
-typedef class SkShader* PlatformPattern;
 
 namespace WebCore {
 
@@ -113,11 +111,7 @@ namespace WebCore {
 
         float aspectRatio() const { return m_aspectRatio; }
 
-#if OS(WINCE)
-        const Vector<ColorStop, 2>& getStops() const;
-#else
-        PlatformGradient platformGradient();
-#endif
+        SkShader* shader();
 
         struct ColorStop {
             float stop;
@@ -135,13 +129,10 @@ namespace WebCore {
         void setSpreadMethod(GradientSpreadMethod);
         GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
         void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
-        // CG transform the gradient at draw time
         AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
 
-        virtual void fill(GraphicsContext*, const FloatRect&);
-        virtual void adjustParametersForTiledDrawing(IntSize& size, FloatRect& srcRect);
-
-        void setPlatformGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
+        virtual void fill(GraphicsContext*, const FloatRect&) OVERRIDE;
+        virtual void adjustParametersForTiledDrawing(IntSize&, FloatRect&) OVERRIDE;
 
         virtual unsigned hash() const OVERRIDE;
         void invalidateHash() { m_cachedHash = 0; }
@@ -150,8 +141,7 @@ namespace WebCore {
         Gradient(const FloatPoint& p0, const FloatPoint& p1);
         Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio);
 
-        void platformInit() { m_gradient = 0; }
-        void platformDestroy();
+        void destroyShader();
 
         int findStop(float value) const;
         void sortStopsIfNecessary();
@@ -171,7 +161,7 @@ namespace WebCore {
 
         mutable unsigned m_cachedHash;
 
-        PlatformGradient m_gradient;
+        SkShader* m_gradient;
     };
 
 } //namespace

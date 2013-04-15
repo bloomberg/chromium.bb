@@ -360,7 +360,7 @@ void PlatformContextSkia::setupShader(SkPaint* paint, Gradient* grad, Pattern* p
     SkShader* shader = 0;
 
     if (grad) {
-        shader = grad->platformGradient();
+        shader = grad->shader();
         color = SK_ColorBLACK;
     } else if (pat) {
         shader = pat->shader();
