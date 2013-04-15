@@ -3755,3 +3755,9 @@ crbug.com/230771 fast/forms/file/input-file-write-files.html [ Failure ]
 crbug.com/230771 fast/forms/file/selected-files-from-history-state.html [ Failure ]
 crbug.com/230771 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
 crbug.com/230771 fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
+
+# From WebKit's generic expectations.
+# pending functional patch and per-port verification
+webkit.org/b/109954 css3/line-break [ Skip ]
+# pending implementation completion and feature enabling
+webkit.org/b/109570 media/track/regions-webvtt [ Skip ]
