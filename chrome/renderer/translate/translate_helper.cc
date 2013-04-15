@@ -48,7 +48,7 @@ const int kMaxTranslateInitCheckAttempts = 5;
 const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
-const char* const kAutoDetectionLanguage = "auto";
+const char kAutoDetectionLanguage[] = "auto";
 
 // Language code synonyms. Some languages have changed codes over the years
 // and sometimes the older codes are used, so we must see them as synonyms.

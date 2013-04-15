@@ -107,8 +107,8 @@ class TranslateManager : public content::NotificationObserver,
   static bool IsSupportedLanguage(const std::string& language);
 
   // static const values shared with our browser tests.
-  static const char* const kLanguageListCallbackName;
-  static const char* const kTargetLanguagesKey;
+  static const char kLanguageListCallbackName[];
+  static const char kTargetLanguagesKey[];
  protected:
   TranslateManager();
 

@@ -135,38 +135,37 @@ const char* const kDefaultSupportedLanguages[] = {
     "yi",     // Yiddish
 };
 
-const char* const kTranslateScriptURL =
+const char kTranslateScriptURL[] =
     "https://translate.google.com/translate_a/element.js";
-const char* const kTranslateScriptHeader =
-    "Google-Translate-Element-Mode: library";
-const char* const kReportLanguageDetectionErrorURL =
+const char kTranslateScriptHeader[] = "Google-Translate-Element-Mode: library";
+const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
-const char* const kLanguageListFetchURL =
+const char kLanguageListFetchURL[] =
     "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
 
 // Used in kTranslateScriptURL to request supporting languages list including
 // "alpha languages".
-const char* const kAlphaLanguageQueryName = "alpha";
-const char* const kAlphaLanguageQueryValue = "1";
+const char kAlphaLanguageQueryName[] = "alpha";
+const char kAlphaLanguageQueryValue[] = "1";
 
 // Used in all translate URLs to specify API Key.
-const char* const kApiKeyName = "key";
+const char kApiKeyName[] = "key";
 
 // Used in kTranslateScriptURL to specify a callback function name.
-const char* const kCallbackQueryName = "cb";
-const char* const kCallbackQueryValue =
+const char kCallbackQueryName[] = "cb";
+const char kCallbackQueryValue[] =
     "cr.googleTranslate.onTranslateElementLoad";
 
 // Used in kTranslateScriptURL and kLanguageListFetchURL to specify the
 // application locale.
-const char* const kHostLocaleQueryName = "hl";
+const char kHostLocaleQueryName[] = "hl";
 
 // Used in kReportLanguageDetectionErrorURL to specify the original page
 // language.
-const char* const kSourceLanguageQueryName = "sl";
+const char kSourceLanguageQueryName[] = "sl";
 
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
-const char* const kUrlQueryName = "u";
+const char kUrlQueryName[] = "u";
 
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
@@ -186,8 +185,8 @@ GURL AddHostLocaleToUrl(const GURL& url) {
 }  // namespace
 
 // This must be kept in sync with the &cb= value in the kLanguageListFetchURL.
-const char* const TranslateManager::kLanguageListCallbackName = "sl(";
-const char* const TranslateManager::kTargetLanguagesKey = "tl";
+const char TranslateManager::kLanguageListCallbackName[] = "sl(";
+const char TranslateManager::kTargetLanguagesKey[] = "tl";
 
 // static
 base::LazyInstance<std::set<std::string> >
