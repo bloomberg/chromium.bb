@@ -44,7 +44,7 @@
 
     void multiTransferList([TransferList=tx] SCRIPT_VALUE first, optional ARRAY tx, optional TRANSFER_TXX_SCRIPT_VALUE second, optional ARRAY txx);
 
-    void setShadow(DOUBLE width, DOUBLE height, float blur, [StrictTypeChecking] OPTIONAL_STRING color, optional DOUBLE alpha);
+    void setShadow(DOUBLE width, DOUBLE height, float blur, [StrictTypeChecking] optional STRING color, optional DOUBLE alpha);
 
     ULONGLONG methodWithSequenceArg(sequence<SCRIPT_VALUE> sequenceArg);
 
@@ -72,7 +72,6 @@ typedef SerializedScriptValue      SCRIPT_VALUE;
 typedef long[]                     ARRAY_OF_LONGS;
 typedef SVGPoint                   SVGPOINT;
 typedef DOMString                  STRING;
-typedef optional DOMString       OPTIONAL_STRING;
 typedef DOMString[]                ARRAY_OF_STRINGS;
 typedef [Callback] TestCallback    TEST_CALLBACK;
 typedef TestSubObjConstructor      T;
