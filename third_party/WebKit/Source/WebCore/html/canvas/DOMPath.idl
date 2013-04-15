@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  */
 
-interface [
+[
     EnabledAtRuntime=canvasPath,
     Constructor,
     Constructor(DOMPath path),
@@ -34,7 +34,7 @@ interface [
     Constructor(DOMString text),
 #endif
     InterfaceName=Path
-] DOMPath {
+] interface DOMPath {
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();
