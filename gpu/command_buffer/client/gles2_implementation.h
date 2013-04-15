@@ -535,7 +535,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // pack reverse row order as last set by glPixelstorei
   bool pack_reverse_row_order_;
 
-  scoped_array<TextureUnit> texture_units_;
+  scoped_ptr<TextureUnit[]> texture_units_;
 
   // 0 to gl_state_.max_combined_texture_image_units.
   GLuint active_texture_unit_;

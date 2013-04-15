@@ -109,7 +109,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLuint element_array_buffer_id_;
   GLsizei element_array_buffer_size_;
   GLsizei collection_buffer_size_;
-  scoped_array<int8> collection_buffer_;
+  scoped_ptr<int8[]> collection_buffer_;
 
   VertexArrayObject* default_vertex_array_object_;
   VertexArrayObject* bound_vertex_array_object_;

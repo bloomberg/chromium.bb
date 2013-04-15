@@ -50,7 +50,7 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual void OnFlush() = 0;
 
  private:
-  scoped_array<int8> transfer_buffers_[kMaxTransferBuffers];
+  scoped_ptr<int8[]> transfer_buffers_[kMaxTransferBuffers];
   Buffer transfer_buffer_buffers_[kMaxTransferBuffers];
   CommandBufferEntry* ring_buffer_;
   Buffer ring_buffer_buffer_;
