@@ -218,8 +218,6 @@
             'browser/devtools/devtools_toggle_action.h',
             'browser/devtools/devtools_window.cc',
             'browser/devtools/devtools_window.h',
-            'browser/devtools/protocol_http_request.cc',
-            'browser/devtools/protocol_http_request.h',
             'browser/devtools/remote_debugging_server.cc',
             'browser/devtools/remote_debugging_server.h',
           ],
