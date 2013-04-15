@@ -91,6 +91,9 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
   explicit AdbPagesCommand(const PagesCallback& callback)
      : callback_(callback) {
     pages_.reset(new DevToolsAdbBridge::RemotePages());
+#if defined(DEBUG_DEVTOOLS)
+    serials_.push_back(std::string()); // For desktop remote debugging.
+#endif  // defined(DEBUG_DEVTOOLS)
   }
 
   void Run() {
@@ -136,15 +139,10 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
   }
 
   void ReceivedModel(int result, const std::string& response) {
-    if (result != net::OK) {
-      serials_.pop_back();
-      ProcessSerials();
-      return;
-    }
-
+    std::string model = result == net::OK ? response : "Unknown";
     AdbClientSocket::HttpQuery(
       kAdbPort, serials_.back(), kDevToolsChannelName, kPageListRequest,
-      base::Bind(&AdbPagesCommand::ReceivedPages, this, response));
+      base::Bind(&AdbPagesCommand::ReceivedPages, this, model));
   }
 
   void ReceivedPages(const std::string& model,
@@ -201,7 +199,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   AgentHostDelegate(
       const std::string& id,
       scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
-      net::TCPClientSocket* socket)
+      net::StreamSocket* socket)
       : id_(id),
         adb_thread_(adb_thread),
         socket_(socket) {
@@ -329,7 +327,6 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
     DictionaryValue* dvalue;
     if (!value || !value->GetAsDictionary(&dvalue))
       return;
-
     proxy_->DispatchOnClientHost(message);
   }
 
@@ -339,7 +336,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
 
   std::string id_;
   scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
-  scoped_ptr<net::TCPClientSocket> socket_;
+  scoped_ptr<net::StreamSocket> socket_;
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
   std::string response_buffer_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
@@ -368,7 +365,7 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
   friend class base::RefCounted<AdbAttachCommand>;
   virtual ~AdbAttachCommand() {}
 
-  void Handle(int result, net::TCPClientSocket* socket) {
+  void Handle(int result, net::StreamSocket* socket) {
     if (result != net::OK || socket == NULL)
       return;
 
@@ -376,7 +373,7 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
         base::Bind(&AdbAttachCommand::OpenDevToolsWindow, this, socket));
   }
 
-  void OpenDevToolsWindow(net::TCPClientSocket* socket) {
+  void OpenDevToolsWindow(net::StreamSocket* socket) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     DevToolsAdbBridge* bridge = bridge_.get();

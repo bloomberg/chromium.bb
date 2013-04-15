@@ -168,10 +168,54 @@ class RemoteDataSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(RemoteDataSource);
 };
 
+#if defined(DEBUG_DEVTOOLS)
+class LocalhostDataSource : public content::URLDataSource {
+ public:
+  explicit LocalhostDataSource(net::URLRequestContextGetter*
+      request_context) : request_context_(request_context) {
+  }
+
+  // content::URLDataSource implementation.
+  virtual std::string GetSource() OVERRIDE {
+    return "localhost";
+  }
+
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+
+    GURL url = GURL("http://localhost:9222/" + path);
+    new FetchRequest(request_context_, url, callback);
+  }
+
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+    return GetMimeTypeForPath(path);
+  }
+
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return false;
+  }
+
+ private:
+  virtual ~LocalhostDataSource() {}
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalhostDataSource);
+};
+#endif  // defined(DEBUG_DEVTOOLS)
+
 }  // namespace
 
 // static
 GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
+#if defined(DEBUG_DEVTOOLS)
+  if (frontend_url.find(chrome::kChromeUIDevToolsBundledHost) == 1) {
+    return GURL(base::StringPrintf("%s://localhost%s",
+                                   chrome::kChromeDevToolsScheme,
+                                   frontend_url.c_str()));
+  }
+#endif  // defined(DEBUG_DEVTOOLS)
   GURL url(frontend_url);
   CHECK(url.is_valid());
   CHECK_EQ(url.host(), kRemoteFrontendDomain);
@@ -189,4 +233,9 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::URLDataSource::Add(
       profile,
       new RemoteDataSource(profile->GetRequestContext()));
+#if defined(DEBUG_DEVTOOLS)
+  content::URLDataSource::Add(
+      profile,
+      new LocalhostDataSource(profile->GetRequestContext()));
+#endif  // defined(DEBUG_DEVTOOLS)
 }

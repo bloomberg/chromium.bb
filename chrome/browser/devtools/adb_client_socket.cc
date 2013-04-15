@@ -9,8 +9,11 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
+#include "net/socket/tcp_client_socket.h"
 
 namespace {
 
@@ -22,7 +25,7 @@ const char kLocalAbstractCommand[] = "localabstract:%s";
 const char kLocalhost[] = "127.0.0.1";
 
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
-typedef base::Callback<void(int, net::TCPClientSocket*)> SocketCallback;
+typedef base::Callback<void(int, net::StreamSocket*)> SocketCallback;
 
 std::string EncodeMessage(const std::string& message) {
   static const char kHexChars[] = "0123456789ABCDEF";
@@ -40,12 +43,11 @@ std::string EncodeMessage(const std::string& message) {
 
 class AdbTransportSocket : public AdbClientSocket {
  public:
-  AdbTransportSocket(const std::string& host,
-                     int port,
+  AdbTransportSocket(int port,
                      const std::string& serial,
                      const std::string& socket_name,
                      const SocketCallback& callback)
-    : AdbClientSocket(host, port),
+    : AdbClientSocket(port),
       serial_(serial),
       socket_name_(socket_name),
       callback_(callback) {
@@ -94,8 +96,7 @@ class AdbTransportSocket : public AdbClientSocket {
 
 class HttpOverAdbSocket {
  public:
-  HttpOverAdbSocket(const std::string& host,
-                    int port,
+  HttpOverAdbSocket(int port,
                     const std::string& serial,
                     const std::string& socket_name,
                     const std::string& request,
@@ -103,11 +104,10 @@ class HttpOverAdbSocket {
     : request_(request),
       command_callback_(callback),
       body_pos_(0) {
-    Connect(host, port, serial, socket_name);
+    Connect(port, serial, socket_name);
   }
 
-  HttpOverAdbSocket(const std::string& host,
-                    int port,
+  HttpOverAdbSocket(int port,
                     const std::string& serial,
                     const std::string& socket_name,
                     const std::string& request,
@@ -115,25 +115,24 @@ class HttpOverAdbSocket {
     : request_(request),
       socket_callback_(callback),
       body_pos_(0) {
-    Connect(host, port, serial, socket_name);
+    Connect(port, serial, socket_name);
   }
 
  private:
   ~HttpOverAdbSocket() {
   }
 
-  void Connect(const std::string& host,
-               int port,
+  void Connect(int port,
                const std::string& serial,
                const std::string& socket_name) {
-    new AdbTransportSocket(
-        host, port, serial, socket_name,
+    AdbClientSocket::TransportQuery(
+        port, serial, socket_name,
         base::Bind(&HttpOverAdbSocket::OnSocketAvailable,
                    base::Unretained(this)));
   }
 
   void OnSocketAvailable(int result,
-                         net::TCPClientSocket* socket) {
+                         net::StreamSocket* socket) {
     if (!CheckNetResultOrDie(result))
       return;
 
@@ -223,7 +222,7 @@ class HttpOverAdbSocket {
     return false;
   }
 
-  scoped_ptr<net::TCPClientSocket> socket_;
+  scoped_ptr<net::StreamSocket> socket_;
   std::string request_;
   std::string response_;
   CommandCallback command_callback_;
@@ -233,11 +232,10 @@ class HttpOverAdbSocket {
 
 class AdbQuerySocket : AdbClientSocket {
  public:
-  AdbQuerySocket(const std::string& host,
-                 int port,
+  AdbQuerySocket(int port,
                  const std::string& query,
                  const CommandCallback& callback)
-      : AdbClientSocket(host, port),
+      : AdbClientSocket(port),
         current_query_(0),
         callback_(callback) {
     if (Tokenize(query, "|", &queries_) == 0) {
@@ -293,7 +291,41 @@ class AdbQuerySocket : AdbClientSocket {
 void AdbClientSocket::AdbQuery(int port,
                                const std::string& query,
                                const CommandCallback& callback) {
-  new AdbQuerySocket(kLocalhost, port, query, callback);
+  new AdbQuerySocket(port, query, callback);
+}
+
+#if defined(DEBUG_DEVTOOLS)
+static void UseTransportQueryForDesktop(const SocketCallback& callback,
+                                        net::StreamSocket* socket,
+                                        int result) {
+  callback.Run(result, socket);
+}
+#endif  // defined(DEBUG_DEVTOOLS)
+
+// static
+void AdbClientSocket::TransportQuery(int port,
+                                     const std::string& serial,
+                                     const std::string& socket_name,
+                                     const SocketCallback& callback) {
+#if defined(DEBUG_DEVTOOLS)
+  if (serial.empty()) {
+    // Use plain socket for remote debugging on Desktop (debugging purposes).
+    net::IPAddressNumber ip_number;
+    net::ParseIPLiteralToNumber(kLocalhost, &ip_number);
+
+    int tcp_port = 0;
+    if (!base::StringToInt(socket_name, &tcp_port))
+      tcp_port = 9222;
+
+    net::AddressList address_list =
+        net::AddressList::CreateFromIPAddress(ip_number, tcp_port);
+    net::TCPClientSocket* socket = new net::TCPClientSocket(
+        address_list, NULL, net::NetLog::Source());
+    socket->Connect(base::Bind(&UseTransportQueryForDesktop, callback, socket));
+    return;
+  }
+#endif  // defined(DEBUG_DEVTOOLS)
+  new AdbTransportSocket(port, serial, socket_name, callback);
 }
 
 // static
@@ -302,7 +334,7 @@ void AdbClientSocket::HttpQuery(int port,
                                 const std::string& socket_name,
                                 const std::string& request_path,
                                 const CommandCallback& callback) {
-  new HttpOverAdbSocket(kLocalhost, port, serial, socket_name, request_path,
+  new HttpOverAdbSocket(port, serial, socket_name, request_path,
       callback);
 }
 
@@ -312,12 +344,12 @@ void AdbClientSocket::HttpQuery(int port,
                                 const std::string& socket_name,
                                 const std::string& request_path,
                                 const SocketCallback& callback) {
-  new HttpOverAdbSocket(kLocalhost, port, serial, socket_name, request_path,
+  new HttpOverAdbSocket(port, serial, socket_name, request_path,
       callback);
 }
 
-AdbClientSocket::AdbClientSocket(const std::string& host, int port)
-    : host_(host), port_(port) {
+AdbClientSocket::AdbClientSocket(int port)
+    : host_(kLocalhost), port_(port) {
 }
 
 AdbClientSocket::~AdbClientSocket() {

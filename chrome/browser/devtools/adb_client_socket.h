@@ -7,17 +7,22 @@
 
 #include "base/callback.h"
 #include "net/base/io_buffer.h"
-#include "net/socket/tcp_client_socket.h"
+#include "net/socket/stream_socket.h"
 
 class AdbClientSocket {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result,
-                              net::TCPClientSocket*)> SocketCallback;
+                              net::StreamSocket*)> SocketCallback;
 
   static void AdbQuery(int port,
                        const std::string& query,
                        const CommandCallback& callback);
+
+  static void TransportQuery(int port,
+                             const std::string& serial,
+                             const std::string& socket_name,
+                             const SocketCallback& callback);
 
   static void HttpQuery(int port,
                         const std::string& serial,
@@ -31,7 +36,7 @@ class AdbClientSocket {
                         const std::string& request,
                         const SocketCallback& callback);
 
-  AdbClientSocket(const std::string& host, int port);
+  AdbClientSocket(int port);
   ~AdbClientSocket();
 
  protected:
@@ -41,7 +46,7 @@ class AdbClientSocket {
                    bool is_void,
                    const CommandCallback& callback);
 
-  scoped_ptr<net::TCPClientSocket> socket_;
+  scoped_ptr<net::StreamSocket> socket_;
 
  private:
   void ReadResponse(const CommandCallback& callback, bool is_void, int result);
