@@ -29,7 +29,7 @@
     Supplemental=DOMWindow
 ] interface DOMWindowNotifications {
 #if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    [EnabledAtRuntime, MeasureAs=LegacyNotifications, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute NotificationCenter webkitNotifications;
+    [EnabledAtRuntime, MeasureAs=LegacyNotifications] readonly attribute NotificationCenter webkitNotifications;
 #endif
 #if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
     attribute NotificationConstructor Notification;

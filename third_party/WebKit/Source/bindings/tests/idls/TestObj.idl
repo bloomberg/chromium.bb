@@ -115,7 +115,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [CallWith=ScriptExecutionContext|ScriptState] void withScriptExecutionContextAndScriptState();
     [CallWith=ScriptExecutionContext|ScriptState, RaisesException] TestObj withScriptExecutionContextAndScriptStateObjException();
     [CallWith=  ScriptExecutionContext  |  ScriptState  ] TestObj withScriptExecutionContextAndScriptStateWithSpaces();
-    [CallWith=ScriptArguments] void withScriptArguments();
+    [CallWith=ScriptArguments|CallStack] void withScriptArgumentsAndCallStack();
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ScriptExecutionContext] attribute TestObj withScriptExecutionContextAttribute;
@@ -124,7 +124,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [CallWith=ScriptExecutionContext|ScriptState] attribute TestObj withScriptExecutionContextAndScriptStateAttribute;
     [CallWith=ScriptExecutionContext|ScriptState, GetterRaisesException] attribute TestObj withScriptExecutionContextAndScriptStateAttributeRaises;
     [CallWith=  ScriptExecutionContext  |  ScriptState  ] attribute TestObj withScriptExecutionContextAndScriptStateWithSpacesAttribute;
-    [CallWith=ScriptArguments] attribute TestObj withScriptArgumentsAttribute;
+    [CallWith=ScriptArguments|CallStack] attribute TestObj withScriptArgumentsAndCallStackAttribute;
 
     // 'Optional' extended attribute
     void    methodWithOptionalArg([Optional] long opt);
@@ -275,19 +275,4 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [PerWorldBindings] void perWorldMethod();
     [PerWorldBindings] void overloadedPerWorldMethod(long longArg);
     [PerWorldBindings] void overloadedPerWorldMethod(DOMString strArg, long longArg);
-
-    [ActivityLog=Access] void activityLoggedMethod1(in long longArg);
-    [PerWorldBindings, ActivityLog=Access] void activityLoggedMethod2(in long longArg);
-    [PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void activityLoggedInIsolatedWorldMethod(in long longArg);
-    [PerWorldBindings, ActivityLog=Access] void overloadedActivityLoggedMethod(in long longArg);
-    [PerWorldBindings, ActivityLog=Access] void overloadedActivityLoggedMethod(in DOMString strArg, in long longArg);
-    [ActivityLog=Access] attribute long activityLoggedAttr1;
-    [PerWorldBindings, ActivityLog=Access] attribute long activityLoggedAttr2;
-    [PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttr;
-    [ActivityLog=Setter] attribute long activityLoggedAttrSetter1;
-    [PerWorldBindings, ActivityLog=Setter] attribute long activityLoggedAttrSetter2;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrSetter;
-    [ActivityLog=Getter] attribute long activityLoggedAttrGetter1;
-    [PerWorldBindings, ActivityLog=Getter] attribute long activityLoggedAttrGetter2;
-    [PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrGetter;
 };
