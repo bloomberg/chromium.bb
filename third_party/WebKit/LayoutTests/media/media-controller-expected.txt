@@ -17,6 +17,14 @@ RUN(controller = new MediaController())
 RUN(video.controller = controller)
 EXPECTED (video.controller == '[object MediaController]') OK
 
+Test assigning the wrong type to the controller attribute of a media element:
+TEST(video.controller = 42) THROWS("TypeError: Value is not of type MediaController") OK
+EXPECTED (video.controller == '[object MediaController]') OK
+
+Test assigning a null controller to a media element:
+RUN(video.controller = null)
+EXPECTED (video.controller == 'null') OK
+
 Test that two media elements with the same mediaGroup have the same controller:
 RUN(video.mediaGroup = 'group')
 RUN(video2.mediaGroup = 'group')

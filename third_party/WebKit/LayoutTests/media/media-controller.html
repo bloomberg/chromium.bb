@@ -30,6 +30,14 @@
             run("video.controller = controller");
             testExpected("video.controller", controller);
             consoleWrite("");
+            consoleWrite("Test assigning the wrong type to the controller attribute of a media element:")
+            testException("video.controller = 42", '"TypeError: Value is not of type MediaController"');
+            testExpected("video.controller", controller);
+            consoleWrite("");
+            consoleWrite("Test assigning a null controller to a media element:")
+            run("video.controller = null");
+            testExpected("video.controller", null);
+            consoleWrite("");
             consoleWrite("Test that two media elements with the same mediaGroup have the same controller:")
             run("video.mediaGroup = 'group'");
             run("video2.mediaGroup = 'group'");

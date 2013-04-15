@@ -33,20 +33,20 @@
 
 namespace WebCore {
 
-void V8HTMLMediaElement::controllerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8HTMLMediaElement::controllerAttrSetterCustom(v8::Local<v8::String>, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
-    HTMLMediaElement* imp = V8HTMLMediaElement::toNative(info.Holder());
     MediaController* controller = 0;
-    if (V8MediaController::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())))
+    if (!value->IsNull()) {
+        if (!V8MediaController::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate()))) {
+            throwTypeError("Value is not of type MediaController", info.GetIsolate());
+            return;
+        }
         controller = V8MediaController::toNative(value->ToObject());
-    
-    if (!controller) {
-        throwTypeError("Value is not of type MediaController", info.GetIsolate());
-        return;
     }
 
     // 4.8.10.11.2 Media controllers: controller attribute.
     // On setting, it must first remove the element's mediagroup attribute, if any, 
+    HTMLMediaElement* imp = V8HTMLMediaElement::toNative(info.Holder());
     imp->setMediaGroup(String());
     // and then set the current media controller to the given value.
     imp->setController(controller);
