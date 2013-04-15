@@ -6647,6 +6647,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBRTC_DESCRIPTION" desc="Description for the flag to disable WebRTC.">
         Enabling this option prevents web applications from accessing the WebRTC API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBAUDIO_NAME" desc="Name of the 'Enable WebAudio' lab.">
+        Enable WebAudio
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBAUDIO_DESCRIPTION" desc="Description for the flag to enable WebAudio.">
+        Enabling this option allows web sites to access the WebAudio API.
+      </message>
       <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME" desc="Name of the 'Fixed position creates stacking context' lab.">
         Fixed position elements create stacking contexts.
       </message>

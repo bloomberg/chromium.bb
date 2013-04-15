@@ -9,6 +9,23 @@
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/file_descriptor_posix.h"
+#include "base/shared_memory.h"
+#include "content/common/view_messages.h"
+
+namespace {
+void RunWebAudioMediaCodec(
+    base::SharedMemoryHandle encoded_data_handle,
+    base::FileDescriptor pcm_output) {
+  content::ChildThread::current()->Send(
+      new ViewHostMsg_RunWebAudioMediaCodec(encoded_data_handle,
+                                            pcm_output));
+}
+
+} // anonymous namespace
+#endif
+
 namespace content {
 
 WebKitPlatformSupportImpl::WebKitPlatformSupportImpl() {
@@ -48,5 +65,12 @@ WebKitPlatformSupportImpl::CreateWebSocketBridge(
       ChildThread::current()->socket_stream_dispatcher();
   return dispatcher->CreateBridge(handle, delegate);
 }
+
+#if defined(OS_ANDROID)
+webkit_media::WebAudioMediaCodecRunner
+WebKitPlatformSupportImpl::GetWebAudioMediaCodecRunner() {
+  return base::Bind(&RunWebAudioMediaCodec);
+}
+#endif
 
 }  // namespace content

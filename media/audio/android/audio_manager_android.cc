@@ -83,10 +83,10 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
 
 AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
-  // TODO(xians): figure out the right output sample rate and sample rate to
+  // TODO(xians): figure out the right output sample rate and buffer size to
   // achieve the best audio performance for Android devices.
-  static const int kDefaultSampleRate = 16000;
-  static const int kDefaultBufferSize = 1024;
+  static const int kDefaultSampleRate = 44100;
+  static const int kDefaultBufferSize = 2048;
 
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;

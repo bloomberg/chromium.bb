@@ -83,6 +83,9 @@
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
+#if defined(OS_ANDROID)
+#include "media/base/android/webaudio_media_codec_bridge.h"
+#endif
 
 using net::CookieStore;
 
@@ -414,6 +417,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLose3DContext, OnDidLose3DContext)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RunWebAudioMediaCodec, OnWebAudioMediaCodec)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1144,4 +1150,18 @@ void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
 }
 #endif
 
+#if defined(OS_ANDROID)
+void RenderMessageFilter::OnWebAudioMediaCodec(
+    base::SharedMemoryHandle encoded_data_handle,
+    base::FileDescriptor pcm_output) {
+  // Let a WorkerPool handle this request since the WebAudio
+  // MediaCodec bridge is slow and can block while sending the data to
+  // the renderer.
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&media::WebAudioMediaCodecBridge::RunWebAudioMediaCodec,
+                 encoded_data_handle, pcm_output),
+      true);
+}
+#endif
 }  // namespace content

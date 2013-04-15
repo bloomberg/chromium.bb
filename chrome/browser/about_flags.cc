@@ -420,6 +420,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-webaudio",
+    IDS_FLAGS_ENABLE_WEBAUDIO_NAME,
+    IDS_FLAGS_ENABLE_WEBAUDIO_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
+  },
+#endif
   {
     "fixed-position-creates-stacking-context",
     IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME,

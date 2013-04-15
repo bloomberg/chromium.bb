@@ -34,6 +34,10 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
+#if defined(OS_ANDROID)
+  virtual webkit_media::WebAudioMediaCodecRunner GetWebAudioMediaCodecRunner()
+      OVERRIDE;
+#endif
 };
 
 }  // namespace content

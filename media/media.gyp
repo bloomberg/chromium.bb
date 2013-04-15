@@ -560,9 +560,6 @@
           },
         }],
         ['OS == "android"', {
-          'sources': [
-            'base/media_stub.cc',
-          ],
           'link_settings': {
             'libraries': [
               '-lOpenSLES',
@@ -582,7 +579,21 @@
                 'media_java',
               ],
             }],
-          ]
+            ['use_openmax_dl_fft==1', {
+              # FFT library requires Neon support, so we enable
+              # WebAudio only if Neon is detected at runtime.
+              'sources': [
+                'base/media_android.cc',
+              ],
+              'includes': [
+                '../build/android/cpufeatures.gypi',
+              ],
+            }, {
+              'sources': [
+                'base/media_stub.cc',
+              ],
+            }],
+          ],
         }],
         # A simple WebM encoder for animated avatars on ChromeOS.
         ['chromeos==1', {
@@ -1446,7 +1457,7 @@
     }],
     ['OS == "android"', {
       'targets': [
-         {
+        {
           'target_name': 'media_player_jni_headers',
           'type': 'none',
           'variables': {
@@ -1465,6 +1476,7 @@
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
+            'base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java',
           ],
           'variables': {
             'jni_gen_package': 'media',
@@ -1512,6 +1524,8 @@
             'base/android/media_player_bridge.h',
             'base/android/media_player_listener.cc',
             'base/android/media_player_listener.h',
+            'base/android/webaudio_media_codec_bridge.cc',
+            'base/android/webaudio_media_codec_bridge.h',
           ],
           'dependencies': [
             '../base/base.gyp:base',

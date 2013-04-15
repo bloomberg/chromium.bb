@@ -121,6 +121,13 @@ class MemoryUsageCache {
   base::Lock lock_;
 };
 
+#if defined(OS_ANDROID)
+void NullRunWebAudioMediaCodec(
+    base::SharedMemoryHandle encoded_data_handle,
+    base::FileDescriptor pcm_output) {
+}
+#endif
+
 }  // anonymous namespace
 
 namespace webkit_glue {
@@ -675,10 +682,20 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
 bool WebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
+#if !defined(OS_ANDROID)
   return webkit_media::DecodeAudioFileData(destination_bus,
                                            audio_file_data,
                                            data_size,
                                            sample_rate);
+#else
+  webkit_media::WebAudioMediaCodecRunner runner = GetWebAudioMediaCodecRunner();
+  return webkit_media::DecodeAudioFileData(
+      destination_bus,
+      audio_file_data,
+      data_size,
+      sample_rate,
+      runner);
+#endif
 }
 
 WebString WebKitPlatformSupportImpl::queryLocalizedString(
@@ -961,5 +978,11 @@ WebKit::WebDiscardableMemory*
   return NULL;
 }
 
+#if defined(OS_ANDROID)
+webkit_media::WebAudioMediaCodecRunner
+    WebKitPlatformSupportImpl::GetWebAudioMediaCodecRunner() {
+  return base::Bind(&NullRunWebAudioMediaCodec);
+}
+#endif
 
 }  // namespace webkit_glue

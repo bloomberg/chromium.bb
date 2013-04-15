@@ -2355,6 +2355,11 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_UpdateFrameInfo,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
                     bool /* is_begin */)
 
+// This message runs the MediaCodec for decoding audio for webaudio.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_RunWebAudioMediaCodec,
+                     base::SharedMemoryHandle /* encoded_data_handle */,
+                     base::FileDescriptor /* pcm_output */)
+
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,

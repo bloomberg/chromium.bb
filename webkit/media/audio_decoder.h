@@ -7,13 +7,30 @@
 
 #include "base/basictypes.h"
 
+#if defined(OS_ANDROID)
+#include "base/callback_forward.h"
+#include "base/file_descriptor_posix.h"
+#include "base/shared_memory.h"
+#endif
+
 namespace WebKit { class WebAudioBus; }
 
 namespace webkit_media {
 
+#if !defined(OS_ANDROID)
+
 // Decode in-memory audio file data.
 bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate);
+#else
+
+typedef base::Callback<void (base::SharedMemoryHandle, base::FileDescriptor)>
+    WebAudioMediaCodecRunner;
+
+bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
+                         size_t data_size, double sample_rate,
+                         const WebAudioMediaCodecRunner& runner);
+#endif
 
 }  // namespace webkit_media
 

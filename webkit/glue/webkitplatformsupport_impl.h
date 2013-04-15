@@ -23,6 +23,7 @@
 #include "webkit/glue/webthemeengine_impl_mac.h"
 #elif defined(OS_ANDROID)
 #include "webkit/glue/webthemeengine_impl_android.h"
+#include "webkit/media/audio_decoder.h"
 #endif
 
 namespace base {
@@ -172,6 +173,10 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
     return compositor_support_.get();
   }
 
+#if defined(OS_ANDROID)
+  virtual webkit_media::WebAudioMediaCodecRunner
+      GetWebAudioMediaCodecRunner();
+#endif
  private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
