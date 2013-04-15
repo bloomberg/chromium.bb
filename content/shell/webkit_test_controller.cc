@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -213,6 +214,15 @@ bool WebKitTestController::PrepareForLayoutTest(
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
     initial_size = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
+  if (main_window_ &&
+      !SiteInstance::IsSameWebSite(
+          browser_context,
+          main_window_->web_contents()->GetSiteInstance()->GetSiteURL(),
+          test_url)) {
+    base::RunLoop run_loop;
+    DiscardMainWindow();
+    run_loop.Run();
+  }
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
         browser_context,
