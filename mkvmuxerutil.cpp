@@ -8,6 +8,10 @@
 
 #include "mkvmuxerutil.hpp"
 
+#ifdef __ANDROID__
+#include <fcntl.h>
+#endif
+
 #include <cmath>
 #include <cstdio>
 #ifdef _WIN32
@@ -511,12 +515,21 @@ mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
   for (int i = 0; i < 7; ++i) {  // avoid problems with 8-byte values
     uid <<= 8;
 
+    // TODO(fgalligan): Move random number generation to platform specific code.
 #ifdef _WIN32
     (void)seed;
     unsigned int random_value;
     const errno_t e = rand_s(&random_value);
     (void)e;
     const int32 nn  = random_value;
+#elif __ANDROID__
+    int32 temp_num = 1;
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd != -1) {
+      read(fd, &temp_num, sizeof(int32));
+      close(fd);
+    }
+    const int32 nn = temp_num;
 #else
     const int32 nn = rand_r(seed);
 #endif
