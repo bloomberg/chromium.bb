@@ -190,11 +190,19 @@ void Shell::ShowDevTools() {
     return;
   }
   devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
+  registrar_.Add(this,
+                 NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 Source<WebContents>(
+                     devtools_frontend_->frontend_shell()->web_contents()));
 }
 
 void Shell::CloseDevTools() {
   if (!devtools_frontend_)
     return;
+  registrar_.Remove(this,
+                    NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    Source<WebContents>(
+                        devtools_frontend_->frontend_shell()->web_contents()));
   devtools_frontend_->Close();
   devtools_frontend_ = NULL;
 }
@@ -311,6 +319,11 @@ void Shell::Observe(int type,
       string16 text = title->first->GetTitle();
       PlatformSetTitle(text);
     }
+  } else if (type == NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    devtools_frontend_ = NULL;
+    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED, source);
+  } else {
+    NOTREACHED();
   }
 }
 

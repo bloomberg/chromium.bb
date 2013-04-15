@@ -27,6 +27,8 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   void Focus();
   void Close();
 
+  Shell* frontend_shell() const { return frontend_shell_; }
+
  private:
   ShellDevToolsFrontend(Shell* frontend_shell, DevToolsAgentHost* agent_host);
   virtual ~ShellDevToolsFrontend();
