@@ -139,7 +139,7 @@ class ScopedComPtr : public scoped_refptr<Interface> {
 
   // Provides direct access to the interface.
   // Here we use a well known trick to make sure we block access to
-  // IUknown methods so that something bad like this doesn't happen:
+  // IUnknown methods so that something bad like this doesn't happen:
   //    ScopedComPtr<IUnknown> p(Foo());
   //    p->Release();
   //    ... later the destructor runs, which will Release() again.
