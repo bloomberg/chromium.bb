@@ -23,6 +23,7 @@
 #if ENABLE(SVG)
 #include "RenderStyleConstants.h"
 #include <wtf/HashMap.h>
+#include <wtf/Noncopyable.h>
 
 namespace WebCore {
 

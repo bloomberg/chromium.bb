@@ -33,6 +33,7 @@
 
 #include <public/Platform.h>
 #include <wtf/StdLibExtras.h>
+#include <wtf/Threading.h>
 
 namespace WebCore {
 

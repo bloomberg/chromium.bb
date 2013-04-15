@@ -24,21 +24,9 @@
 
 #include <wtf/Alignment.h>
 #include <wtf/Assertions.h>
-#include <wtf/DataLog.h>
 #include <wtf/FastMalloc.h>
 #include <wtf/HashTraits.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Threading.h>
-#include <wtf/ValueCheck.h>
 #include <string.h>
-
-#ifndef NDEBUG
-// Required for CHECK_HASHTABLE_ITERATORS.
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#endif
-
-namespace WTF {
 
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
@@ -53,6 +41,23 @@ namespace WTF {
 #define CHECK_HASHTABLE_ITERATORS 1
 #define CHECK_HASHTABLE_USE_AFTER_DESTRUCTION 1
 #endif
+
+#if CHECK_HASHTABLE_ITERATORS
+// Required for CHECK_HASHTABLE_ITERATORS.
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
+#include <wtf/Threading.h>
+#endif
+
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+#include <wtf/DataLog.h>
+#endif
+
+#if !ASSERT_DISABLED
+#include <wtf/ValueCheck.h>
+#endif
+
+namespace WTF {
 
 #if DUMP_HASHTABLE_STATS
 

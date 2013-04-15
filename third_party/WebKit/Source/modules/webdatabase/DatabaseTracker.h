@@ -32,6 +32,7 @@
 #include "DatabaseError.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
+#include <wtf/ThreadingPrimitives.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
 

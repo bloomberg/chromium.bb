@@ -32,7 +32,7 @@
 #define WTF_StreamBuffer_h
 
 #include <wtf/Deque.h>
-#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 
 namespace WTF {
 

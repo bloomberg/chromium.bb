@@ -30,6 +30,7 @@
 #include "InspectorState.h"
 
 #include "InspectorStateClient.h"
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
