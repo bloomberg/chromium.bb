@@ -346,10 +346,6 @@
 #define ENABLE_VIDEO 0
 #endif
 
-#if !defined(ENABLE_VIDEO_TRACK)
-#define ENABLE_VIDEO_TRACK 0
-#endif
-
 #if !defined(ENABLE_VIEWPORT)
 #define ENABLE_VIEWPORT 0
 #endif
@@ -382,10 +378,6 @@
 
 #if ENABLE(SVG_FONTS) && !ENABLE(SVG)
 #error "ENABLE(SVG_FONTS) requires ENABLE(SVG)"
-#endif
-
-#if ENABLE(VIDEO_TRACK) && !ENABLE(VIDEO)
-#error "ENABLE(VIDEO_TRACK) requires ENABLE(VIDEO)"
 #endif
 
 #endif /* WTF_FeatureDefines_h */
