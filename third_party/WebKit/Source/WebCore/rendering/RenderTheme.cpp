@@ -646,12 +646,11 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& bo
 
     case ListboxPart:
     case MenulistPart:
+    case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
         return isBackgroundOrBorderStyled(*style, border, background, backgroundColor) || style->boxShadow();
 
-    // FIXME: SearchFieldPart should be in the above group. crbug.com/101447.
-    case SearchFieldPart:
     case SliderHorizontalPart:
     case SliderVerticalPart:
         return style->boxShadow();

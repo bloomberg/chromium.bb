@@ -493,6 +493,9 @@ bool RenderThemeMacShared::isControlStyled(const RenderStyle* style, const Borde
     // is in effect we treat it like the control is styled.
     if (style->appearance() == MenulistPart && style->effectiveZoom() != 1.0f)
         return true;
+    // FIXME: NSSearchFieldCell doesn't work well when scaled.
+    if (style->appearance() == SearchFieldPart && style->effectiveZoom() != 1)
+        return true;
 
     return RenderTheme::isControlStyled(style, border, background, backgroundColor);
 }
