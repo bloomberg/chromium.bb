@@ -405,12 +405,12 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
 
 bool BaseMultipleFieldsDateAndTimeInputType::isKeyboardFocusable(KeyboardEvent*) const
 {
-    return element()->isFocusable();
+    return element()->isTextFormControlFocusable();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::isMouseFocusable() const
 {
-    return element()->isFocusable();
+    return element()->isTextFormControlFocusable();
 }
 
 AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const
