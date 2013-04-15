@@ -64,19 +64,8 @@ class DeprecatedPort(object):
             "chromium": ChromiumPort,
             "chromium-android": ChromiumAndroidPort,
             "chromium-xvfb": ChromiumXVFBPort,
-            "gtk": GtkPort,
-            "mac": MacPort,
-            "mac-wk2": MacWK2Port,
-            "win": WinPort,
-            "qt": QtPort,
-            "efl": EflPort,
         }
-        default_port = {
-            "Windows": WinPort,
-            "Darwin": MacPort,
-        }
-        # Do we really need MacPort as the ultimate default?
-        return ports.get(port_name, default_port.get(platform.system(), MacPort))()
+        return ports.get(port_name)()
 
     def makeArgs(self):
         # FIXME: This shouldn't use a static Executive().
@@ -119,64 +108,6 @@ class DeprecatedPort(object):
 
     def run_bindings_tests_command(self):
         return self.script_shell_command("run-bindings-tests")
-
-
-class MacPort(DeprecatedPort):
-    port_flag_name = "mac"
-
-
-class MacWK2Port(DeprecatedPort):
-    port_flag_name = "mac-wk2"
-
-    def run_webkit_tests_command(self):
-        command = super(MacWK2Port, self).run_webkit_tests_command()
-        command.append("-2")
-        return command
-
-
-class WinPort(DeprecatedPort):
-    port_flag_name = "win"
-
-    def run_bindings_tests_command(self):
-        return None
-
-
-class GtkPort(DeprecatedPort):
-    port_flag_name = "gtk"
-
-    def build_webkit_command(self, build_style=None):
-        command = super(GtkPort, self).build_webkit_command(build_style=build_style)
-        command.append("--gtk")
-        command.append("--update-gtk")
-        command.append("--no-webkit2")
-        command.append(super(GtkPort, self).makeArgs())
-        return command
-
-    def run_webkit_tests_command(self):
-        command = super(GtkPort, self).run_webkit_tests_command()
-        command.append("--gtk")
-        return command
-
-
-class QtPort(DeprecatedPort):
-    port_flag_name = "qt"
-
-    def build_webkit_command(self, build_style=None):
-        command = super(QtPort, self).build_webkit_command(build_style=build_style)
-        command.append("--qt")
-        command.append(super(QtPort, self).makeArgs())
-        return command
-
-
-class EflPort(DeprecatedPort):
-    port_flag_name = "efl"
-
-    def build_webkit_command(self, build_style=None):
-        command = super(EflPort, self).build_webkit_command(build_style=build_style)
-        command.append("--efl")
-        command.append("--update-efl")
-        command.append(super(EflPort, self).makeArgs())
-        return command
 
 
 class ChromiumPort(DeprecatedPort):
