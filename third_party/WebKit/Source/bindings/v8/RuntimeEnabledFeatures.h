@@ -211,6 +211,9 @@ public:
     static bool shadowDOMEnabled() { return isShadowDOMEnabled; }
     static void setShadowDOMEnabled(bool isEnabled) { isShadowDOMEnabled = isEnabled; }
 
+    static bool experimentalShadowDOMEnabled() { return isExperimentalShadowDOMEnabled; }
+    static void setExperimentalShadowDOMEnabled(bool isEnabled) { isExperimentalShadowDOMEnabled = isEnabled; }
+
     static bool authorShadowDOMForAnyElementEnabled() { return isAuthorShadowDOMForAnyElementEnabled; }
     static void setAuthorShadowDOMForAnyElementEnabled(bool isEnabled) { isAuthorShadowDOMForAnyElementEnabled = isEnabled; }
 
@@ -307,6 +310,8 @@ private:
 #endif
 
     static bool isShadowDOMEnabled;
+
+    static bool isExperimentalShadowDOMEnabled;
 
     static bool isAuthorShadowDOMForAnyElementEnabled;
 

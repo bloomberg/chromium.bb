@@ -163,6 +163,8 @@ bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
 
 bool RuntimeEnabledFeatures::isShadowDOMEnabled = false;
 
+bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
+
 bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
 
 #if ENABLE(CUSTOM_ELEMENTS)

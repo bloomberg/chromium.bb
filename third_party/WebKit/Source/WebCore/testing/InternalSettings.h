@@ -54,6 +54,7 @@ public:
         bool m_originalCSSVariablesEnabled;
         bool m_originalShadowDOMEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
+        bool m_originalExperimentalShadowDOMEnabled;
         bool m_originalStyleScoped;
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
@@ -93,6 +94,7 @@ public:
     void setTouchEventEmulationEnabled(bool enabled, ExceptionCode&);
     void setShadowDOMEnabled(bool enabled, ExceptionCode&);
     void setAuthorShadowDOMForAnyElementEnabled(bool);
+    void setExperimentalShadowDOMEnabled(bool enabled);
     void setStyleScopedEnabled(bool);
     void setStandardFontFamily(const String& family, const String& script, ExceptionCode&);
     void setSerifFontFamily(const String& family, const String& script, ExceptionCode&);
