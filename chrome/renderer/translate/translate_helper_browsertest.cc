@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate/translate_helper.h"
@@ -20,7 +21,11 @@ class TestTranslateHelper : public TranslateHelper {
       : TranslateHelper(render_view) {
   }
 
-  virtual bool DontDelayTasks() { return true; }
+  virtual base::TimeDelta AdjustDelay(int delayInMs) OVERRIDE {
+    // Just returns base::TimeDelta() which has initial value 0.
+    // Tasks doesn't need to be delayed in tests.
+    return base::TimeDelta();
+  }
 
   void TranslatePage(int page_id,
                      const std::string& source_lang,
@@ -45,12 +50,12 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
   TranslateHelperBrowserTest() : translate_helper_(NULL) {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     delete translate_helper_;
     ChromeRenderViewTest::TearDown();
   }

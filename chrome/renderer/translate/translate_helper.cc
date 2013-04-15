@@ -81,8 +81,6 @@ TranslateHelper::~TranslateHelper() {
 }
 
 void TranslateHelper::PageCaptured(const string16& contents) {
-  WebDocument document = render_view()->GetWebView()->mainFrame()->document();
-
   // Get the document language as set by WebKit from the http-equiv
   // meta tag for "content-language".  This may or may not also
   // have a value derived from the actual Content-Language HTTP
@@ -92,6 +90,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // language of the intended audience (a distinction really only
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
+  WebDocument document = GetMainFrame()->document();
   std::string content_language = document.contentLanguage().utf8();
   std::string language = DeterminePageLanguage(content_language, contents);
   if (language.empty())
@@ -145,67 +144,40 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
 // TranslateHelper, protected:
 //
 bool TranslateHelper::IsTranslateLibAvailable() {
-  bool lib_available = false;
-  if (!ExecuteScriptAndGetBoolResult(
+  return ExecuteScriptAndGetBoolResult(
       "typeof cr != 'undefined' && typeof cr.googleTranslate != 'undefined' && "
-      "typeof cr.googleTranslate.translate == 'function'", &lib_available)) {
-    NOTREACHED();
-    return false;
-  }
-  return lib_available;
+      "typeof cr.googleTranslate.translate == 'function'", false);
 }
 
 bool TranslateHelper::IsTranslateLibReady() {
-  bool lib_ready = false;
-  if (!ExecuteScriptAndGetBoolResult("cr.googleTranslate.libReady",
-                                     &lib_ready)) {
-    NOTREACHED();
-    return false;
-  }
-  return lib_ready;
+  return ExecuteScriptAndGetBoolResult("cr.googleTranslate.libReady", false);
 }
 
 bool TranslateHelper::HasTranslationFinished() {
-  bool translation_finished = false;
-  if (!ExecuteScriptAndGetBoolResult("cr.googleTranslate.finished",
-                                     &translation_finished)) {
-    NOTREACHED() << "crGoogleTranslateGetFinished returned unexpected value.";
-    return true;
-  }
-
-  return translation_finished;
+  return ExecuteScriptAndGetBoolResult("cr.googleTranslate.finished", true);
 }
 
 bool TranslateHelper::HasTranslationFailed() {
-  bool translation_failed = false;
-  if (!ExecuteScriptAndGetBoolResult("cr.googleTranslate.error",
-                                     &translation_failed)) {
-    NOTREACHED() << "crGoogleTranslateGetError returned unexpected value.";
-    return true;
-  }
-
-  return translation_failed;
+  return ExecuteScriptAndGetBoolResult("cr.googleTranslate.error", true);
 }
 
 bool TranslateHelper::StartTranslation() {
-  bool translate_success = false;
-  if (!ExecuteScriptAndGetBoolResult("cr.googleTranslate.translate('" +
-                                     source_lang_ + "','" + target_lang_ + "')",
-                                     &translate_success)) {
-    NOTREACHED();
-    return false;
-  }
-  return translate_success;
+  std::string script = "cr.googleTranslate.translate('" +
+                       source_lang_ +
+                       "','" +
+                       target_lang_ +
+                       "')";
+  return ExecuteScriptAndGetBoolResult(script, false);
 }
 
 std::string TranslateHelper::GetOriginalPageLanguage() {
-  std::string lang;
-  ExecuteScriptAndGetStringResult("cr.googleTranslate.sourceLang", &lang);
-  return lang;
+  return ExecuteScriptAndGetStringResult("cr.googleTranslate.sourceLang");
 }
 
-bool TranslateHelper::DontDelayTasks() {
-  return false;
+base::TimeDelta TranslateHelper::AdjustDelay(int delayInMs) {
+  // Just converts |delayInMs| without any modification in practical cases.
+  // Tests will override this function to return modified value.
+  return base::TimeDelta::FromMilliseconds(delayInMs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,14 +350,9 @@ void TranslateHelper::OnRevertTranslation(int page_id) {
     return;
   }
 
-  WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
-    return;
-
   CancelPendingTranslation();
 
-  main_frame->executeScript(
-      WebScriptSource(ASCIIToUTF16("cr.googleTranslate.revert()")));
+  ExecuteScript("cr.googleTranslate.revert()");
 }
 
 void TranslateHelper::CheckTranslateStatus() {
@@ -436,54 +403,51 @@ void TranslateHelper::CheckTranslateStatus() {
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(
-          DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs));
+      AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
-bool TranslateHelper::ExecuteScript(const std::string& script) {
+void TranslateHelper::ExecuteScript(const std::string& script) {
   WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
-    return false;
-  main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
-  return true;
+  if (main_frame)
+    main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
 }
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
-                                                    bool* value) {
-  DCHECK(value);
+                                                    bool fallback) {
   WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
-    return false;
+    return fallback;
 
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
       WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsBoolean())
-    return false;
+  if (v.IsEmpty() || !v->IsBoolean()) {
+    NOTREACHED();
+    return fallback;
+  }
 
-  *value = v->BooleanValue();
-  return true;
+  return v->BooleanValue();
 }
 
-bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
-                                                      std::string* value) {
-  DCHECK(value);
+std::string TranslateHelper::ExecuteScriptAndGetStringResult(
+    const std::string& script) {
   WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
-    return false;
+    return std::string();
 
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
       WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsString())
-    return false;
+  if (v.IsEmpty() || !v->IsString()) {
+    NOTREACHED();
+    return std::string();
+  }
 
   v8::Local<v8::String> v8_str = v->ToString();
   int length = v8_str->Utf8Length() + 1;
   scoped_ptr<char[]> str(new char[length]);
   v8_str->WriteUtf8(str.get(), length);
-  *value = str.get();
-  return true;
+  return std::string(str.get());
 }
 
 void TranslateHelper::TranslatePageImpl(int count) {
@@ -502,8 +466,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
         FROM_HERE,
         base::Bind(&TranslateHelper::TranslatePageImpl,
                    weak_method_factory_.GetWeakPtr(), count),
-        base::TimeDelta::FromMilliseconds(
-            DontDelayTasks() ? 0 : count * kTranslateInitCheckDelayMs));
+        AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
 
@@ -516,8 +479,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
       FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(
-          DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs));
+      AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
 void TranslateHelper::NotifyBrowserTranslationFailed(
