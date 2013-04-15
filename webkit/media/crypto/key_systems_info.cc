@@ -22,8 +22,10 @@ static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 static const char kExternalClearKeyKeySystem[] =
     "org.chromium.externalclearkey";
 
+#if defined(WIDEVINE_CDM_AVAILABLE)
 // TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
 static const char kWidevineBaseKeySystem[] = "com.widevine";
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 // The supported codecs depend on what the CDM provides.
@@ -96,7 +98,8 @@ const int kNumKeySystemToPluginTypeMapping =
 bool IsSystemCompatible(const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (key_system == kWidevineKeySystem) {
+  if (key_system == kWidevineKeySystem ||
+      key_system == kWidevineBaseKeySystem) {
     Version glibc_version(gnu_get_libc_version());
     DCHECK(glibc_version.IsValid());
     return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
