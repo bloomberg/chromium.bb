@@ -189,7 +189,7 @@ bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 #endif
 
-bool RuntimeEnabledFeatures::isDoNotTrackEnabled = false;
+bool RuntimeEnabledFeatures::isDoNotTrackEnabled = true;
 
 #if USE(WEBP)
 bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;

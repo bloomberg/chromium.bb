@@ -42,7 +42,6 @@
 #include "WebFrame.h"
 #include "WebHistoryItem.h"
 #include "WebIDBFactory.h"
-#include "WebRuntimeFeatures.h"
 #include "WebTestingSupport.h"
 #include "WebSettings.h"
 #include "WebTestProxy.h"
@@ -142,10 +141,6 @@ void TestShell::initialize(MockPlatform* platformSupport)
     // Set theme engine.
     webkit_support::SetThemeEngine(m_testInterfaces->themeEngine());
 #endif
-
-    // We can't enable this in TestRunner, because content_shell still has its
-    // own doNotTrack implementation.
-    WebRuntimeFeatures::enableDoNotTrack(true);
 
     WTF::initializeThreading();
 
