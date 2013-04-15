@@ -46,7 +46,6 @@
 #include "ContextMenuController.h"
 #include "ContextMenuItem.h"
 #include "Cursor.h"
-#include "DOMUtilitiesPrivate.h"
 #include "DeviceOrientationClientProxy.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -1022,7 +1021,7 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
             return false;
         }
         Element* element = toElement(node);
-        if (!element->hasLocalName(HTMLNames::inputTag)) {
+        if (!element->hasTagName(HTMLNames::inputTag)) {
             ASSERT_NOT_REACHED();
             return false;
         }
@@ -1032,7 +1031,7 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
         if (!m_autofillPopupClient->canRemoveSuggestionAtIndex(selectedIndex))
             return false;
 
-        WebString name = WebInputElement(toHTMLInputElement(element)).nameForAutofill();
+        WebString name = WebInputElement(element->toInputElement()).nameForAutofill();
         WebString value = m_autofillPopupClient->itemText(selectedIndex);
         m_autofillClient->removeAutocompleteSuggestion(name, value);
         // Update the entries in the currently showing popup to reflect the

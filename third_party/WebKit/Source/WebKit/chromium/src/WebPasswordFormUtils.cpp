@@ -48,8 +48,6 @@
 #include "HTMLNames.h"
 #include "KURL.h"
 
-#include "DOMUtilitiesPrivate.h"
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -72,10 +70,10 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
         if (formElement->isActivatedSubmit())
             fields->submit = formElement;
 
-        if (!formElement->hasLocalName(HTMLNames::inputTag))
+        if (!formElement->hasTagName(HTMLNames::inputTag))
             continue;
 
-        HTMLInputElement* inputElement = toHTMLInputElement(formElement);
+        HTMLInputElement* inputElement = formElement->toInputElement();
         if (inputElement->isDisabledFormControl())
             continue;
 

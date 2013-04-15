@@ -38,26 +38,7 @@
 
 using namespace WebCore;
 
-namespace {
-
-template <class HTMLNodeType>
-HTMLNodeType* toHTMLElement(Node* node, const QualifiedName& name)
-{
-    if (node->isHTMLElement()
-        && toHTMLElement(node)->hasTagName(name)) {
-        return static_cast<HTMLNodeType*>(node);
-    }
-    return 0;
-}
-
-} // namespace
-
 namespace WebKit {
-
-HTMLInputElement* toHTMLInputElement(Node* node)
-{
-    return toHTMLElement<HTMLInputElement>(node, HTMLNames::inputTag);
-}
 
 bool elementHasLegalLinkAttribute(const Element* element,
                                   const QualifiedName& attrName)

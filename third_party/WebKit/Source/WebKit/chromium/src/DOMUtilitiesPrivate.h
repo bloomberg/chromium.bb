@@ -33,17 +33,11 @@
 
 namespace WebCore {
 class Element;
-class HTMLInputElement;
-class Node;
 class QualifiedName;
 }
 
 // This file is an aggregate of useful WebCore operations.
 namespace WebKit {
-
-// If node is an HTML node with a tag name of name it is casted and returned.
-// If node is not an HTML node or the tag name is not name, 0 is returned.
-WebCore::HTMLInputElement* toHTMLInputElement(WebCore::Node*);
 
 // For img, script, iframe, frame element, when attribute name is src,
 // for link, a, area element, when attribute name is href,

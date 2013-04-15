@@ -43,8 +43,6 @@
 #include "Settings.h"
 #include "SpellChecker.h"
 #include "UndoStep.h"
-
-#include "DOMUtilitiesPrivate.h"
 #include "WebAutofillClient.h"
 #include "WebEditingAction.h"
 #include "WebElement.h"
@@ -658,7 +656,7 @@ void EditorClientImpl::textFieldDidBeginEditing(Element* element)
 
 void EditorClientImpl::textFieldDidEndEditing(Element* element)
 {
-    HTMLInputElement* inputElement = toHTMLInputElement(element);
+    HTMLInputElement* inputElement = element->toInputElement();
     if (m_webView->autofillClient() && inputElement)
         m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(inputElement));
 
@@ -680,7 +678,7 @@ void EditorClientImpl::textDidChangeInTextField(Element* element)
 bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element,
                                                    KeyboardEvent* event)
 {
-    HTMLInputElement* inputElement = toHTMLInputElement(element);
+    HTMLInputElement* inputElement = element->toInputElement();
     if (m_webView->autofillClient() && inputElement) {
         m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(inputElement),
                                                                 WebKeyboardEventBuilder(*event));
