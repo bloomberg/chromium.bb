@@ -134,15 +134,17 @@ public:
 
         std::sort(m_connections.begin(), m_connections.end());
         Vector<v8::Persistent<v8::Value> > group;
-        size_t i = 0;
-        while (i < m_connections.size()) {
-            void* root = m_connections[i].root();
-            v8::Persistent<v8::Object> groupRepresentativeWrapper = m_connections[i].wrapper();
-            OwnPtr<RetainedObjectInfo> retainedObjectInfo = m_connections[i].retainedObjectInfo();
+        ImplicitConnection* con_iter = m_connections.begin();
+        const ImplicitConnection* con_end = m_connections.end();
+        while (con_iter < con_end) {
+            void* root = con_iter->root();
+            v8::Persistent<v8::Object> groupRepresentativeWrapper = con_iter->wrapper();
+            OwnPtr<RetainedObjectInfo> retainedObjectInfo = con_iter->retainedObjectInfo();
 
             do {
-                group.append(m_connections[i++].wrapper());
-            } while (i < m_connections.size() && root == m_connections[i].root());
+                group.append(con_iter->wrapper());
+                ++con_iter;
+            } while (con_iter < con_end && root == con_iter->root());
 
             if (group.size() > 1)
                 v8::V8::AddObjectGroup(group.data(), group.size(), retainedObjectInfo.leakPtr());
@@ -155,19 +157,21 @@ public:
         }
 
         std::sort(m_references.begin(), m_references.end());
-        i = 0;
-        while (i < m_references.size()) {
-            void* parent = m_references[i].parent;
+        const ImplicitReference* ref_iter = m_references.begin();
+        const ImplicitReference* ref_end = m_references.end();
+        while (ref_iter < ref_end) {
+            void* parent = ref_iter->parent;
             v8::Persistent<v8::Object> parentWrapper = m_rootGroupMap.get(parent);
             if (parentWrapper.IsEmpty()) {
-                ++i;
+                ++ref_iter;
                 continue;
             }
 
             Vector<v8::Persistent<v8::Value> > children;
             do {
-                children.append(m_references[i++].child);
-            } while (i < m_references.size() && parent == m_references[i].parent);
+                children.append(ref_iter->child);
+                ++ref_iter;
+            } while (ref_iter < ref_end && parent == ref_iter->parent);
 
             v8::V8::AddImplicitReferences(parentWrapper, children.data(), children.size());
         }
@@ -267,8 +271,10 @@ static void gcTree(v8::Isolate* isolate, Node* startNode)
     // We completed the DOM tree traversal. All wrappers in the DOM tree are
     // stored in newSpaceWrappers and are expected to exist in the new space of V8.
     // We report those wrappers to V8 as an object group.
-    for (size_t i = 0; i < newSpaceWrappers.size(); i++)
-        newSpaceWrappers[i].MarkPartiallyDependent(isolate);
+    v8::Persistent<v8::Value>* wrap_iter = newSpaceWrappers.begin();
+    const v8::Persistent<v8::Value>* end_iter = newSpaceWrappers.end();
+    for (; wrap_iter != end_iter; ++wrap_iter)
+        wrap_iter->MarkPartiallyDependent(isolate);
     if (newSpaceWrappers.size() > 0)
         v8::V8::AddObjectGroup(&newSpaceWrappers[0], newSpaceWrappers.size());
 }
@@ -320,10 +326,13 @@ public:
 
     void notifyFinished()
     {
-        for (size_t i = 0; i < m_nodesInNewSpace.size(); i++) {
-            ASSERT(!m_nodesInNewSpace[i]->wrapper().IsEmpty());
-            if (m_nodesInNewSpace[i]->isV8CollectableDuringMinorGC()) // This branch is just for performance.
-                gcTree(m_isolate, m_nodesInNewSpace[i]);
+        Node** node_iter = m_nodesInNewSpace.begin();
+        Node** node_end = m_nodesInNewSpace.end();
+        for (; node_iter < node_end; ++node_iter) {
+            Node* node = *node_iter;
+            ASSERT(!node->wrapper().IsEmpty());
+            if (node->isV8CollectableDuringMinorGC()) // This branch is just for performance.
+                gcTree(m_isolate, node);
         }
     }
 
