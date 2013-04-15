@@ -519,13 +519,16 @@ static cairo_surface_t *
 load_icon_or_fallback(const char *icon)
 {
 	cairo_surface_t *surface = cairo_image_surface_create_from_png(icon);
+	cairo_status_t status;
 	cairo_t *cr;
 
-	if (cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+	status = cairo_surface_status(surface);
+	if (status == CAIRO_STATUS_SUCCESS)
 		return surface;
 
 	cairo_surface_destroy(surface);
-	fprintf(stderr, "ERROR loading icon from file '%s'\n", icon);
+	fprintf(stderr, "ERROR loading icon from file '%s', error: '%s'\n",
+		icon, cairo_status_to_string(status));
 
 	/* draw fallback icon */
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
