@@ -988,6 +988,8 @@
         'browser/metrics/variations/eula_accepted_notifier.h',
         'browser/metrics/variations/eula_accepted_notifier_chromeos.cc',
         'browser/metrics/variations/eula_accepted_notifier_chromeos.h',
+        'browser/metrics/variations/eula_accepted_notifier_mobile.cc',
+        'browser/metrics/variations/eula_accepted_notifier_mobile.h',
         'browser/metrics/variations/network_time_tracker.cc',
         'browser/metrics/variations/network_time_tracker.h',
         'browser/metrics/variations/resource_request_allowed_notifier.cc',
@@ -2598,6 +2600,8 @@
         }],
         ['OS!="android" and OS!="ios"', {
           'sources!': [
+            'browser/metrics/variations/eula_accepted_notifier_mobile.cc',
+            'browser/metrics/variations/eula_accepted_notifier_mobile.h',
             'browser/metrics/variations/variations_request_scheduler_mobile.cc',
             'browser/metrics/variations/variations_request_scheduler_mobile.h',
           ],

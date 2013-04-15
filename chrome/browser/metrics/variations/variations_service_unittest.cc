@@ -562,7 +562,7 @@ TEST(VariationsServiceTest, SeedStoredWhenOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService variations_service(&prefs);
+  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
 
   net::TestURLFetcherFactory factory;
   variations_service.DoActualFetch();
@@ -593,7 +593,7 @@ TEST(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService variations_service(&prefs);
+  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     variations_service.DoActualFetch();

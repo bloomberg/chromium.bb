@@ -21,7 +21,7 @@ void EulaAcceptedNotifier::NotifyObserver() {
   observer_->OnEulaAccepted();
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // static
 EulaAcceptedNotifier* EulaAcceptedNotifier::Create() {
   return NULL;
