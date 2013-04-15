@@ -38,6 +38,7 @@
     debug("Test WebKitNamedFlowCollection name getter");
     shouldBeEqualToString("document.webkitGetNamedFlows().flow1.name", "flow1");
     shouldBeEqualToString("document.webkitGetNamedFlows().flow2.name", "flow2");
+    shouldBeUndefined("document.webkitGetNamedFlows().undefinedNamedProperty");
 
     document.body.removeChild(region1);
     document.body.removeChild(region2);

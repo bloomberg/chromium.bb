@@ -2702,15 +2702,11 @@ sub GenerateImplementationNamedPropertyGetter
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
-    if (!$namedPropertyGetter) {
-        $namedPropertyGetter = $codeGenerator->FindSuperMethod($interface, "namedItem");
-    }
-
     if ($interface->extendedAttributes->{"NamedGetter"}) {
         AddToImplIncludes("V8Collection.h");
         my $type = $namedPropertyGetter->type;
         push(@implContent, <<END);
-    setCollectionNamedGetter<${interfaceName}, ${type}>(desc);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, 0, 0, 0, 0);
 END
     }
 
@@ -2976,6 +2972,9 @@ END
         } else {
             push(@normalFunctions, $function);
         }
+    }
+    if (!$namedPropertyGetter) {
+        $namedPropertyGetter = $codeGenerator->FindSuperMethod($interface, "namedItem");
     }
 
     if ($needsDomainSafeFunctionSetter) {
@@ -3414,6 +3413,36 @@ v8::Persistent<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isol
     }
 }
 
+END
+    }
+
+    # FIXME: Separate array for generated code and move this block to GenerateImplementationNamedPropertyGetter
+    if ( $interface->extendedAttributes->{"NamedGetter"} ) {
+        my $type = $namedPropertyGetter->type;
+        push(@implContent, <<END);
+v8::Handle<v8::Value> ${v8InterfaceName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return v8Undefined();
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return v8Undefined();
+
+    v8::Local<v8::Object> object = info.Holder();
+    v8::Handle<v8::Object> creationContext = info.Holder();
+    v8::Isolate* isolate = info.GetIsolate();
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
+    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
+    $interfaceName* collection = toNative(object);
+
+    AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
+    RefPtr<$type> element = collection->namedItem(propertyName);
+
+    if (!element)
+        return v8Undefined();
+
+    return toV8(element.release(), creationContext, isolate);
+}
 END
     }
 

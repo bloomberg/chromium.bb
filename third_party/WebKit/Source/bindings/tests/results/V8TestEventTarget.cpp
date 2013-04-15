@@ -189,7 +189,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     
     setCollectionIndexedGetter<TestEventTarget, Node>(desc);
-    setCollectionNamedGetter<TestEventTarget, Node>(desc);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, 0, 0, 0, 0);
     desc->InstanceTemplate()->MarkAsUndetectable();
 
     // Custom Signature 'dispatchEvent'
@@ -234,6 +234,29 @@ EventTarget* V8TestEventTarget::toEventTarget(v8::Handle<v8::Object> object)
     return toNative(object);
 }
 
+v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return v8Undefined();
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return v8Undefined();
+
+    v8::Local<v8::Object> object = info.Holder();
+    v8::Handle<v8::Object> creationContext = info.Holder();
+    v8::Isolate* isolate = info.GetIsolate();
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
+    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
+    TestEventTarget* collection = toNative(object);
+
+    AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
+    RefPtr<Node> element = collection->namedItem(propertyName);
+
+    if (!element)
+        return v8Undefined();
+
+    return toV8(element.release(), creationContext, isolate);
+}
 
 v8::Handle<v8::Object> V8TestEventTarget::createWrapper(PassRefPtr<TestEventTarget> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
