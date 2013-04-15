@@ -78,12 +78,14 @@ void WebAudioMediaCodecBridge::InitializeDestination(
   // this file is an audio/vorbis file.  Information is sent as a set of
   // 4 longs. This must be coordinated with DecodeAudioFileData!
 
-  unsigned long info[4] = {channel_count,
-                           sample_rate,
+  unsigned long info[4] = {static_cast<unsigned long>(channel_count),
+                           static_cast<unsigned long>(sample_rate),
                            // The number of frames is the duration of the file
                            // (in microseconds) times the sample rate.
-                           0.5 + (duration_microsec * 0.000001 * sample_rate),
-                           is_vorbis ? 1 : 0};
+                           static_cast<unsigned long>(
+                               0.5 + (duration_microsec * 0.000001 *
+                                      sample_rate)),
+                           is_vorbis ? 1ul : 0ul};
 
   DVLOG(1) << "InitializeDestination:"
            << "  channel count = " << channel_count
