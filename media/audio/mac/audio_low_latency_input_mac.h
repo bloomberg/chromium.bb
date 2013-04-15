@@ -135,7 +135,7 @@ class AUAudioInputStream : public AudioInputStreamImpl {
 
   // Temporary storage for recorded data. The InputProc() renders into this
   // array as soon as a frame of the desired buffer size has been recorded.
-  scoped_array<uint8> audio_data_buffer_;
+  scoped_ptr<uint8[]> audio_data_buffer_;
 
   // True after successfull Start(), false after successful Stop().
   bool started_;

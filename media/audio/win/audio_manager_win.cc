@@ -201,7 +201,7 @@ string16 AudioManagerWin::GetAudioInputDeviceModel() {
     if (!interface_detail_size)
       continue;
 
-    scoped_array<char> interface_detail_buffer(new char[interface_detail_size]);
+    scoped_ptr<char[]> interface_detail_buffer(new char[interface_detail_size]);
     SP_DEVICE_INTERFACE_DETAIL_DATA* interface_detail =
         reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA*>(
             interface_detail_buffer.get());

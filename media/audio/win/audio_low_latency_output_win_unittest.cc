@@ -152,7 +152,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
  private:
   scoped_refptr<DecoderBuffer> file_;
-  scoped_array<int> delta_times_;
+  scoped_ptr<int[]> delta_times_;
   int pos_;
   base::Time previous_call_time_;
   FILE* text_file_;

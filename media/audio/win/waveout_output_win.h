@@ -125,7 +125,7 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
 
   // Pointer to the allocated audio buffers, we allocate all buffers in one big
   // chunk. This object owns them.
-  scoped_array<char> buffers_;
+  scoped_ptr<char[]> buffers_;
 
   // Lock used to avoid the conflict when callbacks are called simultaneously.
   base::Lock lock_;

@@ -152,7 +152,7 @@ bool AudioHardwareUnifiedStream::Open() {
 
   if (result == noErr && size > 0) {
     // Allocate storage.
-    scoped_array<uint8> input_list_storage(new uint8[size]);
+    scoped_ptr<uint8[]> input_list_storage(new uint8[size]);
     AudioBufferList& input_list =
         *reinterpret_cast<AudioBufferList*>(input_list_storage.get());
 
@@ -198,7 +198,7 @@ bool AudioHardwareUnifiedStream::Open() {
 
   if (result == noErr && size > 0) {
     // Allocate storage.
-    scoped_array<uint8> output_list_storage(new uint8[size]);
+    scoped_ptr<uint8[]> output_list_storage(new uint8[size]);
     AudioBufferList& output_list =
         *reinterpret_cast<AudioBufferList*>(output_list_storage.get());
 

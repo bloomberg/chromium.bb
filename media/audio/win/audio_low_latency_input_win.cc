@@ -315,7 +315,7 @@ void WASAPIAudioInputStream::Run() {
   size_t capture_buffer_size = std::max(
       2 * endpoint_buffer_size_frames_ * frame_size_,
       2 * packet_size_frames_ * frame_size_);
-  scoped_array<uint8> capture_buffer(new uint8[capture_buffer_size]);
+  scoped_ptr<uint8[]> capture_buffer(new uint8[capture_buffer_size]);
 
   LARGE_INTEGER now_count;
   bool recording = true;

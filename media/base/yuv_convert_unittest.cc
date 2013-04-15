@@ -36,7 +36,7 @@ static const int kRGBSizeScaled = kScaledWidth * kScaledHeight * kBpp;
 static const int kRGB24Size = kSourceYSize * 3;
 static const int kRGBSizeConverted = kSourceYSize * kBpp;
 
-// Helper for reading test data into a scoped_array<uint8>.
+// Helper for reading test data into a scoped_ptr<uint8[]>.
 static void ReadData(const base::FilePath::CharType* filename,
                      int expected_size,
                      scoped_ptr<uint8[]>* data) {

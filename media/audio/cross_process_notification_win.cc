@@ -179,7 +179,7 @@ int CrossProcessNotification::WaitMultiple(const Notifications& notifications,
 
   // TODO(tommi): Should we wait in an alertable state so that we can be
   // canceled via an APC?
-  scoped_array<HANDLE> handles(new HANDLE[notifications.size()]);
+  scoped_ptr<HANDLE[]> handles(new HANDLE[notifications.size()]);
 
   // Because of the way WaitForMultipleObjects works, we do a little trick here.
   // When multiple events are signaled, WaitForMultipleObjects will return the

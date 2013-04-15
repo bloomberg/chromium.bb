@@ -528,7 +528,7 @@ void ScreenCapturerWin::CaptureCursor() {
 
     // x2 because there are 2 masks in the bitmap: AND and XOR.
     int mask_bytes = height * row_bytes * 2;
-    scoped_array<uint8> mask(new uint8[mask_bytes]);
+    scoped_ptr<uint8[]> mask(new uint8[mask_bytes]);
     if (!GetBitmapBits(hbitmap.Get(), mask_bytes, mask.get())) {
       VLOG(3) << "Unable to get cursor mask bits. Error = " << GetLastError();
       return;

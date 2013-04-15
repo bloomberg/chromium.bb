@@ -132,7 +132,7 @@ class FFmpegDemuxerTest : public testing::Test {
   // TODO(xhwang): This is a workaround of the issue that move-only parameters
   // are not supported in mocked methods. Remove this when the issue is fixed
   // (http://code.google.com/p/googletest/issues/detail?id=395) or when we use
-  // std::string instead of scoped_array<uint8> (http://crbug.com/130689).
+  // std::string instead of scoped_ptr<uint8[]> (http://crbug.com/130689).
   MOCK_METHOD3(NeedKeyCBMock, void(const std::string& type,
                                    const uint8* init_data, int init_data_size));
   void NeedKeyCB(const std::string& type,

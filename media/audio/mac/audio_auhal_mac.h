@@ -146,7 +146,7 @@ class AUHALStream : public AudioOutputStream {
   bool stopped_;
 
   // The input AudioUnit renders its data here.
-  scoped_array<uint8> input_buffer_list_storage_;
+  scoped_ptr<uint8[]> input_buffer_list_storage_;
   AudioBufferList* input_buffer_list_;
 
   // Holds the actual data for |input_buffer_list_|.

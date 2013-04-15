@@ -328,7 +328,7 @@ bool AudioManagerMac::GetDeviceChannels(
     return false;
 
   // Allocate storage.
-  scoped_array<uint8> list_storage(new uint8[size]);
+  scoped_ptr<uint8[]> list_storage(new uint8[size]);
   AudioBufferList& buffer_list =
       *reinterpret_cast<AudioBufferList*>(list_storage.get());
 

@@ -115,7 +115,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
 
  private:
   base::Time previous_call_time_;
-  scoped_array<int> delta_times_;
+  scoped_ptr<int[]> delta_times_;
   FILE* text_file_;
   size_t elements_to_write_;
 };

@@ -102,7 +102,7 @@ class ScreenCaptureFrameMac : public ScreenCaptureFrame {
 
  private:
   // Allocated pixel buffer.
-  scoped_array<uint8> data_;
+  scoped_ptr<uint8[]> data_;
 
   // DPI settings for this buffer.
   SkIPoint dpi_;
