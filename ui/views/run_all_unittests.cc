@@ -18,7 +18,6 @@ class ViewTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
-
     ui::RegisterPathProvider();
     ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 

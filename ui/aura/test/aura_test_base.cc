@@ -10,6 +10,11 @@
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/ime/text_input_test_support.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#endif
+
 namespace aura {
 namespace test {
 
@@ -59,6 +64,10 @@ void AuraTestBase::SetUp() {
 
   helper_.reset(new AuraTestHelper(&message_loop_));
   helper_->SetUp();
+#if defined(OS_WIN)
+    if (base::win::IsTSFAwareRequired())
+      ui::TSFBridge::Initialize();
+#endif
 }
 
 void AuraTestBase::TearDown() {

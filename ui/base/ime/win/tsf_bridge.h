@@ -67,6 +67,9 @@ class UI_EXPORT TSFBridge {
   // Obtains current thread manager.
   virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() = 0;
 
+  // Returns the focused text input client.
+  virtual TextInputClient* GetFocusedTextInputClient() const = 0;
+
  protected:
   // Uses GetInstance() instead.
   TSFBridge();

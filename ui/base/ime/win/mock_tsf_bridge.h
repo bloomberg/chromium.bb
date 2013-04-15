@@ -27,6 +27,7 @@ class MockTSFBridge : public TSFBridge {
                                 TextInputClient* client) OVERRIDE;
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE;
   virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() OVERRIDE;
+  virtual TextInputClient* GetFocusedTextInputClient() const OVERRIDE;
 
   // Resets MockTSFBridge state including function call counter.
   void Reset();

@@ -44,6 +44,7 @@ class TSFBridgeDelegate : public TSFBridge {
                                 TextInputClient* client) OVERRIDE;
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE;
   virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() OVERRIDE;
+  virtual TextInputClient* GetFocusedTextInputClient() const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<TSFBridgeDelegate>;
@@ -272,6 +273,10 @@ void TSFBridgeDelegate::RemoveFocusedClient(TextInputClient* client) {
   }
 }
 
+TextInputClient* TSFBridgeDelegate::GetFocusedTextInputClient() const {
+  return client_;
+}
+
 base::win::ScopedComPtr<ITfThreadMgr> TSFBridgeDelegate::GetThreadManager() {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
   DCHECK(IsInitialized());
@@ -438,10 +443,13 @@ bool TSFBridge::Initialize() {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return false;
   }
-  tls_tsf_bridge.Initialize(TSFBridge::Finalize);
-  TSFBridgeDelegate* delegate = new TSFBridgeDelegate();
-  tls_tsf_bridge.Set(delegate);
-  return delegate->Initialize();
+  if (!tls_tsf_bridge.initialized()) {
+    tls_tsf_bridge.Initialize(TSFBridge::Finalize);
+    TSFBridgeDelegate* delegate = new TSFBridgeDelegate();
+    tls_tsf_bridge.Set(delegate);
+    return delegate->Initialize();
+  }
+  return true;
 }
 
 // static

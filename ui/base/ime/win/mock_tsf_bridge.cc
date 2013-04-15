@@ -56,6 +56,10 @@ base::win::ScopedComPtr<ITfThreadMgr> MockTSFBridge::GetThreadManager() {
   return thread_manager_;
 }
 
+TextInputClient* MockTSFBridge::GetFocusedTextInputClient() const {
+  return text_input_client_;
+}
+
 void MockTSFBridge::Reset() {
   shutdown_call_count_ = 0;
   enable_ime_call_count_ = 0;

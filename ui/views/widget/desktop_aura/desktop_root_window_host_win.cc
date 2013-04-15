@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 
+#include "base/win/metro.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
@@ -12,6 +13,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method_win.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/insets.h"
@@ -751,6 +753,8 @@ void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
+  if (base::win::IsTSFAwareRequired() && event.IsAnyButton())
+    ui::TSFBridge::GetInstance()->CancelComposition();
   return root_window_host_delegate_->OnHostMouseEvent(
       const_cast<ui::MouseEvent*>(&event));
 }
@@ -777,8 +781,8 @@ bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
                                                 LPARAM l_param,
                                                 LRESULT* result) {
   // TODO(ime): Having to cast here is wrong. Maybe we should have IME events
-  // and have these flow through the same path as HandleUntranslatedKeyEvent()
-  // does.
+  // and have these flow through the same path as
+  // HandleUnHandletranslatedKeyEvent() does.
   ui::InputMethodWin* ime_win =
       static_cast<ui::InputMethodWin*>(
           desktop_native_widget_aura_->input_method_event_filter()->

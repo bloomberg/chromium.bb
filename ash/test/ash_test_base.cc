@@ -39,9 +39,11 @@
 #if defined(OS_WIN)
 #include "ash/test/test_metro_viewer_process_host.h"
 #include "base/test/test_process_killer_win.h"
+#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window_host_win.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
 
@@ -95,6 +97,8 @@ void AshTestBase::SetUp() {
       switches::kAshHostWindowBounds, "1+1-800x600");
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(true);
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::Initialize();
 #endif
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(

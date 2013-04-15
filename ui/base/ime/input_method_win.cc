@@ -8,12 +8,14 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/win/metro.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/win/hwnd_util.h"
 
@@ -106,6 +108,12 @@ bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
+  if (base::win::IsTSFAwareRequired()) {
+    UpdateIMEState();
+    ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(
+        const_cast<TextInputClient*>(client));
+    return;
+  }
   if (IsTextInputClientFocused(client)) {
     ime_input_.CancelIME(hwnd_);
     UpdateIMEState();
@@ -116,7 +124,6 @@ void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
 void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!enabled_ || !IsTextInputClientFocused(client))
     return;
-
   // The current text input type should not be NONE if |client| is focused.
   DCHECK(!IsTextInputTypeNone());
   gfx::Rect screen_bounds(GetTextInputClient()->GetCaretBounds());
@@ -149,10 +156,38 @@ bool InputMethodWin::IsActive() {
   return active_;
 }
 
+void InputMethodWin::SetFocusedTextInputClient(TextInputClient* client) {
+  if (base::win::IsTSFAwareRequired()) {
+    if (client) {
+      ui::TSFBridge::GetInstance()->SetFocusedClient(hwnd_, client);
+    } else {
+      ui::TSFBridge::GetInstance()->RemoveFocusedClient(
+          ui::TSFBridge::GetInstance()->GetFocusedTextInputClient());
+      return;
+    }
+  }
+  InputMethodBase::SetFocusedTextInputClient(client);
+}
+
+TextInputClient* InputMethodWin::GetTextInputClient() const {
+  if (base::win::IsTSFAwareRequired())
+    return ui::TSFBridge::GetInstance()->GetFocusedTextInputClient();
+  return InputMethodBase::GetTextInputClient();
+}
+
 LRESULT InputMethodWin::OnImeMessages(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param,
                                       BOOL* handled) {
+  // Don't do traditional IME in Text services mode.
+  if (base::win::IsTSFAwareRequired() &&
+      message != WM_CHAR &&
+      message != WM_SYSCHAR &&
+      message != WM_DEADCHAR &&
+      message != WM_SYSDEADCHAR &&
+      message != WM_IME_SETCONTEXT) {
+    return false;
+  }
   LRESULT result = 0;
   switch (message) {
     case WM_IME_SETCONTEXT:

@@ -13,6 +13,11 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#endif
+
 namespace views {
 
 ViewsTestBase::ViewsTestBase()
@@ -36,6 +41,10 @@ void ViewsTestBase::SetUp() {
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
 #endif  // USE_AURA
+#if defined(OS_WIN)
+    if (base::win::IsTSFAwareRequired())
+      ui::TSFBridge::Initialize();
+#endif
 }
 
 void ViewsTestBase::TearDown() {

@@ -17,6 +17,7 @@
 
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
 namespace aura {
@@ -112,6 +113,7 @@ class AshTestBase : public testing::Test {
   scoped_ptr<aura::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)
   scoped_ptr<TestMetroViewerProcessHost> metro_viewer_host_;
+  ui::ScopedOleInitializer ole_initializer_;
 #endif
 
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;

@@ -35,6 +35,8 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+  virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
+  virtual TextInputClient* GetTextInputClient() const OVERRIDE;
 
   // Handles IME messages.
   LRESULT OnImeMessages(UINT message,

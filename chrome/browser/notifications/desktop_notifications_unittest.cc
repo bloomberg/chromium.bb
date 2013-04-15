@@ -30,6 +30,11 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#endif
+
 using content::BrowserThread;
 
 // static
@@ -103,6 +108,10 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
+#if defined(OS_WIN)
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::Initialize();
+#endif
 #if defined(USE_ASH)
   WebKit::initialize(webkit_platform_support_.Get());
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(

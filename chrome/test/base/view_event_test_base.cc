@@ -34,6 +34,11 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#endif
+
 namespace {
 
 // View subclass that allows you to specify the preferred size.
@@ -117,7 +122,10 @@ void ViewEventTestBase::SetUp() {
   aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
 #endif
-
+#if defined(OS_WIN)
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::Initialize();
+#endif
   window_ = views::Widget::CreateWindowWithContext(this, context);
 }
 
