@@ -27,6 +27,7 @@
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
+      'USE_WEBRTC_DEV_BRANCH',
     ],
     'configurations': {
       'Debug': {
