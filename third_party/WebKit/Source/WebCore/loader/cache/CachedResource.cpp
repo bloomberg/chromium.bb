@@ -43,7 +43,7 @@
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
-#include "SubresourceLoader.h"
+#include "ResourceLoader.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
@@ -330,14 +330,12 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
         m_fragmentIdentifierForRequest = String();
     }
 
-    m_loader = SubresourceLoader::create(cachedResourceLoader->frame(), this, request, options);
+    m_loader = ResourceLoader::create(cachedResourceLoader->frame(), this, request, options);
 
     if (!m_loader) {
         failBeforeStarting();
         return;
     }
-
-    m_loader->start();
     m_status = Pending;
 }
 

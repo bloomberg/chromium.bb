@@ -43,10 +43,10 @@
 #include "InspectorInstrumentation.h"
 #include "ProgressTracker.h"
 #include "ResourceError.h"
+#include "ResourceLoader.h"
 #include "ResourceRequest.h"
 #include "SchemeRegistry.h"
 #include "SecurityOrigin.h"
-#include "SubresourceLoader.h"
 #include "ThreadableLoaderClient.h"
 #include <wtf/Assertions.h>
 #include <wtf/UnusedParam.h>
