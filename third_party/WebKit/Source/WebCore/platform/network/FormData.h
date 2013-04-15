@@ -114,10 +114,6 @@ public:
     void flatten(Vector<char>&) const; // omits files
     String flattenToString() const; // omits files
 
-    // Resolve all blob references so we only have file and data.
-    // If the FormData has no blob references to resolve, this is returned.
-    PassRefPtr<FormData> resolveBlobReferences();
-
     bool isEmpty() const { return m_elements.isEmpty(); }
     const Vector<FormDataElement>& elements() const { return m_elements; }
     const Vector<char>& boundary() const { return m_boundary; }

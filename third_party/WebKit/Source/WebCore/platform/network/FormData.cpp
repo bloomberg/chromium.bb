@@ -24,7 +24,6 @@
 #include "FormData.h"
 
 #include "BlobData.h"
-#include "BlobRegistryImpl.h"
 #include "BlobURL.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -302,68 +301,6 @@ String FormData::flattenToString() const
     Vector<char> bytes;
     flatten(bytes);
     return Latin1Encoding().decode(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-}
-
-static void appendBlobResolved(FormData* formData, const KURL& url)
-{
-    if (!blobRegistry().isBlobRegistryImpl()) {
-        LOG_ERROR("Tried to resolve a blob without a usable registry");
-        return;
-    }
-    BlobStorageData* blobData = static_cast<BlobRegistryImpl&>(blobRegistry()).getBlobDataFromURL(KURL(ParsedURLString, url));
-    if (!blobData) {
-        LOG_ERROR("Could not get blob data from a registry");
-        return;
-    }
-
-    BlobDataItemList::const_iterator it = blobData->items().begin();
-    const BlobDataItemList::const_iterator itend = blobData->items().end();
-    for (; it != itend; ++it) {
-        const BlobDataItem& blobItem = *it;
-        if (blobItem.type == BlobDataItem::Data)
-            formData->appendData(blobItem.data->data() + static_cast<int>(blobItem.offset), static_cast<int>(blobItem.length));
-        else if (blobItem.type == BlobDataItem::File)
-            formData->appendFileRange(blobItem.path, blobItem.offset, blobItem.length, blobItem.expectedModificationTime);
-        else if (blobItem.type == BlobDataItem::Blob)
-            appendBlobResolved(formData, blobItem.url);
-        else
-            ASSERT_NOT_REACHED();
-    }
-}
-
-PassRefPtr<FormData> FormData::resolveBlobReferences()
-{
-    // First check if any blobs needs to be resolved, or we can take the fast path.
-    bool hasBlob = false;
-    Vector<FormDataElement>::const_iterator it = elements().begin();
-    const Vector<FormDataElement>::const_iterator itend = elements().end();
-    for (; it != itend; ++it) {
-        if (it->m_type == FormDataElement::encodedBlob) {
-            hasBlob = true;
-            break;
-        }
-    }
-
-    if (!hasBlob)
-        return this;
-
-    // Create a copy to append the result into.
-    RefPtr<FormData> newFormData = FormData::create();
-    newFormData->setAlwaysStream(alwaysStream());
-    newFormData->setIdentifier(identifier());
-    it = elements().begin();
-    for (; it != itend; ++it) {
-        const FormDataElement& element = *it;
-        if (element.m_type == FormDataElement::data)
-            newFormData->appendData(element.m_data.data(), element.m_data.size());
-        else if (element.m_type == FormDataElement::encodedFile)
-            newFormData->appendFileRange(element.m_filename, element.m_fileStart, element.m_fileLength, element.m_expectedFileModificationTime, element.m_shouldGenerateFile);
-        else if (element.m_type == FormDataElement::encodedBlob)
-            appendBlobResolved(newFormData.get(), element.m_url);
-        else
-            ASSERT_NOT_REACHED();
-    }
-    return newFormData.release();
 }
 
 void FormData::generateFiles(Document* document)
