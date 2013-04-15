@@ -1,0 +1,41 @@
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is the set of recommended gyp variable settings for Chrome for Android development.
+#
+# These can be used by copying them into ~/.gyp/include.gypi or $CHROME_SRC/chrome/supplement.gypi
+# Even better, use the below in chrome/supplement.gypi:
+#   {
+#     'includes': [ '../build/android/developer_recommended_flags.gypi' ]
+#   }
+# and you'll get new settings automatically.
+
+{
+  'variables': {
+    # When set to 1, only write jni generated files if they've changed. This can prevent unnecessary
+    # compiling/linking of native libraries when editing java files.
+    'optimize_jni_generation': 1,
+
+    # Set component to 'shared_library' to enable the component build. This builds native code as
+    # many small shared libraries instead of one monolithic library. This slightly reduces the time
+    # required for incremental builds.
+    'component': 'shared_library',
+
+    # When gyp_managed_install is set to 1, building an APK will install that APK on the connected
+    # device(/emulator). To install on multiple devices (or onto a new device), build the APK once
+    # with each device attached. This greatly reduces the time required for incremental builds.
+    #
+    # This comes with some caveats:
+    #   Only works with a single device connected.
+    #   Some actions are always run (i.e. ninja will never say "no work to do").
+    #   Native libraries are not packaged in the APK (you can not manually install the APK)
+    'gyp_managed_install': 1,
+
+    # Set clang to 1 to use the clang compiler. Clang has much (much, much) better warning/error
+    # messages than gcc.
+    # TODO(cjhopman): Enable this when http://crbug.com/156420 is addressed. Until then, users can
+    # set clang to 1, but Android stack traces will sometimes be incomplete.
+    #'clang': 1,
+  },
+}
