@@ -27,7 +27,7 @@
 [
     Supplemental=DOMWindow
 ] interface DOMWindowWebDatabase {
-    [EnabledAtRuntime, MeasureAs=OpenWebDatabase, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback);
+    [EnabledAtRuntime, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback);
     attribute SQLExceptionConstructor SQLException;
 };
 

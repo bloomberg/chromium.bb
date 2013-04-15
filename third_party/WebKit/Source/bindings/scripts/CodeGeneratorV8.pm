@@ -775,6 +775,26 @@ sub GenerateHeaderCustomCall
     }
 }
 
+sub HasActivityLogging
+{
+    my $forMainWorldSuffix = shift;
+    my $attrExt = shift;
+    my $access = shift;
+
+    if (!$attrExt->{"ActivityLog"}) {
+        return 0;
+    }
+    my $logAllAccess = ($attrExt->{"ActivityLog"} =~ /^Access/);
+    my $logGetter = ($attrExt->{"ActivityLog"} =~ /^Getter/);
+    my $logSetter = ($attrExt->{"ActivityLog"} =~ /^Setter/);
+    my $logOnlyIsolatedWorlds = ($attrExt->{"ActivityLog"} =~ /ForIsolatedWorlds$/);
+
+    if ($logOnlyIsolatedWorlds && $forMainWorldSuffix eq "ForMainWorld") {
+        return 0;
+    }
+    return $logAllAccess || ($logGetter && $access eq "Getter") || ($logSetter && $access eq "Setter");
+}
+
 sub IsConstructable
 {
     my $interface = shift;
@@ -918,6 +938,45 @@ sub GenerateFeatureObservation
     return "";
 }
 
+sub GenerateActivityLogging
+{
+    my $accessType = shift;
+    my $interface = shift;
+    my $propertyName = shift;
+
+    my $visibleInterfaceName = $codeGenerator->GetVisibleInterfaceName($interface);
+
+    AddToImplIncludes("V8Binding.h");
+    AddToImplIncludes("V8DOMActivityLogger.h");
+    AddToImplIncludes("wtf/Vector.h");
+
+    if ($accessType eq "Method") {
+        push(@implContentInternals, <<END);
+    V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
+        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", args.Length(), loggerArgs.data(), "${accessType}");
+    }
+END
+    } elsif ($accessType eq "Setter") {
+        push(@implContentInternals, <<END);
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        v8::Handle<v8::Value> loggerArg[] = { value };
+        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", 1, &loggerArg[0], "${accessType}");
+    }
+END
+    } elsif ($accessType eq "Getter") {
+        push(@implContentInternals, <<END);
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger())
+        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", 0, 0, "${accessType}");
+END
+    } else {
+        die "Unrecognized activity logging access type";
+    }
+}
+
 sub GenerateNormalAttrGetterCallback
 {
     my $attribute = shift;
@@ -935,6 +994,9 @@ sub GenerateNormalAttrGetterCallback
     push(@implContentInternals, "static v8::Handle<v8::Value> ${attrName}AttrGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
     push(@implContentInternals, GenerateFeatureObservation($attrExt->{"MeasureAs"}));
+    if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Getter")) {
+        GenerateActivityLogging("Getter", $interface, "${attrName}");
+    }
     if (HasCustomGetter($attrExt)) {
         push(@implContentInternals, "    return ${v8InterfaceName}::${attrName}AttrGetterCustom(name, info);\n");
     } else {
@@ -1225,6 +1287,9 @@ sub GenerateReplaceableAttrSetterCallback
     push(@implContentInternals, "static void ${interfaceName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
     push(@implContentInternals, GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"}));
+    if (HasActivityLogging("", $interface->extendedAttributes, "Setter")) {
+         die "IDL error: ActivityLog attribute cannot exist on a ReplacableAttrSetterCallback";
+    }
     push(@implContentInternals, "    return ${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetter(name, value, info);\n");
     push(@implContentInternals, "}\n\n");
 }
@@ -1290,6 +1355,9 @@ sub GenerateNormalAttrSetterCallback
     push(@implContentInternals, "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
     push(@implContentInternals, GenerateFeatureObservation($attrExt->{"MeasureAs"}));
+    if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Setter")) {
+        GenerateActivityLogging("Setter", $interface, "${attrName}");
+    }
     if (HasCustomSetter($attrExt)) {
         push(@implContentInternals, "    ${v8InterfaceName}::${attrName}AttrSetterCustom(name, value, info);\n");
     } else {
@@ -1630,6 +1698,9 @@ static v8::Handle<v8::Value> ${name}MethodCallback${forMainWorldSuffix}(const v8
 {
 END
     push(@implContentInternals, GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"}));
+    if (HasActivityLogging($forMainWorldSuffix, $function->signature->extendedAttributes, "Access")) {
+        GenerateActivityLogging("Method", $interface, "${name}");
+    }
     if (HasCustomMethod($function->signature->extendedAttributes)) {
         push(@implContentInternals, "    return ${v8InterfaceName}::${name}MethodCustom(args);\n");
     } else {
