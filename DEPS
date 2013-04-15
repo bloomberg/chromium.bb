@@ -213,15 +213,6 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests":
     Var("webkit_trunk") + "/LayoutTests/http/tests/websocket/tests@" +
     Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/workers@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/files":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/files@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/events@" +
-    Var("webkit_revision"),
   "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/events@" +
     Var("webkit_revision"),
@@ -453,8 +444,6 @@ deps_os = {
     "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers": None,
     "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers": None,
     "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers": None,
     "src/content/test/data/layout_tests/LayoutTests/storage/indexeddb": None,
     "src/content/test/data/layout_tests/LayoutTests/storage/domstorage": None,
     "src/chrome/test/data/perf/canvas_bench": None,
