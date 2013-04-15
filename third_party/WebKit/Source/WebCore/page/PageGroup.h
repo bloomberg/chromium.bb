@@ -35,10 +35,8 @@
 
 namespace WebCore {
 
-#if ENABLE(VIDEO_TRACK)
     class CaptionPreferencesChangedListener;
     class CaptionUserPreferences;
-#endif
     class KURL;
     class GroupSettings;
     class IDBFactoryBackendInterface;
@@ -98,10 +96,8 @@ namespace WebCore {
 
         GroupSettings* groupSettings() const { return m_groupSettings.get(); }
 
-#if ENABLE(VIDEO_TRACK)
         void captionPreferencesChanged();
         CaptionUserPreferences* captionPreferences();
-#endif
 
     private:
         PageGroup(Page*);
@@ -123,9 +119,7 @@ namespace WebCore {
 
         OwnPtr<GroupSettings> m_groupSettings;
 
-#if ENABLE(VIDEO_TRACK)
         OwnPtr<CaptionUserPreferences> m_captionPreferences;
-#endif
     };
 
 } // namespace WebCore

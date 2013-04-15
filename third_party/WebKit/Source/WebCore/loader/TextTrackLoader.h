@@ -26,8 +26,6 @@
 #ifndef TextTrackLoader_h
 #define TextTrackLoader_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "CachedTextTrack.h"
@@ -104,5 +102,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

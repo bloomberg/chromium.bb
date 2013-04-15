@@ -31,7 +31,7 @@
 #ifndef TextTrackRegion_h
 #define TextTrackRegion_h
 
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
 
 #include "FloatPoint.h"
 #include "TextTrack.h"

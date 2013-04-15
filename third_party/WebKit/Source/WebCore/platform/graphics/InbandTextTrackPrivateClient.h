@@ -30,8 +30,6 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(VIDEO_TRACK)
-
 namespace WebCore {
 
 class InbandTextTrackPrivate;
@@ -123,5 +121,4 @@ public:
 
 } // namespace WebCore
 
-#endif
 #endif

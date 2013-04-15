@@ -26,8 +26,6 @@
 #ifndef TrackEvent_h
 #define TrackEvent_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "Event.h"
 #include "TrackBase.h"
 
@@ -66,5 +64,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

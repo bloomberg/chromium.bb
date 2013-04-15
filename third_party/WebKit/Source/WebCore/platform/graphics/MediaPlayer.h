@@ -199,13 +199,11 @@ public:
     virtual IntRect mediaPlayerWindowClipRect() { return IntRect(); }
     virtual CachedResourceLoader* mediaPlayerCachedResourceLoader() { return 0; }
 
-#if ENABLE(VIDEO_TRACK)
     virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) { }
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) { }
 
     virtual void textTrackRepresentationBoundsChanged(const IntRect&) { }
     virtual void paintTextTrackRepresentation(GraphicsContext*, const IntRect&) { }
-#endif
 };
 
 class MediaPlayerSupportsTypeClient {
@@ -411,13 +409,11 @@ public:
 
     CachedResourceLoader* cachedResourceLoader();
 
-#if ENABLE(VIDEO_TRACK)
     void addTextTrack(PassRefPtr<InbandTextTrackPrivate>);
     void removeTextTrack(PassRefPtr<InbandTextTrackPrivate>);
 
     bool requiresTextTrackRepresentation() const;
     void setTextTrackRepresentation(TextTrackRepresentation*);
-#endif
 
     static void resetMediaEngines();
 

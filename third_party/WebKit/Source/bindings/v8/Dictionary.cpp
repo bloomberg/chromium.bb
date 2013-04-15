@@ -42,10 +42,8 @@
 #include "V8MediaKeyError.h"
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 #include "TrackBase.h"
 #include "V8TextTrack.h"
-#endif
 
 #if ENABLE(SCRIPTED_SPEECH)
 #include "SpeechRecognitionError.h"
@@ -353,7 +351,6 @@ bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
 }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -373,7 +370,6 @@ bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
     value = source;
     return true;
 }
-#endif
 
 #if ENABLE(SCRIPTED_SPEECH)
 bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) const

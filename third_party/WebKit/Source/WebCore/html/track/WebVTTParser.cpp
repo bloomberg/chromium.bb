@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "WebVTTParser.h"
 
 #include "HTMLElement.h"
@@ -577,4 +575,3 @@ String WebVTTParser::collectNextLine(const char* data, unsigned length, unsigned
 
 }
 
-#endif

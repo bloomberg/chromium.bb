@@ -26,8 +26,6 @@
 #ifndef TextTrackList_h
 #define TextTrackList_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "EventListener.h"
 #include "EventTarget.h"
 #include "Timer.h"
@@ -102,5 +100,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

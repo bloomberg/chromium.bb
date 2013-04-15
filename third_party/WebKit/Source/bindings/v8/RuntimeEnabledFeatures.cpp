@@ -153,9 +153,7 @@ bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
 
 bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
 
-#if ENABLE(VIDEO_TRACK)
-    bool RuntimeEnabledFeatures::isVideoTrackEnabled = true;
-#endif
+bool RuntimeEnabledFeatures::isVideoTrackEnabled = true;
 
 #if ENABLE(ENCRYPTED_MEDIA)
 bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;

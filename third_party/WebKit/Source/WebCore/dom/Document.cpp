@@ -225,9 +225,7 @@
 #include "Prerenderer.h"
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 #include "CaptionUserPreferences.h"
-#endif
 
 using namespace std;
 using namespace WTF;
@@ -4041,7 +4039,6 @@ void Document::unregisterForMediaVolumeCallbacks(Element* e)
     m_mediaVolumeCallbackElements.remove(e);
 }
 
-#if ENABLE(VIDEO_TRACK)
 void Document::registerForCaptionPreferencesChangedCallbacks(Element* e)
 {
     if (page())
@@ -4061,7 +4058,6 @@ void Document::captionPreferencesChanged()
     for (HashSet<Element*>::iterator it = m_captionPreferencesChangedElements.begin(); it != end; ++it)
         (*it)->captionPreferencesChanged();
 }
-#endif
 
 void Document::setShouldCreateRenderers(bool f)
 {

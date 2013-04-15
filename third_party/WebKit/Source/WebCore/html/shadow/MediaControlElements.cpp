@@ -53,10 +53,8 @@
 #include "RenderVideo.h"
 #include "RenderView.h"
 #include "Settings.h"
-#if ENABLE(VIDEO_TRACK)
 #include "TextTrack.h"
 #include "TextTrackList.h"
-#endif
 
 namespace WebCore {
 
@@ -65,9 +63,7 @@ using namespace HTMLNames;
 static const AtomicString& getMediaControlCurrentTimeDisplayElementShadowPseudoId();
 static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseudoId();
 
-#if ENABLE(VIDEO_TRACK)
 static const char* textTracksOffAttrValue = "-1"; // This must match HTMLMediaElement::textTracksOffIndex()
-#endif
 
 MediaControlPanelElement::MediaControlPanelElement(Document* document)
     : MediaControlDivElement(document, MediaControlsPanel)
@@ -514,7 +510,6 @@ PassRefPtr<MediaControlClosedCaptionsTrackListElement> MediaControlClosedCaption
 
 void MediaControlClosedCaptionsTrackListElement::defaultEventHandler(Event* event)
 {
-#if ENABLE(VIDEO_TRACK)
     if (event->type() == eventNames().clickEvent) {
         Node* target = event->target()->toNode();
         if (!target || !target->isElementNode())
@@ -549,7 +544,6 @@ void MediaControlClosedCaptionsTrackListElement::defaultEventHandler(Event* even
     }
 
     MediaControlDivElement::defaultEventHandler(event);
-#endif
 }
 
 const AtomicString& MediaControlClosedCaptionsTrackListElement::shadowPseudoId() const
@@ -560,7 +554,6 @@ const AtomicString& MediaControlClosedCaptionsTrackListElement::shadowPseudoId()
 
 void MediaControlClosedCaptionsTrackListElement::updateDisplay()
 {
-#if ENABLE(VIDEO_TRACK)
     DEFINE_STATIC_LOCAL(AtomicString, selectedClassValue, ("selected", AtomicString::ConstructFromLiteral));
 
     if (!mediaController()->hasClosedCaptions())
@@ -606,12 +599,10 @@ void MediaControlClosedCaptionsTrackListElement::updateDisplay()
         else
             trackItem->classList()->remove(selectedClassValue, ASSERT_NO_EXCEPTION);
     }
-#endif
 }
 
 void MediaControlClosedCaptionsTrackListElement::rebuildTrackListMenu()
 {
-#if ENABLE(VIDEO_TRACK)
     // Remove any existing content.
     removeChildren();
     m_menuItems.clear();
@@ -666,7 +657,6 @@ void MediaControlClosedCaptionsTrackListElement::rebuildTrackListMenu()
     appendChild(captionsMenuList);
 
     updateDisplay();
-#endif
 }
 
 // ----------------------------
@@ -859,8 +849,6 @@ const AtomicString& MediaControlCurrentTimeDisplayElement::shadowPseudoId() cons
 }
 
 // ----------------------------
-
-#if ENABLE(VIDEO_TRACK)
 
 MediaControlTextTrackContainerElement::MediaControlTextTrackContainerElement(Document* document)
     : MediaControlDivElement(document, MediaTextTrackDisplayContainer)
@@ -1058,7 +1046,6 @@ void MediaControlTextTrackContainerElement::textTrackRepresentationBoundsChanged
 {
     updateSizes();
 }
-#endif // ENABLE(VIDEO_TRACK)
 
 // ----------------------------
 

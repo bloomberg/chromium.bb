@@ -157,11 +157,9 @@ namespace WebCore {
             PseudoOutOfRange,
             PseudoUserAgentCustomElement,
             PseudoWebKitCustomElement,
-#if ENABLE(VIDEO_TRACK)
             PseudoCue,
             PseudoFutureCue,
             PseudoPastCue,
-#endif
             PseudoSeamlessDocument,
             PseudoDistributed
         };

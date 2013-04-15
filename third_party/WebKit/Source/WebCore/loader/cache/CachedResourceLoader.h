@@ -87,9 +87,7 @@ public:
     CachedResourceHandle<CachedXSLStyleSheet> requestXSLStyleSheet(CachedResourceRequest&);
 #endif
     CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, CachedResourceRequest&);
-#if ENABLE(VIDEO_TRACK)
     CachedResourceHandle<CachedTextTrack> requestTextTrack(CachedResourceRequest&);
-#endif
     CachedResourceHandle<CachedShader> requestShader(CachedResourceRequest&);
 
     // Logs an access denied message to the console for the specified URL.

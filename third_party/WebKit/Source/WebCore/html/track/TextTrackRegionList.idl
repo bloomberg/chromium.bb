@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=VIDEO_TRACK & WEBVTT_REGIONS,
+    Conditional=WEBVTT_REGIONS,
     EnabledAtRuntime=webkitVideoTrack,
     IndexedGetter,
     ImplementationLacksVTable

@@ -31,8 +31,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/AtomicString.h>
 
-#if ENABLE(VIDEO_TRACK)
-
 namespace WebCore {
 
 class InbandTextTrackPrivateClient;
@@ -80,5 +78,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

@@ -203,9 +203,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token <string> URI
 %token <string> FUNCTION
 %token <string> ANYFUNCTION
-#if ENABLE_VIDEO_TRACK
 %token <string> CUEFUNCTION
-#endif
 %token <string> NOTFUNCTION
 %token <string> DISTRIBUTEDFUNCTION
 %token <string> CALCFUNCTION
@@ -1412,7 +1410,6 @@ pseudo:
         if (type == CSSSelector::PseudoUnknown)
             $$ = 0;
     }
-#if ENABLE_VIDEO_TRACK
     // used by ::cue(:past/:future)
     | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space ')' {
         if ($5) {
@@ -1426,7 +1423,6 @@ pseudo:
         } else
             $$ = 0;
     }
-#endif
     | ':' ':' DISTRIBUTEDFUNCTION maybe_space selector maybe_space ')' {
         if (!$5)
             $$ = 0;

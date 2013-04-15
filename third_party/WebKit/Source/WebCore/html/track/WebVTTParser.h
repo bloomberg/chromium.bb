@@ -31,8 +31,6 @@
 #ifndef WebVTTParser_h
 #define WebVTTParser_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "DocumentFragment.h"
 #include "HTMLNames.h"
 #include "TextTrackCue.h"
@@ -174,5 +172,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

@@ -26,8 +26,6 @@
 #ifndef InbandTextTrack_h
 #define InbandTextTrack_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "InbandTextTrackPrivate.h"
 #include "InbandTextTrackPrivateClient.h"
 #include "TextTrack.h"
@@ -67,5 +65,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

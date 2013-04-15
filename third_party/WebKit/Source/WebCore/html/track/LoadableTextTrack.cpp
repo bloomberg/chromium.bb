@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "LoadableTextTrack.h"
 
 #include "Event.h"
@@ -159,4 +157,3 @@ size_t LoadableTextTrack::trackElementIndex()
 
 } // namespace WebCore
 
-#endif

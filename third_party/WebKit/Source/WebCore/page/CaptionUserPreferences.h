@@ -26,8 +26,6 @@
 #ifndef CaptionUserPreferences_h
 #define CaptionUserPreferences_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "Language.h"
 #include "LocalizedStrings.h"
 #include "TextTrack.h"
@@ -96,6 +94,5 @@ private:
 };
     
 }
-#endif
 
 #endif

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TrackEvent.h"
 
 #include "EventNames.h"
@@ -61,4 +59,3 @@ const AtomicString& TrackEvent::interfaceName() const
 
 } // namespace WebCore
 
-#endif

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackRepresentation.h"
 
 namespace WebCore {
@@ -47,4 +45,3 @@ PassOwnPtr<TextTrackRepresentation> TextTrackRepresentation::create(TextTrackRep
 
 }
 
-#endif

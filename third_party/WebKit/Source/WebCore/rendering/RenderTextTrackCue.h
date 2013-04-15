@@ -26,8 +26,6 @@
 #ifndef RenderTextTrackCue_h
 #define RenderTextTrackCue_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "FloatPoint.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
@@ -63,5 +61,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif // RenderTextTrackCue_h

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackCueList.h"
 
 namespace WebCore {
@@ -145,4 +143,3 @@ void TextTrackCueList::invalidateCueIndexes(size_t start)
 
 } // namespace WebCore
 
-#endif

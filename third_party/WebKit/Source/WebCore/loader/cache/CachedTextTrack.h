@@ -26,8 +26,6 @@
 #ifndef CachedTextTrack_h
 #define CachedTextTrack_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "CachedResource.h"
 #include "FontOrientation.h"
 
@@ -43,5 +41,4 @@ public:
 
 }
 
-#endif
 #endif

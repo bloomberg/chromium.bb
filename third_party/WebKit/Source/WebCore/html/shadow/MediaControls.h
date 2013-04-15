@@ -40,9 +40,7 @@
 #include "Text.h"
 #include <wtf/RefPtr.h>
 
-#if ENABLE(VIDEO_TRACK)
 #include "TextTrackCue.h"
-#endif
 
 namespace WebCore {
 
@@ -101,13 +99,11 @@ class MediaControls : public HTMLDivElement {
     virtual void startHideFullscreenControlsTimer();
     virtual void stopHideFullscreenControlsTimer();
 
-#if ENABLE(VIDEO_TRACK)
     virtual void createTextTrackDisplay();
     virtual void showTextTrackDisplay();
     virtual void hideTextTrackDisplay();
     virtual void updateTextTrackDisplay();
     virtual void textTrackPreferencesChanged();
-#endif
 
 protected:
     explicit MediaControls(Document*);
@@ -122,9 +118,7 @@ protected:
     MediaControlPanelElement* m_panel;
 
     // Container for the text track cues.
-#if ENABLE(VIDEO_TRACK)
     MediaControlTextTrackContainerElement* m_textDisplayContainer;
-#endif
 
     // Media control elements.
     MediaControlPlayButtonElement* m_playButton;

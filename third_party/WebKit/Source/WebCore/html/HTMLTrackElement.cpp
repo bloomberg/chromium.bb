@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(VIDEO_TRACK)
 #include "HTMLTrackElement.h"
 
 #include "ContentSecurityPolicy.h"
@@ -361,4 +360,3 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
 
 }
 
-#endif

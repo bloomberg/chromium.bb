@@ -26,8 +26,6 @@
 #ifndef TrackBase_h
 #define TrackBase_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "EventTarget.h"
 #include <wtf/RefCounted.h>
 
@@ -66,5 +64,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif // TrackBase_h

@@ -50,8 +50,8 @@
     [RaisesException] void setDialogElementEnabled(boolean enabled);
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
 
-    [Conditional=VIDEO_TRACK, RaisesException] void setShouldDisplayTrackKind(DOMString kind, boolean enabled);
-    [Conditional=VIDEO_TRACK, RaisesException] boolean shouldDisplayTrackKind(DOMString trackKind);
+    [RaisesException] void setShouldDisplayTrackKind(DOMString kind, boolean enabled);
+    [RaisesException] boolean shouldDisplayTrackKind(DOMString trackKind);
     [RaisesException] void setImagesEnabled(boolean enabled);
     [RaisesException] void setMinimumTimerInterval(double intervalInSeconds);
     [RaisesException] void setDefaultVideoPosterURL(DOMString poster);

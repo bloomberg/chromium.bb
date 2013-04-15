@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "V8TrackEvent.h"
 
 #include "TrackBase.h"
@@ -70,4 +68,3 @@ v8::Handle<v8::Value> V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> 
 
 } // namespace WebCore
 
-#endif

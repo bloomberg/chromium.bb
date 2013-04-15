@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-#if ENABLE(VIDEO_TRACK)
-
 class RenderTextTrackContainerElement : public RenderBlock {
 public:
     RenderTextTrackContainerElement(Element*);
@@ -46,7 +44,6 @@ private:
     virtual void layout();
 };
 
-#endif // ENABLE(VIDEO_TRACK)
 
 } // namespace WebCore
 

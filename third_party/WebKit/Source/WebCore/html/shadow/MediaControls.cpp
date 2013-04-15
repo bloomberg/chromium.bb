@@ -38,9 +38,7 @@ MediaControls::MediaControls(Document* document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_mediaController(0)
     , m_panel(0)
-#if ENABLE(VIDEO_TRACK)
     , m_textDisplayContainer(0)
-#endif
     , m_playButton(0)
     , m_currentTimeDisplay(0)
     , m_timeline(0)
@@ -62,10 +60,8 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
 
     if (m_panel)
         m_panel->setMediaController(controller);
-#if ENABLE(VIDEO_TRACK)
     if (m_textDisplayContainer)
         m_textDisplayContainer->setMediaController(controller);
-#endif
     if (m_playButton)
         m_playButton->setMediaController(controller);
     if (m_currentTimeDisplay)
@@ -369,7 +365,6 @@ bool MediaControls::containsRelatedTarget(Event* event)
     return contains(relatedTarget->toNode());
 }
 
-#if ENABLE(VIDEO_TRACK)
 void MediaControls::createTextTrackDisplay()
 {
     if (m_textDisplayContainer)
@@ -413,7 +408,6 @@ void MediaControls::textTrackPreferencesChanged()
         m_textDisplayContainer->updateSizes(true);
     closedCaptionTracksChanged();
 }
-#endif
 
 }
 

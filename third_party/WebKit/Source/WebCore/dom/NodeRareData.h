@@ -31,9 +31,7 @@
 #include "Page.h"
 #include "QualifiedName.h"
 #include "TagNodeList.h"
-#if ENABLE(VIDEO_TRACK)
 #include "TextTrack.h"
-#endif
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

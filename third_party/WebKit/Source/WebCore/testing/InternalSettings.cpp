@@ -84,11 +84,9 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
     , m_minimumTimerInterval(settings->minDOMTimerInterval())
-#if ENABLE(VIDEO_TRACK)
     , m_shouldDisplaySubtitles(settings->shouldDisplaySubtitles())
     , m_shouldDisplayCaptions(settings->shouldDisplayCaptions())
     , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
-#endif
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalTimeWithoutMouseMovementBeforeHidingControls(settings->timeWithoutMouseMovementBeforeHidingControls())
 {
@@ -114,11 +112,9 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setMinDOMTimerInterval(m_minimumTimerInterval);
-#if ENABLE(VIDEO_TRACK)
     settings->setShouldDisplaySubtitles(m_shouldDisplaySubtitles);
     settings->setShouldDisplayCaptions(m_shouldDisplayCaptions);
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
-#endif
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setTimeWithoutMouseMovementBeforeHidingControls(m_originalTimeWithoutMouseMovementBeforeHidingControls);
 }
@@ -360,7 +356,6 @@ void InternalSettings::setShouldDisplayTrackKind(const String& kind, bool enable
 {
     InternalSettingsGuardForSettings();
 
-#if ENABLE(VIDEO_TRACK)
     if (!page())
         return;
     CaptionUserPreferences* captionPreferences = page()->group().captionPreferences();
@@ -373,17 +368,12 @@ void InternalSettings::setShouldDisplayTrackKind(const String& kind, bool enable
         captionPreferences->setUserPrefersTextDescriptions(enabled);
     else
         ec = SYNTAX_ERR;
-#else
-    UNUSED_PARAM(kind);
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 bool InternalSettings::shouldDisplayTrackKind(const String& kind, ExceptionCode& ec)
 {
     InternalSettingsGuardForSettingsReturn(false);
 
-#if ENABLE(VIDEO_TRACK)
     if (!page())
         return false;
     CaptionUserPreferences* captionPreferences = page()->group().captionPreferences();
@@ -397,10 +387,6 @@ bool InternalSettings::shouldDisplayTrackKind(const String& kind, ExceptionCode&
 
     ec = SYNTAX_ERR;
     return false;
-#else
-    UNUSED_PARAM(kind);
-    return false;
-#endif
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)

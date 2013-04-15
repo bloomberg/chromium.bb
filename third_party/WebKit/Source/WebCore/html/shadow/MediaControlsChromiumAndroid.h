@@ -40,9 +40,7 @@ public:
     virtual void playbackStarted() OVERRIDE;
     virtual void playbackStopped() OVERRIDE;
 
-#if ENABLE(VIDEO_TRACK)
     void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
-#endif
 
 private:
     explicit MediaControlsChromiumAndroid(Document*);

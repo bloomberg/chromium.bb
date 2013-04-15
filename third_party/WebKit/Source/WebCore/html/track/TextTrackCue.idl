@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=VIDEO_TRACK,
     EnabledAtRuntime=webkitVideoTrack,
     Constructor(double startTime, double endTime, DOMString text),
     CallWith=ScriptExecutionContext,

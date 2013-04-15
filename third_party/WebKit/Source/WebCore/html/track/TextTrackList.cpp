@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackList.h"
 
 #include "EventNames.h"
@@ -269,4 +267,3 @@ Node* TextTrackList::owner() const
     return m_owner;
 }
 
-#endif

@@ -90,7 +90,6 @@
 #include <wtf/Uint8Array.h>
 #include <wtf/text/CString.h>
 
-#if ENABLE(VIDEO_TRACK)
 #include "CaptionUserPreferences.h"
 #include "HTMLTrackElement.h"
 #include "InbandTextTrack.h"
@@ -98,7 +97,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "TextTrackCueList.h"
 #include "TextTrackList.h"
-#endif
 
 #if ENABLE(WEB_AUDIO)
 #include "AudioSourceProvider.h"
@@ -197,7 +195,6 @@ static ExceptionCode exceptionCodeForMediaKeyException(MediaPlayer::MediaKeyExce
 }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 class TrackDisplayUpdateScope {
 public:
     TrackDisplayUpdateScope(HTMLMediaElement* mediaElement)
@@ -214,7 +211,6 @@ public:
 private:
     HTMLMediaElement* m_mediaElement;
 };
-#endif
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* document, bool createdByParser)
     : HTMLElement(tagName, document)
@@ -266,14 +262,12 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
     , m_parsingInProgress(createdByParser)
-#if ENABLE(VIDEO_TRACK)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
     , m_lastTextTrackUpdateTime(-1)
     , m_textTracks(0)
     , m_ignoreTrackDisplayUpdate(0)
-#endif
 #if ENABLE(WEB_AUDIO)
     , m_audioSourceNode(0)
 #endif
@@ -289,9 +283,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, document);
 
-#if ENABLE(VIDEO_TRACK)
     document->registerForCaptionPreferencesChangedCallbacks(this);
-#endif
 }
 
 HTMLMediaElement::~HTMLMediaElement()
@@ -301,7 +293,6 @@ HTMLMediaElement::~HTMLMediaElement()
         document()->removeMediaCanStartListener(this);
     setShouldDelayLoadEvent(false);
     document()->unregisterForMediaVolumeCallbacks(this);
-#if ENABLE(VIDEO_TRACK)
     document()->unregisterForCaptionPreferencesChangedCallbacks(this);
     if (m_textTracks)
         m_textTracks->clearOwner();
@@ -309,7 +300,6 @@ HTMLMediaElement::~HTMLMediaElement()
         for (unsigned i = 0; i < m_textTracks->length(); ++i)
             m_textTracks->item(i)->clearClient();
     }
-#endif
 
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);
@@ -456,7 +446,6 @@ void HTMLMediaElement::finishParsingChildren()
     HTMLElement::finishParsingChildren();
     m_parsingInProgress = false;
 
-#if ENABLE(VIDEO_TRACK)
     if (!RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         return;
     
@@ -466,7 +455,6 @@ void HTMLMediaElement::finishParsingChildren()
             break;
         }
     }
-#endif
 
     ScriptWrappable::init(this);
 }
@@ -542,10 +530,8 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
         m_pendingActionFlags |= LoadMediaResource;
     }
 
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (actionType & LoadTextTrackResource))
         m_pendingActionFlags |= LoadTextTrackResource;
-#endif
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     if (actionType & TextTrackChangesNotification)
@@ -578,10 +564,8 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
 {
     RefPtr<HTMLMediaElement> protect(this); // loadNextSourceChild may fire 'beforeload', which can make arbitrary DOM mutations.
 
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (m_pendingActionFlags & LoadTextTrackResource))
         configureTextTracks();
-#endif
 
     if (m_pendingActionFlags & LoadMediaResource) {
         if (m_loadState == LoadingFromSourceElement)
@@ -696,10 +680,8 @@ void HTMLMediaElement::prepareForLoad()
         invalidateCachedTime();
         scheduleEvent(eventNames().emptiedEvent);
         updateMediaController();
-#if ENABLE(VIDEO_TRACK)
         if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
             updateActiveTextTrackCues(0);
-#endif
     }
 
     // 5 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
@@ -753,7 +735,6 @@ void HTMLMediaElement::loadInternal()
     // put in the the background.
     removeBehaviorRestriction(RequirePageConsentToLoadMediaRestriction);
 
-#if ENABLE(VIDEO_TRACK)
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
     // disabled state when the element's resource selection algorithm last started".
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled()) {
@@ -766,7 +747,6 @@ void HTMLMediaElement::loadInternal()
             }
         }
     }
-#endif
 
     selectMediaResource();
 }
@@ -927,7 +907,6 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
         renderer()->updateFromElement();
 }
 
-#if ENABLE(VIDEO_TRACK)
 static bool trackIndexCompare(TextTrack* a,
                               TextTrack* b)
 {
@@ -1326,7 +1305,6 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     updateActiveTextTrackCues(currentTime());
 }
 
-#endif
 
 bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionIfInvalid)
 {
@@ -1585,19 +1563,13 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     ReadyState oldState = m_readyState;
     ReadyState newState = static_cast<ReadyState>(state);
 
-#if ENABLE(VIDEO_TRACK)
     bool tracksAreReady = !RuntimeEnabledFeatures::webkitVideoTrackEnabled() || textTracksAreReady();
 
     if (newState == oldState && m_tracksAreReady == tracksAreReady)
         return;
 
     m_tracksAreReady = tracksAreReady;
-#else
-    if (newState == oldState)
-        return;
-    bool tracksAreReady = true;
-#endif
-    
+
     if (tracksAreReady)
         m_readyState = newState;
     else {
@@ -1688,10 +1660,8 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
 
     updatePlayState();
     updateMediaController();
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         updateActiveTextTrackCues(currentTime());
-#endif
 }
 
 #if ENABLE(ENCRYPTED_MEDIA)
@@ -2567,11 +2537,9 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 
     if (!m_paused && hasMediaControls())
         mediaControls()->playbackProgressed();
-    
-#if ENABLE(VIDEO_TRACK)
+
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         updateActiveTextTrackCues(currentTime());
-#endif
 }
 
 void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
@@ -2616,8 +2584,6 @@ double HTMLMediaElement::percentLoaded() const
     }
     return buffered / duration;
 }
-
-#if ENABLE(VIDEO_TRACK)
 
 void HTMLMediaElement::mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate> prpTrack)
 {
@@ -3052,7 +3018,6 @@ void HTMLMediaElement::configureTextTracks()
     if (hasMediaControls())
         mediaControls()->closedCaptionTracksChanged();
 }
-#endif
 
 bool HTMLMediaElement::havePotentialSourceChild()
 {
@@ -3263,10 +3228,8 @@ void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged");
 
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         updateActiveTextTrackCues(currentTime());
-#endif
 
     beginProcessingMediaPlayerCallback();
 
@@ -3718,10 +3681,8 @@ void HTMLMediaElement::userCancelledLoad()
     // Reset m_readyState since m_player is gone.
     m_readyState = HAVE_NOTHING;
     updateMediaController();
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         updateActiveTextTrackCues(0);
-#endif
 }
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
@@ -3733,9 +3694,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
     removeAllInbandTracks();
-#endif
 
     setSourceState(MediaSource::closedKeyword());
 
@@ -3746,10 +3705,8 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     m_pendingActionFlags &= ~flags;
     m_loadState = WaitingForSource;
 
-#if ENABLE(VIDEO_TRACK)
     if (m_textTracks)
         configureTextTrackDisplay();
-#endif
 }
 
 bool HTMLMediaElement::canSuspend() const
@@ -3825,7 +3782,6 @@ void HTMLMediaElement::mediaVolumeDidChange()
     updateVolume();
 }
 
-#if ENABLE(VIDEO_TRACK)
 bool HTMLMediaElement::requiresTextTrackRepresentation() const
 {
     return m_player ? m_player->requiresTextTrackRepresentation() : 0;
@@ -3836,7 +3792,6 @@ void HTMLMediaElement::setTextTrackRepresentation(TextTrackRepresentation* repre
     if (m_player)
         m_player->setTextTrackRepresentation(representation);
 }
-#endif // ENABLE(VIDEO_TRACK)
 
 bool HTMLMediaElement::isFullscreen() const
 {
@@ -3917,7 +3872,6 @@ bool HTMLMediaElement::hasClosedCaptions() const
     if (m_player && m_player->hasClosedCaptions())
         return true;
 
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && m_textTracks)
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
         if (m_textTracks->item(i)->readinessState() == TextTrack::FailedToLoad)
@@ -3927,7 +3881,6 @@ bool HTMLMediaElement::hasClosedCaptions() const
             || m_textTracks->item(i)->kind() == TextTrack::subtitlesKeyword())
             return true;
     }
-#endif
     return false;
 }
 
@@ -3936,7 +3889,6 @@ bool HTMLMediaElement::closedCaptionsVisible() const
     return m_closedCaptionsVisible;
 }
 
-#if ENABLE(VIDEO_TRACK)
 void HTMLMediaElement::updateTextTrackDisplay()
 {
     if (!hasMediaControls() && !createMediaControls())
@@ -3944,7 +3896,6 @@ void HTMLMediaElement::updateTextTrackDisplay()
     
     mediaControls()->updateTextTrackDisplay();
 }
-#endif
 
 void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 {
@@ -3956,16 +3907,11 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     m_closedCaptionsVisible = closedCaptionVisible;
     m_player->setClosedCaptionsVisible(closedCaptionVisible);
 
-#if ENABLE(VIDEO_TRACK)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled()) {
         m_processingPreferenceChange = true;
         markCaptionAndSubtitleTracksAsUnconfigured();
         updateTextTrackDisplay();
     }
-#else
-    if (hasMediaControls())
-        mediaControls()->changedClosedCaptionsVisibility();
-#endif
 }
 
 void HTMLMediaElement::setWebkitClosedCaptionsVisible(bool visible)
@@ -4099,7 +4045,6 @@ void HTMLMediaElement::configureMediaControls()
     mediaControls()->show();
 }
 
-#if ENABLE(VIDEO_TRACK)
 void HTMLMediaElement::configureTextTrackDisplay()
 {
     ASSERT(m_textTracks);
@@ -4163,7 +4108,6 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     configureTextTracks();
 }
 
-#endif
 
 void* HTMLMediaElement::preDispatchEventHandler(Event* event)
 {
@@ -4495,12 +4439,10 @@ void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_nextChildNodeToConsider, "nextChildNodeToConsider");
     info.addMember(m_player, "player");
     info.addMember(m_mediaSource, "mediaSource");
-#if ENABLE(VIDEO_TRACK)
     info.addMember(m_textTracks, "textTracks");
     info.addMember(m_textTracksWhenResourceSelectionBegan, "textTracksWhenResourceSelectionBegan");
     info.addMember(m_cueTree, "cueTree");
     info.addMember(m_currentlyActiveCues, "currentlyActiveCues");
-#endif
     info.addMember(m_mediaGroup, "mediaGroup");
     info.addMember(m_mediaController, "mediaController");
 

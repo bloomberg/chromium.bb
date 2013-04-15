@@ -31,8 +31,6 @@
 #ifndef WebVTTTokenizer_h
 #define WebVTTTokenizer_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "InputStreamPreprocessor.h"
 #include "WebVTTToken.h"
 #include <wtf/PassOwnPtr.h>
@@ -114,5 +112,4 @@ private:
 
 }
 
-#endif
 #endif

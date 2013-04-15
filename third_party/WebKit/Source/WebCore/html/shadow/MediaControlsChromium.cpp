@@ -201,7 +201,6 @@ void MediaControlsChromium::changedMute()
         m_volumeSlider->setVolume(m_mediaController->volume());
 }
 
-#if ENABLE(VIDEO_TRACK)
 void MediaControlsChromium::createTextTrackDisplay()
 {
     if (m_textDisplayContainer)
@@ -223,7 +222,6 @@ void MediaControlsChromium::insertTextTrackContainer(PassRefPtr<MediaControlText
     insertBefore(textTrackContainer, m_enclosure, ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
-#endif
 
 }
 

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "TrackBase.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 namespace WebCore {
 
 TrackBase::TrackBase(ScriptExecutionContext* context, Type type)
@@ -63,4 +61,3 @@ EventTargetData* TrackBase::ensureEventTargetData()
 
 } // namespace WebCore
 
-#endif

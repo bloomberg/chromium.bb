@@ -31,8 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrack.h"
 
 #include "Event.h"
@@ -280,7 +278,7 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionCode& ec)
         m_client->textTrackRemoveCue(this, cue);
 }
 
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
 TextTrackRegionList* TextTrack::regionList()
 {
     return ensureTextTrackRegionList();
@@ -527,4 +525,3 @@ bool TextTrack::isMainProgramContent() const
 
 } // namespace WebCore
 
-#endif

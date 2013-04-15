@@ -940,11 +940,9 @@ public:
     void unregisterForMediaVolumeCallbacks(Element*);
     void mediaVolumeDidChange();
 
-#if ENABLE(VIDEO_TRACK)
     void registerForCaptionPreferencesChangedCallbacks(Element*);
     void unregisterForCaptionPreferencesChangedCallbacks(Element*);
     void captionPreferencesChanged();
-#endif
 
     void setShouldCreateRenderers(bool);
     bool shouldCreateRenderers();
@@ -1417,9 +1415,7 @@ private:
 
     HashSet<Element*> m_documentSuspensionCallbackElements;
     HashSet<Element*> m_mediaVolumeCallbackElements;
-#if ENABLE(VIDEO_TRACK)
     HashSet<Element*> m_captionPreferencesChangedElements;
-#endif
 
     HashMap<StringImpl*, Element*, CaseFoldingHash> m_elementsByAccessKey;
     bool m_accessKeyMapValid;

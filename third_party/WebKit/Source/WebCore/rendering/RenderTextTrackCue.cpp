@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "RenderTextTrackCue.h"
 
 #include "TextTrackCue.h"
@@ -271,4 +269,3 @@ void RenderTextTrackCue::repositionCueSnapToLinesNotSet()
 
 } // namespace WebCore
 
-#endif

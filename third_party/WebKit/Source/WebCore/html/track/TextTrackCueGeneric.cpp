@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackCueGeneric.h"
 
 #include "CSSPropertyNames.h"
@@ -172,4 +170,3 @@ bool TextTrackCueGeneric::operator==(const TextTrackCue& cue) const
     
 } // namespace WebCore
 
-#endif

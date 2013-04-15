@@ -99,10 +99,8 @@ void CachedPage::restore(Page* page)
     if (m_needsFullStyleRecalc)
         page->setNeedsRecalcStyleInAllFrames();
 
-#if ENABLE(VIDEO_TRACK)
     if (m_needsCaptionPreferencesChanged)
         page->captionPreferencesChanged();
-#endif
 
     clear();
 }

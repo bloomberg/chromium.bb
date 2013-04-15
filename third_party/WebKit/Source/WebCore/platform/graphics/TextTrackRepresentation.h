@@ -26,8 +26,6 @@
 #ifndef TextTrackRepresentation_h
 #define TextTrackRepresentation_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "IntRect.h"
 #include "PlatformLayer.h"
 #include <wtf/PassOwnPtr.h>
@@ -59,6 +57,5 @@ public:
 
 }
 
-#endif
 
 #endif // TextTrackRepresentation_h

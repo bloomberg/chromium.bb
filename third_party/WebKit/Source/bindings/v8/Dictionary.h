@@ -80,9 +80,7 @@ public:
 #if ENABLE(ENCRYPTED_MEDIA)
     bool get(const String&, RefPtr<MediaKeyError>&) const;
 #endif
-#if ENABLE(VIDEO_TRACK)
     bool get(const String&, RefPtr<TrackBase>&) const;
-#endif
 #if ENABLE(SCRIPTED_SPEECH)
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionResult>&) const;

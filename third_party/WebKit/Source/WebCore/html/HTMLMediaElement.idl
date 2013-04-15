@@ -107,10 +107,8 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
     [EnabledAtRuntime=encryptedMedia] attribute MediaKeys mediaKeys;
 #endif
 
-#if defined(ENABLE_VIDEO_TRACK) && ENABLE_VIDEO_TRACK
 [EnabledAtRuntime=webkitVideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, [Optional] DOMString label, [Optional] DOMString language);
 [EnabledAtRuntime=webkitVideoTrack] readonly attribute TextTrackList textTracks;
-#endif
 
 [Reflect, TreatNullAs=NullString] attribute DOMString mediaGroup;
 [CustomSetter] attribute MediaController controller;

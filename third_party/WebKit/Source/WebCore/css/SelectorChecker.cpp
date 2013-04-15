@@ -55,9 +55,7 @@
 #include "StyledElement.h"
 #include "Text.h"
 
-#if ENABLE(VIDEO_TRACK)
 #include "WebVTTElement.h"
-#endif
 
 namespace WebCore {
 
@@ -657,11 +655,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoLang:
             {
                 AtomicString value;
-#if ENABLE(VIDEO_TRACK)
                 if (element->isWebVTTElement())
                     value = toWebVTTElement(element)->language();
                 else
-#endif
                     value = element->computeInheritedLanguage();
                 const AtomicString& argument = selector->argument();
                 if (value.isEmpty() || !value.startsWith(argument, false))
@@ -706,12 +702,10 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 return false;
             element->document()->setContainsValidityStyleRules();
             return element->isOutOfRange();
-#if ENABLE(VIDEO_TRACK)
         case CSSSelector::PseudoFutureCue:
             return (element->isWebVTTElement() && !toWebVTTElement(element)->isPastNode());
         case CSSSelector::PseudoPastCue:
             return (element->isWebVTTElement() && toWebVTTElement(element)->isPastNode());
-#endif
 
         case CSSSelector::PseudoScope:
             {
@@ -741,7 +735,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         }
         return false;
     }
-#if ENABLE(VIDEO_TRACK)
     else if (selector->m_match == CSSSelector::PseudoElement && selector->pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
@@ -754,7 +747,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         }
         return false;
     }
-#endif
     // ### add the rest of the checks...
     return true;
 }

@@ -26,7 +26,7 @@
 #ifndef TextTrackRegionList_h
 #define TextTrackRegionList_h
 
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
 
 #include "TextTrackRegion.h"
 #include <wtf/PassRefPtr.h>

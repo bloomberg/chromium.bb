@@ -97,9 +97,9 @@ allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
 passwordEchoEnabled initial=false
 visualWordMovementEnabled initial=false
-shouldDisplaySubtitles initial=false, conditional=VIDEO_TRACK
-shouldDisplayCaptions initial=false, conditional=VIDEO_TRACK
-shouldDisplayTextDescriptions initial=false, conditional=VIDEO_TRACK
+shouldDisplaySubtitles initial=false
+shouldDisplayCaptions initial=false
+shouldDisplayTextDescriptions initial=false
 scrollingCoordinatorEnabled initial=false
 scrollAnimatorEnabled initial=true
 

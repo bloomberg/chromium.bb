@@ -31,8 +31,6 @@
 #ifndef WebVTTToken_h
 #define WebVTTToken_h
 
-#if ENABLE(VIDEO_TRACK)
-
 namespace WebCore {
 
 class WebVTTTokenTypes {
@@ -208,5 +206,4 @@ private:
 
 }
 
-#endif
 #endif

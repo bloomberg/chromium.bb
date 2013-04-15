@@ -48,11 +48,9 @@ public:
 
     virtual void updateCurrentTimeDisplay() OVERRIDE;
 
-#if ENABLE(VIDEO_TRACK)
     void createTextTrackDisplay() OVERRIDE;
 
     virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
-#endif
 
 protected:
     explicit MediaControlsChromium(Document*);

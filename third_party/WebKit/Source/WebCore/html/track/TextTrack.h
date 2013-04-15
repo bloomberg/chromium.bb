@@ -27,8 +27,6 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "ExceptionCode.h"
 #include "TrackBase.h"
 #include <wtf/PassOwnPtr.h>
@@ -113,7 +111,7 @@ public:
     void removeCue(TextTrackCue*, ExceptionCode&);
     bool hasCue(TextTrackCue*);
 
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* regions();
     void addRegion(PassRefPtr<TextTrackRegion>);
     void removeRegion(TextTrackRegion*, ExceptionCode&);
@@ -153,7 +151,7 @@ public:
 
 protected:
     TextTrack(ScriptExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* regionList();
 #endif
 
@@ -161,7 +159,7 @@ protected:
 
 private:
 
-#if ENABLE(VIDEO_TRACK) && ENABLE(WEBVTT_REGIONS)
+#if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* ensureTextTrackRegionList();
     RefPtr<TextTrackRegionList> m_regions;
 #endif
@@ -189,5 +187,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

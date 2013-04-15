@@ -203,10 +203,8 @@ public:
     static void setEncryptedMediaEnabled(bool isEnabled) { isEncryptedMediaEnabled = isEnabled; }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
     static bool webkitVideoTrackEnabled() { return isVideoTrackEnabled; }
     static void setWebkitVideoTrackEnabled(bool isEnabled) { isVideoTrackEnabled = isEnabled; }
-#endif
 
     static bool shadowDOMEnabled() { return isShadowDOMEnabled; }
     static void setShadowDOMEnabled(bool isEnabled) { isShadowDOMEnabled = isEnabled; }
@@ -302,9 +300,7 @@ private:
     static bool isEncryptedMediaEnabled;
 #endif
 
-#if ENABLE(VIDEO_TRACK)
     static bool isVideoTrackEnabled;
-#endif
 
     static bool isShadowDOMEnabled;
 

@@ -32,8 +32,6 @@
 #ifndef TextTrackCue_h
 #define TextTrackCue_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "EventTarget.h"
 #include "HTMLDivElement.h"
 #include "HTMLElement.h"
@@ -282,5 +280,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

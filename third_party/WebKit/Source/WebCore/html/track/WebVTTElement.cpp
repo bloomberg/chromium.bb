@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "WebVTTElement.h"
 
 #include "TextTrack.h"
@@ -122,4 +120,3 @@ PassRefPtr<HTMLElement> WebVTTElement::createEquivalentHTMLElement(Document* doc
 
 } // namespace WebCore
 
-#endif

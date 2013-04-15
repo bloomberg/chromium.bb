@@ -132,10 +132,8 @@
 #include "MockCDM.h"
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 #include "CaptionUserPreferences.h"
 #include "PageGroup.h"
-#endif
 
 #if ENABLE(SPEECH_SYNTHESIS)
 #include "DOMWindowSpeechSynthesis.h"
@@ -241,9 +239,7 @@ void Internals::resetToConsistentState(Page* page)
 #endif
     if (page->inspectorController())
         page->inspectorController()->setProfilerEnabled(false);
-#if ENABLE(VIDEO_TRACK)
     page->group().captionPreferences()->setTestingMode(false);
-#endif
     if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
         page->mainFrame()->editor()->toggleContinuousSpellChecking();
     if (page->mainFrame()->editor()->isOverwriteModeEnabled())
@@ -253,10 +249,8 @@ void Internals::resetToConsistentState(Page* page)
 Internals::Internals(Document* document)
     : ContextDestructionObserver(document)
 {
-#if ENABLE(VIDEO_TRACK)
     if (document && document->page())
         document->page()->group().captionPreferences()->setTestingMode(true);
-#endif
 }
 
 Document* Internals::contextDocument() const

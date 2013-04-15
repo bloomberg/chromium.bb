@@ -41,9 +41,7 @@
 #include "TimeRanges.h"
 #include <wtf/text/CString.h>
 
-#if ENABLE(VIDEO_TRACK)
 #include "InbandTextTrackPrivate.h"
-#endif
 
 #if ENABLE(MEDIA_SOURCE)
 #include "MediaSource.h"
@@ -971,7 +969,6 @@ CachedResourceLoader* MediaPlayer::cachedResourceLoader()
     return m_mediaPlayerClient->mediaPlayerCachedResourceLoader();
 }
 
-#if ENABLE(VIDEO_TRACK)
 void MediaPlayer::addTextTrack(PassRefPtr<InbandTextTrackPrivate> track)
 {
     if (!m_mediaPlayerClient)
@@ -997,7 +994,6 @@ void MediaPlayer::setTextTrackRepresentation(TextTrackRepresentation* representa
 {
     m_private->setTextTrackRepresentation(representation);
 }
-#endif // ENABLE(VIDEO_TRACK)
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
 bool MediaPlayer::implementsTextTrackControls() const

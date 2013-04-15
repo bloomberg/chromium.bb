@@ -122,12 +122,10 @@ bool RenderThemeChromiumSkia::supportsCalendarPicker(const AtomicString& type) c
 }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 bool RenderThemeChromiumSkia::supportsClosedCaptioning() const
 {
     return true;
 }
-#endif
 
 Color RenderThemeChromiumSkia::platformActiveSelectionBackgroundColor() const
 {
@@ -407,14 +405,7 @@ bool RenderThemeChromiumSkia::paintMediaSliderThumb(RenderObject* object, const 
 
 bool RenderThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-#if ENABLE(VIDEO_TRACK)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)

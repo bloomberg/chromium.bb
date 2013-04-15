@@ -9881,12 +9881,10 @@ inline bool CSSParser::detectFunctionTypeToken(int length)
             m_token = URI;
             return true;
         }
-#if ENABLE(VIDEO_TRACK)
         if (isASCIIAlphaCaselessEqual(name[0], 'c') && isASCIIAlphaCaselessEqual(name[1], 'u') && isASCIIAlphaCaselessEqual(name[2], 'e')) {
             m_token = CUEFUNCTION;
             return true;
         }
-#endif
         return false;
 
     case 4:
@@ -11138,9 +11136,7 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
     if (!specifiers->isCustomPseudoElement()) {
         if (tag == anyQName())
             return specifiers;
-#if ENABLE(VIDEO_TRACK)
         if (!(specifiers->pseudoType() == CSSSelector::PseudoCue))
-#endif
             specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
         return specifiers;
     }
@@ -11188,11 +11184,7 @@ CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSel
 
 CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)
 {
-#if ENABLE(VIDEO_TRACK)
     if (newSpecifier->isCustomPseudoElement() || newSpecifier->pseudoType() == CSSSelector::PseudoCue) {
-#else
-    if (newSpecifier->isCustomPseudoElement()) {
-#endif
         // Unknown pseudo element always goes at the top of selector chain.
         newSpecifier->appendTagHistory(CSSSelector::ShadowDescendant, sinkFloatingSelector(specifiers));
         return newSpecifier;

@@ -333,9 +333,7 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-#if ENABLE(VIDEO_TRACK)
     void captionPreferencesChanged();
-#endif
 
 private:
     void initGroup();

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "CachedTextTrack.h"
 
 #include "CachedResourceClient.h"
@@ -66,4 +64,3 @@ void CachedTextTrack::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived
 
 }
 
-#endif

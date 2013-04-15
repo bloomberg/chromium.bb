@@ -26,8 +26,6 @@
 #ifndef TextTrackCueGeneric_h
 #define TextTrackCueGeneric_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "Color.h"
 #include "TextTrackCue.h"
 #include <wtf/RefCounted.h>
@@ -91,5 +89,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

@@ -1243,13 +1243,11 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.ignoreMember(m_validationMessageClient);
 }
 
-#if ENABLE(VIDEO_TRACK)
 void Page::captionPreferencesChanged()
 {
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
         frame->document()->captionPreferencesChanged();
 }
-#endif
 
 Page::PageClients::PageClients()
     : alternativeTextClient(0)

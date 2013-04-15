@@ -69,11 +69,9 @@ public:
         bool m_langAttributeAwareFormControlUIEnabled;
         bool m_imagesEnabled;
         double m_minimumTimerInterval;
-#if ENABLE(VIDEO_TRACK)
         bool m_shouldDisplaySubtitles;
         bool m_shouldDisplayCaptions;
         bool m_shouldDisplayTextDescriptions;
-#endif
         String m_defaultVideoPosterURL;
         bool m_originalTimeWithoutMouseMovementBeforeHidingControls;
     };

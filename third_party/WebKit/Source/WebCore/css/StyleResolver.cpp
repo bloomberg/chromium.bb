@@ -172,9 +172,7 @@
 #include "StyleCachedImageSet.h"
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 #include "WebVTTElement.h"
-#endif
 
 using namespace std;
 
@@ -674,14 +672,12 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     if (element->isLink() && state.elementLinkState() != style->insideLink())
         return false;
 
-#if ENABLE(VIDEO_TRACK)
     // Deny sharing styles between WebVTT and non-WebVTT nodes.
     if (element->isWebVTTElement() != state.element()->isWebVTTElement())
         return false;
 
     if (element->isWebVTTElement() && state.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(state.element())->isPastNode())
         return false;
-#endif
 
     if (element == element->document()->webkitCurrentFullScreenElement() || state.element() == state.document()->webkitCurrentFullScreenElement())
         return false;
@@ -1687,10 +1683,8 @@ void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRul
 
         if (propertyWhitelistType == PropertyWhitelistRegion && !StyleResolver::isValidRegionStyleProperty(property))
             continue;
-#if ENABLE(VIDEO_TRACK)
         if (propertyWhitelistType == PropertyWhitelistCue && !StyleResolver::isValidCueStyleProperty(property))
             continue;
-#endif
         switch (pass) {
         case VariableDefinitions:
             COMPILE_ASSERT(CSSPropertyVariable < firstCSSProperty, CSS_variable_is_before_first_property);
@@ -1982,7 +1976,6 @@ inline bool StyleResolver::isValidRegionStyleProperty(CSSPropertyID id)
     return false;
 }
 
-#if ENABLE(VIDEO_TRACK)
 inline bool StyleResolver::isValidCueStyleProperty(CSSPropertyID id)
 {
     switch (id) {
@@ -2024,7 +2017,6 @@ inline bool StyleResolver::isValidCueStyleProperty(CSSPropertyID id)
     }
     return false;
 }
-#endif
 // SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
 // of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()
 // multiplies each resolved length with the zoom multiplier - so for SVG we need to disable that.

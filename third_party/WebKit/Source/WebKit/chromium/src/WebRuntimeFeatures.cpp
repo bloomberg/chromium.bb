@@ -365,20 +365,12 @@ bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 
 void WebRuntimeFeatures::enableVideoTrack(bool enable)
 {
-#if ENABLE(VIDEO_TRACK)
     RuntimeEnabledFeatures::setWebkitVideoTrackEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isVideoTrackEnabled()
 {
-#if ENABLE(VIDEO_TRACK)
     return RuntimeEnabledFeatures::webkitVideoTrackEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableGamepad(bool enable)

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "CaptionUserPreferences.h"
 #include "Page.h"
 #include "PageGroup.h"
@@ -224,4 +222,3 @@ int CaptionUserPreferences::textTrackLanguageSelectionScore(TextTrack* track) co
 
 }
 
-#endif // ENABLE(VIDEO_TRACK)

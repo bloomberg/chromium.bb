@@ -35,8 +35,6 @@
 
 namespace WebCore {
 
-#if ENABLE(VIDEO_TRACK)
-
 RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* element)
     : RenderBlock(element)
 {
@@ -54,7 +52,6 @@ void RenderTextTrackContainerElement::layout()
     static_cast<MediaControlTextTrackContainerElement*>(node())->updateSizes();
 }
 
-#endif // ENABLE(VIDEO_TRACK)
 
 } // namespace WebCore
 

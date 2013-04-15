@@ -26,6 +26,7 @@
 #include "config.h"
 #include "PageGroup.h"
 
+#include "CaptionUserPreferences.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -37,10 +38,6 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StorageNamespace.h"
-
-#if ENABLE(VIDEO_TRACK)
-#include "CaptionUserPreferences.h"
-#endif
 
 #include "VisitedLinks.h"
 
@@ -284,7 +281,6 @@ void PageGroup::invalidatedInjectedStyleSheetCacheInAllFrames()
     }
 }
 
-#if ENABLE(VIDEO_TRACK)
 void PageGroup::captionPreferencesChanged()
 {
     for (HashSet<Page*>::iterator i = m_pages.begin(); i != m_pages.end(); ++i)
@@ -300,6 +296,5 @@ CaptionUserPreferences* PageGroup::captionPreferences()
     return m_captionPreferences.get();
 }
 
-#endif
 
 } // namespace WebCore

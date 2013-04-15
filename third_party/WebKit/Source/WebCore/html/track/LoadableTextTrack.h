@@ -26,8 +26,6 @@
 #ifndef LoadableTextTrack_h
 #define LoadableTextTrack_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrack.h"
 #include "TextTrackLoader.h"
 #include <wtf/PassRefPtr.h>
@@ -86,5 +84,4 @@ private:
 };
 } // namespace WebCore
 
-#endif
 #endif

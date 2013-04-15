@@ -54,9 +54,7 @@ public:
 
     void markForVistedLinkStyleRecalc() { m_needStyleRecalcForVisitedLinks = true; }
     void markForFullStyleRecalc() { m_needsFullStyleRecalc = true; }
-#if ENABLE(VIDEO_TRACK)
     void markForCaptionPreferencesChanged() { m_needsCaptionPreferencesChanged = true; }
-#endif
 
 private:
     CachedPage(Page*);

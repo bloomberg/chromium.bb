@@ -211,10 +211,8 @@ private:
 
     typedef Vector<RefPtr<Element> > TrackMenuItems;
     TrackMenuItems m_menuItems;
-#if ENABLE(VIDEO_TRACK)
     typedef HashMap<RefPtr<Element>, RefPtr<TextTrack> > MenuItemToTrackMap;
     MenuItemToTrackMap m_menuToTrackMap;
-#endif
     MediaControls* m_controls;
     bool m_trackListHasChanged;
 };
@@ -291,8 +289,6 @@ private:
 
 // ----------------------------
 
-#if ENABLE(VIDEO_TRACK)
-
 class MediaControlTextTrackContainerElement : public MediaControlDivElement, public TextTrackRepresentationClient {
 public:
     static PassRefPtr<MediaControlTextTrackContainerElement> create(Document*);
@@ -315,7 +311,6 @@ private:
     float m_fontSize;
 };
 
-#endif
 
 } // namespace WebCore
 

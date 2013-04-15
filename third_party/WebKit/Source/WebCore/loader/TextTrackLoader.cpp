@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackLoader.h"
 
 #include "CachedResourceLoader.h"
@@ -224,4 +222,3 @@ void TextTrackLoader::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegi
 #endif
 }
 
-#endif

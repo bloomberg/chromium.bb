@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "InbandTextTrack.h"
 
 #include "Document.h"
@@ -190,4 +188,3 @@ void InbandTextTrack::addWebVTTCue(InbandTextTrackPrivate* trackPrivate, double 
 
 } // namespace WebCore
 
-#endif

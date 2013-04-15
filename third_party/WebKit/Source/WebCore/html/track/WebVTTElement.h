@@ -23,8 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "HTMLElement.h"
 
 namespace WebCore {
@@ -93,4 +91,3 @@ void toWebVTTElement(const WebVTTElement*);
 
 } // namespace WebCore
 
-#endif

@@ -34,11 +34,9 @@
 #include "MediaControllerInterface.h"
 #include "MediaPlayer.h"
 
-#if ENABLE(VIDEO_TRACK)
 #include "PODIntervalTree.h"
 #include "TextTrack.h"
 #include "TextTrackCue.h"
-#endif
 
 namespace WebCore {
 
@@ -59,22 +57,18 @@ class TimeRanges;
 class MediaKeys;
 #endif
 
-#if ENABLE(VIDEO_TRACK)
 class InbandTextTrackPrivate;
 
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
 typedef Vector<CueInterval> CueList;
-#endif
 
 // FIXME: The inheritance from MediaPlayerClient here should be private inheritance.
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
 class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public MediaPlayerSupportsTypeClient, private MediaCanStartListener, public ActiveDOMObject, public MediaControllerInterface
-#if ENABLE(VIDEO_TRACK)
     , private TextTrackClient
-#endif
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     , public PlatformTextTrackMenuClient
 #endif
@@ -203,7 +197,6 @@ public:
 
     double percentLoaded() const;
 
-#if ENABLE(VIDEO_TRACK)
     PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, const String& language, ExceptionCode&);
     PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, ExceptionCode& ec) { return addTextTrack(kind, label, emptyString(), ec); }
     PassRefPtr<TextTrack> addTextTrack(const String& kind, ExceptionCode& ec) { return addTextTrack(kind, emptyString(), emptyString(), ec); }
@@ -271,7 +264,6 @@ public:
 
     bool requiresTextTrackRepresentation() const;
     void setTextTrackRepresentation(TextTrackRepresentation*);
-#endif
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
@@ -360,11 +352,9 @@ protected:
     void addBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions |= restriction; }
     void removeBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions &= ~restriction; }
 
-#if ENABLE(VIDEO_TRACK)
     bool ignoreTrackDisplayUpdateRequests() const { return m_ignoreTrackDisplayUpdate > 0; }
     void beginIgnoringTrackDisplayUpdateRequests();
     void endIgnoringTrackDisplayUpdateRequests();
-#endif
 
 private:
     void createMediaPlayer();
@@ -484,13 +474,11 @@ private:
 
     void mediaLoadingFailed(MediaPlayer::NetworkState);
 
-#if ENABLE(VIDEO_TRACK)
     void updateActiveTextTrackCues(double);
     HTMLTrackElement* showingTrackWithSameKind(HTMLTrackElement*) const;
 
     void markCaptionAndSubtitleTracksAsUnconfigured();
     virtual void captionPreferencesChanged() OVERRIDE;
-#endif
 
     // These "internal" functions do not check user gesture restrictions.
     void loadInternal();
@@ -635,7 +623,6 @@ private:
     bool m_havePreparedToPlay : 1;
     bool m_parsingInProgress : 1;
 
-#if ENABLE(VIDEO_TRACK)
     bool m_tracksAreReady : 1;
     bool m_haveVisibleTextTrack : 1;
     bool m_processingPreferenceChange : 1;
@@ -648,7 +635,6 @@ private:
 
     CueList m_currentlyActiveCues;
     int m_ignoreTrackDisplayUpdate;
-#endif
 
 #if ENABLE(WEB_AUDIO)
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
@@ -672,7 +658,6 @@ private:
 #endif
 };
 
-#if ENABLE(VIDEO_TRACK)
 #ifndef NDEBUG
 // Template specializations required by PodIntervalTree in debug mode.
 template <>
@@ -690,7 +675,6 @@ struct ValueToString<TextTrackCue*> {
         return String::format("%p id=%s interval=%f-->%f cue=%s)", cue, cue->id().utf8().data(), cue->startTime(), cue->endTime(), cue->text().utf8().data());
     }
 };
-#endif
 #endif
 
 inline bool isMediaElement(Node* node)

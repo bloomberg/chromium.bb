@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "WebVTTTokenizer.h"
 
 #include "MarkupTokenizerInlines.h"
@@ -226,4 +224,3 @@ bool WebVTTTokenizer::nextToken(SegmentedString& source, WebVTTToken& token)
 
 }
 
-#endif

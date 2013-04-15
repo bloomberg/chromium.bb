@@ -189,11 +189,9 @@ namespace WebCore {
 
     String clickToExitFullScreenText();
 
-#if ENABLE(VIDEO_TRACK)
     String textTrackSubtitlesText();
     String textTrackOffText();
     String textTrackNoLabelText();
-#endif
 
 } // namespace WebCore
 

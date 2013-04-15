@@ -26,8 +26,6 @@
 #ifndef TextTrackCueList_h
 #define TextTrackCueList_h
 
-#if ENABLE(VIDEO_TRACK)
-
 #include "TextTrackCue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -70,5 +68,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif
