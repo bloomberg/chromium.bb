@@ -41,13 +41,14 @@
 #include "NotImplemented.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "TextEncoding.h"
-#include <url/url_util.h>
 #include <wtf/HashMap.h>
 #include <wtf/MemoryInstrumentationString.h>
-#include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
+#include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringHash.h>
+
+#include <googleurl/src/url_util.h>
 
 using WTF::isASCIILower;
 using WTF::toASCIILower;

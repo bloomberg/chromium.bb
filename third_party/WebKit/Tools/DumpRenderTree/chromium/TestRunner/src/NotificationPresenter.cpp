@@ -38,7 +38,7 @@
 #include "WebNotificationPermissionCallback.h"
 #include "WebSecurityOrigin.h"
 #include "WebTestDelegate.h"
-#include "url/gurl.h"
+#include "googleurl/src/gurl.h"
 #include <public/Platform.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>

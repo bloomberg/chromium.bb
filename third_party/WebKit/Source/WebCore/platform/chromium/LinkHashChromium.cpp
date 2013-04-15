@@ -32,7 +32,7 @@
 #include "KURL.h"
 #include "LinkHash.h"
 
-#include <url/url_util.h>
+#include <googleurl/src/url_util.h>
 #include <public/Platform.h>
 
 namespace WebCore {

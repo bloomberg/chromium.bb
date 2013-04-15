@@ -31,12 +31,13 @@
 #ifndef KURLGooglePrivate_h
 #define KURLGooglePrivate_h
 
-#include <url/url_parse.h>
-#include <url/url_canon.h>
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+
+#include <googleurl/src/url_parse.h>
+#include <googleurl/src/url_canon.h>
 
 namespace WebCore {
 
