@@ -16,44 +16,94 @@
 namespace content {
 namespace {
 
+
+// CountedBrowserAccessibility ------------------------------------------------
+
 // Subclass of BrowserAccessibilityWin that counts the number of instances.
 class CountedBrowserAccessibility : public BrowserAccessibilityWin {
  public:
-  CountedBrowserAccessibility() { global_obj_count_++; }
-  virtual ~CountedBrowserAccessibility() { global_obj_count_--; }
-  static int global_obj_count_;
+  CountedBrowserAccessibility();
+  virtual ~CountedBrowserAccessibility();
+
+  static void reset() { num_instances_ = 0; }
+  static int num_instances() { return num_instances_; }
+
+ private:
+  static int num_instances_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountedBrowserAccessibility);
 };
 
-int CountedBrowserAccessibility::global_obj_count_ = 0;
+// static
+int CountedBrowserAccessibility::num_instances_ = 0;
+
+CountedBrowserAccessibility::CountedBrowserAccessibility() {
+  ++num_instances_;
+}
+
+CountedBrowserAccessibility::~CountedBrowserAccessibility() {
+  --num_instances_;
+}
+
+
+// CountedBrowserAccessibilityFactory -----------------------------------------
 
 // Factory that creates a CountedBrowserAccessibility.
-class CountedBrowserAccessibilityFactory
-    : public BrowserAccessibilityFactory {
+class CountedBrowserAccessibilityFactory : public BrowserAccessibilityFactory {
  public:
-  virtual ~CountedBrowserAccessibilityFactory() {}
-  virtual BrowserAccessibility* Create() {
-    CComObject<CountedBrowserAccessibility>* instance;
-    HRESULT hr = CComObject<CountedBrowserAccessibility>::CreateInstance(
-        &instance);
-    DCHECK(SUCCEEDED(hr));
-    instance->AddRef();
-    return instance;
-  }
+  CountedBrowserAccessibilityFactory();
+
+ private:
+  virtual ~CountedBrowserAccessibilityFactory();
+
+  virtual BrowserAccessibility* Create() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(CountedBrowserAccessibilityFactory);
 };
 
-}  // anonymous namespace
+CountedBrowserAccessibilityFactory::CountedBrowserAccessibilityFactory() {
+}
+
+CountedBrowserAccessibilityFactory::~CountedBrowserAccessibilityFactory() {
+}
+
+BrowserAccessibility* CountedBrowserAccessibilityFactory::Create() {
+  CComObject<CountedBrowserAccessibility>* instance;
+  HRESULT hr = CComObject<CountedBrowserAccessibility>::CreateInstance(
+      &instance);
+  DCHECK(SUCCEEDED(hr));
+  instance->AddRef();
+  return instance;
+}
+
+}  // namespace
+
+
+// BrowserAccessibilityTest ---------------------------------------------------
 
 class BrowserAccessibilityTest : public testing::Test {
  public:
-  BrowserAccessibilityTest() {}
+  BrowserAccessibilityTest();
+  virtual ~BrowserAccessibilityTest();
 
  private:
-  virtual void SetUp() {
-    ui::win::CreateATLModuleIfNeeded();
-  }
+  virtual void SetUp() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
+
+BrowserAccessibilityTest::BrowserAccessibilityTest() {
+}
+
+BrowserAccessibilityTest::~BrowserAccessibilityTest() {
+}
+
+void BrowserAccessibilityTest::SetUp() {
+  ui::win::CreateATLModuleIfNeeded();
+}
+
+
+// Actual tests ---------------------------------------------------------------
 
 // Test that BrowserAccessibilityManager correctly releases the tree of
 // BrowserAccessibility instances upon delete.
@@ -85,28 +135,23 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   // AccessibilityNodeData tree and a factory for an instance-counting
   // BrowserAccessibility, and ensure that exactly 3 instances were
   // created. Note that the manager takes ownership of the factory.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
-          NULL,
-          new CountedBrowserAccessibilityFactory());
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(button, checkbox);
-  ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   // Delete the manager and test that all 3 instances are deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 
   // Construct a manager again, and this time use the IAccessible interface
   // to get new references to two of the three nodes in the tree.
-  manager =
-      BrowserAccessibilityManager::Create(
-          root,
-          NULL,
-          new CountedBrowserAccessibilityFactory());
+  manager.reset(BrowserAccessibilityManager::Create(
+      root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(button, checkbox);
-  ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
   IAccessible* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
   IDispatch* root_iaccessible = NULL;
@@ -120,15 +165,15 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
 
   // Now delete the manager, and only one of the three nodes in the tree
   // should be released.
-  delete manager;
-  ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
 
   // Release each of our references and make sure that each one results in
   // the instance being deleted as its reference count hits zero.
   root_iaccessible->Release();
-  ASSERT_EQ(1, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(1, CountedBrowserAccessibility::num_instances());
   child1_iaccessible->Release();
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
@@ -151,12 +196,10 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Construct a BrowserAccessibilityManager with this
   // AccessibilityNodeData tree and a factory for an instance-counting
   // BrowserAccessibility.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
-          NULL,
-          new CountedBrowserAccessibilityFactory());
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(text);
 
   // Query for the text IAccessible and verify that it returns "old text" as its
@@ -194,8 +237,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
   hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
-      one,
-      text_dispatch.Receive());
+      one, text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
@@ -210,8 +252,8 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
@@ -246,14 +288,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // AccessibilityNodeData tree and a factory for an instance-counting
   // BrowserAccessibility and ensure that exactly 4 instances were
   // created. Note that the manager takes ownership of the factory.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
-          NULL,
-          new CountedBrowserAccessibilityFactory());
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(div, text3, text4);
-  ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(4, CountedBrowserAccessibility::num_instances());
 
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
@@ -265,12 +305,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   std::vector<AccessibilityHostMsg_NotificationParams> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);
-  ASSERT_EQ(1, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(1, CountedBrowserAccessibility::num_instances());
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
@@ -287,82 +327,81 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   root.state = 0;
   root.child_ids.push_back(11);
 
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      root, NULL,
-      new CountedBrowserAccessibilityFactory());
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(text1);
-  ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
   BrowserAccessibilityWin* text1_obj =
       root_obj->GetChild(0)->ToBrowserAccessibilityWin();
 
-  base::win::ScopedBstr text;
-  long start;
-  long end;
-
   long text1_len;
   ASSERT_EQ(S_OK, text1_obj->get_nCharacters(&text1_len));
 
+  base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, text.Receive()));
-  ASSERT_EQ(string16(text), text1.value);
+  ASSERT_EQ(text1.value, string16(text));
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, text.Receive()));
-  ASSERT_STREQ(text, L"One ");
+  ASSERT_STREQ(L"One ", text);
   text.Reset();
 
+  long start;
+  long end;
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
-  ASSERT_EQ(start, 1);
-  ASSERT_EQ(end, 2);
-  ASSERT_STREQ(text, L"n");
+  ASSERT_EQ(1, start);
+  ASSERT_EQ(2, end);
+  ASSERT_STREQ(L"n", text);
   text.Reset();
 
   ASSERT_EQ(S_FALSE, text1_obj->get_textAtOffset(
       text1_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
-  ASSERT_EQ(start, text1_len);
-  ASSERT_EQ(end, text1_len);
+  ASSERT_EQ(text1_len, start);
+  ASSERT_EQ(text1_len, end);
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(start, 0);
-  ASSERT_EQ(end, 3);
-  ASSERT_STREQ(text, L"One");
+  ASSERT_EQ(0, start);
+  ASSERT_EQ(3, end);
+  ASSERT_STREQ(L"One", text);
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(start, 4);
-  ASSERT_EQ(end, 7);
-  ASSERT_STREQ(text, L"two");
+  ASSERT_EQ(4, start);
+  ASSERT_EQ(7, end);
+  ASSERT_STREQ(L"two", text);
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       text1_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(start, 25);
-  ASSERT_EQ(end, 29);
-  ASSERT_STREQ(text, L"six.");
+  ASSERT_EQ(25, start);
+  ASSERT_EQ(29, end);
+  ASSERT_STREQ(L"six.", text);
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
-  ASSERT_EQ(start, 0);
-  ASSERT_EQ(end, 15);
-  ASSERT_STREQ(text, L"One two three.\n");
+  ASSERT_EQ(0, start);
+  ASSERT_EQ(15, end);
+  ASSERT_STREQ(L"One two three.\n", text);
   text.Reset();
 
   ASSERT_EQ(S_OK,
             text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  ASSERT_STREQ(text, L"One two three.\nFour five six.");
+  ASSERT_STREQ(L"One two three.\nFour five six.", text);
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
@@ -385,23 +424,22 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   root.child_ids.push_back(11);
   root.child_ids.push_back(12);
 
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      root, NULL,
-      new CountedBrowserAccessibilityFactory());
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(root, text1, text2);
-  ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
-  base::win::ScopedBstr text;
-
   long text_len;
   ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
 
+  base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
-  EXPECT_EQ(string16(text), text1.name + text2.name);
+  EXPECT_EQ(text1.name + text2.name, string16(text));
 
   long hyperlink_count;
   ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
@@ -425,8 +463,8 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
@@ -471,27 +509,26 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   root.child_ids.push_back(12);
   root.child_ids.push_back(14);
 
-  CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
-      root, NULL,
-      new CountedBrowserAccessibilityFactory());
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root, NULL, new CountedBrowserAccessibilityFactory()));
   manager->UpdateNodesForTesting(root,
                                  text1, button1, button1_text,
                                  text2, link1, link1_text);
 
-  ASSERT_EQ(7, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(7, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
-  base::win::ScopedBstr text;
-
   long text_len;
   ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
 
+  base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
   const string16 embed = BrowserAccessibilityWin::kEmbeddedCharacter;
-  EXPECT_EQ(string16(text), text1.name + embed + text2.name + embed);
+  EXPECT_EQ(text1.name + embed + text2.name + embed, string16(text));
   text.Reset();
 
   long hyperlink_count;
@@ -508,7 +545,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK,
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 3, text.Receive()));
-  EXPECT_STREQ(text, L"red");
+  EXPECT_STREQ(L"red", text);
   text.Reset();
   hyperlink.Release();
   hypertext.Release();
@@ -517,7 +554,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK,
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
-  EXPECT_STREQ(text, L"blue");
+  EXPECT_STREQ(L"blue", text);
   text.Reset();
   hyperlink.Release();
   hypertext.Release();
@@ -534,22 +571,23 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
-  delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // Try creating an empty document with busy state. Readonly is
   // set automatically.
+  CountedBrowserAccessibility::reset();
   const int32 busy_state = 1 << AccessibilityNodeData::STATE_BUSY;
   const int32 readonly_state = 1 << AccessibilityNodeData::STATE_READONLY;
-  scoped_ptr<BrowserAccessibilityManager> manager;
-  manager.reset(new BrowserAccessibilityManagerWin(
-      GetDesktopWindow(),
-      NULL,
-      BrowserAccessibilityManagerWin::GetEmptyDocument(),
-      NULL,
-      new CountedBrowserAccessibilityFactory()));
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      new BrowserAccessibilityManagerWin(
+          GetDesktopWindow(),
+          NULL,
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
@@ -616,7 +654,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
 
   // Ensure we properly cleaned up.
   manager.reset();
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 }  // namespace content
