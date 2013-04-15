@@ -1251,6 +1251,13 @@ bool WebContentsImpl::PreHandleWheelEvent(
   return false;
 }
 
+void WebContentsImpl::HandleMouseMove() {
+  if (delegate_) {
+    delegate_->ContentsMouseEvent(
+        this, gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(), true);
+  }
+}
+
 void WebContentsImpl::HandleMouseDown() {
   if (delegate_)
     delegate_->HandleMouseDown();

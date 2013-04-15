@@ -256,6 +256,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void HandleKeyboardEvent(WebContents* source,
                                    const NativeWebKeyboardEvent& event) {}
 
+  virtual void HandleMouseMove() {}
   virtual void HandleMouseDown() {}
   virtual void HandleMouseUp() {}
 
