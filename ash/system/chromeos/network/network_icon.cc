@@ -695,8 +695,8 @@ int GetCellularUninitializedMsg() {
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkStateHandler::Get();
-  if (handler->TechnologyUninitialized(
-          NetworkStateHandler::kMatchTypeMobile)) {
+  if (handler->GetTechnologyState(NetworkStateHandler::kMatchTypeMobile)
+      == NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;

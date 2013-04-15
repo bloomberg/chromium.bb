@@ -39,6 +39,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+using chromeos::DeviceState;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
@@ -230,7 +231,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == button_wifi_) {
-    bool enabled = handler->TechnologyEnabled(flimflam::kTypeWifi);
+    bool enabled = handler->IsTechnologyEnabled(flimflam::kTypeWifi);
     handler->SetTechnologyEnabled(
         flimflam::kTypeWifi, !enabled,
         chromeos::network_handler::ErrorCallback());
@@ -239,12 +240,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
         flimflam::kTypeWifi, true,
         chromeos::network_handler::ErrorCallback());
   } else if (sender == button_mobile_) {
-    // TODO: This needs to be fixed to use
-    // NetworkStateHandler::SetTechnologyEnabled instead. Currently
-    // ToggleMobile has code to handle the locked SIM case, which cannot
-    // be moved here yet due to dependencies on src/chrome/* - see,
-    // crbug.com/222540.
-    delegate->ToggleMobile();
+    ToggleMobile();
   } else if (sender == settings_) {
     delegate->ShowNetworkSettings();
   } else if (sender == proxy_settings_) {
@@ -400,20 +396,41 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
   NetworkStateHandler* handler = NetworkStateHandler::Get();
-  if (button_wifi_) {
-    button_wifi_->SetToggled(
-        !handler->TechnologyEnabled(flimflam::kTypeWifi));
-  }
+  if (button_wifi_)
+    UpdateTechnologyButton(button_wifi_, flimflam::kTypeWifi);
   if (button_mobile_) {
-    button_mobile_->SetToggled(!handler->TechnologyEnabled(
-        NetworkStateHandler::kMatchTypeMobile));
-    button_mobile_->SetVisible(handler->TechnologyAvailable(
-        NetworkStateHandler::kMatchTypeMobile));
+    UpdateTechnologyButton(
+        button_mobile_, NetworkStateHandler::kMatchTypeMobile);
   }
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != NULL);
 
   static_cast<views::View*>(footer())->Layout();
+}
+
+void NetworkStateListDetailedView::UpdateTechnologyButton(
+    TrayPopupHeaderButton* button,
+    const std::string& technology) {
+  NetworkStateHandler::TechnologyState state =
+      NetworkStateHandler::Get()->GetTechnologyState(technology);
+  if (state == NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
+    button->SetVisible(false);
+    return;
+  }
+  button->SetVisible(true);
+  if (state == NetworkStateHandler::TECHNOLOGY_AVAILABLE) {
+    button->SetEnabled(true);
+    button->SetToggled(true);
+  } else if (state == NetworkStateHandler::TECHNOLOGY_ENABLED) {
+    button->SetEnabled(true);
+    button->SetToggled(false);
+  } else if (state == NetworkStateHandler::TECHNOLOGY_ENABLING) {
+    button->SetEnabled(false);
+    button->SetToggled(false);
+  } else {  // Initializing
+    button->SetEnabled(false);
+    button->SetToggled(true);
+  }
 }
 
 void NetworkStateListDetailedView::UpdateNetworks(
@@ -564,7 +581,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
     // Cellular initializing
     int status_message_id = network_icon::GetCellularUninitializedMsg();
     if (!status_message_id &&
-        handler->TechnologyEnabled(NetworkStateHandler::kMatchTypeMobile) &&
+        handler->IsTechnologyEnabled(NetworkStateHandler::kMatchTypeMobile) &&
         !handler->FirstNetworkByType(NetworkStateHandler::kMatchTypeMobile)) {
       status_message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
     }
@@ -580,7 +597,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
 
     // "Wifi Enabled / Disabled"
     if (network_list_.empty()) {
-      int message_id = handler->TechnologyEnabled(flimflam::kTypeWifi) ?
+      int message_id = handler->IsTechnologyEnabled(flimflam::kTypeWifi) ?
           IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
           IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
       base::string16 text = rb.GetLocalizedString(message_id);
@@ -667,22 +684,34 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
   NetworkStateHandler* handler = NetworkStateHandler::Get();
   if (other_wifi_) {
     DCHECK(turn_on_wifi_);
-    if (!handler->TechnologyAvailable(flimflam::kTypeWifi)) {
+    NetworkStateHandler::TechnologyState state =
+        handler->GetTechnologyState(flimflam::kTypeWifi);
+    if (state == NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
       turn_on_wifi_->SetVisible(false);
-      other_wifi_->SetVisible(false);
-    } else if (!handler->TechnologyEnabled(flimflam::kTypeWifi)) {
-      turn_on_wifi_->SetVisible(true);
       other_wifi_->SetVisible(false);
     } else {
-      turn_on_wifi_->SetVisible(false);
-      other_wifi_->SetVisible(true);
+      if (state == NetworkStateHandler::TECHNOLOGY_AVAILABLE) {
+        turn_on_wifi_->SetVisible(true);
+        turn_on_wifi_->SetEnabled(true);
+        other_wifi_->SetVisible(false);
+      } else if (state == NetworkStateHandler::TECHNOLOGY_ENABLED) {
+        turn_on_wifi_->SetVisible(false);
+        other_wifi_->SetVisible(true);
+      } else {
+        // Initializing or Enabling
+        turn_on_wifi_->SetVisible(true);
+        turn_on_wifi_->SetEnabled(false);
+        other_wifi_->SetVisible(false);
+      }
     }
     layout_parent = other_wifi_->parent();
   }
 
   if (other_mobile_) {
     bool show_other_mobile = false;
-    if (handler->TechnologyAvailable(NetworkStateHandler::kMatchTypeMobile)) {
+    NetworkStateHandler::TechnologyState state =
+        handler->GetTechnologyState(NetworkStateHandler::kMatchTypeMobile);
+    if (state != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
       const chromeos::DeviceState* device =
           handler->GetDeviceStateByType(NetworkStateHandler::kMatchTypeMobile);
       show_other_mobile = (device && device->support_network_scan());
@@ -690,7 +719,7 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
     if (show_other_mobile) {
       other_mobile_->SetVisible(true);
       other_mobile_->SetEnabled(
-          handler->TechnologyEnabled(NetworkStateHandler::kMatchTypeMobile));
+          state == NetworkStateHandler::TECHNOLOGY_ENABLED);
     } else {
       other_mobile_->SetVisible(false);
     }
@@ -815,6 +844,33 @@ void NetworkStateListDetailedView::CallRequestScan() {
       FROM_HERE,
       base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
+}
+
+void NetworkStateListDetailedView::ToggleMobile() {
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  bool enabled =
+      handler->IsTechnologyEnabled(NetworkStateHandler::kMatchTypeMobile);
+  if (enabled) {
+    handler->SetTechnologyEnabled(
+        NetworkStateHandler::kMatchTypeMobile, false,
+        chromeos::network_handler::ErrorCallback());
+  } else {
+    const DeviceState* mobile =
+        handler->GetDeviceStateByType(NetworkStateHandler::kMatchTypeMobile);
+    if (!mobile) {
+      LOG(ERROR) << "Mobile device not found.";
+      return;
+    }
+    if (!mobile->sim_lock_type().empty() || mobile->IsSimAbsent()) {
+      // TODO(stevenjb): Rename ToggleMobile() to ShowMobileSimDialog()
+      // when NetworkListDetailedView is deprecated. crbug.com/222540.
+      ash::Shell::GetInstance()->system_tray_delegate()->ToggleMobile();
+    } else {
+      handler->SetTechnologyEnabled(
+          NetworkStateHandler::kMatchTypeMobile, true,
+          chromeos::network_handler::ErrorCallback());
+    }
+  }
 }
 
 }  // namespace tray

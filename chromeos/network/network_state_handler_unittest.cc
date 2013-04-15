@@ -216,13 +216,21 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
   // Enable a technology.
-  EXPECT_FALSE(network_state_handler_->TechnologyEnabled(flimflam::kTypeWimax));
+  EXPECT_NE(NetworkStateHandler::TECHNOLOGY_ENABLED,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
   network_state_handler_->SetTechnologyEnabled(
       flimflam::kTypeWimax, true, network_handler::ErrorCallback());
-  message_loop_.RunUntilIdle();
-  // Ensure we get a manager changed callback when we change a property.
+  // The technology state should immediately change to ENABLING and we should
+  // receive a manager changed callback.
   EXPECT_EQ(2u, test_observer_->manager_changed_count());
-  EXPECT_TRUE(network_state_handler_->TechnologyEnabled(flimflam::kTypeWimax));
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLING,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  message_loop_.RunUntilIdle();
+  // Ensure we receive another manager changed callbacks when the technology
+  // becomes enabled.
+  EXPECT_EQ(3u, test_observer_->manager_changed_count());
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
 }
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {

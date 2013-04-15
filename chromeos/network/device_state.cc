@@ -15,7 +15,8 @@ DeviceState::DeviceState(const std::string& path)
     : ManagedState(MANAGED_TYPE_DEVICE, path),
       provider_requires_roaming_(false),
       support_network_scan_(false),
-      scanning_(false) {
+      scanning_(false),
+      sim_present_(true) {
 }
 
 DeviceState::~DeviceState() {
@@ -56,8 +57,25 @@ bool DeviceState::PropertyChanged(const std::string& key,
                    << home_provider_id_;
     }
     return true;
+  } else if (key == flimflam::kTechnologyFamilyProperty) {
+    return GetStringValue(key, value, &technology_family_);
+  } else if (key == flimflam::kSIMLockStatusProperty) {
+    const DictionaryValue* dict = NULL;
+    if (!value.GetAsDictionary(&dict))
+      return false;
+    if (!dict->GetStringWithoutPathExpansion(flimflam::kSIMLockTypeProperty,
+                                             &sim_lock_type_))
+      return false;
+    // Ignore other SIMLockStatus properties.
+    return true;
+  } else if (key == shill::kSIMPresentProperty) {
+    return GetBooleanValue(key, value, &sim_present_);
   }
   return false;
+}
+
+bool DeviceState::IsSimAbsent() const {
+  return technology_family_ == flimflam::kTechnologyFamilyGsm && !sim_present_;
 }
 
 }  // namespace chromeos

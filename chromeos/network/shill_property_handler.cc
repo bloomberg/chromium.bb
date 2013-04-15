@@ -121,17 +121,22 @@ void ShillPropertyHandler::Init() {
   shill_manager_->AddPropertyChangedObserver(this);
 }
 
-bool ShillPropertyHandler::TechnologyAvailable(
+bool ShillPropertyHandler::IsTechnologyAvailable(
     const std::string& technology) const {
   return available_technologies_.count(technology) != 0;
 }
 
-bool ShillPropertyHandler::TechnologyEnabled(
+bool ShillPropertyHandler::IsTechnologyEnabled(
     const std::string& technology) const {
   return enabled_technologies_.count(technology) != 0;
 }
 
-bool ShillPropertyHandler::TechnologyUninitialized(
+bool ShillPropertyHandler::IsTechnologyEnabling(
+    const std::string& technology) const {
+  return enabling_technologies_.count(technology) != 0;
+}
+
+bool ShillPropertyHandler::IsTechnologyUninitialized(
     const std::string& technology) const {
   return uninitialized_technologies_.count(technology) != 0;
 }
@@ -141,12 +146,16 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
   if (enabled) {
+    enabling_technologies_.insert(technology);
     shill_manager_->EnableTechnology(
         technology,
         base::Bind(&base::DoNothing),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   kLogModule, technology, error_callback));
+        base::Bind(&ShillPropertyHandler::EnableTechnologyFailed,
+                   AsWeakPtr(), technology, error_callback));
   } else {
+    // Imediately clear locally from enabled and enabling lists.
+    enabled_technologies_.erase(technology);
+    enabling_technologies_.erase(technology);
     shill_manager_->DisableTechnology(
         technology,
         base::Bind(&base::DoNothing),
@@ -351,6 +360,7 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
     (*iter)->GetAsString(&technology);
     DCHECK(!technology.empty());
     enabled_technologies_.insert(technology);
+    enabling_technologies_.erase(technology);
   }
 }
 
@@ -367,6 +377,16 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
     DCHECK(!technology.empty());
     uninitialized_technologies_.insert(technology);
   }
+}
+
+void ShillPropertyHandler::EnableTechnologyFailed(
+    const std::string& technology,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  enabling_technologies_.erase(technology);
+  network_handler::ShillErrorCallbackFunction(
+      kLogModule, technology, error_callback, error_name, error_message);
 }
 
 void ShillPropertyHandler::GetPropertiesCallback(

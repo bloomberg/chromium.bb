@@ -25,6 +25,10 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
   bool scanning() const { return scanning_; }
+  std::string sim_lock_type() const { return sim_lock_type_; }
+
+  // Returns true if the technology family is GSM and sim_present_ is false.
+  bool IsSimAbsent() const;
 
  private:
   // Common Device Properties
@@ -34,6 +38,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool provider_requires_roaming_;
   bool support_network_scan_;
   bool scanning_;
+  std::string technology_family_;
+  std::string sim_lock_type_;
+  bool sim_present_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceState);
 };

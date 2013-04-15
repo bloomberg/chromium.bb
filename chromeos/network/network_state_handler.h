@@ -57,6 +57,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   typedef std::vector<ManagedState*> ManagedStateList;
   typedef std::vector<const NetworkState*> NetworkStateList;
 
+  enum TechnologyState {
+    TECHNOLOGY_UNAVAILABLE,
+    TECHNOLOGY_AVAILABLE,
+    TECHNOLOGY_UNINITIALIZED,
+    TECHNOLOGY_ENABLING,
+    TECHNOLOGY_ENABLED
+  };
+
   virtual ~NetworkStateHandler();
 
   // Sets the global instance. Must be called before any calls to Get().
@@ -75,11 +83,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void AddObserver(NetworkStateHandlerObserver* observer);
   void RemoveObserver(NetworkStateHandlerObserver* observer);
 
-  // Returns true if technology for |type| is available/ enabled/uninitialized.
-  // kMatchTypeMobile (only) is also supported.
-  bool TechnologyAvailable(const std::string& type) const;
-  bool TechnologyEnabled(const std::string& type) const;
-  bool TechnologyUninitialized(const std::string& type) const;
+  // Returns the state for technology |type|. kMatchTypeMobile (only) is
+  // also supported.
+  TechnologyState GetTechnologyState(const std::string& type) const;
+  bool IsTechnologyEnabled(const std::string& type) const {
+    return GetTechnologyState(type) == TECHNOLOGY_ENABLED;
+  }
 
   // Asynchronously sets the technology enabled property for |type|.
   // kMatchTypeMobile (only) is also supported.
@@ -243,6 +252,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Called whenever Device.Scanning state transitions to false.
   void ScanCompleted(const std::string& type);
+
+  // Returns the technology type for |type|.
+  std::string GetTechnologyForType(const std::string& type) const;
 
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;

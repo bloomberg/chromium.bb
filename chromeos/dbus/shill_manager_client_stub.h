@@ -112,6 +112,9 @@ class ShillManagerClientStub : public ShillManagerClient,
   void NotifyObserversPropertyChanged(const std::string& property);
   base::ListValue* GetListProperty(const std::string& property);
   bool TechnologyEnabled(const std::string& type) const;
+  void SetTechnologyEnabled(const std::string& type,
+                            const base::Closure& callback,
+                            bool enabled);
   base::ListValue* GetEnabledServiceList(const std::string& property) const;
   void ScanCompleted(const std::string& device_path,
                      const base::Closure& callback);

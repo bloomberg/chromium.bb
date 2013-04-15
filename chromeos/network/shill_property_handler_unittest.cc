@@ -249,9 +249,9 @@ class ShillPropertyHandlerTest : public testing::Test {
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
   EXPECT_EQ(1, listener_->manager_updates());
-  EXPECT_TRUE(shill_property_handler_->TechnologyAvailable(
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
       flimflam::kTypeWifi));
-  EXPECT_TRUE(shill_property_handler_->TechnologyEnabled(
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
       flimflam::kTypeWifi));
   const size_t kNumShillManagerClientStubImplDevices = 2;
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,
@@ -269,9 +269,9 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   manager_test_->AddTechnology(flimflam::kTypeWimax, false);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, listener_->manager_updates());
-  EXPECT_TRUE(shill_property_handler_->TechnologyAvailable(
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
       flimflam::kTypeWimax));
-  EXPECT_FALSE(shill_property_handler_->TechnologyEnabled(
+  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(
       flimflam::kTypeWimax));
 
   // Enable the technology.
@@ -280,7 +280,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(3, listener_->manager_updates());
-  EXPECT_TRUE(shill_property_handler_->TechnologyEnabled(
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
       flimflam::kTypeWimax));
 
   EXPECT_EQ(0, listener_->errors());

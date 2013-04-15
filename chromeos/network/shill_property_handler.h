@@ -90,10 +90,11 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // Sends an initial property request and sets up the observer.
   void Init();
 
-  // Returns true if |technology| is available / enabled / uninitialized.
-  bool TechnologyAvailable(const std::string& technology) const;
-  bool TechnologyEnabled(const std::string& technology) const;
-  bool TechnologyUninitialized(const std::string& technology) const;
+  // Returns true if |technology| is available, enabled, etc.
+  bool IsTechnologyAvailable(const std::string& technology) const;
+  bool IsTechnologyEnabled(const std::string& technology) const;
+  bool IsTechnologyEnabling(const std::string& technology) const;
+  bool IsTechnologyUninitialized(const std::string& technology) const;
 
   // Asynchronously sets the enabled state for |technology|.
   // Note: Modifes Manager state. Calls |error_callback| on failure.
@@ -139,6 +140,12 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void UpdateEnabledTechnologies(const base::ListValue& technologies);
   void UpdateUninitializedTechnologies(const base::ListValue& technologies);
 
+  void EnableTechnologyFailed(
+      const std::string& technology,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
+
   // Called when Shill returns the properties for a service or device.
   void GetPropertiesCallback(ManagedState::ManagedType type,
                              const std::string& path,
@@ -183,6 +190,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // Lists of available / enabled / uninitialized technologies
   std::set<std::string> available_technologies_;
   std::set<std::string> enabled_technologies_;
+  std::set<std::string> enabling_technologies_;
   std::set<std::string> uninitialized_technologies_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillPropertyHandler);

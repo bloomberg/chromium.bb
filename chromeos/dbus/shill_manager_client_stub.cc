@@ -135,14 +135,17 @@ void ShillManagerClientStub::EnableTechnology(
     }
     return;
   }
-  enabled_list->AppendIfNotPresent(new base::StringValue(type));
-  CallNotifyObserversPropertyChanged(
-      flimflam::kEnabledTechnologiesProperty, 0);
-  if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
-  // May affect available services
-  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
-  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    const int kEnableTechnologyDelaySeconds = 3;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillManagerClientStub::SetTechnologyEnabled,
+                   weak_ptr_factory_.GetWeakPtr(), type, callback, true),
+        base::TimeDelta::FromSeconds(kEnableTechnologyDelaySeconds));
+  } else {
+    SetTechnologyEnabled(type, callback, true);
+  }
 }
 
 void ShillManagerClientStub::DisableTechnology(
@@ -159,16 +162,18 @@ void ShillManagerClientStub::DisableTechnology(
     }
     return;
   }
-  base::StringValue type_value(type);
-  enabled_list->Remove(type_value, NULL);
-  CallNotifyObserversPropertyChanged(
-      flimflam::kEnabledTechnologiesProperty, 0);
-  if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
-  // May affect available services
-  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
-  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
- }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    const int kDisableTechnologyDelaySeconds = 3;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillManagerClientStub::SetTechnologyEnabled,
+                   weak_ptr_factory_.GetWeakPtr(), type, callback, false),
+        base::TimeDelta::FromSeconds(kDisableTechnologyDelaySeconds));
+  } else {
+    SetTechnologyEnabled(type, callback, false);
+  }
+}
 
 void ShillManagerClientStub::ConfigureService(
     const base::DictionaryValue& properties,
@@ -448,6 +453,10 @@ void ShillManagerClientStub::CallNotifyObserversPropertyChanged(
   // initial setup).
   if (observer_list_.size() == 0)
     return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    delay_ms = 0;
+  }
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillManagerClientStub::NotifyObserversPropertyChanged,
@@ -499,6 +508,27 @@ bool ShillManagerClientStub::TechnologyEnabled(const std::string& type) const {
       enabled = true;
   }
   return enabled;
+}
+
+void ShillManagerClientStub::SetTechnologyEnabled(
+    const std::string& type,
+    const base::Closure& callback,
+    bool enabled) {
+  base::ListValue* enabled_list = NULL;
+  stub_properties_.GetListWithoutPathExpansion(
+      flimflam::kEnabledTechnologiesProperty, &enabled_list);
+  DCHECK(enabled_list);
+  if (enabled)
+    enabled_list->AppendIfNotPresent(new base::StringValue(type));
+  else
+    enabled_list->Remove(base::StringValue(type), NULL);
+  CallNotifyObserversPropertyChanged(
+      flimflam::kEnabledTechnologiesProperty, 0 /* already delayed */);
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  // May affect available services
+  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
 }
 
 base::ListValue* ShillManagerClientStub::GetEnabledServiceList(

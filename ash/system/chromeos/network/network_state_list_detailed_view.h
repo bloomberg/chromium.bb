@@ -87,6 +87,8 @@ class NetworkStateListDetailedView
 
   // Update UI components.
   void UpdateHeaderButtons();
+  void UpdateTechnologyButton(TrayPopupHeaderButton* button,
+                              const std::string& technology);
 
   void UpdateNetworks(const NetworkStateList& networks);
   void UpdateNetworkList();
@@ -112,6 +114,9 @@ class NetworkStateListDetailedView
 
   // Periodically request a network scan.
   void CallRequestScan();
+
+  // Handle toggile mobile action
+  void ToggleMobile();
 
   // Type of list (all networks or vpn)
   ListType list_type_;
