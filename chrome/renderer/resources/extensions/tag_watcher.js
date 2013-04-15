@@ -21,10 +21,11 @@ function watchForTag(tagName, cb) {
   var documentObserver = new WebKitMutationObserver(function(mutations) {
     forEach(mutations, function(i, mutation) {
       forEach(mutation.addedNodes, function(i, addedNode) {
-        if (addedNode.tagName == tagName) {
-          cb(addedNode);
+        if (addedNode.nodeType == Node.ELEMENT_NODE) {
+          if (addedNode.tagName == tagName)
+            cb(addedNode);
+          findChildTags(addedNode);
         }
-        findChildTags(addedNode);
       });
     });
   });
@@ -32,4 +33,3 @@ function watchForTag(tagName, cb) {
 }
 
 exports.watchForTag = watchForTag;
-
