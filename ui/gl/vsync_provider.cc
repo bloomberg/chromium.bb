@@ -63,6 +63,12 @@ void SyncControlVSyncProvider::GetVSyncParameters(
                      &swap_buffer_counter))
     return;
 
+  // Both Intel and Mali drivers will return TRUE for GetSyncValues
+  // but a value of 0 for MSC if they cannot access the CRTC data structure
+  // associated with the surfrace.
+  if (media_stream_counter == 0)
+    return;
+
   struct timespec real_time;
   struct timespec monotonic_time;
   clock_gettime(CLOCK_REALTIME, &real_time);
