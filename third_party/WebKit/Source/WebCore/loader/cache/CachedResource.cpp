@@ -122,10 +122,8 @@ static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type 
         return ResourceLoadPriorityMedium;
     case CachedResource::ImageResource:
         return ResourceLoadPriorityLow;
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
         return ResourceLoadPriorityHigh;
-#endif
 #if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
         return ResourceLoadPriorityLow;
@@ -149,9 +147,7 @@ static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource
     case CachedResource::MainResource:
         return ResourceRequest::TargetIsMainFrame;
     case CachedResource::CSSStyleSheet:
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
-#endif
         return ResourceRequest::TargetIsStyleSheet;
     case CachedResource::Script: 
         return ResourceRequest::TargetIsScript;

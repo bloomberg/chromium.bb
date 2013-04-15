@@ -184,6 +184,7 @@
 #include "XPathExpression.h"
 #include "XPathNSResolver.h"
 #include "XPathResult.h"
+#include "XSLTProcessor.h"
 #include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
@@ -198,10 +199,6 @@
 
 #if ENABLE(SHARED_WORKERS)
 #include "SharedWorkerRepository.h"
-#endif
-
-#if ENABLE(XSLT)
-#include "XSLTProcessor.h"
 #endif
 
 #if ENABLE(SVG)
@@ -4139,8 +4136,6 @@ KURL Document::openSearchDescriptionURL()
     return KURL();
 }
 
-#if ENABLE(XSLT)
-
 void Document::applyXSLTransform(ProcessingInstruction* pi)
 {
     RefPtr<XSLTProcessor> processor = XSLTProcessor::create();
@@ -4160,8 +4155,6 @@ void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 {
     m_transformSource = source;
 }
-
-#endif
 
 void Document::setDesignMode(InheritedBool value)
 {
@@ -5835,10 +5828,8 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_updateFocusAppearanceTimer, "updateFocusAppearanceTimer");
     info.addMember(m_pendingStateObject, "pendingStateObject");
     info.addMember(m_scriptRunner, "scriptRunner");
-#if ENABLE(XSLT)
     info.addMember(m_transformSource, "transformSource");
     info.addMember(m_transformSourceDocument, "transformSourceDocument");
-#endif
     info.addMember(m_savedRenderer, "savedRenderer");
     info.addMember(m_decoder, "decoder");
     info.addMember(m_xpathEvaluator, "xpathEvaluator");

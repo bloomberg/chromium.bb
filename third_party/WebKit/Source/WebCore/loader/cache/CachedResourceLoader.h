@@ -83,9 +83,7 @@ public:
 #if ENABLE(SVG)
     CachedResourceHandle<CachedSVGDocument> requestSVGDocument(CachedResourceRequest&);
 #endif
-#if ENABLE(XSLT)
     CachedResourceHandle<CachedXSLStyleSheet> requestXSLStyleSheet(CachedResourceRequest&);
-#endif
     CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, CachedResourceRequest&);
     CachedResourceHandle<CachedTextTrack> requestTextTrack(CachedResourceRequest&);
     CachedResourceHandle<CachedShader> requestShader(CachedResourceRequest&);

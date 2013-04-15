@@ -72,9 +72,7 @@ public:
 #if ENABLE(SVG)
         , SVGDocumentResource
 #endif
-#if ENABLE(XSLT)
         , XSLStyleSheet
-#endif
         , LinkPrefetch
         , LinkSubresource
         , TextTrackResource

@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(XSLT)
-
 #include "V8XSLTProcessor.h"
 
 #include "Document.h"
@@ -93,5 +91,3 @@ v8::Handle<v8::Value> V8XSLTProcessor::removeParameterMethodCustom(const v8::Arg
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

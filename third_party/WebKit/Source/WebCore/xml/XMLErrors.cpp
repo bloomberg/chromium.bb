@@ -156,7 +156,6 @@ void XMLErrors::insertErrorMessageBlock()
     String errorMessages = m_errorMessages.toString();
     RefPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);
 
-#if ENABLE(XSLT)
     if (m_document->transformSourceDocument()) {
         Vector<Attribute> attributes;
         attributes.append(Attribute(styleAttr, "white-space: normal"));
@@ -165,7 +164,6 @@ void XMLErrors::insertErrorMessageBlock()
         paragraph->parserAppendChild(m_document->createTextNode("This document was created as the result of an XSL transformation. The line and column numbers given are from the transformed result."));
         reportElement->parserAppendChild(paragraph.release());
     }
-#endif
 
     Node* firstChild = documentElement->firstChild();
     if (firstChild)

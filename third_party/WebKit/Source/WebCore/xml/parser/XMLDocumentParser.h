@@ -190,9 +190,7 @@ class Text;
         SegmentedString m_pendingSrc;
     };
 
-#if ENABLE(XSLT)
 void* xmlDocPtrForString(CachedResourceLoader*, const String& source, const String& url);
-#endif
 
 HashMap<String, String> parseAttributes(const String&, bool& attrsOK);
 

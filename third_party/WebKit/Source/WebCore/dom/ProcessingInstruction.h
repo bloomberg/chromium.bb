@@ -49,9 +49,7 @@ public:
     void setCSSStyleSheet(PassRefPtr<CSSStyleSheet>);
 
     bool isCSS() const { return m_isCSS; }
-#if ENABLE(XSLT)
     bool isXSL() const { return m_isXSL; }
-#endif
 
 private:
     ProcessingInstruction(Document*, const String& target, const String& data);
@@ -69,9 +67,7 @@ private:
 
     void checkStyleSheet();
     virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
-#if ENABLE(XSLT)
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
-#endif
 
     bool isLoading() const;
     virtual bool sheetLoaded();
@@ -91,9 +87,7 @@ private:
     bool m_alternate;
     bool m_createdByParser;
     bool m_isCSS;
-#if ENABLE(XSLT)
     bool m_isXSL;
-#endif
 };
 
 } //namespace

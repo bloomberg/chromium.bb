@@ -22,8 +22,6 @@
 #include "config.h"
 #include "XSLStyleSheet.h"
 
-#if ENABLE(XSLT)
-
 #include "CachedResourceLoader.h"
 #include "Document.h"
 #include "Frame.h"
@@ -305,5 +303,3 @@ void XSLStyleSheet::markAsProcessed()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

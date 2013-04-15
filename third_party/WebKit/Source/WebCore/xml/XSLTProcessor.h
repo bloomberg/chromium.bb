@@ -23,8 +23,6 @@
 #ifndef XSLTProcessor_h
 #define XSLTProcessor_h
 
-#if ENABLE(XSLT)
-
 #include "Node.h"
 #include "XSLStyleSheet.h"
 #include <libxml/parserInternals.h>
@@ -81,5 +79,4 @@ private:
 
 }
 
-#endif
 #endif

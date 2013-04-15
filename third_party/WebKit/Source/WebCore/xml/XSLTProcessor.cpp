@@ -22,8 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(XSLT)
-
 #include "XSLTProcessor.h"
 
 #include "DOMImplementation.h"
@@ -167,5 +165,3 @@ void XSLTProcessor::reset()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

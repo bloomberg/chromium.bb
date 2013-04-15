@@ -29,8 +29,6 @@
 #ifndef XMLTreeViewer_h
 #define XMLTreeViewer_h
 
-#if ENABLE(XSLT)
-
 namespace WebCore {
 
 class Document;
@@ -49,5 +47,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(XSLT)
 #endif // XMLTreeViewer_h

@@ -29,8 +29,6 @@
 #include "config.h"
 #include "XMLTreeViewer.h"
 
-#if ENABLE(XSLT)
-
 #include "Document.h"
 #include "Element.h"
 #include "ExceptionCodePlaceholder.h"
@@ -81,5 +79,3 @@ void XMLTreeViewer::transformDocumentToTreeView()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

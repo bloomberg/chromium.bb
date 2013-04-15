@@ -32,16 +32,13 @@ CachedResourceLoader* XMLDocumentParserScope::currentCachedResourceLoader = 0;
 
 XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader)
     : m_oldCachedResourceLoader(currentCachedResourceLoader)
-#if ENABLE(XSLT)
     , m_oldGenericErrorFunc(xmlGenericError)
     , m_oldStructuredErrorFunc(xmlStructuredError)
     , m_oldErrorContext(xmlGenericErrorContext)
-#endif
 {
     currentCachedResourceLoader = cachedResourceLoader;
 }
 
-#if ENABLE(XSLT)
 XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc, void* errorContext)
     : m_oldCachedResourceLoader(currentCachedResourceLoader)
     , m_oldGenericErrorFunc(xmlGenericError)
@@ -54,15 +51,12 @@ XMLDocumentParserScope::XMLDocumentParserScope(CachedResourceLoader* cachedResou
     if (structuredErrorFunc)
         xmlSetStructuredErrorFunc(errorContext, structuredErrorFunc);
 }
-#endif
 
 XMLDocumentParserScope::~XMLDocumentParserScope()
 {
     currentCachedResourceLoader = m_oldCachedResourceLoader;
-#if ENABLE(XSLT)
     xmlSetGenericErrorFunc(m_oldErrorContext, m_oldGenericErrorFunc);
     xmlSetStructuredErrorFunc(m_oldErrorContext, m_oldStructuredErrorFunc);
-#endif
 }
 
 }

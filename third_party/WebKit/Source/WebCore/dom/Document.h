@@ -149,6 +149,7 @@ class StyleSheetList;
 class Text;
 class TextAutosizer;
 class TextResourceDecoder;
+class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
 class XMLHttpRequest;
@@ -159,10 +160,6 @@ class XPathResult;
 
 #if ENABLE(SVG)
 class SVGDocumentExtensions;
-#endif
-
-#if ENABLE(XSLT)
-class TransformSource;
 #endif
 
 struct AnnotatedRegionValue;
@@ -864,14 +861,12 @@ public:
     
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
-#if ENABLE(XSLT)
     void applyXSLTransform(ProcessingInstruction* pi);
     PassRefPtr<Document> transformSourceDocument() { return m_transformSourceDocument; }
     void setTransformSourceDocument(Document* doc) { m_transformSourceDocument = doc; }
 
     void setTransformSource(PassOwnPtr<TransformSource>);
     TransformSource* transformSource() const { return m_transformSource.get(); }
-#endif
 
     void incDOMTreeVersion() { m_domTreeVersion = ++s_globalTreeVersion; }
     uint64_t domTreeVersion() const { return m_domTreeVersion; }
@@ -1369,10 +1364,8 @@ private:
     
     OwnPtr<ScriptRunner> m_scriptRunner;
 
-#if ENABLE(XSLT)
     OwnPtr<TransformSource> m_transformSource;
     RefPtr<Document> m_transformSourceDocument;
-#endif
 
     int m_docID; // A unique document identifier used for things like document-specific mapped attributes.
 

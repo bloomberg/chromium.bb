@@ -95,11 +95,7 @@ void WebCache::getResourceTypeStats(ResourceTypeStats* result)
         ToResourceTypeStat(stats.images, result->images);
         ToResourceTypeStat(stats.cssStyleSheets, result->cssStyleSheets);
         ToResourceTypeStat(stats.scripts, result->scripts);
-#if ENABLE(XSLT)
         ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
-#else
-        memset(&result->xslStyleSheets, 0, sizeof(result->xslStyleSheets));
-#endif
         ToResourceTypeStat(stats.fonts, result->fonts);
     } else
         memset(result, 0, sizeof(WebCache::ResourceTypeStats));

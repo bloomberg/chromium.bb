@@ -22,8 +22,6 @@
 
 #include "config.h"
 
-#if ENABLE(XSLT)
-
 #include "XSLTProcessor.h"
 
 #include "CachedResourceLoader.h"
@@ -352,5 +350,3 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

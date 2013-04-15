@@ -22,8 +22,6 @@
 #include "config.h"
 #include "XSLImportRule.h"
 
-#if ENABLE(XSLT)
-
 #include "CachedXSLStyleSheet.h"
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
@@ -115,5 +113,3 @@ void XSLImportRule::loadSheet()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)

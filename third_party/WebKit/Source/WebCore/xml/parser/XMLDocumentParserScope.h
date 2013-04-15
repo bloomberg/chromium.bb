@@ -28,9 +28,7 @@
 
 #include <wtf/Noncopyable.h>
 
-#if ENABLE(XSLT)
 #include <libxml/xmlerror.h>
-#endif
 
 namespace WebCore {
 
@@ -44,18 +42,14 @@ namespace WebCore {
 
         static CachedResourceLoader* currentCachedResourceLoader;
 
-#if ENABLE(XSLT)
         XMLDocumentParserScope(CachedResourceLoader* cachedResourceLoader, xmlGenericErrorFunc genericErrorFunc, xmlStructuredErrorFunc structuredErrorFunc = 0, void* errorContext = 0);
-#endif
 
     private:
         CachedResourceLoader* m_oldCachedResourceLoader;
 
-#if ENABLE(XSLT)
         xmlGenericErrorFunc m_oldGenericErrorFunc;
         xmlStructuredErrorFunc m_oldStructuredErrorFunc;
         void* m_oldErrorContext;
-#endif
     };
 
 } // namespace WebCore

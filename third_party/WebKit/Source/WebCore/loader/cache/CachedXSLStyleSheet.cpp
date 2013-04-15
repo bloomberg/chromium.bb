@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-#if ENABLE(XSLT)
-
 CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
     : CachedResource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
@@ -97,6 +95,4 @@ void CachedXSLStyleSheet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) 
     info.addMember(m_decoder, "decoder");
 }
 
-#endif
-
-}
+} // namespace WebCore

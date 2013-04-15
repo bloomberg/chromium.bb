@@ -20,8 +20,6 @@
 #ifndef TransformSource_h
 #define TransformSource_h
 
-#if ENABLE(XSLT)
-
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
@@ -48,7 +46,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif
 
 #endif // TransformSource_h

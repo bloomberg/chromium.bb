@@ -28,8 +28,6 @@
 #ifndef XSLTUnicodeSort_h
 #define XSLTUnicodeSort_h
 
-#if ENABLE(XSLT)
-
 #include <libxslt/xsltInternals.h>
 
 namespace WebCore {
@@ -38,5 +36,4 @@ namespace WebCore {
 
 }
 
-#endif
 #endif

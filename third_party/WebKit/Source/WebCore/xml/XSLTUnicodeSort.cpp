@@ -29,8 +29,6 @@
 #include "config.h"
 #include "XSLTUnicodeSort.h"
 
-#if ENABLE(XSLT)
-
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
 #include <wtf/text/WTFString.h>
@@ -286,6 +284,4 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts, in
     }
 }
 
-}
-
-#endif
+} // namespace WebCore

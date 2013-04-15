@@ -83,10 +83,8 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
     case CachedResource::RawResource:
     case CachedResource::MainResource:
         return new CachedRawResource(request, type);
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
         return new CachedXSLStyleSheet(request);
-#endif
     case CachedResource::LinkPrefetch:
         return new CachedResource(request, CachedResource::LinkPrefetch);
     case CachedResource::LinkSubresource:
@@ -203,12 +201,10 @@ CachedResourceHandle<CachedScript> CachedResourceLoader::requestScript(CachedRes
     return static_cast<CachedScript*>(requestResource(CachedResource::Script, request).get());
 }
 
-#if ENABLE(XSLT)
 CachedResourceHandle<CachedXSLStyleSheet> CachedResourceLoader::requestXSLStyleSheet(CachedResourceRequest& request)
 {
     return static_cast<CachedXSLStyleSheet*>(requestResource(CachedResource::XSLStyleSheet, request).get());
 }
-#endif
 
 #if ENABLE(SVG)
 CachedResourceHandle<CachedSVGDocument> CachedResourceLoader::requestSVGDocument(CachedResourceRequest& request)
@@ -238,9 +234,7 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
 {
     switch (type) {
     case CachedResource::Script:
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
-#endif
 #if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
 #endif
@@ -305,23 +299,19 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
 #if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
 #endif
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
         if (!m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }
-#endif
         break;
     }
 
     switch (type) {
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
             return false;
         break;
-#endif
     case CachedResource::Script:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
             return false;

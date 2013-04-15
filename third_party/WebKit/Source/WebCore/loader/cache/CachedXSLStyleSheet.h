@@ -34,7 +34,6 @@ namespace WebCore {
     class CachedResourceLoader;
     class TextResourceDecoder;
 
-#if ENABLE(XSLT)
     class CachedXSLStyleSheet : public CachedResource {
     public:
         CachedXSLStyleSheet(const ResourceRequest&);
@@ -56,8 +55,6 @@ namespace WebCore {
         RefPtr<TextResourceDecoder> m_decoder;
     };
 
-#endif
-
-}
+} // namespace WebCore
 
 #endif

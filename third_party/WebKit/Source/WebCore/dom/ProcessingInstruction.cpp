@@ -47,9 +47,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document* document, const St
     , m_alternate(false)
     , m_createdByParser(false)
     , m_isCSS(false)
-#if ENABLE(XSLT)
     , m_isXSL(false)
-#endif
 {
     ScriptWrappable::init(this);
 }
@@ -123,13 +121,9 @@ void ProcessingInstruction::checkStyleSheet()
             type = i->value;
 
         m_isCSS = type.isEmpty() || type == "text/css";
-#if ENABLE(XSLT)
         m_isXSL = (type == "text/xml" || type == "text/xsl" || type == "application/xml" ||
                    type == "application/xhtml+xml" || type == "application/rss+xml" || type == "application/atom+xml");
         if (!m_isCSS && !m_isXSL)
-#else
-        if (!m_isCSS)
-#endif
             return;
 
         String href = attrs.get("href");
@@ -143,7 +137,6 @@ void ProcessingInstruction::checkStyleSheet()
 
         if (href.length() > 1 && href[0] == '#') {
             m_localHref = href.substring(1);
-#if ENABLE(XSLT)
             // We need to make a synthetic XSLStyleSheet that is embedded.  It needs to be able
             // to kick off import/include loads that can hang off some parent sheet.
             if (m_isXSL) {
@@ -151,7 +144,6 @@ void ProcessingInstruction::checkStyleSheet()
                 m_sheet = XSLStyleSheet::createEmbedded(this, finalURL);
                 m_loading = false;
             }
-#endif
         } else {
             if (m_cachedSheet) {
                 m_cachedSheet->removeClient(this);
@@ -166,11 +158,9 @@ void ProcessingInstruction::checkStyleSheet()
             document()->styleSheetCollection()->addPendingSheet();
             
             CachedResourceRequest request(ResourceRequest(document()->completeURL(href)));
-#if ENABLE(XSLT)
             if (m_isXSL)
                 m_cachedSheet = document()->cachedResourceLoader()->requestXSLStyleSheet(request);
             else
-#endif
             {
                 String charset = attrs.get("charset");
                 if (charset.isEmpty())
@@ -233,23 +223,19 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     parseStyleSheet(sheet->sheetText(true));
 }
 
-#if ENABLE(XSLT)
 void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
 {
     ASSERT(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
     parseStyleSheet(sheet);
 }
-#endif
 
 void ProcessingInstruction::parseStyleSheet(const String& sheet)
 {
     if (m_isCSS)
         static_cast<CSSStyleSheet*>(m_sheet.get())->contents()->parseString(sheet);
-#if ENABLE(XSLT)
     else if (m_isXSL)
         static_cast<XSLStyleSheet*>(m_sheet.get())->parseString(sheet);
-#endif
 
     if (m_cachedSheet)
         m_cachedSheet->removeClient(this);
@@ -259,10 +245,8 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
 
     if (m_isCSS)
         static_cast<CSSStyleSheet*>(m_sheet.get())->contents()->checkLoaded();
-#if ENABLE(XSLT)
     else if (m_isXSL)
         static_cast<XSLStyleSheet*>(m_sheet.get())->checkLoaded();
-#endif
 }
 
 void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)

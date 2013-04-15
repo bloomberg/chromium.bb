@@ -23,8 +23,6 @@
 #ifndef XSLStyleSheet_h
 #define XSLStyleSheet_h
 
-#if ENABLE(XSLT)
-
 #include "ProcessingInstruction.h"
 #include "StyleSheet.h"
 #include <libxml/tree.h>
@@ -118,7 +116,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(XSLT)
 
 #endif // XSLStyleSheet_h

@@ -66,10 +66,8 @@
 #include <wtf/Vector.h>
 #include <wtf/unicode/UTF8.h>
 
-#if ENABLE(XSLT)
 #include "XMLTreeViewer.h"
 #include <libxslt/xslt.h>
-#endif
 
 using namespace std;
 
@@ -478,12 +476,10 @@ static int closeFunc(void* context)
     return 0;
 }
 
-#if ENABLE(XSLT)
 static void errorFunc(void*, const char*, ...)
 {
     // FIXME: It would be nice to display error messages somewhere.
 }
-#endif
 
 static bool didInit = false;
 
@@ -988,11 +984,9 @@ void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlCh
 
     if (pi->isCSS())
         m_sawCSS = true;
-#if ENABLE(XSLT)
     m_sawXSLTransform = !m_sawFirstElement && pi->isXSL();
     if (m_sawXSLTransform && !document()->transformSourceDocument())
         stopParsing();
-#endif
 }
 
 void XMLDocumentParser::cdataBlock(const xmlChar* s, int len)
@@ -1357,7 +1351,6 @@ void XMLDocumentParser::doEnd()
         }
     }
 
-#if ENABLE(XSLT)
     XMLTreeViewer xmlTreeViewer(document());
     bool xmlViewerMode = !m_sawError && !m_sawCSS && !m_sawXSLTransform && xmlTreeViewer.hasNoStyleInformation();
     if (xmlViewerMode)
@@ -1378,10 +1371,8 @@ void XMLDocumentParser::doEnd()
         document()->setParsing(true);
         DocumentParser::stopParsing();
     }
-#endif
 }
 
-#if ENABLE(XSLT)
 void* xmlDocPtrForString(CachedResourceLoader* cachedResourceLoader, const String& source, const String& url)
 {
     if (source.isEmpty())
@@ -1401,7 +1392,6 @@ void* xmlDocPtrForString(CachedResourceLoader* cachedResourceLoader, const Strin
                                         XSLT_PARSE_OPTIONS);
     return sourceDoc;
 }
-#endif
 
 OrdinalNumber XMLDocumentParser::lineNumber() const
 {

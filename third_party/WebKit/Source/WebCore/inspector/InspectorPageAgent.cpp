@@ -302,9 +302,7 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Ca
         return InspectorPageAgent::FontResource;
     case CachedResource::CSSStyleSheet:
         // Fall through.
-#if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
-#endif
         return InspectorPageAgent::StylesheetResource;
     case CachedResource::Script:
         return InspectorPageAgent::ScriptResource;

@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(XSLT)
 #include "TransformSource.h"
 
 #include <libxml/tree.h>
@@ -42,6 +41,4 @@ TransformSource::~TransformSource()
     xmlFreeDoc((xmlDocPtr)m_source);
 }
 
-}
-
-#endif
+} // namespace WebCore
