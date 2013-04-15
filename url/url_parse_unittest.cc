@@ -27,9 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "url/url_parse.h"
+
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_parse.h"
 
 // Some implementations of base/basictypes.h may define ARRAYSIZE.
 // If it's not defined, we define it to the ARRAYSIZE_UNSAFE macro
@@ -68,6 +69,7 @@
 //      it looks like an absolute drive path. Also, slashes and backslashes are
 //      equally valid here.
 
+namespace url_parse {
 namespace {
 
 // Used for regular URL parse cases.
@@ -143,8 +145,6 @@ void ExpectInvalidComponent(const url_parse::Component& component) {
   EXPECT_EQ(-1, component.len);
 }
 
-}  // namespace
-
 // Parsed ----------------------------------------------------------------------
 
 TEST(URLParser, Length) {
@@ -177,16 +177,15 @@ TEST(URLParser, Length) {
 }
 
 TEST(URLParser, CountCharactersBefore) {
-  using namespace url_parse;
   struct CountCase {
     const char* url;
     Parsed::ComponentType component;
     bool include_delimiter;
     int expected_count;
   } count_cases[] = {
-      // Test each possibility in the case where all components are present.
-//    0         1         2
-//    0123456789012345678901
+  // Test each possibility in the case where all components are present.
+  //    0         1         2
+  //    0123456789012345678901
     {"http://u:p@h:8/p?q#r", Parsed::SCHEME, true, 0},
     {"http://u:p@h:8/p?q#r", Parsed::SCHEME, false, 0},
     {"http://u:p@h:8/p?q#r", Parsed::USERNAME, true, 7},
@@ -647,3 +646,5 @@ TEST(URLParser, FileSystemURL) {
   }
 }
 
+}  // namespace
+}  // namespace url_parse
