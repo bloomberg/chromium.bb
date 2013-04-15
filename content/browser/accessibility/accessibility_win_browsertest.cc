@@ -387,16 +387,12 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   HRESULT hr = accessible->get_accState(childid_self, var_state.Receive());
   EXPECT_EQ(S_OK, hr);
   ASSERT_EQ(VT_I4, var_state.type());
-  LONG obj_state = V_I4(&var_state);
-  // Avoid flakiness. The "offscreen" state depends on whether the browser
-  // window is frontmost or not, and "hottracked" depends on whether the
-  // mouse cursor happens to be over the element.
-  obj_state &= ~STATE_SYSTEM_OFFSCREEN;
-  obj_state &= ~STATE_SYSTEM_HOTTRACKED;
-  EXPECT_EQ(state_, obj_state);
-  if (state_ != obj_state) {
-    LOG(ERROR) << "Expected state: " << IAccessibleStateToString(state_);
-    LOG(ERROR) << "Got state: " << IAccessibleStateToString(V_I4(&var_state));
+  EXPECT_EQ(state_, V_I4(&var_state));
+  if (state_ != V_I4(&var_state)) {
+    LOG(ERROR) << "Expected state: " <<
+        IAccessibleStateToString(state_);
+    LOG(ERROR) << "Got state: " <<
+        IAccessibleStateToString(V_I4(&var_state));
   }
 }
 
@@ -632,7 +628,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Check the browser's copy of the renderer accessibility tree.
   SCOPED_TRACE("Check initial tree");
   AccessibleChecker group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
-  group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
+  group_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_OFFSCREEN);
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   document_checker.AppendExpectedChild(&group_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
