@@ -164,6 +164,26 @@ class ProxyToRenderViewVisitor : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(ProxyToRenderViewVisitor);
 };
 
+class NavigateAwayVisitor : public RenderViewVisitor {
+ public:
+  NavigateAwayVisitor(RenderView* main_render_view)
+      : main_render_view_(main_render_view) {}
+  virtual ~NavigateAwayVisitor() {}
+
+  virtual bool Visit(RenderView* render_view) OVERRIDE {
+    if (render_view == main_render_view_)
+      return true;
+    render_view->GetWebView()->mainFrame()
+        ->loadRequest(WebURLRequest(GURL("about:blank")));
+    return true;
+  }
+
+ private:
+  RenderView* main_render_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigateAwayVisitor);
+};
+
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
@@ -441,6 +461,8 @@ int WebKitTestRunner::layoutTestTimeout() {
 }
 
 void WebKitTestRunner::closeRemainingWindows() {
+  NavigateAwayVisitor visitor(render_view());
+  RenderView::ForEach(&visitor);
   Send(new ShellViewHostMsg_CloseRemainingWindows(routing_id()));
 }
 
