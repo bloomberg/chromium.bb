@@ -24,7 +24,7 @@ class LocalFileSystem(file_system.FileSystem):
         contents = f.read()
         if binary:
           return contents
-        return file_system._ToUnicode(contents)
+        return file_system.ToUnicode(contents)
     except IOError:
       raise file_system.FileNotFoundError(filename)
 

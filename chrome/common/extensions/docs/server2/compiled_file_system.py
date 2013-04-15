@@ -35,6 +35,10 @@ class CompiledFileSystem(object):
       full_name = cls.__name__
       if category is not None:
         full_name = '%s/%s' % (full_name, category)
+      # TODO(kalman): Fix ServerInstance.CreateForTest to not give an empty FS.
+      if self._file_system and self._file_system.GetVersion() is not None:
+        version = (self._file_system.GetVersion() +
+                   (version if version is not None else 0))
       return self._Create(populate_function, full_name, version=version)
 
     def GetOrCreateIdentity(self):

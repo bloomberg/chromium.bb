@@ -31,14 +31,12 @@ class CachingFileSystem(FileSystem):
   """
   def __init__(self, file_system, object_store_creator_factory):
     self._file_system = file_system
-    object_store_creator = object_store_creator_factory.Create(
-        CachingFileSystem)
-    self._stat_object_store = object_store_creator.Create(
-        category='stat')
-    self._read_object_store = object_store_creator.Create(
-        category='read')
-    self._read_binary_object_store = object_store_creator.Create(
-        category='read-binary')
+    def create_object_store(category):
+      return (object_store_creator_factory.Create(CachingFileSystem)
+          .Create(category=category, version=file_system.GetVersion()))
+    self._stat_object_store = create_object_store('stat')
+    self._read_object_store = create_object_store('read')
+    self._read_binary_object_store = create_object_store('read-binary')
 
   def Stat(self, path, stats=None):
     """Stats the directory given, or if a file is given, stats the files parent
