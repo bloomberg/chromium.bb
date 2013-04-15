@@ -385,6 +385,13 @@ other types of suffix sets.
   <summary>The importer used for an import session.</summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.IOError" enum="LevelDBIOErrorMethods">
+  <summary>
+    Methods where leveldb's Chromium environment has IO errors when being used
+    by IndexedDB.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.IOError." enum="PlatformFileError">
   <summary>
     PlatformFileErrors encountered by a single leveldb env method.
@@ -2394,6 +2401,13 @@ other types of suffix sets.
 
 <histogram name="Net.Wifi.ScanLatency" units="milliseconds">
   <summary>The time that a Wi-fi scan takes.</summary>
+</histogram>
+
+<histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
+  <summary>
+    Errors returned by CreateFile on windows that PlatformFileError doesn't yet
+    support.
+  </summary>
 </histogram>
 
 <histogram name="PLT.Abandoned" enum="Abandoned">
