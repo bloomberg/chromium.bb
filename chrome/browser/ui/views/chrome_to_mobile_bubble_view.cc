@@ -24,8 +24,8 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
@@ -45,9 +45,9 @@ const size_t kProgressThrobDurationMS = 2400;
 // The seconds to delay before automatically closing the bubble after sending.
 const int kAutoCloseDelay = 3;
 
-// Downcast TextButton |view| and set the icon image with the resource |id|.
-void SetTextButtonIconToId(views::View* view, int id) {
-  static_cast<views::TextButton*>(view)->
+// Downcast MenuButton |view| and set the icon image with the resource |id|.
+void SetMenuButtonIconToId(views::View* view, int id) {
+  static_cast<views::MenuButton*>(view)->
       SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id));
 }
 
@@ -84,7 +84,7 @@ void ChromeToMobileBubbleView::ShowBubble(views::View* anchor_view,
     return;
 
   // Show the lit mobile device icon during the bubble's lifetime.
-  SetTextButtonIconToId(anchor_view, IDR_MOBILE_LIT);
+  SetMenuButtonIconToId(anchor_view, IDR_MOBILE_LIT);
   bubble_ = new ChromeToMobileBubbleView(anchor_view, browser);
   views::BubbleDelegateView::CreateBubble(bubble_)->Show();
 }
@@ -113,7 +113,7 @@ void ChromeToMobileBubbleView::WindowClosing() {
   service_->DeleteSnapshot(snapshot_path_);
 
   // Restore the resting state action box icon.
-  SetTextButtonIconToId(anchor_view(), IDR_ACTION_BOX_BUTTON_NORMAL);
+  SetMenuButtonIconToId(anchor_view(), IDR_ACTION_BOX_BUTTON_NORMAL);
 }
 
 bool ChromeToMobileBubbleView::AcceleratorPressed(
