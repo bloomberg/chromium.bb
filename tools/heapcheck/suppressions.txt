@@ -1864,3 +1864,31 @@
    fun:cc::LayerTreeHostImpl::InitializeRenderer
    fun:cc::ThreadProxy::InitializeRendererOnImplThread
 }
+# leak in OSMesa used to run compositor_unittests in bots.
+{
+   bug_148477_d
+   Heapcheck:Leak
+   ...
+   fun:gfx::GLApiBase::glCompileShaderFn
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
+   fun:cc::ProgramBindingBase::LoadShader
+   fun:cc::ProgramBindingBase::Init
+   fun:ProgramBinding
+   ...
+   fun:cc::LayerTreeHostImpl::InitializeRenderer
+   fun:cc::ThreadProxy::InitializeRendererOnImplThread
+}
+{
+   bug_148477_e
+   Heapcheck:Leak
+   ...
+   fun:gfx::GLApiBase::glCompileShaderFn
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
+   fun:cc::ProgramBindingBase::LoadShader
+   fun:cc::ProgramBindingBase::Init
+   fun:ProgramBinding
+   ...
+   fun:cc::FrameRateController::OnTimerTick
+   fun:cc::FrameRateControllerTimeSourceAdapter::OnTimerTick
+   fun:cc::DelayBasedTimeSource::OnTimerFired
+}
