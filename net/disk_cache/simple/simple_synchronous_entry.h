@@ -96,8 +96,15 @@ class SimpleSynchronousEntry {
   ~SimpleSynchronousEntry();
 
   bool OpenOrCreateFiles(bool create);
-  bool InitializeForOpen();
-  bool InitializeForCreate();
+
+  // Returns a net::Error, i.e. net::OK on success.
+  int InitializeForOpen();
+
+  // Returns a net::Error, including net::OK on success and net::FILE_EXISTS
+  // when the entry already exists.
+  int InitializeForCreate();
+
+  void Doom();
 
   scoped_refptr<base::TaskRunner> callback_runner_;
   const base::FilePath path_;

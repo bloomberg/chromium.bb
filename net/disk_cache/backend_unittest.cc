@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/port.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -20,6 +21,8 @@
 #include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/mapped_file.h"
 #include "net/disk_cache/mem_backend_impl.h"
+#include "net/disk_cache/simple/simple_disk_format.h"
+#include "net/disk_cache/simple/simple_util.h"
 #include "net/disk_cache/tracing_cache_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2700,17 +2703,72 @@ TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithBackendImpl) {
   TracingBackendBasics();
 }
 
-// File renaming is flaky on Windows, disable all Simple Backend Tests there.
-#ifdef OS_WIN
-#define TEST_SIMPLECACHE_F(c, t) TEST_F(c, DISABLED_##t)
-#else
-#define TEST_SIMPLECACHE_F(c, t) TEST_F(c, t)
-#endif
+// The simple cache backend isn't intended to work on windows, which has very
+// different file system guarantees from Windows.
+#if !defined(OS_WIN)
 
-TEST_SIMPLECACHE_F(DiskCacheBackendTest,
+TEST_F(DiskCacheBackendTest,
                    TracingBackendBasicsWithSimpleBackend) {
   SetSimpleCacheMode();
   TracingBackendBasics();
   // TODO(pasko): implement integrity checking on the Simple Backend.
   DisableIntegrityCheck();
 }
+
+TEST_F(DiskCacheBackendTest, SimpleOpenMissingFile) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char* key = "the first key";
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  ASSERT_TRUE(entry != NULL);
+  entry->Close();
+  entry = NULL;
+
+  // Delete one of the files in the entry.
+  base::FilePath to_delete_file = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
+  EXPECT_TRUE(file_util::PathExists(to_delete_file));
+  EXPECT_TRUE(disk_cache::DeleteCacheFile(to_delete_file));
+
+  // Failing to open the entry should delete the rest of these files.
+  ASSERT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
+
+  // Confirm the rest of the files are gone.
+  for (int i = 1; i < disk_cache::kSimpleEntryFileCount; ++i) {
+    base::FilePath
+        should_be_gone_file(cache_path_.AppendASCII(
+            disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, i)));
+    EXPECT_FALSE(file_util::PathExists(should_be_gone_file));
+  }
+}
+
+TEST_F(DiskCacheBackendTest, SimpleOpenBadFile) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char* key = "the first key";
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  disk_cache::Entry* null = NULL;
+  ASSERT_NE(null, entry);
+  entry->Close();
+  entry = NULL;
+
+  // Write an invalid header on stream 1.
+  base::FilePath entry_file1_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 1));
+
+  disk_cache::SimpleFileHeader header;
+  header.initial_magic_number = GG_UINT64_C(0xbadf00d);
+  EXPECT_EQ(
+      implicit_cast<int>(sizeof(header)),
+      file_util::WriteFile(entry_file1_path, reinterpret_cast<char*>(&header),
+                           sizeof(header)));
+  ASSERT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
+}
+
+#endif  // !defined(OS_WIN)

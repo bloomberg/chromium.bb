@@ -20,6 +20,7 @@
 #include "base/task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/simple/simple_util.h"
 
 using base::ClosePlatformFile;
 using base::FilePath;
@@ -37,31 +38,12 @@ using base::Time;
 using base::TruncatePlatformFile;
 using base::WritePlatformFile;
 
-namespace {
-
-std::string GetFilenameForKeyAndIndex(const std::string& key, int index) {
-  return disk_cache::GetEntryHashKeyAsHexString(key) +
-      base::StringPrintf("_%1d", index);
-}
-
-int32 DataSizeFromKeyAndFileSize(size_t key_size, int64 file_size) {
-  int64 data_size = file_size - key_size - sizeof(disk_cache::SimpleFileHeader);
-  DCHECK_GE(implicit_cast<int64>(std::numeric_limits<int32>::max()), data_size);
-  return data_size;
-}
-
-int64 FileSizeFromKeyAndDataSize(size_t key_size, int32 data_size) {
-  return data_size + key_size + sizeof(disk_cache::SimpleFileHeader);
-}
-
-int64 FileOffsetFromDataOffset(size_t key_size, int data_offset) {
-  const int64 headers_size = sizeof(disk_cache::SimpleFileHeader) + key_size;
-  return headers_size + data_offset;
-}
-
-}  // namespace
-
 namespace disk_cache {
+
+using simple_util::GetFilenameFromKeyAndIndex;
+using simple_util::GetDataSizeFromKeyAndFileSize;
+using simple_util::GetFileSizeFromKeyAndDataSize;
+using simple_util::GetFileOffsetFromKeyAndDataOffset;
 
 // static
 void SimpleSynchronousEntry::OpenEntry(
@@ -71,8 +53,9 @@ void SimpleSynchronousEntry::OpenEntry(
     const SynchronousCreationCallback& callback) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(callback_runner, path, key);
-
-  if (!sync_entry->InitializeForOpen()) {
+  int rv = sync_entry->InitializeForOpen();
+  if (rv != net::OK) {
+    sync_entry->Doom();
     delete sync_entry;
     sync_entry = NULL;
   }
@@ -87,7 +70,11 @@ void SimpleSynchronousEntry::CreateEntry(
     const SynchronousCreationCallback& callback) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(callback_runner, path, key);
-  if (!sync_entry->InitializeForCreate()) {
+  int rv = sync_entry->InitializeForCreate();
+  if (rv != net::OK) {
+    if (rv != net::ERR_FILE_EXISTS) {
+      sync_entry->Doom();
+    }
     delete sync_entry;
     sync_entry = NULL;
   }
@@ -101,7 +88,7 @@ void SimpleSynchronousEntry::DoomEntry(
     scoped_refptr<TaskRunner> callback_runner,
     const net::CompletionCallback& callback) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath to_delete = path.AppendASCII(GetFilenameForKeyAndIndex(key, i));
+    FilePath to_delete = path.AppendASCII(GetFilenameFromKeyAndIndex(key, i));
     bool ALLOW_UNUSED result = file_util::Delete(to_delete, false);
     DLOG_IF(ERROR, !result) << "Could not delete " << to_delete.MaybeAsASCII();
   }
@@ -125,12 +112,14 @@ void SimpleSynchronousEntry::ReadData(
     const SynchronousOperationCallback& callback) {
   DCHECK(initialized_);
 
-  int64 file_offset = FileOffsetFromDataOffset(key_.size(), offset);
+  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   int bytes_read = ReadPlatformFile(files_[index], file_offset,
                                     buf->data(), buf_len);
   if (bytes_read > 0)
     last_used_ = Time::Now();
   int result = (bytes_read >= 0) ? bytes_read : net::ERR_FAILED;
+  if (result == net::ERR_FAILED)
+    Doom();
   callback_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
@@ -143,10 +132,11 @@ void SimpleSynchronousEntry::WriteData(
     bool truncate) {
   DCHECK(initialized_);
 
-  int64 file_offset = FileOffsetFromDataOffset(key_.size(), offset);
+  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   if (buf_len > 0) {
     if (WritePlatformFile(files_[index], file_offset, buf->data(), buf_len) !=
         buf_len) {
+      Doom();
       callback_runner_->PostTask(FROM_HERE,
                                  base::Bind(callback, net::ERR_FAILED));
       return;
@@ -156,6 +146,7 @@ void SimpleSynchronousEntry::WriteData(
   if (truncate) {
     data_size_[index] = offset + buf_len;
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
+      Doom();
       callback_runner_->PostTask(FROM_HERE,
                                  base::Bind(callback, net::ERR_FAILED));
       return;
@@ -180,7 +171,7 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
 
 bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath filename = path_.AppendASCII(GetFilenameForKeyAndIndex(key_, i));
+    FilePath filename = path_.AppendASCII(GetFilenameFromKeyAndIndex(key_, i));
     int flags = PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
     if (create)
       flags |= PLATFORM_FILE_CREATE;
@@ -210,7 +201,7 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     }
     last_used_ = std::max(last_used_, file_info.last_accessed);
     last_modified_ = std::max(last_modified_, file_info.last_modified);
-    data_size_[i] = DataSizeFromKeyAndFileSize(key_.size(), file_info.size);
+    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
   }
 
   return true;
@@ -219,15 +210,15 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
 int64 SimpleSynchronousEntry::GetFileSize() const {
   int64 file_size = 0;
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    file_size += FileSizeFromKeyAndDataSize(key_.size(), data_size_[i]);
+    file_size += GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
   }
   return file_size;
 }
 
-bool SimpleSynchronousEntry::InitializeForOpen() {
+int SimpleSynchronousEntry::InitializeForOpen() {
   DCHECK(!initialized_);
   if (!OpenOrCreateFiles(false))
-    return false;
+    return net::ERR_FAILED;
 
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
@@ -236,7 +227,7 @@ bool SimpleSynchronousEntry::InitializeForOpen() {
                          sizeof(header));
     if (header_read_result != sizeof(header)) {
       DLOG(WARNING) << "Cannot read header from entry.";
-      return false;
+      return net::ERR_FAILED;
     }
 
     if (header.initial_magic_number != kSimpleInitialMagicNumber) {
@@ -244,12 +235,12 @@ bool SimpleSynchronousEntry::InitializeForOpen() {
       // should give consideration to not saturating the log with these if that
       // becomes a problem.
       DLOG(WARNING) << "Magic number did not match.";
-      return false;
+      return net::ERR_FAILED;
     }
 
     if (header.version != kSimpleVersion) {
       DLOG(WARNING) << "Unreadable version.";
-      return false;
+      return net::ERR_FAILED;
     }
 
     scoped_ptr<char[]> key(new char[header.key_length]);
@@ -257,7 +248,7 @@ bool SimpleSynchronousEntry::InitializeForOpen() {
                                            key.get(), header.key_length);
     if (key_read_result != implicit_cast<int>(header.key_length)) {
       DLOG(WARNING) << "Cannot read key from entry.";
-      return false;
+      return net::ERR_FAILED;
     }
     if (header.key_length != key_.size() ||
         std::memcmp(key_.data(), key.get(), key_.size()) != 0) {
@@ -265,24 +256,24 @@ bool SimpleSynchronousEntry::InitializeForOpen() {
       // is expected to occur at some frequency, add unit_tests that this does
       // is handled gracefully at higher levels.
       DLOG(WARNING) << "Key mismatch on open.";
-      return false;
+      return net::ERR_FAILED;
     }
 
     if (base::Hash(key.get(), header.key_length) != header.key_hash) {
       DLOG(WARNING) << "Hash mismatch on key.";
-      return false;
+      return net::ERR_FAILED;
     }
   }
 
   initialized_ = true;
-  return true;
+  return net::OK;
 }
 
-bool SimpleSynchronousEntry::InitializeForCreate() {
+int SimpleSynchronousEntry::InitializeForCreate() {
   DCHECK(!initialized_);
   if (!OpenOrCreateFiles(true)) {
     DLOG(WARNING) << "Could not create platform files.";
-    return false;
+    return net::ERR_FILE_EXISTS;
   }
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
@@ -294,20 +285,24 @@ bool SimpleSynchronousEntry::InitializeForCreate() {
 
     if (WritePlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
                           sizeof(header)) != sizeof(header)) {
-      // TODO(gavinp): Clean up created files.
       DLOG(WARNING) << "Could not write headers to new cache entry.";
-      return false;
+      return net::ERR_FAILED;
     }
 
     if (WritePlatformFile(files_[i], sizeof(header), key_.data(),
                           key_.size()) != implicit_cast<int>(key_.size())) {
-      // TODO(gavinp): Clean up created files.
       DLOG(WARNING) << "Could not write keys to new cache entry.";
-      return false;
+      return net::ERR_FAILED;
     }
   }
   initialized_ = true;
-  return true;
+  return net::OK;
+}
+
+void SimpleSynchronousEntry::Doom() {
+  // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
+  DoomEntry(path_, key_,
+            scoped_refptr<base::TaskRunner>(), net::CompletionCallback());
 }
 
 }  // namespace disk_cache

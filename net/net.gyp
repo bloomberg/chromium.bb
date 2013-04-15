@@ -386,6 +386,8 @@
         'disk_cache/simple/simple_index.h',
         'disk_cache/simple/simple_synchronous_entry.cc',
         'disk_cache/simple/simple_synchronous_entry.h',
+        'disk_cache/simple/simple_util.cc',
+        'disk_cache/simple/simple_util.h',
         'disk_cache/flash/flash_entry_impl.cc',
         'disk_cache/flash/flash_entry_impl.h',
         'disk_cache/flash/format.h',

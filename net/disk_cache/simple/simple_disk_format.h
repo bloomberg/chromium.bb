@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
+#include "net/base/net_export.h"
 
 namespace base {
 class Time;
@@ -26,7 +27,7 @@ const uint32 kSimpleVersion = 1;
 
 static const int kSimpleEntryFileCount = 3;
 
-struct SimpleFileHeader {
+struct NET_EXPORT_PRIVATE SimpleFileHeader {
   SimpleFileHeader();
   uint64 initial_magic_number;
   uint32 version;

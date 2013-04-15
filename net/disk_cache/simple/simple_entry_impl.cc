@@ -281,8 +281,12 @@ void SimpleEntryImpl::EntryOperationComplete(
     SimpleSynchronousEntry* sync_entry,
     int result) {
   DCHECK(sync_entry);
-  if (index)
-    index->UpdateEntrySize(sync_entry->key(), sync_entry->GetFileSize());
+  if (index) {
+    if (result >= 0)
+      index->UpdateEntrySize(sync_entry->key(), sync_entry->GetFileSize());
+    else
+      index->Remove(sync_entry->key());
+  }
 
   if (entry) {
     DCHECK(entry->synchronous_entry_in_use_by_worker_);

@@ -229,7 +229,7 @@ void DiskCacheTestWithCache::TearDown() {
   if (cache_thread_.IsRunning())
     cache_thread_.Stop();
 
-  if (!memory_only_ && integrity_) {
+  if (!memory_only_ && !simple_cache_mode_ && integrity_) {
     EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
   }
 
