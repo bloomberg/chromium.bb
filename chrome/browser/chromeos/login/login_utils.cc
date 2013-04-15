@@ -353,29 +353,37 @@ void LoginUtilsImpl::PrepareProfile(
   delegate_ = delegate;
   InitSessionRestoreStrategy();
 
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
+  bool wait_for_policy_fetch = false;
 
-  // If this is an enterprise device and the user belongs to the enterprise
-  // domain, then wait for a policy fetch before logging the user in. This
-  // will delay Profile creation until the policy is fetched, so that features
-  // controlled by policy (e.g. Sync, Startup tabs) only start after the
-  // PrefService has the right values.
-  // Profile creation is also resumed if the fetch attempt fails.
-  bool wait_for_policy_fetch =
-      using_oauth_ &&
-      authenticator_.get() &&
-      (connector->GetUserAffiliation(user_context_.username) ==
-           policy::USER_AFFILIATION_MANAGED);
+  // TODO(nkostylev): Figure out implementation for multiple-profiles.
+  // http://crbug.com/230349
+  bool is_primary_user = UserManager::Get()->GetLoggedInUsers().size() == 1;
+  if (is_primary_user) {
+    policy::BrowserPolicyConnector* connector =
+        g_browser_process->browser_policy_connector();
 
-  // Initialize user policy before the profile is created so the profile
-  // initialization code sees the cached policy settings.
-  connector->InitializeUserPolicy(user_context_.username,
-                                  user_manager->IsLoggedInAsPublicAccount(),
-                                  wait_for_policy_fetch);
+    // If this is an enterprise device and the user belongs to the enterprise
+    // domain, then wait for a policy fetch before logging the user in. This
+    // will delay Profile creation until the policy is fetched, so that features
+    // controlled by policy (e.g. Sync, Startup tabs) only start after the
+    // PrefService has the right values.
+    // Profile creation is also resumed if the fetch attempt fails.
+    wait_for_policy_fetch =
+        using_oauth_ &&
+        authenticator_.get() &&
+        (connector->GetUserAffiliation(user_context_.username) ==
+             policy::USER_AFFILIATION_MANAGED);
+
+    // Initialize user policy before the profile is created so the profile
+    // initialization code sees the cached policy settings.
+    connector->InitializeUserPolicy(user_context_.username,
+                                    user_manager->IsLoggedInAsPublicAccount(),
+                                    wait_for_policy_fetch);
+  }
 
   // The default profile will have been changed because the ProfileManager
-  // will process the notification that the UserManager sends out.
+  // will process the notification that the UserManager sends out so
+  // username_hash has been already propogated to ProfileManager.
   ProfileManager::CreateDefaultProfileAsync(
       base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
 

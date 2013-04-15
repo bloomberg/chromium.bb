@@ -71,6 +71,10 @@ bool ChromeShellDelegate::UseImmersiveFullscreen() {
   return false;
 }
 
+bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
+}
+
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
 }

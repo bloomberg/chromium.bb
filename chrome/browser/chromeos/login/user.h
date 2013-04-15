@@ -157,6 +157,12 @@ class User {
 
   virtual std::string username_hash() const;
 
+  // True if current user is logged in.
+  virtual bool is_logged_in() const;
+
+  // True if current user is active within the current session.
+  virtual bool is_active() const;
+
  protected:
   friend class UserManagerImpl;
   friend class UserImageManagerImpl;
@@ -202,6 +208,14 @@ class User {
     username_hash_ = username_hash;
   }
 
+  void set_is_logged_in(bool is_logged_in) {
+    is_logged_in_ = is_logged_in;
+  }
+
+  void set_is_active(bool is_active) {
+    is_active_ = is_active;
+  }
+
  private:
   std::string email_;
   string16 display_name_;
@@ -222,6 +236,12 @@ class User {
 
   // True if current user image is being loaded from file.
   bool image_is_loading_;
+
+  // True if user is currently logged in in current session.
+  bool is_logged_in_;
+
+  // True if user is currently logged in and active in current session.
+  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

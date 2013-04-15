@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -368,15 +370,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual const string16 GetUserDisplayName() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser()->GetDisplayName();
+    return UserManager::Get()->GetActiveUser()->GetDisplayName();
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser()->display_email();
+    return UserManager::Get()->GetActiveUser()->display_email();
   }
 
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser()->image();
+    return UserManager::Get()->GetActiveUser()->image();
   }
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
@@ -400,6 +402,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual bool IsOobeCompleted() const OVERRIDE {
     return WizardController::IsOobeCompleted();
+  }
+
+  virtual void GetLoggedInUsers(ash::UserEmailList* users) OVERRIDE {
+    const UserList& logged_in_users = UserManager::Get()->GetLoggedInUsers();
+    for (UserList::const_iterator it = logged_in_users.begin();
+         it != logged_in_users.end(); ++it) {
+      const User* user = (*it);
+      users->push_back(user->email());
+    }
+  }
+
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE {
+    UserManager::Get()->SwitchActiveUser(email);
   }
 
   virtual void ChangeProfilePicture() OVERRIDE {
@@ -503,6 +518,45 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       GURL url(google_util::StringAppendGoogleLocaleParam(
           chrome::kLearnMoreEnterpriseURL));
       chrome::ShowSingletonTab(GetAppropriateBrowser(), url);
+    }
+  }
+
+  virtual void ShowUserLogin() OVERRIDE {
+    if (!ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
+      return;
+
+    // Only regular users could add other users to current session.
+    if (UserManager::Get()->GetActiveUser()->GetType() !=
+            User::USER_TYPE_REGULAR) {
+      return;
+    }
+
+    // TODO(nkostylev): Show some UI messages why no more users could be added
+    // to this session. http://crbug.com/230863
+    // We limit list of logged in users to 3 due to memory constraints.
+    // TODO(nkostylev): Adjust this limitation based on device capabilites.
+    // http://crbug.com/230865
+    if (UserManager::Get()->GetLoggedInUsers().size() >= 3)
+      return;
+
+    // Check whether there're regular users on the list that are not
+    // currently logged in.
+    const UserList& users = UserManager::Get()->GetUsers();
+    bool has_regular_not_logged_in_users = false;
+    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+      const User* user = (*it);
+      if (user->GetType() == User::USER_TYPE_REGULAR &&
+          !user->is_logged_in()) {
+        has_regular_not_logged_in_users = true;
+        break;
+      }
+    }
+
+    // Launch sign in screen to add another user to current session.
+    if (has_regular_not_logged_in_users) {
+      ash::Shell::GetInstance()->
+          desktop_background_controller()->MoveDesktopToLockedContainer();
+      ShowLoginWizard(std::string(), gfx::Size());
     }
   }
 

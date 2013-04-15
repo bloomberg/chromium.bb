@@ -55,6 +55,11 @@ void OAuth2LoginManager::RestoreSession(
     SessionRestoreStrategy restore_strategy,
     const std::string& oauth2_refresh_token,
     const std::string& auth_code) {
+  // TODO(nkostylev): OAuth2LoginManager should support multi-profiles or
+  // should be refactored as ProfileKeyedService. For now we unsubscribe from
+  // TokenService notifications of a user that was previously active.
+  // http://crbug.com/230342
+  registrar_.RemoveAll();
   user_profile_ = user_profile;
   auth_request_context_ = auth_request_context;
   state_ = OAuthLoginManager::SESSION_RESTORE_IN_PROGRESS;

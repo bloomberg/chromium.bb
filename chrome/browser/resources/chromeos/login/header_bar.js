@@ -179,15 +179,18 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
+      var isMultiProfilesUI = Oobe.getInstance().isSignInToAddScreen();
 
-      $('add-user-button').hidden = !accountPickerIsActive;
+      $('add-user-button').hidden = !accountPickerIsActive || isMultiProfilesUI;
       $('cancel-add-user-button').hidden = accountPickerIsActive ||
           !this.allowCancel_ ||
-          wrongHWIDWarningIsActive;
+          wrongHWIDWarningIsActive ||
+          isMultiProfilesUI;
       $('guest-user-header-bar-item').hidden = gaiaIsActive ||
           managedUserCreationDialogIsActive ||
           !this.showGuest_ ||
-          wrongHWIDWarningIsActive;
+          wrongHWIDWarningIsActive ||
+          isMultiProfilesUI;
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
       $('apps-header-bar-item').hidden = !this.hasApps_ ||

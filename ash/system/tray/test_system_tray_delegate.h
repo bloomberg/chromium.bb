@@ -31,6 +31,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
   virtual bool IsOobeCompleted() const OVERRIDE;
+  virtual void GetLoggedInUsers(UserEmailList* users) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
@@ -49,6 +51,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowAccessibilityHelp() OVERRIDE;
   virtual void ShowPublicAccountInfo() OVERRIDE;
   virtual void ShowEnterpriseInfo() OVERRIDE;
+  virtual void ShowUserLogin() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;

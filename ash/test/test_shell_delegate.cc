@@ -49,6 +49,10 @@ bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }
 
+bool TestShellDelegate::IsMultiProfilesEnabled() const {
+  return false;
+}
+
 bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }

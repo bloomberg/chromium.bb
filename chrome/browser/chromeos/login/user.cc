@@ -172,6 +172,14 @@ std::string User::username_hash() const {
   return username_hash_;
 }
 
+bool User::is_logged_in() const {
+  return is_logged_in_;
+}
+
+bool User::is_active() const {
+  return is_active_;
+}
+
 User* User::CreateRegularUser(const std::string& email) {
   return new RegularUser(email);
 }
@@ -201,7 +209,9 @@ User::User(const std::string& email)
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
       image_is_stub_(false),
-      image_is_loading_(false) {
+      image_is_loading_(false),
+      is_logged_in_(false),
+      is_active_(false) {
 }
 
 User::~User() {}

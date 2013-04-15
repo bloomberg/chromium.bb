@@ -31,6 +31,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool IsGuestSession() const OVERRIDE;
   virtual bool IsFirstRunAfterBoot() const OVERRIDE;
+  virtual bool IsMultiProfilesEnabled() const OVERRIDE;
   virtual bool IsRunningInForcedAppMode() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;

@@ -112,6 +112,9 @@ class ASH_EXPORT ShellDelegate {
   // restarted, typically due to logging in as a guest or logging out.
   virtual bool IsFirstRunAfterBoot() const = 0;
 
+  // Returns true if multi-profiles feature is enabled.
+  virtual bool IsMultiProfilesEnabled() const = 0;
+
   // Returns true if we're running in forced app mode.
   virtual bool IsRunningInForcedAppMode() const = 0;
 

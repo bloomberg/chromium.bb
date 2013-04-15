@@ -95,6 +95,9 @@ class UserManager {
   // is sorted by last login date with the most recent user at the beginning.
   virtual const UserList& GetUsers() const = 0;
 
+  // Returns a list of users who are currently logged in.
+  virtual const UserList& GetLoggedInUsers() const = 0;
+
   // Indicates that a user with the given |email| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
   // |browser_restart| is true when reloading Chrome after crash to distinguish
@@ -103,6 +106,9 @@ class UserManager {
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
                             bool browser_restart) = 0;
+
+  // Switches to active user identified by |email|. User has to be logged in.
+  virtual void SwitchActiveUser(const std::string& email) = 0;
 
   // Indicates that user just logged on as the retail mode user.
   virtual void RetailModeUserLoggedIn() = 0;
@@ -168,8 +174,16 @@ class UserManager {
       const string16& display_name) const = 0;
 
   // Returns the logged-in user.
+  // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
+  // http://crbug.com/230852
   virtual const User* GetLoggedInUser() const = 0;
   virtual User* GetLoggedInUser() = 0;
+
+  // Returns the logged-in user that is currently active within this session.
+  // There could be multiple users logged in at the the same but for now
+  // we support only one of them being active.
+  virtual const User* GetActiveUser() const = 0;
+  virtual User* GetActiveUser() = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
@@ -213,7 +227,7 @@ class UserManager {
   // a password with which to unlock the session).
   virtual bool CanCurrentUserLock() const = 0;
 
-  // Returns true if user is signed in.
+  // Returns true if at least one user has signed in.
   virtual bool IsUserLoggedIn() const = 0;
 
   // Returns true if we're logged in as a regular user.

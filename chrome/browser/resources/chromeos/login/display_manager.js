@@ -472,7 +472,16 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
-     * Returns true if the current screen is the lock screen.
+     * Returns true if the current UI type is the "Sign-in to add user"
+     * (another user session is already active).
+     */
+    isSignInToAddScreen: function() {
+      return document.documentElement.getAttribute('screen') ==
+          'login-add-user';
+    },
+
+    /**
+     * Returns true if the current UI type is the lock screen.
      */
     isLockScreen: function() {
       return document.documentElement.getAttribute('screen') == 'lock';

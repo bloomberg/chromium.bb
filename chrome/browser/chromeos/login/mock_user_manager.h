@@ -25,8 +25,10 @@ class MockUserManager : public UserManager {
 
   MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsers, const UserList&(void));
+  MOCK_CONST_METHOD0(GetLoggedInUsers, const UserList&(void));
   MOCK_METHOD3(UserLoggedIn, void(
       const std::string&, const std::string&, bool));
+  MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
   MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
   MOCK_METHOD1(KioskAppLoggedIn, void(const std::string& app_id));
@@ -87,13 +89,12 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(SetAppModeChromeClientOAuthInfo, void(const std::string&,
                                                      const std::string&));
 
-  // You can't mock this function easily because nobody can create User objects
-  // but the UserManagerImpl and us.
+  // You can't mock these functions easily because nobody can create
+  // User objects but the UserManagerImpl and us.
   virtual const User* GetLoggedInUser() const OVERRIDE;
-
-  // You can't mock this function easily because nobody can create User objects
-  // but the UserManagerImpl and us.
   virtual User* GetLoggedInUser() OVERRIDE;
+  virtual const User* GetActiveUser() const OVERRIDE;
+  virtual User* GetActiveUser() OVERRIDE;
 
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
 

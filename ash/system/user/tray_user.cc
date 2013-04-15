@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -470,12 +471,16 @@ void UserView::Layout() {
 }
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (sender == logout_button_)
+  if (sender == logout_button_) {
     ash::Shell::GetInstance()->system_tray_delegate()->SignOut();
-  else if (sender == profile_picture_)
-    ash::Shell::GetInstance()->system_tray_delegate()->ChangeProfilePicture();
-  else
+  } else if (sender == profile_picture_) {
+    if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
+      ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
+    else
+      ash::Shell::GetInstance()->system_tray_delegate()->ChangeProfilePicture();
+  } else {
     NOTREACHED();
+  }
 }
 
 void UserView::AddLogoutButton(ash::user::LoginStatus login) {

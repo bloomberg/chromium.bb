@@ -46,9 +46,11 @@ class UserManagerImpl
   virtual void Shutdown() OVERRIDE;
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
+  virtual const UserList& GetLoggedInUsers() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void KioskAppLoggedIn(const std::string& username) OVERRIDE;
@@ -68,6 +70,8 @@ class UserManagerImpl
       const string16& display_name) const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
+  virtual const User* GetActiveUser() const OVERRIDE;
+  virtual User* GetActiveUser() OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -153,11 +157,24 @@ class UserManagerImpl
   // and ephemeral users are enabled.
   bool AreEphemeralUsersEnabled() const;
 
+  // Returns a list of users who have logged into this device previously.
+  // Same as GetUsers but used if you need to modify User from that list.
+  UserList& GetUsersAndModify();
+
+  // Returns the user with the given email address if found in the persistent
+  // list or currently logged in as ephemeral. Returns |NULL| otherwise.
+  // Same as FindUser but returns non-const pointer to User object.
+  User* FindUserAndModify(const std::string& email);
+
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& email) const;
 
-  // Notifies that new user session has started.
+  // Same as FindUserInList but returns non-const pointer to User object.
+  User* FindUserInListAndModify(const std::string& email);
+
+  // Notifies that user has logged in.
+  // Sends NOTIFICATION_LOGIN_USER_CHANGED notification.
   void NotifyOnLogin();
 
   // Reads user's oauth token status from local state preferences.
@@ -221,10 +238,15 @@ class UserManagerImpl
   // |UpdateAndCleanUpPublicAccounts|.
   UserList users_;
 
-  // The logged-in user. NULL until a user has logged in, then points to one
+  // List of all users that are logged in current session. These point to User
+  // instances in |users_|. Only one of them could be marked as active.
+  UserList logged_in_users_;
+
+  // The logged-in user that is currently active in current session.
+  // NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
   // ephemeral user instance.
-  User* logged_in_user_;
+  User* active_user_;
 
   // True if SessionStarted() has been called.
   bool session_started_;

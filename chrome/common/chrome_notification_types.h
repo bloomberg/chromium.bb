@@ -890,16 +890,25 @@ enum NotificationType {
 
 #if defined(OS_CHROMEOS)
   // Sent when a chromium os user logs in.
+  // The details are a chromeos::User object.
   NOTIFICATION_LOGIN_USER_CHANGED,
+
+  // Sent when a chromium os active user has changed.
+  // The details are a chromeos::User object.
+  // This notification is _not_ sent when user logs in to a new or existing
+  // session because NOTIFICATION_LOGIN_USER_CHANGED is sent instead.
+  NOTIFICATION_ACTIVE_USER_CHANGED,
 
   // Sent immediately after the logged-in user's profile is ready.
   // The details are a Profile object.
   NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
 
-  // Sent when the chromium session is first started. If this is a new user this
-  // will not be sent until a profile picture has been selected, unlike
-  // NOTIFICATION_LOGIN_USER_CHANGED which is sent immediately after the user
-  // has logged in. This will be sent again if the browser crashes and restarts.
+  // Sent when the chromium session of a particular user is started.
+  // If this is a new user on the machine this will not be sent until a profile
+  // picture has been selected, unlike NOTIFICATION_LOGIN_USER_CHANGED which is
+  // sent immediately after the user has logged in. This will be sent again if
+  // the browser crashes and restarts.
+  // The details are a chromeos::User object.
   NOTIFICATION_SESSION_STARTED,
 
   // Sent when user image is updated.

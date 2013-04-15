@@ -110,6 +110,8 @@ typedef std::vector<IMEInfo> IMEInfoList;
 
 class VolumeControlDelegate;
 
+typedef std::vector<std::string> UserEmailList;
+
 class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
@@ -123,12 +125,18 @@ class SystemTrayDelegate {
   // Returns true if system tray should be visible on startup.
   virtual bool GetTrayVisibilityOnStartup() = 0;
 
-  // Gets information about the logged in user.
+  // Gets information about the active user.
   virtual const base::string16 GetUserDisplayName() const = 0;
   virtual const std::string GetUserEmail() const = 0;
   virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
   virtual bool IsOobeCompleted() const = 0;
+
+  // Returns a list of all logged in users.
+  virtual void GetLoggedInUsers(UserEmailList* users) = 0;
+
+  // Switches to another active user (if that user has already signed in).
+  virtual void SwitchActiveUser(const std::string& email) = 0;
 
   // Shows UI for changing user's profile picture.
   virtual void ChangeProfilePicture() = 0;
@@ -183,6 +191,9 @@ class SystemTrayDelegate {
 
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo() = 0;
+
+  // Shows login UI to add other users to this session.
+  virtual void ShowUserLogin() = 0;
 
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;

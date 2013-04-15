@@ -319,11 +319,20 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("bootIntoWallpaper", "off");
   }
 
-  // OobeUI is used for OOBE/login and lock screen.
-  if (BaseLoginDisplayHost::default_host())
-    localized_strings->SetString("screenType", "login");
-  else
+  // TODO(nkostylev): Make sure that only one type of login UI
+  // is active at a time.
+  // OobeUI is used for these use cases:
+  // 1. Out-of-box / login
+  // 2. Lock screen.
+  // 3. Multi-profiles sign in (add user to current session).
+  if (BaseLoginDisplayHost::default_host()) {
+    if (!UserManager::Get()->IsUserLoggedIn())
+      localized_strings->SetString("screenType", "login");
+    else
+      localized_strings->SetString("screenType", "login-add-user");
+  } else {
     localized_strings->SetString("screenType", "lock");
+  }
 }
 
 void OobeUI::InitializeScreenMaps() {

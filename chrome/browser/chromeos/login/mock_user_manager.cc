@@ -21,6 +21,14 @@ User* MockUserManager::GetLoggedInUser() {
   return user_;
 }
 
+const User* MockUserManager::GetActiveUser() const {
+  return user_;
+}
+
+User* MockUserManager::GetActiveUser() {
+  return user_;
+}
+
 UserImageManager* MockUserManager::GetUserImageManager() {
   return user_image_manager_.get();
 }

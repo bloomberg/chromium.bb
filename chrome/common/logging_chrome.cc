@@ -216,6 +216,13 @@ base::FilePath GetSessionLogFile(const CommandLine& command_line) {
 }
 
 void RedirectChromeLogging(const CommandLine& command_line) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles) &&
+      chrome_logging_redirected_) {
+    // TODO(nkostylev): Support multiple active users. http://crbug.com/230345
+    LOG(ERROR) << "NOT redirecting logging for multi-profiles case.";
+    return;
+  }
+
   DCHECK(!chrome_logging_redirected_) <<
     "Attempted to redirect logging when it was already initialized.";
 

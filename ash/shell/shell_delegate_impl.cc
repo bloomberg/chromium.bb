@@ -55,6 +55,10 @@ bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }
 
+bool ShellDelegateImpl::IsMultiProfilesEnabled() const {
+  return false;
+}
+
 bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }

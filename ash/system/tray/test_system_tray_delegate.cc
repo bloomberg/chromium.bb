@@ -103,6 +103,12 @@ bool TestSystemTrayDelegate::IsOobeCompleted() const {
   return true;
 }
 
+void TestSystemTrayDelegate::GetLoggedInUsers(UserEmailList* users) {
+}
+
+void TestSystemTrayDelegate::SwitchActiveUser(const std::string& email) {
+}
+
 void TestSystemTrayDelegate::ChangeProfilePicture() {
 }
 
@@ -160,6 +166,9 @@ void TestSystemTrayDelegate::ShowPublicAccountInfo() {
 }
 
 void TestSystemTrayDelegate::ShowEnterpriseInfo() {
+}
+
+void TestSystemTrayDelegate::ShowUserLogin() {
 }
 
 void TestSystemTrayDelegate::ShutDown() {

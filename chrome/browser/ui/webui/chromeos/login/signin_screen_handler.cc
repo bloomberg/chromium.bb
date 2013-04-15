@@ -1373,9 +1373,22 @@ void SigninScreenHandler::SendUserList(bool animated) {
   ListValue users_list;
   const UserList& users = delegate_->GetUsers();
 
+  // TODO(nkostylev): Show optional intro dialog about multi-profiles feature
+  // based on user preferences. http://crbug.com/230862
+
+  // TODO(nkostylev): Move to a separate method in UserManager.
+  // http://crbug.com/230852
+  bool is_signin_to_add = BaseLoginDisplayHost::default_host() &&
+      UserManager::Get()->IsUserLoggedIn();
+
   bool single_user = users.size() == 1;
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
+    if (is_signin_to_add && (*it)->is_logged_in()) {
+      // Skip all users that are already signed in.
+      continue;
+    }
+
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     bool is_owner = (email == owner);
@@ -1394,7 +1407,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
                             !email.empty() &&
                             !is_owner &&
                             !is_public_account &&
-                            !signed_in);
+                            !signed_in &&
+                            !is_signin_to_add);
 
       users_list.Append(user_dict);
       if (!is_owner)
