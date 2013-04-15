@@ -3477,8 +3477,8 @@ webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/
 webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_measure_associate_with_navigation_timing.html [ Failure Pass ]
 
 # Flaky since r136945
-webkit.org/b/94002 [ Win Mac Debug ] inspector/debugger/live-edit-breakpoints.html [ Failure Timeout ]
-webkit.org/b/94002 [ Mac Debug ] inspector/debugger/live-edit.html [ Crash Pass Timeout ]
+crbug.com/230644 [ Debug ] inspector/debugger/live-edit-breakpoints.html [ Failure Timeout ]
+crbug.com/230644 [ Mac Debug ] inspector/debugger/live-edit.html [ Crash Pass Timeout ]
 
 # No support for exposing in-band text tracks
 webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band.html [ Skip ]
@@ -3673,7 +3673,7 @@ webkit.org/b/91611 media/media-higher-prio-audio-stream.html [ Skip ]
 # Needs rebaseline on all platforms
 Bug(leviw) fast/text/shaping/shaping-selection-rect.html [ Failure ]
 # Needs rebaseline on all platforms but linux
-Bug(eae) [ Mac Win ] fast/block/float/overhanging-tall-block.html [ Failure ]
+Bug(eae) [ Mac Win Release ] fast/block/float/overhanging-tall-block.html [ Failure ]
 
 # Flaky tests
 webkit.org/b/112598 [ Win Mac Linux ] http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
@@ -3743,8 +3743,6 @@ crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailur
 crbug.com/230339 virtual/gpu/compositedscrolling/scrollbars/short-scrollbar.html [ Pass ImageOnlyFailure ]
 
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
-
-crbug.com/230644 [ Debug ] inspector/debugger/live-edit-breakpoints.html [ Timeout ]
 
 # Failing tests after r148246
 crbug.com/230771 editing/pasteboard/drop-file-svg.html [ Failure ]
