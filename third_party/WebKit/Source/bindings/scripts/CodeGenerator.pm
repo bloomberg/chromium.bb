@@ -33,15 +33,11 @@ my $useDocument = "";
 my $useOutputDir = "";
 my $useOutputHeadersDir = "";
 my $useDirectories = "";
-my $useLayerOnTop = 0;
 my $preprocessor;
-my $writeDependencies = 0;
 my $defines = "";
-my $targetIdlFilePath = "";
+my $verbose = 0;
 
 my $codeGenerator = 0;
-
-my $verbose = 0;
 
 my %numericTypeHash = ("int" => 1, "short" => 1, "long" => 1, "long long" => 1,
                        "unsigned int" => 1, "unsigned short" => 1,
@@ -105,11 +101,8 @@ sub new
     $useDirectories = shift;
     $useOutputDir = shift;
     $useOutputHeadersDir = shift;
-    $useLayerOnTop = shift;
     $preprocessor = shift;
-    $writeDependencies = shift;
     $verbose = shift;
-    $targetIdlFilePath = shift;
 
     bless($reference, $object);
     return $reference;
@@ -127,7 +120,7 @@ sub ProcessDocument
     %enumTypeHash = map { $_->name => $_->values } @{$useDocument->enumerations};
 
     # Dynamically load external code generation perl module
-    $codeGenerator = $ifaceName->new($object, $useLayerOnTop, $preprocessor, $writeDependencies, $verbose, $targetIdlFilePath);
+    $codeGenerator = $ifaceName->new($object, $preprocessor, $verbose);
     unless (defined($codeGenerator)) {
         my $interfaces = $useDocument->interfaces;
         foreach my $interface (@$interfaces) {

@@ -44,9 +44,7 @@ my $outputDirectory;
 my $outputHeadersDirectory;
 my $defines;
 my $filename;
-my $prefix;
 my $preprocessor;
-my $writeDependencies;
 my $verbose;
 my $supplementalDependencyFile;
 my $additionalIdlFiles;
@@ -57,10 +55,8 @@ GetOptions('include=s@' => \@idlDirectories,
            'outputHeadersDir=s' => \$outputHeadersDirectory,
            'defines=s' => \$defines,
            'filename=s' => \$filename,
-           'prefix=s' => \$prefix,
            'preprocessor=s' => \$preprocessor,
            'verbose' => \$verbose,
-           'write-dependencies' => \$writeDependencies,
            'supplementalDependencyFile=s' => \$supplementalDependencyFile,
            'additionalIdlFiles=s' => \$additionalIdlFiles,
            'idlAttributesFile=s' => \$idlAttributesFile);
@@ -112,7 +108,7 @@ if ($supplementalDependencyFile) {
     }
 
     if (!$idlFound) {
-        my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose);
+        my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose);
 
         # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
         generateEmptyHeaderAndCpp($targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
@@ -192,7 +188,7 @@ foreach my $idlFile (@supplementedIdlFiles) {
 }
 
 # Generate desired output for the target IDL file.
-my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose, $targetIdlFile);
+my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose);
 $codeGen->ProcessDocument($targetDocument, $defines);
 
 sub generateEmptyHeaderAndCpp
