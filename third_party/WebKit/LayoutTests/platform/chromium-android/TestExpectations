@@ -1,7 +1,7 @@
 # This file should contain only the rules to skip tests about the features not supported
 # or not testable on Android.
 #
-# Other rules should be in platform/chromium/TestExpectations.
+# Other rules should be in LayoutTests/TestExpectations.
 
 # Features not supported: http://crbug.com/145338.
 crbug.com/145338 compositing/plugins

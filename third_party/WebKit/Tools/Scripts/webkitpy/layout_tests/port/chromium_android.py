@@ -241,7 +241,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     def _port_specific_expectations_files(self):
         # LayoutTests/platform/chromium-android/TestExpectations should contain only the rules to
         # skip tests for the features not supported or not testable on Android.
-        # Other rules should be in LayoutTests/platform/chromium/TestExpectations.
+        # Other rules should be in LayoutTests/TestExpectations.
         android_expectations_file = self.path_from_webkit_base('LayoutTests', 'platform', 'chromium-android', 'TestExpectations')
         return super(ChromiumAndroidPort, self)._port_specific_expectations_files() + [android_expectations_file]
 
