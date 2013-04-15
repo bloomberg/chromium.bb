@@ -1037,9 +1037,9 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         if (!this.isSinglePod) {
           pod.isActionBoxMenuActive = false;
-          pod.isActionBoxMenuHovered = false;
         }
         if (pod != podToFocus) {
+          pod.isActionBoxMenuHovered = false;
           pod.classList.remove('focused');
           pod.classList.remove('faded');
           pod.reset(false);
@@ -1204,9 +1204,14 @@ cr.define('login', function() {
         this.focusPod();
       }
 
+      if (pod)
+        pod.isActionBoxMenuHovered = true;
+
       // Return focus back to single pod.
       if (this.isSinglePod) {
         this.focusPod(this.focusedPod_, true /* force */);
+        if (!pod)
+          this.focusedPod_.isActionBoxMenuHovered = false;
       }
     },
 
