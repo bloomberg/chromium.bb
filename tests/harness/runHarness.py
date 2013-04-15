@@ -197,26 +197,13 @@ class BrailleTest():
         assert hyphenated_word == self.expectedOutput, u("\n".join(report))
 
 def test_allCases():
-    harness_dir = "harness"
-    if 'HARNESS_DIR' in os.environ:
-        # we assume that if HARNESS_DIR is set that we are invoked from
-        # the Makefile, i.e. all the paths to the Python test files and
-        # the test tables are set correctly.
-        harness_dir = os.environ['HARNESS_DIR']
-    else:
-        # we are not invoked via the Makefile, i.e. we have to set up the
-        # paths (LOUIS_TABLEPATH) manually.
-        harness_dir = "harness"
-        # make sure local test braille tables are found
-        os.environ['LOUIS_TABLEPATH'] = 'tables'
-
     # Process all *_harness.txt files in the harness directory.
     testfiles=[]
     if len(sys.argv)>1:
         for i in range(1, len(sys.argv)):
-            testfiles=testfiles+list(iglob(os.path.join(harness_dir, sys.argv[i])))
+            testfiles += list(iglob(sys.argv[i]))
     else:
-        testfiles=iglob(os.path.join(harness_dir, '*_harness.txt'))
+        testfiles += list(iglob('*_harness.txt'))
     for harness in testfiles:
         f = open(harness, 'r')
         try:

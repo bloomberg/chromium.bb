@@ -144,8 +144,7 @@ dist_check_SCRIPTS =		\
 if HAVE_PYTHON
 if HAVE_UCS4
 dist_check_SCRIPTS += \
-	check_doctests.py \
-	runHarness.py
+	check_doctests.py
 endif
 endif
 
@@ -161,8 +160,6 @@ XFAIL_TESTS =					\
 TESTS =				\
 	$(check_PROGRAMS)	\
 	$(dist_check_SCRIPTS)
-
-HARNESS_DIR = $(top_srcdir)/tests/harness
 
 TESTS_ENVIRONMENT =												\
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables	\

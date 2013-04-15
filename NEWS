@@ -16,7 +16,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       and bokmål) thanks to Lars Bjørndal.
 
 *** runHarness.py: 
-    accept filename globs on the commandline to run specific harness files.
+    Accept filename globs on the commandline to run specific harness files.
+    In tests/harness, one can do make <filename> or make runall
+    Removed from make check because these checks are checking the validity
+    of our tables, rather than validity of the code.
 
 ** Braille Table Improvements
    - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation table.
