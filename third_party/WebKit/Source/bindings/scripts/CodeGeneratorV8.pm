@@ -1132,7 +1132,11 @@ END
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
         push(@implContentInternals, "    RefPtr<$returnType> result = ${getterString};\n");
-        push(@implContentInternals, "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper(result.get(), info.GetIsolate())) : v8Undefined();\n");
+        if ($forMainWorldSuffix) {
+          push(@implContentInternals, "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper${forMainWorldSuffix}(result.get())) : v8Undefined();\n");
+        } else {
+          push(@implContentInternals, "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper(result.get(), info.GetIsolate())) : v8Undefined();\n");
+        }
         push(@implContentInternals, "    if (wrapper.IsEmpty()) {\n");
         push(@implContentInternals, "        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n"); # FIXME: Could use wrap here since the wrapper is empty.
         push(@implContentInternals, "        if (!wrapper.IsEmpty())\n");
