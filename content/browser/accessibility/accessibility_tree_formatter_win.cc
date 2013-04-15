@@ -66,7 +66,14 @@ string16 AccessibilityTreeFormatter::ToString(
 
   // Get state strings.
   std::vector<string16> state_strings;
-  IAccessibleStateToStringVector(acc_obj->ia_state(), &state_strings);
+  int32 ia_state = acc_obj->ia_state();
+
+  // Avoid flakiness: these states depend on whether the window is focused
+  // and the position of the mouse cursor.
+  ia_state &= ~STATE_SYSTEM_HOTTRACKED;
+  ia_state &= ~STATE_SYSTEM_OFFSCREEN;
+
+  IAccessibleStateToStringVector(ia_state, &state_strings);
   IAccessible2StateToStringVector(acc_obj->ia2_state(), &state_strings);
 
   // Get the attributes.
