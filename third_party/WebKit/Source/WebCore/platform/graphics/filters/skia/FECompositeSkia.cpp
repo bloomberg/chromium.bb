@@ -40,7 +40,8 @@ public:
 
     virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* dst, SkIPoint* offset)
     {
-        SkBitmap background, foreground = src;
+        SkBitmap background = src;
+        SkBitmap foreground = src;
         SkImageFilter* backgroundInput = getInput(0);
         SkImageFilter* foregroundInput = getInput(1);
         SkIPoint backgroundOffset = SkIPoint::Make(0, 0), foregroundOffset = SkIPoint::Make(0, 0);
@@ -50,14 +51,14 @@ public:
         if (foregroundInput && !foregroundInput->filterImage(proxy, src, ctm, &foreground, &foregroundOffset))
             return false;
 
-        dst->setConfig(background.config(), background.width(), background.height());
-        dst->allocPixels();
-        SkCanvas canvas(*dst);
+        SkAutoTUnref<SkDevice> device(proxy->createDevice(background.width(), background.height()));
+        SkCanvas canvas(device);
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
         canvas.drawBitmap(background, backgroundOffset.fX, backgroundOffset.fY, &paint);
         paint.setXfermodeMode(m_mode);
         canvas.drawBitmap(foreground, foregroundOffset.fX, foregroundOffset.fY, &paint);
+        *dst = device->accessBitmap(false);
         return true;
     }
 
@@ -88,7 +89,7 @@ SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
     case WebCore::FECOMPOSITE_OPERATOR_IN:
         return SkXfermode::kSrcIn_Mode;
     case WebCore::FECOMPOSITE_OPERATOR_OUT:
-        return SkXfermode::kDstOut_Mode;
+        return SkXfermode::kSrcOut_Mode;
     case WebCore::FECOMPOSITE_OPERATOR_ATOP:
         return SkXfermode::kSrcATop_Mode;
     case WebCore::FECOMPOSITE_OPERATOR_XOR:
@@ -109,7 +110,7 @@ SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
     SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1)));
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
         return 0; // FIXME: Implement arithmetic op
-    return new CompositeImageFilter(toXfermode(m_type), foreground, background);
+    return new CompositeImageFilter(toXfermode(m_type), background, foreground);
 }
 
 };
