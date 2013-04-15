@@ -44,7 +44,6 @@ namespace WebCore {
         
         virtual void setEncoding(const String&);
         virtual String encoding() const;
-        virtual void data(PassRefPtr<ResourceBuffer> data, bool allDataReceived);
         
         virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

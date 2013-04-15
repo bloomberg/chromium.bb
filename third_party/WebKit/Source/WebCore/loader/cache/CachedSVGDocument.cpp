@@ -53,22 +53,17 @@ String CachedSVGDocument::encoding() const
     return m_decoder->encoding().name();
 }
 
-void CachedSVGDocument::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
+void CachedSVGDocument::checkNotify()
 {
-    if (!allDataReceived)
-        return;
-
-    if (data) {
+    if (m_data) {
         StringBuilder decodedText;
-        decodedText.append(m_decoder->decode(data->data(), data->size()));
+        decodedText.append(m_decoder->decode(m_data->data(), m_data->size()));
         decodedText.append(m_decoder->flush());
         // We don't need to create a new frame because the new document belongs to the parent UseElement.
         m_document = SVGDocument::create(0, response().url());
         m_document->setContent(decodedText.toString());
     }
-
-    setLoading(false);
-    checkNotify();
+    CachedResource::checkNotify();
 }
 
 void CachedSVGDocument::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

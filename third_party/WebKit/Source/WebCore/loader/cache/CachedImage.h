@@ -76,9 +76,10 @@ public:
     virtual void allClientsRemoved();
     virtual void destroyDecodedData();
 
-    virtual void data(PassRefPtr<ResourceBuffer> data, bool allDataReceived);
+    virtual void data(PassRefPtr<ResourceBuffer> data) OVERRIDE;
     virtual void error(CachedResource::Status);
     virtual void responseReceived(const ResourceResponse&);
+    virtual void finishOnePart() OVERRIDE;
     
     // For compatibility, images keep loading even if there are HTTP errors.
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
@@ -101,6 +102,7 @@ private:
 
     void setCustomAcceptHeader();
     void createImage();
+    void updateImage(bool allDataReceived);
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = 0);
@@ -116,6 +118,7 @@ private:
 #if ENABLE(SVG)
     OwnPtr<SVGImageCache> m_svgImageCache;
 #endif
+    bool m_loadingMultipartContent;
 };
 
 }

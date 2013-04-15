@@ -42,7 +42,6 @@ public:
     virtual ~CachedShader();
     
     const String& shaderString();
-    void data(PassRefPtr<ResourceBuffer>, bool allDataReceived);
     
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

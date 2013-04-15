@@ -82,17 +82,6 @@ const String& CachedScript::script()
     return m_script;
 }
 
-void CachedScript::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
-{
-    if (!allDataReceived)
-        return;
-
-    m_data = data;
-    setEncodedSize(m_data.get() ? m_data->size() : 0);
-    setLoading(false);
-    checkNotify();
-}
-
 void CachedScript::destroyDecodedData()
 {
     m_script = String();

@@ -62,25 +62,12 @@ String CachedXSLStyleSheet::encoding() const
     return m_decoder->encoding().name();
 }
 
-void CachedXSLStyleSheet::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
+void CachedXSLStyleSheet::checkNotify()
 {
-    if (!allDataReceived)
-        return;
-
-    m_data = data;
-    setEncodedSize(m_data.get() ? m_data->size() : 0);
     if (m_data.get()) {
         m_sheet = m_decoder->decode(m_data->data(), encodedSize());
         m_sheet.append(m_decoder->flush());
     }
-    setLoading(false);
-    checkNotify();
-}
-
-void CachedXSLStyleSheet::checkNotify()
-{
-    if (isLoading())
-        return;
     
     CachedResourceClientWalker<CachedStyleSheetClient> w(m_clients);
     while (CachedStyleSheetClient* c = w.next())

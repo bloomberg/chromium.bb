@@ -58,6 +58,7 @@ namespace WebCore {
 CachedImage::CachedImage(const ResourceRequest& resourceRequest)
     : CachedResource(resourceRequest, ImageResource)
     , m_image(0)
+    , m_loadingMultipartContent(false)
 {
     setStatus(Unknown);
     setCustomAcceptHeader();
@@ -341,10 +342,15 @@ inline void CachedImage::clearImage()
     m_image.clear();
 }
 
-void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
+void CachedImage::data(PassRefPtr<ResourceBuffer> data)
 {
-    m_data = data;
+    CachedResource::data(data);
+    if (!m_loadingMultipartContent)
+        updateImage(false);
+}
 
+void CachedImage::updateImage(bool allDataReceived)
+{
     if (m_data)
         createImage();
 
@@ -371,15 +377,13 @@ void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
         // It would be nice to only redraw the decoded band of the image, but with the current design
         // (decoding delayed until painting) that seems hard.
         notifyObservers();
+    }
+}
 
-        if (m_image)
-            setEncodedSize(m_image->data() ? m_image->data()->size() : 0);
-    }
-    
-    if (allDataReceived) {
-        setLoading(false);
-        checkNotify();
-    }
+void CachedImage::finishOnePart()
+{
+    updateImage(true);
+    CachedResource::finishOnePart();
 }
 
 void CachedImage::error(CachedResource::Status status)
@@ -393,6 +397,8 @@ void CachedImage::responseReceived(const ResourceResponse& response)
 {
     if (!m_response.isNull())
         clear();
+    if (response.isMultipart())
+        m_loadingMultipartContent = true;
     CachedResource::responseReceived(response);
 }
 

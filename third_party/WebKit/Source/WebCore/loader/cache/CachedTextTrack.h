@@ -36,7 +36,7 @@ public:
     CachedTextTrack(const ResourceRequest&);
     virtual ~CachedTextTrack();
 
-    virtual void data(PassRefPtr<ResourceBuffer> data, bool allDataReceived);
+    virtual void data(PassRefPtr<ResourceBuffer> data) OVERRIDE;
 };
 
 }

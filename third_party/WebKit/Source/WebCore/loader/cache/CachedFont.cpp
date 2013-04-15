@@ -75,17 +75,6 @@ void CachedFont::didAddClient(CachedResourceClient* c)
         static_cast<CachedFontClient*>(c)->fontLoaded(this);
 }
 
-void CachedFont::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
-{
-    if (!allDataReceived)
-        return;
-
-    m_data = data;
-    setEncodedSize(m_data.get() ? m_data->size() : 0);
-    setLoading(false);
-    checkNotify();
-}
-
 void CachedFont::beginLoadIfNeeded(CachedResourceLoader* dl)
 {
     if (!m_loadInitiated) {
@@ -173,9 +162,6 @@ void CachedFont::allClientsRemoved()
 
 void CachedFont::checkNotify()
 {
-    if (isLoading())
-        return;
-    
     CachedResourceClientWalker<CachedFontClient> w(m_clients);
     while (CachedFontClient* c = w.next())
          c->fontLoaded(this);

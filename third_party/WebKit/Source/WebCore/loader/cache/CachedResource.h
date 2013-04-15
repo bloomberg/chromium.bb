@@ -94,7 +94,7 @@ public:
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
-    virtual void data(PassRefPtr<ResourceBuffer> data, bool allDataReceived);
+    virtual void data(PassRefPtr<ResourceBuffer> data);
     virtual void error(CachedResource::Status);
 
     void setResourceError(const ResourceError& error) { m_error = error; }
@@ -159,6 +159,7 @@ public:
 
     // Computes the status of an object after loading.  
     // Updates the expire date on the cache entry file
+    virtual void finishOnePart();
     void finish();
 
     bool passesAccessControlCheck(SecurityOrigin*);

@@ -349,13 +349,10 @@ void CachedResource::checkNotify()
         c->notifyFinished(this);
 }
 
-void CachedResource::data(PassRefPtr<ResourceBuffer>, bool allDataReceived)
+void CachedResource::data(PassRefPtr<ResourceBuffer> data)
 {
-    if (!allDataReceived)
-        return;
-    
-    setLoading(false);
-    checkNotify();
+    m_data = data;
+    setEncodedSize(m_data ? m_data->size() : 0);
 }
 
 void CachedResource::error(CachedResource::Status status)
@@ -368,8 +365,15 @@ void CachedResource::error(CachedResource::Status status)
     checkNotify();
 }
 
+void CachedResource::finishOnePart()
+{
+    setLoading(false);
+    checkNotify();
+}
+
 void CachedResource::finish()
 {
+    finishOnePart();
     if (!errorOccurred())
         m_status = Cached;
 }
@@ -466,7 +470,7 @@ void CachedResource::stopLoading()
 
     CachedResourceHandle<CachedResource> protect(this);
 
-    // All loads finish with data(allDataReceived = true) or error(), except for
+    // All loads finish with finish() or error(), except for
     // canceled loads, which silently set our request to 0. Be sure to notify our
     // client in that case, so we don't seem to continue loading forever.
     if (isLoading()) {

@@ -46,20 +46,12 @@ CachedTextTrack::~CachedTextTrack()
 {
 }
 
-void CachedTextTrack::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
+void CachedTextTrack::data(PassRefPtr<ResourceBuffer> data)
 {
-    m_data = data;
-    setEncodedSize(m_data.get() ? m_data->size() : 0);
-
+    CachedResource::data(data);
     CachedResourceClientWalker<CachedResourceClient> walker(m_clients);
     while (CachedResourceClient *client = walker.next())
         client->deprecatedDidReceiveCachedResource(this);
-
-    if (!allDataReceived)
-        return;
-    
-    setLoading(false);
-    checkNotify();
 }
 
 }

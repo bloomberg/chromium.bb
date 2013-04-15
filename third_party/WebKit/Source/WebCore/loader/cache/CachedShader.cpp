@@ -59,13 +59,6 @@ const String& CachedShader::shaderString()
     return m_shaderString;
 }
 
-void CachedShader::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
-{
-    if (allDataReceived)
-        m_data = data;
-    CachedResource::data(data, allDataReceived);
-}
-
 void CachedShader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceShader);

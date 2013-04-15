@@ -94,32 +94,19 @@ const String CachedCSSStyleSheet::sheetText(bool enforceMIMEType, bool* hasValid
     return sheetText;
 }
 
-void CachedCSSStyleSheet::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
+void CachedCSSStyleSheet::checkNotify()
 {
-    if (!allDataReceived)
-        return;
-
-    m_data = data;
-    setEncodedSize(m_data.get() ? m_data->size() : 0);
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
     if (m_data) {
         m_decodedSheetText = m_decoder->decode(m_data->data(), m_data->size());
         m_decodedSheetText.append(m_decoder->flush());
     }
-    setLoading(false);
-    checkNotify();
-    // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
-    m_decodedSheetText = String();
-}
-
-void CachedCSSStyleSheet::checkNotify()
-{
-    if (isLoading())
-        return;
 
     CachedResourceClientWalker<CachedStyleSheetClient> w(m_clients);
     while (CachedStyleSheetClient* c = w.next())
         c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
+    // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
+    m_decodedSheetText = String();
 }
 
 bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const
