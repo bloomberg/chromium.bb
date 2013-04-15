@@ -1,0 +1,3 @@
+If this test passes, all borders have the same color: #d0d0d0.
+This span should have borders with #d0d0d0 color.
+This span should also have borders with #d0d0d0 color.
