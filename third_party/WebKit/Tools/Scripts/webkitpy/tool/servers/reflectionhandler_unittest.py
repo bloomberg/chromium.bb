@@ -52,6 +52,26 @@ class TestReflectionHandler(ReflectionHandler):
         self.functions_run.add("some_html")
 
 
+class WriteConvertingLogger(object):
+    def __init__(self):
+        self.data = ''
+
+    def write(self, data):
+        # If data is still in ASCII, this will throw an exception.
+        self.data = str(data)
+
+
+class TestReflectionHandlerServeXML(ReflectionHandler):
+    def __init__(self):
+        self.requestline = False
+        self.client_address = '127.0.0.1'
+        self.request_version = '1'
+        self.wfile = WriteConvertingLogger()
+
+    def serve_xml(self, data):
+        self._serve_xml(data)
+
+
 class ReflectionHandlerTest(unittest.TestCase):
     def assert_handler_response(self, requests, expected_static_files, expected_errors, expected_functions):
         handler = TestReflectionHandler()
@@ -68,3 +88,9 @@ class ReflectionHandlerTest(unittest.TestCase):
         self.assert_handler_response(["/test.js", "/test.exe", "/testhtml"], set(["test.js"]), set([404]), set())
         self.assert_handler_response(["/test.html", "/function.one"], set(["test.html"]), set(), set(['function_one']))
         self.assert_handler_response(["/some.html"], set(["some.html"]), set(), set())
+
+    def test_svn_log_non_ascii(self):
+        xmlChangelog = u'<?xml version="1.0"?>\n<log>\n<logentry revision="1">\n<msg>Patch from John Do\xe9.</msg>\n</logentry>\n</log>'
+        handler = TestReflectionHandlerServeXML()
+        handler.serve_xml(xmlChangelog)
+        self.assertEqual(handler.wfile.data, xmlChangelog.encode('utf-8'))

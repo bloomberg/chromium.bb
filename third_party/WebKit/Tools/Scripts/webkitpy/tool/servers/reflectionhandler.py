@@ -148,4 +148,5 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self._send_access_control_header()
         self.send_header("Content-type", "text/xml")
         self.end_headers()
+        xml = xml.encode('utf-8')
         self.wfile.write(xml)
