@@ -229,7 +229,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     WebLayer* webScrollLayer = static_cast<WebLayer*>(layerBacking->scrollingContentsLayer()->platformLayer());
     ASSERT_TRUE(webScrollLayer->scrollable());
 
-#if !OS(DARWIN) && !OS(WINDOWS)
+#if OS(ANDROID)
     // Now verify we've attached impl-side scrollbars onto the scrollbar layers
     ASSERT_TRUE(layerBacking->layerForHorizontalScrollbar());
     ASSERT_TRUE(layerBacking->layerForHorizontalScrollbar()->hasContentsLayer());
@@ -272,7 +272,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
     WebLayer* webScrollLayer = static_cast<WebLayer*>(scrollLayer->platformLayer());
     ASSERT_TRUE(webScrollLayer->scrollable());
 
-#if !OS(DARWIN) && !OS(WINDOWS)
+#if OS(ANDROID)
     // Now verify we've attached impl-side scrollbars onto the scrollbar layers
     ASSERT_TRUE(innerCompositor->layerForHorizontalScrollbar());
     ASSERT_TRUE(innerCompositor->layerForHorizontalScrollbar()->hasContentsLayer());
