@@ -1986,6 +1986,8 @@ popup_grab_end(struct wl_pointer *pointer)
 	if (pointer->grab->interface == &popup_grab_interface) {
 		wl_pointer_end_grab(grab->pointer);
 		shseat->popup_grab.client = NULL;
+		shseat->popup_grab.grab.interface = NULL;
+		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
 		/* Send the popup_done event to all the popups open */
 		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
 			wl_shell_surface_send_popup_done(&shsurf->resource);
@@ -2028,6 +2030,7 @@ remove_popup_grab(struct shell_surface *shsurf)
 	wl_list_init(&shsurf->popup.grab_link);
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
 		wl_pointer_end_grab(shseat->popup_grab.grab.pointer);
+		shseat->popup_grab.grab.interface = NULL;
 	}
 }
 
