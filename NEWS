@@ -15,6 +15,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Updated hyphenation tables for the Norwegian language (nynorsk
       and bokmål) thanks to Lars Bjørndal.
 
+*** runHarness.py: 
+    accept filename globs on the commandline to run specific harness files.
+
 ** Braille Table Improvements
    - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation table.
    - Most tables: removed the default collapse whitespace statements, if you need to compress 

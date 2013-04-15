@@ -211,7 +211,13 @@ def test_allCases():
         os.environ['LOUIS_TABLEPATH'] = 'tables'
 
     # Process all *_harness.txt files in the harness directory.
-    for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
+    testfiles=[]
+    if len(sys.argv)>1:
+        for i in range(1, len(sys.argv)):
+            testfiles=testfiles+list(iglob(os.path.join(harness_dir, sys.argv[i])))
+    else:
+        testfiles=iglob(os.path.join(harness_dir, '*_harness.txt'))
+    for harness in testfiles:
         f = open(harness, 'r')
         try:
             harnessModule = json.load(f, encoding="UTF-8")
