@@ -11,11 +11,11 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 

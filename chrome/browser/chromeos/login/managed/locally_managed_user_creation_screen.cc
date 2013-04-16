@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/error_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
-#include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

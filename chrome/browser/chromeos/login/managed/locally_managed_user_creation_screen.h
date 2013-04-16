@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 

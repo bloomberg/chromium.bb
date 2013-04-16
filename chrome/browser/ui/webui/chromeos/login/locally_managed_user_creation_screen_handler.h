@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/reset_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 

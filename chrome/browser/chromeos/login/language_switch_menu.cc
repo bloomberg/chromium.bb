@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_list.h"
-#include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
 namespace chromeos {

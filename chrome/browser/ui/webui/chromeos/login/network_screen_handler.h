@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/network_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "ui/gfx/point.h"
 

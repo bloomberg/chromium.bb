@@ -8,7 +8,7 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "net/proxy/proxy_config.h"

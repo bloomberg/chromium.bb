@@ -13,8 +13,8 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 

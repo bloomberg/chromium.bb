@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/mock_screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "content/public/test/test_utils.h"

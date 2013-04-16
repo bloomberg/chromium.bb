@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/login/user_image_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"

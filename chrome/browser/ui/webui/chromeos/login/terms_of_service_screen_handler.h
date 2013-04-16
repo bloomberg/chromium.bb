@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/terms_of_service_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
