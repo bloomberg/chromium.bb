@@ -71,12 +71,16 @@
             '<(test_isolation_mode)',
             # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
             # be provided twice. To work around this behavior, append '/'.
+            #
             # Also have a space after <(PRODUCT_DIR) or visual studio will
             # escape the argument wrappping " with the \ and merge it into
             # the following arguments.
+            #
+            # Other variables should use the -V FOO=<(FOO) form so frequent
+            # values, like '0' or '1', aren't stripped out by GYP.
             '--outdir', '<(PRODUCT_DIR)/ ',
             '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-            '--variable', 'OS', '<(OS)',
+            '--variable', 'OS=<(OS)',
             '--result', '<@(_outputs)',
             '--isolate', '<(RULE_INPUT_PATH)',
           ],
@@ -86,11 +90,9 @@
             '<(DEPTH)/tools/swarm_client/isolate.py',
             '<(test_isolation_mode)',
             '--outdir', '<(test_isolation_outdir)',
-            # Have a space after <(PRODUCT_DIR) or visual studio will
-            # escape the argument wrappping " with the \ and merge it into
-            # the following arguments.
+            # See comment above.
             '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-            '--variable', 'OS', '<(OS)',
+            '--variable', 'OS=<(OS)',
             '--result', '<@(_outputs)',
             '--isolate', '<(RULE_INPUT_PATH)',
           ],
