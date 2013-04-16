@@ -44,7 +44,6 @@ class MockEncryptionEscrowClientObserver :
                void(const std::string& escrow_handle));
   MOCK_METHOD1(OnDidEscrowInstrumentInformation,
                void(const std::string& escrow_handle));
-  // TODO(isherman): Add test expectations for calls to this method.
   MOCK_METHOD0(OnDidMakeRequest, void());
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
