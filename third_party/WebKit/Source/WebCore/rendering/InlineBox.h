@@ -278,7 +278,7 @@ public:
 
     int expansion() const { return m_bitfields.expansion(); }
 
-    bool visibleToHitTesting() const { return renderer()->style()->visibility() == VISIBLE && renderer()->style()->pointerEvents() != PE_NONE; }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer()->style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || renderer()->style()->pointerEvents() != PE_NONE); }
     
     EVerticalAlign verticalAlign() const { return renderer()->style(m_bitfields.firstLine())->verticalAlign(); }
 

@@ -1012,7 +1012,7 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     // foreground phase (which is true for replaced elements like images).
     LayoutRect boundsRect = borderBoxRectInRegion(locationInContainer.region());
     boundsRect.moveBy(adjustedLocation);
-    if (visibleToHitTesting() && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
+    if (visibleToHitTestRequest(request) && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
         updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         if (!result.addNodeToRectBasedTestResult(node(), request, locationInContainer, boundsRect))
             return true;

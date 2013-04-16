@@ -38,7 +38,8 @@ public:
         DisallowShadowContent = 1 << 8,
         AllowFrameScrollbars = 1 << 9,
         AllowChildFrameContent = 1 << 10,
-        ChildFrameHitTest = 1 << 11
+        ChildFrameHitTest = 1 << 11,
+        IgnorePointerEventsNone = 1 << 12
     };
 
     typedef unsigned HitTestRequestType;
@@ -60,6 +61,7 @@ public:
     bool allowsFrameScrollbars() const { return m_requestType & AllowFrameScrollbars; }
     bool allowsChildFrameContent() const { return m_requestType & AllowChildFrameContent; }
     bool isChildFrameHitTest() const { return m_requestType & ChildFrameHitTest; }
+    bool ignorePointerEventsNone() const { return m_requestType & IgnorePointerEventsNone; }
 
     // Convenience functions
     bool touchMove() const { return move() && touchEvent(); }

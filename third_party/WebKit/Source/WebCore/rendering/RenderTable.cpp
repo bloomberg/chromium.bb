@@ -1398,7 +1398,7 @@ bool RenderTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Check our bounds next.
     LayoutRect boundsRect(adjustedLocation, size());
-    if (visibleToHitTesting() && (action == HitTestBlockBackground || action == HitTestChildBlockBackground) && locationInContainer.intersects(boundsRect)) {
+    if (visibleToHitTestRequest(request) && (action == HitTestBlockBackground || action == HitTestChildBlockBackground) && locationInContainer.intersects(boundsRect)) {
         updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(adjustedLocation)));
         if (!result.addNodeToRectBasedTestResult(node(), request, locationInContainer, boundsRect))
             return true;

@@ -182,7 +182,7 @@ bool RenderRegion::nodeAtPoint(const HitTestRequest& request, HitTestResult& res
     // FIXME: Once we support overflow, we need to intersect with that and not with the bounds rect.
     LayoutRect boundsRect = borderBoxRectInRegion(locationInContainer.region());
     boundsRect.moveBy(adjustedLocation);
-    if (visibleToHitTesting() && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
+    if (visibleToHitTestRequest(request) && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
         // Check the contents of the RenderFlowThread.
         if (m_flowThread->hitTestFlowThreadPortionInRegion(this, flowThreadPortionRect(), flowThreadPortionOverflowRect(), request, result, locationInContainer, LayoutPoint(adjustedLocation.x() + borderLeft() + paddingLeft(), adjustedLocation.y() + borderTop() + paddingTop())))
             return true;
