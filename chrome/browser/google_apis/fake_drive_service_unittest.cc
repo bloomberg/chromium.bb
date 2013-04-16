@@ -91,6 +91,18 @@ class FakeDriveServiceTest : public testing::Test {
   FakeDriveService fake_service_;
 };
 
+void AppendGetContentCallbackResult(
+    std::vector<std::string>* values,
+    GDataErrorCode error,
+    scoped_ptr<std::string> content) {
+  DCHECK_EQ(error, HTTP_SUCCESS);  // Should always HTTP_SUCCESS.
+  values->push_back(*content);
+}
+
+void AppendProgressCallbackResult(std::vector<int64>* values, int64 progress) {
+  values->push_back(progress);
+}
+
 TEST_F(FakeDriveServiceTest, GetAllResourceList) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
@@ -852,12 +864,13 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
       temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
+  std::vector<std::string> content_buffer;
   fake_service_.DownloadFile(
       base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       test_util::CreateCopyResultCallback(&error, &output_file_path),
-      GetContentCallback(),
+      base::Bind(&AppendGetContentCallbackResult, &content_buffer),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &download_progress_values));
   message_loop_.RunUntilIdle();
@@ -872,6 +885,12 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   EXPECT_TRUE(base::STLIsSorted(download_progress_values));
   EXPECT_GE(download_progress_values.front().first, 0);
   EXPECT_LE(download_progress_values.back().first, 10);
+
+  std::string concatenated_content;
+  for (size_t i = 0; i < content_buffer.size(); ++i) {
+    concatenated_content += content_buffer[i];
+  }
+  EXPECT_EQ(content, concatenated_content);
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {

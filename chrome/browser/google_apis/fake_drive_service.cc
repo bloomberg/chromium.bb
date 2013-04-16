@@ -519,6 +519,19 @@ void FakeDriveService::DownloadFile(
     std::string content(file_size, 'x');
     DCHECK_EQ(static_cast<size_t>(file_size), content.size());
 
+    if (!get_content_callback.is_null()) {
+      const int64 kBlockSize = 5;
+      for (int64 i = 0; i < file_size; i += kBlockSize) {
+        const int64 size = std::min(kBlockSize, file_size - i);
+        scoped_ptr<std::string> content_for_callback(
+            new std::string(content.substr(i, size)));
+        base::MessageLoopProxy::current()->PostTask(
+            FROM_HERE,
+            base::Bind(get_content_callback, HTTP_SUCCESS,
+                       base::Passed(&content_for_callback)));
+      }
+    }
+
     if (static_cast<int>(content.size()) ==
         file_util::WriteFile(local_cache_path,
                              content.data(),
