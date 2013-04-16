@@ -47,7 +47,7 @@ private:
     CStringBuffer(size_t length) : m_length(length) { }
     char* mutableData() { return m_data; }
 
-    const size_t m_length;
+    const unsigned m_length;
     char m_data[1];
 };
 

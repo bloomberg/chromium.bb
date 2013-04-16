@@ -33,7 +33,7 @@ namespace WTF {
 
 PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 {
-    RELEASE_ASSERT(length <= (numeric_limits<size_t>::max() - sizeof(CStringBuffer)));
+    RELEASE_ASSERT(length <= (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
 
     // CStringBuffer already has space for one character, we do not need to add +1 to the length
     // to store the terminating zero.
