@@ -573,13 +573,7 @@ const SkBitmap* PlatformContextSkia::bitmap() const
 
 bool PlatformContextSkia::isNativeFontRenderingAllowed()
 {
-#if USE(SKIA_TEXT)
     return false;
-#else
-    if (isAccelerated())
-        return false;
-    return skia::SupportsPlatformPaint(m_canvas);
-#endif
 }
 
 void PlatformContextSkia::applyClipFromImage(const SkRect& rect, const SkBitmap& imageBuffer)

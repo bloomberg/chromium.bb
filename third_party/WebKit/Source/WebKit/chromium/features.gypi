@@ -80,7 +80,6 @@
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
       'WTF_USE_OPENTYPE_SANITIZER=1',
-      'WTF_USE_SKIA_TEXT=<(enable_skia_text)',
       'WTF_USE_WEBP=1',
       'WTF_USE_WEBKIT_IMAGE_DECODERS=1',
     ],
@@ -88,13 +87,11 @@
     # through GYP_DEFINES.
     'variables': {
       'use_accelerated_compositing%': 1,
-      'enable_skia_text%': 1,
       'enable_svg%': 1,
       'enable_touch_events%': 1,
       'enable_touch_icon_loading%' : 0,
     },
     'use_accelerated_compositing%': '<(use_accelerated_compositing)',
-    'enable_skia_text%': '<(enable_skia_text)',
     'enable_svg%': '<(enable_svg)',
     'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
