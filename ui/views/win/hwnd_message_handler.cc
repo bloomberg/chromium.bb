@@ -1871,6 +1871,9 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
     case HTBOTTOMLEFT:
       cursor = IDC_SIZENESW;
       break;
+    case HTCLIENT:
+      // Client-area mouse events set the proper cursor from View::GetCursor.
+      return 0;
     default:
       // Use the default value, IDC_ARROW.
       break;
