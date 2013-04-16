@@ -202,7 +202,8 @@ class HostProcess
 
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
   bool OnHostDomainPolicyUpdate(const std::string& host_domain);
-  bool OnUsernamePolicyUpdate(bool username_match_required);
+  bool OnUsernamePolicyUpdate(bool curtain_required,
+                              bool username_match_required);
   bool OnNatPolicyUpdate(bool nat_traversal_enabled);
   bool OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
@@ -724,10 +725,16 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
                           &string_value)) {
     restart_required |= OnHostDomainPolicyUpdate(string_value);
   }
+  bool curtain_required = false;
+  if (policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
+          &curtain_required)) {
+    restart_required |= OnCurtainPolicyUpdate(curtain_required);
+  }
   if (policies->GetBoolean(
       policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
       &bool_value)) {
-    restart_required |= OnUsernamePolicyUpdate(bool_value);
+    restart_required |= OnUsernamePolicyUpdate(curtain_required, bool_value);
   }
   if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
                            &bool_value)) {
@@ -737,11 +744,6 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
           policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
           &string_value)) {
     restart_required |= OnHostTalkGadgetPrefixPolicyUpdate(string_value);
-  }
-  if (policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
-          &bool_value)) {
-    restart_required |= OnCurtainPolicyUpdate(bool_value);
   }
   std::string token_url_string, token_validation_url_string;
   if (policies->GetString(
@@ -774,7 +776,8 @@ bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
   return false;
 }
 
-bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
+bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
+                                         bool host_username_match_required) {
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
@@ -794,6 +797,15 @@ bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
     }
 #endif
 
+    // Curtain-mode on Windows presents the standard OS login prompt to the user
+    // for each connection, removing the need for an explicit user-name matching
+    // check.
+#if defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
+    if (curtain_required)
+      return false;
+#endif  // defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
+
+    // Shutdown the host if the username does not match.
     if (shutdown) {
       LOG(ERROR) << "The host username does not match.";
       ShutdownHost(kUsernameMismatchExitCode);

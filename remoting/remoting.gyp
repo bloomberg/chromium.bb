@@ -20,7 +20,7 @@
     },
 
     'remoting_multi_process%': '<(remoting_multi_process)',
-    'remoting_rdp_session%': 0,
+    'remoting_rdp_session%': 1,
     'remoting_use_apps_v2%': 0,
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
