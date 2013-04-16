@@ -104,6 +104,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDumpRenderTree)) {
+    command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
     command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
