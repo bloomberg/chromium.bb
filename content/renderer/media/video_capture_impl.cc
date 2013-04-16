@@ -330,7 +330,6 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
       break;
     case VIDEO_CAPTURE_STATE_ENDED:
       DVLOG(1) << "OnStateChanged: ended!, device_id = " << device_id_;
-      STLDeleteValues(&cached_dibs_);
       for (ClientInfo::iterator it = clients_.begin();
           it != clients_.end(); ++it) {
         it->first->OnRemoved(this);
