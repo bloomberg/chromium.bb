@@ -3187,11 +3187,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_requestedHistoryItem, "requestedHistoryItem");
 }
 
-bool FrameLoaderClient::hasHTMLView() const
-{
-    return true;
-}
-
 Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());

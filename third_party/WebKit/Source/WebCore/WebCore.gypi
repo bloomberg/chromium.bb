@@ -1041,8 +1041,6 @@
             'loader/NavigationScheduler.cpp',
             'loader/PingLoader.cpp',
             'loader/PingLoader.h',
-            'loader/PlaceholderDocument.cpp',
-            'loader/PlaceholderDocument.h',
             'loader/PolicyCallback.cpp',
             'loader/PolicyChecker.cpp',
             'loader/Prerenderer.cpp',

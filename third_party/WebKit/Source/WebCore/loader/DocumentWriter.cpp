@@ -36,7 +36,6 @@
 #include "FrameLoaderClient.h"
 #include "FrameLoaderStateMachine.h"
 #include "FrameView.h"
-#include "PlaceholderDocument.h"
 #include "PluginDocument.h"
 #include "RawDataDocumentParser.h"
 #include "ScriptableDocumentParser.h"
@@ -104,8 +103,6 @@ void DocumentWriter::begin()
 
 PassRefPtr<Document> DocumentWriter::createDocument(const KURL& url)
 {
-    if (!m_frame->loader()->client()->hasHTMLView())
-        return PlaceholderDocument::create(m_frame, url);
     return DOMImplementation::createDocument(m_mimeType, m_frame, url, m_frame->inViewSourceMode());
 }
 
@@ -158,7 +155,7 @@ void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ow
     // document.open).
     m_parser = document->parser();
 
-    if (m_frame->view() && m_frame->loader()->client()->hasHTMLView())
+    if (m_frame->view())
         m_frame->view()->setContentsSize(IntSize());
 
     m_state = StartedWritingState;

@@ -198,9 +198,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
         percentOfRemainingBytes = 1.0;
     
     // For documents that use WebCore's layout system, treat first layout as the half-way point.
-    // FIXME: The hasHTMLView function is a sort of roundabout way of asking "do you use WebCore's layout system".
-    bool useClampedMaxProgress = frame->loader()->client()->hasHTMLView()
-        && !frame->loader()->stateMachine()->firstLayoutDone();
+    bool useClampedMaxProgress = !frame->loader()->stateMachine()->firstLayoutDone();
     double maxProgressValue = useClampedMaxProgress ? 0.5 : finalProgressValue;
     increment = (maxProgressValue - m_progressValue) * percentOfRemainingBytes;
     m_progressValue += increment;
