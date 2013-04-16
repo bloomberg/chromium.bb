@@ -34,6 +34,7 @@ class ComponentExtensionIMEManagerTest :
     ComponentExtensionIME ext1;
     ext1.id = "ext1_id";
     ext1.description = "ext1_description";
+    ext1.options_page_url = "chrome-extension://" + ext1.id + "/options.html";
     ext1.path = base::FilePath("ext1_file_path");
 
     IBusComponent::EngineDescription ext1_engine1;
@@ -90,6 +91,7 @@ class ComponentExtensionIMEManagerTest :
     ComponentExtensionIME ext3;
     ext3.id = "ext3_id";
     ext3.description = "ext3_description";
+    ext1.options_page_url = "chrome-extension://" + ext3.id + "/options.html";
     ext3.path = base::FilePath("ext3_file_path");
 
     IBusComponent::EngineDescription ext3_engine1;
@@ -249,24 +251,6 @@ TEST_F(ComponentExtensionIMEManagerTest, GetAllIMEAsInputMethodDescriptor) {
     total_ime_size += ime_list_[i].engines.size();
   }
   EXPECT_EQ(total_ime_size, descriptors.size());
-}
-
-TEST_F(ComponentExtensionIMEManagerTest, GetComponentExtensionIMEId) {
-  const char kExtensionID[] = "extension_id";
-  const char kEngineID[] = "engine_id";
-  const std::string ime_id =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          kExtensionID, kEngineID);
-
-  EXPECT_TRUE(ComponentExtensionIMEManager::IsComponentExtensionIMEId(
-      ime_id));
-  EXPECT_FALSE(ComponentExtensionIMEManager::IsComponentExtensionIMEId("mozc"));
-  EXPECT_FALSE(ComponentExtensionIMEManager::IsComponentExtensionIMEId(
-      extension_ime_util::GetInputMethodID(kExtensionID, kEngineID)));
-  EXPECT_FALSE(ComponentExtensionIMEManager::IsComponentExtensionIMEId(
-      extension_ime_util::GetInputMethodID(kExtensionID, "mozc")));
-  EXPECT_FALSE(ComponentExtensionIMEManager::IsComponentExtensionIMEId(
-      extension_ime_util::GetInputMethodID("ext-id", kEngineID)));
 }
 
 }  // namespace

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -157,12 +158,22 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
 // static
 bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
     const DictionaryValue& manifest,
+    const std::string& extension_id,
     ComponentExtensionIME* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   if (!manifest.GetString(extension_manifest_keys::kDescription,
                           &out->description))
     return false;
-  // TODO(nona): option page handling.
+  std::string url_string;
+  if (!manifest.GetString(extension_manifest_keys::kOptionsPage, &url_string))
+    return true;  // It's okay to return true on no option page case.
+
+  GURL url = extensions::Extension::GetResourceURL(
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id),
+      url_string);
+  if (!url.is_valid())
+    return false;
+  out->options_page_url = url.spec();
   return true;
 }
 
@@ -190,7 +201,9 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     if (!manifest.get())
       continue;
 
-    if (!ReadExtensionInfo(*manifest.get(), &component_ime))
+    if (!ReadExtensionInfo(*manifest.get(),
+                           whitelisted_component_extension[i].id,
+                           &component_ime))
       continue;
     component_ime.id = whitelisted_component_extension[i].id;
 

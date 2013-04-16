@@ -15,12 +15,14 @@
 namespace chromeos {
 
 // Represents a component extension IME.
+// TODO(nona): Use GURL for |option_page_url| instead of string.
 struct CHROMEOS_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
   std::string id;  // extension id.
   std::string manifest;  // the contents of manifest.json
   std::string description;  // description of extension.
+  std::string options_page_url; // We can't use GURL due to deps restriction.
   base::FilePath path;
   std::vector<IBusComponent::EngineDescription> engines;
 };

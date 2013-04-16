@@ -63,7 +63,8 @@ class ComponentExtensionIMEManagerImpl
   // returns true on success, otherwise returns false. This function must be
   // called on file thread.
   static bool ReadExtensionInfo(const DictionaryValue& manifest,
-                                      ComponentExtensionIME* out);
+                                const std::string& extension_id,
+                                ComponentExtensionIME* out);
 
   // Reads each engine component in |dict|. |dict| is given by GetList with
   // kInputComponents key from manifest. This function returns true on success,

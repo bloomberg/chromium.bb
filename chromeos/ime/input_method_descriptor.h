@@ -24,6 +24,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
                         const std::string& name,
                         const std::string& keyboard_layout,
                         const std::string& language_code,
+                        const std::string& options_page_url,
                         bool third_party);
   ~InputMethodDescriptor();
 
@@ -37,6 +38,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   const std::string& name() const { return name_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
   const std::string& language_code() const { return language_code_; }
+  const std::string& options_page_url() const { return options_page_url_; }
   bool third_party() const { return third_party_; }
 
   // Returns the fallback input method descriptor (the very basic US
@@ -56,6 +58,11 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   std::string keyboard_layout_;
   // Language code like "ko", "ja", "en-US", and "zh-CN".
   std::string language_code_;
+  // Options page URL e.g.
+  // "chrome-extension://ceaajjmckiakobniehbjpdcidfpohlin/options.html".
+  // We can't use GURL here due to dependency policy. This field is valid only
+  // for input method extension.
+  std::string options_page_url_;
   // Indicates if this is a third party ime
   bool third_party_;
 };

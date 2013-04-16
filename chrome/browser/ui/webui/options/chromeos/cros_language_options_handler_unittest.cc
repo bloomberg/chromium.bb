@@ -47,6 +47,7 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
                                  "",  // name
                                  raw_layout,
                                  language_code,
+                                 "",  // options page url
                                  false);
   }
 };

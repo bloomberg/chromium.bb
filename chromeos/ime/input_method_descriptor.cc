@@ -16,15 +16,18 @@ namespace {
 const char kFallbackLayout[] = "us";
 }  // namespace
 
-InputMethodDescriptor::InputMethodDescriptor(const std::string& id,
-                                             const std::string& name,
-                                             const std::string& keyboard_layout,
-                                             const std::string& language_code,
-                                             bool third_party)
+InputMethodDescriptor::InputMethodDescriptor(
+    const std::string& id,
+    const std::string& name,
+    const std::string& keyboard_layout,
+    const std::string& language_code,
+    const std::string& options_page_url,
+    bool third_party)
     : id_(id),
       name_(name),
       keyboard_layout_(keyboard_layout),
       language_code_(language_code),
+      options_page_url_(options_page_url),
       third_party_(third_party) {
 }
 
@@ -51,6 +54,7 @@ InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
                                "",
                                kFallbackLayout,
                                "en-US",
+                               "",  // options page, not available.
                                false);
 }
 
@@ -60,6 +64,7 @@ std::string InputMethodDescriptor::ToString() const {
          << ", name=" << name()
          << ", keyboard_layout=" << keyboard_layout()
          << ", language_code=" << language_code()
+         << ", options_page_url=" << options_page_url()
          << ", third_party=" << third_party();
   return stream.str();
 }

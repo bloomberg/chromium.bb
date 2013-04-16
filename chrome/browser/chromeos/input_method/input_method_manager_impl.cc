@@ -379,8 +379,10 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   }
 
   const std::string layout = layouts.empty() ? "" : layouts[0];
+  // TODO(nona): Support options page for normal extension ime.
+  //             crbug.com/156283.
   extra_input_methods_[id] =
-      InputMethodDescriptor(id, name, layout, language, true);
+      InputMethodDescriptor(id, name, layout, language, "",  true);
   if (!Contains(filtered_extension_imes_, id) &&
       !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {

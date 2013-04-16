@@ -145,6 +145,7 @@ input_method::InputMethodDescriptors
               component_extension_imes_[i].engines[j].display_name,
               component_extension_imes_[i].engines[j].layout,
               component_extension_imes_[i].engines[j].language_code,
+              component_extension_imes_[i].options_page_url,
               false));
     }
   }

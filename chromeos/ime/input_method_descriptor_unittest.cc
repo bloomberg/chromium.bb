@@ -24,6 +24,7 @@ class InputMethodDescriptorTest : public testing::Test {
                                  "",  // name
                                  "us",
                                  "language_code",
+                                 "",
                                  false);
   }
 };

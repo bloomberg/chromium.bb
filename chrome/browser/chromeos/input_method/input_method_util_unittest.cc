@@ -52,6 +52,7 @@ class InputMethodUtilTest : public testing::Test {
                                  "",
                                  raw_layout,
                                  language_code,
+                                 "",  // options page url
                                  false);
   }
 
