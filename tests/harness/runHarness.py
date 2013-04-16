@@ -76,10 +76,11 @@ class Reporter(Plugin):
         self.res.append("%s\n" % value)
 
     def finalize(self, result):
-        total = "%d test%s" % (result.testsRun, result.testsRun != 1 and "s" or "")
-        failures = "%d failure%s" % (len(result.failures), len(result.failures) != 1 and "s" or "")
-        errors = "%d error%s" %(len(result.errors), len(result.errors) != 1 and "s" or "")
-        self.res.append("Ran %s, with %s and %s.\n" % (total,  failures, errors))
+        failures=len(result.failures)
+        errors=len(result.errors)
+        total=result.testsRun
+        sPercent = round((total-failures-errors+0.0)/total*100,2)
+        self.res.append("Ran {total} tests ({sPercent}% success), with {failures} failures and {errors} errors.\n".format(total=total, sPercent=sPercent, failures=failures, errors=errors))
         self.stream.write("\n".join(self.res))
 
 ### End of nosetest plugin for controlling the output format. ###
