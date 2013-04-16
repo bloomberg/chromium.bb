@@ -5,8 +5,6 @@
 #ifndef CONTENT_SHELL_SHELL_DEVTOOLS_DELEGATE_H_
 #define CONTENT_SHELL_SHELL_DEVTOOLS_DELEGATE_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
@@ -18,7 +16,7 @@ class DevToolsHttpHandler;
 
 class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
  public:
-  ShellDevToolsDelegate(BrowserContext* browser_context, int port);
+  explicit ShellDevToolsDelegate(BrowserContext* browser_context);
   virtual ~ShellDevToolsDelegate();
 
   // Stops http server.

@@ -77,6 +77,10 @@ static void RunTests(JNIEnv* env,
   // Append required switches.
   command_line->AppendSwitch(content::kSingleProcessTestsFlag);
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+  // Specify a socket name to not conflict with the default one used
+  // in content_shell.
+  command_line->AppendSwitchASCII(switches::kRemoteDebuggingSocketName,
+                                  "content_browsertests_devtools_remote");
 
   // Create fifo and redirect stdout and stderr to it.
   base::FilePath files_dir(

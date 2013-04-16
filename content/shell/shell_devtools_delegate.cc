@@ -4,9 +4,14 @@
 
 #include "content/shell/shell_devtools_delegate.h"
 
+#include <vector>
+
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
 #include "grit/shell_resources.h"
@@ -16,26 +21,46 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
 #include "net/socket/unix_domain_socket_posix.h"
+#endif
 
 namespace {
-const char kSocketName[] = "content_shell_devtools_remote";
-}
+
+net::StreamListenSocketFactory* CreateSocketFactory() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+#if defined(OS_ANDROID)
+  std::string socket_name = "content_shell_devtools_remote";
+  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
+    socket_name = command_line.GetSwitchValueASCII(
+        switches::kRemoteDebuggingSocketName);
+  }
+  return new net::UnixDomainSocketWithAbstractNamespaceFactory(
+      socket_name, base::Bind(&content::CanUserConnectToDevTools));
+#else
+  // See if the user specified a port on the command line (useful for
+  // automation). If not, use an ephemeral port by specifying 0.
+  int port = 0;
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    int temp_port;
+    std::string port_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+    if (base::StringToInt(port_str, &temp_port) &&
+        temp_port > 0 && temp_port < 65535) {
+      port = temp_port;
+    } else {
+      DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
+    }
+  }
+  return new net::TCPListenSocketFactory("127.0.0.1", port);
 #endif
+}
+}  // namespace
 
 namespace content {
 
-ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context,
-                                             int port)
+ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
     : browser_context_(browser_context) {
-  devtools_http_handler_ = DevToolsHttpHandler::Start(
-#if defined(OS_ANDROID)
-      new net::UnixDomainSocketWithAbstractNamespaceFactory(
-          kSocketName, base::Bind(&CanUserConnectToDevTools)),
-#else
-      new net::TCPListenSocketFactory("127.0.0.1", port),
-#endif
-      std::string(),
-      this);
+  devtools_http_handler_ =
+      DevToolsHttpHandler::Start(CreateSocketFactory(), std::string(), this);
 }
 
 ShellDevToolsDelegate::~ShellDevToolsDelegate() {

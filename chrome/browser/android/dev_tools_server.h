@@ -31,7 +31,7 @@ class DevToolsServer {
 
  private:
   bool use_bundled_frontend_resources_;
-  const std::string socket_name_;
+  std::string socket_name_;
   content::DevToolsHttpHandler* protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServer);

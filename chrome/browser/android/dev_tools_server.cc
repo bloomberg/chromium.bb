@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "grit/devtools_discovery_page_resources.h"
 #include "jni/DevToolsServer_jni.h"
 #include "net/socket/unix_domain_socket_posix.h"
@@ -31,7 +33,7 @@ namespace {
 
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/static/%s/devtools.html";
-const char kSocketName[] = "chrome_devtools_remote";
+const char kDefaultSocketName[] = "chrome_devtools_remote";
 const char kTetheringSocketName[] = "chrome_devtools_tethering_%d";
 
 // Delegate implementation for the devtools http handler on android. A new
@@ -116,8 +118,14 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
 DevToolsServer::DevToolsServer()
     : use_bundled_frontend_resources_(false),
-      socket_name_(kSocketName),
+      socket_name_(kDefaultSocketName),
       protocol_handler_(NULL) {
+  // Override the default socket name if one is specified on the command line.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
+    socket_name_ = command_line.GetSwitchValueASCII(
+        switches::kRemoteDebuggingSocketName);
+  }
 }
 
 DevToolsServer::DevToolsServer(bool use_bundled_frontend_resources,

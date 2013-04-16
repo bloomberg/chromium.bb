@@ -560,6 +560,11 @@ const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
+#if defined(OS_ANDROID)
+// Enables remote debug over HTTP on the specified socket name.
+const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
+#endif
+
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererAssertTest[]            = "renderer-assert-test";
 
