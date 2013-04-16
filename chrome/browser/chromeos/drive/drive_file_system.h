@@ -116,6 +116,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
+  virtual void GetFileContentByPath(
+      const base::FilePath& file_path,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const FileOperationCallback& completion_callback) OVERRIDE;
   virtual void CancelGetFile(const base::FilePath& drive_file_path) OVERRIDE;
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
@@ -403,6 +408,18 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       DriveFileError error,
       const base::FilePath& file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of GetFileContentByPath(). Called after
+  // DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // |initialized_callback|, |get_content_callback| and |completion_callback|
+  // must not be null.
+  void GetFileContentByPathAfterGetEntry(
+      const base::FilePath& file_path,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const FileOperationCallback& completion_callback,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of RefreshDirectory(). Called after

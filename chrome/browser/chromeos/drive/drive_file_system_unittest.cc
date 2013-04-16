@@ -101,6 +101,13 @@ void AsyncInitializationCallback(
     message_loop->Quit();
 }
 
+void AppendContent(std::vector<std::string>* buffer,
+                   google_apis::GDataErrorCode error,
+                   scoped_ptr<std::string> content) {
+  DCHECK_EQ(error, google_apis::HTTP_SUCCESS);
+  buffer->push_back(*content);
+}
+
 }  // namespace
 
 class DriveFileSystemTest : public testing::Test {
@@ -1737,6 +1744,46 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(REGULAR_FILE, file_type);
+}
+
+TEST_F(DriveFileSystemTest, GetFileContentByPath) {
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+
+  // The transfered file is cached and the change of "offline available"
+  // attribute is notified.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
+
+  ASSERT_TRUE(LoadRootFeedDocument());
+
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+
+  DriveFileError initialized_error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry_proto;
+  base::FilePath local_path;
+
+  std::vector<std::string> content_buffer;
+
+  DriveFileError completion_error = DRIVE_FILE_ERROR_FAILED;
+
+  file_system_->GetFileContentByPath(
+      file_in_root,
+      google_apis::test_util::CreateCopyResultCallback(
+          &initialized_error, &entry_proto, &local_path),
+      base::Bind(&AppendContent, &content_buffer),
+      google_apis::test_util::CreateCopyResultCallback(&completion_error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(DRIVE_FILE_OK, initialized_error);
+  ASSERT_TRUE(entry_proto);
+  ASSERT_TRUE(local_path.empty());
+  size_t content_size = 0;
+  for (size_t i = 0; i < content_buffer.size(); ++i) {
+    content_size += content_buffer[i].size();
+  }
+  EXPECT_EQ(static_cast<size_t>(entry_proto->file_info().size()),
+            content_size);
+  EXPECT_EQ(DRIVE_FILE_OK, completion_error);
 }
 
 TEST_F(DriveFileSystemTest, CancelGetFile) {

@@ -73,6 +73,12 @@ typedef base::Callback<void(DriveFileError error,
                             const std::string& mime_type,
                             DriveFileType file_type)> GetFileCallback;
 
+// Used to get file content from the file system.
+typedef base::Callback<void(DriveFileError error,
+                            scoped_ptr<DriveEntryProto> entry_proto,
+                            const base::FilePath& local_file)>
+    GetFileContentInitializedCallback;
+
 // Used to read a directory from the file system.
 // Similar to ReadDirectoryCallback but this one provides
 // |hide_hosted_documents|
@@ -307,6 +313,23 @@ class DriveFileSystemInterface {
       const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) = 0;
+
+  // Gets a file by the given |file_path|.
+  // Calls |initialized_callback| when either:
+  //   1) The cached file (or JSON file for hosted file) is found, or
+  //   2) Starting to download the file from drive server.
+  // In case of 2), the given FilePath is empty, and |get_content_callback| is
+  // called repeatedly with downloaded content following the
+  // |initialized_callback| invocation.
+  // |completion_callback| is invoked if an error is found, or the operation
+  // is successfully done.
+  // |initialized_callback|, |get_content_callback| and |completion_callback|
+  // must not be null.
+  virtual void GetFileContentByPath(
+      const base::FilePath& file_path,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const FileOperationCallback& completion_callback) = 0;
 
   // Cancels the file fetch of |drive_file_path|, which can be retieved by
   // GetEntryInfoByResourceId.

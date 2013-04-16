@@ -142,6 +142,14 @@ void FakeDriveFileSystem::GetFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::GetFileContentByPath(
+    const base::FilePath& file_path,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

@@ -119,6 +119,16 @@ void OnGetLargestChangestamp(
   callback.Run(metadata);
 }
 
+// Thin adapter to map GetFileCallback to FileOperationCallback.
+void GetFileCallbackToFileOperationCallbackAdapter(
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    const base::FilePath& unused_file_path,
+    const std::string& unused_mime_type,
+    DriveFileType unused_file_type) {
+  callback.Run(error);
+}
+
 }  // namespace
 
 // DriveFileSystem::GetFileCompleteForOpenParams struct implementation.
@@ -146,11 +156,13 @@ struct DriveFileSystem::GetResolvedFileParams {
       const base::FilePath& drive_file_path,
       const DriveClientContext& context,
       scoped_ptr<DriveEntryProto> entry_proto,
+      const GetFileContentInitializedCallback& initialized_callback,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback)
       : drive_file_path(drive_file_path),
         context(context),
         entry_proto(entry_proto.Pass()),
+        initialized_callback(initialized_callback),
         get_file_callback(get_file_callback),
         get_content_callback(get_content_callback) {
     DCHECK(!get_file_callback.is_null());
@@ -160,6 +172,24 @@ struct DriveFileSystem::GetResolvedFileParams {
   void OnError(DriveFileError error) {
     get_file_callback.Run(
         error, base::FilePath(), std::string(), REGULAR_FILE);
+  }
+
+  void OnCacheFileFound(const base::FilePath& local_file_path) {
+    if (initialized_callback.is_null()) {
+      return;
+    }
+
+    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(*entry_proto));
+    initialized_callback.Run(DRIVE_FILE_OK, entry.Pass(), local_file_path);
+  }
+
+  void OnStartDownloading() {
+    if (initialized_callback.is_null()) {
+      return;
+    }
+
+    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(*entry_proto));
+    initialized_callback.Run(DRIVE_FILE_OK, entry.Pass(), base::FilePath());
   }
 
   void OnComplete(const base::FilePath& local_file_path) {
@@ -176,6 +206,7 @@ struct DriveFileSystem::GetResolvedFileParams {
   const base::FilePath drive_file_path;
   const DriveClientContext context;
   scoped_ptr<DriveEntryProto> entry_proto;
+  const GetFileContentInitializedCallback initialized_callback;
   const GetFileCallback get_file_callback;
   const google_apis::GetContentCallback get_content_callback;
 };
@@ -517,6 +548,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
           file_path,
           DriveClientContext(USER_INITIATED),
           entry_proto.Pass(),
+          GetFileContentInitializedCallback(),
           callback,
           google_apis::GetContentCallback())));
 }
@@ -562,7 +594,57 @@ void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
           file_path,
           context,
           entry_proto.Pass(),
+          GetFileContentInitializedCallback(),
           get_file_callback,
+          get_content_callback)));
+}
+
+void DriveFileSystem::GetFileContentByPath(
+    const base::FilePath& file_path,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!initialized_callback.is_null());
+  DCHECK(!get_content_callback.is_null());
+  DCHECK(!completion_callback.is_null());
+
+  resource_metadata_->GetEntryInfoByPath(
+      file_path,
+      base::Bind(&DriveFileSystem::GetFileContentByPathAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
+                 initialized_callback,
+                 get_content_callback,
+                 completion_callback));
+}
+
+void DriveFileSystem::GetFileContentByPathAfterGetEntry(
+    const base::FilePath& file_path,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!initialized_callback.is_null());
+  DCHECK(!get_content_callback.is_null());
+  DCHECK(!completion_callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    completion_callback.Run(error);
+    return;
+  }
+
+  DCHECK(entry_proto);
+  GetResolvedFileByPath(
+      make_scoped_ptr(new GetResolvedFileParams(
+          file_path,
+          DriveClientContext(USER_INITIATED),
+          entry_proto.Pass(),
+          initialized_callback,
+          base::Bind(&GetFileCallbackToFileOperationCallbackAdapter,
+                     completion_callback),
           get_content_callback)));
 }
 
@@ -800,6 +882,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterCreateDocumentJsonFile(
     return;
   }
 
+  params->OnCacheFileFound(*file_path);
   params->OnComplete(*file_path);
 }
 
@@ -812,6 +895,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache(
 
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == DRIVE_FILE_OK) {
+    params->OnCacheFileFound(cache_file_path);
     params->OnComplete(cache_file_path);
     return;
   }
@@ -938,6 +1022,7 @@ void DriveFileSystem::GetResolveFileByPathAfterCreateTemporaryFile(
     return;
   }
 
+  params->OnStartDownloading();
   GetResolvedFileParams* params_ptr = params.get();
   scheduler_->DownloadFile(
       params_ptr->drive_file_path,
@@ -1438,6 +1523,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
           file_path,
           DriveClientContext(USER_INITIATED),
           entry_proto.Pass(),
+          GetFileContentInitializedCallback(),
           base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
                      weak_ptr_factory_.GetWeakPtr(),
                      GetFileCompleteForOpenParams(
