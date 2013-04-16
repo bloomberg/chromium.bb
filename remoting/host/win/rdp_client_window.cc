@@ -6,9 +6,15 @@
 
 #include <wtsdefs.h>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
+
+namespace remoting {
+
+namespace {
 
 // RDP connection disconnect reasons codes that should not be interpreted as
 // errors.
@@ -17,7 +23,34 @@ const long kDisconnectReasonLocalNotError = 1;
 const long kDisconnectReasonRemoteByUser = 2;
 const long kDisconnectReasonByServer = 3;
 
-namespace remoting {
+// Points to a per-thread instance of the window activation hook handle.
+base::LazyInstance<base::ThreadLocalPointer<RdpClientWindow::WindowHook> >
+    g_window_hook = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// Used to close any windows activated on a particular thread. It installs
+// a WH_CBT window hook to track window activations and close all activated
+// windows. There should be only one instance of |WindowHook| per thread
+// at any given moment.
+class RdpClientWindow::WindowHook
+    : public base::RefCounted<WindowHook> {
+ public:
+  static scoped_refptr<WindowHook> Create();
+
+ private:
+  friend class base::RefCounted<WindowHook>;
+
+  WindowHook();
+  virtual ~WindowHook();
+
+  static LRESULT CALLBACK CloseWindowOnActivation(
+      int code, WPARAM wparam, LPARAM lparam);
+
+  HHOOK hook_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowHook);
+};
 
 RdpClientWindow::RdpClientWindow(const net::IPEndPoint& server_endpoint,
                                  EventHandler* event_handler)
@@ -200,12 +233,19 @@ void RdpClientWindow::OnDestroy() {
 }
 
 HRESULT RdpClientWindow::OnAuthenticationWarningDisplayed() {
-  LOG(ERROR) << "RDP: authentication warning is about to be shown. Closing "
-                "the connection because the modal UI will block any further "
-                "progress";
+  LOG(WARNING) << "RDP: authentication warning is about to be shown.";
 
-  DestroyWindow();
-  NotifyDisconnected();
+  // Hook window activation to cancel any modal UI shown by the RDP control.
+  // This does not affect creation of other instances of the RDP control on this
+  // thread because the RDP control's window is hidden and is not activated.
+  window_activate_hook_ = WindowHook::Create();
+  return S_OK;
+}
+
+HRESULT RdpClientWindow::OnAuthenticationWarningDismissed() {
+  LOG(WARNING) << "RDP: authentication warning has been dismissed.";
+
+  window_activate_hook_ = NULL;
   return S_OK;
 }
 
@@ -278,6 +318,58 @@ void RdpClientWindow::NotifyDisconnected() {
     event_handler_ = NULL;
     event_handler->OnDisconnected();
   }
+}
+
+scoped_refptr<RdpClientWindow::WindowHook>
+RdpClientWindow::WindowHook::Create() {
+  scoped_refptr<WindowHook> window_hook = g_window_hook.Pointer()->Get();
+
+  if (!window_hook)
+    window_hook = new WindowHook();
+
+  return window_hook;
+}
+
+RdpClientWindow::WindowHook::WindowHook() : hook_(NULL) {
+  DCHECK(!g_window_hook.Pointer()->Get());
+
+  // Install a window hook to be called on window activation.
+  hook_ = SetWindowsHookEx(WH_CBT,
+                           &WindowHook::CloseWindowOnActivation,
+                           NULL,
+                           GetCurrentThreadId());
+  // Without the hook installed, RdpClientWindow will not be able to cancel
+  // modal UI windows. This will block the UI message loop so it is better to
+  // terminate the process now.
+  CHECK(hook_);
+
+  // Let CloseWindowOnActivation() to access the hook handle.
+  g_window_hook.Pointer()->Set(this);
+}
+
+RdpClientWindow::WindowHook::~WindowHook() {
+  DCHECK(g_window_hook.Pointer()->Get() == this);
+
+  g_window_hook.Pointer()->Set(NULL);
+
+  BOOL result = UnhookWindowsHookEx(hook_);
+  DCHECK(result);
+}
+
+// static
+LRESULT CALLBACK RdpClientWindow::WindowHook::CloseWindowOnActivation(
+    int code, WPARAM wparam, LPARAM lparam) {
+  // Get the hook handle.
+  HHOOK hook = g_window_hook.Pointer()->Get()->hook_;
+
+  if (code != HCBT_ACTIVATE)
+    return CallNextHookEx(hook, code, wparam, lparam);
+
+  // Close the window once all pending window messages are processed.
+  HWND window = reinterpret_cast<HWND>(wparam);
+  LOG(WARNING) << "RDP: closing a window: " << std::hex << window << std::dec;
+  ::PostMessage(window, WM_CLOSE, 0, 0);
+  return 0;
 }
 
 }  // namespace remoting

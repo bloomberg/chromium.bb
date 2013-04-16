@@ -11,6 +11,7 @@
 #include <atlctl.h>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/win/scoped_comptr.h"
 #include "net/base/ip_endpoint.h"
@@ -105,10 +106,13 @@ class RdpClientWindow
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 15, OnConfirmClose)
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 18,
                   OnAuthenticationWarningDisplayed)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 19,
+                  OnAuthenticationWarningDismissed)
   END_SINK_MAP()
 
   // mstsc::IMsTscAxEvents notifications.
   STDMETHOD(OnAuthenticationWarningDisplayed)();
+  STDMETHOD(OnAuthenticationWarningDismissed)();
   STDMETHOD(OnConnected)();
   STDMETHOD(OnDisconnected)(long reason);
   STDMETHOD(OnFatalError)(long error_code);
@@ -132,6 +136,10 @@ class RdpClientWindow
   // Interfaces exposed by the RDP ActiveX control.
   base::win::ScopedComPtr<mstsc::IMsRdpClient> client_;
   base::win::ScopedComPtr<mstsc::IMsRdpClientAdvancedSettings> client_settings_;
+
+  // Used to cancel modal dialog boxes shown by the RDP control.
+  class WindowHook;
+  scoped_refptr<WindowHook> window_activate_hook_;
 };
 
 }  // namespace remoting
