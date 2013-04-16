@@ -89,7 +89,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_shouldDisplayCaptions(settings->shouldDisplayCaptions())
     , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
-    , m_originalTimeWithoutMouseMovementBeforeHidingControls(settings->timeWithoutMouseMovementBeforeHidingControls())
 {
 }
 
@@ -118,7 +117,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setShouldDisplayCaptions(m_shouldDisplayCaptions);
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
-    settings->setTimeWithoutMouseMovementBeforeHidingControls(m_originalTimeWithoutMouseMovementBeforeHidingControls);
 }
 
 // We can't use RefCountedSupplement because that would try to make InternalSettings RefCounted
@@ -417,12 +415,6 @@ void InternalSettings::setDefaultVideoPosterURL(const String& url, ExceptionCode
 {
     InternalSettingsGuardForSettings();
     settings()->setDefaultVideoPosterURL(url);
-}
-
-void InternalSettings::setTimeWithoutMouseMovementBeforeHidingControls(double time, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setTimeWithoutMouseMovementBeforeHidingControls(time);
 }
 
 }

@@ -74,7 +74,6 @@ public:
         bool m_shouldDisplayCaptions;
         bool m_shouldDisplayTextDescriptions;
         String m_defaultVideoPosterURL;
-        bool m_originalTimeWithoutMouseMovementBeforeHidingControls;
     };
 
     static PassRefPtr<InternalSettings> create(Page* page)
@@ -118,7 +117,6 @@ public:
     void setImagesEnabled(bool enabled, ExceptionCode&);
     void setMinimumTimerInterval(double intervalInSeconds, ExceptionCode&);
     void setDefaultVideoPosterURL(const String& url, ExceptionCode&);
-    void setTimeWithoutMouseMovementBeforeHidingControls(double time, ExceptionCode&);
 
 private:
     explicit InternalSettings(Page*);

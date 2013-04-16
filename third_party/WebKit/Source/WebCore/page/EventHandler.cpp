@@ -1328,13 +1328,15 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
 }
 
 #if ENABLE(CURSOR_VISIBILITY)
+static const double timeWithoutMouseMovementBeforeHidingControls = 3;
+
 void EventHandler::startAutoHideCursorTimer()
 {
     Page* page = m_frame->page();
     if (!page)
         return;
 
-    m_autoHideCursorTimer.startOneShot(page->settings()->timeWithoutMouseMovementBeforeHidingControls());
+    m_autoHideCursorTimer.startOneShot(timeWithoutMouseMovementBeforeHidingControls);
 
     // The fake mouse move event screws up the auto-hide feature (by resetting the auto-hide timer)
     // so cancel any pending fake mouse moves.

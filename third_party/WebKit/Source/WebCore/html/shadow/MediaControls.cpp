@@ -34,6 +34,8 @@
 
 namespace WebCore {
 
+static const double timeWithoutMouseMovementBeforeHidingFullscreenControls = 3;
+
 MediaControls::MediaControls(Document* document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_mediaController(0)
@@ -341,7 +343,7 @@ void MediaControls::startHideFullscreenControlsTimer()
     if (!page)
         return;
 
-    m_hideFullscreenControlsTimer.startOneShot(page->settings()->timeWithoutMouseMovementBeforeHidingControls());
+    m_hideFullscreenControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingFullscreenControls);
 }
 
 void MediaControls::stopHideFullscreenControlsTimer()
