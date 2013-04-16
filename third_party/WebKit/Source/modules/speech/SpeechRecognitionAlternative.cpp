@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechRecognitionAlternative.h"
 
 namespace WebCore {
@@ -43,5 +41,3 @@ SpeechRecognitionAlternative::SpeechRecognitionAlternative(const String& transcr
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)

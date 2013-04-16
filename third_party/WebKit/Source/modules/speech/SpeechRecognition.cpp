@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechRecognition.h"
 
 #include "Document.h"
@@ -190,5 +188,3 @@ SpeechRecognition::~SpeechRecognition()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)

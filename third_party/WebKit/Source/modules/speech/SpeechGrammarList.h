@@ -26,8 +26,6 @@
 #ifndef SpeechGrammarList_h
 #define SpeechGrammarList_h
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechGrammar.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)
 
 #endif // SpeechGrammarList_h

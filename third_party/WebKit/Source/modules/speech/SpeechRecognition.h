@@ -26,8 +26,6 @@
 #ifndef SpeechRecognition_h
 #define SpeechRecognition_h
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "ActiveDOMObject.h"
 #include "EventTarget.h"
 #include "SpeechGrammarList.h"
@@ -129,7 +127,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)
 
 #endif // SpeechRecognition_h

@@ -847,9 +847,7 @@ private:
 #if ENABLE(INPUT_SPEECH)
     OwnPtr<SpeechInputClientImpl> m_speechInputClient;
 #endif
-#if ENABLE(SCRIPTED_SPEECH)
     OwnPtr<SpeechRecognitionClientProxy> m_speechRecognitionClient;
-#endif
 
     OwnPtr<DeviceOrientationClientProxy> m_deviceOrientationClientProxy;
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;

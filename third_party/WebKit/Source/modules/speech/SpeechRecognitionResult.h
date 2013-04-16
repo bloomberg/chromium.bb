@@ -26,8 +26,6 @@
 #ifndef SpeechRecognitionResult_h
 #define SpeechRecognitionResult_h
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechRecognitionAlternative.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -51,7 +49,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)
 
 #endif // SpeechRecognitionResult_h

@@ -61,7 +61,6 @@
       'ENABLE_RESOLUTION_MEDIA_QUERY=0',
       'ENABLE_RUBY=1',
       'ENABLE_SANDBOX=1',
-      'ENABLE_SCRIPTED_SPEECH=1',
       'ENABLE_SPEECH_SYNTHESIS=0',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',

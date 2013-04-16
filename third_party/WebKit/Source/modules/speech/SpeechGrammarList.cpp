@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechGrammarList.h"
 
 #include "Document.h"
@@ -63,5 +61,3 @@ SpeechGrammarList::SpeechGrammarList()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)

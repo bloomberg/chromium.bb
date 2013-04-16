@@ -29,10 +29,16 @@
 #include "ArrayValue.h"
 #include "DOMStringList.h"
 #include "IDBKeyRange.h"
+#include "SpeechRecognitionError.h"
+#include "SpeechRecognitionResult.h"
+#include "SpeechRecognitionResultList.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"
 #include "V8EventTarget.h"
 #include "V8IDBKeyRange.h"
+#include "V8SpeechRecognitionError.h"
+#include "V8SpeechRecognitionResult.h"
+#include "V8SpeechRecognitionResultList.h"
 #include "V8Storage.h"
 #include "V8Uint8Array.h"
 #include "V8Utilities.h"
@@ -44,15 +50,6 @@
 
 #include "TrackBase.h"
 #include "V8TextTrack.h"
-
-#if ENABLE(SCRIPTED_SPEECH)
-#include "SpeechRecognitionError.h"
-#include "SpeechRecognitionResult.h"
-#include "SpeechRecognitionResultList.h"
-#include "V8SpeechRecognitionError.h"
-#include "V8SpeechRecognitionResult.h"
-#include "V8SpeechRecognitionResultList.h"
-#endif
 
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStream.h"
@@ -371,7 +368,6 @@ bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
     return true;
 }
 
-#if ENABLE(SCRIPTED_SPEECH)
 bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -407,8 +403,6 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResultList>& val
         value = V8SpeechRecognitionResultList::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
-
-#endif
 
 #if ENABLE(MEDIA_STREAM)
 bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const

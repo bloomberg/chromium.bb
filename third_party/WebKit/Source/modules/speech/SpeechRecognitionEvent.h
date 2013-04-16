@@ -26,8 +26,6 @@
 #ifndef SpeechRecognitionEvent_h
 #define SpeechRecognitionEvent_h
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "Event.h"
 #include "SpeechRecognitionResult.h"
 #include "SpeechRecognitionResultList.h"
@@ -73,7 +71,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)
 
 #endif // SpeechRecognitionEvent_h

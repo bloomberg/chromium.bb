@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=SCRIPTED_SPEECH,
     Supplemental=DOMWindow
 ] interface DOMWindowSpeech {
     [EnabledAtRuntime] attribute SpeechRecognitionConstructor webkitSpeechRecognition;

@@ -155,7 +155,6 @@ public:
     static bool webkitSpeechEnabled() { return isSpeechInputEnabled; }
     static bool webkitGrammarEnabled() { return isSpeechInputEnabled; }
 
-#if ENABLE(SCRIPTED_SPEECH)
     static void setScriptedSpeechEnabled(bool isEnabled) { isScriptedSpeechEnabled = isEnabled; }
     static bool scriptedSpeechEnabled() { return isScriptedSpeechEnabled; }
     static bool webkitSpeechRecognitionEnabled() { return isScriptedSpeechEnabled; }
@@ -163,7 +162,6 @@ public:
     static bool webkitSpeechRecognitionEventEnabled() { return isScriptedSpeechEnabled; }
     static bool webkitSpeechGrammarEnabled() { return isScriptedSpeechEnabled; }
     static bool webkitSpeechGrammarListEnabled() { return isScriptedSpeechEnabled; }
-#endif
 
     static bool fileSystemEnabled();
     static void setFileSystemEnabled(bool isEnabled) { isFileSystemEnabled = isEnabled; }
@@ -275,9 +273,7 @@ private:
     static bool isCSSRegionsEnabled;
     static bool isCSSCompositingEnabled;
     static bool isLangAttributeAwareFormControlUIEnabled;
-#if ENABLE(SCRIPTED_SPEECH)
     static bool isScriptedSpeechEnabled;
-#endif
     static bool isFileSystemEnabled;
 
 #if ENABLE(JAVASCRIPT_I18N_API)

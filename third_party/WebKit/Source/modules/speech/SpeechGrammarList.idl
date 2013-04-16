@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=SCRIPTED_SPEECH,
     IndexedGetter,
     Constructor,
     ImplementationLacksVTable

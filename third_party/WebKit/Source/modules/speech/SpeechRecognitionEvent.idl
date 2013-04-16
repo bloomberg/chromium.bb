@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=SCRIPTED_SPEECH,
     ConstructorTemplate=Event,
 ] interface SpeechRecognitionEvent : Event {
     [InitializedByEventConstructor] readonly attribute unsigned long resultIndex;

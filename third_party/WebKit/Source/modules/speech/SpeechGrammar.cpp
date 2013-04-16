@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SCRIPTED_SPEECH)
-
 #include "SpeechGrammar.h"
 
 #include "Document.h"
@@ -61,5 +59,3 @@ SpeechGrammar::SpeechGrammar(const KURL& src, double weight)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SCRIPTED_SPEECH)

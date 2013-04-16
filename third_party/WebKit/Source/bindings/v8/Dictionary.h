@@ -81,11 +81,9 @@ public:
     bool get(const String&, RefPtr<MediaKeyError>&) const;
 #endif
     bool get(const String&, RefPtr<TrackBase>&) const;
-#if ENABLE(SCRIPTED_SPEECH)
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionResult>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionResultList>&) const;
-#endif
 #if ENABLE(MEDIA_STREAM)
     bool get(const String&, RefPtr<MediaStream>&) const;
 #endif
