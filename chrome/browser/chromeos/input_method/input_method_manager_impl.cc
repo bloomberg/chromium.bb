@@ -348,11 +348,23 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
 void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
   if (!component_extension_ime_manager_->IsInitialized())
     return;
-  for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
-    if (component_extension_ime_manager_->IsWhitelisted(
-        active_input_method_ids_[i])) {
+  // Load component extensions but also update |active_input_method_ids_| as
+  // some component extension IMEs may have been removed from the Chrome OS
+  // image. If specified component extension IME no longer exists, falling back
+  // to an existing IME.
+  std::vector<std::string> unfiltered_input_method_ids =
+      active_input_method_ids_;
+  active_input_method_ids_.clear();
+  for (size_t i = 0; i < unfiltered_input_method_ids.size(); ++i) {
+    if (!component_extension_ime_manager_->IsComponentExtensionIMEId(
+        unfiltered_input_method_ids[i])) {
+      // Legacy IMEs or xkb layouts are alwayes active.
+      active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
+    } else if (component_extension_ime_manager_->IsWhitelisted(
+        unfiltered_input_method_ids[i])) {
       component_extension_ime_manager_->LoadComponentExtensionIME(
-          active_input_method_ids_[i]);
+          unfiltered_input_method_ids[i]);
+      active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
     }
   }
 }
