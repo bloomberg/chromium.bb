@@ -6,17 +6,54 @@
 
 #include <limits>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/sha1.h"
 #include "base/stringprintf.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
+#include "base/strings/string_number_conversions.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
+
+namespace {
+
+// Size of the uint64 hash_key number in Hex format in a string.
+const size_t kEntryHashKeyAsHexStringSize = 2 * sizeof(uint64);
+
+}  // namespace
 
 namespace disk_cache {
 
 namespace simple_util {
 
+std::string ConvertEntryHashKeyToHexString(uint64 hash_key) {
+  const std::string hash_key_str = base::StringPrintf("%016" PRIx64, hash_key);
+  DCHECK_EQ(kEntryHashKeyAsHexStringSize, hash_key_str.size());
+  return hash_key_str;
+}
+
+std::string GetEntryHashKeyAsHexString(const std::string& key) {
+  std::string hash_key_str =
+      ConvertEntryHashKeyToHexString(GetEntryHashKey(key));
+  DCHECK_EQ(kEntryHashKeyAsHexStringSize, hash_key_str.size());
+  return hash_key_str;
+}
+
+bool GetEntryHashKeyFromHexString(const std::string& hash_key,
+                                  uint64* hash_key_out) {
+  if (hash_key.size() != kEntryHashKeyAsHexStringSize) {
+    return false;
+  }
+  return base::HexStringToUInt64(hash_key, hash_key_out);
+}
+
+uint64 GetEntryHashKey(const std::string& key) {
+  const std::string sha_hash = base::SHA1HashString(key);
+  uint64 hash_key = 0;
+  sha_hash.copy(reinterpret_cast<char*>(&hash_key), sizeof(hash_key));
+  return hash_key;
+}
+
 std::string GetFilenameFromKeyAndIndex(const std::string& key, int index) {
-  return disk_cache::GetEntryHashKeyAsHexString(key) +
-      base::StringPrintf("_%1d", index);
+  return GetEntryHashKeyAsHexString(key) + base::StringPrintf("_%1d", index);
 }
 
 int32 GetDataSizeFromKeyAndFileSize(const std::string& key, int64 file_size) {
