@@ -18,18 +18,18 @@
  *   END_INTERFACE(FrobInterface, PPB_Frob)
  */
 
-BEGIN_INTERFACE(ConsoleInterface, PPB_Console, PPB_CONSOLE_INTERFACE)
+BEGIN_INTERFACE(ConsoleInterface, PPB_Console, PPB_CONSOLE_INTERFACE_1_0)
   METHOD3(ConsoleInterface, void, Log, PP_Instance, PP_LogLevel, struct PP_Var)
 END_INTERFACE(ConsoleInterface, PPB_Console)
 
 BEGIN_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev,
-                PPB_DIRECTORYREADER_DEV_INTERFACE)
+                PPB_DIRECTORYREADER_DEV_INTERFACE_0_6)
   METHOD1(DirectoryReaderInterface, PP_Resource, Create, PP_Resource)
   METHOD3(DirectoryReaderInterface, int32_t, ReadEntries, PP_Resource,
           PP_ArrayOutput, PP_CompletionCallback)
 END_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev)
 
-BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE)
+BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE_1_0)
   METHOD1(FileIoInterface, void, Close, PP_Resource)
   METHOD1(FileIoInterface, PP_Resource, Create, PP_Resource)
   METHOD2(FileIoInterface, int32_t, Flush, PP_Resource,
@@ -46,7 +46,7 @@ BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE)
           const char*, int32_t, PP_CompletionCallback)
 END_INTERFACE(FileIoInterface, PPB_FileIO)
 
-BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE)
+BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE_1_0)
   METHOD2(FileRefInterface, PP_Resource, Create, PP_Resource, const char*)
   METHOD2(FileRefInterface, int32_t, Delete, PP_Resource, PP_CompletionCallback)
   METHOD1(FileRefInterface, PP_Var, GetName, PP_Resource)
@@ -54,23 +54,24 @@ BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE)
           PP_CompletionCallback)
 END_INTERFACE(FileRefInterface, PPB_FileRef)
 
-BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem, PPB_FILESYSTEM_INTERFACE)
+BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem,
+                PPB_FILESYSTEM_INTERFACE_1_0)
   METHOD2(FileSystemInterface, PP_Resource, Create, PP_Instance,
           PP_FileSystemType)
   METHOD3(FileSystemInterface, int32_t, Open, PP_Resource, int64_t,
           PP_CompletionCallback)
 END_INTERFACE(FileSystemInterface, PPB_FileSystem)
 
-BEGIN_INTERFACE(MessagingInterface, PPB_Messaging, PPB_MESSAGING_INTERFACE)
+BEGIN_INTERFACE(MessagingInterface, PPB_Messaging, PPB_MESSAGING_INTERFACE_1_0)
   METHOD2(MessagingInterface, void, PostMessage, PP_Instance, struct PP_Var)
 END_INTERFACE(MessagingInterface, PPB_Messaging)
 
-BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE)
+BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE_1_1)
   METHOD2(VarInterface, struct PP_Var, VarFromUtf8, const char *, uint32_t)
   METHOD2(VarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
 END_INTERFACE(VarInterface, PPB_Var)
 
-BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader, PPB_URLLOADER_INTERFACE)
+BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader, PPB_URLLOADER_INTERFACE_1_0)
   METHOD1(URLLoaderInterface, PP_Resource, Create, PP_Instance)
   METHOD3(URLLoaderInterface, int32_t, Open, PP_Resource, PP_Resource,
           PP_CompletionCallback)
@@ -81,14 +82,14 @@ BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader, PPB_URLLOADER_INTERFACE)
 END_INTERFACE(URLLoaderInterface, PPB_URLLoader)
 
 BEGIN_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo,
-                PPB_URLREQUESTINFO_INTERFACE)
+                PPB_URLREQUESTINFO_INTERFACE_1_0)
   METHOD1(URLRequestInfoInterface, PP_Resource, Create, PP_Instance)
   METHOD3(URLRequestInfoInterface, PP_Bool, SetProperty, PP_Resource,
           PP_URLRequestProperty, PP_Var)
 END_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo)
 
 BEGIN_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo,
-                PPB_URLRESPONSEINFO_INTERFACE)
+                PPB_URLRESPONSEINFO_INTERFACE_1_0)
   METHOD2(URLResponseInfoInterface, PP_Var, GetProperty, PP_Resource,
           PP_URLResponseProperty)
 END_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo)
