@@ -44,7 +44,7 @@
             'dependencies': [
                 '<(source_dir)/WebCore/WebCore.gyp/WebCore.gyp:webcore',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
-                '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
+                '<(source_dir)/wtf/wtf.gyp:wtf',
                 '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                 '<(DEPTH)/base/base.gyp:test_support_base',

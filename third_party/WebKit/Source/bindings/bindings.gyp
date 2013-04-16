@@ -286,7 +286,7 @@
         'bindings_sources',
         '../WebCore/WebCore.gyp/WebCore.gyp:webcore_prerequisites',
         '../yarr/yarr.gyp:yarr',
-        '../WTF/WTF.gyp/WTF.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',

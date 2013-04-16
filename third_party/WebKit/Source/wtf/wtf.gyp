@@ -27,9 +27,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {
   'includes': [
-    '../../WebKit/chromium/WinPrecompile.gypi',
-    '../../WebKit/chromium/features.gypi',
-    '../wtf/wtf.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
+    '../WebKit/chromium/features.gypi',
+    'wtf.gypi',
   ],
   'conditions': [
     ['os_posix == 1 and OS != "mac" and gcc_version>=46', {
@@ -63,7 +63,7 @@
               'CRASH=__debugbreak',
             ],
             'include_dirs': [
-              '../wtf/os-win32',
+              'os-win32',
             ],
           }],
           # FIXME: This should go in a header, not in the GYP file.
@@ -79,9 +79,9 @@
       'target_name': 'wtf',
       'type': 'static_library',
       'include_dirs': [
+        '.',
         '..',
-        '../wtf',
-        '../wtf/unicode',
+        '../unicode',
       ],
       'dependencies': [
           'wtf_config',
@@ -146,7 +146,7 @@
           'sources/': [
             ['exclude', 'Mac\\.mm$'],
             # mac is the only OS that uses WebKit's copy of TCMalloc.
-            ['exclude', 'wtf/TC.*\\.(cpp|h)$'],
+            ['exclude', 'TC.*\\.(cpp|h)$'],
           ],
         }],
       ],

@@ -47,7 +47,7 @@
       'target_name': 'yarr',
       'type': 'static_library',
       'dependencies': [
-        '../WTF/WTF.gyp/WTF.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
       ],
       'variables': { 'optimize': 'max' },
       'actions': [
@@ -87,7 +87,7 @@
         ],
       },
       'export_dependent_settings': [
-        '../WTF/WTF.gyp/WTF.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
       ],
       'conditions': [
         ['OS=="win"', {

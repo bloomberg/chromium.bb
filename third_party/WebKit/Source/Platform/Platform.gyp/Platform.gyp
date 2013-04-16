@@ -38,7 +38,7 @@
             'target_name': 'webkit_platform',
             'type': 'static_library',
             'dependencies': [
-                '../../WTF/WTF.gyp/WTF.gyp:wtf',
+                '../../wtf/wtf.gyp:wtf',
                 '<(DEPTH)/skia/skia.gyp:skia',
             ],
             'include_dirs': [

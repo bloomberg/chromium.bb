@@ -229,7 +229,7 @@
                 '<(source_dir)/devtools/devtools.gyp:devtools_frontend_resources',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
-                '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
+                '<(source_dir)/wtf/wtf.gyp:wtf',
                 '<(DEPTH)/base/base.gyp:test_support_base',
                 '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',

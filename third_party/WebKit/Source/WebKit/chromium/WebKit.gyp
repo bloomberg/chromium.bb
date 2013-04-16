@@ -749,7 +749,7 @@
             'target_name': 'webkit_wtf_support',
             'type': 'static_library',
             'dependencies': [
-                '../../WTF/WTF.gyp/WTF.gyp:wtf',
+                '../../wtf/wtf.gyp:wtf',
             ],
             'defines': [
                 'WEBKIT_IMPLEMENTATION=1',
@@ -778,7 +778,7 @@
                 }, {
                     'type': 'static_library',
                     'dependencies': [
-                        '../../WTF/WTF.gyp/WTF.gyp:wtf',
+                        '../../wtf/wtf.gyp:wtf',
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
                     ],
                     'include_dirs': [
