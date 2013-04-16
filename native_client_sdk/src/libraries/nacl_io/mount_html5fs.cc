@@ -25,7 +25,7 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 }  // namespace
 
 MountNode *MountHtml5Fs::Open(const Path& path, int mode) {
-  if (!IsFilesystemOpen())
+  if (BlockUntilFilesystemOpen() != PP_OK)
     return NULL;
 
   PP_Resource fileref = ppapi()->GetFileRefInterface()->Create(
@@ -47,8 +47,8 @@ int MountHtml5Fs::Unlink(const Path& path) {
 }
 
 int MountHtml5Fs::Mkdir(const Path& path, int permissions) {
-  if (!IsFilesystemOpen()) {
-    errno = EINVAL;
+  if (BlockUntilFilesystemOpen() != PP_OK) {
+    errno = ENODEV;
     return -1;
   }
 
@@ -75,8 +75,8 @@ int MountHtml5Fs::Rmdir(const Path& path) {
 }
 
 int MountHtml5Fs::Remove(const Path& path) {
-  if (!IsFilesystemOpen()) {
-    errno = EINVAL;
+  if (BlockUntilFilesystemOpen() != PP_OK) {
+    errno = ENODEV;
     return -1;
   }
 
@@ -102,7 +102,8 @@ int MountHtml5Fs::Remove(const Path& path) {
 
 MountHtml5Fs::MountHtml5Fs()
     : filesystem_resource_(0),
-      filesystem_open_(false) {
+      filesystem_open_has_result_(false),
+      filesystem_open_result_(PP_OK) {
 }
 
 bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
@@ -135,22 +136,40 @@ bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   if (filesystem_resource_ == 0)
     return false;
 
-  // Open the filesystem. Don't block, this could be called from the main
-  // thread.
-  ppapi->GetFileSystemInterface()->Open(filesystem_resource_, expected_size,
+  // We can't block the main thread, so make an asynchronous call if on main
+  // thread. If we are off-main-thread, then don't make an asynchronous call;
+  // otherwise we require a message loop.
+  bool main_thread = ppapi->IsMainThread();
+  PP_CompletionCallback cc = main_thread ?
       PP_MakeCompletionCallback(&MountHtml5Fs::FilesystemOpenCallbackThunk,
-                                this));
+                                this) :
+      PP_BlockUntilComplete();
 
-  return true;
+  int32_t result = ppapi->GetFileSystemInterface()->Open(
+      filesystem_resource_, expected_size, cc);
+
+  if (!main_thread) {
+    filesystem_open_has_result_ = true;
+    filesystem_open_result_ = result;
+
+    return filesystem_open_result_ == PP_OK;
+  } else {
+    // We have to assume the call to Open will succeed; there is no better
+    // result to return here.
+    return true;
+  }
 }
 
 void MountHtml5Fs::Destroy() {
   ppapi_->ReleaseResource(filesystem_resource_);
 }
 
-bool MountHtml5Fs::IsFilesystemOpen() {
+int32_t MountHtml5Fs::BlockUntilFilesystemOpen() {
   AutoLock lock(&lock_);
-  return filesystem_open_;
+  while (!filesystem_open_has_result_) {
+    pthread_cond_wait(&filesystem_open_cond_, &lock_);
+  }
+  return filesystem_open_result_;
 }
 
 // static
@@ -162,5 +181,7 @@ void MountHtml5Fs::FilesystemOpenCallbackThunk(void* user_data,
 
 void MountHtml5Fs::FilesystemOpenCallback(int32_t result) {
   AutoLock lock(&lock_);
-  filesystem_open_ = result == PP_OK;
+  filesystem_open_has_result_ = true;
+  filesystem_open_result_ = result;
+  pthread_cond_signal(&filesystem_open_cond_);
 }

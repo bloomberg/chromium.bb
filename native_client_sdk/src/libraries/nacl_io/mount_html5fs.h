@@ -27,14 +27,16 @@ class MountHtml5Fs: public Mount {
   virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
-  bool IsFilesystemOpen();
+  int32_t BlockUntilFilesystemOpen();
 
  private:
   static void FilesystemOpenCallbackThunk(void* user_data, int32_t result);
   void FilesystemOpenCallback(int32_t result);
 
   PP_Resource filesystem_resource_;
-  bool filesystem_open_;  // protected by lock_.
+  bool filesystem_open_has_result_;  // protected by lock_.
+  int32_t filesystem_open_result_;  // protected by lock_.
+  pthread_cond_t filesystem_open_cond_;
 
   friend class Mount;
 };

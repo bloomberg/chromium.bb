@@ -104,6 +104,10 @@ void RealPepperInterface::ReleaseResource(PP_Resource resource) {
     core_interface_->ReleaseResource(resource);
 }
 
+bool RealPepperInterface::IsMainThread() {
+  return core_interface_->IsMainThread();
+}
+
 // Define getter function.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"

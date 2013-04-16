@@ -9,6 +9,9 @@
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_instance.h>
+#if defined(WIN32)
+#include <windows.h>  // For Sleep()
+#endif
 
 #include "mock_util.h"
 #include "nacl_io/mount_html5fs.h"
@@ -19,6 +22,7 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::WithArgs;
@@ -40,32 +44,44 @@ class MountHtml5FsTest : public ::testing::Test {
  public:
   MountHtml5FsTest();
   ~MountHtml5FsTest();
-  void SetUpFilesystem(PP_FileSystemType, int);
+  void SetUpFilesystemExpectations(PP_FileSystemType, int,
+                                   bool async_callback=false);
 
  protected:
   PepperInterfaceMock* ppapi_;
+  PP_CompletionCallback open_filesystem_callback_;
 
   static const PP_Instance instance_ = 123;
   static const PP_Resource filesystem_resource_ = 234;
 };
 
 MountHtml5FsTest::MountHtml5FsTest()
-    : ppapi_(NULL) {
+    : ppapi_(new PepperInterfaceMock(instance_)) {
 }
 
 MountHtml5FsTest::~MountHtml5FsTest() {
   delete ppapi_;
 }
 
-void MountHtml5FsTest::SetUpFilesystem(PP_FileSystemType fstype,
-                                       int expected_size) {
-  ppapi_ = new PepperInterfaceMock(instance_);
+void MountHtml5FsTest::SetUpFilesystemExpectations(
+    PP_FileSystemType fstype,
+    int expected_size,
+    bool async_callback) {
   FileSystemInterfaceMock* filesystem = ppapi_->GetFileSystemInterface();
   EXPECT_CALL(*filesystem, Create(instance_, fstype))
       .Times(1)
       .WillOnce(Return(filesystem_resource_));
-  EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
-      .WillOnce(CallCallback<2>(int32_t(PP_OK)));
+
+  if (async_callback) {
+    EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
+        .WillOnce(DoAll(SaveArg<2>(&open_filesystem_callback_),
+                        Return(int32_t(PP_OK))));
+    EXPECT_CALL(*ppapi_, IsMainThread()).WillOnce(Return(PP_TRUE));
+  } else {
+    EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
+        .WillOnce(CallCallback<2>(int32_t(PP_OK)));
+    EXPECT_CALL(*ppapi_, IsMainThread()).WillOnce(Return(PP_FALSE));
+  }
 
   EXPECT_CALL(*ppapi_, ReleaseResource(filesystem_resource_));
 }
@@ -75,6 +91,10 @@ class MountHtml5FsNodeTest : public MountHtml5FsTest {
   MountHtml5FsNodeTest();
   virtual void SetUp();
   virtual void TearDown();
+
+  void SetUpNodeExpectations();
+  void InitFilesystem();
+  void InitNode();
 
  protected:
   MountHtml5FsMock* mnt_;
@@ -99,13 +119,18 @@ MountHtml5FsNodeTest::MountHtml5FsNodeTest()
 }
 
 void MountHtml5FsNodeTest::SetUp() {
-  SetUpFilesystem(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-  StringMap_t map;
-  mnt_ = new MountHtml5FsMock(map, ppapi_);
-
   fileref_ = ppapi_->GetFileRefInterface();
   fileio_ = ppapi_->GetFileIoInterface();
+}
 
+void MountHtml5FsNodeTest::TearDown() {
+  if (mnt_) {
+    mnt_->ReleaseNode(node_);
+    delete mnt_;
+  }
+}
+
+void MountHtml5FsNodeTest::SetUpNodeExpectations() {
   // Open.
   EXPECT_CALL(*fileref_, Create(filesystem_resource_, StrEq(&path_[0])))
       .WillOnce(Return(fileref_resource_));
@@ -121,14 +146,31 @@ void MountHtml5FsNodeTest::SetUp() {
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_));
   EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource_));
   EXPECT_CALL(*fileio_, Flush(fileio_resource_, _));
+}
 
+void MountHtml5FsNodeTest::InitFilesystem() {
+  StringMap_t map;
+  mnt_ = new MountHtml5FsMock(map, ppapi_);
+}
+
+void MountHtml5FsNodeTest::InitNode() {
   node_ = mnt_->Open(Path(path_), O_CREAT | O_RDWR);
   ASSERT_NE((MountNode*)NULL, node_);
 }
 
-void MountHtml5FsNodeTest::TearDown() {
-  mnt_->ReleaseNode(node_);
-  delete mnt_;
+// Node test where the filesystem is opened synchronously; that is, the
+// creation of the mount blocks until the filesystem is ready.
+class MountHtml5FsNodeSyncTest : public MountHtml5FsNodeTest {
+ public:
+  virtual void SetUp();
+};
+
+void MountHtml5FsNodeSyncTest::SetUp() {
+  MountHtml5FsNodeTest::SetUp();
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
+  InitFilesystem();
+  SetUpNodeExpectations();
+  InitNode();
 }
 
 void ReadEntriesAction(const PP_ArrayOutput& output) {
@@ -146,11 +188,101 @@ void ReadEntriesAction(const PP_ArrayOutput& output) {
   memcpy(dest, &entries[0], sizeof(PP_DirectoryEntry_Dev) * 2);
 }
 
+class MountHtml5FsNodeAsyncTest : public MountHtml5FsNodeTest {
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
+
+ private:
+  static void* ThreadThunk(void* param);
+  void Thread();
+
+  enum {
+    STATE_INIT,
+    STATE_INIT_NODE,
+    STATE_INIT_NODE_FINISHED,
+  } state_;
+
+  pthread_t thread_;
+  pthread_cond_t cond_;
+  pthread_mutex_t mutex_;
+};
+
+void MountHtml5FsNodeAsyncTest::SetUp() {
+  MountHtml5FsNodeTest::SetUp();
+
+  state_ = STATE_INIT;
+
+  pthread_create(&thread_, NULL, &MountHtml5FsNodeAsyncTest::ThreadThunk, this);
+  pthread_mutex_init(&mutex_, NULL);
+  pthread_cond_init(&cond_, NULL);
+
+  // This test shows that even if the filesystem open callback happens after an
+  // attempt to open a node, it still works (opening the node blocks until the
+  // filesystem is ready).
+  // true => asynchronous filesystem open.
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0, true);
+  InitFilesystem();
+  SetUpNodeExpectations();
+
+  // Signal the other thread to try opening a Node.
+  pthread_mutex_lock(&mutex_);
+  state_ = STATE_INIT_NODE;
+  pthread_cond_signal(&cond_);
+  pthread_mutex_unlock(&mutex_);
+
+  // Wait for a bit...
+  // TODO(binji): this will be flaky. How to test this better?
+#if defined(WIN32)
+  Sleep(500);  // milliseconds
+#else
+  usleep(500*1000);  // microseconds
+#endif
+
+  // Call the filesystem open callback.
+  (*open_filesystem_callback_.func)(open_filesystem_callback_.user_data, PP_OK);
+
+  // Wait for the other thread to unblock and signal us.
+  pthread_mutex_lock(&mutex_);
+  while (state_ != STATE_INIT_NODE_FINISHED)
+    pthread_cond_wait(&cond_, &mutex_);
+  pthread_mutex_unlock(&mutex_);
+}
+
+void MountHtml5FsNodeAsyncTest::TearDown() {
+  pthread_cond_destroy(&cond_);
+  pthread_mutex_destroy(&mutex_);
+
+  MountHtml5FsNodeTest::TearDown();
+}
+
+void* MountHtml5FsNodeAsyncTest::ThreadThunk(void* param) {
+  static_cast<MountHtml5FsNodeAsyncTest*>(param)->Thread();
+  return NULL;
+}
+
+void MountHtml5FsNodeAsyncTest::Thread() {
+  // Wait for the "main" thread to tell us to open the Node.
+  pthread_mutex_lock(&mutex_);
+  while (state_ != STATE_INIT_NODE)
+    pthread_cond_wait(&cond_, &mutex_);
+  pthread_mutex_unlock(&mutex_);
+
+  // Opening the node blocks until the filesystem is open...
+  InitNode();
+
+  // Signal the "main" thread to tell it we're unblocked.
+  pthread_mutex_lock(&mutex_);
+  state_ = STATE_INIT_NODE_FINISHED;
+  pthread_cond_signal(&cond_);
+  pthread_mutex_unlock(&mutex_);
+}
+
 }  // namespace
 
 
 TEST_F(MountHtml5FsTest, FilesystemType) {
-  SetUpFilesystem(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 100);
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 100);
 
   StringMap_t map;
   map["type"] = "PERSISTENT";
@@ -163,7 +295,7 @@ TEST_F(MountHtml5FsTest, Mkdir) {
   const PP_Resource fileref_resource = 235;
 
   // These are the default values.
-  SetUpFilesystem(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
   FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
 
@@ -186,7 +318,7 @@ TEST_F(MountHtml5FsTest, Remove) {
   const PP_Resource fileref_resource = 235;
 
   // These are the default values.
-  SetUpFilesystem(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
   FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
 
@@ -203,10 +335,13 @@ TEST_F(MountHtml5FsTest, Remove) {
   ASSERT_EQ(0, result);
 }
 
-TEST_F(MountHtml5FsNodeTest, OpenAndClose) {
+TEST_F(MountHtml5FsNodeAsyncTest, AsyncFilesystemOpen) {
 }
 
-TEST_F(MountHtml5FsNodeTest, Write) {
+TEST_F(MountHtml5FsNodeSyncTest, OpenAndClose) {
+}
+
+TEST_F(MountHtml5FsNodeSyncTest, Write) {
   const int offset = 10;
   const int count = 20;
   const char buffer[30] = {0};
@@ -218,7 +353,7 @@ TEST_F(MountHtml5FsNodeTest, Write) {
   EXPECT_EQ(count, result);
 }
 
-TEST_F(MountHtml5FsNodeTest, Read) {
+TEST_F(MountHtml5FsNodeSyncTest, Read) {
   const int offset = 10;
   const int count = 20;
   char buffer[30] = {0};
@@ -230,7 +365,7 @@ TEST_F(MountHtml5FsNodeTest, Read) {
   EXPECT_EQ(count, result);
 }
 
-TEST_F(MountHtml5FsNodeTest, GetStat) {
+TEST_F(MountHtml5FsNodeSyncTest, GetStat) {
   const int size = 123;
   const int creation_time = 1000;
   const int access_time = 2000;
@@ -259,7 +394,7 @@ TEST_F(MountHtml5FsNodeTest, GetStat) {
   EXPECT_EQ(creation_time, statbuf.st_ctime);
 }
 
-TEST_F(MountHtml5FsNodeTest, Truncate) {
+TEST_F(MountHtml5FsNodeSyncTest, Truncate) {
   const int size = 123;
   EXPECT_CALL(*fileio_, SetLength(fileio_resource_, size, _))
       .WillOnce(Return(int32_t(PP_OK)));
@@ -268,7 +403,7 @@ TEST_F(MountHtml5FsNodeTest, Truncate) {
   EXPECT_EQ(0, result);
 }
 
-TEST_F(MountHtml5FsNodeTest, GetDents) {
+TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
   const int dir_reader_resource = 237;
   const int fileref_resource_1 = 238;
   const int fileref_resource_2 = 239;

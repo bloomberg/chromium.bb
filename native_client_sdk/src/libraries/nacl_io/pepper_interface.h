@@ -48,6 +48,7 @@ class PepperInterface {
   virtual PP_Instance GetInstance() = 0;
   virtual void AddRefResource(PP_Resource) = 0;
   virtual void ReleaseResource(PP_Resource) = 0;
+  virtual bool IsMainThread() = 0;
 
 // Interface getters.
 #include "nacl_io/pepper/define_empty_macros.h"

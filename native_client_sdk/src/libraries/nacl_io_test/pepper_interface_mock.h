@@ -39,6 +39,7 @@ class PepperInterfaceMock : public PepperInterface {
   virtual PP_Instance GetInstance();
   MOCK_METHOD1(AddRefResource, void(PP_Resource));
   MOCK_METHOD1(ReleaseResource, void(PP_Resource));
+  MOCK_METHOD0(IsMainThread, bool());
 
 // Interface getters.
 #include "nacl_io/pepper/define_empty_macros.h"
