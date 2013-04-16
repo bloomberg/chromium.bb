@@ -94,57 +94,57 @@ PerformanceTiming* Performance::timing() const
     return m_timing.get();
 }
 
-PassRefPtr<PerformanceEntryList> Performance::webkitGetEntries() const
+Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntries() const
 {
-    RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
+    Vector<RefPtr<PerformanceEntry> > entries;
 
-    entries->appendAll(m_resourceTimingBuffer);
+    entries.append(m_resourceTimingBuffer);
 
     if (m_userTiming) {
-        entries->appendAll(m_userTiming->getMarks());
-        entries->appendAll(m_userTiming->getMeasures());
+        entries.append(m_userTiming->getMarks());
+        entries.append(m_userTiming->getMeasures());
     }
 
-    entries->sort();
+    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
     return entries;
 }
 
-PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByType(const String& entryType)
+Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntriesByType(const String& entryType)
 {
-    RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
+    Vector<RefPtr<PerformanceEntry> > entries;
 
     if (equalIgnoringCase(entryType, "resource"))
         for (Vector<RefPtr<PerformanceEntry> >::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
-            entries->append(*resource);
+            entries.append(*resource);
 
     if (m_userTiming) {
         if (equalIgnoringCase(entryType, "mark"))
-            entries->appendAll(m_userTiming->getMarks());
+            entries.append(m_userTiming->getMarks());
         else if (equalIgnoringCase(entryType, "measure"))
-            entries->appendAll(m_userTiming->getMeasures());
+            entries.append(m_userTiming->getMeasures());
     }
 
-    entries->sort();
+    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
     return entries;
 }
 
-PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const String& name, const String& entryType)
+Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntriesByName(const String& name, const String& entryType)
 {
-    RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
+    Vector<RefPtr<PerformanceEntry> > entries;
 
     if (entryType.isNull() || equalIgnoringCase(entryType, "resource"))
         for (Vector<RefPtr<PerformanceEntry> >::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
             if ((*resource)->name() == name)
-                entries->append(*resource);
+                entries.append(*resource);
 
     if (m_userTiming) {
         if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
-            entries->appendAll(m_userTiming->getMarks(name));
+            entries.append(m_userTiming->getMarks(name));
         if (entryType.isNull() || equalIgnoringCase(entryType, "measure"))
-            entries->appendAll(m_userTiming->getMeasures(name));
+            entries.append(m_userTiming->getMeasures(name));
     }
 
-    entries->sort();
+    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
     return entries;
 }
 

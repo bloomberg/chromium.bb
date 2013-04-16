@@ -32,7 +32,6 @@
 #ifndef PerformanceEntry_h
 #define PerformanceEntry_h
 
-#include "Performance.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

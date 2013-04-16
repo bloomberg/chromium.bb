@@ -37,9 +37,9 @@
     readonly attribute PerformanceTiming timing;
     readonly attribute MemoryInfo memory;
 
-    PerformanceEntryList webkitGetEntries();
-    PerformanceEntryList webkitGetEntriesByType(DOMString entryType);
-    PerformanceEntryList webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
+    sequence<PerformanceEntry> webkitGetEntries();
+    sequence<PerformanceEntry> webkitGetEntriesByType(DOMString entryType);
+    sequence<PerformanceEntry> webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned long maxSize);

@@ -35,7 +35,7 @@
 #include "DOMWindowProperty.h"
 #include "EventTarget.h"
 #include "MemoryInfo.h"
-#include "PerformanceEntryList.h"
+#include "PerformanceEntry.h"
 #include "PerformanceNavigation.h"
 #include "PerformanceTiming.h"
 #include "ScriptWrappable.h"
@@ -64,9 +64,9 @@ public:
     PerformanceTiming* timing() const;
     double now() const;
 
-    PassRefPtr<PerformanceEntryList> webkitGetEntries() const;
-    PassRefPtr<PerformanceEntryList> webkitGetEntriesByType(const String& entryType);
-    PassRefPtr<PerformanceEntryList> webkitGetEntriesByName(const String& name, const String& entryType);
+    Vector<RefPtr<PerformanceEntry> > webkitGetEntries() const;
+    Vector<RefPtr<PerformanceEntry> > webkitGetEntriesByType(const String& entryType);
+    Vector<RefPtr<PerformanceEntry> > webkitGetEntriesByName(const String& name, const String& entryType);
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned int);
