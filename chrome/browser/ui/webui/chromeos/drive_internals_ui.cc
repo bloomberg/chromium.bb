@@ -516,10 +516,13 @@ void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
 void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
     const drive::DriveFileSystemMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  drive::DriveSystemService* const system_service = GetSystemService();
+  if (!system_service)
+    return;
 
   base::DictionaryValue delta_update_status;
   delta_update_status.SetBoolean("push-notification-enabled",
-                                 metadata.push_notification_enabled);
+                                 system_service->PushNotificationEnabled());
   delta_update_status.SetString(
       "last-update-check-time",
       google_apis::util::FormatTimeAsStringLocaltime(

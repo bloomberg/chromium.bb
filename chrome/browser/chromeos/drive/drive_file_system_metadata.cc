@@ -10,7 +10,6 @@ DriveFileSystemMetadata::DriveFileSystemMetadata()
     : largest_changestamp(0),
       loaded(false),
       refreshing(false),
-      push_notification_enabled(false),
       last_update_check_error(DRIVE_FILE_OK) {
 }
 

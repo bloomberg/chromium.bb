@@ -248,7 +248,6 @@ DriveFileSystem::DriveFileSystem(
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
       scheduler_(new DriveScheduler(profile, drive_service)),
-      push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -353,10 +352,6 @@ void DriveFileSystem::StartInitialFeedFetch() {
                    DirectoryFetchInfo(),
                    base::Bind(&util::EmptyFileOperationCallback)));
   }
-}
-
-void DriveFileSystem::SetPushNotificationEnabled(bool enabled) {
-  push_notification_enabled_ = enabled;
 }
 
 void DriveFileSystem::GetEntryInfoByResourceId(
@@ -1420,7 +1415,6 @@ void DriveFileSystem::GetMetadata(
   metadata.refreshing = change_list_loader_->refreshing();
 
   // Metadata related to delta update.
-  metadata.push_notification_enabled = push_notification_enabled_;
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 

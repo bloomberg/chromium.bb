@@ -206,8 +206,7 @@ bool DriveSystemService::IsDriveEnabled() {
 
 void DriveSystemService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  file_system_->SetPushNotificationEnabled(
-      state == syncer::INVALIDATIONS_ENABLED);
+  DVLOG(1) << "InvalidatorState changed to " << state;
 }
 
 void DriveSystemService::OnIncomingInvalidation(
@@ -276,6 +275,19 @@ void DriveSystemService::ReloadAndRemountFileSystem() {
   // Reload() is asynchronous. But we can add back the mount point right away
   // because every operation waits until loading is complete.
   AddDriveMountPoint();
+}
+
+bool DriveSystemService::PushNotificationEnabled() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile_);
+
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service)
+    return false;
+
+  return (profile_sync_service->GetInvalidatorState() ==
+          syncer::INVALIDATIONS_ENABLED);
 }
 
 void DriveSystemService::AddDriveMountPoint() {
@@ -364,9 +376,6 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
         kDriveInvalidationObjectId));
     profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
     push_notification_registered_ = true;
-    file_system_->SetPushNotificationEnabled(
-        profile_sync_service->GetInvalidatorState() ==
-        syncer::INVALIDATIONS_ENABLED);
   }
 
   AddDriveMountPoint();

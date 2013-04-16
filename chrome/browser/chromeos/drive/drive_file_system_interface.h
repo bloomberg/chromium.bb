@@ -158,9 +158,6 @@ class DriveFileSystemInterface {
   // Starts initial feed fetch from the server.
   virtual void StartInitialFeedFetch() = 0;
 
-  // Sets the availability of push notification when its status is changed.
-  virtual void SetPushNotificationEnabled(bool enabled) = 0;
-
   // Notifies the file system was just mounted.
   virtual void NotifyFileSystemMounted() = 0;
 

@@ -67,7 +67,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void StartInitialFeedFetch() OVERRIDE;
-  virtual void SetPushNotificationEnabled(bool enabled) OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
   virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
@@ -493,9 +492,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Polling interval for checking updates in seconds.
   int polling_interval_sec_;
-
-  // True if push notification is enabled.
-  bool push_notification_enabled_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

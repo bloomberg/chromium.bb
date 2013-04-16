@@ -86,13 +86,16 @@ class DriveSystemService : public ProfileKeyedService,
   // Reloads and remounts the file system.
   void ReloadAndRemountFileSystem();
 
+  // Returns true if the push notification is enabled.
+  bool PushNotificationEnabled();
+
+ private:
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
- private:
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
   bool IsDriveEnabled();

@@ -26,9 +26,6 @@ struct DriveFileSystemMetadata {
   // True if the feed is now being fetched from the server.
   bool refreshing;
 
-  // True if push notification is enabled.
-  bool push_notification_enabled;
-
   // Time of the last update check.
   base::Time last_update_check_time;
 

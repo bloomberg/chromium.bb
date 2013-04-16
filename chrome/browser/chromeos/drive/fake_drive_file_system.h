@@ -46,7 +46,6 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void StartInitialFeedFetch() OVERRIDE;
-  virtual void SetPushNotificationEnabled(bool enabled) OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
   virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;

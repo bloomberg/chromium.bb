@@ -46,9 +46,6 @@ void FakeDriveFileSystem::StartInitialFeedFetch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::SetPushNotificationEnabled(bool enabled) {
-}
-
 void FakeDriveFileSystem::NotifyFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
