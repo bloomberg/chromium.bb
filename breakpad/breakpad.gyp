@@ -615,6 +615,16 @@
             '..',
             'src',
           ],
+          'conditions': [
+            ['OS=="android"', {
+              'libraries': [
+                '-llog',
+              ],
+              'include_dirs': [
+                'src/common/android/include',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'minidump-2-core',
