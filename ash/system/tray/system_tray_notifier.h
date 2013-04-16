@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/audio/audio_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
@@ -29,6 +28,7 @@
 #include "base/observer_list.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/chromeos/screen_capture/screen_capture_observer.h"
@@ -43,9 +43,6 @@ public:
 
   void AddAccessibilityObserver(AccessibilityObserver* observer);
   void RemoveAccessibilityObserver(AccessibilityObserver* observer);
-
-  void AddAudioObserver(AudioObserver* observer);
-  void RemoveAudioObserver(AudioObserver* observer);
 
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
@@ -84,6 +81,9 @@ public:
   void RemoveUserObserver(UserObserver* observer);
 
 #if defined(OS_CHROMEOS)
+  void AddAudioObserver(AudioObserver* observer);
+  void RemoveAudioObserver(AudioObserver* observer);
+
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
 
@@ -102,8 +102,6 @@ public:
 
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
-  void NotifyVolumeChanged(float level);
-  void NotifyMuteToggled();
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
   void NotifyBrightnessChanged(double level, bool user_initialted);
@@ -124,6 +122,8 @@ public:
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
 #if defined(OS_CHROMEOS)
+  void NotifyVolumeChanged(float level);
+  void NotifyMuteToggled();
   void NotifyRefreshNetwork(const NetworkIconInfo &info);
   void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
                                NetworkObserver::MessageType message_type,
@@ -143,7 +143,6 @@ public:
 
  private:
   ObserverList<AccessibilityObserver> accessibility_observers_;
-  ObserverList<AudioObserver> audio_observers_;
   ObserverList<BluetoothObserver> bluetooth_observers_;
   ObserverList<BrightnessObserver> brightness_observers_;
   ObserverList<CapsLockObserver> caps_lock_observers_;
@@ -157,6 +156,7 @@ public:
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
+  ObserverList<AudioObserver> audio_observers_;
   ObserverList<NetworkObserver> network_observers_;
   ObserverList<NetworkObserver> vpn_observers_;
   ObserverList<SmsObserver> sms_observers_;

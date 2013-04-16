@@ -22,14 +22,6 @@ void SystemTrayNotifier::RemoveAccessibilityObserver(
   accessibility_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
-  audio_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
-  audio_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.AddObserver(observer);
 }
@@ -134,6 +126,15 @@ void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
+  audio_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
+  audio_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {
   network_observers_.AddObserver(observer);
 }
@@ -186,18 +187,6 @@ void SystemTrayNotifier::NotifyAccessibilityModeChanged(
       AccessibilityObserver,
       accessibility_observers_,
       OnAccessibilityModeChanged(notify));
-}
-
-void SystemTrayNotifier::NotifyVolumeChanged(float level) {
-  FOR_EACH_OBSERVER(AudioObserver,
-                    audio_observers_,
-                    OnVolumeChanged(level));
-}
-
-void SystemTrayNotifier::NotifyMuteToggled() {
-  FOR_EACH_OBSERVER(AudioObserver,
-                    audio_observers_,
-                    OnMuteToggled());
 }
 
 void SystemTrayNotifier::NotifyRefreshBluetooth() {
@@ -306,6 +295,18 @@ void SystemTrayNotifier::NotifyUserUpdate() {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::NotifyVolumeChanged(float level) {
+  FOR_EACH_OBSERVER(AudioObserver,
+                    audio_observers_,
+                    OnVolumeChanged(level));
+}
+
+void SystemTrayNotifier::NotifyMuteToggled() {
+  FOR_EACH_OBSERVER(AudioObserver,
+                    audio_observers_,
+                    OnMuteToggled());
+}
 
 void SystemTrayNotifier::NotifyRefreshNetwork(const NetworkIconInfo &info) {
   FOR_EACH_OBSERVER(NetworkObserver,

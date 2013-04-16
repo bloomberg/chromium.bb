@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_AUDIO_TRAY_VOLUME_H_
-#define ASH_SYSTEM_AUDIO_TRAY_VOLUME_H_
+#ifndef ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_
+#define ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_
 
-#include "ash/system/audio/audio_observer.h"
+#include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 
 namespace ash {
@@ -50,4 +50,4 @@ class TrayVolume : public TrayImageItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_AUDIO_TRAY_VOLUME_H_
+#endif  // ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_

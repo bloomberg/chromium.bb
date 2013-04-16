@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/audio/tray_volume.h"
+#include "ash/system/chromeos/audio/tray_volume.h"
 
 #include <cmath>
 
