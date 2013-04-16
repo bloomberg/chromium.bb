@@ -37,6 +37,7 @@ function DirectoryModel(root, singleSelection, fileFilter,
   this.scanFailures_ = 0;
   this.driveEnabled_ = isDriveEnabled;
   this.showSpecialSearchRoots_ = showSpecialSearchRoots;
+  this.closureQueue_ = [];
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',
@@ -125,14 +126,42 @@ DirectoryModel.fakeDriveSpecialSearchEntries_ =
 DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
+ * Enqueues an asynchronous closure. Guarantees that the closured are called
+ * sequentially in order they are enqueued. Each of the closures added to the
+ * queue must call a callback once handling is completed.
+ *
+ * @param {function(function())} handler Closure.
+ * @private
+ */
+DirectoryModel.prototype.enqueueClosure_ = function(handler) {
+  var processQueue = function() {
+    if (this.closureQueue_.length == 0) {
+      this.closureQueueBusy_ = false;
+      return;
+    }
+    var handler = this.closureQueue_.shift();
+    this.closureQueueBusy_ = true;
+    handler(function() {
+      setTimeout(function() {
+        processQueue();
+      }.bind(this), 0);
+    }.bind(this));
+  }.bind(this);
+  this.closureQueue_.push(handler.bind(this));
+  if (!this.closureQueueBusy_)
+    processQueue();
+};
+
+/**
  * Fills the root list and starts tracking changes.
  */
 DirectoryModel.prototype.start = function() {
-  var volumesChangeHandler = this.onMountChanged_.bind(this);
-  this.volumeManager_.addEventListener('change', volumesChangeHandler);
+  this.volumeManager_.addEventListener('change',
+      this.enqueueClosure_.bind(this, this.onMountChanged_));
   this.volumeManager_.addEventListener('drive-status-changed',
-      this.onDriveStatusChanged_.bind(this));
-  this.updateRoots_();
+      this.enqueueClosure_.bind(this, this.onDriveStatusChanged_));
+
+  this.enqueueClosure_(this.updateRoots_);
 };
 
 /**
@@ -151,7 +180,7 @@ DirectoryModel.prototype.setDriveEnabled = function(enabled) {
   if (this.driveEnabled_ == enabled)
     return;
   this.driveEnabled_ = enabled;
-  this.updateRoots_();
+  this.enqueueClosure_(this.updateRoots_);
   if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
                    this.getCurrentRootType() == RootType.DRIVE_OFFLINE))
     this.changeDirectory(this.getDefaultDirectory());
@@ -1094,14 +1123,18 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
 
 /**
  * Updates the roots list.
+ *
+ * @param {function()=} opt_callback Completion callback.
  * @private
  */
-DirectoryModel.prototype.updateRoots_ = function() {
+DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
   var self = this;
   this.resolveRoots_(function(rootEntries) {
     var dm = self.rootsList_;
     var args = [0, dm.length].concat(rootEntries);
     dm.splice.apply(dm, args);
+    if (opt_callback)
+      opt_callback();
   });
 };
 
@@ -1115,24 +1148,30 @@ DirectoryModel.prototype.isDriveMounted = function() {
 
 /**
  * Handler for the VolumeManager's 'change' event.
+ *
+ * @param {function()} callback Completion callback.
  * @private
  */
-DirectoryModel.prototype.onMountChanged_ = function() {
-  this.updateRoots_();
+DirectoryModel.prototype.onMountChanged_ = function(callback) {
+  this.updateRoots_(function() {
+    var rootType = this.getCurrentRootType();
 
-  var rootType = this.getCurrentRootType();
+    if ((rootType == RootType.ARCHIVE || rootType == RootType.REMOVABLE) &&
+        !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
+      this.changeDirectory(this.getDefaultDirectory());
+    }
 
-  if ((rootType == RootType.ARCHIVE || rootType == RootType.REMOVABLE) &&
-      !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
-    this.changeDirectory(this.getDefaultDirectory());
-  }
+    callback();
+  }.bind(this));
 };
 
 /**
  * Handler for the VolumeManager's 'drive-status-changed' event.
+ *
+ * @param {function()} callback Completion callback.
  * @private
  */
-DirectoryModel.prototype.onDriveStatusChanged_ = function() {
+DirectoryModel.prototype.onDriveStatusChanged_ = function(callback) {
   var mounted = this.isDriveMounted();
   if (mounted) {
     // Change fake entry to real one and rescan.
@@ -1144,14 +1183,17 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function() {
       } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
         this.rescan();
       }
-    }
+      callback();
+    };
     this.root_.getDirectory(
         DirectoryModel.fakeDriveEntry_.fullPath, {},
         onGotDirectory.bind(this));
   } else {
     var rootType = this.getCurrentRootType();
-    if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE)
+    if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE) {
+      callback();
       return;
+    }
 
     // Current entry unmounted. Replace with fake drive one.
     this.updateRootEntry_(DirectoryModel.fakeDriveEntry_);
@@ -1161,6 +1203,7 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function() {
     } else {
       this.changeDirectoryEntry_(false, DirectoryModel.fakeDriveEntry_);
     }
+    callback();
   }
 };
 
