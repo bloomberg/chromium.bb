@@ -1149,7 +1149,11 @@ const LayerTreeSettings& LayerTreeHostImpl::Settings() const {
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
-  client_->DidLoseOutputSurfaceOnImplThread();
+  // TODO(jamesr): The renderer_ check is needed to make some of the
+  // LayerTreeHostContextTest tests pass, but shouldn't be necessary (or
+  // important) in production. We should adjust the test to not need this.
+  if (renderer_)
+    client_->DidLoseOutputSurfaceOnImplThread();
 }
 
 void LayerTreeHostImpl::OnSwapBuffersComplete() {

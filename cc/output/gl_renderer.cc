@@ -119,7 +119,6 @@ bool GLRenderer::Initialize() {
   if (!context_->makeContextCurrent())
     return false;
 
-  context_->setContextLostCallback(this);
   context_->pushGroupMarkerEXT("CompositorContext");
 
   std::string extensions_string =
@@ -144,8 +143,6 @@ bool GLRenderer::Initialize() {
   if (client_->HasImplThread())
     capabilities_.using_swap_complete_callback =
         extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
-  if (capabilities_.using_swap_complete_callback)
-    context_->setSwapBuffersCompleteCallbackCHROMIUM(this);
 
   capabilities_.using_set_visibility =
       extensions.count("GL_CHROMIUM_set_visibility") > 0;
@@ -191,9 +188,7 @@ bool GLRenderer::Initialize() {
 }
 
 GLRenderer::~GLRenderer() {
-  context_->setSwapBuffersCompleteCallbackCHROMIUM(NULL);
   context_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
-  context_->setContextLostCallback(NULL);
   CleanupSharedObjects();
 }
 
@@ -1889,12 +1884,6 @@ bool GLRenderer::SwapBuffers() {
   return true;
 }
 
-void GLRenderer::ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {
-  onSwapBuffersComplete();
-}
-
-void GLRenderer::onSwapBuffersComplete() { client_->OnSwapBuffersComplete(); }
-
 void GLRenderer::onMemoryAllocationChanged(
     WebGraphicsMemoryAllocation allocation) {
   // Just ignore the memory manager when it says to set the limit to zero
@@ -1971,8 +1960,6 @@ void GLRenderer::EnsureBackbuffer() {
   output_surface_->EnsureBackbuffer();
   is_backbuffer_discarded_ = false;
 }
-
-void GLRenderer::onContextLost() { client_->DidLoseOutputSurface(); }
 
 void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   DCHECK(rect.right() <= ViewportWidth());
