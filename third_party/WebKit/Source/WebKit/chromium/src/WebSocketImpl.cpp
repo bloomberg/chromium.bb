@@ -34,9 +34,9 @@
 #include "Document.h"
 #include "KURL.h"
 #include "MainThreadWebSocketChannel.h"
-#include "ThreadableWebSocketChannel.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
+#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WebSocketClient.h"
 
@@ -90,12 +90,12 @@ WebString WebSocketImpl::extensions()
 
 bool WebSocketImpl::sendText(const WebString& message)
 {
-    return m_private->send(message) == ThreadableWebSocketChannel::SendSuccess;
+    return m_private->send(message) == WebSocketChannel::SendSuccess;
 }
 
 bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
 {
-    return m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength()) == ThreadableWebSocketChannel::SendSuccess;
+    return m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength()) == WebSocketChannel::SendSuccess;
 }
 
 unsigned long WebSocketImpl::bufferedAmount() const

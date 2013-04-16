@@ -50,7 +50,7 @@
 #include "ScriptCallStack.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/HashSet.h>
@@ -240,7 +240,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         return;
     }
 
-    m_channel = ThreadableWebSocketChannel::create(scriptExecutionContext(), this);
+    m_channel = WebSocketChannel::create(scriptExecutionContext(), this);
 
     // FIXME: There is a disagreement about restriction of subprotocols between WebSocket API and hybi-10 protocol
     // draft. The former simply says "only characters in the range U+0021 to U+007E are allowed," while the latter
@@ -291,13 +291,13 @@ bool WebSocket::send(const String& message, ExceptionCode& ec)
         return false;
     }
     ASSERT(m_channel);
-    ThreadableWebSocketChannel::SendResult result = m_channel->send(message);
-    if (result == ThreadableWebSocketChannel::InvalidMessage) {
+    WebSocketChannel::SendResult result = m_channel->send(message);
+    if (result == WebSocketChannel::InvalidMessage) {
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Websocket message contains invalid character(s).");
         ec = SYNTAX_ERR;
         return false;
     }
-    return result == ThreadableWebSocketChannel::SendSuccess;
+    return result == WebSocketChannel::SendSuccess;
 }
 
 bool WebSocket::send(ArrayBuffer* binaryData, ExceptionCode& ec)
@@ -315,7 +315,7 @@ bool WebSocket::send(ArrayBuffer* binaryData, ExceptionCode& ec)
         return false;
     }
     ASSERT(m_channel);
-    return m_channel->send(*binaryData, 0, binaryData->byteLength()) == ThreadableWebSocketChannel::SendSuccess;
+    return m_channel->send(*binaryData, 0, binaryData->byteLength()) == WebSocketChannel::SendSuccess;
 }
 
 bool WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionCode& ec)
@@ -334,7 +334,7 @@ bool WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionCode& ec)
     }
     ASSERT(m_channel);
     RefPtr<ArrayBuffer> arrayBuffer(arrayBufferView->buffer());
-    return m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()) == ThreadableWebSocketChannel::SendSuccess;
+    return m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()) == WebSocketChannel::SendSuccess;
 }
 
 bool WebSocket::send(Blob* binaryData, ExceptionCode& ec)
@@ -352,7 +352,7 @@ bool WebSocket::send(Blob* binaryData, ExceptionCode& ec)
         return false;
     }
     ASSERT(m_channel);
-    return m_channel->send(*binaryData) == ThreadableWebSocketChannel::SendSuccess;
+    return m_channel->send(*binaryData) == WebSocketChannel::SendSuccess;
 }
 
 void WebSocket::closeInternal(int code, const String& reason, ExceptionCode& ec)
@@ -590,4 +590,4 @@ size_t WebSocket::getFramingOverhead(size_t payloadSize)
     return overhead;
 }
 
-}  // namespace WebCore
+} // namespace WebCore

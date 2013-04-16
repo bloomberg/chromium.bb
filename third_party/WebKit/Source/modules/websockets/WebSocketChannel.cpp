@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 
 #include "Document.h"
 #include "MainThreadWebSocketChannel.h"
@@ -48,7 +48,7 @@ namespace WebCore {
 
 static const char webSocketChannelMode[] = "webSocketChannelMode";
 
-PassRefPtr<ThreadableWebSocketChannel> ThreadableWebSocketChannel::create(ScriptExecutionContext* context, WebSocketChannelClient* client)
+PassRefPtr<WebSocketChannel> WebSocketChannel::create(ScriptExecutionContext* context, WebSocketChannelClient* client)
 {
     ASSERT(context);
     ASSERT(client);

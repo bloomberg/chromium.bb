@@ -46,7 +46,7 @@
 namespace WebCore {
 
 class Blob;
-class ThreadableWebSocketChannel;
+class WebSocketChannel;
 
 class WebSocket : public RefCounted<WebSocket>, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
@@ -140,7 +140,7 @@ private:
         BinaryTypeArrayBuffer
     };
 
-    RefPtr<ThreadableWebSocketChannel> m_channel;
+    RefPtr<WebSocketChannel> m_channel;
 
     State m_state;
     KURL m_url;

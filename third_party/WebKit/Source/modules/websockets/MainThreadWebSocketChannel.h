@@ -33,8 +33,8 @@
 
 #include "FileReaderLoaderClient.h"
 #include "SocketStreamHandleClient.h"
-#include "ThreadableWebSocketChannel.h"
 #include "Timer.h"
+#include "WebSocketChannel.h"
 #include "WebSocketDeflateFramer.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshake.h"
@@ -53,7 +53,7 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class MainThreadWebSocketChannel : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public ThreadableWebSocketChannel
+class MainThreadWebSocketChannel : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public WebSocketChannel
                                  , public FileReaderLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -62,13 +62,13 @@ public:
 
     bool send(const char* data, int length);
 
-    // ThreadableWebSocketChannel functions.
+    // WebSocketChannel functions.
     virtual void connect(const KURL&, const String& protocol) OVERRIDE;
     virtual String subprotocol() OVERRIDE;
     virtual String extensions() OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const String& message) OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const Blob&) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const Blob&) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
@@ -118,9 +118,9 @@ public:
     using RefCounted<MainThreadWebSocketChannel>::deref;
 
 protected:
-    // ThreadableWebSocketChannel functions.
-    virtual void refThreadableWebSocketChannel() OVERRIDE { ref(); }
-    virtual void derefThreadableWebSocketChannel() OVERRIDE { deref(); }
+    // WebSocketChannel functions.
+    virtual void refWebSocketChannel() OVERRIDE { ref(); }
+    virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*);

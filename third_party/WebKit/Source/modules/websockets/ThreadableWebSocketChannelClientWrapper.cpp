@@ -34,7 +34,7 @@
 #include "CrossThreadCopier.h"
 #include "CrossThreadTask.h"
 #include "ScriptExecutionContext.h"
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -47,7 +47,7 @@ ThreadableWebSocketChannelClientWrapper::ThreadableWebSocketChannelClientWrapper
     , m_peer(0)
     , m_failedWebSocketChannelCreation(false)
     , m_syncMethodDone(true)
-    , m_sendRequestResult(ThreadableWebSocketChannel::SendFail)
+    , m_sendRequestResult(WebSocketChannel::SendFail)
     , m_bufferedAmount(0)
     , m_suspended(false)
 {
@@ -129,12 +129,12 @@ void ThreadableWebSocketChannelClientWrapper::setExtensions(const String& extens
         memcpy(m_extensions.data(), extensions.characters(), sizeof(UChar) * length);
 }
 
-ThreadableWebSocketChannel::SendResult ThreadableWebSocketChannelClientWrapper::sendRequestResult() const
+WebSocketChannel::SendResult ThreadableWebSocketChannelClientWrapper::sendRequestResult() const
 {
     return m_sendRequestResult;
 }
 
-void ThreadableWebSocketChannelClientWrapper::setSendRequestResult(ThreadableWebSocketChannel::SendResult sendRequestResult)
+void ThreadableWebSocketChannelClientWrapper::setSendRequestResult(WebSocketChannel::SendResult sendRequestResult)
 {
     m_sendRequestResult = sendRequestResult;
     m_syncMethodDone = true;

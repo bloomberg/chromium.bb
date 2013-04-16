@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadableWebSocketChannel_h
-#define ThreadableWebSocketChannel_h
+#ifndef WebSocketChannel_h
+#define WebSocketChannel_h
 
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
@@ -42,11 +42,11 @@ class KURL;
 class ScriptExecutionContext;
 class WebSocketChannelClient;
 
-class ThreadableWebSocketChannel {
-    WTF_MAKE_NONCOPYABLE(ThreadableWebSocketChannel);
+class WebSocketChannel {
+    WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
-    ThreadableWebSocketChannel() { }
-    static PassRefPtr<ThreadableWebSocketChannel> create(ScriptExecutionContext*, WebSocketChannelClient*);
+    WebSocketChannel() { }
+    static PassRefPtr<WebSocketChannel> create(ScriptExecutionContext*, WebSocketChannelClient*);
 
     enum SendResult {
         SendSuccess,
@@ -69,15 +69,15 @@ public:
     virtual void suspend() = 0;
     virtual void resume() = 0;
 
-    void ref() { refThreadableWebSocketChannel(); }
-    void deref() { derefThreadableWebSocketChannel(); }
+    void ref() { refWebSocketChannel(); }
+    void deref() { derefWebSocketChannel(); }
 
 protected:
-    virtual ~ThreadableWebSocketChannel() { }
-    virtual void refThreadableWebSocketChannel() = 0;
-    virtual void derefThreadableWebSocketChannel() = 0;
+    virtual ~WebSocketChannel() { }
+    virtual void refWebSocketChannel() = 0;
+    virtual void derefWebSocketChannel() = 0;
 };
 
 } // namespace WebCore
 
-#endif // ThreadableWebSocketChannel_h
+#endif // WebSocketChannel_h

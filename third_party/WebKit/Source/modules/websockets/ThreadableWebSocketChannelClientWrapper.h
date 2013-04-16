@@ -32,7 +32,7 @@
 #define ThreadableWebSocketChannelClientWrapper_h
 
 #include "ScriptExecutionContext.h"
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WorkerThreadableWebSocketChannel.h"
 #include <wtf/Forward.h>
@@ -68,8 +68,8 @@ public:
     String extensions() const;
     void setExtensions(const String&);
 
-    ThreadableWebSocketChannel::SendResult sendRequestResult() const;
-    void setSendRequestResult(ThreadableWebSocketChannel::SendResult);
+    WebSocketChannel::SendResult sendRequestResult() const;
+    void setSendRequestResult(WebSocketChannel::SendResult);
 
     unsigned long bufferedAmount() const;
     void setBufferedAmount(unsigned long);
@@ -109,7 +109,7 @@ private:
     // ThreadSafeRefCounted must not have String member variables.
     Vector<UChar> m_subprotocol;
     Vector<UChar> m_extensions;
-    ThreadableWebSocketChannel::SendResult m_sendRequestResult;
+    WebSocketChannel::SendResult m_sendRequestResult;
     unsigned long m_bufferedAmount;
     bool m_suspended;
     Vector<OwnPtr<ScriptExecutionContext::Task> > m_pendingTasks;

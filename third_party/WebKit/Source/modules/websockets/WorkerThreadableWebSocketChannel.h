@@ -31,7 +31,7 @@
 #ifndef WorkerThreadableWebSocketChannel_h
 #define WorkerThreadableWebSocketChannel_h
 
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WorkerContext.h"
 
@@ -50,22 +50,22 @@ class WorkerContext;
 class WorkerLoaderProxy;
 class WorkerRunLoop;
 
-class WorkerThreadableWebSocketChannel : public RefCounted<WorkerThreadableWebSocketChannel>, public ThreadableWebSocketChannel {
+class WorkerThreadableWebSocketChannel : public RefCounted<WorkerThreadableWebSocketChannel>, public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<ThreadableWebSocketChannel> create(WorkerContext* workerContext, WebSocketChannelClient* client, const String& taskMode)
+    static PassRefPtr<WebSocketChannel> create(WorkerContext* workerContext, WebSocketChannelClient* client, const String& taskMode)
     {
         return adoptRef(new WorkerThreadableWebSocketChannel(workerContext, client, taskMode));
     }
     virtual ~WorkerThreadableWebSocketChannel();
 
-    // ThreadableWebSocketChannel functions.
+    // WebSocketChannel functions.
     virtual void connect(const KURL&, const String& protocol) OVERRIDE;
     virtual String subprotocol() OVERRIDE;
     virtual String extensions() OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const String& message) OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual ThreadableWebSocketChannel::SendResult send(const Blob&) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(const Blob&) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason) OVERRIDE;
@@ -109,7 +109,7 @@ public:
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
-        RefPtr<ThreadableWebSocketChannel> m_mainWebSocketChannel;
+        RefPtr<WebSocketChannel> m_mainWebSocketChannel;
         String m_taskMode;
     };
 
@@ -117,9 +117,9 @@ public:
     using RefCounted<WorkerThreadableWebSocketChannel>::deref;
 
 protected:
-    // ThreadableWebSocketChannel functions.
-    virtual void refThreadableWebSocketChannel() OVERRIDE { ref(); }
-    virtual void derefThreadableWebSocketChannel() OVERRIDE { deref(); }
+    // WebSocketChannel functions.
+    virtual void refWebSocketChannel() OVERRIDE { ref(); }
+    virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
 private:
     // Bridge for Peer. Running on the worker thread.
@@ -132,9 +132,9 @@ private:
         ~Bridge();
         void initialize();
         void connect(const KURL&, const String& protocol);
-        ThreadableWebSocketChannel::SendResult send(const String& message);
-        ThreadableWebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
-        ThreadableWebSocketChannel::SendResult send(const Blob&);
+        WebSocketChannel::SendResult send(const String& message);
+        WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
+        WebSocketChannel::SendResult send(const Blob&);
         unsigned long bufferedAmount();
         void close(int code, const String& reason);
         void fail(const String& reason);

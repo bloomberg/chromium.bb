@@ -50,7 +50,7 @@
 #include "Settings.h"
 #include "SocketStreamError.h"
 #include "SocketStreamHandle.h"
-#include "ThreadableWebSocketChannel.h"
+#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WebSocketHandshake.h"
 
@@ -132,7 +132,7 @@ String MainThreadWebSocketChannel::extensions()
     return extensions;
 }
 
-ThreadableWebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& message)
+WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& message)
 {
     LOG(Network, "MainThreadWebSocketChannel %p send() Sending String '%s'", this, message.utf8().data());
     CString utf8 = message.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
@@ -144,23 +144,23 @@ ThreadableWebSocketChannel::SendResult MainThreadWebSocketChannel::send(const St
     // m_channel->send() may happen later, thus it's not always possible to know whether
     // the message has been sent to the socket successfully. In this case, we have no choice
     // but to return true.
-    return ThreadableWebSocketChannel::SendSuccess;
+    return WebSocketChannel::SendSuccess;
 }
 
-ThreadableWebSocketChannel::SendResult MainThreadWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
     LOG(Network, "MainThreadWebSocketChannel %p send() Sending ArrayBuffer %p byteOffset=%u byteLength=%u", this, &binaryData, byteOffset, byteLength);
     enqueueRawFrame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
     processOutgoingFrameQueue();
-    return ThreadableWebSocketChannel::SendSuccess;
+    return WebSocketChannel::SendSuccess;
 }
 
-ThreadableWebSocketChannel::SendResult MainThreadWebSocketChannel::send(const Blob& binaryData)
+WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const Blob& binaryData)
 {
     LOG(Network, "MainThreadWebSocketChannel %p send() Sending Blob '%s'", this, binaryData.url().elidedString().utf8().data());
     enqueueBlobFrame(WebSocketFrame::OpCodeBinary, binaryData);
     processOutgoingFrameQueue();
-    return ThreadableWebSocketChannel::SendSuccess;
+    return WebSocketChannel::SendSuccess;
 }
 
 bool MainThreadWebSocketChannel::send(const char* data, int length)
