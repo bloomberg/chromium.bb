@@ -110,7 +110,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   int   desc;
   void  *map_addr;
   int   host_prot;
+  int   tmp_prot;
   int   host_flags;
+  int   need_exec;
   UNREFERENCED_PARAMETER(effp);
 
   NaClLog(4,
@@ -152,7 +154,43 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   NaClLog(4, "NaClHostDescMap: host_prot 0x%x, host_flags 0x%x\n",
           host_prot, host_flags);
 
-  map_addr = mmap(start_addr, len, host_prot, host_flags, desc, offset);
+  /*
+   * In chromium-os, the /dev/shm and the user partition (where
+   * installed apps live) are mounted no-exec, and a special
+   * modification was made to the chromium-os version of the Linux
+   * kernel to allow mmap to use files as backing store with
+   * PROT_EXEC. The standard mmap code path will fail mmap requests
+   * that ask for PROT_EXEC, but mprotect will allow chaning the
+   * permissions later. This retains most of the defense-in-depth
+   * property of disallowing PROT_EXEC in mmap, but enables the use
+   * case of getting executable code from a file without copying.
+   *
+   * See https://code.google.com/p/chromium/issues/detail?id=202321
+   * for details of the chromium-os change.
+   */
+  tmp_prot = host_prot & ~PROT_EXEC;
+  need_exec = (0 != (PROT_EXEC & host_prot));
+  map_addr = mmap(start_addr, len, tmp_prot, host_flags, desc, offset);
+  if (need_exec && MAP_FAILED != map_addr) {
+    if (0 != mprotect(map_addr, len, host_prot)) {
+      /*
+       * Not being able to turn on PROT_EXEC is fatal: we have already
+       * replaced the original mapping -- restoring them would be too
+       * painful.  Without scanning /proc (disallowed by outer
+       * sandbox) or Mach's vm_region call, there is no way
+       * simple/direct to figure out what was there before.  On Linux
+       * we could have mremap'd the old memory elsewhere, but still
+       * would require probing to find the contiguous memory segments
+       * within the original address range.  And restoring dirtied
+       * pages on OSX the mappings for which had disappeared may well
+       * be impossible (getting clean copies of the pages is feasible,
+       * but insufficient).
+       */
+      NaClLog(LOG_FATAL,
+              "NaClHostDescMap: mprotect to turn on PROT_EXEC failed,"
+              " errno %d\n", errno);
+    }
+  }
 
   NaClLog(4, "NaClHostDescMap: mmap returned %"NACL_PRIxPTR"\n",
           (uintptr_t) map_addr);
