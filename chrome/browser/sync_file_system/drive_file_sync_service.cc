@@ -911,54 +911,28 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
   if (!extension_service)
     return;
 
-  // TODO(nhiroki): clean up these loops with similar bodies.
-  // http://crbug.com/211600
-
-  std::vector<GURL> disabled_origins;
-  metadata_store_->GetDisabledOrigins(&disabled_origins);
-  for (std::vector<GURL>::const_iterator itr = disabled_origins.begin();
-       itr != disabled_origins.end(); ++itr) {
+  std::vector<GURL> origins;
+  metadata_store_->GetAllOrigins(&origins);
+  for (std::vector<GURL>::const_iterator itr = origins.begin();
+       itr != origins.end(); ++itr) {
     std::string extension_id = itr->host();
     GURL origin =
         extensions::Extension::GetBaseURLFromExtensionId(extension_id);
 
     if (!extension_service->GetInstalledExtension(extension_id)) {
+      // Extension has been uninstalled.
       UninstallOrigin(origin, base::Bind(&DidHandleUnregisteredOrigin, origin));
-      continue;
-    }
-
-    if (extension_service->IsExtensionEnabled(extension_id)) {
-      // Extension is enabled. Enable origin.
-      metadata_store_->EnableOrigin(
-          origin, base::Bind(&EmptyStatusCallback));
+    } else if ((metadata_store_->IsBatchSyncOrigin(origin) ||
+                metadata_store_->IsIncrementalSyncOrigin(origin)) &&
+               !extension_service->IsExtensionEnabled(extension_id)) {
+      // Extension has been disabled.
+      metadata_store_->DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
+    } else if (metadata_store_->IsOriginDisabled(origin) &&
+               extension_service->IsExtensionEnabled(extension_id)) {
+      // Extension has been re-enabled.
+      metadata_store_->EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
       pending_batch_sync_origins_.insert(origin);
-      continue;
     }
-
-    // Extension is still disabled.
-  }
-
-  std::vector<GURL> enabled_origins;
-  metadata_store_->GetEnabledOrigins(&enabled_origins);
-  for (std::vector<GURL>::const_iterator itr = enabled_origins.begin();
-       itr != enabled_origins.end(); ++itr) {
-    std::string extension_id = itr->host();
-    GURL origin =
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id);
-
-    if (!extension_service->GetInstalledExtension(extension_id)) {
-      UninstallOrigin(origin, base::Bind(&DidHandleUnregisteredOrigin, origin));
-      continue;
-    }
-
-    if (!extension_service->IsExtensionEnabled(extension_id)) {
-      // Extension is disabled. Disable origin.
-      metadata_store_->DisableOrigin(
-          origin, base::Bind(&EmptyStatusCallback));
-      continue;
-    }
-
-    // Extension is still enabled.
   }
 }
 

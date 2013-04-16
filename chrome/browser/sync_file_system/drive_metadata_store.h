@@ -145,12 +145,9 @@ class DriveMetadataStore
     return disabled_origins_;
   }
 
-  // Returns tracked and enabled origins. i.e. Union of batch_sync_origins_ and
-  // incremental_sync_origins_.
-  void GetEnabledOrigins(std::vector<GURL>* origins);
-
-  // Returns tracked but disabled origins. i.e. disabled_origins_.
-  void GetDisabledOrigins(std::vector<GURL>* origins);
+  // Returns all tracked origins. i.e. Union of batch_sync_origins_,
+  // incremental_sync_origins_ and disabled_origins_.
+  void GetAllOrigins(std::vector<GURL>* origins);
 
   // Maps |resource_id| to corresponding |origin|.
   // Returns true if the directory indicated by |resource_id| is not an origin

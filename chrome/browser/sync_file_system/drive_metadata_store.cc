@@ -750,19 +750,15 @@ std::string DriveMetadataStore::GetResourceIdForOrigin(
   return std::string();
 }
 
-void DriveMetadataStore::GetEnabledOrigins(std::vector<GURL>* origins) {
+void DriveMetadataStore::GetAllOrigins(std::vector<GURL>* origins) {
   DCHECK(CalledOnValidThread());
+  DCHECK(origins);
   origins->clear();
   origins->reserve(batch_sync_origins_.size() +
-                   incremental_sync_origins_.size());
+                   incremental_sync_origins_.size() +
+                   disabled_origins_.size());
   AddOriginsToVector(origins, batch_sync_origins_);
   AddOriginsToVector(origins, incremental_sync_origins_);
-}
-
-void DriveMetadataStore::GetDisabledOrigins(std::vector<GURL>* origins) {
-  DCHECK(CalledOnValidThread());
-  origins->clear();
-  origins->reserve(disabled_origins_.size());
   AddOriginsToVector(origins, disabled_origins_);
 }
 
