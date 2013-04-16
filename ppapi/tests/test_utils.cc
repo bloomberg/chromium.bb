@@ -150,17 +150,6 @@ TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
       delegate_(NULL) {
 }
 
-int32_t TestCompletionCallback::WaitForResult() {
-  PP_DCHECK(!wait_for_result_called_);
-  wait_for_result_called_ = true;
-  errors_.clear();
-  if (!have_result_) {
-    post_quit_task_ = true;
-    RunMessageLoop();
-  }
-  return result_;
-}
-
 void TestCompletionCallback::WaitForResult(int32_t result) {
   PP_DCHECK(!wait_for_result_called_);
   wait_for_result_called_ = true;

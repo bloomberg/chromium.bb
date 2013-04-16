@@ -159,14 +159,8 @@ class TestCase {
   // NULL unless InitTestingInterface is called.
   const PPB_Testing_Dev* testing_interface_;
 
-  // TODO(dmichael): Remove this, it's for temporary backwards compatibility so
-  // I don't have to change all the tests at once.
-  bool force_async_;
-
   void set_callback_type(CallbackType callback_type) {
     callback_type_ = callback_type;
-    // TODO(dmichael): Remove this; see comment on force_async_.
-    force_async_ = (callback_type_ == PP_REQUIRED);
   }
   CallbackType callback_type() const {
     return callback_type_;
@@ -376,6 +370,10 @@ class TestCaseFactory {
 #define ASSERT_FALSE(cmd) ASSERT_TRUE(!(cmd))
 #define ASSERT_EQ(a, b) ASSERT_TRUE((a) == (b))
 #define ASSERT_NE(a, b) ASSERT_TRUE((a) != (b))
+#define ASSERT_LT(a, b) ASSERT_TRUE((a) < (b))
+#define ASSERT_LE(a, b) ASSERT_TRUE((a) <= (b))
+#define ASSERT_GT(a, b) ASSERT_TRUE((a) > (b))
+#define ASSERT_GE(a, b) ASSERT_TRUE((a) >= (b))
 
 #define ASSERT_DOUBLE_EQ(a, b) ASSERT_TRUE( \
     std::fabs((a)-(b)) <= std::numeric_limits<double>::epsilon())

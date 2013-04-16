@@ -33,7 +33,7 @@ bool TestHostResolverPrivateDisallowed::Init() {
 }
 
 void TestHostResolverPrivateDisallowed::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(Resolve, filter);
+  RUN_CALLBACK_TEST(TestHostResolverPrivateDisallowed, Resolve, filter);
 }
 
 std::string TestHostResolverPrivateDisallowed::TestResolve() {
@@ -41,14 +41,10 @@ std::string TestHostResolverPrivateDisallowed::TestResolve() {
   PP_HostResolver_Private_Hint hint;
   hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
   hint.flags = PP_HOST_RESOLVER_FLAGS_CANONNAME;
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = host_resolver.Resolve(host_, port_, hint,
-                                     callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_HostResolver_Private::Resolve force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_ERROR_FAILED)
-    return "PPB_HostResolver_Private can resolve without allowing switch";
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      host_resolver.Resolve(host_, port_, hint, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
   PASS();
 }

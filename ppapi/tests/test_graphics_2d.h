@@ -66,13 +66,10 @@ class TestGraphics2D : public TestCase {
   // Validates that the given device context is filled with the given color.
   bool IsDCUniformColor(const pp::Graphics2D& dc, uint32_t color) const;
 
-  // Returns true if Graphics2D resource is created correctly.
-  bool ResourceHealthCheck(pp::Instance* instance, pp::Graphics2D* context);
-  bool ResourceHealthCheckForC(pp::Instance* instance, PP_Resource graphics_2d);
-
   // Issues a flush on the given device context and blocks until the flush
-  // has issued its callback. Returns true on success.
-  bool FlushAndWaitForDone(pp::Graphics2D* context);
+  // has issued its callback. Returns an empty string on success or an error
+  // message on failure.
+  std::string FlushAndWaitForDone(pp::Graphics2D* context);
 
   // Creates an image and replaces the contents of the Graphics2D with the
   // image, waiting for completion. This returns the resource ID of the image
@@ -107,8 +104,8 @@ class TestGraphics2D : public TestCase {
   std::string TestBindNull();
 
   // Used by the tests that access the C API directly.
-  const PPB_Graphics2D* graphics_2d_interface_;
-  const PPB_ImageData* image_data_interface_;
+  const PPB_Graphics2D_1_1* graphics_2d_interface_;
+  const PPB_ImageData_1_0* image_data_interface_;
 
   // Used to indicate that DidChangeView has happened, in order to make plugin
   // and ui synchronous.

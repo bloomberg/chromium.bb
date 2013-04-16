@@ -93,14 +93,6 @@ class TestCompletionCallback {
   // The delegate will be reset when Reset() or GetCallback() is called.
   void SetDelegate(Delegate* delegate) { delegate_ = delegate; }
 
-  // Waits for the callback to be called and returns the
-  // result. Returns immediately if the callback was previously called
-  // and the result wasn't returned (i.e. each result value received
-  // by the callback is returned by WaitForResult() once and only
-  // once). DEPRECATED: Please use the one below.
-  // TODO(dmichael): Remove this one when all the tests are updated.
-  int32_t WaitForResult();
-
   // Wait for a result, given the return from the call which took this callback
   // as a parameter. If |result| is PP_OK_COMPLETIONPENDING, WaitForResult will
   // block until its callback has been invoked (in some cases, this will already

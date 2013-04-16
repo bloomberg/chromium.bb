@@ -42,33 +42,29 @@ bool TestHostResolverPrivate::Init() {
 
 void TestHostResolverPrivate::RunTests(const std::string& filter) {
   RUN_TEST(Empty, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(Resolve, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ResolveIPv4, filter);
+  RUN_CALLBACK_TEST(TestHostResolverPrivate, Resolve, filter);
+  RUN_CALLBACK_TEST(TestHostResolverPrivate, ResolveIPv4, filter);
 }
 
 std::string TestHostResolverPrivate::SyncConnect(pp::TCPSocketPrivate* socket,
                                                  const std::string& host,
                                                  uint16_t port) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->Connect(host.c_str(), port, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+     socket->Connect(host.c_str(), port, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
   PASS();
 }
 
 std::string TestHostResolverPrivate::SyncConnect(
     pp::TCPSocketPrivate* socket,
     const PP_NetAddress_Private& address) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->ConnectWithNetAddress(&address, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->ConnectWithNetAddress(&address, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
   PASS();
 }
 
@@ -76,15 +72,12 @@ std::string TestHostResolverPrivate::SyncRead(pp::TCPSocketPrivate* socket,
                                               char* buffer,
                                               int32_t num_bytes,
                                               int32_t* bytes_read) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->Read(buffer, num_bytes, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Read force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (num_bytes != rv)
-    return ReportError("PPB_TCPSocket_Private::Read", rv);
-  *bytes_read = rv;
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->Read(buffer, num_bytes, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(num_bytes, callback.result());
+  *bytes_read = callback.result();
   PASS();
 }
 
@@ -92,15 +85,12 @@ std::string TestHostResolverPrivate::SyncWrite(pp::TCPSocketPrivate* socket,
                                                const char* buffer,
                                                int32_t num_bytes,
                                                int32_t* bytes_written) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->Write(buffer, num_bytes, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Write force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (num_bytes != rv)
-    return ReportError("PPB_TCPSocket_Private::Write", rv);
-  *bytes_written = rv;
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->Write(buffer, num_bytes, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(num_bytes, callback.result());
+  *bytes_written = callback.result();
   PASS();
 }
 
@@ -127,14 +117,10 @@ std::string TestHostResolverPrivate::SyncResolve(
     const std::string& host,
     uint16_t port,
     const PP_HostResolver_Private_Hint& hint) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = host_resolver->Resolve(host, port, hint, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_HostResolver_Private::Resolve force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("PPB_HostResolver_Private::Resolve", rv);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      host_resolver->Resolve(host, port, hint, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
   PASS();
 }
 

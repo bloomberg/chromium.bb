@@ -36,6 +36,20 @@ void FlushCallbackQuitMessageLoop(void* data, int32_t result) {
   static_cast<TestGraphics2D*>(data)->QuitMessageLoop();
 }
 
+bool CanFlushContext(pp::Instance* instance, pp::Graphics2D* context) {
+  TestCompletionCallback callback(instance->pp_instance());
+  callback.WaitForResult(context->Flush(callback.GetCallback()));
+  return (callback.result() == PP_OK);
+}
+
+bool CanFlushContextC(pp::Instance* instance, PP_Resource graphics_2d,
+                      const PPB_Graphics2D_1_1* graphics_2d_if) {
+  TestCompletionCallback callback(instance->pp_instance());
+  callback.WaitForResult(graphics_2d_if->Flush(
+      graphics_2d, callback.GetCallback().pp_completion_callback()));
+  return (callback.result() == PP_OK);
+}
+
 }  // namespace
 
 TestGraphics2D::TestGraphics2D(TestingInstance* instance)
@@ -46,9 +60,9 @@ TestGraphics2D::TestGraphics2D(TestingInstance* instance)
 
 bool TestGraphics2D::Init() {
   graphics_2d_interface_ = static_cast<const PPB_Graphics2D*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE));
+      pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE_1_1));
   image_data_interface_ = static_cast<const PPB_ImageData*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
+      pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE_1_0));
   return graphics_2d_interface_ && image_data_interface_ &&
          CheckTestingInterface();
 }
@@ -94,41 +108,12 @@ bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
   return IsSquareInImage(readback, 0, pp::Rect(dc.size()), color);
 }
 
-bool TestGraphics2D::ResourceHealthCheck(pp::Instance* instance,
-                                         pp::Graphics2D* context) {
-  TestCompletionCallback callback(instance->pp_instance(), callback_type());
+std::string TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(context->Flush(callback.GetCallback()));
-  if (callback.result() < 0)
-    return callback.result() != PP_ERROR_FAILED;
-  else if (callback.result() == 0)
-    return false;
-  return true;
-}
-
-bool TestGraphics2D::ResourceHealthCheckForC(pp::Instance* instance,
-                                             PP_Resource graphics_2d) {
-  TestCompletionCallback callback(instance->pp_instance(), callback_type());
-  callback.WaitForResult(graphics_2d_interface_->Flush(
-      graphics_2d, callback.GetCallback().pp_completion_callback()));
-  if (callback.result() < 0)
-    return callback.result() != PP_ERROR_FAILED;
-  else if (callback.result() == 0)
-    return false;
-  return true;
-}
-
-bool TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
-  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-  pp::CompletionCallback cc(&FlushCallbackQuitMessageLoop, this, flags);
-  int32_t rv = context->Flush(cc);
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return false;
-  if (rv == PP_OK)
-    return true;
-  if (rv != PP_OK_COMPLETIONPENDING)
-    return false;
-  testing_interface_->RunMessageLoop(instance_->pp_instance());
-  return true;
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+  PASS();
 }
 
 void TestGraphics2D::FillRectInImage(pp::ImageData* image,
@@ -218,7 +203,8 @@ PP_Resource TestGraphics2D::ReplaceContentsAndReturnID(
   PP_Resource id = image.pp_resource();
 
   dc->ReplaceContents(&image);
-  if (!FlushAndWaitForDone(dc))
+  std::string result = FlushAndWaitForDone(dc);
+  if (!result.empty())
     return 0;
 
   return id;
@@ -264,36 +250,33 @@ std::string TestGraphics2D::TestInvalidResource() {
                                           image.pp_resource());
 
   // Flush.
-  if (graphics_2d_interface_->Flush(
-          image.pp_resource(),
-          PP_MakeOptionalCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
-    return "Flush succeeded with a different resource";
-  if (graphics_2d_interface_->Flush(
-          null_context.pp_resource(),
-          PP_MakeOptionalCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
-    return "Flush succeeded with a NULL resource";
+  TestCompletionCallback cb(instance_->pp_instance(), PP_OPTIONAL);
+  cb.WaitForResult(
+      graphics_2d_interface_->Flush(image.pp_resource(),
+                                    cb.GetCallback().pp_completion_callback()));
+  ASSERT_EQ(PP_ERROR_BADRESOURCE, cb.result());
+  cb.WaitForResult(
+      graphics_2d_interface_->Flush(null_context.pp_resource(),
+                                    cb.GetCallback().pp_completion_callback()));
+  ASSERT_EQ(PP_ERROR_BADRESOURCE, cb.result());
 
   // ReadImageData.
-  if (testing_interface_->ReadImageData(image.pp_resource(),
-                                        image.pp_resource(),
-                                        &zero_zero))
-    return "ReadImageData succeeded with a different resource";
-  if (testing_interface_->ReadImageData(null_context.pp_resource(),
-                                        image.pp_resource(),
-                                        &zero_zero))
-    return "ReadImageData succeeded with a NULL resource";
+  ASSERT_FALSE(testing_interface_->ReadImageData(image.pp_resource(),
+                                                 image.pp_resource(),
+                                                 &zero_zero));
+  ASSERT_FALSE(testing_interface_->ReadImageData(null_context.pp_resource(),
+                                                 image.pp_resource(),
+                                                 &zero_zero));
 
   PASS();
 }
 
 std::string TestGraphics2D::TestInvalidSize() {
   pp::Graphics2D a(instance_, pp::Size(16, 0), false);
-  if (ResourceHealthCheck(instance_, &a))
-    return "0 height accepted";
+  ASSERT_FALSE(CanFlushContext(instance_, &a));
 
   pp::Graphics2D b(instance_, pp::Size(0, 16), false);
-  if (ResourceHealthCheck(instance_, &b))
-    return "0 height accepted";
+  ASSERT_FALSE(CanFlushContext(instance_, &b));
 
   // Need to use the C API since pp::Size prevents negative sizes.
   PP_Size size;
@@ -301,50 +284,48 @@ std::string TestGraphics2D::TestInvalidSize() {
   size.height = -16;
   PP_Resource graphics = graphics_2d_interface_->Create(
       instance_->pp_instance(), &size, PP_FALSE);
-  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
+  ASSERT_FALSE(CanFlushContextC(instance_, graphics, graphics_2d_interface_));
+  pp::Module::Get()->core()->ReleaseResource(graphics);
 
   size.width = -16;
   size.height = 16;
   graphics = graphics_2d_interface_->Create(
       instance_->pp_instance(), &size, PP_FALSE);
-  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
+  ASSERT_FALSE(CanFlushContextC(instance_, graphics, graphics_2d_interface_));
+  pp::Module::Get()->core()->ReleaseResource(graphics);
 
   // Overflow to negative size
   size.width = std::numeric_limits<int32_t>::max();
   size.height = std::numeric_limits<int32_t>::max();
   graphics = graphics_2d_interface_->Create(
       instance_->pp_instance(), &size, PP_FALSE);
-  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
+  ASSERT_FALSE(CanFlushContextC(instance_, graphics, graphics_2d_interface_));
+  pp::Module::Get()->core()->ReleaseResource(graphics);
 
   PASS();
 }
 
 std::string TestGraphics2D::TestHumongous() {
   pp::Graphics2D a(instance_, pp::Size(100000, 100000), false);
-  if (ResourceHealthCheck(instance_, &a))
-    return "Humongous device created";
+  ASSERT_FALSE(CanFlushContext(instance_, &a));
   PASS();
 }
 
 std::string TestGraphics2D::TestInitToZero() {
   const int w = 15, h = 17;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
 
   // Make an image with nonzero data in it (so we can test that zeros were
   // actually read versus ReadImageData being a NOP).
   pp::ImageData image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                       pp::Size(w, h), true);
-  if (image.is_null())
-    return "Failure to allocate an image";
+  ASSERT_FALSE(image.is_null());
   memset(image.data(), 0xFF, image.stride() * image.size().height() * 4);
 
   // Read out the initial data from the device & check.
-  if (!ReadImageData(dc, &image, pp::Point(0, 0)))
-    return "Couldn't read image data";
-  if (!IsSquareInImage(image, 0, pp::Rect(0, 0, w, h), 0))
-    return "Got a nonzero pixel";
+  ASSERT_TRUE(ReadImageData(dc, &image, pp::Point(0, 0)));
+  ASSERT_TRUE(IsSquareInImage(image, 0, pp::Rect(0, 0, w, h), 0));
 
   PASS();
 }
@@ -353,19 +334,17 @@ std::string TestGraphics2D::TestDescribe() {
   const int w = 15, h = 17;
   const bool always_opaque = (::rand() % 2 == 1);
   pp::Graphics2D dc(instance_, pp::Size(w, h), always_opaque);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
 
   PP_Size size;
   size.width = -1;
   size.height = -1;
   PP_Bool is_always_opaque = PP_FALSE;
-  if (!graphics_2d_interface_->Describe(dc.pp_resource(), &size,
-                                        &is_always_opaque))
-    return "Describe failed";
-  if (size.width != w || size.height != h ||
-      is_always_opaque != PP_FromBool(always_opaque))
-    return "Mismatch of data.";
+  ASSERT_TRUE(graphics_2d_interface_->Describe(dc.pp_resource(), &size,
+                                               &is_always_opaque));
+  ASSERT_EQ(w, size.width);
+  ASSERT_EQ(h, size.height);
+  ASSERT_EQ(PP_FromBool(always_opaque), is_always_opaque);
 
   PASS();
 }
@@ -375,22 +354,15 @@ std::string TestGraphics2D::TestScale() {
   const int w = 20, h = 16;
   const float scale = 1.0f/2.0f;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
-  if (dc.GetScale() != 1.0f)
-    return "GetScale returned unexpected value before SetScale";
-  if (!dc.SetScale(scale))
-    return "SetScale failed";
-  if (dc.GetScale() != scale)
-    return "GetScale mismatch with prior SetScale";
+  ASSERT_FALSE(dc.is_null());
+  ASSERT_EQ(1.0,  dc.GetScale());
+  ASSERT_TRUE(dc.SetScale(scale));
+  ASSERT_EQ(scale, dc.GetScale());
   // Try setting a few invalid scale factors. Ensure that we catch these errors
   // and don't change the actual scale
-  if (dc.SetScale(-1.0f))
-    return "SetScale(-1f) did not fail";
-  if (dc.SetScale(0.0f))
-    return "SetScale(0.0f) did not fail";
-  if (dc.GetScale() != scale)
-    return "SetScale with invalid parameter overwrote the scale";
+  ASSERT_FALSE(dc.SetScale(-1.0f));
+  ASSERT_FALSE(dc.SetScale(0.0f));
+  ASSERT_EQ(scale, dc.GetScale());
 
   // Verify that the context has the specified number of pixels, despite the
   // non-identity scale
@@ -398,12 +370,11 @@ std::string TestGraphics2D::TestScale() {
   size.width = -1;
   size.height = -1;
   PP_Bool is_always_opaque = PP_FALSE;
-  if (!graphics_2d_interface_->Describe(dc.pp_resource(), &size,
-                                        &is_always_opaque))
-    return "Describe failed";
-  if (size.width != w || size.height != h ||
-      is_always_opaque != PP_FromBool(false))
-    return "Mismatch of data.";
+  ASSERT_TRUE(graphics_2d_interface_->Describe(dc.pp_resource(), &size,
+                                               &is_always_opaque));
+  ASSERT_EQ(w, size.width);
+  ASSERT_EQ(h, size.height);
+  ASSERT_EQ(PP_FALSE, is_always_opaque);
 
   PASS();
 }
@@ -411,12 +382,10 @@ std::string TestGraphics2D::TestScale() {
 std::string TestGraphics2D::TestPaint() {
   const int w = 15, h = 17;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
 
   // Make sure the device background is 0.
-  if (!IsDCUniformColor(dc, 0))
-    return "Bad initial color";
+  ASSERT_TRUE(IsDCUniformColor(dc, 0));
 
   // Fill the backing store with white.
   const uint32_t background_color = 0xFFFFFFFF;
@@ -424,35 +393,30 @@ std::string TestGraphics2D::TestPaint() {
                            pp::Size(w, h), false);
   FillRectInImage(&background, pp::Rect(0, 0, w, h), background_color);
   dc.PaintImageData(background, pp::Point(0, 0));
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush to fill backing store";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
   // Make an image to paint with that's opaque white and enqueue a paint.
   const int fill_w = 2, fill_h = 3;
   pp::ImageData fill(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                      pp::Size(fill_w, fill_h), true);
-  if (fill.is_null())
-    return "Failure to allocate fill image";
+  ASSERT_FALSE(fill.is_null());
   FillRectInImage(&fill, pp::Rect(fill.size()), background_color);
   const int paint_x = 4, paint_y = 5;
   dc.PaintImageData(fill, pp::Point(paint_x, paint_y));
 
   // Validate that nothing has been actually painted.
-  if (!IsDCUniformColor(dc, background_color))
-    return "Image updated before flush (or failure in readback).";
+  ASSERT_TRUE(IsDCUniformColor(dc, background_color));
 
   // The paint hasn't been flushed so we can still change the bitmap. Fill with
   // 50% blue. This will also verify that the backing store is replaced
   // with the contents rather than blended.
   const uint32_t fill_color = 0x80000080;
   FillRectInImage(&fill, pp::Rect(fill.size()), fill_color);
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush 50% blue paint";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
-  if (!IsSquareInDC(dc, background_color,
-                    pp::Rect(paint_x, paint_y, fill_w, fill_h),
-                    fill_color))
-    return "Image not painted properly.";
+  ASSERT_TRUE(IsSquareInDC(dc, background_color,
+                           pp::Rect(paint_x, paint_y, fill_w, fill_h),
+                           fill_color));
 
   // Reset the DC to blank white & paint our image slightly off the buffer.
   // This should succeed. We also try painting the same thing where the
@@ -462,13 +426,11 @@ std::string TestGraphics2D::TestPaint() {
   dc.PaintImageData(fill, pp::Point(second_paint_x, second_paint_y));
   dc.PaintImageData(fill, pp::Point(second_paint_x, second_paint_y),
                     pp::Rect(-second_paint_x, -second_paint_y, 1, 1));
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush second paint";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
   // Now we should have a little bit of the image peeking out the top left.
-  if (!IsSquareInDC(dc, background_color, pp::Rect(0, 0, 1, 1),
-                    fill_color))
-    return "Partially offscreen paint failed.";
+  ASSERT_TRUE(IsSquareInDC(dc, background_color, pp::Rect(0, 0, 1, 1),
+                           fill_color));
 
   // Now repaint that top left pixel by doing a subset of the source image.
   pp::ImageData subset(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
@@ -478,11 +440,9 @@ std::string TestGraphics2D::TestPaint() {
   *subset.GetAddr32(pp::Point(subset_x, subset_y)) = subset_color;
   dc.PaintImageData(subset, pp::Point(-subset_x, -subset_y),
                     pp::Rect(subset_x, subset_y, 1, 1));
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush repaint";
-  if (!IsSquareInDC(dc, background_color, pp::Rect(0, 0, 1, 1),
-                    subset_color))
-    return "Subset paint failed.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(IsSquareInDC(dc, background_color, pp::Rect(0, 0, 1, 1),
+                           subset_color));
 
   PASS();
 }
@@ -490,14 +450,11 @@ std::string TestGraphics2D::TestPaint() {
 std::string TestGraphics2D::TestScroll() {
   const int w = 115, h = 117;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device.";
-  if (!instance_->BindGraphics(dc))
-    return "Failure to bind the boring device.";
+  ASSERT_FALSE(dc.is_null());
+  ASSERT_TRUE(instance_->BindGraphics(dc));
 
   // Make sure the device background is 0.
-  if (!IsDCUniformColor(dc, 0))
-    return "Bad initial color.";
+  ASSERT_TRUE(IsDCUniformColor(dc, 0));
 
   const int image_width = 15, image_height = 23;
   pp::ImageData test_image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
@@ -511,13 +468,11 @@ std::string TestGraphics2D::TestScroll() {
   pp::ImageData readback_scroll(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                 pp::Size(image_width, image_height), false);
 
-  if (test_image.size() != pp::Size(image_width, image_height))
-    return "Wrong test image size\n";
+  ASSERT_EQ(pp::Size(image_width, image_height), test_image.size());
 
   int image_x = 51, image_y = 72;
   dc.PaintImageData(test_image, pp::Point(image_x, image_y));
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush to fill backing store.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
   // Test Case 1. Incorrect usage when scrolling image to a free space.
   // The clip area is *not* the area to shift around within the graphics device
@@ -528,12 +483,10 @@ std::string TestGraphics2D::TestScroll() {
   int scroll_x = image_x + dx, scroll_y = image_y + dy;
   pp::Rect clip(image_x, image_y, image_width, image_height);
   dc.Scroll(clip, pp::Point(dx, dy));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC1, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC1, Couldn't read back scrolled image data.";
-  if (!CompareImages(no_image, readback_scroll))
-    return "TC1, Read back scrolled image is not the same as no image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_TRUE(CompareImages(no_image, readback_scroll));
 
   // Test Case 2.
   // The amount is intended to place the image in the free space outside
@@ -542,12 +495,10 @@ std::string TestGraphics2D::TestScroll() {
   scroll_x = 11, scroll_y = 24;
   clip = pp::Rect(0, 0, w, h + 1);
   dc.Scroll(clip, pp::Point(scroll_x - image_x, scroll_y - image_y));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC2, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC2, Couldn't read back scrolled image data.";
-  if (!CompareImages(no_image, readback_scroll))
-    return "TC2, Read back scrolled image is not the same as no image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_TRUE(CompareImages(no_image, readback_scroll));
 
   // Test Case 3.
   // The amount is intended to place the image in the free space outside
@@ -556,12 +507,10 @@ std::string TestGraphics2D::TestScroll() {
   scroll_x = 11, scroll_y = 24;
   clip = pp::Rect(0, 0, image_x, image_y);
   dc.Scroll(clip, pp::Point(scroll_x - image_x, scroll_y - image_y));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC3, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC3, Couldn't read back scrolled image data.";
-  if (!CompareImages(no_image, readback_scroll))
-    return "TC3, Read back scrolled image is not the same as no image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_TRUE(CompareImages(no_image, readback_scroll));
 
   // Test Case 4.
   // Same as TC3, but the clip covers part of the image.
@@ -569,36 +518,30 @@ std::string TestGraphics2D::TestScroll() {
   int part_w = image_width / 2, part_h = image_height / 2;
   clip = pp::Rect(0, 0, image_x + part_w, image_y + part_h);
   dc.Scroll(clip, pp::Point(scroll_x - image_x, scroll_y - image_y));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC4, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC4, Couldn't read back scrolled image data.";
-  if (CompareImages(test_image, readback_scroll))
-    return "TC4, Read back scrolled image is the same as test image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_FALSE(CompareImages(test_image, readback_scroll));
   pp::Rect part_rect(part_w, part_h);
-  if (!CompareImageRect(test_image, part_rect, readback_scroll, part_rect))
-    return "TC4, Read back scrolled image is not the same as part test image.";
+  ASSERT_TRUE(
+      CompareImageRect(test_image, part_rect, readback_scroll, part_rect));
 
   // Test Case 5
   // Same as TC3, but the clip area covers the entire image.
   // It will be scrolled to the intended origin.
   clip = pp::Rect(0, 0, image_x + image_width, image_y + image_height);
   dc.Scroll(clip, pp::Point(scroll_x - image_x, scroll_y - image_y));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC5, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC5, Couldn't read back scrolled image data.";
-  if (!CompareImages(test_image, readback_scroll))
-    return "TC5, Read back scrolled image is not the same as test image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_TRUE(CompareImages(test_image, readback_scroll));
 
   // Note that the undefined area left by the scroll does not actually get
   // cleared, so the original image is still there. This is not guaranteed and
   // is not something for users to rely on, but we can test for this here, so
   // we know when the underlying behavior changes.
-  if (!ReadImageData(dc, &readback_image, pp::Point(image_x, image_y)))
-    return "Couldn't read back original image data.";
-  if (!CompareImages(test_image, readback_image))
-    return "Read back original image is not the same as test image.";
+  ASSERT_TRUE(ReadImageData(dc, &readback_image, pp::Point(image_x, image_y)));
+  ASSERT_TRUE(CompareImages(test_image, readback_image));
 
   // Test Case 6.
   // Scroll image to an overlapping space. The clip area is limited
@@ -609,17 +552,14 @@ std::string TestGraphics2D::TestScroll() {
   scroll_y = image_y + dy;
   clip = pp::Rect(image_x, image_y, image_width, image_height);
   dc.Scroll(clip, pp::Point(dx, dy));
-  if (!FlushAndWaitForDone(&dc))
-    return "TC6, Couldn't flush to scroll.";
-  if (!ReadImageData(dc, &readback_image, pp::Point(image_x, image_y)))
-    return "TC6, Couldn't read back image data.";
-  if (CompareImages(test_image, readback_image))
-    return "TC6, Read back image is still the same as test image.";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
+  ASSERT_TRUE(ReadImageData(dc, &readback_image, pp::Point(image_x, image_y)));
+  ASSERT_FALSE(CompareImages(test_image, readback_image));
   pp::Rect scroll_rect(image_width - dx, image_height - dy);
-  if (!ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)))
-    return "TC6, Couldn't read back scrolled image data.";
-  if (!CompareImageRect(test_image, scroll_rect, readback_scroll, scroll_rect))
-    return "TC6, Read back scrolled image is not the same as part test image.";
+  ASSERT_TRUE(
+      ReadImageData(dc, &readback_scroll, pp::Point(scroll_x, scroll_y)));
+  ASSERT_TRUE(
+      CompareImageRect(test_image, scroll_rect, readback_scroll, scroll_rect));
 
   PASS();
 }
@@ -627,22 +567,19 @@ std::string TestGraphics2D::TestScroll() {
 std::string TestGraphics2D::TestReplace() {
   const int w = 15, h = 17;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
 
   // Replacing with a different size image should fail.
   pp::ImageData weird_size(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(w - 1, h), true);
-  if (weird_size.is_null())
-    return "Failure allocating the weird sized image";
+  ASSERT_FALSE(weird_size.is_null());
   dc.ReplaceContents(&weird_size);
 
   // Fill the background with blue but don't flush yet.
   const int32_t background_color = 0xFF0000FF;
   pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(w, h), true);
-  if (background.is_null())
-    return "Failure to allocate background image";
+  ASSERT_FALSE(background.is_null());
   FillRectInImage(&background, pp::Rect(0, 0, w, h), background_color);
   dc.PaintImageData(background, pp::Point(0, 0));
 
@@ -650,30 +587,25 @@ std::string TestGraphics2D::TestReplace() {
   const int32_t swapped_color = 0x00FF00FF;
   pp::ImageData swapped(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                         pp::Size(w, h), true);
-  if (swapped.is_null())
-    return "Failure to allocate swapped image";
+  ASSERT_FALSE(swapped.is_null());
   FillRectInImage(&swapped, pp::Rect(0, 0, w, h), swapped_color);
   dc.ReplaceContents(&swapped);
 
   // The background should be unchanged since we didn't flush yet.
-  if (!IsDCUniformColor(dc, 0))
-    return "Image updated before flush (or failure in readback).";
+  ASSERT_TRUE(IsDCUniformColor(dc, 0));
 
   // Test the C++ wrapper. The size of the swapped image should be reset.
-  if (swapped.pp_resource() || swapped.size().width() ||
-      swapped.size().height() || swapped.data())
-    return "Size of the swapped image should be reset.";
+  ASSERT_TRUE(!swapped.pp_resource() && !swapped.size().width() &&
+              !swapped.size().height() && !swapped.data());
 
   // Painting with the swapped image should fail.
   dc.PaintImageData(swapped, pp::Point(0, 0));
 
   // Flush and make sure the result is correct.
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
   // The background should be green from the swapped image.
-  if (!IsDCUniformColor(dc, swapped_color))
-    return "Flushed color incorrect (or failure in readback).";
+  ASSERT_TRUE(IsDCUniformColor(dc, swapped_color));
 
   PASS();
 }
@@ -683,50 +615,37 @@ std::string TestGraphics2D::TestFlush() {
   // (which is the current one).
   const int w = 15, h = 17;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
 
   // Fill the background with blue but don't flush yet.
   pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(w, h), true);
-  if (background.is_null())
-    return "Failure to allocate background image";
+  ASSERT_FALSE(background.is_null());
   dc.PaintImageData(background, pp::Point(0, 0));
 
   int32_t rv = dc.Flush(pp::BlockUntilComplete());
-  if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
-    return "Flush succeeded from the main thread with no callback.";
+  ASSERT_EQ(PP_ERROR_BLOCKS_MAIN_THREAD, rv);
 
   // Test flushing with no operations still issues a callback.
   // (This may also hang if the browser never issues the callback).
   pp::Graphics2D dc_nopaints(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating the nopaint device";
-  if (!FlushAndWaitForDone(&dc_nopaints))
-    return "Couldn't flush the nopaint device";
+  ASSERT_FALSE(dc.is_null());
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc_nopaints));
 
-  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+  TestCompletionCallback callback_1(instance_->pp_instance(), callback_type());
 
   // Test that multiple flushes fail if we don't get a callback in between.
-  rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL,
-                                                flags));
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return "Flush must complete asynchronously.";
-  if (rv != PP_OK && rv != PP_OK_COMPLETIONPENDING)
-    return "Couldn't flush first time for multiple flush test.";
-
+  rv = dc_nopaints.Flush(callback_1.GetCallback());
   if (rv == PP_OK_COMPLETIONPENDING) {
     // If the first flush completes asynchronously, then a second should fail.
-    rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL,
-                                                  flags));
-    if (force_async_) {
-      if (rv != PP_OK_COMPLETIONPENDING)
-        return "Second flush must fail asynchronously.";
-    } else {
-      if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
-        return "Second flush succeeded before callback ran.";
-    }
+    TestCompletionCallback callback_2(instance_->pp_instance(),
+                                      callback_type());
+    callback_2.WaitForResult(dc_nopaints.Flush(callback_2.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback_2);
+    ASSERT_EQ(PP_ERROR_INPROGRESS, callback_2.result());
   }
+  callback_1.WaitForResult(rv);
+  ASSERT_EQ(PP_OK, callback_1.result());
 
   PASS();
 }
@@ -763,10 +682,8 @@ std::string TestGraphics2D::TestFlushOffscreenUpdate() {
   const PP_Time kFlushDelaySec = 1. / 30;  // 30 fps
   const int w = 80, h = 80;
   pp::Graphics2D dc(instance_, pp::Size(w, h), true);
-  if (dc.is_null())
-    return "Failure creating a boring device";
-  if (!instance_->BindGraphics(dc))
-    return "Failure to bind the boring device.";
+  ASSERT_FALSE(dc.is_null());
+  ASSERT_TRUE(instance_->BindGraphics(dc));
 
   // Squeeze from top until bottom half of plugin is out of screen.
   ResetViewChangedState();
@@ -777,14 +694,12 @@ std::string TestGraphics2D::TestFlushOffscreenUpdate() {
       "big.setAttribute('id', 'big-div');"
       "big.setAttribute('style', 'height: ' + offset + '; width: 100%;');"
       "document.body.insertBefore(big, document.body.firstChild);");
-  if (!WaitUntilViewChanged())
-    return "View didn't change as expected";
+  ASSERT_TRUE(WaitUntilViewChanged());
 
   // Allocate a red image chunk
   pp::ImageData chunk(instance_, PP_IMAGEDATAFORMAT_RGBA_PREMUL,
                       pp::Size(w/8, h/8), true);
-  if (chunk.is_null())
-    return "Failure to allocate image";
+  ASSERT_FALSE(chunk.is_null());
   const uint32_t kRed = 0xff0000ff;
   FillRectInImage(&chunk, pp::Rect(chunk.size()), kRed);
 
@@ -792,21 +707,18 @@ std::string TestGraphics2D::TestFlushOffscreenUpdate() {
   dc.PaintImageData(chunk, pp::Point(0, h*0.75));
 
   PP_Time begin = pp::Module::Get()->core()->GetTime();
-  if (!FlushAndWaitForDone(&dc))
-    return "Couldn't flush an invisible paint";
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
   PP_Time actual_time_elapsed = pp::Module::Get()->core()->GetTime() - begin;
   // Expect actual_time_elapsed >= kFlushDelaySec, but loose a bit to avoid
   // precision issue.
-  if (actual_time_elapsed < kFlushDelaySec * 0.9)
-    return "Offscreen painting should be delayed";
+  ASSERT_GE(actual_time_elapsed, kFlushDelaySec * 0.9);
 
   // Remove the padding on the top since test cases here isn't independent.
   instance_->EvalScript(
       "var big = document.getElementById('big-div');"
       "big.parentNode.removeChild(big);");
   ResetViewChangedState();
-  if (!WaitUntilViewChanged())
-    return "View didn't change as expected";
+  ASSERT_TRUE(WaitUntilViewChanged());
 
   PASS();
 }
@@ -816,23 +728,16 @@ std::string TestGraphics2D::TestDev() {
   const int w = 20, h = 16;
   const float scale = 1.0f/2.0f;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating a boring device";
+  ASSERT_FALSE(dc.is_null());
   pp::Graphics2D_Dev dc_dev(dc);
-  if (dc_dev.GetScale() != 1.0f)
-    return "GetScale returned unexpected value before SetScale";
-  if (!dc_dev.SetScale(scale))
-    return "SetScale failed";
-  if (dc_dev.GetScale() != scale)
-    return "GetScale mismatch with prior SetScale";
+  ASSERT_EQ(1.0f, dc_dev.GetScale());
+  ASSERT_TRUE(dc_dev.SetScale(scale));
+  ASSERT_EQ(scale, dc_dev.GetScale());
   // Try setting a few invalid scale factors. Ensure that we catch these errors
   // and don't change the actual scale
-  if (dc_dev.SetScale(-1.0f))
-    return "SetScale(-1f) did not fail";
-  if (dc_dev.SetScale(0.0f))
-    return "SetScale(0.0f) did not fail";
-  if (dc_dev.GetScale() != scale)
-    return "SetScale with invalid parameter overwrote the scale";
+  ASSERT_FALSE(dc_dev.SetScale(-1.0f));
+  ASSERT_FALSE(dc_dev.SetScale(0.0f));
+  ASSERT_EQ(scale, dc_dev.GetScale());
 
   // Verify that the context has the specified number of pixels, despite the
   // non-identity scale
@@ -840,12 +745,11 @@ std::string TestGraphics2D::TestDev() {
   size.width = -1;
   size.height = -1;
   PP_Bool is_always_opaque = PP_FALSE;
-  if (!graphics_2d_interface_->Describe(dc_dev.pp_resource(), &size,
-                                        &is_always_opaque))
-    return "Describe failed";
-  if (size.width != w || size.height != h ||
-      is_always_opaque != PP_FromBool(false))
-    return "Mismatch of data.";
+  ASSERT_TRUE(graphics_2d_interface_->Describe(dc_dev.pp_resource(), &size,
+                                               &is_always_opaque));
+  ASSERT_EQ(w, size.width);
+  ASSERT_EQ(h, size.height);
+  ASSERT_EQ(PP_FALSE, is_always_opaque);
 
   PASS();
 }
@@ -901,10 +805,8 @@ std::string TestGraphics2D::TestBindNull() {
 
   const int w = 115, h = 117;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
-  if (dc.is_null())
-    return "Failure creating device.";
-  if (!instance_->BindGraphics(dc))
-    return "Failure to bind the boring device.";
+  ASSERT_FALSE(dc.is_null());
+  ASSERT_TRUE(instance_->BindGraphics(dc));
 
   ASSERT_TRUE(instance_->BindGraphics(pp::Graphics2D()));
   ASSERT_TRUE(instance_->BindGraphics(pp::Graphics3D()));

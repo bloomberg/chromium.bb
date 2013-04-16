@@ -39,15 +39,11 @@ std::string TestTCPSocketPrivateDisallowed::TestConnect() {
       tcp_socket_private_interface_->Create(instance_->pp_instance());
   if (0 != socket) {
     TestCompletionCallback callback(instance_->pp_instance());
-    int32_t rv = tcp_socket_private_interface_->Connect(
+    callback.WaitForResult(tcp_socket_private_interface_->Connect(
         socket, kServerName, kPort,
-        callback.GetCallback().pp_completion_callback());
-
-    if (PP_OK_COMPLETIONPENDING == rv)
-      rv = callback.WaitForResult();
-
-    if (PP_ERROR_FAILED != rv)
-      return "PPB_TCPSocket_Private can connect without allowing switch";
+        callback.GetCallback().pp_completion_callback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_ERROR_FAILED, callback.result());
   }
   PASS();
 }

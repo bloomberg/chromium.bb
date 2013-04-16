@@ -53,7 +53,7 @@ bool TestTCPServerSocketPrivateDisallowed::Init() {
 }
 
 void TestTCPServerSocketPrivateDisallowed::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(Listen, filter);
+  RUN_CALLBACK_TEST(TestTCPServerSocketPrivateDisallowed, Listen, filter);
 }
 
 std::string TestTCPServerSocketPrivateDisallowed::TestListen() {
@@ -69,17 +69,14 @@ std::string TestTCPServerSocketPrivateDisallowed::TestListen() {
     ASSERT_TRUE(pp::NetAddressPrivate::ReplacePort(base_address,
                                                    port,
                                                    &current_address));
-    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = tcp_server_socket_private_interface_->Listen(
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(tcp_server_socket_private_interface_->Listen(
         socket,
         &current_address,
         1,
-        callback.GetCallback().pp_completion_callback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("PPB_TCPServerSocket_Private::Listen force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    ASSERT_NE(PP_OK, rv);
+        callback.GetCallback().pp_completion_callback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_NE(PP_OK, callback.result());
   }
 
   PASS();

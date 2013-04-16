@@ -47,22 +47,20 @@ bool TestTCPSocketPrivate::Init() {
 }
 
 void TestTCPSocketPrivate::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(Basic, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ReadWrite, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSSL, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAddress, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(SetOption, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, Basic, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, ReadWrite, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, ReadWriteSSL, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, ConnectAddress, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, SetOption, filter);
 }
 
 std::string TestTCPSocketPrivate::TestBasic() {
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  int32_t rv = socket.Connect(host_.c_str(), port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(socket.Connect(host_.c_str(), port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
   PP_NetAddress_Private unused;
   // TODO(viettrungluu): check the values somehow.
@@ -76,13 +74,11 @@ std::string TestTCPSocketPrivate::TestBasic() {
 
 std::string TestTCPSocketPrivate::TestReadWrite() {
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  int32_t rv = socket.Connect(host_.c_str(), port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(socket.Connect(host_.c_str(), port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
   ASSERT_EQ(PP_OK, WriteStringToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
 
@@ -98,19 +94,16 @@ std::string TestTCPSocketPrivate::TestReadWrite() {
 
 std::string TestTCPSocketPrivate::TestReadWriteSSL() {
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  int32_t rv = socket.Connect(host_.c_str(), ssl_port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(socket.Connect(host_.c_str(), ssl_port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
-  rv = socket.SSLHandshake(host_.c_str(), ssl_port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(
+      socket.SSLHandshake(host_.c_str(), ssl_port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
   ASSERT_EQ(PP_OK, WriteStringToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
 
@@ -130,12 +123,10 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
   // First, bring up a connection and grab the address.
   {
     pp::TCPSocketPrivate socket(instance_);
-    TestCompletionCallback cb(instance_->pp_instance(), force_async_);
-    int32_t rv = socket.Connect(host_.c_str(), port_, cb.GetCallback());
-    ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = cb.WaitForResult();
-    ASSERT_EQ(PP_OK, rv);
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+    cb.WaitForResult(socket.Connect(host_.c_str(), port_, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_OK, cb.result());
     ASSERT_TRUE(socket.GetRemoteAddress(&address));
     // Omit the |Disconnect()| here to make sure we don't crash if we just let
     // the resource be destroyed.
@@ -143,12 +134,10 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
 
   // Connect to that address.
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
-  int32_t rv = socket.ConnectWithNetAddress(&address, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  cb.WaitForResult(socket.ConnectWithNetAddress(&address, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
   // Make sure we can read/write to it properly (see |TestReadWrite()|).
   ASSERT_EQ(PP_OK, WriteStringToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
@@ -163,32 +152,26 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
 
 std::string TestTCPSocketPrivate::TestSetOption() {
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  int32_t rv = socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true,
-                                cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_ERROR_FAILED, rv);
+  cb.WaitForResult(
+      socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_ERROR_FAILED, cb.result());
 
-  rv = socket.Connect(host_.c_str(), port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(socket.Connect(host_.c_str(), port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
-  rv = socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(
+      socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
-  rv = socket.SetOption(PP_TCPSOCKETOPTION_INVALID, true, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_ERROR_BADARGUMENT, rv);
+  cb.WaitForResult(
+      socket.SetOption(PP_TCPSOCKETOPTION_INVALID, true, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, cb.result());
 
   socket.Disconnect();
 
@@ -203,18 +186,17 @@ int32_t TestTCPSocketPrivate::ReadFirstLineFromSocket(
   s->clear();
   // Make sure we don't just hang if |Read()| spews.
   while (s->size() < 1000000) {
-    TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
     int32_t rv = socket->Read(buffer, sizeof(buffer), cb.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    if (callback_type() == PP_REQUIRED && rv != PP_OK_COMPLETIONPENDING)
       return PP_ERROR_FAILED;
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = cb.WaitForResult();
-    if (rv < 0)
-      return rv;
-    if (rv == 0)
+    cb.WaitForResult(rv);
+    if (cb.result() < 0)
+      return cb.result();
+    if (cb.result() == 0)
       return PP_ERROR_FAILED;  // Didn't get a \n-terminated line.
-    s->reserve(s->size() + rv);
-    for (int32_t i = 0; i < rv; i++) {
+    s->reserve(s->size() + cb.result());
+    for (int32_t i = 0; i < cb.result(); i++) {
       s->push_back(buffer[i]);
       if (buffer[i] == '\n')
         return PP_OK;
@@ -228,18 +210,17 @@ int32_t TestTCPSocketPrivate::WriteStringToSocket(pp::TCPSocketPrivate* socket,
   const char* buffer = s.data();
   size_t written = 0;
   while (written < s.size()) {
-    TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
     int32_t rv = socket->Write(buffer + written, s.size() - written,
                                cb.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    if (callback_type() == PP_REQUIRED && rv != PP_OK_COMPLETIONPENDING)
       return PP_ERROR_FAILED;
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = cb.WaitForResult();
-    if (rv < 0)
-      return rv;
-    if (rv == 0)
+    cb.WaitForResult(rv);
+    if (cb.result() < 0)
+      return cb.result();
+    if (cb.result() == 0)
       return PP_ERROR_FAILED;
-    written += rv;
+    written += cb.result();
   }
   if (written != s.size())
     return PP_ERROR_FAILED;

@@ -57,10 +57,9 @@ int32_t TestNetAddressPrivateUntrusted::Connect(TCPSocketPrivate* socket,
                                                 uint16_t port) {
   TestCompletionCallback callback(instance_->pp_instance(), false);
 
-  int32_t rv = socket->Connect(host.c_str(), port, callback.GetCallback());
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  return rv;
+  callback.WaitForResult(
+      socket->Connect(host.c_str(), port, callback.GetCallback()));
+  return callback.result();
 }
 
 std::string TestNetAddressPrivateUntrusted::TestAreEqual() {

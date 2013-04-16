@@ -60,23 +60,19 @@ bool TestTCPServerSocketPrivate::Init() {
 }
 
 void TestTCPServerSocketPrivate::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(Listen, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(Backlog, filter);
+  RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, Listen, filter);
+  RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, Backlog, filter);
 }
 
 std::string TestTCPServerSocketPrivate::GetLocalAddress(
     PP_NetAddress_Private* address) {
   TCPSocketPrivate socket(instance_);
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket.Connect(host_.c_str(), port_, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("PPB_TCPSocket_Private::Connect", rv);
-  if (!socket.GetLocalAddress(address))
-    return ReportError("PPB_TCPSocket_Private::GetLocalAddress", 0);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket.Connect(host_.c_str(), port_, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+  ASSERT_TRUE(socket.GetLocalAddress(address));
   socket.Disconnect();
   PASS();
 }
@@ -85,16 +81,13 @@ std::string TestTCPServerSocketPrivate::SyncRead(TCPSocketPrivate* socket,
                                                  char* buffer,
                                                  size_t num_bytes) {
   while (num_bytes > 0) {
-    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Read(buffer, num_bytes, callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("PPB_TCPSocket_Private::Read force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv < 0)
-      return ReportError("PPB_TCPSocket_Private::Read", rv);
-    buffer += rv;
-    num_bytes -= rv;
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        socket->Read(buffer, num_bytes, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_TRUE(callback.result() >= 0);
+    buffer += callback.result();
+    num_bytes -= callback.result();
   }
   PASS();
 }
@@ -103,16 +96,13 @@ std::string TestTCPServerSocketPrivate::SyncWrite(TCPSocketPrivate* socket,
                                                   const char* buffer,
                                                   size_t num_bytes) {
   while (num_bytes > 0) {
-    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Write(buffer, num_bytes, callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("PPB_TCPSocket_Private::Write force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv < 0)
-      return ReportError("PPB_TCPSocket_Private::Write", rv);
-    buffer += rv;
-    num_bytes -= rv;
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        socket->Write(buffer, num_bytes, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_TRUE(callback.result() >= 0);
+    buffer += callback.result();
+    num_bytes -= callback.result();
   }
   PASS();
 }
@@ -120,14 +110,11 @@ std::string TestTCPServerSocketPrivate::SyncWrite(TCPSocketPrivate* socket,
 std::string TestTCPServerSocketPrivate::SyncConnect(
     TCPSocketPrivate* socket,
     PP_NetAddress_Private* address) {
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  int32_t rv = socket->ConnectWithNetAddress(address, callback.GetCallback());
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("PPB_TCPSocket_Private::Connect force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("PPB_TCPSocket_Private::Connect", rv);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->ConnectWithNetAddress(address, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
   PASS();
 }
 
@@ -153,20 +140,17 @@ std::string TestTCPServerSocketPrivate::SyncListen(
     if (!NetAddressPrivate::ReplacePort(base_address, port, address))
       return ReportError("PPB_NetAddress_Private::ReplacePort", 0);
 
-    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = socket->Listen(address, backlog, callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("PPB_TCPServerSocket_Private::Listen force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv == PP_OK) {
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        socket->Listen(address, backlog, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    if (callback.result() == PP_OK) {
       is_free_port_found = true;
       break;
     }
   }
 
-  if (!is_free_port_found)
-    return "Can't find available port";
+  ASSERT_TRUE(is_free_port_found);
   PASS();
 }
 
@@ -178,8 +162,17 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   PP_NetAddress_Private address;
   ASSERT_SUBTEST_SUCCESS(SyncListen(&server_socket, &address, kBacklog));
 
+  // We can't use a blocking callback for Accept, because it will wait forever
+  // for the client to connect, since the client connects after.
   TestCompletionCallback accept_callback(instance_->pp_instance(),
-                                         force_async_);
+                                         PP_REQUIRED);
+  // We need to make sure there's a message loop to run accept_callback on.
+  pp::MessageLoop current_thread_loop(pp::MessageLoop::GetCurrent());
+  if (current_thread_loop.is_null() && testing_interface_->IsOutOfProcess()) {
+    current_thread_loop = pp::MessageLoop(instance_);
+    current_thread_loop.AttachToCurrentThread();
+  }
+
   PP_Resource resource;
   int32_t accept_rv = server_socket.Accept(&resource,
                                            accept_callback.GetCallback());
@@ -187,14 +180,9 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   TCPSocketPrivate client_socket(instance_);
   ForceConnect(&client_socket, &address);
 
-  if (force_async_ && accept_rv != PP_OK_COMPLETIONPENDING) {
-    return ReportError("PPB_TCPServerSocket_Private::Accept force_async",
-                       accept_rv);
-  }
-  if (accept_rv == PP_OK_COMPLETIONPENDING)
-    accept_rv = accept_callback.WaitForResult();
-  if (accept_rv != PP_OK)
-    return ReportError("PPB_TCPServerSocket_Private::Accept", accept_rv);
+  accept_callback.WaitForResult(accept_rv);
+  CHECK_CALLBACK_BEHAVIOR(accept_callback);
+  ASSERT_EQ(PP_OK, accept_callback.result());
 
   ASSERT_TRUE(resource != 0);
   TCPSocketPrivate accepted_socket(pp::PassRef(), resource);
@@ -231,37 +219,29 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   for (size_t i = 0; i < kBacklog; ++i) {
     client_sockets[i] = new TCPSocketPrivate(instance_);
     connect_callbacks[i] = new TestCompletionCallback(instance_->pp_instance(),
-                                                      force_async_);
+                                                      callback_type());
     connect_rv[i] = client_sockets[i]->ConnectWithNetAddress(
         &address,
         connect_callbacks[i]->GetCallback());
-    if (force_async_ && connect_rv[i] != PP_OK_COMPLETIONPENDING) {
-      return ReportError("PPB_TCPSocket_Private::Connect force_async",
-                         connect_rv[i]);
-    }
   }
 
   std::vector<PP_Resource> resources(kBacklog);
   std::vector<TCPSocketPrivate*> accepted_sockets(kBacklog);
   for (size_t i = 0; i < kBacklog; ++i) {
-    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-    int32_t rv = server_socket.Accept(&resources[i], callback.GetCallback());
-    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-      return ReportError("PPB_TCPServerSocket_Private::Accept force_async", rv);
-    if (rv == PP_OK_COMPLETIONPENDING)
-      rv = callback.WaitForResult();
-    if (rv != PP_OK)
-      return ReportError("PPB_TCPServerSocket_Private::Accept", rv);
+    TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+    callback.WaitForResult(
+        server_socket.Accept(&resources[i], callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
 
     ASSERT_TRUE(resources[i] != 0);
     accepted_sockets[i] = new TCPSocketPrivate(pp::PassRef(), resources[i]);
   }
 
   for (size_t i = 0; i < kBacklog; ++i) {
-    if (connect_rv[i] == PP_OK_COMPLETIONPENDING)
-      connect_rv[i] = connect_callbacks[i]->WaitForResult();
-    if (connect_rv[i] != PP_OK)
-      return ReportError("PPB_TCPSocket_Private::Connect", connect_rv[i]);
+    connect_callbacks[i]->WaitForResult(connect_rv[i]);
+    CHECK_CALLBACK_BEHAVIOR(*connect_callbacks[i]);
+    ASSERT_EQ(PP_OK, connect_callbacks[i]->result());
   }
 
   for (size_t i = 0; i < kBacklog; ++i) {

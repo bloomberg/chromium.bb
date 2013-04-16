@@ -36,14 +36,10 @@ std::string TestUDPSocketPrivateDisallowed::TestBind() {
     pp::NetAddressPrivate::GetAnyAddress(false, &addr);
 
     TestCompletionCallback callback(instance_->pp_instance());
-    int32_t rv = udp_socket_private_interface_->Bind(socket, &addr,
-        callback.GetCallback().pp_completion_callback());
-
-    if (PP_OK_COMPLETIONPENDING == rv)
-      rv = callback.WaitForResult();
-
-    if (PP_ERROR_FAILED != rv)
-      return "PPB_UDPSocket_Private can bind without allowing switch";
+    callback.WaitForResult(udp_socket_private_interface_->Bind(socket, &addr,
+        callback.GetCallback().pp_completion_callback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_ERROR_FAILED, callback.result());
   }
   PASS();
 }

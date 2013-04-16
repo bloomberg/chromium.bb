@@ -35,24 +35,22 @@ bool TestTCPSocketPrivateTrusted::Init() {
 }
 
 void TestTCPSocketPrivateTrusted::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(GetServerCertificate, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivateTrusted, GetServerCertificate, filter);
 }
 
 std::string TestTCPSocketPrivateTrusted::TestGetServerCertificate() {
   pp::TCPSocketPrivate socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
-  int32_t rv = socket.Connect(host_.c_str(), ssl_port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(
+      socket.Connect(host_.c_str(), ssl_port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
-  rv = socket.SSLHandshake(host_.c_str(), ssl_port_, cb.GetCallback());
-  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = cb.WaitForResult();
-  ASSERT_EQ(PP_OK, rv);
+  cb.WaitForResult(
+      socket.SSLHandshake(host_.c_str(), ssl_port_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
 
   const pp::X509CertificatePrivate& cert = socket.GetServerCertificate();
   ASSERT_EQ(

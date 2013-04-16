@@ -137,11 +137,8 @@ std::string TestGraphics3D::TestExtensionsGL() {
 
 int32_t TestGraphics3D::SwapBuffersSync(pp::Graphics3D* context) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  int32_t rv = context->SwapBuffers(callback.GetCallback());
-  if (rv != PP_OK_COMPLETIONPENDING)
-    return rv;
-
-  return callback.WaitForResult();
+  callback.WaitForResult(context->SwapBuffers(callback.GetCallback()));
+  return callback.result();
 }
 
 std::string TestGraphics3D::CheckPixelPPAPI(
