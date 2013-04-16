@@ -4,14 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
-#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -31,30 +27,24 @@ NetworkDropdownHandler::NetworkDropdownHandler() {
 NetworkDropdownHandler::~NetworkDropdownHandler() {
 }
 
-void NetworkDropdownHandler::GetLocalizedStrings(
-    base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("selectNetwork",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
-  localized_strings->SetString("selectAnotherNetwork",
-      l10n_util::GetStringUTF16(IDS_ANOTHER_NETWORK_SELECTION_SELECT));
+void NetworkDropdownHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
+  builder->Add("selectAnotherNetwork", IDS_ANOTHER_NETWORK_SELECTION_SELECT);
 }
 
 void NetworkDropdownHandler::Initialize() {
 }
 
 void NetworkDropdownHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiNetworkItemChosen,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkItemChosen,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownShow,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownShow,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownHide,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownHide,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownRefresh,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownRefresh,
-                 base::Unretained(this)));
+  AddCallback(kJsApiNetworkItemChosen,
+              &NetworkDropdownHandler::HandleNetworkItemChosen);
+  AddCallback(kJsApiNetworkDropdownShow,
+              &NetworkDropdownHandler::HandleNetworkDropdownShow);
+  AddCallback(kJsApiNetworkDropdownHide,
+              &NetworkDropdownHandler::HandleNetworkDropdownHide);
+  AddCallback(kJsApiNetworkDropdownRefresh,
+              &NetworkDropdownHandler::HandleNetworkDropdownRefresh);
 }
 
 void NetworkDropdownHandler::HandleNetworkItemChosen(

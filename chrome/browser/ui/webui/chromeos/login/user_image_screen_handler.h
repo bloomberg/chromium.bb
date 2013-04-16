@@ -31,8 +31,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual ~UserImageScreenHandler();
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
   virtual void Initialize() OVERRIDE;
 
   // UserImageScreenActor implementation:

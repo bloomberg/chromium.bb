@@ -2,6 +2,8 @@
 <!-- ChromeOS-specific strings (included from generated_resources.grd).
      Everything in this file is wrapped in <if expr="pp_ifdef('chromeos')">. -->
 <grit-part>
+  <message name="IDS_EMPTY_STRING" desc="Empty string, exist only to make code generic. No translation required.">
+  </message>
   <!-- Idle logout dialog for retail mode -->
   <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog. Used in retail mode only.">
     Are you still there?
@@ -18,7 +20,7 @@ Press any key to continue exploring.
     Going.. Going... Gone.
   </message>
 
-  <!-- Imageburn Strings -->
+<!-- Imageburn Strings -->
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
     Checking for updates
   </message>

@@ -4,12 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,37 +23,29 @@ UpdateScreenHandler::~UpdateScreenHandler() {
     screen_->OnActorDestroyed(this);
 }
 
-void UpdateScreenHandler::GetLocalizedStrings(
-    DictionaryValue *localized_strings) {
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  localized_strings->SetString("checkingForUpdatesMsg",
-      l10n_util::GetStringFUTF16(IDS_CHECKING_FOR_UPDATE_MSG,
-                                 short_product_name));
-  localized_strings->SetString("updateScreenTitle",
-      l10n_util::GetStringUTF16(IDS_UPDATE_SCREEN_TITLE));
-  localized_strings->SetString("checkingForUpdates",
-      l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES));
-  localized_strings->SetString("installingUpdateDesc",
-      l10n_util::GetStringFUTF16(IDS_UPDATE_MSG, short_product_name));
-  localized_strings->SetString("downloading",
-      l10n_util::GetStringUTF16(IDS_DOWNLOADING));
-  localized_strings->SetString("downloadingTimeLeftLong",
-      l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_LONG));
-  localized_strings->SetString("downloadingTimeLeftStatusOneHour",
-      l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR));
-  localized_strings->SetString("downloadingTimeLeftStatusMinutes",
-      l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_STATUS_MINUTES));
-  localized_strings->SetString("downloadingTimeLeftSmall",
-      l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_SMALL));
+void UpdateScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->AddF("checkingForUpdatesMsg",
+                IDS_CHECKING_FOR_UPDATE_MSG, IDS_SHORT_PRODUCT_NAME);
+  builder->AddF("installingUpdateDesc",
+                IDS_UPDATE_MSG, IDS_SHORT_PRODUCT_NAME);
+
+  builder->Add("updateScreenTitle", IDS_UPDATE_SCREEN_TITLE);
+  builder->Add("checkingForUpdates", IDS_CHECKING_FOR_UPDATES);
+  builder->Add("downloading", IDS_DOWNLOADING);
+  builder->Add("downloadingTimeLeftLong", IDS_DOWNLOADING_TIME_LEFT_LONG);
+  builder->Add("downloadingTimeLeftStatusOneHour",
+               IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR);
+  builder->Add("downloadingTimeLeftStatusMinutes",
+               IDS_DOWNLOADING_TIME_LEFT_STATUS_MINUTES);
+  builder->Add("downloadingTimeLeftSmall", IDS_DOWNLOADING_TIME_LEFT_SMALL);
+
 #if !defined(OFFICIAL_BUILD)
-  localized_strings->SetString("cancelUpdateHint",
-      l10n_util::GetStringUTF16(IDS_UPDATE_CANCEL));
-  localized_strings->SetString("cancelledUpdateMessage",
-      l10n_util::GetStringUTF16(IDS_UPDATE_CANCELLED));
+  builder->Add("cancelUpdateHint", IDS_UPDATE_CANCEL);
+  builder->Add("cancelledUpdateMessage", IDS_UPDATE_CANCELLED);
 #else
-  localized_strings->SetString("cancelUpdateHint", "");
-  localized_strings->SetString("cancelledUpdateMessage", "");
+  builder->Add("cancelUpdateHint", IDS_EMPTY_STRING);
+  builder->Add("cancelledUpdateMessage", IDS_EMPTY_STRING);
 #endif
 }
 
@@ -78,7 +67,7 @@ void UpdateScreenHandler::Show() {
   }
   ShowScreen(OobeUI::kScreenOobeUpdate, NULL);
 #if !defined(OFFICIAL_BUILD)
-  web_ui()->CallJavascriptFunction("oobe.UpdateScreen.enableUpdateCancel");
+  CallJS("oobe.UpdateScreen.enableUpdateCancel");
 #endif
 }
 
@@ -90,31 +79,27 @@ void UpdateScreenHandler::PrepareToShow() {
 
 void UpdateScreenHandler::ShowManualRebootInfo() {
   StringValue message(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage", message);
+  CallJS("cr.ui.Oobe.setUpdateMessage", message);
 }
 
 void UpdateScreenHandler::SetProgress(int progress) {
   base::FundamentalValue progress_value(progress);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateProgress",
-                                   progress_value);
+  CallJS("cr.ui.Oobe.setUpdateProgress", progress_value);
 }
 
 void UpdateScreenHandler::ShowEstimatedTimeLeft(bool visible) {
   base::FundamentalValue visible_value(visible);
-  web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.showEstimatedTimeLeft", visible_value);
+  CallJS("cr.ui.Oobe.showEstimatedTimeLeft", visible_value);
 }
 
 void UpdateScreenHandler::SetEstimatedTimeLeft(const base::TimeDelta& time) {
   base::FundamentalValue seconds_value(time.InSecondsF());
-  web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.setEstimatedTimeLeft", seconds_value);
+  CallJS("cr.ui.Oobe.setEstimatedTimeLeft", seconds_value);
 }
 
 void UpdateScreenHandler::ShowProgressMessage(bool visible) {
   base::FundamentalValue visible_value(visible);
-  web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.showProgressMessage", visible_value);
+  CallJS("cr.ui.Oobe.showProgressMessage", visible_value);
 }
 
 void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
@@ -140,23 +125,18 @@ void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
     default:
       NOTREACHED();
   };
-  if (progress_message.get()) {
-    web_ui()->CallJavascriptFunction(
-        "cr.ui.Oobe.setProgressMessage", *progress_message);
-  }
+  if (progress_message.get())
+    CallJS("cr.ui.Oobe.setProgressMessage", *progress_message);
 }
 
 void UpdateScreenHandler::ShowCurtain(bool visible) {
   base::FundamentalValue visible_value(visible);
-  web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.showUpdateCurtain", visible_value);
+  CallJS("cr.ui.Oobe.showUpdateCurtain", visible_value);
 }
 
 void UpdateScreenHandler::RegisterMessages() {
 #if !defined(OFFICIAL_BUILD)
-  web_ui()->RegisterMessageCallback("cancelUpdate",
-      base::Bind(&UpdateScreenHandler::HandleUpdateCancel,
-                 base::Unretained(this)));
+  AddCallback("cancelUpdate", &UpdateScreenHandler::HandleUpdateCancel);
 #endif
 }
 

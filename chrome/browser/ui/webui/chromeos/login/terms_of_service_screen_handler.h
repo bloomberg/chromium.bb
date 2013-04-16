@@ -29,8 +29,7 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // BaseScreenHandler:
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
 
   // TermsOfServiceScreenActor:
   virtual void SetDelegate(Delegate* screen) OVERRIDE;

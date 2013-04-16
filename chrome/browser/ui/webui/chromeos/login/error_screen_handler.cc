@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -15,9 +14,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -92,8 +89,7 @@ void ErrorScreenHandler::HideCaptivePortal() {
 void ErrorScreenHandler::SetUIState(ErrorScreen::UIState ui_state) {
   ui_state_ = ui_state;
   base::FundamentalValue ui_state_value(static_cast<int>(ui_state));
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.setUIState",
-                                   ui_state_value);
+  CallJS("login.ErrorMessageScreen.setUIState", ui_state_value);
 }
 
 void ErrorScreenHandler::SetErrorState(ErrorScreen::ErrorState error_state,
@@ -101,21 +97,19 @@ void ErrorScreenHandler::SetErrorState(ErrorScreen::ErrorState error_state,
   error_state_ = error_state;
   base::FundamentalValue error_state_value(static_cast<int>(error_state));
   base::StringValue network_value(network);
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.setErrorState",
-                                   error_state_value,
-                                   network_value);
+  CallJS("login.ErrorMessageScreen.setErrorState",
+         error_state_value,
+         network_value);
 }
 
 void ErrorScreenHandler::AllowGuestSignin(bool allowed) {
   base::FundamentalValue allowed_value(allowed);
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.allowGuestSignin",
-                                   allowed_value);
+  CallJS("login.ErrorMessageScreen.allowGuestSignin", allowed_value);
 }
 
 void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
   base::FundamentalValue allowed_value(allowed);
-  web_ui()->CallJavascriptFunction("login.ErrorMessageScreen.allowOfflineLogin",
-                                   allowed_value);
+  CallJS("login.ErrorMessageScreen.allowOfflineLogin", allowed_value);
 }
 
 void ErrorScreenHandler::NetworkErrorShown() {
@@ -143,34 +137,26 @@ void ErrorScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {
 }
 
 void ErrorScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("showCaptivePortal",
-      base::Bind(&ErrorScreenHandler::HandleShowCaptivePortal,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("hideCaptivePortal",
-      base::Bind(&ErrorScreenHandler::HandleHideCaptivePortal,
-                 base::Unretained(this)));
+  AddCallback("showCaptivePortal",
+              &ErrorScreenHandler::HandleShowCaptivePortal);
+  AddCallback("hideCaptivePortal",
+              &ErrorScreenHandler::HandleHideCaptivePortal);
 }
 
-void ErrorScreenHandler::GetLocalizedStrings(
-    base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("proxyErrorTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PROXY_ERROR_TITLE));
-  localized_strings->SetString("signinOfflineMessageBody",
-      l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
-  localized_strings->SetString("captivePortalTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE));
-  localized_strings->SetString("captivePortalMessage",
-      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
-  localized_strings->SetString("captivePortalProxyMessage",
-      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_PROXY));
-  localized_strings->SetString("captivePortalNetworkSelect",
-      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT));
-  localized_strings->SetString("signinProxyMessageText",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PROXY_ERROR_MESSAGE));
-  localized_strings->SetString("updateOfflineMessageBody",
-      l10n_util::GetStringUTF16(IDS_UPDATE_OFFLINE_MESSAGE));
-  localized_strings->SetString("updateProxyMessageText",
-      l10n_util::GetStringUTF16(IDS_UPDATE_PROXY_ERROR_MESSAGE));
+void ErrorScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
+  builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
+  builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
+  builder->Add("captivePortalTitle", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE);
+  builder->Add("captivePortalMessage", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL);
+  builder->Add("captivePortalProxyMessage",
+               IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_PROXY);
+  builder->Add("captivePortalNetworkSelect",
+               IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT);
+  builder->Add("signinProxyMessageText", IDS_LOGIN_PROXY_ERROR_MESSAGE);
+  builder->Add("updateOfflineMessageBody", IDS_UPDATE_OFFLINE_MESSAGE);
+  builder->Add("updateProxyMessageText", IDS_UPDATE_PROXY_ERROR_MESSAGE);
 }
 
 void ErrorScreenHandler::Initialize() {

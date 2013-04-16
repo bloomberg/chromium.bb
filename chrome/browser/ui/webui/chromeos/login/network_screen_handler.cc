@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,10 +15,8 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
-#include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -71,14 +67,12 @@ void NetworkScreenHandler::Hide() {
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
-  scoped_ptr<Value> message_value(Value::CreateStringValue(message));
-  web_ui()->CallJavascriptFunction("oobe.NetworkScreen.showError",
-                                   *message_value);
+  CallJS("oobe.NetworkScreen.showError", base::StringValue(message));
 }
 
 void NetworkScreenHandler::ClearErrors() {
   if (page_is_ready())
-    web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+    CallJS("cr.ui.Oobe.clearErrors");
 }
 
 void NetworkScreenHandler::ShowConnectingStatus(
@@ -87,14 +81,10 @@ void NetworkScreenHandler::ShowConnectingStatus(
   // string16 connecting_label =
   //     l10n_util::GetStringFUTF16(IDS_NETWORK_SELECTION_CONNECTING,
   //                                network_id);
-  // scoped_ptr<Value> connecting_value(Value::CreateBooleanValue(connecting));
-  // scoped_ptr<Value> network_id_value(Value::CreateStringValue(network_id));
-  // scoped_ptr<Value> connecting_label_value(
-  //     Value::CreateStringValue(connecting_label));
-  // web_ui()->CallJavascriptFunction("cr.ui.Oobe.showConnectingStatus",
-  //                                  *connecting_value,
-  //                                  *network_id_value,
-  //                                  *connecting_label_value);
+  // CallJS("cr.ui.Oobe.showConnectingStatus",
+  //        base::FundamentalValue(connecting),
+  //        base::StringValue(network_id),
+  //        base::StringValue(connecting_label_value));
 }
 
 void NetworkScreenHandler::EnableContinue(bool enabled) {
@@ -102,31 +92,26 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
   if (!page_is_ready())
     return;
 
-  scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.enableContinueButton",
-                                   *enabled_value);
+  CallJS("cr.ui.Oobe.enableContinueButton", base::FundamentalValue(enabled));
 }
 
 // NetworkScreenHandler, BaseScreenHandler implementation: --------------------
 
-void NetworkScreenHandler::GetLocalizedStrings(
-    base::DictionaryValue* localized_strings) {
-  localized_strings->SetString("networkScreenGreeting",
-      l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_GREETING));
-  localized_strings->SetString("networkScreenTitle",
-      l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_TITLE));
-  localized_strings->SetString("selectLanguage",
-      l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
-  localized_strings->SetString("selectKeyboard",
-      l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
-  localized_strings->SetString("selectNetwork",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
-  localized_strings->SetString("proxySettings",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
-  localized_strings->SetString("continueButton",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
-  localized_strings->Set("languageList", GetLanguageList());
-  localized_strings->Set("inputMethodsList", GetInputMethods());
+void NetworkScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
+  builder->Add("networkScreenTitle", IDS_WELCOME_SCREEN_TITLE);
+  builder->Add("selectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
+  builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
+  builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
+  builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
+  builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
+}
+
+void NetworkScreenHandler::GetAdditionalParameters(
+    base::DictionaryValue* dict) {
+  dict->Set("languageList", GetLanguageList());
+  dict->Set("inputMethodsList", GetInputMethods());
 }
 
 void NetworkScreenHandler::Initialize() {
@@ -140,14 +125,11 @@ void NetworkScreenHandler::Initialize() {
 // NetworkScreenHandler, WebUIMessageHandler implementation: -------------------
 
 void NetworkScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiNetworkOnExit,
-      base::Bind(&NetworkScreenHandler::HandleOnExit,base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiNetworkOnLanguageChanged,
-      base::Bind(&NetworkScreenHandler::HandleOnLanguageChanged,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
-      base::Bind(&NetworkScreenHandler::HandleOnInputMethodChanged,
-                 base::Unretained(this)));
+  AddCallback(kJsApiNetworkOnExit, &NetworkScreenHandler::HandleOnExit);
+  AddCallback(kJsApiNetworkOnLanguageChanged,
+              &NetworkScreenHandler::HandleOnLanguageChanged);
+  AddCallback(kJsApiNetworkOnInputMethodChanged,
+              &NetworkScreenHandler::HandleOnInputMethodChanged);
 }
 
 // NetworkScreenHandler, private: ----------------------------------------------
@@ -174,8 +156,7 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   DictionaryValue localized_strings;
   static_cast<OobeUI*>(web_ui()->GetController())->GetLocalizedStrings(
       &localized_strings);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.reloadContent",
-                                   localized_strings);
+  CallJS("cr.ui.Oobe.reloadContent", localized_strings);
   // Buttons are recreated, updated "Continue" button state.
   EnableContinue(is_continue_enabled_);
 }

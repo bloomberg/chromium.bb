@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -343,105 +341,73 @@ SigninScreenHandler::~SigninScreenHandler() {
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
-void SigninScreenHandler::GetLocalizedStrings(
-    DictionaryValue* localized_strings) {
-  localized_strings->SetString("signinScreenTitle",
-      l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_TITLE));
-  localized_strings->SetString("signinScreenPasswordChanged",
-      l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_PASSWORD_CHANGED));
-  localized_strings->SetString("passwordHint",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
-  localized_strings->SetString("podMenuButtonAccessibleName",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME));
-  localized_strings->SetString("podMenuRemoveItemAccessibleName",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME));
-  localized_strings->SetString("passwordFieldAccessibleName",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME));
-  localized_strings->SetString("signedIn",
-      l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER));
-  localized_strings->SetString("signinButton",
-      l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
-  localized_strings->SetString("enterGuestButton",
-      l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON));
-  localized_strings->SetString("enterGuestButtonAccessibleName",
-      l10n_util::GetStringUTF16(
-          IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME));
-  localized_strings->SetString("shutDown",
-      l10n_util::GetStringUTF16(IDS_SHUTDOWN_BUTTON));
-  localized_strings->SetString("addUser",
-      l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
-  localized_strings->SetString("browseAsGuest",
-      l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
-  localized_strings->SetString("cancel",
-      l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString("signOutUser",
-      l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
-  localized_strings->SetString("createAccount",
-      l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
-  localized_strings->SetString("guestSignin",
-      l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_HTML));
-  localized_strings->SetString("createLocallyManagedUser",
-      l10n_util::GetStringUTF16(IDS_CREATE_LOCALLY_MANAGED_USER_HTML));
-  localized_strings->SetString("offlineLogin",
-      l10n_util::GetStringUTF16(IDS_OFFLINE_LOGIN_HTML));
-  localized_strings->SetString("ownerUserPattern",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_OWNER_USER));
-  localized_strings->SetString("removeUser",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_REMOVE_USER));
-  localized_strings->SetString("errorTpmFailureTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_TITLE));
-  localized_strings->SetString("errorTpmFailureReboot",
-      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT));
-  localized_strings->SetString("errorTpmFailureRebootButton",
-      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON));
-  localized_strings->SetString("disabledAddUserTooltip",
-      l10n_util::GetStringUTF16(
-          g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
-            IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
-            IDS_DISABLED_ADD_USER_TOOLTIP));
+void SigninScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE);
+  builder->Add("signinScreenPasswordChanged",
+               IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);
+  builder->Add("passwordHint", IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT);
+  builder->Add("podMenuButtonAccessibleName",
+               IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME);
+  builder->Add("podMenuRemoveItemAccessibleName",
+               IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME);
+  builder->Add("passwordFieldAccessibleName",
+               IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME);
+  builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
+  builder->Add("signinButton", IDS_LOGIN_BUTTON);
+  builder->Add("enterGuestButton", IDS_ENTER_GUEST_SESSION_BUTTON);
+  builder->Add("enterGuestButtonAccessibleName",
+               IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME);
+  builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
+  builder->Add("addUser", IDS_ADD_USER_BUTTON);
+  builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);
+  builder->Add("cancel", IDS_CANCEL);
+  builder->Add("signOutUser", IDS_SCREEN_LOCK_SIGN_OUT);
+  builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
+  builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
+  builder->Add("createLocallyManagedUser",
+               IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
+  builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
+  builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
+  builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
+  builder->Add("errorTpmFailureTitle", IDS_LOGIN_ERROR_TPM_FAILURE_TITLE);
+  builder->Add("errorTpmFailureReboot", IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT);
+  builder->Add("errorTpmFailureRebootButton",
+               IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON);
+  builder->Add(
+      "disabledAddUserTooltip",
+      g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
+          IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
+          IDS_DISABLED_ADD_USER_TOOLTIP);
 
   // Strings used by password changed dialog.
-  localized_strings->SetString("passwordChangedTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_TITLE));
-  localized_strings->SetString("passwordChangedDesc",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DESC));
-  localized_strings->SetString("passwordChangedMoreInfo",
-      l10n_util::GetStringFUTF16(
-          IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME)));
-  localized_strings->SetString("oldPasswordHint",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT));
-  localized_strings->SetString("oldPasswordIncorrect",
-        l10n_util::GetStringUTF16(
-            IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD));
-  localized_strings->SetString("passwordChangedCantRemember",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER));
-  localized_strings->SetString("passwordChangedBackButton",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON));
-  localized_strings->SetString("passwordChangedsOkButton",
-      l10n_util::GetStringUTF16(IDS_OK));
-  localized_strings->SetString("passwordChangedProceedAnyway",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY));
-  localized_strings->SetString("proceedAnywayButton",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON));
+  builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);
+  builder->Add("passwordChangedDesc", IDS_LOGIN_PASSWORD_CHANGED_DESC);
+  builder->AddF("passwordChangedMoreInfo",
+                IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO,
+                IDS_SHORT_PRODUCT_OS_NAME);
 
-  localized_strings->SetString("publicAccountInfoFormat",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT));
-  localized_strings->SetString("publicAccountReminder",
-       l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER));
-  localized_strings->SetString("publicAccountEnter",
-       l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_ENTER));
-  localized_strings->SetString("publicAccountEnterAccessibleName",
-       l10n_util::GetStringUTF16(
-           IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME));
+  builder->Add("oldPasswordHint", IDS_LOGIN_PASSWORD_CHANGED_OLD_PASSWORD_HINT);
+  builder->Add("oldPasswordIncorrect",
+               IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD);
+  builder->Add("passwordChangedCantRemember",
+               IDS_LOGIN_PASSWORD_CHANGED_CANT_REMEMBER);
+  builder->Add("passwordChangedBackButton",
+               IDS_LOGIN_PASSWORD_CHANGED_BACK_BUTTON);
+  builder->Add("passwordChangedsOkButton", IDS_OK);
+  builder->Add("passwordChangedProceedAnyway",
+               IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY);
+  builder->Add("proceedAnywayButton",
+               IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON);
+  builder->Add("publicAccountInfoFormat", IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT);
+  builder->Add("publicAccountReminder",
+               IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER);
+  builder->Add("publicAccountEnter", IDS_LOGIN_PUBLIC_ACCOUNT_ENTER);
+  builder->Add("publicAccountEnterAccessibleName",
+               IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
 
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    localized_strings->SetString("demoLoginMessage",
-        l10n_util::GetStringUTF16(IDS_KIOSK_MODE_LOGIN_MESSAGE));
-  }
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
+   builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
@@ -471,7 +437,7 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 }
 
 void SigninScreenHandler::ShowRetailModeLoginSpinner() {
-  web_ui()->CallJavascriptFunction("showLoginSpinner");
+  CallJS("showLoginSpinner");
 }
 
 void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
@@ -728,7 +694,7 @@ void SigninScreenHandler::ReloadGaiaScreen() {
     return;
   }
   LOG(WARNING) << "Reload auth extension frame.";
-  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.doReload");
+  CallJS("login.GaiaSigninScreen.doReload");
 }
 
 void SigninScreenHandler::Initialize() {
@@ -756,115 +722,57 @@ gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("authenticateUser",
-      base::Bind(&SigninScreenHandler::HandleAuthenticateUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("completeLogin",
-      base::Bind(&SigninScreenHandler::HandleCompleteLogin,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("completeAuthentication",
-      base::Bind(&SigninScreenHandler::HandleCompleteAuthentication,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getUsers",
-      base::Bind(&SigninScreenHandler::HandleGetUsers,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchDemoUser",
-      base::Bind(&SigninScreenHandler::HandleLaunchDemoUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchIncognito",
-      base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showLocallyManagedUserCreationScreen",
-      base::Bind(
-          &SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchPublicAccount",
-      base::Bind(&SigninScreenHandler::HandleLaunchPublicAccount,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("offlineLogin",
-      base::Bind(&SigninScreenHandler::HandleOfflineLogin,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("rebootSystem",
-      base::Bind(&SigninScreenHandler::HandleRebootSystem,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showAddUser",
-      base::Bind(&SigninScreenHandler::HandleShowAddUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("shutdownSystem",
-      base::Bind(&SigninScreenHandler::HandleShutdownSystem,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loadWallpaper",
-      base::Bind(&SigninScreenHandler::HandleLoadWallpaper,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeUser",
-      base::Bind(&SigninScreenHandler::HandleRemoveUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("toggleEnrollmentScreen",
-      base::Bind(&SigninScreenHandler::HandleToggleEnrollmentScreen,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("toggleResetScreen",
-      base::Bind(&SigninScreenHandler::HandleToggleResetScreen,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchHelpApp",
-      base::Bind(&SigninScreenHandler::HandleLaunchHelpApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("createAccount",
-      base::Bind(&SigninScreenHandler::HandleCreateAccount,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("accountPickerReady",
-      base::Bind(&SigninScreenHandler::HandleAccountPickerReady,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("wallpaperReady",
-      base::Bind(&SigninScreenHandler::HandleWallpaperReady,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginWebuiReady",
-      base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("demoWebuiReady",
-      base::Bind(&SigninScreenHandler::HandleDemoWebuiReady,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("signOutUser",
-      base::Bind(&SigninScreenHandler::HandleSignOutUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("userImagesLoaded",
-      base::Bind(&SigninScreenHandler::HandleUserImagesLoaded,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("networkErrorShown",
-      base::Bind(&SigninScreenHandler::HandleNetworkErrorShown,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openProxySettings",
-      base::Bind(&SigninScreenHandler::HandleOpenProxySettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginVisible",
-      base::Bind(&SigninScreenHandler::HandleLoginVisible,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("cancelPasswordChangedFlow",
-        base::Bind(&SigninScreenHandler::HandleCancelPasswordChangedFlow,
-                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("migrateUserData",
-        base::Bind(&SigninScreenHandler::HandleMigrateUserData,
-                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("resyncUserData",
-        base::Bind(&SigninScreenHandler::HandleResyncUserData,
-                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginUIStateChanged",
-      base::Bind(&SigninScreenHandler::HandleLoginUIStateChanged,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("unlockOnLoginSuccess",
-      base::Bind(&SigninScreenHandler::HandleUnlockOnLoginSuccess,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginScreenUpdate",
-      base::Bind(&SigninScreenHandler::HandleLoginScreenUpdate,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showGaiaFrameError",
-      base::Bind(&SigninScreenHandler::HandleShowGaiaFrameError,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showLoadingTimeoutError",
-      base::Bind(&SigninScreenHandler::HandleShowLoadingTimeoutError,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("updateOfflineLogin",
-      base::Bind(&SigninScreenHandler::HandleUpdateOfflineLogin,
-                 base::Unretained(this)));
+  AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
+  AddCallback("completeLogin", &SigninScreenHandler::HandleCompleteLogin);
+  AddCallback("completeAuthentication",
+              &SigninScreenHandler::HandleCompleteAuthentication);
+  AddCallback("getUsers", &SigninScreenHandler::HandleGetUsers);
+  AddCallback("launchDemoUser", &SigninScreenHandler::HandleLaunchDemoUser);
+  AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
+  AddCallback("showLocallyManagedUserCreationScreen",
+              &SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen);
+  AddCallback("launchPublicAccount",
+              &SigninScreenHandler::HandleLaunchPublicAccount);
+  AddCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
+  AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
+  AddCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
+  AddCallback("shutdownSystem", &SigninScreenHandler::HandleShutdownSystem);
+  AddCallback("loadWallpaper", &SigninScreenHandler::HandleLoadWallpaper);
+  AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
+  AddCallback("toggleEnrollmentScreen",
+              &SigninScreenHandler::HandleToggleEnrollmentScreen);
+  AddCallback("toggleResetScreen",
+              &SigninScreenHandler::HandleToggleResetScreen);
+  AddCallback("launchHelpApp", &SigninScreenHandler::HandleLaunchHelpApp);
+  AddCallback("createAccount", &SigninScreenHandler::HandleCreateAccount);
+  AddCallback("accountPickerReady",
+              &SigninScreenHandler::HandleAccountPickerReady);
+  AddCallback("wallpaperReady", &SigninScreenHandler::HandleWallpaperReady);
+  AddCallback("loginWebuiReady", &SigninScreenHandler::HandleLoginWebuiReady);
+  AddCallback("demoWebuiReady", &SigninScreenHandler::HandleDemoWebuiReady);
+  AddCallback("signOutUser", &SigninScreenHandler::HandleSignOutUser);
+  AddCallback("userImagesLoaded", &SigninScreenHandler::HandleUserImagesLoaded);
+  AddCallback("networkErrorShown",
+              &SigninScreenHandler::HandleNetworkErrorShown);
+  AddCallback("openProxySettings",
+              &SigninScreenHandler::HandleOpenProxySettings);
+  AddCallback("loginVisible", &SigninScreenHandler::HandleLoginVisible);
+  AddCallback("cancelPasswordChangedFlow",
+              &SigninScreenHandler::HandleCancelPasswordChangedFlow);
+  AddCallback("migrateUserData", &SigninScreenHandler::HandleMigrateUserData);
+  AddCallback("resyncUserData", &SigninScreenHandler::HandleResyncUserData);
+  AddCallback("loginUIStateChanged",
+              &SigninScreenHandler::HandleLoginUIStateChanged);
+  AddCallback("unlockOnLoginSuccess",
+              &SigninScreenHandler::HandleUnlockOnLoginSuccess);
+  AddCallback("loginScreenUpdate",
+              &SigninScreenHandler::HandleLoginScreenUpdate);
+  AddCallback("showGaiaFrameError",
+              &SigninScreenHandler::HandleShowGaiaFrameError);
+  AddCallback("showLoadingTimeoutError",
+              &SigninScreenHandler::HandleShowLoadingTimeoutError);
+  AddCallback("updateOfflineLogin",
+              &SigninScreenHandler::HandleUpdateOfflineLogin);
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -873,16 +781,16 @@ void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
 
 void SigninScreenHandler::ClearAndEnablePassword() {
   base::FundamentalValue force_online(false);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI", force_online);
+  CallJS("cr.ui.Oobe.resetSigninUI", force_online);
 }
 
 void SigninScreenHandler::ClearUserPodPassword() {
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearUserPodPassword");
+  CallJS("cr.ui.Oobe.clearUserPodPassword");
 }
 
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
   base::StringValue username_value(username);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
+  CallJS("cr.ui.Oobe.onLoginSuccess", username_value);
 }
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
@@ -894,8 +802,7 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
     return;
 
   base::StringValue user_email(user.email());
-  web_ui()->CallJavascriptFunction(
-      "login.AccountPickerScreen.updateUserImage", user_email);
+  CallJS("login.AccountPickerScreen.updateUserImage", user_email);
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
@@ -922,21 +829,17 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
-  base::FundamentalValue login_attempts_value(login_attempts);
-  base::StringValue error_message(error_text);
-  base::StringValue help_link(help_link_text);
-  base::FundamentalValue help_id(static_cast<int>(help_topic_id));
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSignInError",
-                                   login_attempts_value,
-                                   error_message,
-                                   help_link,
-                                   help_id);
+  CallJS("cr.ui.Oobe.showSignInError",
+         base::FundamentalValue(login_attempts),
+         base::StringValue(error_text),
+         base::StringValue(help_link_text),
+         base::FundamentalValue(static_cast<int>(help_topic_id)));
 }
 
 void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   switch (error_id) {
     case LoginDisplay::TPM_ERROR:
-      web_ui()->CallJavascriptFunction("cr.ui.Oobe.showTpmError");
+      CallJS("cr.ui.Oobe.showTpmError");
       break;
     default:
       NOTREACHED() << "Unknown sign in error";
@@ -946,22 +849,20 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {
   base::StringValue email_value(email);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSigninUI", email_value);
+  CallJS("cr.ui.Oobe.showSigninUI", email_value);
 }
 
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);
   base::StringValue email_value(email_);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSigninUI", email_value);
-  web_ui()->CallJavascriptFunction(
-      "login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
+  CallJS("cr.ui.Oobe.showSigninUI", email_value);
+  CallJS("login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
   base::FundamentalValue showError(show_password_error);
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showPasswordChangedScreen",
-                                   showError);
+  CallJS("cr.ui.Oobe.showPasswordChangedScreen", showError);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
@@ -985,8 +886,7 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
 void SigninScreenHandler::OnCapsLockChange(bool enabled) {
   if (page_is_ready()) {
     base::FundamentalValue capsLockState(enabled);
-    web_ui()->CallJavascriptFunction(
-        "login.AccountPickerScreen.setCapsLockState", capsLockState);
+    CallJS("login.AccountPickerScreen.setCapsLockState", capsLockState);
   }
 }
 
@@ -1128,21 +1028,18 @@ void SigninScreenHandler::LoadAuthExtension(
       test_pass_.clear();
     }
   }
-  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.loadAuthExtension",
-                                   params);
+  CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
 }
 
 void SigninScreenHandler::UpdateAuthExtension() {
   DictionaryValue params;
   UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
-  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.updateAuthExtension",
-                                   params);
+  CallJS("login.GaiaSigninScreen.updateAuthExtension", params);
 }
 
 void SigninScreenHandler::UpdateAddButtonStatus() {
   base::FundamentalValue disabled(AllWhitelistedUsersPresent());
-  web_ui()->CallJavascriptFunction(
-      "cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
+  CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
@@ -1418,8 +1315,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
   base::FundamentalValue animated_value(animated);
   base::FundamentalValue guest_value(delegate_->IsShowGuest());
-  web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-                                   users_list, animated_value, guest_value);
+  CallJS("login.AccountPickerScreen.loadUsers",
+         users_list, animated_value, guest_value);
 }
 
 void SigninScreenHandler::HandleAccountPickerReady(

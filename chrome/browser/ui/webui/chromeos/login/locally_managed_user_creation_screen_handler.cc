@@ -32,93 +32,64 @@ LocallyManagedUserCreationScreenHandler::
 LocallyManagedUserCreationScreenHandler::
     ~LocallyManagedUserCreationScreenHandler() {}
 
-void LocallyManagedUserCreationScreenHandler::GetLocalizedStrings(
-    base::DictionaryValue* localized_strings) {
-  localized_strings->SetString(
-      "managedUserCreationErrorTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE));
-  localized_strings->SetString(
-      "managedUserCreationSuccessTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_TITLE));
-  localized_strings->SetString(
-      "managedUserCreationSuccessImageText",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_IMAGE_TEXT));
-  localized_strings->SetString(
+void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("managedUserCreationErrorTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE);
+  builder->Add("managedUserCreationSuccessTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_TITLE);
+  builder->Add("managedUserCreationSuccessImageText",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_IMAGE_TEXT);
+  builder->Add(
       "managedUserCreationSuccessSendEmailInstructionsText",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_EMAIL_INSTRUCTIONS));
-  localized_strings->SetString(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_EMAIL_INSTRUCTIONS);
+  builder->Add(
       "managedUserCreationFlowRetryButtonTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE));
-  localized_strings->SetString(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE);
+  builder->Add(
       "managedUserCreationFlowCancelButtonTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE));
-  localized_strings->SetString(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE);
+  builder->Add(
       "managedUserCreationFlowFinishButtonTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE));
-  localized_strings->SetString("createManagedUserNameTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE));
-  localized_strings->SetString("createManagedUserPasswordTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE));
-  localized_strings->SetString("createManagedUserPasswordHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT));
-  localized_strings->SetString("createManagedUserPasswordConfirmHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT));
-  localized_strings->SetString("managedUserCreationFlowProceedButtonTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT));
-  localized_strings->SetString("createManagedUserPasswordMismatchError",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR));
-
-  localized_strings->SetString("createManagedUserSelectManagerTitle",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT));
-  localized_strings->SetString("createManagedUserManagerPasswordHint",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT));
-  localized_strings->SetString("createManagedUserWrongManagerPasswordText",
-       l10n_util::GetStringUTF16(
-           IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR));
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE);
+  builder->Add("createManagedUserNameTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE);
+  builder->Add("createManagedUserPasswordTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE);
+  builder->Add("createManagedUserPasswordHint",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT);
+  builder->Add("createManagedUserPasswordConfirmHint",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT);
+  builder->Add("managedUserCreationFlowProceedButtonTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT);
+  builder->Add("createManagedUserPasswordMismatchError",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR);
+  builder->Add("createManagedUserSelectManagerTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT);
+  builder->Add("createManagedUserManagerPasswordHint",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
+  builder->Add("createManagedUserWrongManagerPasswordText",
+               IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR);
 }
 
 void LocallyManagedUserCreationScreenHandler::Initialize() {}
 
 void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "finishLocalManagedUserCreation",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleFinishLocalManagedUserCreation,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "abortLocalManagedUserCreation",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleAbortLocalManagedUserCreation,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "retryLocalManagedUserCreation",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleRetryLocalManagedUserCreation,
-                 base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback("checkLocallyManagedUserName",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleCheckLocallyManagedUserName,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("runLocallyManagedUserCreationFlow",
-      base::Bind(&LocallyManagedUserCreationScreenHandler::
-                     HandleRunLocallyManagedUserCreationFlow,
-                 base::Unretained(this)));
+  AddCallback("finishLocalManagedUserCreation",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleFinishLocalManagedUserCreation);
+  AddCallback("abortLocalManagedUserCreation",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleAbortLocalManagedUserCreation);
+  AddCallback("retryLocalManagedUserCreation",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleRetryLocalManagedUserCreation);
+  AddCallback("checkLocallyManagedUserName",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleCheckLocallyManagedUserName);
+  AddCallback("runLocallyManagedUserCreationFlow",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleRunLocallyManagedUserCreationFlow);
 }
 
 void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
@@ -145,8 +116,7 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 void LocallyManagedUserCreationScreenHandler::Hide() {}
 
 void LocallyManagedUserCreationScreenHandler::ShowInitialScreen() {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showIntialScreen");
+  CallJS("login.LocallyManagedUserCreationScreen.showIntialScreen");
 }
 
 
@@ -159,32 +129,27 @@ void LocallyManagedUserCreationScreenHandler::
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showManagerPasswordError");
+  CallJS("login.LocallyManagedUserCreationScreen.showManagerPasswordError");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowProgressScreen() {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showProgressScreen");
+  CallJS("login.LocallyManagedUserCreationScreen.showProgressScreen");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowPostImageSelectionScreen() {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showPostImageSelectionScreen");
+  CallJS("login.LocallyManagedUserCreationScreen.showPostImageSelectionScreen");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showFinishedMessage");
+  CallJS("login.LocallyManagedUserCreationScreen.showFinishedMessage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorMessage(
     string16 message,
     bool recoverable) {
-  web_ui()->CallJavascriptFunction(
-      "login.LocallyManagedUserCreationScreen.showErrorMessage",
-      base::StringValue(message),
-      base::FundamentalValue(recoverable));
+  CallJS("login.LocallyManagedUserCreationScreen.showErrorMessage",
+         base::StringValue(message),
+         base::FundamentalValue(recoverable));
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
@@ -217,16 +182,14 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
   }
   if (NULL != UserManager::Get()->
           FindLocallyManagedUser(CollapseWhitespace(name, true))) {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            name)));
+    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
+           base::StringValue(name),
+           base::StringValue(l10n_util::GetStringFUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
+               name)));
   } else {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.managedUserNameOk",
-        base::StringValue(name));
+    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameOk",
+           base::StringValue(name));
   }
 }
 
@@ -250,21 +213,19 @@ void LocallyManagedUserCreationScreenHandler::
 
   new_user_name = CollapseWhitespace(new_user_name, true);
   if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.managedUserNameError",
-        base::StringValue(new_user_name),
-        base::StringValue(l10n_util::GetStringFUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-            new_user_name)));
+    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
+           base::StringValue(new_user_name),
+           base::StringValue(l10n_util::GetStringFUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
+               new_user_name)));
     return;
   }
 
   // TODO(antrim): Any other password checks here?
   if (new_user_password.length() == 0) {
-    web_ui()->CallJavascriptFunction(
-        "login.LocallyManagedUserCreationScreen.showPasswordError",
-        base::StringValue(l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
+    CallJS("login.LocallyManagedUserCreationScreen.showPasswordError",
+           base::StringValue(l10n_util::GetStringUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
     return;
   }
 

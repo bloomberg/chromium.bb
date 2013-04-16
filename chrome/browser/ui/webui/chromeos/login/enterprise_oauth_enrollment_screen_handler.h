@@ -56,8 +56,7 @@ class EnterpriseOAuthEnrollmentScreenHandler
 
   // Implements BaseScreenHandler:
   virtual void Initialize() OVERRIDE;
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
 
   // Implements GaiaOAuthConsumer:
   virtual void OnGetOAuthTokenFailure(

@@ -6,9 +6,6 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -99,18 +96,12 @@ EnterpriseOAuthEnrollmentScreenHandler::
 // EnterpriseOAuthEnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnterpriseOAuthEnrollmentScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "oauthEnrollClose",
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleClose,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "oauthEnrollCompleteLogin",
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "oauthEnrollRetry",
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleRetry,
-                 base::Unretained(this)));
+  AddCallback("oauthEnrollClose",
+              &EnterpriseOAuthEnrollmentScreenHandler::HandleClose);
+  AddCallback("oauthEnrollCompleteLogin",
+              &EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin);
+  AddCallback("oauthEnrollRetry",
+              &EnterpriseOAuthEnrollmentScreenHandler::HandleRetry);
 }
 
 // EnterpriseOAuthEnrollmentScreenHandler
@@ -298,41 +289,25 @@ void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
   }
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
-    base::DictionaryValue *localized_strings) {
-  localized_strings->SetString(
-      "oauthEnrollScreenTitle",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE));
-  localized_strings->SetString(
-      "oauthEnrollRetry",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_RETRY));
-  localized_strings->SetString(
-      "oauthEnrollCancel",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL));
-  localized_strings->SetString(
-      "oauthEnrollDone",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_DONE));
-  localized_strings->SetString(
-      "oauthEnrollSuccess",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_SUCCESS));
-  localized_strings->SetString(
-      "oauthEnrollExplain",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN));
-  localized_strings->SetString(
-      "oauthEnrollExplainLink",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK));
-  localized_strings->SetString(
-      "oauthEnrollExplainButton",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON));
-  localized_strings->SetString(
-      "oauthEnrollCancelAutoEnrollmentReally",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY));
-  localized_strings->SetString(
-      "oauthEnrollCancelAutoEnrollmentConfirm",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM));
-  localized_strings->SetString(
-      "oauthEnrollCancelAutoEnrollmentGoBack",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK));
+void EnterpriseOAuthEnrollmentScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
+  builder->Add("oauthEnrollScreenTitle",
+               IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE);
+  builder->Add("oauthEnrollRetry", IDS_ENTERPRISE_ENROLLMENT_RETRY);
+  builder->Add("oauthEnrollCancel", IDS_ENTERPRISE_ENROLLMENT_CANCEL);
+  builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
+  builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
+  builder->Add("oauthEnrollExplain", IDS_ENTERPRISE_ENROLLMENT_EXPLAIN);
+  builder->Add("oauthEnrollExplainLink",
+               IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK);
+  builder->Add("oauthEnrollExplainButton",
+               IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON);
+  builder->Add("oauthEnrollCancelAutoEnrollmentReally",
+               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY);
+  builder->Add("oauthEnrollCancelAutoEnrollmentConfirm",
+               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM);
+  builder->Add("oauthEnrollCancelAutoEnrollmentGoBack",
+               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
@@ -450,8 +425,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
   base::StringValue step_value(step);
-  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showStep",
-                                   step_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showStep",
+         step_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
@@ -466,16 +441,13 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowErrorMessage(
 
   base::StringValue message_value(message);
   base::FundamentalValue retry_value(retry);
-  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showError",
-                                   message_value,
-                                   retry_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showError", message_value, retry_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowWorking(int message_id) {
   const std::string message(l10n_util::GetStringUTF8(message_id));
   base::StringValue message_value(message);
-  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showWorking",
-                                   message_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showWorking", message_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {

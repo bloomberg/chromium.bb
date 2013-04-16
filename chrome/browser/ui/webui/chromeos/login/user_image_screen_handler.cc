@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -47,34 +45,26 @@ UserImageScreenHandler::~UserImageScreenHandler() {
     image_decoder_->set_delegate(NULL);
 }
 
-void UserImageScreenHandler::GetLocalizedStrings(
-    DictionaryValue *localized_strings) {
+void UserImageScreenHandler::DeclareLocalizedValues(
+    LocalizedValuesBuilder* builder) {
   // TODO(ivankr): string should be renamed to something like
   // IDS_USER_IMAGE_SCREEN_TITLE (currently used for Take Photo dialog).
-  localized_strings->SetString("userImageScreenTitle",
-      l10n_util::GetStringUTF16(IDS_OOBE_PICTURE));
-  localized_strings->SetString("userImageScreenDescription",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
-  localized_strings->SetString("takePhoto",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO));
-  localized_strings->SetString("discardPhoto",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO));
-  localized_strings->SetString("flipPhoto",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO));
-  localized_strings->SetString("profilePhoto",
-      l10n_util::GetStringUTF16(IDS_IMAGE_SCREEN_PROFILE_PHOTO));
-  localized_strings->SetString("profilePhotoLoading",
-      l10n_util::GetStringUTF16(IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO));
-  localized_strings->SetString("okButtonText",
-      l10n_util::GetStringUTF16(IDS_OK));
-  localized_strings->SetString("authorCredit",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
-  localized_strings->SetString("photoFromCamera",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA));
-  localized_strings->SetString("photoCaptureAccessibleText",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT));
-  localized_strings->SetString("photoDiscardAccessibleText",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT));
+  builder->Add("userImageScreenTitle", IDS_OOBE_PICTURE);
+  builder->Add("userImageScreenDescription",
+               IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT);
+  builder->Add("takePhoto", IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
+  builder->Add("discardPhoto", IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO);
+  builder->Add("flipPhoto", IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO);
+  builder->Add("profilePhoto", IDS_IMAGE_SCREEN_PROFILE_PHOTO);
+  builder->Add("profilePhotoLoading",
+               IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO);
+  builder->Add("okButtonText", IDS_OK);
+  builder->Add("authorCredit", IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT);
+  builder->Add("photoFromCamera", IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA);
+  builder->Add("photoCaptureAccessibleText",
+               IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
+  builder->Add("photoDiscardAccessibleText",
+               IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
 }
 
 void UserImageScreenHandler::Initialize() {
@@ -111,9 +101,8 @@ void UserImageScreenHandler::SelectImage(int index) {
   selected_image_ = index;
   if (page_is_ready()) {
     base::StringValue image_url(GetDefaultImageUrl(index));
-    web_ui()->CallJavascriptFunction(
-        "oobe.UserImageScreen.setSelectedImage",
-        image_url);
+    CallJS("oobe.UserImageScreen.setSelectedImage",
+           image_url);
   }
 }
 
@@ -124,24 +113,15 @@ void UserImageScreenHandler::CheckCameraPresence() {
 }
 
 void UserImageScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getImages",
-      base::Bind(&UserImageScreenHandler::HandleGetImages,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("photoTaken",
-      base::Bind(&UserImageScreenHandler::HandlePhotoTaken,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("selectImage",
-      base::Bind(&UserImageScreenHandler::HandleSelectImage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("checkCameraPresence",
-      base::Bind(&UserImageScreenHandler::HandleCheckCameraPresence,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onUserImageAccepted",
-      base::Bind(&UserImageScreenHandler::HandleImageAccepted,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onUserImageScreenShown",
-      base::Bind(&UserImageScreenHandler::HandleScreenShown,
-                 base::Unretained(this)));
+  AddCallback("getImages", &UserImageScreenHandler::HandleGetImages);
+  AddCallback("photoTaken", &UserImageScreenHandler::HandlePhotoTaken);
+  AddCallback("selectImage", &UserImageScreenHandler::HandleSelectImage);
+  AddCallback("checkCameraPresence",
+              &UserImageScreenHandler::HandleCheckCameraPresence);
+  AddCallback("onUserImageAccepted",
+              &UserImageScreenHandler::HandleImageAccepted);
+  AddCallback("onUserImageScreenShown",
+              &UserImageScreenHandler::HandleScreenShown);
 }
 
 void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
@@ -152,8 +132,7 @@ void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
   if (page_is_ready()) {
     base::StringValue data_url_value(data_url);
-    web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                     data_url_value);
+    CallJS("oobe.UserImageScreen.setProfileImage", data_url_value);
   }
 }
 
@@ -161,8 +140,7 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
   profile_picture_absent_ = true;
   if (page_is_ready()) {
     scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-    web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                     *null_value);
+    CallJS("oobe.UserImageScreen.setProfileImage", *null_value);
   }
 }
 
@@ -180,8 +158,7 @@ void UserImageScreenHandler::HandleGetImages(const base::ListValue* args) {
     image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
-  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setDefaultImages",
-                                   image_urls);
+  CallJS("oobe.UserImageScreen.setDefaultImages", image_urls);
 
   if (selected_image_ != User::kInvalidImageIndex)
     SelectImage(selected_image_);
@@ -283,8 +260,7 @@ void UserImageScreenHandler::HandleScreenShown(const base::ListValue* args) {
 void UserImageScreenHandler::OnCameraPresenceCheckDone() {
   base::FundamentalValue present_value(
       CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
-  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setCameraPresent",
-                                   present_value);
+  CallJS("oobe.UserImageScreen.setCameraPresent", present_value);
 }
 
 void UserImageScreenHandler::OnImageDecoded(const ImageDecoder* decoder,
@@ -301,9 +277,7 @@ void UserImageScreenHandler::OnDecodeImageFailed(const ImageDecoder* decoder) {
 
 void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
   base::FundamentalValue present_value(enabled);
-  web_ui()->
-      CallJavascriptFunction("oobe.UserImageScreen.setProfilePictureEnabled",
-                             present_value);
+  CallJS("oobe.UserImageScreen.setProfilePictureEnabled", present_value);
 }
 
 }  // namespace chromeos

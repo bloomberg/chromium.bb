@@ -36,8 +36,8 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void EnableContinue(bool enabled) OVERRIDE;
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
+  virtual void GetAdditionalParameters(base::DictionaryValue* dict) OVERRIDE;
   virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation:
