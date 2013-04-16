@@ -171,6 +171,7 @@ public:
     static void setJavaScriptI18NAPIEnabled(bool isEnabled) { isJavaScriptI18NAPIEnabled = isEnabled; }
 #endif
 
+#if ENABLE(MEDIA_STREAM)
     static bool mediaStreamEnabled() { return isMediaStreamEnabled; }
     static void setMediaStreamEnabled(bool isEnabled) { isMediaStreamEnabled = isEnabled; }
     static bool webkitGetUserMediaEnabled() { return isMediaStreamEnabled; }
@@ -179,6 +180,7 @@ public:
     static bool peerConnectionEnabled() { return isMediaStreamEnabled && isPeerConnectionEnabled; }
     static void setPeerConnectionEnabled(bool isEnabled) { isPeerConnectionEnabled = isEnabled; }
     static bool webkitRTCPeerConnectionEnabled() { return peerConnectionEnabled(); }
+#endif
 
 #if ENABLE(GAMEPAD)
     static void setWebkitGetGamepadsEnabled(bool isEnabled) { isGamepadEnabled = isEnabled; }
@@ -276,8 +278,10 @@ private:
     static bool isJavaScriptI18NAPIEnabled;
 #endif
 
+#if ENABLE(MEDIA_STREAM)
     static bool isMediaStreamEnabled;
     static bool isPeerConnectionEnabled;
+#endif
 
 #if ENABLE(GAMEPAD)
     static bool isGamepadEnabled;

@@ -23,6 +23,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "RTCDataChannelHandlerChromium.h"
 
 #include "RTCDataChannelHandlerClient.h"
@@ -107,3 +110,5 @@ void RTCDataChannelHandlerChromium::didDetectError() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

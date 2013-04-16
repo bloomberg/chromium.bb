@@ -31,6 +31,8 @@
 #ifndef RTCConfiguration_h
 #define RTCConfiguration_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -77,5 +79,7 @@ public:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCConfiguration_h

@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "MediaStreamSource.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -106,3 +108,5 @@ void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     Constructor(Dictionary dictionary),
     RaisesException
 ] interface RTCIceCandidate {

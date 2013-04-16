@@ -29,6 +29,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "RTCSessionDescription.h"
 
 #include "Dictionary.h"
@@ -105,3 +108,5 @@ RTCSessionDescriptionDescriptor* RTCSessionDescription::descriptor()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

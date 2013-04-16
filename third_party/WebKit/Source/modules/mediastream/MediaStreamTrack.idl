@@ -23,6 +23,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     EventTarget,
     ActiveDOMObject
 ] interface MediaStreamTrack {

@@ -25,6 +25,8 @@
 #ifndef NavigatorUserMediaSuccessCallback_h
 #define NavigatorUserMediaSuccessCallback_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -38,5 +40,7 @@ public:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // NavigatorUserMediaSuccessCallback_h

@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <public/WebRTCSessionDescriptionRequest.h>
 
 #include "RTCSessionDescriptionDescriptor.h"
@@ -96,4 +98,6 @@ void WebRTCSessionDescriptionRequest::setExtraData(ExtraData* extraData)
 }
 
 } // namespace WebKit
+
+#endif // ENABLE(MEDIA_STREAM)
 

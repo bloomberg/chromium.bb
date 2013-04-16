@@ -29,6 +29,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "MediaStreamCenterChromium.h"
 
 #include "MediaStreamDescriptor.h"
@@ -114,3 +117,5 @@ void MediaStreamCenterChromium::stopLocalMediaStream(const WebKit::WebMediaStrea
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

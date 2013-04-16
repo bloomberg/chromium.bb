@@ -31,6 +31,8 @@
 #ifndef MediaConstraints_h
 #define MediaConstraints_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
@@ -62,5 +64,7 @@ protected:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaConstraints_h

@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <public/WebMediaStreamSourcesRequest.h>
 
 #include "MediaStreamSource.h"
@@ -81,3 +83,6 @@ void WebMediaStreamSourcesRequest::didCompleteQuery(const WebVector<WebMediaStre
 }
 
 } // namespace WebKit
+
+#endif // ENABLE(MEDIA_STREAM)
+

@@ -25,6 +25,8 @@
 #ifndef UserMediaController_h
 #define UserMediaController_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "Page.h"
 #include "UserMediaClient.h"
 #include <wtf/PassOwnPtr.h>
@@ -61,5 +63,7 @@ inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* reques
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // UserMediaController_h

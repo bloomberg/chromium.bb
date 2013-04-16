@@ -25,7 +25,7 @@
 #ifndef MediaStreamAudioDestinationNode_h
 #define MediaStreamAudioDestinationNode_h
 
-#if ENABLE(WEB_AUDIO)
+#if ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
 #include "AudioBasicInspectorNode.h"
 #include "AudioBus.h"
@@ -67,6 +67,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(WEB_AUDIO)
+#endif // ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamAudioDestinationNode_h

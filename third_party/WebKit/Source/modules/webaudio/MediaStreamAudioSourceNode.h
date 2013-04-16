@@ -25,7 +25,7 @@
 #ifndef MediaStreamAudioSourceNode_h
 #define MediaStreamAudioSourceNode_h
 
-#if ENABLE(WEB_AUDIO)
+#if ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
 #include "AudioSourceNode.h"
 #include "AudioSourceProvider.h"
@@ -72,6 +72,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(WEB_AUDIO)
+#endif // ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamAudioSourceNode_h

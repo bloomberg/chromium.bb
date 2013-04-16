@@ -25,6 +25,8 @@
 #ifndef RTCDataChannelHandlerClient_h
 #define RTCDataChannelHandlerClient_h
 
+#if ENABLE(MEDIA_STREAM)
+
 namespace WebCore {
 
 class RTCDataChannelHandlerClient {
@@ -45,5 +47,7 @@ public:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDataChannelHandlerClient_h

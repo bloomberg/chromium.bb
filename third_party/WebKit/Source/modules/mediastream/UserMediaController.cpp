@@ -25,6 +25,8 @@
 #include "config.h"
 #include "UserMediaController.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 namespace WebCore {
 
 const char* UserMediaController::supplementName()
@@ -53,3 +55,5 @@ void provideUserMediaTo(Page* page, UserMediaClient* client)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

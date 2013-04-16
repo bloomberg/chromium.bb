@@ -103,7 +103,9 @@
 #include "MediaElementAudioSourceNode.h"
 #endif
 
+#if ENABLE(MEDIA_STREAM)
 #include "MediaStreamRegistry.h"
+#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 #include "MediaKeyNeededEvent.h"
@@ -866,8 +868,10 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
+#if ENABLE(MEDIA_STREAM)
     if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string()))
         removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+#endif
 
     if (m_sendProgressEvents) 
         startProgressEventTimer();

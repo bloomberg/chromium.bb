@@ -49,9 +49,6 @@
 #include "GainNode.h"
 #include "HRTFDatabaseLoader.h"
 #include "HRTFPanner.h"
-#include "MediaStream.h"
-#include "MediaStreamAudioDestinationNode.h"
-#include "MediaStreamAudioSourceNode.h"
 #include "OfflineAudioCompletionEvent.h"
 #include "OfflineAudioDestinationNode.h"
 #include "OscillatorNode.h"
@@ -63,6 +60,12 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
+
+#if ENABLE(MEDIA_STREAM)
+#include "MediaStream.h"
+#include "MediaStreamAudioDestinationNode.h"
+#include "MediaStreamAudioSourceNode.h"
+#endif
 
 #if ENABLE(VIDEO)
 #include "HTMLMediaElement.h"
@@ -380,6 +383,7 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
 }
 #endif
 
+#if ENABLE(MEDIA_STREAM)
 PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionCode& ec)
 {
     ASSERT(mediaStream);
@@ -420,6 +424,8 @@ PassRefPtr<MediaStreamAudioDestinationNode> AudioContext::createMediaStreamDesti
     // FIXME: The default should probably be stereo instead of mono.
     return MediaStreamAudioDestinationNode::create(this, 1);
 }
+
+#endif
 
 PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, ExceptionCode& ec)
 {

@@ -117,8 +117,10 @@ public:
 #if ENABLE(VIDEO)
     PassRefPtr<MediaElementAudioSourceNode> createMediaElementSource(HTMLMediaElement*, ExceptionCode&);
 #endif
+#if ENABLE(MEDIA_STREAM)
     PassRefPtr<MediaStreamAudioSourceNode> createMediaStreamSource(MediaStream*, ExceptionCode&);
     PassRefPtr<MediaStreamAudioDestinationNode> createMediaStreamDestination();
+#endif
     PassRefPtr<GainNode> createGain();
     PassRefPtr<BiquadFilterNode> createBiquadFilter();
     PassRefPtr<WaveShaperNode> createWaveShaper();

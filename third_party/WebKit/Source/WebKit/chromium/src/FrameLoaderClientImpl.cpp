@@ -55,7 +55,9 @@
 #include "ProgressTracker.h"
 #include "ResourceHandleInternal.h"
 #include "ResourceLoader.h"
+#if ENABLE(MEDIA_STREAM)
 #include "RTCPeerConnectionHandlerChromium.h"
+#endif
 #include "Settings.h"
 #include "SocketStreamHandleInternal.h"
 #include "UserGestureIndicator.h"
@@ -1450,10 +1452,12 @@ void FrameLoaderClientImpl::dispatchWillOpenSocketStream(SocketStreamHandle* han
     m_webFrame->client()->willOpenSocketStream(SocketStreamHandleInternal::toWebSocketStreamHandle(handle));
 }
 
+#if ENABLE(MEDIA_STREAM)
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler* handler)
 {
     m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), RTCPeerConnectionHandlerChromium::toWebRTCPeerConnectionHandler(handler));
 }
+#endif
 
 void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)
 {

@@ -25,6 +25,8 @@
 #ifndef MediaStreamEvent_h
 #define MediaStreamEvent_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "Event.h"
 #include "MediaStream.h"
 #include <wtf/text/AtomicString.h>
@@ -58,5 +60,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamEvent_h

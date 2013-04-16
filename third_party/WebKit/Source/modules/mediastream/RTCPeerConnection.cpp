@@ -29,6 +29,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "RTCPeerConnection.h"
 
 #include "ArrayValue.h"
@@ -655,3 +658,5 @@ void RTCPeerConnection::scheduledEventTimerFired(Timer<RTCPeerConnection>*)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

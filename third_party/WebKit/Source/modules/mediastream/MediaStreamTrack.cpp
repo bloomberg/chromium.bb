@@ -26,6 +26,8 @@
 #include "config.h"
 #include "MediaStreamTrack.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "Event.h"
 #include "MediaStreamCenter.h"
 #include "MediaStreamComponent.h"
@@ -179,3 +181,5 @@ EventTargetData* MediaStreamTrack::ensureEventTargetData()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

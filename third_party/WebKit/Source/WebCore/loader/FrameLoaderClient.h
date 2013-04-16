@@ -74,7 +74,9 @@ namespace WebCore {
     class ResourceHandle;
     class ResourceRequest;
     class ResourceResponse;
+#if ENABLE(MEDIA_STREAM)
     class RTCPeerConnectionHandler;
+#endif
     class SecurityOrigin;
     class SharedBuffer;
     class SocketStreamHandle;
@@ -238,7 +240,9 @@ namespace WebCore {
 
         virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) { }
 
+#if ENABLE(MEDIA_STREAM)
         virtual void dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler*) { }
+#endif
 
         virtual void didRequestAutocomplete(PassRefPtr<FormState>) = 0;
 

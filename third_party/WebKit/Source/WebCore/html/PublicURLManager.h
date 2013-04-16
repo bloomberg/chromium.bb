@@ -31,8 +31,10 @@
 #include <wtf/HashSet.h>
 #include <wtf/text/WTFString.h>
 
+#if ENABLE(MEDIA_STREAM)
 #include "MediaStream.h"
 #include "MediaStreamRegistry.h"
+#endif
 
 #include "MediaSource.h"
 #include "MediaSourceRegistry.h"
@@ -51,21 +53,27 @@ public:
         for (HashSet<String>::iterator iter = m_blobURLs.begin(); iter != blobURLsEnd; ++iter)
             ThreadableBlobRegistry::unregisterBlobURL(KURL(ParsedURLString, *iter));
 
+#if ENABLE(MEDIA_STREAM)
         HashSet<String>::iterator streamURLsEnd = m_streamURLs.end();
         for (HashSet<String>::iterator iter = m_streamURLs.begin(); iter != streamURLsEnd; ++iter)
             MediaStreamRegistry::registry().unregisterMediaStreamURL(KURL(ParsedURLString, *iter));
+#endif
         HashSet<String>::iterator sourceURLsEnd = m_sourceURLs.end();
         for (HashSet<String>::iterator iter = m_sourceURLs.begin(); iter != sourceURLsEnd; ++iter)
             MediaSourceRegistry::registry().unregisterMediaSourceURL(KURL(ParsedURLString, *iter));
     }
 
     HashSet<String>& blobURLs() { return m_blobURLs; }
+#if ENABLE(MEDIA_STREAM)
     HashSet<String>& streamURLs() { return m_streamURLs; }
+#endif
     HashSet<String>& sourceURLs() { return m_sourceURLs; }
 
 private:
     HashSet<String> m_blobURLs;
+#if ENABLE(MEDIA_STREAM)
     HashSet<String> m_streamURLs;
+#endif
     HashSet<String> m_sourceURLs;
 };
 

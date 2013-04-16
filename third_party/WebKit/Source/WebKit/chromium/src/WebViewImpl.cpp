@@ -436,7 +436,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_batteryClient(adoptPtr(new BatteryClientImpl(client ? client->batteryStatusClient() : 0)))
 #endif
     , m_emulatedTextZoomFactor(1)
+#if ENABLE(MEDIA_STREAM)
     , m_userMediaClientImpl(this)
+#endif
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     , m_navigatorContentUtilsClient(NavigatorContentUtilsClientImpl::create(this))
 #endif
@@ -465,7 +467,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
         pageClients.validationMessageClient = m_validationMessage.get();
 
     m_page = adoptPtr(new Page(pageClients));
+#if ENABLE(MEDIA_STREAM)
     provideUserMediaTo(m_page.get(), &m_userMediaClientImpl);
+#endif
 #if ENABLE(INPUT_SPEECH)
     provideSpeechInputTo(m_page.get(), m_speechInputClient.get());
 #endif

@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_AUDIO)
+#if ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
 #include "MediaStreamAudioDestinationNode.h"
 
@@ -83,4 +83,4 @@ void MediaStreamAudioDestinationNode::reset()
 
 } // namespace WebCore
 
-#endif // ENABLE(WEB_AUDIO)
+#endif // ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)

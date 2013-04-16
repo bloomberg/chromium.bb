@@ -30,7 +30,11 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "MediaStreamCenter.h"
+
 #include "MediaStreamDescriptor.h"
 
 namespace WebCore {
@@ -53,3 +57,5 @@ void MediaStreamCenter::endLocalMediaStream(MediaStreamDescriptor* streamDescrip
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

@@ -18,6 +18,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     Supplemental=Navigator
 ] interface NavigatorMediaStream {
     [EnabledAtRuntime, RaisesException] void webkitGetUserMedia(Dictionary options,

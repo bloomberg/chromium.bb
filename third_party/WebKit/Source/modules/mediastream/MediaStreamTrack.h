@@ -26,6 +26,8 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "ActiveDOMObject.h"
 #include "EventTarget.h"
 #include "MediaStreamDescriptor.h"
@@ -92,5 +94,7 @@ private:
 typedef Vector<RefPtr<MediaStreamTrack> > MediaStreamTrackVector;
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamTrack_h

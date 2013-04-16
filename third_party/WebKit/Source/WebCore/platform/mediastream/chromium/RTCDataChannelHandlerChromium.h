@@ -25,6 +25,8 @@
 #ifndef RTCDataChannelHandlerChromium_h
 #define RTCDataChannelHandlerChromium_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "RTCDataChannelHandler.h"
 #include "RTCDataChannelHandlerClient.h"
 #include <public/WebRTCDataChannelHandler.h>
@@ -64,5 +66,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDataChannelHandlerChromium_h

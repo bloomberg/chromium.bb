@@ -24,6 +24,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     ConstructorTemplate=Event
 ] interface RTCDTMFToneChangeEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString tone;

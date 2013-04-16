@@ -171,7 +171,9 @@ public:
 
     virtual void dispatchWillOpenSocketStream(WebCore::SocketStreamHandle*) OVERRIDE;
 
+#if ENABLE(MEDIA_STREAM)
     virtual void dispatchWillStartUsingPeerConnectionHandler(WebCore::RTCPeerConnectionHandler*) OVERRIDE;
+#endif
 
     virtual void didRequestAutocomplete(PassRefPtr<WebCore::FormState>) OVERRIDE;
 

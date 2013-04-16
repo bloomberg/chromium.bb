@@ -24,6 +24,8 @@
 
 #include "config.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <public/WebRTCStatsResponse.h>
 
 #include "RTCStatsResponseBase.h"
@@ -66,4 +68,6 @@ void WebRTCStatsResponse::addStatistic(size_t report, WebString name, WebString 
 }
 
 } // namespace WebKit
+
+#endif // ENABLE(MEDIA_STREAM)
 

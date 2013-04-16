@@ -14,19 +14,19 @@ IDBOpenDBRequest
 IDBRequest
 IDBTransaction
 ScriptProcessorNode conditional=WEB_AUDIO
-LocalMediaStream
+LocalMediaStream conditional=MEDIA_STREAM
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 MediaController conditional=VIDEO
 MediaSource
-MediaStream
-MediaStreamTrack
+MediaStream conditional=MEDIA_STREAM
+MediaStreamTrack conditional=MEDIA_STREAM
 MessagePort
 Node
 Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 Performance
-RTCDataChannel
-RTCDTMFSender
-RTCPeerConnection
+RTCDataChannel conditional=MEDIA_STREAM
+RTCDTMFSender conditional=MEDIA_STREAM
+RTCPeerConnection conditional=MEDIA_STREAM
 SharedWorker conditional=SHARED_WORKERS
 SharedWorkerContext conditional=SHARED_WORKERS
 SourceBufferList

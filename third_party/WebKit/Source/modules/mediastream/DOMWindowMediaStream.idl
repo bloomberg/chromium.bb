@@ -25,6 +25,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     Supplemental=DOMWindow
 ] interface DOMWindowMediaStream {
     [EnabledAtRuntime] attribute MediaStreamConstructor webkitMediaStream;

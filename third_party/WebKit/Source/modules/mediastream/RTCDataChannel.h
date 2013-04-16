@@ -25,6 +25,8 @@
 #ifndef RTCDataChannel_h
 #define RTCDataChannel_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "EventTarget.h"
 #include "RTCDataChannelHandlerClient.h"
 #include "Timer.h"
@@ -107,5 +109,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDataChannel_h

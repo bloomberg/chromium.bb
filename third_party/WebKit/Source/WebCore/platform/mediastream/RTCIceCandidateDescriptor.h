@@ -31,6 +31,8 @@
 #ifndef RTCIceCandidateDescriptor_h
 #define RTCIceCandidateDescriptor_h
 
+#if ENABLE(MEDIA_STREAM)
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -55,5 +57,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCIceCandidateDescriptor_h

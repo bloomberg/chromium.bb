@@ -23,6 +23,7 @@
  */
 
 [
+    Conditional=MEDIA_STREAM,
     EventTarget
 ] interface LocalMediaStream : MediaStream {
     void stop();

@@ -25,6 +25,8 @@
 #include "config.h"
 #include "RTCDataChannelEvent.h"
 
+#if ENABLE(MEDIA_STREAM)
+
 #include "EventNames.h"
 #include "RTCDataChannel.h"
 
@@ -68,4 +70,6 @@ const AtomicString& RTCDataChannelEvent::interfaceName() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 

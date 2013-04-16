@@ -25,6 +25,9 @@
 
 #include "config.h"
 #include "LocalMediaStream.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "MediaStreamCenter.h"
 #include "UUID.h"
 
@@ -65,3 +68,5 @@ const AtomicString& LocalMediaStream::interfaceName() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

@@ -29,6 +29,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "RTCVoidRequestImpl.h"
 
 #include "RTCErrorCallback.h"
@@ -83,3 +86,5 @@ void RTCVoidRequestImpl::clear()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

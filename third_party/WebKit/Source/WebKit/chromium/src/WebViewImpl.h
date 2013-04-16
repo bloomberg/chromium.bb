@@ -857,7 +857,9 @@ private:
 
     float m_emulatedTextZoomFactor;
 
+#if ENABLE(MEDIA_STREAM)
     UserMediaClientImpl m_userMediaClientImpl;
+#endif
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     OwnPtr<NavigatorContentUtilsClientImpl> m_navigatorContentUtilsClient;
 #endif

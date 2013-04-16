@@ -50,7 +50,9 @@ public:
     static String createObjectURL(ScriptExecutionContext*, Blob*);
     static void revokeObjectURL(ScriptExecutionContext*, const String&);
     static String createObjectURL(ScriptExecutionContext*, MediaSource*);
+#if ENABLE(MEDIA_STREAM)
     static String createObjectURL(ScriptExecutionContext*, MediaStream*);
+#endif
 };
 
 } // namespace WebCore

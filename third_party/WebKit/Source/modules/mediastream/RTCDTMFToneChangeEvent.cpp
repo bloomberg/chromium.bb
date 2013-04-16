@@ -25,6 +25,9 @@
 
 #include "config.h"
 #include "RTCDTMFToneChangeEvent.h"
+
+#if ENABLE(MEDIA_STREAM)
+
 #include "EventNames.h"
 
 namespace WebCore {
@@ -79,4 +82,6 @@ const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
 
