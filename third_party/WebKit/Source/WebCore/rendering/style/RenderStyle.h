@@ -953,13 +953,9 @@ public:
 #else
     bool hasBlendMode() const { return false; }
 #endif
- 
-#if USE(RTL_SCROLLBAR)
+
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
-#else
-    bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return false; }
-#endif
-        
+
 // attribute setter methods
 
     void setDisplay(EDisplay v) { noninherited_flags._effectiveDisplay = v; }
