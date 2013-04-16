@@ -141,10 +141,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/active_tab_tracker.h"
 #endif
@@ -586,13 +582,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     MetricsLog::set_version_extension("-F");
 #elif defined(ARCH_CPU_64_BITS)
   MetricsLog::set_version_extension("-64");
-#elif defined(OS_ANDROID)
-  // Set version extension to identify Android releases.
-  // Example: 16.0.912.61-K88
-  std::string version_extension = "-K";
-  version_extension.append(
-      base::android::BuildInfo::GetInstance()->package_version_code());
-  MetricsLog::set_version_extension(version_extension);
 #endif  // defined(OS_WIN)
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
