@@ -3765,3 +3765,5 @@ crbug.com/230771 fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 webkit.org/b/109954 css3/line-break [ Skip ]
 # pending implementation completion and feature enabling
 webkit.org/b/109570 media/track/regions-webvtt [ Skip ]
+
+crbug.com/231721 [ XP Release ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
