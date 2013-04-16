@@ -12,8 +12,8 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.h"
+#include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
@@ -50,53 +50,6 @@ const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
 const char kUnsupportedConflictResolutionPolicy[] =
     "Policy %s is not supported.";
-
-api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
-    const SyncFileStatus state) {
-  switch (state) {
-    case sync_file_system::SYNC_FILE_STATUS_UNKNOWN:
-      return api::sync_file_system::FILE_STATUS_NONE;
-    case sync_file_system::SYNC_FILE_STATUS_SYNCED:
-      return api::sync_file_system::FILE_STATUS_SYNCED;
-    case sync_file_system::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
-      return api::sync_file_system::FILE_STATUS_PENDING;
-    case sync_file_system::SYNC_FILE_STATUS_CONFLICTING:
-      return api::sync_file_system::FILE_STATUS_CONFLICTING;
-  }
-  NOTREACHED();
-  return api::sync_file_system::FILE_STATUS_NONE;
-}
-
-ConflictResolutionPolicy ExtensionEnumToConflictResolutionPolicy(
-    const std::string& policy_string) {
-  api::sync_file_system::ConflictResolutionPolicy policy =
-      api::sync_file_system::ParseConflictResolutionPolicy(policy_string);
-  switch (policy) {
-    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE:
-      return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
-    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN:
-      return sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN;
-    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL:
-      return sync_file_system::CONFLICT_RESOLUTION_MANUAL;
-  }
-  NOTREACHED();
-  return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
-}
-
-api::sync_file_system::ConflictResolutionPolicy
-ConflictResolutionPolicyToExtensionEnum(
-    ConflictResolutionPolicy policy) {
-  switch (policy) {
-    case sync_file_system::CONFLICT_RESOLUTION_UNKNOWN:
-      return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
-    case sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN:
-        return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
-    case sync_file_system::CONFLICT_RESOLUTION_MANUAL:
-      return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL;
-  }
-  NOTREACHED();
-  return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
-}
 
 sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
     Profile* profile) {
@@ -270,7 +223,7 @@ void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
 
   // Convert from C++ to JavaScript enum.
   results_ = api::sync_file_system::GetFileStatus::Results::Create(
-      FileSyncStatusEnumToExtensionEnum(sync_file_status));
+      SyncFileStatusToExtensionEnum(sync_file_status));
   SendResponse(true);
 }
 
@@ -342,7 +295,7 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     fileapi::FileSystemURL url = it->first;
     SyncStatusCode file_error = it->second.first;
     api::sync_file_system::FileStatus file_status =
-        FileSyncStatusEnumToExtensionEnum(it->second.second);
+        SyncFileStatusToExtensionEnum(it->second.second);
 
     GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
         url.origin(), url.filesystem_id());
@@ -426,8 +379,8 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
 bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
   std::string policy_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
-  ConflictResolutionPolicy policy =
-      ExtensionEnumToConflictResolutionPolicy(policy_string);
+  ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
+      api::sync_file_system::ParseConflictResolutionPolicy(policy_string));
   if (policy == sync_file_system::CONFLICT_RESOLUTION_UNKNOWN) {
     SetError(base::StringPrintf(kUnsupportedConflictResolutionPolicy,
                                 policy_string.c_str()));

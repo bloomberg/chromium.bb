@@ -38,7 +38,7 @@ class ExtensionSyncEventObserver
   // sync_file_system::SyncEventObserver interface implementation.
   virtual void OnSyncStateUpdated(
       const GURL& app_origin,
-      sync_file_system::SyncEventObserver::SyncServiceState state,
+      sync_file_system::SyncServiceState state,
       const std::string& description) OVERRIDE;
 
   virtual void OnFileSynced(

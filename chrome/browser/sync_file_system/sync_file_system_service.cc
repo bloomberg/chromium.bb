@@ -37,20 +37,20 @@ namespace sync_file_system {
 
 namespace {
 
-SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
+SyncServiceState RemoteStateToSyncServiceState(
     RemoteServiceState state) {
   switch (state) {
     case REMOTE_SERVICE_OK:
-      return SyncEventObserver::SYNC_SERVICE_RUNNING;
+      return SYNC_SERVICE_RUNNING;
     case REMOTE_SERVICE_TEMPORARY_UNAVAILABLE:
-      return SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE;
+      return SYNC_SERVICE_TEMPORARY_UNAVAILABLE;
     case REMOTE_SERVICE_AUTHENTICATION_REQUIRED:
-      return SyncEventObserver::SYNC_SERVICE_AUTHENTICATION_REQUIRED;
+      return SYNC_SERVICE_AUTHENTICATION_REQUIRED;
     case REMOTE_SERVICE_DISABLED:
-      return SyncEventObserver::SYNC_SERVICE_DISABLED;
+      return SYNC_SERVICE_DISABLED;
   }
-  NOTREACHED();
-  return SyncEventObserver::SYNC_SERVICE_DISABLED;
+  NOTREACHED() << "Unknown remote service state: " << state;
+  return SYNC_SERVICE_DISABLED;
 }
 
 void DidHandleOriginForExtensionUnloadedEvent(

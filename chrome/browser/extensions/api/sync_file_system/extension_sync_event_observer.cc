@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 
+#include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,72 +19,6 @@
 using sync_file_system::SyncEventObserver;
 
 namespace extensions {
-
-namespace {
-
-api::sync_file_system::ServiceStatus SyncServiceStateEnumToExtensionEnum(
-    SyncEventObserver::SyncServiceState state) {
-  switch (state) {
-    case SyncEventObserver::SYNC_SERVICE_RUNNING:
-      return api::sync_file_system::SERVICE_STATUS_RUNNING;
-    case SyncEventObserver::SYNC_SERVICE_AUTHENTICATION_REQUIRED:
-      return api::sync_file_system::SERVICE_STATUS_AUTHENTICATION_REQUIRED;
-    case SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE:
-      return api::sync_file_system::SERVICE_STATUS_TEMPORARY_UNAVAILABLE;
-    case SyncEventObserver::SYNC_SERVICE_DISABLED:
-      return api::sync_file_system::SERVICE_STATUS_DISABLED;
-  }
-  NOTREACHED() << "Invalid state: " << state;
-  return api::sync_file_system::SERVICE_STATUS_NONE;
-}
-
-api::sync_file_system::FileStatus SyncFileStatusToExtensionEnum(
-    sync_file_system::SyncFileStatus status) {
-  switch (status) {
-    case sync_file_system::SYNC_FILE_STATUS_SYNCED:
-      return api::sync_file_system::FILE_STATUS_SYNCED;
-    case sync_file_system::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
-      return api::sync_file_system::FILE_STATUS_PENDING;
-    case sync_file_system::SYNC_FILE_STATUS_CONFLICTING:
-      return api::sync_file_system::FILE_STATUS_CONFLICTING;
-    case sync_file_system::SYNC_FILE_STATUS_UNKNOWN:
-      return api::sync_file_system::FILE_STATUS_NONE;
-  }
-  NOTREACHED() << "Invalid status: " << status;
-  return api::sync_file_system::FILE_STATUS_NONE;
-}
-
-api::sync_file_system::SyncAction SyncActionToExtensionEnum(
-    sync_file_system::SyncAction action) {
-  switch (action) {
-    case sync_file_system::SYNC_ACTION_ADDED:
-      return api::sync_file_system::SYNC_ACTION_ADDED;
-    case sync_file_system::SYNC_ACTION_UPDATED:
-      return api::sync_file_system::SYNC_ACTION_UPDATED;
-    case sync_file_system::SYNC_ACTION_DELETED:
-      return api::sync_file_system::SYNC_ACTION_DELETED;
-    case sync_file_system::SYNC_ACTION_NONE:
-      return api::sync_file_system::SYNC_ACTION_NONE;
-  }
-  NOTREACHED() << "Invalid action: " << action;
-  return api::sync_file_system::SYNC_ACTION_NONE;
-}
-
-api::sync_file_system::SyncDirection SyncDirectionToExtensionEnum(
-    sync_file_system::SyncDirection direction) {
-  switch (direction) {
-    case sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE:
-      return api::sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE;
-    case sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL:
-      return api::sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL;
-    case sync_file_system::SYNC_DIRECTION_NONE:
-      return api::sync_file_system::SYNC_DIRECTION_NONE;
-  }
-  NOTREACHED() << "Invalid direction: " << direction;
-  return api::sync_file_system::SYNC_DIRECTION_NONE;
-}
-
-}  // namespace
 
 ExtensionSyncEventObserver::ExtensionSyncEventObserver(
     Profile* profile)
@@ -123,11 +58,11 @@ std::string ExtensionSyncEventObserver::GetExtensionId(
 
 void ExtensionSyncEventObserver::OnSyncStateUpdated(
     const GURL& app_origin,
-    SyncServiceState state,
+    sync_file_system::SyncServiceState state,
     const std::string& description) {
   // Convert state and description into SyncState Object.
   api::sync_file_system::ServiceInfo service_info;
-  service_info.state = SyncServiceStateEnumToExtensionEnum(state);
+  service_info.state = SyncServiceStateToExtensionEnum(state);
   service_info.description = description;
   scoped_ptr<base::ListValue> params(
       api::sync_file_system::OnServiceStatusChanged::Create(service_info));

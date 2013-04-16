@@ -379,6 +379,8 @@
         'browser/extensions/api/sync_file_system/extension_sync_event_observer.h',
         'browser/extensions/api/sync_file_system/sync_file_system_api.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_api.h',
+        'browser/extensions/api/sync_file_system/sync_file_system_api_helpers.cc',
+        'browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h',
         'browser/extensions/api/system_indicator/system_indicator_api.cc',
         'browser/extensions/api/system_indicator/system_indicator_api.h',
         'browser/extensions/api/system_indicator/system_indicator_manager.cc',

@@ -188,7 +188,7 @@ class SyncFileSystemServiceTest : public testing::Test {
   void InitializeAppForObserverTest(
       RemoteServiceState state_to_notify,
       SyncStatusCode status_to_return,
-      const std::vector<SyncEventObserver::SyncServiceState> expected_states,
+      const std::vector<SyncServiceState> expected_states,
       SyncStatusCode expected_status,
       int expected_current_state_calls) {
     StrictMock<MockSyncEventObserver> event_observer;
@@ -208,7 +208,7 @@ class SyncFileSystemServiceTest : public testing::Test {
           .WillRepeatedly(Return(REMOTE_SERVICE_OK));
     }
 
-    std::vector<SyncEventObserver::SyncServiceState> actual_states;
+    std::vector<SyncServiceState> actual_states;
     EXPECT_CALL(event_observer, OnSyncStateUpdated(GURL(), _, _))
         .WillRepeatedly(RecordState(&actual_states));
 
@@ -260,8 +260,8 @@ TEST_F(SyncFileSystemServiceTest, InitializeForApp) {
 }
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppSuccess) {
-  std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(SyncEventObserver::SYNC_SERVICE_RUNNING);
+  std::vector<SyncServiceState> expected_states;
+  expected_states.push_back(SYNC_SERVICE_RUNNING);
 
   InitializeAppForObserverTest(
       REMOTE_SERVICE_OK,
@@ -272,9 +272,8 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppSuccess) {
 }
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
-  std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(
-      SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE);
+  std::vector<SyncServiceState> expected_states;
+  expected_states.push_back(SYNC_SERVICE_TEMPORARY_UNAVAILABLE);
 
   // Notify REMOTE_SERVICE_TEMPORARY_UNAVAILABLE and callback with
   // SYNC_STATUS_NETWORK_ERROR.  This should let the
@@ -288,8 +287,8 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
 }
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
-  std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(SyncEventObserver::SYNC_SERVICE_DISABLED);
+  std::vector<SyncServiceState> expected_states;
+  expected_states.push_back(SYNC_SERVICE_DISABLED);
 
   // Notify REMOTE_SERVICE_DISABLED and callback with
   // SYNC_STATUS_FAILED.  This should let the InitializeApp fail.
