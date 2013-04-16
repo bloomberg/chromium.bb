@@ -134,17 +134,17 @@ public:
 
         std::sort(m_connections.begin(), m_connections.end());
         Vector<v8::Persistent<v8::Value> > group;
-        ImplicitConnection* con_iter = m_connections.begin();
-        const ImplicitConnection* con_end = m_connections.end();
-        while (con_iter < con_end) {
-            void* root = con_iter->root();
-            v8::Persistent<v8::Object> groupRepresentativeWrapper = con_iter->wrapper();
-            OwnPtr<RetainedObjectInfo> retainedObjectInfo = con_iter->retainedObjectInfo();
+        ImplicitConnection* connectionIterator = m_connections.begin();
+        const ImplicitConnection* connectionIteratorEnd = m_connections.end();
+        while (connectionIterator < connectionIteratorEnd) {
+            void* root = connectionIterator->root();
+            v8::Persistent<v8::Object> groupRepresentativeWrapper = connectionIterator->wrapper();
+            OwnPtr<RetainedObjectInfo> retainedObjectInfo = connectionIterator->retainedObjectInfo();
 
             do {
-                group.append(con_iter->wrapper());
-                ++con_iter;
-            } while (con_iter < con_end && root == con_iter->root());
+                group.append(connectionIterator->wrapper());
+                ++connectionIterator;
+            } while (connectionIterator < connectionIteratorEnd && root == connectionIterator->root());
 
             if (group.size() > 1)
                 v8::V8::AddObjectGroup(group.data(), group.size(), retainedObjectInfo.leakPtr());
@@ -157,21 +157,21 @@ public:
         }
 
         std::sort(m_references.begin(), m_references.end());
-        const ImplicitReference* ref_iter = m_references.begin();
-        const ImplicitReference* ref_end = m_references.end();
-        while (ref_iter < ref_end) {
-            void* parent = ref_iter->parent;
+        const ImplicitReference* referenceIterator = m_references.begin();
+        const ImplicitReference* referenceIteratorEnd = m_references.end();
+        while (referenceIterator < referenceIteratorEnd) {
+            void* parent = referenceIterator->parent;
             v8::Persistent<v8::Object> parentWrapper = m_rootGroupMap.get(parent);
             if (parentWrapper.IsEmpty()) {
-                ++ref_iter;
+                ++referenceIterator;
                 continue;
             }
 
             Vector<v8::Persistent<v8::Value> > children;
             do {
-                children.append(ref_iter->child);
-                ++ref_iter;
-            } while (ref_iter < ref_end && parent == ref_iter->parent);
+                children.append(referenceIterator->child);
+                ++referenceIterator;
+            } while (referenceIterator < referenceIteratorEnd && parent == referenceIterator->parent);
 
             v8::V8::AddImplicitReferences(parentWrapper, children.data(), children.size());
         }
@@ -271,10 +271,10 @@ static void gcTree(v8::Isolate* isolate, Node* startNode)
     // We completed the DOM tree traversal. All wrappers in the DOM tree are
     // stored in newSpaceWrappers and are expected to exist in the new space of V8.
     // We report those wrappers to V8 as an object group.
-    v8::Persistent<v8::Value>* wrap_iter = newSpaceWrappers.begin();
-    const v8::Persistent<v8::Value>* end_iter = newSpaceWrappers.end();
-    for (; wrap_iter != end_iter; ++wrap_iter)
-        wrap_iter->MarkPartiallyDependent(isolate);
+    v8::Persistent<v8::Value>* wrapperIterator = newSpaceWrappers.begin();
+    const v8::Persistent<v8::Value>* wrapperIteratorEnd = newSpaceWrappers.end();
+    for (; wrapperIterator != wrapperIteratorEnd; ++wrapperIterator)
+        wrapperIterator->MarkPartiallyDependent(isolate);
     if (newSpaceWrappers.size() > 0)
         v8::V8::AddObjectGroup(&newSpaceWrappers[0], newSpaceWrappers.size());
 }
@@ -326,10 +326,10 @@ public:
 
     void notifyFinished()
     {
-        Node** node_iter = m_nodesInNewSpace.begin();
-        Node** node_end = m_nodesInNewSpace.end();
-        for (; node_iter < node_end; ++node_iter) {
-            Node* node = *node_iter;
+        Node** nodeIterator = m_nodesInNewSpace.begin();
+        Node** nodeIteratorEnd = m_nodesInNewSpace.end();
+        for (; nodeIterator < nodeIteratorEnd; ++nodeIterator) {
+            Node* node = *nodeIterator;
             ASSERT(!node->wrapper().IsEmpty());
             if (node->isV8CollectableDuringMinorGC()) // This branch is just for performance.
                 gcTree(m_isolate, node);
