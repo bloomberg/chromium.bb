@@ -677,8 +677,8 @@
       'google_default_client_id%': '',
       'google_default_client_secret%': '',
 
-      # Whether Android uses OpenMAX DL FFT.  Default is no.
-      'use_openmax_dl_fft%': 0,
+      # Whether Android uses OpenMAX DL FFT.  Default is yes.
+      'use_openmax_dl_fft%': 1,
     },
 
     # Copy conditionally-set variables out one scope.
