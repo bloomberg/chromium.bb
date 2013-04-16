@@ -2206,7 +2206,8 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onUnload_ = function() {
-    this.fileWatcher_.stop();
+    if (this.fileWatcher_)
+      this.fileWatcher_.stop();
     if (this.filePopup_ &&
         this.filePopup_.contentWindow &&
         this.filePopup_.contentWindow.unload) {

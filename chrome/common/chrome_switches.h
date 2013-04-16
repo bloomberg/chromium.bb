@@ -443,7 +443,7 @@ extern const char kStubCrosSettings[];
 extern const char kAuthExtensionPath[];
 extern const char kEnterpriseEnrollmentInitialModulus[];
 extern const char kEnterpriseEnrollmentModulusLimit[];
-extern const char kFileManagerPackaged[];
+extern const char kFileManagerLegacy[];
 extern const char kFileManagerNewUI[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];

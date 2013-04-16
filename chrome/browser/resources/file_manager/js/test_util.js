@@ -20,6 +20,29 @@ test.util = {};
 test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
 
 /**
+ * Opens the main Files.app's window and waits until it is ready.
+ *
+ * @param {string} path Path of the directory to be opened.
+ * @param {function(string)} callback Completion callback with the new window's
+ *     App ID.
+ */
+test.util.openMainWindow = function(path, callback) {
+  var appId = launchFileManager({defaultPath: path});
+  function helper() {
+    if (appWindows[appId]) {
+      var contentWindow = appWindows[appId].contentWindow;
+      var table = contentWindow.document.querySelector('#detail-table');
+      if (table) {
+        callback(appId);
+        return;
+      }
+    }
+    window.setTimeout(helper, 50);
+  }
+  helper();
+};
+
+/**
  * Returns an array with the files currently selected in the file manager.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -191,49 +214,54 @@ test.util.registerRemoteTestUtils = function() {
       return false;
     }
     var contentWindow;
-    if (util.platform.v2()) {
-      if (contentWindows[request.window])
-        contentWindow = contentWindows[request.window].contentWindow;
-    } else {
-      // In Apps V1, we do not support window passing. Instead, the first one
-      // with /main.html path name is used.
-      var views = chrome.extension.getViews();
-      for (var index = 0; index < views.length; index++) {
-        if (views[index].document.location.pathname == '/main.html')
-          contentWindow = views[index];
+    if (request.appId) {
+      if (!appWindows[request.appId]) {
+        console.error('Specified window not found.');
+        return false;
       }
+      contentWindow = appWindows[request.appId].contentWindow;
     }
     if (!contentWindow) {
-      console.error('Window not found.');
-      return false;
-    }
-    switch (request.func) {
-      case 'getSelectedFiles':
-        test.util.sendReponse(getSelectedFiles(contentWindow));
-        return false;
-      case 'getFileList':
-        test.util.sendResponse(getFileList(contentWindow));
-        return false;
-      case 'waitForFileListChange':
-        test.util.waitForFileListChange(
-            contentWindow, request.args[0], sendResponse);
-        return true;
-      case 'waitAndAcceptDialog':
-        test.util.waitAndAcceptDialog(contentWindow, sendResponse);
-        return true;
-      case 'selectFile':
-        test.util.sendResponse(selectFile(contentWindow, request.args[0]));
-        return false;
-      case 'fakeKeyDown':
-        test.util.sendResponse(
-            fakeKeyDown(contentWindow, request.args[0], request.request[1]));
-        return false;
-      case 'copyFile':
-        sendResponse(test.util.copyFile(contentWindow, request.args[0]));
-        return false;
-      case 'deleteFile':
-        sendResponse(test.util.deleteFile(contentWindow, request.args[0]));
-        return false;
+      // Global functions, not requiring a window.
+      switch (request.func) {
+        case 'openMainWindow':
+          test.util.openMainWindow(request.args[0], sendResponse);
+          return true;
+        default:
+          console.error('Global function ' + request.func + ' not found.');
+      }
+    } else {
+      // Functions working on a window.
+      switch (request.func) {
+        case 'getSelectedFiles':
+          sendResponse(test.util.getSelectedFiles(contentWindow));
+          return false;
+        case 'getFileList':
+          sendResponse(test.util.getFileList(contentWindow));
+          return false;
+        case 'waitForFileListChange':
+          test.util.waitForFileListChange(
+              contentWindow, request.args[0], sendResponse);
+          return true;
+        case 'waitAndAcceptDialog':
+          test.util.waitAndAcceptDialog(contentWindow, sendResponse);
+          return true;
+        case 'selectFile':
+          test.util.sendResponse(selectFile(contentWindow, request.args[0]));
+          return false;
+        case 'fakeKeyDown':
+          test.util.fakeKeyDown(
+              contentWindow, request.args[0], request.request[1]);
+          return false;
+        case 'copyFile':
+          sendResponse(test.util.copyFile(contentWindow, request.args[0]));
+          return false;
+        case 'deleteFile':
+          sendResponse(test.util.deleteFile(contentWindow, request.args[0]));
+          return false;
+        default:
+          console.error('Window function ' + request.func + ' not found.');
+      }
     }
     return false;
   });

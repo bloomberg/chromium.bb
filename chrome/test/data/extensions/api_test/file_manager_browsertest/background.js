@@ -13,13 +13,16 @@ var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
  * Calls a remote test util in Files.app's extension. See: test_util.js.
  *
  * @param {string} func Function name.
+ * @param {?string} appId Target window's App ID or null for functions
+ *     not requiring a window.
  * @param {Array.<*>} args Array of arguments.
  * @param {function(*)} callback Callback handling the function's result.
  */
-function callRemoteTestUtil(func, args, callback) {
+function callRemoteTestUtil(func, appId, args, callback) {
   chrome.runtime.sendMessage(
       FILE_MANAGER_EXTENSIONS_ID, {
         func: func,
+        appId: appId,
         args: args
       },
       callback);

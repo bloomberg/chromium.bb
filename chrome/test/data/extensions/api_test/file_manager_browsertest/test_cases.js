@@ -30,11 +30,18 @@ var EXPECTED_FILES_AFTER = [
 ].sort();
 
 /**
- * Waits until the file list is initialized.
- * @param {function(Array.<Array.<string>>)} List of files on the file list.
+ * Opens a Files.app's main window and waits until it is initialized.
+ *
+ * @param {string} path Directory to be opened.
+ * @param {function(string, Array.<Array.<string>>)} Callback with the app id
+ *     and with the file list.
  */
-function waitUntilReady(callback) {
-  callRemoteTestUtil('waitForFileListChange', [0], callback);
+function setupAndWaitUntilReady(path, callback) {
+  callRemoteTestUtil('openMainWindow', null, [path], function(appId) {
+    callRemoteTestUtil('waitForFileListChange', appId, [0], function(files) {
+      callback(appId, files);
+    });
+  });
 }
 
 /**
@@ -43,16 +50,24 @@ function waitUntilReady(callback) {
 var testcase = {};
 
 /**
+ * Namespace for intermediate test cases.
+ * */
+testcase.intermediate = {};
+
+/**
  * Tests if the files initially added by the C++ side are displayed, and
  * that a subsequently added file shows up.
+ *
+ * @param {string} path Directory path to be tested.
  */
-testcase.fileDisplay = function() {
-  waitUntilReady(function(actualFilesBefore) {
+testcase.intermediate.fileDisplay = function(path) {
+  setupAndWaitUntilReady(path, function(appId, actualFilesBefore) {
     chrome.test.assertEq(EXPECTED_FILES_BEFORE, actualFilesBefore);
     chrome.test.sendMessage('initial check done', function(reply) {
       chrome.test.assertEq('file added', reply);
       callRemoteTestUtil(
           'waitForFileListChange',
+          appId,
           [EXPECTED_FILES_BEFORE.length],
           chrome.test.callbackPass(function(actualFilesAfter) {
             chrome.test.assertEq(EXPECTED_FILES_AFTER, actualFilesAfter);
@@ -64,12 +79,15 @@ testcase.fileDisplay = function() {
 /**
  * Tests copying a file to the same directory and waits until the file lists
  * changes.
+ *
+ * @param {string} path Directory path to be tested.
  */
-testcase.keyboardCopy = function() {
-  waitUntilReady(function() {
-    callRemoteTestUtil('copyFile', ['world.mpeg'], function(result) {
+testcase.intermediate.keyboardCopy = function(path) {
+  setupAndWaitUntilReady(path, function(appId) {
+    callRemoteTestUtil('copyFile', appId, ['world.mpeg'], function(result) {
       chrome.test.assertFalse(!result);
       callRemoteTestUtil('waitForFileListChange',
+                         appId,
                          [EXPECTED_FILES_BEFORE.length],
                          chrome.test.succeed);
     });
@@ -78,16 +96,44 @@ testcase.keyboardCopy = function() {
 
 /**
  * Tests deleting a file and and waits until the file lists changes.
+ * @param {string} path Directory path to be tested.
  */
-testcase.keyboardDelete = function() {
-  waitUntilReady(function() {
-    callRemoteTestUtil('deleteFile', ['world.mpeg'], function(result) {
-      chrome.test.assertFalse(!result);
-      callRemoteTestUtil('waitAndAcceptDialog', [], function() {
-        callRemoteTestUtil('waitForFileListChange',
-                           [EXPECTED_FILES_BEFORE.length],
-                           chrome.test.succeed);
-      });
+ testcase.intermediate.keyboardDelete = function(path) {
+  setupAndWaitUntilReady(path, function(appId) {
+    callRemoteTestUtil(
+        'deleteFile', appId, ['world.mpeg'], function(result) {
+          chrome.test.assertFalse(!result);
+          callRemoteTestUtil('waitAndAcceptDialog', appId, [], function() {
+            callRemoteTestUtil('waitForFileListChange',
+                               appId,
+                               [EXPECTED_FILES_BEFORE.length],
+                               chrome.test.succeed);
+          });
     });
   });
 };
+
+testcase.fileDisplayDownloads = function() {
+  testcase.intermediate.fileDisplay('/Downloads');
+};
+
+testcase.keyboardCopyDownloads = function() {
+  testcase.intermediate.keyboardCopy('/Downloads');
+};
+
+testcase.keyboardDeleteDownloads = function() {
+  testcase.intermediate.keyboardDelete('/Downloads');
+};
+
+testcase.fileDisplayDrive = function() {
+  testcase.intermediate.fileDisplay('/drive/root');
+};
+
+testcase.keyboardCopyDrive = function() {
+  testcase.intermediate.keyboardCopy('/drive/root');
+};
+
+testcase.keyboardDeleteDrive = function() {
+  testcase.intermediate.keyboardDelete('/drive/root');
+};
+

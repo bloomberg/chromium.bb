@@ -721,7 +721,8 @@ util.createChild = function(parent, opt_className, opt_tag) {
  *   stringified if object. If omitted the search query is left unchanged.
  */
 util.updateAppState = function(replace, path, opt_param) {
-  if (window.appState) {
+  if (util.platform.v2()) {
+    window.appState = window.appState || {};
     // |replace| parameter is ignored. There is no stack, so saving/restoring
     // the state is the apps responsibility.
     if (typeof opt_param == 'string')

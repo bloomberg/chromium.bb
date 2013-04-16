@@ -1040,11 +1040,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewLockAnimations),
   },
   {
-    "file-manager-packaged",
-    IDS_FLAGS_FILE_MANAGER_PACKAGED_NAME,
-    IDS_FLAGS_FILE_MANAGER_PACKAGED_DESCRIPTION,
+    "file-manager-legacy",
+    IDS_FLAGS_FILE_MANAGER_LEGACY_NAME,
+    IDS_FLAGS_FILE_MANAGER_LEGACY_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kFileManagerPackaged),
+    SINGLE_VALUE_TYPE(switches::kFileManagerLegacy),
   },
   {
     "disable-launcher-per-display",

@@ -240,12 +240,12 @@ void ComponentLoader::AddFileManagerExtension() {
 #if defined(FILE_MANAGER_EXTENSION)
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   int manifest_id;
-  if (command_line->HasSwitch(switches::kFileManagerPackaged))
-    manifest_id = IDR_FILEMANAGER_MANIFEST;
+  if (command_line->HasSwitch(switches::kFileManagerLegacy))
+    manifest_id = IDR_FILEMANAGER_MANIFEST_V1;
   else if (command_line->HasSwitch(switches::kFileManagerNewUI))
     manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;
   else
-    manifest_id = IDR_FILEMANAGER_MANIFEST_V1;
+    manifest_id = IDR_FILEMANAGER_MANIFEST;
 #ifndef NDEBUG
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
     base::FilePath filemgr_extension_path(

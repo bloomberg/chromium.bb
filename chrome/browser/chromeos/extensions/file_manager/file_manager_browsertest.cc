@@ -44,11 +44,13 @@
 
 namespace {
 
-const char kFileManagerExtensionId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
-
 const char kKeyboardTestFileName[] = "world.mpeg";
 const int64 kKeyboardTestFileSize = 1000;
 const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
+
+// Test suffixes appended to the Javascript tests' names.
+const char kDownloadsVolume[] = "Downloads";
+const char kDriveVolume[] = "Drive";
 
 struct TestFileInfo {
   const char* base_name;
@@ -80,11 +82,6 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
  protected:
   // Adds an incognito and guest-mode flags for tests in the guest mode.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-
-  // Loads the file manager extension, navigating it to |directory_path| for
-  // testing, and waits for it to finish initializing. This is invoked at the
-  // start of each test (it crashes if run in SetUp).
-  void StartFileManager(const std::string& directory_path);
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
@@ -118,39 +115,26 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
       = 0;
 
-  // Runs the file display test, shared by sub classes.
-  void DoTestFileDisplay();
+  // Runs the file display test on the passed |volume|, shared by subclasses.
+  void DoTestFileDisplay(const std::string& volume);
 
-  // Runs the keyboard copy test, shared by sub classes.
-  void DoTestKeyboardCopy();
+  // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
+  void DoTestKeyboardCopy(const std::string& volume);
 
-  // Runs the keyboard delete test, shared by sub classes.
-  void DoTestKeyboardDelete();
+  // Runs the keyboard delete test on the passed |volume|, shared by subclasses.
+  void DoTestKeyboardDelete(const std::string& volume);
 };
 
 void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
   bool in_guest_mode = GetParam();
   if (in_guest_mode) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
   }
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
-void FileManagerBrowserTestBase::StartFileManager(
-    const std::string& directory_path) {
-  std::string file_manager_url =
-      (std::string("chrome-extension://") +
-       kFileManagerExtensionId +
-       "/main.html#" +
-       net::EscapeQueryParamValue(directory_path, false /* use_plus */));
-
-  ui_test_utils::NavigateToURL(browser(), GURL(file_manager_url));
-
-  // This is sent by the file manager when it's finished initializing.
-  ExtensionTestMessageListener listener("worker-initialized", false);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-}
 
 void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
   base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
@@ -176,29 +160,28 @@ void FileManagerBrowserTestBase::CreateTestFilesAndDirectories() {
   }
 }
 
-void FileManagerBrowserTestBase::DoTestFileDisplay() {
+void FileManagerBrowserTestBase::DoTestFileDisplay(const std::string& volume) {
   ResultCatcher catcher;
-
-  StartTest("fileDisplay");  // Run testcase.fileDisplay in test_cases.js.
+  StartTest("fileDisplay" + volume);
 
   ExtensionTestMessageListener listener("initial check done", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
+
   CreateTestFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
   listener.Reply("file added");
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-void FileManagerBrowserTestBase::DoTestKeyboardCopy() {
+void FileManagerBrowserTestBase::DoTestKeyboardCopy(const std::string& volume) {
   base::FilePath copy_path =
       GetRootPath().AppendASCII(kKeyboardTestFileCopyName);
   ASSERT_FALSE(PathExists(copy_path));
 
   ResultCatcher catcher;
-  StartTest("keyboardCopy");  // Run testcase.keyboardCopy in test_cases.js.
+  StartTest("keyboardCopy" + volume);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-
   ASSERT_TRUE(WaitUntilFilePresentWithSize(copy_path, kKeyboardTestFileSize));
 
   // Check that it was a copy, not a move.
@@ -207,15 +190,16 @@ void FileManagerBrowserTestBase::DoTestKeyboardCopy() {
   ASSERT_TRUE(PathExists(source_path));
 }
 
-void FileManagerBrowserTestBase::DoTestKeyboardDelete() {
+void FileManagerBrowserTestBase::DoTestKeyboardDelete(
+    const std::string& volume) {
   base::FilePath delete_path =
       GetRootPath().AppendASCII(kKeyboardTestFileName);
   ASSERT_TRUE(PathExists(delete_path));
 
   ResultCatcher catcher;
-  StartTest("keyboardDelete");  // Run testcase.keyboardDelete in test_cases.js.
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  StartTest("keyboardDelete" + volume);
 
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   ASSERT_TRUE(WaitUntilFileNotPresent(delete_path));
 }
 
@@ -358,7 +342,7 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
       OVERRIDE;
 
   // Add a mount point to the fake Downloads directory. Should be called
-  // before StartFileManager().
+  // before StartTest().
   void AddMountPointToFakeDownloads();
 
   // Path to the fake Downloads directory used in the test.
@@ -368,9 +352,11 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
   base::ScopedTempDir tmp_dir_;
 };
 
-INSTANTIATE_TEST_CASE_P(InGuestMode,
-                        FileManagerBrowserLocalTest,
-                        ::testing::Values(true));
+// InGuestMode tests temporarily disabled due to the crbug.com/230724 bug.
+//
+// INSTANTIATE_TEST_CASE_P(InGuestMode,
+//                         FileManagerBrowserLocalTest,
+//                         ::testing::Values(true));
 
 INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserLocalTest,
@@ -685,44 +671,32 @@ void FileManagerBrowserDriveTest::OnDirectoryChanged(
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
   AddMountPointToFakeDownloads();
-  StartFileManager("/Downloads");
-
-  DoTestFileDisplay();
+  DoTestFileDisplay(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
   AddMountPointToFakeDownloads();
-  StartFileManager("/Downloads");
-
-  DoTestKeyboardCopy();
+  DoTestKeyboardCopy(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
   AddMountPointToFakeDownloads();
-  StartFileManager("/Downloads");
-
-  DoTestKeyboardDelete();
+  DoTestKeyboardDelete(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestFileDisplay) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-  StartFileManager("/drive/root");
-
-  DoTestFileDisplay();
+  DoTestFileDisplay(kDriveVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-  StartFileManager("/drive/root");
-
-  DoTestKeyboardCopy();
+  DoTestKeyboardCopy(kDriveVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-  StartFileManager("/drive/root");
-
-  DoTestKeyboardDelete();
+  DoTestKeyboardDelete(kDriveVolume);
 }
 
 }  // namespace

@@ -251,16 +251,20 @@ function createFileManagerOptions() {
 /**
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
+ * @return {string} The window's App ID.
  */
 function launchFileManager(opt_appState, opt_id) {
   var id = opt_id || nextFileManagerWindowID;
   nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
+  var appId = FILES_ID_PREFIX + id;
 
   var appWindow = new AppWindowWrapper(
       util.platform.newUI() ? 'main_new_ui.html' : 'main.html',
-      FILES_ID_PREFIX + id,
+      appId,
       createFileManagerOptions);
   appWindow.launch(opt_appState || {});
+
+  return appId;
 }
 
 /**

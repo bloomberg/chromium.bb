@@ -334,7 +334,7 @@ bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
 
 bool IsFileManagerPackaged() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kFileManagerPackaged);
+  return !command_line->HasSwitch(switches::kFileManagerLegacy);
 }
 
 // Grants file system access to the file browser.
