@@ -6,6 +6,7 @@
 
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -340,6 +341,11 @@ void NotifierSettingsView::OnBlur() {
 }
 
 bool NotifierSettingsView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_ESCAPE) {
+    GetWidget()->Close();
+    return true;
+  }
+
   return scroller_->OnKeyPressed(event);
 }
 
