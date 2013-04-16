@@ -2,6 +2,7 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/unformatted.js"></script>
 
 <script>
 
@@ -26,7 +27,7 @@ var test = function()
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
-                InspectorTest.setBreakpoint(sourceFrame, 10, "", true);
+                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
                 InspectorTest.waitUntilPaused(pausedInF1);
                 InspectorTest.evaluateInPageWithTimeout("f1()");
             }
@@ -56,7 +57,7 @@ var test = function()
                 dumpBreakpointSidebarPane("while paused in pretty printed");
                 sourceFrame._uiSourceCode.setFormatted(false);
                 dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.removeBreakpoint(sourceFrame, 10);
+                InspectorTest.removeBreakpoint(sourceFrame, 11);
                 InspectorTest.resumeExecution(next);
             }
         },
@@ -70,7 +71,7 @@ var test = function()
                 sourceFrame = frame;
                 InspectorTest.addResult("Adding breakpoint.");
                 InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-                InspectorTest.setBreakpoint(sourceFrame, 10, "", true);
+                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
             }
 
             function breakpointResolved()
@@ -83,12 +84,41 @@ var test = function()
             function didFormatPage()
             {
                 InspectorTest.addResult("Removing breakpoint.");
-                InspectorTest.removeBreakpoint(sourceFrame, 17);
+                InspectorTest.removeBreakpoint(sourceFrame, 19);
                 InspectorTest.addResult("Unformatting.");
                 sourceFrame._uiSourceCode.setFormatted(false);
                 var breakpoints = WebInspector.breakpointManager._storage._setting.get();
                 InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
                 next();
+            }
+        },
+
+        function testBreakpointsSetInFormattedSource(next)
+        {
+            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                sourceFrame._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
+                sourceFrame._uiSourceCode.setFormatted(true);
+            }
+                
+            function didFormatPage()
+            {
+                sourceFrame._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
+                InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+                InspectorTest.waitUntilPaused(pausedInF2);
+                InspectorTest.evaluateInPageWithTimeout("f2()");
+            }
+
+            function pausedInF2(callFrames)
+            {
+                dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.removeBreakpoint(sourceFrame, 3);
+                sourceFrame._uiSourceCode.setFormatted(false);
+                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(next);
             }
         }
     ]);

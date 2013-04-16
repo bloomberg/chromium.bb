@@ -208,7 +208,8 @@ InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
 
 InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled)
 {
-    sourceFrame._setBreakpoint(lineNumber, condition, enabled);
+    if (!sourceFrame._muted)
+        sourceFrame._setBreakpoint(lineNumber, condition, enabled);
 };
 
 InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
