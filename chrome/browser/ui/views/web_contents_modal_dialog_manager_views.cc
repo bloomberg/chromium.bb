@@ -4,13 +4,16 @@
 
 #include <set>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
@@ -76,12 +79,38 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetWidget(dialog)->Show();
+    views::Widget* widget = GetWidget(dialog);
+#if defined(USE_AURA)
+    scoped_ptr<views::corewm::SuspendChildWindowVisibilityAnimations> suspend;
+    if (views::DialogDelegate::UseNewStyle() &&
+        shown_widgets_.find(widget) != shown_widgets_.end()) {
+      suspend.reset(new views::corewm::SuspendChildWindowVisibilityAnimations(
+          widget->GetNativeWindow()->parent()));
+    }
+#endif
+    widget->Show();
     FocusDialog(dialog);
+#if defined(USE_AURA)
+    if (views::DialogDelegate::UseNewStyle()) {
+      widget->GetNativeWindow()->parent()->StackChildAbove(
+          widget->GetNativeWindow(),
+          native_delegate_->GetWebContents()->GetView()->GetNativeView());
+    }
+
+    shown_widgets_.insert(widget);
+#endif
   }
 
   virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetWidget(dialog)->Hide();
+    views::Widget* widget = GetWidget(dialog);
+#if defined(USE_AURA)
+    scoped_ptr<views::corewm::SuspendChildWindowVisibilityAnimations> suspend;
+    if (views::DialogDelegate::UseNewStyle()) {
+      suspend.reset(new views::corewm::SuspendChildWindowVisibilityAnimations(
+          widget->GetNativeWindow()->parent()));
+    }
+#endif
+    widget->Hide();
   }
 
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
@@ -138,10 +167,14 @@ class NativeWebContentsModalDialogManagerViews
     widget->RemoveObserver(this);
     native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
+#if defined(USE_AURA)
+    shown_widgets_.erase(widget);
+#endif
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;
   std::set<views::Widget*> observed_widgets_;
+  std::set<views::Widget*> shown_widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerViews);
 };
