@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(URLLoader)) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -1174,7 +1174,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, View) {
   RunTestViaHTTP(LIST_TEST(View_SizeChange)
                  LIST_TEST(View_ClipChange));
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, View) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(View)) {
   RunTestViaHTTP(LIST_TEST(View_SizeChange)
                  LIST_TEST(View_ClipChange));
 }
