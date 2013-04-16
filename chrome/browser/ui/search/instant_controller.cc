@@ -344,7 +344,16 @@ bool InstantController::Update(const AutocompleteMatch& match,
           // tab), by comparing the old and new WebContents.
           if (escape_pressed &&
               instant_tab_->contents() == browser_->GetActiveWebContents()) {
-            instant_tab_->Submit(full_text);
+            // If the omnibox is blank, send an onchange("") instead of an
+            // onsubmit(""). This is to avoid confusion with the onsubmit("")
+            // that we send when the user hits Enter to navigate to a URL.
+            // onchange("") is used for a similar situation with the overlay
+            // (when the overlay is dismissed because the user hit Escape); it
+            // does the right thing for committed tabs as well.
+            if (full_text.empty())
+              instant_tab_->Update(string16(), 0, 0, true);
+            else
+              instant_tab_->Submit(full_text);
           }
         } else if (!full_text.empty()) {
           // If |full_text| is empty, the user is on the NTP. The overlay may

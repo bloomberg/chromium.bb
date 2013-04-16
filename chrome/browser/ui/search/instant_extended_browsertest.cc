@@ -1695,3 +1695,43 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EmptyAutocompleteResults) {
       &num_autocomplete_results));
   EXPECT_EQ(0, num_autocomplete_results);
 }
+
+// Test that hitting Esc to clear the omnibox works. http://crbug.com/231744.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EscapeClearsOmnibox) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Navigate to the Instant NTP, and wait for it to be recognized.
+  content::WindowedNotificationObserver instant_tab_observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(browser(),
+                                              GURL(chrome::kChromeUINewTabURL),
+                                              CURRENT_TAB,
+                                              ui_test_utils::BROWSER_TEST_NONE);
+  instant_tab_observer.Wait();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Type a query. Verify that the query is seen by the page.
+  SetOmniboxText("mojo");
+  std::string query;
+  EXPECT_TRUE(GetStringFromJS(contents, "chrome.embeddedSearch.searchBox.value",
+                              &query));
+  EXPECT_EQ("mojo", query);
+
+  EXPECT_TRUE(content::ExecuteScript(contents,
+                                     "onChangeCalls = submitCount = 0;"));
+
+  // Hit Escape, and verify that the page sees that the query is cleared.
+  SendEscape();
+  EXPECT_TRUE(GetStringFromJS(contents, "chrome.embeddedSearch.searchBox.value",
+                              &query));
+  EXPECT_EQ("", query);
+  EXPECT_EQ("", GetOmniboxText());
+
+  EXPECT_TRUE(UpdateSearchState(contents));
+  EXPECT_LT(0, on_change_calls_);
+  EXPECT_EQ(0, submit_count_);
+}
