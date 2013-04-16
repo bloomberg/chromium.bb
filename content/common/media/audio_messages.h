@@ -122,10 +122,6 @@ IPC_MESSAGE_CONTROL1(AudioInputHostMsg_RecordStream,
 IPC_MESSAGE_CONTROL1(AudioHostMsg_PauseStream,
                      int /* stream_id */)
 
-// Discard all buffered audio data for the specified audio stream.
-IPC_MESSAGE_CONTROL1(AudioHostMsg_FlushStream,
-                     int /* stream_id */)
-
 // Close an audio stream specified by stream_id.
 IPC_MESSAGE_CONTROL1(AudioHostMsg_CloseStream,
                      int /* stream_id */)

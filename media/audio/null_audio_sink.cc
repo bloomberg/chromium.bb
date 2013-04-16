@@ -54,7 +54,7 @@ void NullAudioSink::Play() {
   playing_ = true;
 }
 
-void NullAudioSink::Pause(bool /* flush */) {
+void NullAudioSink::Pause() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (!playing_)

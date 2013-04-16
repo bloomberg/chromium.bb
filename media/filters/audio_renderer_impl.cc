@@ -103,7 +103,7 @@ void AudioRendererImpl::Pause(const base::Closure& callback) {
 void AudioRendererImpl::DoPause() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(sink_);
-  sink_->Pause(false);
+  sink_->Pause();
 }
 
 void AudioRendererImpl::Flush(const base::Closure& callback) {
@@ -176,8 +176,7 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
     AttemptRead_Locked();
   }
 
-  // Pause and flush the stream when we preroll to a new location.
-  sink_->Pause(true);
+  sink_->Pause();
 }
 
 void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,

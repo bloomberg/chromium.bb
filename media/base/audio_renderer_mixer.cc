@@ -66,7 +66,7 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
   if (!mixer_inputs_.empty()) {
     last_play_time_ = now;
   } else if (now - last_play_time_ >= pause_delay_ && playing_) {
-    audio_sink_->Pause(false);
+    audio_sink_->Pause();
     playing_ = false;
   }
 

@@ -47,7 +47,6 @@ class CONTENT_EXPORT AudioMessageFilter
                             const media::AudioParameters& params) OVERRIDE;
   virtual void PlayStream(int stream_id) OVERRIDE;
   virtual void PauseStream(int stream_id) OVERRIDE;
-  virtual void FlushStream(int stream_id) OVERRIDE;
   virtual void CloseStream(int stream_id) OVERRIDE;
   virtual void SetVolume(int stream_id, double volume) OVERRIDE;
 

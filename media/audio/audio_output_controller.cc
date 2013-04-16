@@ -89,11 +89,6 @@ void AudioOutputController::Pause() {
       &AudioOutputController::DoPause, this));
 }
 
-void AudioOutputController::Flush() {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputController::DoFlush, this));
-}
-
 void AudioOutputController::Close(const base::Closure& closed_task) {
   DCHECK(!closed_task.is_null());
   message_loop_->PostTaskAndReply(FROM_HERE, base::Bind(
@@ -237,12 +232,6 @@ void AudioOutputController::DoPause() {
   sync_reader_->UpdatePendingBytes(kPauseMark);
 
   handler_->OnPaused();
-}
-
-void AudioOutputController::DoFlush() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  // TODO(hclam): Actually flush the audio device.
 }
 
 void AudioOutputController::DoClose() {

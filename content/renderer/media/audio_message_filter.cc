@@ -56,10 +56,6 @@ void AudioMessageFilter::PauseStream(int stream_id) {
   Send(new AudioHostMsg_PauseStream(stream_id));
 }
 
-void AudioMessageFilter::FlushStream(int stream_id) {
-  Send(new AudioHostMsg_FlushStream(stream_id));
-}
-
 void AudioMessageFilter::CloseStream(int stream_id) {
   Send(new AudioHostMsg_CloseStream(stream_id));
 }

@@ -89,9 +89,9 @@ void AudioOutputDevice::Play() {
       base::Bind(&AudioOutputDevice::PlayOnIOThread, this));
 }
 
-void AudioOutputDevice::Pause(bool flush) {
+void AudioOutputDevice::Pause() {
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioOutputDevice::PauseOnIOThread, this, flush));
+      base::Bind(&AudioOutputDevice::PauseOnIOThread, this));
 }
 
 bool AudioOutputDevice::SetVolume(double volume) {
@@ -126,16 +126,11 @@ void AudioOutputDevice::PlayOnIOThread() {
   }
 }
 
-void AudioOutputDevice::PauseOnIOThread(bool flush) {
+void AudioOutputDevice::PauseOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ == PLAYING) {
     ipc_->PauseStream(stream_id_);
-    if (flush)
-      ipc_->FlushStream(stream_id_);
     state_ = PAUSED;
-  } else {
-    // Note that |flush| isn't relevant here since this is the case where
-    // the stream is first starting.
   }
   play_on_start_ = false;
 }

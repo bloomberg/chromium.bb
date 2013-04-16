@@ -83,11 +83,6 @@ class MEDIA_EXPORT AudioOutputIPC {
   // AudioOutputController::Pause().
   virtual void PauseStream(int stream_id) = 0;
 
-  // "Flushes" the audio device. This should generate a call to
-  // AudioOutputController::Flush().
-  // TODO(tommi): This is currently neither implemented nor called.  Remove?
-  virtual void FlushStream(int stream_id) = 0;
-
   // Closes the audio stream and deletes the matching AudioOutputController
   // instance.  Prior to deleting the AudioOutputController object, a call to
   // AudioOutputController::Close must be made.

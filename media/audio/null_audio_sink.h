@@ -29,7 +29,7 @@ class MEDIA_EXPORT NullAudioSink
                           RenderCallback* callback) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual void Pause(bool flush) OVERRIDE;
+  virtual void Pause() OVERRIDE;
   virtual void Play() OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
 

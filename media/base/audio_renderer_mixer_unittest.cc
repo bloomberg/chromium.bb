@@ -246,7 +246,7 @@ class AudioRendererMixerTest
 
     // Pause() all even numbered mixer inputs and ensure we get the right value.
     for (size_t i = 0; i < mixer_inputs_.size(); i += 2)
-      mixer_inputs_[i]->Pause(false);
+      mixer_inputs_[i]->Pause();
     for (int i = 0; i < kMixerCycles; ++i)
       ASSERT_TRUE(RenderAndValidateAudioData(mixer_inputs_.size() / 2));
 
@@ -415,7 +415,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_->set_pause_delay_for_testing(kPauseTime);
 
   base::WaitableEvent pause_event(true, false);
-  EXPECT_CALL(*sink_, Pause(testing::_))
+  EXPECT_CALL(*sink_, Pause())
       .Times(2).WillRepeatedly(SignalEvent(&pause_event));
   InitializeInputs(1);
 
@@ -433,7 +433,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_inputs_[0]->Start();
   EXPECT_CALL(*sink_, Play());
   mixer_inputs_[0]->Play();
-  mixer_inputs_[0]->Pause(false);
+  mixer_inputs_[0]->Pause();
 
   // Ensure once the input is paused the sink eventually pauses.
   start_time = base::Time::Now();

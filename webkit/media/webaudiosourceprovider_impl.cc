@@ -98,10 +98,10 @@ void WebAudioSourceProviderImpl::Play() {
   is_running_ = true;
 }
 
-void WebAudioSourceProviderImpl::Pause(bool flush) {
+void WebAudioSourceProviderImpl::Pause() {
   base::AutoLock auto_lock(sink_lock_);
   if (!client_)
-    sink_->Pause(flush);
+    sink_->Pause();
   is_running_ = false;
 }
 

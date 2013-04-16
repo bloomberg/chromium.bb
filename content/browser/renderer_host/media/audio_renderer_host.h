@@ -109,9 +109,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Pause the audio stream referenced by |stream_id|.
   void OnPauseStream(int stream_id);
 
-  // Discard all audio data in stream referenced by |stream_id|.
-  void OnFlushStream(int stream_id);
-
   // Close the audio stream referenced by |stream_id|.
   void OnCloseStream(int stream_id);
 

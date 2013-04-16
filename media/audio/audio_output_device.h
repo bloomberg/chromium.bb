@@ -83,7 +83,7 @@ class MEDIA_EXPORT AudioOutputDevice
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;
-  virtual void Pause(bool flush) OVERRIDE;
+  virtual void Pause() OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
 
   // Methods called on IO thread ----------------------------------------------
@@ -125,7 +125,7 @@ class MEDIA_EXPORT AudioOutputDevice
   // sends IPC messages on that thread.
   void CreateStreamOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
-  void PauseOnIOThread(bool flush);
+  void PauseOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 

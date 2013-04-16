@@ -58,7 +58,7 @@ class AudioRendererSink
   virtual void Stop() = 0;
 
   // Pauses playback.
-  virtual void Pause(bool flush) = 0;
+  virtual void Pause() = 0;
 
   // Resumes playback after calling Pause().
   virtual void Play() = 0;

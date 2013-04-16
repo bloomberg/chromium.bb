@@ -39,8 +39,8 @@ class CONTENT_EXPORT MediaInternals {
   virtual void OnSetAudioStreamPlaying(void* host, int stream_id,
                                        bool playing);
 
-  // Called when the status of an audio stream is set to "created", "flushed",
-  // "closed", or "error".
+  // Called when the status of an audio stream is set to "created", "closed", or
+  // "error".
   virtual void OnSetAudioStreamStatus(void* host, int stream_id,
                                       const std::string& status);
 

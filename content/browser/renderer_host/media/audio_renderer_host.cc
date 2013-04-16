@@ -261,7 +261,6 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
                         OnAssociateStreamWithProducer)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
-    IPC_MESSAGE_HANDLER(AudioHostMsg_FlushStream, OnFlushStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -372,20 +371,6 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
   entry->controller()->Pause();
   if (media_internals_)
     media_internals_->OnSetAudioStreamPlaying(this, stream_id, false);
-}
-
-void AudioRendererHost::OnFlushStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  AudioEntry* entry = LookupById(stream_id);
-  if (!entry) {
-    SendErrorMessage(stream_id);
-    return;
-  }
-
-  entry->controller()->Flush();
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamStatus(this, stream_id, "flushed");
 }
 
 void AudioRendererHost::OnSetVolume(int stream_id, double volume) {

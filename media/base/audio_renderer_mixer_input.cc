@@ -62,7 +62,7 @@ void AudioRendererMixerInput::Play() {
   playing_ = true;
 }
 
-void AudioRendererMixerInput::Pause(bool /* flush */) {
+void AudioRendererMixerInput::Pause() {
   DCHECK(initialized_);
 
   if (!playing_)

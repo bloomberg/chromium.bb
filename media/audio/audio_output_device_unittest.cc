@@ -58,7 +58,6 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD1(CloseStream, void(int stream_id));
   MOCK_METHOD2(SetVolume, void(int stream_id, double volume));
   MOCK_METHOD1(PauseStream, void(int stream_id));
-  MOCK_METHOD1(FlushStream, void(int stream_id));
 };
 
 // Creates a copy of a SyncSocket handle that we can give to AudioOutputDevice.

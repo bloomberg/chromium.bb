@@ -122,10 +122,6 @@ class MEDIA_EXPORT AudioOutputController
   // Pause this audio output stream.
   void Pause();
 
-  // Discard all audio data buffered in this output stream. This method only
-  // has effect when the stream is paused.
-  void Flush();
-
   // Closes the audio output stream. The state is changed and the resources
   // are freed on the audio manager thread. closed_task is executed after that.
   // Callbacks (EventHandler and SyncReader) must exist until closed_task is
@@ -188,7 +184,6 @@ class MEDIA_EXPORT AudioOutputController
   void DoPlay();
   void PollAndStartIfDataReady();
   void DoPause();
-  void DoFlush();
   void DoClose();
   void DoSetVolume(double volume);
   void DoReportError();
