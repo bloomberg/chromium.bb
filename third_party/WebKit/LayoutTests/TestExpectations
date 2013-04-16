@@ -3736,3 +3736,6 @@ webkit.org/b/109954 css3/line-break [ Skip ]
 webkit.org/b/109570 media/track/regions-webvtt [ Skip ]
 
 crbug.com/231721 [ XP Release ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
+
+# The image output is wrong (some red dots can be seen).
+crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
