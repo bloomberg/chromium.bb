@@ -82,7 +82,6 @@ class NetworkStateListDetailedView
   // Create UI components.
   void CreateHeaderEntry();
   void CreateHeaderButtons();
-  void CreateMobileAccount();
   void CreateNetworkExtra();
 
   // Update UI components.
@@ -97,7 +96,6 @@ class NetworkStateListDetailedView
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
   bool OrderChild(views::View* view, int index);
   bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
-  void UpdateMobileAccount();
   void UpdateNetworkExtra();
 
   // Adds a settings entry when logged in, and an entry for changing proxy
@@ -133,17 +131,10 @@ class NetworkStateListDetailedView
   // An owned list of network info.
   ScopedVector<NetworkInfo> network_list_;
 
-  // Cached cellular carrier state info.
-  std::string carrier_id_;
-  std::string topup_url_;
-  std::string setup_url_;
-
   // Child views.
   TrayPopupHeaderButton* info_icon_;
   TrayPopupHeaderButton* button_wifi_;
   TrayPopupHeaderButton* button_mobile_;
-  views::View* view_mobile_account_;
-  views::View* setup_mobile_account_;
   TrayPopupLabelButton* other_wifi_;
   TrayPopupLabelButton* turn_on_wifi_;
   TrayPopupLabelButton* other_mobile_;

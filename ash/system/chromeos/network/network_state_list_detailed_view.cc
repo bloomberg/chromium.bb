@@ -141,8 +141,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       info_icon_(NULL),
       button_wifi_(NULL),
       button_mobile_(NULL),
-      view_mobile_account_(NULL),
-      setup_mobile_account_(NULL),
       other_wifi_(NULL),
       turn_on_wifi_(NULL),
       other_mobile_(NULL),
@@ -165,7 +163,6 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 void NetworkStateListDetailedView::ManagerChanged() {
   UpdateNetworkList();
   UpdateHeaderButtons();
-  UpdateMobileAccount();
   UpdateNetworkExtra();
   Layout();
 }
@@ -176,7 +173,6 @@ void NetworkStateListDetailedView::NetworkListChanged() {
   UpdateNetworks(network_list);
   UpdateNetworkList();
   UpdateHeaderButtons();
-  UpdateMobileAccount();
   UpdateNetworkExtra();
   Layout();
 }
@@ -199,13 +195,12 @@ void NetworkStateListDetailedView::Init() {
   CreateNetworkExtra();
   CreateHeaderEntry();
   CreateHeaderButtons();
-  CreateMobileAccount();
+
   NetworkStateList network_list;
   NetworkStateHandler::Get()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
   UpdateNetworkList();
   UpdateHeaderButtons();
-  UpdateMobileAccount();
   UpdateNetworkExtra();
   CallRequestScan();
 }
@@ -269,18 +264,10 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   if (login_ == user::LOGGED_IN_LOCKED)
     return;
 
-  ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->system_tray_delegate();
-  if (sender == view_mobile_account_) {
-    delegate->ShowCellularURL(topup_url_);
-  } else if (sender == setup_mobile_account_) {
-    delegate->ShowCellularURL(setup_url_);
-  } else {
-    std::map<views::View*, std::string>::iterator found =
-        network_map_.find(sender);
-    if (found != network_map_.end())
-      ConnectToNetwork(found->second);
-  }
+  std::map<views::View*, std::string>::iterator found =
+      network_map_.find(sender);
+  if (found != network_map_.end())
+    ConnectToNetwork(found->second);
 }
 
 // Create UI components.
@@ -328,26 +315,6 @@ void NetworkStateListDetailedView::CreateHeaderButtons() {
   info_icon_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
   footer()->AddButton(info_icon_);
-}
-
-void NetworkStateListDetailedView::CreateMobileAccount() {
-  if (list_type_ != LIST_TYPE_NETWORK)
-    return;
-
-  HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddLabel(
-      ui::ResourceBundle::GetSharedInstance().
-      GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
-      gfx::Font::NORMAL);
-  AddChildView(container);
-  view_mobile_account_ = container;
-
-  container = new HoverHighlightView(this);
-  container->AddLabel(ui::ResourceBundle::GetSharedInstance().
-                      GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
-                      gfx::Font::NORMAL);
-  AddChildView(container);
-  setup_mobile_account_ = container;
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {
@@ -644,36 +611,6 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
   }
 
   return needs_relayout;
-}
-
-void NetworkStateListDetailedView::UpdateMobileAccount() {
-  if (list_type_ != LIST_TYPE_NETWORK)
-    return;
-
-  view_mobile_account_->SetVisible(false);
-  setup_mobile_account_->SetVisible(false);
-
-  if (login_ == user::LOGGED_IN_NONE)
-    return;
-
-  // TODO(stevenjb): Migrate this code to src/chromeos.
-  std::string carrier_id, topup_url, setup_url;
-  if (Shell::GetInstance()->system_tray_delegate()->
-      GetCellularCarrierInfo(&carrier_id, &topup_url, &setup_url)) {
-    if (carrier_id != carrier_id_) {
-      carrier_id_ = carrier_id;
-      if (!topup_url.empty())
-        topup_url_ = topup_url;
-    }
-
-    if (!setup_url.empty())
-      setup_url_ = setup_url;
-
-    if (!topup_url_.empty())
-      view_mobile_account_->SetVisible(true);
-    if (!setup_url_.empty())
-      setup_mobile_account_->SetVisible(true);
-  }
 }
 
 void NetworkStateListDetailedView::UpdateNetworkExtra() {
