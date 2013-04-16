@@ -32,8 +32,6 @@
 #ifndef MediaStreamSource_h
 #define MediaStreamSource_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "AudioDestinationConsumer.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -109,7 +107,5 @@ private:
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamSource_h

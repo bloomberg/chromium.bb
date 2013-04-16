@@ -31,8 +31,6 @@
 #ifndef UserMediaClient_h
 #define UserMediaClient_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "UserMediaRequest.h"
 #include <wtf/text/WTFString.h>
 
@@ -54,7 +52,5 @@ protected:
 void provideUserMediaTo(Page*, UserMediaClient*);
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // UserMediaClient_h

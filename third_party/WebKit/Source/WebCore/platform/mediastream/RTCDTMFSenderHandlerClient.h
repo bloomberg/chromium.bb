@@ -26,8 +26,6 @@
 #ifndef RTCDTMFSenderHandlerClient_h
 #define RTCDTMFSenderHandlerClient_h
 
-#if ENABLE(MEDIA_STREAM)
-
 namespace WebCore {
 
 class RTCDTMFSenderHandlerClient {
@@ -38,7 +36,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDTMFSenderHandlerClient_h

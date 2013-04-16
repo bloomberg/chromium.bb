@@ -23,7 +23,6 @@
  */
 
 [
-    Conditional=MEDIA_STREAM,
     ImplementationLacksVTable
 ] interface RTCStatsReport {
     readonly attribute Date timestamp;

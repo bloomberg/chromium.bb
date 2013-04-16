@@ -25,8 +25,6 @@
 #ifndef RTCDataChannelEvent_h
 #define RTCDataChannelEvent_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "Event.h"
 #include "RTCDataChannel.h"
 #include <wtf/text/AtomicString.h>
@@ -52,7 +50,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDataChannelEvent_h

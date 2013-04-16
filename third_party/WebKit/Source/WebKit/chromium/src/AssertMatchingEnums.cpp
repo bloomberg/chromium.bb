@@ -542,7 +542,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebPageVisibilityStateHidden, PageVisibilityStateHi
 COMPILE_ASSERT_MATCHING_ENUM(WebPageVisibilityStatePrerender, PageVisibilityStatePrerender);
 COMPILE_ASSERT_MATCHING_ENUM(WebPageVisibilityStatePreview, PageVisibilityStatePreview);
 
-#if ENABLE(MEDIA_STREAM)
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::TypeAudio, MediaStreamSource::TypeAudio);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::TypeVideo, MediaStreamSource::TypeVideo);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::ReadyStateLive, MediaStreamSource::ReadyStateLive);
@@ -573,7 +572,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebRTCDataChannelHandlerClient::ReadyStateConnectin
 COMPILE_ASSERT_MATCHING_ENUM(WebRTCDataChannelHandlerClient::ReadyStateOpen, RTCDataChannelHandlerClient::ReadyStateOpen);
 COMPILE_ASSERT_MATCHING_ENUM(WebRTCDataChannelHandlerClient::ReadyStateClosing, RTCDataChannelHandlerClient::ReadyStateClosing);
 COMPILE_ASSERT_MATCHING_ENUM(WebRTCDataChannelHandlerClient::ReadyStateClosed, RTCDataChannelHandlerClient::ReadyStateClosed);
-#endif
 
 COMPILE_ASSERT_MATCHING_ENUM(WebSpeechRecognizerClient::OtherError, SpeechRecognitionError::ErrorCodeOther);
 COMPILE_ASSERT_MATCHING_ENUM(WebSpeechRecognizerClient::NoSpeechError, SpeechRecognitionError::ErrorCodeNoSpeech);

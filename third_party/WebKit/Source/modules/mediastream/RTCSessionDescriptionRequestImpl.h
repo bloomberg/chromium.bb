@@ -31,8 +31,6 @@
 #ifndef RTCSessionDescriptionRequestImpl_h
 #define RTCSessionDescriptionRequestImpl_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "ActiveDOMObject.h"
 #include "RTCSessionDescriptionRequest.h"
 
@@ -63,8 +61,6 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCSessionDescriptionRequestImpl_h
 

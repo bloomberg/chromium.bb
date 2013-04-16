@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebMediaConstraints.h>
 
 #include "MediaConstraints.h"
@@ -107,6 +105,4 @@ bool WebMediaConstraints::getOptionalConstraintValue(const WebString& name, WebS
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
 

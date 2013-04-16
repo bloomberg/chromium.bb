@@ -31,8 +31,6 @@
 #ifndef MediaStreamCenterChromium_h
 #define MediaStreamCenterChromium_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "MediaStreamCenter.h"
 
 #include <public/WebMediaStreamCenterClient.h>
@@ -73,7 +71,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamCenterChromium_h

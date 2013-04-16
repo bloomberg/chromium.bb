@@ -285,38 +285,22 @@ bool WebRuntimeFeatures::isQuotaEnabled()
 
 void WebRuntimeFeatures::enableMediaStream(bool enable)
 {
-#if ENABLE(MEDIA_STREAM)
-    RuntimeEnabledFeatures::setMediaStreamEnabled(enable);
-#else
     UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isMediaStreamEnabled()
 {
-#if ENABLE(MEDIA_STREAM)
-    return RuntimeEnabledFeatures::mediaStreamEnabled();
-#else
-    return false;
-#endif
+    return true;
 }
 
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
-#if ENABLE(MEDIA_STREAM)
-    RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);
-#else
     UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isPeerConnectionEnabled()
 {
-#if ENABLE(MEDIA_STREAM)
-    return RuntimeEnabledFeatures::peerConnectionEnabled();
-#else
-    return false;
-#endif
+    return true;
 }
 
 void WebRuntimeFeatures::enableFullScreenAPI(bool enable)

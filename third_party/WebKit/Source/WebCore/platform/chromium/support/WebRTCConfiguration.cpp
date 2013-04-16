@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebRTCConfiguration.h>
 
 #include "RTCConfiguration.h"
@@ -98,5 +96,3 @@ WebRTCICEServer WebRTCConfiguration::server(size_t index) const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -31,8 +31,6 @@
 #ifndef RTCIceCandidate_h
 #define RTCIceCandidate_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "ExceptionBase.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -63,7 +61,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCIceCandidate_h

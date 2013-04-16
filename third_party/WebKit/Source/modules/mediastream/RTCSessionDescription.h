@@ -31,8 +31,6 @@
 #ifndef RTCSessionDescription_h
 #define RTCSessionDescription_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "ExceptionBase.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -64,7 +62,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCSessionDescription_h

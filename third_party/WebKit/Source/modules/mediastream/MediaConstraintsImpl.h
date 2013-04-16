@@ -31,8 +31,6 @@
 #ifndef MediaConstraintsImpl_h
 #define MediaConstraintsImpl_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "ExceptionBase.h"
 #include "MediaConstraints.h"
 #include <wtf/HashMap.h>
@@ -62,8 +60,6 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaConstraintsImpl_h
 

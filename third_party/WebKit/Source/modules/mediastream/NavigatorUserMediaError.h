@@ -28,8 +28,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
-#if ENABLE(MEDIA_STREAM)
-
 namespace WebCore {
 
 class NavigatorUserMediaError : public RefCounted<NavigatorUserMediaError> {
@@ -55,7 +53,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // NavigatorUserMediaError_h

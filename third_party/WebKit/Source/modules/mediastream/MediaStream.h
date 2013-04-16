@@ -26,8 +26,6 @@
 #ifndef MediaStream_h
 #define MediaStream_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "ContextDestructionObserver.h"
 #include "EventTarget.h"
 #include "ExceptionBase.h"
@@ -117,7 +115,5 @@ private:
 typedef Vector<RefPtr<MediaStream> > MediaStreamVector;
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStream_h

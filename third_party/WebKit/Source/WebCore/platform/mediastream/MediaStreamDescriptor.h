@@ -32,8 +32,6 @@
 #ifndef MediaStreamDescriptor_h
 #define MediaStreamDescriptor_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "MediaStreamComponent.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -152,7 +150,5 @@ private:
 typedef Vector<RefPtr<MediaStreamDescriptor> > MediaStreamDescriptorVector;
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamDescriptor_h

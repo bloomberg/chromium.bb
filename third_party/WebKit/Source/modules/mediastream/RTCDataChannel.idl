@@ -23,7 +23,6 @@
  */
 
 [
-    Conditional=MEDIA_STREAM,
     EventTarget
 ] interface RTCDataChannel {
     readonly attribute DOMString label;

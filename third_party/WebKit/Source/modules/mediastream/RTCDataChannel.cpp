@@ -23,9 +23,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCDataChannel.h"
 
 #include "Blob.h"
@@ -282,5 +279,3 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

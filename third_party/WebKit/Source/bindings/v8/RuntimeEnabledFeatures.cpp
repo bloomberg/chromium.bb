@@ -58,11 +58,8 @@ bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
 bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isScriptedSpeechEnabled = false;
-
-#if ENABLE(MEDIA_STREAM)
 bool RuntimeEnabledFeatures::isMediaStreamEnabled = true;
 bool RuntimeEnabledFeatures::isPeerConnectionEnabled = true;
-#endif
 
 #if ENABLE(GAMEPAD)
 bool RuntimeEnabledFeatures::isGamepadEnabled = false;

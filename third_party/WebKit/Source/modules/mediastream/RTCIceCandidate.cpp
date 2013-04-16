@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCIceCandidate.h"
 
 #include "Dictionary.h"
@@ -94,5 +91,3 @@ RTCIceCandidateDescriptor* RTCIceCandidate::descriptor()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

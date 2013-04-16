@@ -26,8 +26,6 @@
 #ifndef LocalMediaStream_h
 #define LocalMediaStream_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "MediaStream.h"
 
 namespace WebCore {
@@ -51,7 +49,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // LocalMediaStream_h

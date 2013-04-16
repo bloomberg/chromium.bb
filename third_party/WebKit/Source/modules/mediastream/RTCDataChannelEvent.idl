@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-] interface RTCDataChannelEvent : Event {
+interface RTCDataChannelEvent : Event {
     readonly attribute RTCDataChannel channel;
 };

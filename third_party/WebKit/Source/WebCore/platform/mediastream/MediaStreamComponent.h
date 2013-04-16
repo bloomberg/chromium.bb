@@ -31,8 +31,6 @@
 #ifndef MediaStreamComponent_h
 #define MediaStreamComponent_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "MediaStreamSource.h"
 #include "UUID.h"
 
@@ -85,7 +83,5 @@ private:
 typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamComponent_h

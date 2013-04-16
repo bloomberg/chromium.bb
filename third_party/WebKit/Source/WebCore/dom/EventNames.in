@@ -31,11 +31,11 @@ WheelEvent
 XMLHttpRequestProgressEvent
 AudioProcessingEvent conditional=WEB_AUDIO
 OfflineAudioCompletionEvent conditional=WEB_AUDIO
-MediaStreamEvent conditional=MEDIA_STREAM
-MediaStreamTrackEvent conditional=MEDIA_STREAM
-RTCIceCandidateEvent conditional=MEDIA_STREAM
-RTCDataChannelEvent conditional=MEDIA_STREAM
-RTCDTMFToneChangeEvent conditional=MEDIA_STREAM
+MediaStreamEvent
+MediaStreamTrackEvent
+RTCIceCandidateEvent
+RTCDataChannelEvent
+RTCDTMFToneChangeEvent
 SpeechInputEvent conditional=INPUT_SPEECH
 SpeechRecognitionError
 SpeechRecognitionEvent

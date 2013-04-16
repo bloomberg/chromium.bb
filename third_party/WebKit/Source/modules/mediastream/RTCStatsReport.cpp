@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCStatsReport.h"
 
 #include <wtf/text/StringHash.h>
@@ -70,5 +67,3 @@ void RTCStatsReport::addStatistic(const String& name, const String& value)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -20,8 +20,6 @@
 #ifndef NavigatorMediaStream_h
 #define NavigatorMediaStream_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -44,7 +42,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // NavigatorMediaStream_h

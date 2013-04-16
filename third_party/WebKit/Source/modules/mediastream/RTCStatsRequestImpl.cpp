@@ -23,9 +23,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCStatsRequestImpl.h"
 
 #include "RTCStatsCallback.h"
@@ -93,5 +90,3 @@ void RTCStatsRequestImpl::clear()
 
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

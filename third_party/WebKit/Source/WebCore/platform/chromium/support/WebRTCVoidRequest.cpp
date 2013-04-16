@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebRTCVoidRequest.h>
 
 #include "RTCVoidRequest.h"
@@ -96,6 +94,4 @@ void WebRTCVoidRequest::setExtraData(ExtraData* extraData)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
 

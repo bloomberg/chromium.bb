@@ -25,8 +25,6 @@
 #ifndef RTCIceCandidateEvent_h
 #define RTCIceCandidateEvent_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "Event.h"
 #include <wtf/text/AtomicString.h>
 
@@ -52,7 +50,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCIceCandidateEvent_h

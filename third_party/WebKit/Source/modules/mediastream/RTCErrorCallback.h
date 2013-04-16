@@ -31,8 +31,6 @@
 #ifndef RTCErrorCallback_h
 #define RTCErrorCallback_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
@@ -45,7 +43,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCErrorCallback_h

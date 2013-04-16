@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCSessionDescriptionDescriptor.h"
 
 namespace WebCore {
@@ -52,5 +50,3 @@ RTCSessionDescriptionDescriptor::~RTCSessionDescriptionDescriptor()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -23,8 +23,6 @@
  */
 
 #include "config.h"
-#if ENABLE(MEDIA_STREAM)
-
 #include "MediaStreamTrackEvent.h"
 
 #include "EventNames.h"
@@ -70,6 +68,4 @@ const AtomicString& MediaStreamTrackEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 

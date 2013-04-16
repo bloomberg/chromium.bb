@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebRTCStatsRequest.h>
 
 #include "RTCStatsRequest.h"
@@ -86,5 +84,3 @@ void WebRTCStatsRequest::requestSucceeded(const WebRTCStatsResponse& response) c
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)

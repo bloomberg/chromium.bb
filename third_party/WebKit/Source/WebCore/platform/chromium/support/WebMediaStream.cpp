@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebMediaStream.h>
 
 #include "MediaStreamComponent.h"
@@ -180,5 +178,3 @@ void WebMediaStream::assign(const WebMediaStream& other)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)

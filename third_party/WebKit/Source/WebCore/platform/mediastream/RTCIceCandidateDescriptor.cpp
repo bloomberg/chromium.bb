@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCIceCandidateDescriptor.h"
 
 namespace WebCore {
@@ -53,5 +51,3 @@ RTCIceCandidateDescriptor::~RTCIceCandidateDescriptor()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

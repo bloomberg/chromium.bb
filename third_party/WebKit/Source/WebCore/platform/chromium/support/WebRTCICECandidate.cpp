@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebRTCICECandidate.h>
 
 #include "RTCIceCandidateDescriptor.h"
@@ -90,6 +88,3 @@ unsigned short WebRTCICECandidate::sdpMLineIndex() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
-

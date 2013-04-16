@@ -25,8 +25,6 @@
 #ifndef MediaStreamRegistry_h
 #define MediaStreamRegistry_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/StringHash.h>
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamRegistry_h

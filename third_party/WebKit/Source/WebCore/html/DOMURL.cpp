@@ -43,10 +43,8 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/MainThread.h>
 
-#if ENABLE(MEDIA_STREAM)
 #include "MediaStream.h"
 #include "MediaStreamRegistry.h"
-#endif
 
 namespace WebCore {
 
@@ -68,7 +66,6 @@ String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, M
     return publicURL.string();
 }
 
-#if ENABLE(MEDIA_STREAM)
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaStream* stream)
 {
     if (!scriptExecutionContext || !stream)
@@ -86,7 +83,6 @@ String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, M
 
     return publicURL.string();
 }
-#endif
 
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
 {
@@ -122,7 +118,6 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         MediaSourceRegistry::registry().unregisterMediaSourceURL(url);
         sourceURLs.remove(url.string());
     }
-#if ENABLE(MEDIA_STREAM)
     HashSet<String>& streamURLs = scriptExecutionContext->publicURLManager().streamURLs();
     if (streamURLs.contains(url.string())) {
         // FIXME: make sure of this assertion below. Raise a spec question if required.
@@ -131,7 +126,6 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         MediaStreamRegistry::registry().unregisterMediaStreamURL(url);
         streamURLs.remove(url.string());
     }
-#endif
 }
 
 } // namespace WebCore

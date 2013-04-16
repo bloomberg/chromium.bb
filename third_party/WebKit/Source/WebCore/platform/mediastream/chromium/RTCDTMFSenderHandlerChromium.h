@@ -26,8 +26,6 @@
 #ifndef RTCDTMFSenderHandlerChromium_h
 #define RTCDTMFSenderHandlerChromium_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "RTCDTMFSenderHandler.h"
 #include "RTCDTMFSenderHandlerClient.h"
 #include <public/WebRTCDTMFSenderHandler.h>
@@ -62,7 +60,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDTMFSenderHandlerChromium_h

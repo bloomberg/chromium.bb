@@ -202,10 +202,6 @@
 #define ENABLE_MEDIA_CAPTURE 0
 #endif
 
-#if !defined(ENABLE_MEDIA_STREAM)
-#define ENABLE_MEDIA_STREAM 0
-#endif
-
 #if !defined(ENABLE_MOUSE_CURSOR_SCALE)
 #define ENABLE_MOUSE_CURSOR_SCALE 0
 #endif

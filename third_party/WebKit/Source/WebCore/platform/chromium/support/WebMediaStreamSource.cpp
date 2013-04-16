@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebMediaStreamSource.h>
 
 #include "AudioBus.h"
@@ -222,6 +220,3 @@ bool WebMediaStreamSource::removeAudioConsumer(WebAudioDestinationConsumer* cons
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
-

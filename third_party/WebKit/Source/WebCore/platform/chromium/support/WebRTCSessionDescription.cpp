@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <public/WebRTCSessionDescription.h>
 
 #include "RTCSessionDescriptionDescriptor.h"
@@ -91,6 +89,4 @@ void WebRTCSessionDescription::setSDP(const WebString& sdp)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
 

@@ -25,8 +25,6 @@
 #ifndef NavigatorUserMediaErrorCallback_h
 #define NavigatorUserMediaErrorCallback_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "NavigatorUserMediaError.h"
 #include <wtf/RefCounted.h>
 
@@ -39,7 +37,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // NavigatorUserMediaErrorCallback_h
