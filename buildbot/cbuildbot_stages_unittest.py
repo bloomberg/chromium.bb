@@ -1561,6 +1561,9 @@ class PreCQLauncherStageTest(AbstractStageTest):
     old_sleep = time.sleep
     self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.1))
     self.PatchObject(gs.GSContext, '_CheckFile', return_value=True)
+    self.PatchObject(repository.RepoRepository, 'ExportManifest',
+                     return_value='')
+    self.PatchObject(lkgm_manager, 'GenerateBlameList')
     rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
 
