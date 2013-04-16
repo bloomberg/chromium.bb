@@ -28,15 +28,14 @@ def DoJar(options):
   class_files_rel = [os.path.relpath(f, jar_cwd) for f in class_files]
   jar_cmd = ['jar', 'cf0', jar_path] + class_files_rel
 
+  record_path = '%s.md5.stamp' % options.jar_path
+  md5_check.CallAndRecordIfStale(
+      lambda: build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd),
+      record_path=record_path,
+      input_paths=class_files,
+      input_strings=jar_cmd)
 
-  md5_stamp = '%s.md5' % options.jar_path
-  md5_checker = md5_check.Md5Checker(
-      stamp=md5_stamp, inputs=class_files, command=jar_cmd)
-  if md5_checker.IsStale():
-    build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd)
-  else:
-    build_utils.Touch(options.jar_path)
-  md5_checker.Write()
+  build_utils.Touch(options.jar_path)
 
 
 def main(argv):

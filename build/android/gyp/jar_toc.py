@@ -81,13 +81,13 @@ def UpdateToc(jar_path, toc_path):
 def DoJarToc(options):
   jar_path = options.jar_path
   toc_path = options.toc_path
-  md5_stamp_path = '%s.md5' % toc_path
-  md5_checker = md5_check.Md5Checker(stamp=md5_stamp_path, inputs=[jar_path])
-  if md5_checker.IsStale():
-    UpdateToc(jar_path, toc_path)
-    md5_checker.Write()
-  else:
-    build_utils.Touch(toc_path)
+  record_path = '%s.md5.stamp' % toc_path
+  md5_check.CallAndRecordIfStale(
+      lambda: UpdateToc(jar_path, toc_path),
+      record_path=record_path,
+      input_paths=[jar_path],
+      )
+  build_utils.Touch(toc_path)
 
 
 def main(argv):

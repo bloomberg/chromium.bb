@@ -17,14 +17,14 @@ def DoDex(options, paths):
   dx_binary = os.path.join(options.android_sdk_root, 'platform-tools', 'dx')
   dex_cmd = [dx_binary, '--dex', '--output', options.dex_path] + paths
 
-  md5_stamp = '%s.md5' % options.dex_path
-  md5_checker = md5_check.Md5Checker(
-      stamp=md5_stamp, inputs=paths, command=dex_cmd)
-  if md5_checker.IsStale():
-    build_utils.CheckCallDie(dex_cmd, suppress_output=True)
-  else:
-    build_utils.Touch(options.dex_path)
-  md5_checker.Write()
+  record_path = '%s.md5.stamp' % options.dex_path
+  md5_check.CallAndRecordIfStale(
+      lambda: build_utils.CheckCallDie(dex_cmd, suppress_output=True),
+      record_path=record_path,
+      input_paths=paths,
+      input_strings=dex_cmd)
+
+  build_utils.Touch(options.dex_path)
 
 
 def main(argv):

@@ -52,12 +52,7 @@ def DoJavac(options):
       '-Xlint:deprecation',
       ] + java_files
 
-  md5_stamp = '%s/javac.md5' % options.output_dir
-  md5_checker = md5_check.Md5Checker(
-      stamp=md5_stamp,
-      inputs=java_files + jar_inputs,
-      command=javac_cmd)
-  if md5_checker.IsStale():
+  def Compile():
     # Delete the classes directory. This ensures that all .class files in the
     # output are actually from the input .java files. For example, if a .java
     # file is deleted or an inner class is removed, the classes directory should
@@ -66,7 +61,14 @@ def DoJavac(options):
     build_utils.MakeDirectory(output_dir)
     suppress_output = not options.chromium_code
     build_utils.CheckCallDie(javac_cmd, suppress_output=suppress_output)
-    md5_checker.Write()
+
+  record_path = '%s/javac.md5.stamp' % options.output_dir
+  md5_check.CallAndRecordIfStale(
+      Compile,
+      record_path=record_path,
+      input_paths=java_files + jar_inputs,
+      input_strings=javac_cmd)
+
 
 def main(argv):
   parser = optparse.OptionParser()

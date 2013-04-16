@@ -47,14 +47,16 @@ def CreateLinks(options):
   serial_number = adb.Adb().GetSerialNumber()
   for lib in libraries:
     host_path = os.path.join(options.libraries_dir, lib)
-
-    md5_stamp = '%s.%s.link.md5' % (host_path, serial_number)
-    md5_checker = md5_check.Md5Checker(stamp=md5_stamp, inputs=[host_path])
-    if md5_checker.IsStale():
+    def CreateLink():
       link = '/data/data/' + apk_package + '/lib/' + lib
       target = options.target_dir + '/' + lib
       RunLinkCommand(adb, target, link)
-      md5_checker.Write()
+
+    record_path = '%s.%s.link.md5.stamp' % (host_path, serial_number)
+    md5_check.CallAndRecordIfStale(
+        CreateLink,
+        record_path=record_path,
+        input_paths=[host_path])
 
 
 def main(argv):

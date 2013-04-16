@@ -38,13 +38,12 @@ def main(argv):
       options.apk_path]
 
   serial_number = android_commands.AndroidCommands().Adb().GetSerialNumber()
-  md5_stamp = '%s.%s.md5' % (options.apk_path, serial_number)
-
-  md5_checker = md5_check.Md5Checker(
-      stamp=md5_stamp, inputs=[options.apk_path], command=install_cmd)
-  if md5_checker.IsStale():
-    build_utils.CheckCallDie(install_cmd)
-    md5_checker.Write()
+  record_path = '%s.%s.md5.stamp' % (options.apk_path, serial_number)
+  md5_check.CallAndRecordIfStale(
+      lambda: build_utils.CheckCallDie(install_cmd),
+      record_path=record_path,
+      input_paths=[options.apk_path],
+      input_strings=install_cmd)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
