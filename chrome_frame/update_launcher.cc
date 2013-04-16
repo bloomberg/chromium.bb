@@ -9,6 +9,7 @@
 
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_handle.h"
 #include "google_update/google_update_idl.h"
 
 namespace {
@@ -50,36 +51,22 @@ std::wstring GetUpdateCommandFromArguments(const wchar_t* command_line) {
   return command;
 }
 
-// Because we do not have 'base' and all of its pretty RAII helpers, please
-// ensure that this function only ever contains a single 'return', in order
-// to reduce the chance of introducing a leak.
 DWORD LaunchUpdateCommand(const std::wstring& command) {
-  DWORD exit_code = kLaunchFailureExitCode;
-
   base::win::ScopedCOMInitializer com_initializer;
-  if (com_initializer.succeeded()) {
-    base::win::ScopedComPtr<IProcessLauncher> ipl;
-    HANDLE process = NULL;
+  if (!com_initializer.succeeded())
+    return kLaunchFailureExitCode;
 
-    HRESULT hr = ipl.CreateInstance(__uuidof(ProcessLauncherClass));
+  base::win::ScopedComPtr<IProcessLauncher> ipl;
+  if (FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass))))
+    return kLaunchFailureExitCode;
 
-    if (SUCCEEDED(hr)) {
-      ULONG_PTR phandle = NULL;
-      DWORD id = ::GetCurrentProcessId();
+  ULONG_PTR phandle = NULL;
+  if (FAILED(ipl->LaunchCmdElevated(kChromeFrameGuid, command.c_str(),
+                                    ::GetCurrentProcessId(), &phandle)))
+    return kLaunchFailureExitCode;
 
-      hr = ipl->LaunchCmdElevated(kChromeFrameGuid,
-                                  command.c_str(), id, &phandle);
-      if (SUCCEEDED(hr)) {
-        process = reinterpret_cast<HANDLE>(phandle);
-        exit_code = WaitForProcessExitCode(process);
-      }
-    }
-
-    if (process)
-      ::CloseHandle(process);
-  }
-
-  return exit_code;
+  base::win::ScopedHandle process(reinterpret_cast<HANDLE>(phandle));
+  return WaitForProcessExitCode(process);
 }
 
 }  // namespace process_launcher
