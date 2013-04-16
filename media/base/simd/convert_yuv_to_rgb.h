@@ -21,6 +21,19 @@ typedef void (*ConvertYUVToRGB32Proc)(const uint8*,
                                       int,
                                       YUVType);
 
+typedef void (*ConvertYUVAToARGBProc)(const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      uint8*,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      YUVType);
+
 void ConvertYUVToRGB32_C(const uint8* yplane,
                          const uint8* uplane,
                          const uint8* vplane,
@@ -29,6 +42,19 @@ void ConvertYUVToRGB32_C(const uint8* yplane,
                          int height,
                          int ystride,
                          int uvstride,
+                         int rgbstride,
+                         YUVType yuv_type);
+
+void ConvertYUVAToARGB_C(const uint8* yplane,
+                         const uint8* uplane,
+                         const uint8* vplane,
+                         const uint8* aplane,
+                         uint8* rgbframe,
+                         int width,
+                         int height,
+                         int ystride,
+                         int uvstride,
+                         int avstride,
                          int rgbstride,
                          YUVType yuv_type);
 
@@ -54,6 +80,19 @@ void ConvertYUVToRGB32_MMX(const uint8* yplane,
                            int rgbstride,
                            YUVType yuv_type);
 
+void ConvertYUVAToARGB_MMX(const uint8* yplane,
+                           const uint8* uplane,
+                           const uint8* vplane,
+                           const uint8* aplane,
+                           uint8* rgbframe,
+                           int width,
+                           int height,
+                           int ystride,
+                           int uvstride,
+                           int avstride,
+                           int rgbstride,
+                           YUVType yuv_type);
+
 }  // namespace media
 
 // Assembly functions are declared without namespace.
@@ -72,6 +111,13 @@ typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
                                           uint8*,
                                           ptrdiff_t);
 
+typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         uint8*,
+                                         ptrdiff_t);
+
 typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
                                        const uint8*,
                                        const uint8*,
@@ -85,9 +131,23 @@ void ConvertYUVToRGB32Row_C(const uint8* yplane,
                             uint8* rgbframe,
                             ptrdiff_t width);
 
+void ConvertYUVAToARGBRow_C(const uint8* yplane,
+                            const uint8* uplane,
+                            const uint8* vplane,
+                            const uint8* aplane,
+                            uint8* rgbframe,
+                            ptrdiff_t width);
+
 void ConvertYUVToRGB32Row_MMX(const uint8* yplane,
                               const uint8* uplane,
                               const uint8* vplane,
+                              uint8* rgbframe,
+                              ptrdiff_t width);
+
+void ConvertYUVAToARGBRow_MMX(const uint8* yplane,
+                              const uint8* uplane,
+                              const uint8* vplane,
+                              const uint8* aplane,
                               uint8* rgbframe,
                               ptrdiff_t width);
 

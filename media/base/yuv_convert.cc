@@ -603,4 +603,34 @@ void ConvertYUVToRGB32(const uint8* yplane,
 #endif
 }
 
+void ConvertYUVAToARGB(const uint8* yplane,
+                       const uint8* uplane,
+                       const uint8* vplane,
+                       const uint8* aplane,
+                       uint8* rgbframe,
+                       int width,
+                       int height,
+                       int ystride,
+                       int uvstride,
+                       int astride,
+                       int rgbstride,
+                       YUVType yuv_type) {
+#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+  ConvertYUVAToARGB_C(yplane, uplane, vplane, aplane, rgbframe,
+                      width, height, ystride, uvstride, astride, rgbstride,
+                      yuv_type);
+#else
+  static ConvertYUVAToARGBProc convert_proc = NULL;
+  if (!convert_proc) {
+    base::CPU cpu;
+    if (cpu.has_mmx())
+      convert_proc = &ConvertYUVAToARGB_MMX;
+    else
+      convert_proc = &ConvertYUVAToARGB_C;
+  }
+  convert_proc(yplane, uplane, vplane, aplane, rgbframe,
+               width, height, ystride, uvstride, astride, rgbstride, yuv_type);
+#endif
+}
+
 }  // namespace media

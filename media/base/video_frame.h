@@ -24,13 +24,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   };
 
   enum {
-    kMaxPlanes = 3,
+    kMaxPlanes = 4,
 
     kRGBPlane = 0,
 
     kYPlane = 0,
     kUPlane = 1,
     kVPlane = 2,
+    kAPlane = 3,
   };
 
   // Surface formats roughly based on FOURCC labels, see:
@@ -47,6 +48,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #if defined(GOOGLE_TV)
     HOLE = 13,  // Hole frame.
 #endif
+    YV12A = 14,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
   };
 
   // Creates a new frame in system memory with given parameters. Buffers for
