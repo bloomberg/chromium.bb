@@ -6,7 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
+#include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,7 +96,7 @@ void GeolocationInfoBarQueueController::PendingInfoBarRequest::RunCallback(
 void GeolocationInfoBarQueueController::PendingInfoBarRequest::
     CreateInfoBarDelegate(GeolocationInfoBarQueueController* controller,
                           const std::string& display_languages) {
-  infobar_delegate_ = GeolocationConfirmInfoBarDelegate::Create(
+  infobar_delegate_ = GeolocationInfoBarDelegate::Create(
       GetInfoBarService(id_), controller, id_, requesting_frame_,
       display_languages);
 
@@ -216,8 +216,7 @@ void GeolocationInfoBarQueueController::Observe(
       content::Details<InfoBarRemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
-    InfoBarDelegate* confirm_delegate = i->infobar_delegate();
-    if (confirm_delegate == delegate) {
+    if (i->infobar_delegate() == delegate) {
       GeolocationPermissionRequestID id(i->id());
       pending_infobar_requests_.erase(i);
       ShowQueuedInfoBarForTab(id);

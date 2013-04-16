@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -17,7 +17,7 @@ class InfoBarService;
 // GeolocationInfoBarDelegates are created by the
 // GeolocationInfoBarQueueController to control the display
 // and handling of geolocation permission infobars to the user.
-class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
+class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a geolocation delegate and adds it to |infobar_service|.  Returns
   // the delegate if it was successfully added.
@@ -28,12 +28,11 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
                                  const std::string& display_languages);
 
  protected:
-  GeolocationConfirmInfoBarDelegate(
-      InfoBarService* infobar_service,
-      GeolocationInfoBarQueueController* controller,
-      const GeolocationPermissionRequestID& id,
-      const GURL& requesting_frame,
-      const std::string& display_languages);
+  GeolocationInfoBarDelegate(InfoBarService* infobar_service,
+                             GeolocationInfoBarQueueController* controller,
+                             const GeolocationPermissionRequestID& id,
+                             const GURL& requesting_frame,
+                             const std::string& display_languages);
 
   const GeolocationPermissionRequestID& id() const { return id_; }
 
@@ -59,7 +58,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int contents_unique_id_;
   std::string display_languages_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_

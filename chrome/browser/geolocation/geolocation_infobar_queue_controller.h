@@ -10,7 +10,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class GeolocationConfirmInfoBarDelegate;
 class GeolocationPermissionRequestID;
 class InfoBarService;
 class Profile;

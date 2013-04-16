@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
-#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_ANDROID_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
+#include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 
 class GoogleLocationSettingsHelper;
 
-class GeolocationConfirmInfoBarDelegateAndroid
-    : public GeolocationConfirmInfoBarDelegate {
+class GeolocationInfoBarDelegateAndroid: public GeolocationInfoBarDelegate {
  public:
-  GeolocationConfirmInfoBarDelegateAndroid(
+  GeolocationInfoBarDelegateAndroid(
       InfoBarService* infobar_service,
       GeolocationInfoBarQueueController* controller,
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame_url,
       const std::string& display_languages);
-  virtual ~GeolocationConfirmInfoBarDelegateAndroid();
+  virtual ~GeolocationInfoBarDelegateAndroid();
 
  private:
   // ConfirmInfoBarDelegate:
@@ -30,4 +29,4 @@ class GeolocationConfirmInfoBarDelegateAndroid
 
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_ANDROID_H_
