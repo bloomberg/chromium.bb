@@ -51,6 +51,8 @@ void FakeInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
 
 void FakeInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
   text_input_client_ = client;
+  FOR_EACH_OBSERVER(InputMethodObserver, observers_,
+                    OnTextInputStateChanged(client));
 }
 
 TextInputClient* FakeInputMethod::GetTextInputClient() const {
@@ -111,7 +113,10 @@ bool FakeInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 void FakeInputMethod::Init(bool focused) {}
 void FakeInputMethod::OnFocus() {}
 void FakeInputMethod::OnBlur() {}
-void FakeInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {}
+void FakeInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
+  FOR_EACH_OBSERVER(InputMethodObserver, observers_,
+                    OnTextInputStateChanged(client));
+}
 void FakeInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {}
 void FakeInputMethod::CancelComposition(const TextInputClient* client) {}
 
@@ -135,7 +140,12 @@ bool FakeInputMethod::CanComposeInline() const {
   return true;
 }
 
-void FakeInputMethod::AddObserver(InputMethodObserver* observer) {}
-void FakeInputMethod::RemoveObserver(InputMethodObserver* observer) {}
+void FakeInputMethod::AddObserver(InputMethodObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeInputMethod::RemoveObserver(InputMethodObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 }  // namespace ui

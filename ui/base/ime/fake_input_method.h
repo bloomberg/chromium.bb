@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -47,6 +49,7 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  private:
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
+  ObserverList<InputMethodObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputMethod);
 };
