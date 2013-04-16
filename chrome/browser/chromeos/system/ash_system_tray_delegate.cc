@@ -588,6 +588,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       info.address = device->GetAddress();
       info.display_name = device->GetName();
       info.connected = device->IsConnected();
+      info.connecting = device->IsConnecting();
       info.paired = device->IsPaired();
       list->push_back(info);
     }
@@ -607,7 +608,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
     device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
-    if (!device)
+    if (!device || device->IsConnecting())
       return;
     if (device->IsConnected()) {
       device->Disconnect(

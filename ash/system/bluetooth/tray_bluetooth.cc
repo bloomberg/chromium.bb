@@ -128,18 +128,24 @@ class BluetoothDetailedView : public TrayDetailsView,
 
   void UpdateBlueToothDeviceList() {
     connected_devices_.clear();
+    connecting_devices_.clear();
     paired_not_connected_devices_.clear();
     discovered_not_paired_devices_.clear();
     BluetoothDeviceList list;
     Shell::GetInstance()->system_tray_delegate()->
         GetAvailableBluetoothDevices(&list);
     for (size_t i = 0; i < list.size(); ++i) {
-      if (list[i].connected)
+      if (list[i].connecting) {
+        list[i].display_name = l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, list[i].display_name);
+        connecting_devices_.push_back(list[i]);
+      } else if (list[i].connected) {
         connected_devices_.push_back(list[i]);
-      else if (list[i].paired)
+      } else if (list[i].paired) {
         paired_not_connected_devices_.push_back(list[i]);
-      else
+      } else {
         discovered_not_paired_devices_.push_back(list[i]);
+      }
     }
   }
 
@@ -198,6 +204,8 @@ class BluetoothDetailedView : public TrayDetailsView,
 
     AppendSameTypeDevicesToScrollList(
         connected_devices_, true, true, bluetooth_enabled);
+    AppendSameTypeDevicesToScrollList(
+        connecting_devices_, true, false, bluetooth_enabled);
     AppendSameTypeDevicesToScrollList(
         paired_not_connected_devices_, false, false, bluetooth_enabled);
     if (discovered_not_paired_devices_.size() > 0)
@@ -264,13 +272,15 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   // Returns true if the device with |device_id| is found in |device_list|,
-  // and the display_name of the device will be returned in |display_name|.
+  // and the display_name of the device will be returned in |display_name| if
+  // it's not NULL.
   bool FoundDevice(const std::string& device_id,
                    const BluetoothDeviceList& device_list,
                    base::string16* display_name) {
     for (size_t i = 0; i < device_list.size(); ++i) {
       if (device_list[i].address == device_id) {
-        *display_name = device_list[i].display_name;
+        if (display_name)
+          *display_name = device_list[i].display_name;
         return true;
       }
     }
@@ -315,11 +325,13 @@ class BluetoothDetailedView : public TrayDetailsView,
         return;
       std::map<views::View*, std::string>::iterator find;
       find = device_map_.find(sender);
-      if (find != device_map_.end()) {
-        std::string device_id = find->second;
-        UpdateClickedDevice(device_id, sender);
-        delegate->ToggleBluetoothConnection(device_id);
-      }
+      if (find == device_map_.end())
+        return;
+      std::string device_id = find->second;
+      if (FoundDevice(device_id, connecting_devices_, NULL))
+        return;
+      UpdateClickedDevice(device_id, sender);
+      delegate->ToggleBluetoothConnection(device_id);
     }
   }
 
@@ -342,6 +354,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   TrayPopupHeaderButton* toggle_bluetooth_;
   HoverHighlightView* enable_bluetooth_;
   BluetoothDeviceList connected_devices_;
+  BluetoothDeviceList connecting_devices_;
   BluetoothDeviceList paired_not_connected_devices_;
   BluetoothDeviceList discovered_not_paired_devices_;
   bool bluetooth_discovering_;

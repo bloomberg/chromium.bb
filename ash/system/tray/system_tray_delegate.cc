@@ -19,7 +19,9 @@ NetworkIconInfo::~NetworkIconInfo() {
 }
 
 BluetoothDeviceInfo::BluetoothDeviceInfo()
-    : connected(false) {
+    : connected(false),
+      connecting(false),
+      paired(false) {
 }
 
 BluetoothDeviceInfo::~BluetoothDeviceInfo() {

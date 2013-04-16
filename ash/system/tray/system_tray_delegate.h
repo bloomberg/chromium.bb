@@ -47,6 +47,7 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   std::string address;
   base::string16 display_name;
   bool connected;
+  bool connecting;
   bool paired;
 };
 
