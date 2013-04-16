@@ -428,18 +428,7 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     return;
   }
 
-  // TODO(nhiroki): Add helper function to forget remote changes for the given
-  // origin like "ForgetRemoteChangesForOrigin(origin)".
-  // http://crbug.com/211600
-  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
-  if (found != origin_to_changes_map_.end()) {
-    for (PathToChangeMap::iterator itr = found->second.begin();
-         itr != found->second.end(); ++itr)
-      pending_changes_.erase(itr->second.position_in_queue);
-    origin_to_changes_map_.erase(found);
-  }
-  pending_batch_sync_origins_.erase(origin);
-
+  RemoveRemoteChangesForOrigin(origin);
   metadata_store_->RemoveOrigin(origin, base::Bind(
       &DriveFileSyncService::DidChangeOriginOnMetadataStore,
       AsWeakPtr(), base::Passed(&token), callback));
@@ -482,18 +471,7 @@ void DriveFileSyncService::DisableOriginForTrackingChanges(
     return;
   }
 
-  // TODO(nhiroki): Add helper function to forget remote changes for the given
-  // origin like "ForgetRemoteChangesForOrigin(origin)".
-  // http://crbug.com/211600
-  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
-  if (found != origin_to_changes_map_.end()) {
-    for (PathToChangeMap::iterator itr = found->second.begin();
-         itr != found->second.end(); ++itr)
-      pending_changes_.erase(itr->second.position_in_queue);
-    origin_to_changes_map_.erase(found);
-  }
-  pending_batch_sync_origins_.erase(origin);
-
+  RemoveRemoteChangesForOrigin(origin);
   metadata_store_->DisableOrigin(origin, base::Bind(
       &DriveFileSyncService::DidChangeOriginOnMetadataStore,
       AsWeakPtr(), base::Passed(&token), callback));
@@ -2098,6 +2076,17 @@ void DriveFileSyncService::RemoveRemoteChange(
       !ContainsKey(origin_to_changes_map_, url.origin())) {
     metadata_store_->MoveBatchSyncOriginToIncremental(url.origin());
   }
+}
+
+void DriveFileSyncService::RemoveRemoteChangesForOrigin(const GURL& origin) {
+  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
+  if (found != origin_to_changes_map_.end()) {
+    for (PathToChangeMap::iterator itr = found->second.begin();
+         itr != found->second.end(); ++itr)
+      pending_changes_.erase(itr->second.position_in_queue);
+    origin_to_changes_map_.erase(found);
+  }
+  pending_batch_sync_origins_.erase(origin);
 }
 
 bool DriveFileSyncService::GetPendingChangeForFileSystemURL(

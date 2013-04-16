@@ -394,6 +394,7 @@ class DriveFileSyncService
                                   const base::Time& updated_time,
                                   RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
+  void RemoveRemoteChangesForOrigin(const GURL& origin);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
   void MarkConflict(
