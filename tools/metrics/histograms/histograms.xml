@@ -2403,10 +2403,72 @@ other types of suffix sets.
   <summary>The time that a Wi-fi scan takes.</summary>
 </histogram>
 
+<histogram name="Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon"
+    enum="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon">
+  <obsolete>
+    Aggressive HistoryURL provider field trial deleted in spring 2012.
+  </obsolete>
+  <summary>
+    A number that indicates what omnibox ranking behavior the user is seeing as
+    part of the OmniboxAggressiveHistoryURLProvider field trial
+    (OmniboxAggressiveHistoryURLProvider).
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.EnteredKeywordMode" enum="OmniboxEnteredKeywordMode">
   <summary>
     The number of times users enter keyword hint mode &quot;Search ___
     for:&quot; and how.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.QueryBookmarksTime">
+  <obsolete>
+    Deprecated 2012-11-14. Replaced by Autocomplete.BookmarkProviderMatchTime.
+  </obsolete>
+  <summary>
+    Time the HistoryContentProvider takes to perform a bookmark search.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.QueryTime" units="milliseconds">
+  <summary>
+    Time it takes for the omnibox to become responsive to user input after the
+    user has typed N characters. This measures the time it takes to start all
+    the asynchronous autocomplete providers (but not wait for them to finish).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SearchEngine" enum="OmniboxSearchEngine">
+  <summary>
+    The id of search engine that was used for search in omnibox. See
+    src/chrome/browser/search_engines/template_url_prepopulate_data.cc for more
+    info.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime"
+    units="milliseconds">
+  <summary>
+    The time elapsed between the sending of a suggest request to Google until
+    the time the request was returned with status==failed. Ignores requests that
+    were canceled before being returned.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestRequest.Success.GoogleResponseTime"
+    units="milliseconds">
+  <summary>
+    The time elapsed between the sending of a suggest request to Google until
+    the time the request was returned with status==success. Ignores requests
+    that were canceled before being returned.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests">
+  <summary>
+    Counts about the number of suggest requests the omnibox sent, invalidated,
+    and replies received.
   </summary>
 </histogram>
 
@@ -2931,6 +2993,13 @@ other types of suffix sets.
   <summary>
     Measures the frequency of required user actions returned by the Google
     Online Wallet server.
+  </summary>
+</histogram>
+
+<histogram name="Search.DefaultSearchProvider" enum="OmniboxSearchEngine">
+  <summary>
+    The id of the default search engine that is loaded after Chrome startup. See
+    src/chrome/browser/search_engines/prepopulate_engines.json for more info.
   </summary>
 </histogram>
 
@@ -4674,10 +4743,89 @@ other types of suffix sets.
   <int value="8" label="subresource and used"/>
 </enum>
 
+<enum name="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon" type="int">
+  <int value="0" label="disabled by flags"/>
+  <int value="1" label="enabled by flags"/>
+  <int value="2" label="auto, not in trial"/>
+  <int value="3" label="auto, disabled in trial"/>
+  <int value="4" label="auto, enabled in trial"/>
+</enum>
+
 <enum name="OmniboxEnteredKeywordMode" type="int">
   <int value="0" label="via tab"/>
   <int value="1" label="via space at end"/>
   <int value="2" label="via space in middle"/>
+</enum>
+
+<enum name="OmniboxSearchEngine" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Google"/>
+  <int value="2" label="Yahoo!"/>
+  <int value="3" label="Bing"/>
+  <int value="4" label="Ask"/>
+  <int value="5" label="Yahoo! Quebec"/>
+  <int value="6" label="OK.hu"/>
+  <int value="7" label="Bing French and Arabic"/>
+  <int value="11" label="Yamli"/>
+  <int value="12" label="Araby"/>
+  <int value="13" label="Maktoob"/>
+  <int value="14" label="Masrawy"/>
+  <int value="15" label="Yandex"/>
+  <int value="16" label="Rambler"/>
+  <int value="17" label="TUT.BY"/>
+  <int value="18" label="hispavista"/>
+  <int value="19" label="Jabse"/>
+  <int value="20" label="NUR.KZ"/>
+  <int value="21" label="Baidu"/>
+  <int value="22" label="search.ch"/>
+  <int value="23" label="goo"/>
+  <int value="24" label="Pogodak!"/>
+  <int value="25" label="Seznam"/>
+  <int value="26" label="Centrum"/>
+  <int value="27" label="Atlas"/>
+  <int value="28" label="Jubii"/>
+  <int value="29" label="Eniro"/>
+  <int value="30" label="NetSprint"/>
+  <int value="32" label="diri"/>
+  <int value="33" label="Custom"/>
+  <int value="35" label="AOL"/>
+  <int value="37" label="Rediff"/>
+  <int value="38" label="guruji"/>
+  <int value="40" label="GO.com"/>
+  <int value="41" label="Rednano"/>
+  <int value="44" label="NETI"/>
+  <int value="45" label="DELFI"/>
+  <int value="46" label="Fonecta 02.fi"/>
+  <int value="51" label="search.ch"/>
+  <int value="54" label="in.gr"/>
+  <int value="55" label="Walla!"/>
+  <int value="59" label="leit.is"/>
+  <int value="62" label="Virgilio"/>
+  <int value="63" label="Libero"/>
+  <int value="67" label="Naver"/>
+  <int value="68" label="Daum"/>
+  <int value="69" label="Nate"/>
+  <int value="71" label="LATNE"/>
+  <int value="72" label="ABC S.k"/>
+  <int value="73" label="Kvasir"/>
+  <int value="75" label="Onet.pl"/>
+  <int value="76" label="Wirtualna Polska"/>
+  <int value="77" label="SAPO"/>
+  <int value="82" label="UOL Busca"/>
+  <int value="83" label="@MAIL.RU"/>
+  <int value="85" label="Zoznam"/>
+  <int value="87" label="Najdi.si"/>
+  <int value="89" label="AltaVista"/>
+  <int value="90" label="Terra"/>
+  <int value="99" label="Spray"/>
+  <int value="100" label="Sanook!"/>
+  <int value="101" label="MYNET"/>
+</enum>
+
+<enum name="OmniboxSuggestRequests" type="int">
+  <int value="1" label="requests sent"/>
+  <int value="2" label="requests invalidated"/>
+  <int value="3" label="(non-invalidated) replies received"/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">
@@ -5329,6 +5477,16 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="QueryTimeSuffix" separator=".">
+  <group name="0" label="N = 0"/>
+  <group name="1" label="N = 1"/>
+  <group name="2" label="N = 2"/>
+  <group name="3" label="N = 3"/>
+  <group name="4" label="N = 4"/>
+  <group name="5" label="N = 5"/>
+  <affected-histogram name="Omnibox.QueryTime"/>
 </fieldtrial>
 
 <fieldtrial name="SocketType">
