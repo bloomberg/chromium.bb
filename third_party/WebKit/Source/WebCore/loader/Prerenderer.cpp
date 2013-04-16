@@ -105,7 +105,7 @@ void Prerenderer::stop()
 
 void Prerenderer::suspend(ReasonForSuspension reason)
 {
-    if (reason == DocumentWillBecomeInactive || reason == PageWillBeSuspended) {
+    if (reason == DocumentWillBecomeInactive) {
         while (!m_activeHandles.isEmpty()) {
             RefPtr<PrerenderHandle> handle = m_activeHandles[0].release();
             m_activeHandles.remove(0);

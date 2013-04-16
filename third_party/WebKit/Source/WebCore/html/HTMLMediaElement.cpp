@@ -3743,7 +3743,6 @@ void HTMLMediaElement::suspend(ReasonForSuspension why)
         case DocumentWillBecomeInactive:
             stop();
             break;
-        case PageWillBeSuspended:
         case JavaScriptDebuggerPaused:
         case WillDeferLoading:
             // Do nothing, we don't pause media playback in these cases.

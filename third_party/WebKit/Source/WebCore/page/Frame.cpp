@@ -170,7 +170,6 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_orientation(0)
 #endif
     , m_inViewSourceMode(false)
-    , m_activeDOMObjectsAndAnimationsSuspendedCount(0)
 {
     ASSERT(page);
     WebCore::init();
@@ -183,11 +182,6 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
 #ifndef NDEBUG
     frameCounter.increment();
 #endif
-
-    // Pause future ActiveDOMObjects if this frame is being created while the page is in a paused state.
-    Frame* parent = parentFromOwnerElement(ownerElement);
-    if (parent && parent->activeDOMObjectsAndAnimationsSuspended())
-        suspendActiveDOMObjectsAndAnimations();
 }
 
 PassRefPtr<Frame> Frame::create(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* client)
@@ -303,13 +297,6 @@ void Frame::setDocument(PassRefPtr<Document> newDoc)
         if (m_doc && m_doc->hasTouchEventHandlers())
             m_page->chrome()->client()->needTouchEvents(true);
 #endif
-    }
-
-    // Suspend document if this frame was created in suspended state.
-    if (m_doc && activeDOMObjectsAndAnimationsSuspended()) {
-        m_doc->suspendScriptedAnimationControllerCallbacks();
-        m_animationController.suspendAnimationsForDocument(m_doc.get());
-        m_doc->suspendActiveDOMObjects(ActiveDOMObject::PageWillBeSuspended);
     }
 }
 
@@ -841,38 +828,6 @@ void Frame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor
 
     if (page->mainFrame() == this)
         pageCache()->markPagesForFullStyleRecalc(page);
-}
-
-void Frame::suspendActiveDOMObjectsAndAnimations()
-{
-    bool wasSuspended = activeDOMObjectsAndAnimationsSuspended();
-
-    m_activeDOMObjectsAndAnimationsSuspendedCount++;
-
-    if (wasSuspended)
-        return;
-
-    if (document()) {
-        document()->suspendScriptedAnimationControllerCallbacks();
-        animation()->suspendAnimationsForDocument(document());
-        document()->suspendActiveDOMObjects(ActiveDOMObject::PageWillBeSuspended);
-    }
-}
-
-void Frame::resumeActiveDOMObjectsAndAnimations()
-{
-    ASSERT(activeDOMObjectsAndAnimationsSuspended());
-
-    m_activeDOMObjectsAndAnimationsSuspendedCount--;
-
-    if (activeDOMObjectsAndAnimationsSuspended())
-        return;
-
-    if (document()) {
-        document()->resumeActiveDOMObjects();
-        animation()->resumeAnimationsForDocument(document());
-        document()->resumeScriptedAnimationControllerCallbacks();
-    }
 }
 
 void Frame::deviceOrPageScaleFactorChanged()

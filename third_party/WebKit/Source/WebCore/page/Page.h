@@ -306,8 +306,6 @@ public:
     void addRelevantRepaintedObject(RenderObject*, const LayoutRect& objectPaintRect);
     void addRelevantUnpaintedObject(RenderObject*, const LayoutRect& objectPaintRect);
 
-    void suspendActiveDOMObjectsAndAnimations();
-    void resumeActiveDOMObjectsAndAnimations();
 #ifndef NDEBUG
     void setIsPainting(bool painting) { m_isPainting = painting; }
     bool isPainting() const { return m_isPainting; }

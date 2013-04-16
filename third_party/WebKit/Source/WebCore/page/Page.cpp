@@ -1140,18 +1140,6 @@ void Page::addRelevantUnpaintedObject(RenderObject* object, const LayoutRect& ob
     m_relevantUnpaintedRegion.unite(pixelSnappedIntRect(objectPaintRect));
 }
 
-void Page::suspendActiveDOMObjectsAndAnimations()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->suspendActiveDOMObjectsAndAnimations();
-}
-
-void Page::resumeActiveDOMObjectsAndAnimations()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->resumeActiveDOMObjectsAndAnimations();
-}
-
 bool Page::hasSeenAnyPlugin() const
 {
     return !m_seenPlugins.isEmpty();
