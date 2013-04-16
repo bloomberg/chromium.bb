@@ -450,11 +450,13 @@ DirectoryTree.prototype.selectPath = function(path) {
 };
 
 /**
- * Invoked when the root list is changed.
+ * Invoked when the root list is changed. Redraws the list and synchronizes
+ * the selection.
  * @private
  */
 DirectoryTree.prototype.onRootsListChanged_ = function() {
   this.redraw(false /* recursive */);
+  this.selectPath(this.directoryModel_.getCurrentDirPath());
 };
 
 /**
