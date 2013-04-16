@@ -383,9 +383,16 @@ void DriveUploader::OnUploadRangeResponseReceived(
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const UploadMode upload_mode = upload_file_info->upload_mode;
-  if ((upload_mode == UPLOAD_NEW_FILE && response.code == HTTP_CREATED) ||
-      (upload_mode == UPLOAD_EXISTING_FILE && response.code == HTTP_SUCCESS)) {
+  if (response.code == HTTP_CREATED || response.code == HTTP_SUCCESS) {
+    // When upload_mode is UPLOAD_NEW_FILE, we expect HTTP_CREATED, and
+    // when upload_mode is UPLOAD_EXISTING_FILE, we expect HTTP_SUCCESS.
+    // There is an exception: if we uploading an empty file, UPLOAD_NEW_FILE
+    // also returns HTTP_SUCCESS on Drive API v2. The correct way of the fix
+    // should be uploading the metadata only. However, to keep the
+    // compatibility with GData WAPI during the migration period, we just
+    // relax the condition here.
+    // TODO(hidehiko): Upload metadata only for empty files, after GData WAPI
+    // code is gone.
     DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->drive_path.value() << "]";
 
