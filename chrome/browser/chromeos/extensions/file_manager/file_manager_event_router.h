@@ -209,13 +209,6 @@ class FileManagerEventRouter
   // Returns the DriveFileSystem for the current profile.
   drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
 
-  // Handles requests to start and stop periodic updates on remote file system.
-  // When |start| is set to true, this function starts periodic updates only if
-  // it is not yet started; when |start| is set to false, this function stops
-  // periodic updates only if the number of outstanding update requests reaches
-  // zero.
-  void HandleRemoteUpdateRequestOnUIThread(bool start);
-
   base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
   base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
@@ -223,9 +216,6 @@ class FileManagerEventRouter
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
-
-  // Number of active update requests on the remote file system.
-  int num_remote_update_requests_;
 
   // Event router behavior depends on shift modifier status. This is designed
   // for power users.

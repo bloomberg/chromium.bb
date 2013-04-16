@@ -253,7 +253,6 @@ FileManagerEventRouter::FileManagerEventRouter(
       notifications_(new FileManagerNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
-      num_remote_update_requests_(0),
       shift_pressed_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -366,7 +365,6 @@ void FileManagerEventRouter::AddFileWatch(
   if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = drive::util::ExtractDrivePath(watch_path);
     is_remote_watch = true;
-    HandleRemoteUpdateRequestOnUIThread(true /* start */);
   }
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
@@ -397,7 +395,6 @@ void FileManagerEventRouter::RemoveFileWatch(
   // their change notifications.
   if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = drive::util::ExtractDrivePath(watch_path);
-    HandleRemoteUpdateRequestOnUIThread(false /* start */);
   }
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
@@ -431,27 +428,6 @@ void FileManagerEventRouter::MountDrive(
 
   if (!callback.is_null())
     callback.Run();
-}
-
-void FileManagerEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  drive::DriveFileSystemInterface* file_system = GetRemoteFileSystem();
-  // |file_system| is NULL if Drive is disabled.
-  if (!file_system)
-    return;
-
-  if (start) {
-    file_system->CheckForUpdates();
-    if (num_remote_update_requests_ == 0)
-      file_system->StartPolling();
-    ++num_remote_update_requests_;
-  } else {
-    DCHECK_LE(1, num_remote_update_requests_);
-    --num_remote_update_requests_;
-    if (num_remote_update_requests_ == 0)
-      file_system->StopPolling();
-  }
 }
 
 void FileManagerEventRouter::OnDiskEvent(

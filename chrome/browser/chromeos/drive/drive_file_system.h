@@ -68,8 +68,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void StartInitialFeedFetch() OVERRIDE;
-  virtual void StartPolling() OVERRIDE;
-  virtual void StopPolling() OVERRIDE;
   virtual void SetPushNotificationEnabled(bool enabled) OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
   virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
@@ -169,6 +167,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
+
+  // Starts and stops periodic polling.
+  // TODO(satorux): Remove them. crbug.com/231202
+  void StartPolling();
+  void StopPolling();
 
   // Used to implement Reload().
   void ReloadAfterReset();

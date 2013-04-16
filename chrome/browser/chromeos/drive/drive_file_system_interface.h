@@ -152,10 +152,6 @@ class DriveFileSystemInterface {
   // Starts initial feed fetch from the server.
   virtual void StartInitialFeedFetch() = 0;
 
-  // Starts and stops periodic polling.
-  virtual void StartPolling() = 0;
-  virtual void StopPolling() = 0;
-
   // Sets the availability of push notification when its status is changed.
   virtual void SetPushNotificationEnabled(bool enabled) = 0;
 

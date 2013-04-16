@@ -305,7 +305,6 @@ void DriveSystemService::RemoveDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->NotifyFileSystemToBeUnmounted();
-  file_system_->StopPolling();
 
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
