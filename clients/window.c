@@ -4383,10 +4383,18 @@ handle_display_data(struct task *task, uint32_t events)
 	}
 }
 
+static void
+log_handler(const char *format, va_list args)
+{
+	vfprintf(stderr, format, args);
+}
+
 struct display *
 display_create(int *argc, char *argv[])
 {
 	struct display *d;
+
+	wl_log_set_handler_client(log_handler);
 
 	d = malloc(sizeof *d);
 	if (d == NULL)
