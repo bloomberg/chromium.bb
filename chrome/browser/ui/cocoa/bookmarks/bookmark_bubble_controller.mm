@@ -65,14 +65,7 @@ using content::UserMetricsAction;
 - (void)awakeFromNib {
   [super awakeFromNib];
 
-  // Check if NSTextFieldCell supports the method. This check is in place as
-  // only 10.6 and greater support the setUsesSingleLineMode method.
-  // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
-  NSTextFieldCell* nameFieldCell_ = [nameTextField_ cell];
-  if ([nameFieldCell_
-          respondsToSelector:@selector(setUsesSingleLineMode:)]) {
-    [nameFieldCell_ setUsesSingleLineMode:YES];
-  }
+  [[nameTextField_ cell] setUsesSingleLineMode:YES];
 }
 
 // If this is a new bookmark somewhere visible (e.g. on the bookmark
