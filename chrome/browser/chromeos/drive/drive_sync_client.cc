@@ -329,7 +329,7 @@ void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
         break;
       default:
         LOG(WARNING) << "Failed to fetch " << resource_id
-                     << ": " << error;
+                     << ": " << DriveFileErrorToString(error);
     }
   }
 }
@@ -344,7 +344,8 @@ void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
     DVLOG(1) << "Uploaded " << resource_id;
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
-    LOG(WARNING) << "Failed to upload " << resource_id << ": " << error;
+    LOG(WARNING) << "Failed to upload " << resource_id << ": "
+                 << DriveFileErrorToString(error);
   }
 }
 

@@ -340,7 +340,7 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
 
   if (error != DRIVE_FILE_OK) {
     LOG(WARNING) << "Failed to initialize resource metadata. Disabling Drive : "
-                 << error;
+                 << DriveFileErrorToString(error);
     DisableDrive();
     return;
   }

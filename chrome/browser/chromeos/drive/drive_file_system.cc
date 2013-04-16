@@ -313,7 +313,7 @@ void DriveFileSystem::CheckForUpdates() {
 
 void DriveFileSystem::OnUpdateChecked(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "CheckForUpdates finished: " << error;
+  DVLOG(1) << "CheckForUpdates finished: " << DriveFileErrorToString(error);
   last_update_check_time_ = base::Time::Now();
   last_update_check_error_ = error;
 }

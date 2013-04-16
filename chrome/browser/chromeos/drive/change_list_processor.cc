@@ -248,7 +248,7 @@ void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForAddEntry " << file_path.value() << ", error = "
-      << error;
+           << DriveFileErrorToString(error);
   if (error == DRIVE_FILE_OK) {
     // Notify if a directory has been created.
     if (is_directory)

@@ -478,7 +478,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to load directory: "
                << directory_fetch_info.resource_id()
-               << ": " << error;
+               << ": " << DriveFileErrorToString(error);
     callback.Run(error);
     return;
   }

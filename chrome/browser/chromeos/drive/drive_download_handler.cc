@@ -272,7 +272,8 @@ void DriveDownloadHandler::OnEntryFound(
     OnCreateDirectory(callback, DRIVE_FILE_OK);
   } else {
     LOG(WARNING) << "Failed to get entry info for path: "
-                 << drive_dir_path.value() << ", error = " << error;
+                 << drive_dir_path.value() << ", error = "
+                 << DriveFileErrorToString(error);
     callback.Run(base::FilePath());
   }
 }
@@ -280,7 +281,7 @@ void DriveDownloadHandler::OnEntryFound(
 void DriveDownloadHandler::OnCreateDirectory(
     const SubstituteDriveDownloadPathCallback& callback,
     DriveFileError error) {
-  DVLOG(1) << "OnCreateDirectory " << error;
+  DVLOG(1) << "OnCreateDirectory " << DriveFileErrorToString(error);
   if (error == DRIVE_FILE_OK) {
     base::PostTaskAndReplyWithResult(
         BrowserThread::GetBlockingPool(),
@@ -288,7 +289,8 @@ void DriveDownloadHandler::OnCreateDirectory(
         base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_path_),
         callback);
   } else {
-    LOG(WARNING) << "Failed to create directory, error = " << error;
+    LOG(WARNING) << "Failed to create directory, error = "
+                 << DriveFileErrorToString(error);
     callback.Run(base::FilePath());
   }
 }

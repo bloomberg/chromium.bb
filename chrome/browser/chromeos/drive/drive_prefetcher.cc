@@ -122,7 +122,7 @@ void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
                                          DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error != DRIVE_FILE_OK)
-    LOG(WARNING) << "Prefetch failed: " << error;
+    LOG(WARNING) << "Prefetch failed: " << DriveFileErrorToString(error);
   event_logger_->Log(base::StringPrintf("Prefetcher: Finish fetching (%s) %s",
                                         DriveFileErrorToString(error).c_str(),
                                         resource_id.c_str()));
