@@ -49,9 +49,9 @@ void TextInputType::attach()
     TextFieldInputType::attach();
     const AtomicString& type = element()->fastGetAttribute(typeAttr);
     if (equalIgnoringCase(type, InputTypeNames::datetime()))
-        observeFeatureIfVisible(FeatureObserver::InputTypeDateTimeFallback);
+        observeFeatureIfVisible(UseCounter::InputTypeDateTimeFallback);
     else if (equalIgnoringCase(type, InputTypeNames::week()))
-        observeFeatureIfVisible(FeatureObserver::InputTypeWeekFallback);
+        observeFeatureIfVisible(UseCounter::InputTypeWeekFallback);
 }
 
 const AtomicString& TextInputType::formControlType() const

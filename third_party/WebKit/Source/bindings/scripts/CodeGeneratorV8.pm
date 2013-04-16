@@ -911,8 +911,8 @@ sub GenerateFeatureObservation
     my $measureAs = shift;
 
     if ($measureAs) {
-        AddToImplIncludes("FeatureObserver.h");
-        return "    FeatureObserver::observe(activeDOMWindow(BindingState::instance()), FeatureObserver::${measureAs});\n";
+        AddToImplIncludes("UseCounter.h");
+        return "    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::${measureAs});\n";
     }
 
     return "";

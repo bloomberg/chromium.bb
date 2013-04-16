@@ -62,7 +62,7 @@ PassOwnPtr<InputType> DateTimeInputType::create(HTMLInputElement* element)
 
 void DateTimeInputType::attach()
 {
-    observeFeatureIfVisible(FeatureObserver::InputTypeDateTime);
+    observeFeatureIfVisible(UseCounter::InputTypeDateTime);
 }
 
 const AtomicString& DateTimeInputType::formControlType() const

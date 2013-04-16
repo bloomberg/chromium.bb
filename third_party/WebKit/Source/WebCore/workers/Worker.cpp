@@ -36,7 +36,7 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "InspectorInstrumentation.h"
@@ -58,7 +58,7 @@ inline Worker::Worker(ScriptExecutionContext* context)
 PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String& url, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
-    FeatureObserver::observe(static_cast<Document*>(context)->domWindow(), FeatureObserver::WorkerStart);
+    UseCounter::observe(static_cast<Document*>(context)->domWindow(), UseCounter::WorkerStart);
 
     RefPtr<Worker> worker = adoptRef(new Worker(context));
 

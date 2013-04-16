@@ -104,7 +104,7 @@ PassOwnPtr<InputType> NumberInputType::create(HTMLInputElement* element)
 void NumberInputType::attach()
 {
     TextFieldInputType::attach();
-    observeFeatureIfVisible(FeatureObserver::InputTypeNumber);
+    observeFeatureIfVisible(UseCounter::InputTypeNumber);
 }
 
 const AtomicString& NumberInputType::formControlType() const

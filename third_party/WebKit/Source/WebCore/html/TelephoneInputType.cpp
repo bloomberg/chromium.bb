@@ -45,7 +45,7 @@ PassOwnPtr<InputType> TelephoneInputType::create(HTMLInputElement* element)
 void TelephoneInputType::attach()
 {
     TextFieldInputType::attach();
-    observeFeatureIfVisible(FeatureObserver::InputTypeTel);
+    observeFeatureIfVisible(UseCounter::InputTypeTel);
 }
 
 const AtomicString& TelephoneInputType::formControlType() const

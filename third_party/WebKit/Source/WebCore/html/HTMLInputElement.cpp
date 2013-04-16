@@ -38,7 +38,7 @@
 #include "ElementShadow.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "FileInputType.h"
 #include "FileList.h"
 #include "FormController.h"
@@ -696,34 +696,34 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (m_maxResults != oldResults && (m_maxResults <= 0 || oldResults <= 0))
             reattachIfAttached();
         setNeedsStyleRecalc();
-        FeatureObserver::observe(document(), FeatureObserver::ResultsAttribute);
+        UseCounter::observe(document(), UseCounter::ResultsAttribute);
     } else if (name == autosaveAttr) {
         setNeedsStyleRecalc();
-        FeatureObserver::observe(document(), FeatureObserver::AutoSaveAttribute);
+        UseCounter::observe(document(), UseCounter::AutoSaveAttribute);
     } else if (name == incrementalAttr) {
         setNeedsStyleRecalc();
-        FeatureObserver::observe(document(), FeatureObserver::IncrementalAttribute);
+        UseCounter::observe(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {
         m_inputType->minOrMaxAttributeChanged();
         setNeedsValidityCheck();
-        FeatureObserver::observe(document(), FeatureObserver::MinAttribute);
+        UseCounter::observe(document(), UseCounter::MinAttribute);
     } else if (name == maxAttr) {
         m_inputType->minOrMaxAttributeChanged();
         setNeedsValidityCheck();
-        FeatureObserver::observe(document(), FeatureObserver::MaxAttribute);
+        UseCounter::observe(document(), UseCounter::MaxAttribute);
     } else if (name == multipleAttr) {
         m_inputType->multipleAttributeChanged();
         setNeedsValidityCheck();
     } else if (name == stepAttr) {
         m_inputType->stepAttributeChanged();
         setNeedsValidityCheck();
-        FeatureObserver::observe(document(), FeatureObserver::StepAttribute);
+        UseCounter::observe(document(), UseCounter::StepAttribute);
     } else if (name == patternAttr) {
         setNeedsValidityCheck();
-        FeatureObserver::observe(document(), FeatureObserver::PatternAttribute);
+        UseCounter::observe(document(), UseCounter::PatternAttribute);
     } else if (name == precisionAttr) {
         setNeedsValidityCheck();
-        FeatureObserver::observe(document(), FeatureObserver::PrecisionAttribute);
+        UseCounter::observe(document(), UseCounter::PrecisionAttribute);
     } else if (name == disabledAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
         m_inputType->disabledAttributeChanged();
@@ -738,7 +738,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             resetListAttributeTargetObserver();
             listAttributeTargetChanged();
         }
-        FeatureObserver::observe(document(), FeatureObserver::ListAttribute);
+        UseCounter::observe(document(), UseCounter::ListAttribute);
     }
 #endif
 #if ENABLE(INPUT_SPEECH)
@@ -758,13 +758,13 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
         setFormControlValueMatchesRenderer(false);
         setNeedsStyleRecalc();
-        FeatureObserver::observe(document(), FeatureObserver::PrefixedSpeechAttribute);
+        UseCounter::observe(document(), UseCounter::PrefixedSpeechAttribute);
     } else if (name == onwebkitspeechchangeAttr)
         setAttributeEventListener(eventNames().webkitspeechchangeEvent, createAttributeEventListener(this, name, value));
 #endif
     else if (name == webkitdirectoryAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
-        FeatureObserver::observe(document(), FeatureObserver::PrefixedDirectoryAttribute);
+        UseCounter::observe(document(), UseCounter::PrefixedDirectoryAttribute);
     }
     else
         HTMLTextFormControlElement::parseAttribute(name, value);

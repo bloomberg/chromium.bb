@@ -33,7 +33,7 @@
 #ifndef InputType_h
 #define InputType_h
 
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "HTMLTextFormControlElement.h"
 #include "StepRange.h"
 #include <wtf/Forward.h>
@@ -315,7 +315,7 @@ protected:
     HTMLInputElement* element() const { return m_element; }
     Chrome* chrome() const;
     Decimal parseToNumberOrNaN(const String&) const;
-    void observeFeatureIfVisible(FeatureObserver::Feature) const;
+    void observeFeatureIfVisible(UseCounter::Feature) const;
 
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.

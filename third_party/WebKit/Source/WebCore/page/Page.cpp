@@ -1211,7 +1211,7 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_mainFrame, "mainFrame");
     info.addMember(m_pluginData, "pluginData");
     info.addMember(m_theme, "theme");
-    info.addMember(m_featureObserver, "featureObserver");
+    info.addMember(m_UseCounter, "UseCounter");
     info.addMember(m_groupName, "groupName");
     info.addMember(m_pagination, "pagination");
     info.addMember(m_userStyleSheet, "userStyleSheet");

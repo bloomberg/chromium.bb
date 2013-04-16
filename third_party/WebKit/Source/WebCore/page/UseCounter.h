@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FeatureObserver_h
-#define FeatureObserver_h
+#ifndef UseCounter_h
+#define UseCounter_h
 
 #include <wtf/BitVector.h>
 #include <wtf/Noncopyable.h>
@@ -36,11 +36,22 @@ namespace WebCore {
 class DOMWindow;
 class Document;
 
-class FeatureObserver {
-    WTF_MAKE_NONCOPYABLE(FeatureObserver);
+// UseCounter is used for counting the number of times features of
+// Blink are used on real web pages and help us know commonly
+// features are used and thus when it's safe to remove or change them.
+//
+// The Chromium Content layer controls what is done with this data.
+// For instance, in Google Chrome, these counts are submitted
+// anonymously through the Histogram recording system in Chrome
+// for users who opt-in to "Usage Statistics" submission
+// during their install of Google Chrome:
+// http://www.google.com/chrome/intl/en/privacy.html
+
+class UseCounter {
+    WTF_MAKE_NONCOPYABLE(UseCounter);
 public:
-    FeatureObserver();
-    ~FeatureObserver();
+    UseCounter();
+    ~UseCounter();
 
     enum Feature {
         PageDestruction,
@@ -111,29 +122,28 @@ public:
         NumberOfFeatures, // This enum value must be last.
     };
 
+    // "observe" sets the bit for this feature to 1. Repeated calls are ignored.
     static void observe(Document*, Feature);
     static void observe(DOMWindow*, Feature);
     void didCommitLoad();
-
-    const BitVector* accumulatedFeatureBits() const { return m_featureBits.get(); }
 
 private:
     void didObserve(Feature feature)
     {
         ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
         ASSERT(feature < NumberOfFeatures);
-        if (!m_featureBits) {
-            m_featureBits = adoptPtr(new BitVector(NumberOfFeatures));
-            m_featureBits->clearAll();
+        if (!m_countBits) {
+            m_countBits = adoptPtr(new BitVector(NumberOfFeatures));
+            m_countBits->clearAll();
         }
-        m_featureBits->quickSet(feature);
+        m_countBits->quickSet(feature);
     }
 
     void updateMeasurements();
 
-    OwnPtr<BitVector> m_featureBits;
+    OwnPtr<BitVector> m_countBits;
 };
 
 } // namespace WebCore
-    
-#endif // FeatureObserver_h
+
+#endif // UseCounter_h

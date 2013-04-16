@@ -36,7 +36,7 @@
 #include "SharedWorker.h"
 
 #include "ExceptionCode.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "InspectorInstrumentation.h"
 #include "KURL.h"
 #include "MessageChannel.h"
@@ -55,7 +55,7 @@ inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
 PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
-    FeatureObserver::observe(static_cast<Document*>(context)->domWindow(), FeatureObserver::SharedWorkerStart);
+    UseCounter::observe(static_cast<Document*>(context)->domWindow(), UseCounter::SharedWorkerStart);
 
     RefPtr<SharedWorker> worker = adoptRef(new SharedWorker(context));
 

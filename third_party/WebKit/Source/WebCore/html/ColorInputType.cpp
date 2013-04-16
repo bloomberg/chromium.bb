@@ -79,7 +79,7 @@ ColorInputType::~ColorInputType()
 
 void ColorInputType::attach()
 {
-    observeFeatureIfVisible(FeatureObserver::InputTypeColor);
+    observeFeatureIfVisible(UseCounter::InputTypeColor);
 }
 
 bool ColorInputType::isColorControl() const

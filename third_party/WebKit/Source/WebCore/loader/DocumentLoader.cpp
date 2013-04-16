@@ -550,7 +550,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
         setupForReplace();
         m_mainResource->clear();
     } else if (response.isMultipart()) {
-        FeatureObserver::observe(m_frame->document(), FeatureObserver::MultipartMainResource);
+        UseCounter::observe(m_frame->document(), UseCounter::MultipartMainResource);
         m_isLoadingMultipartContent = true;
     }
 

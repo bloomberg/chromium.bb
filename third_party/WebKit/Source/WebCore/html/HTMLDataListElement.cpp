@@ -33,7 +33,7 @@
 #if ENABLE(DATALIST_ELEMENT)
 #include "HTMLDataListElement.h"
 
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "HTMLNames.h"
 #include "IdTargetObserverRegistry.h"
 
@@ -47,7 +47,7 @@ inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Do
 
 PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document* document)
 {
-    FeatureObserver::observe(document, FeatureObserver::DataListElement);
+    UseCounter::observe(document, UseCounter::DataListElement);
     return adoptRef(new HTMLDataListElement(tagName, document));
 }
 

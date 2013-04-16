@@ -62,7 +62,7 @@ PassOwnPtr<InputType> MonthInputType::create(HTMLInputElement* element)
 
 void MonthInputType::attach()
 {
-    observeFeatureIfVisible(FeatureObserver::InputTypeMonth);
+    observeFeatureIfVisible(UseCounter::InputTypeMonth);
 }
 
 const AtomicString& MonthInputType::formControlType() const

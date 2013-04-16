@@ -55,7 +55,7 @@
 #include "FEMerge.h"
 #include "FilterEffectRenderer.h"
 #endif
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "FloatConversion.h"
 #include "FloatPoint3D.h"
 #include "FloatRect.h"
@@ -5999,7 +5999,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     if (renderer()->style()->overflowX() == OMARQUEE && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
         if (!m_marquee)
             m_marquee = adoptPtr(new RenderMarquee(this));
-        FeatureObserver::observe(renderer()->document(), renderer()->isHTMLMarquee() ? FeatureObserver::HTMLMarqueeElement : FeatureObserver::CSSOverflowMarquee);
+        UseCounter::observe(renderer()->document(), renderer()->isHTMLMarquee() ? UseCounter::HTMLMarqueeElement : UseCounter::CSSOverflowMarquee);
         m_marquee->updateMarqueeStyle();
     }
     else if (m_marquee) {
@@ -6018,7 +6018,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     else if (hasReflection()) {
         if (!m_reflection)
             createReflection();
-        FeatureObserver::observe(renderer()->document(), FeatureObserver::Reflection);
+        UseCounter::observe(renderer()->document(), UseCounter::Reflection);
         updateReflectionStyle();
     }
     

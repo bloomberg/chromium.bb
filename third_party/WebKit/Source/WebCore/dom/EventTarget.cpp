@@ -211,11 +211,11 @@ bool EventTarget::fireEventListeners(Event* event)
             if (document->domWindow()) {
                 if (listenerPrefixedVector)
                     if (listenerUnprefixedVector)
-                        FeatureObserver::observe(document->domWindow(), FeatureObserver::PrefixedAndUnprefixedTransitionEndEvent);
+                        UseCounter::observe(document->domWindow(), UseCounter::PrefixedAndUnprefixedTransitionEndEvent);
                     else
-                        FeatureObserver::observe(document->domWindow(), FeatureObserver::PrefixedTransitionEndEvent);
+                        UseCounter::observe(document->domWindow(), UseCounter::PrefixedTransitionEndEvent);
                 else if (listenerUnprefixedVector)
-                    FeatureObserver::observe(document->domWindow(), FeatureObserver::UnprefixedTransitionEndEvent);
+                    UseCounter::observe(document->domWindow(), UseCounter::UnprefixedTransitionEndEvent);
             }
         }
     }

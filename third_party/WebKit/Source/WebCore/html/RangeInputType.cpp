@@ -95,7 +95,7 @@ RangeInputType::RangeInputType(HTMLInputElement* element)
 
 void RangeInputType::attach()
 {
-    observeFeatureIfVisible(FeatureObserver::InputTypeRange);
+    observeFeatureIfVisible(UseCounter::InputTypeRange);
 }
 
 bool RangeInputType::isRangeControl() const

@@ -29,7 +29,7 @@
 #include "Console.h"
 #include "DOMStringList.h"
 #include "Document.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "FormData.h"
 #include "FormDataList.h"
 #include "Frame.h"
@@ -147,20 +147,20 @@ bool isDirectiveName(const String& name)
     );
 }
 
-FeatureObserver::Feature getFeatureObserverType(ContentSecurityPolicy::HeaderType type)
+UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
 {
     switch (type) {
     case ContentSecurityPolicy::PrefixedEnforce:
-        return FeatureObserver::PrefixedContentSecurityPolicy;
+        return UseCounter::PrefixedContentSecurityPolicy;
     case ContentSecurityPolicy::Enforce:
-        return FeatureObserver::ContentSecurityPolicy;
+        return UseCounter::ContentSecurityPolicy;
     case ContentSecurityPolicy::PrefixedReport:
-        return FeatureObserver::PrefixedContentSecurityPolicyReportOnly;
+        return UseCounter::PrefixedContentSecurityPolicyReportOnly;
     case ContentSecurityPolicy::Report:
-        return FeatureObserver::ContentSecurityPolicyReportOnly;
+        return UseCounter::ContentSecurityPolicyReportOnly;
     }
     ASSERT_NOT_REACHED();
-    return FeatureObserver::NumberOfFeatures;
+    return UseCounter::NumberOfFeatures;
 }
 
 const ScriptCallFrame& getFirstNonNativeFrame(PassRefPtr<ScriptCallStack> stack)
@@ -1458,7 +1458,7 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
     if (m_scriptExecutionContext->isDocument()) {
         Document* document = toDocument(m_scriptExecutionContext);
         if (document->domWindow())
-            FeatureObserver::observe(document->domWindow(), getFeatureObserverType(type));
+            UseCounter::observe(document->domWindow(), getUseCounterType(type));
     }
 
     // RFC2616, section 4.2 specifies that headers appearing multiple times can

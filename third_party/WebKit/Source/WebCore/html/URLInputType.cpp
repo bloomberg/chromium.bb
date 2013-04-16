@@ -47,7 +47,7 @@ PassOwnPtr<InputType> URLInputType::create(HTMLInputElement* element)
 void URLInputType::attach()
 {
     TextFieldInputType::attach();
-    observeFeatureIfVisible(FeatureObserver::InputTypeURL);
+    observeFeatureIfVisible(UseCounter::InputTypeURL);
 }
 
 const AtomicString& URLInputType::formControlType() const

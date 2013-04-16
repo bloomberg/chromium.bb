@@ -60,7 +60,7 @@ PassOwnPtr<InputType> SearchInputType::create(HTMLInputElement* element)
 void SearchInputType::attach()
 {
     TextFieldInputType::attach();
-    observeFeatureIfVisible(FeatureObserver::InputTypeSearch);
+    observeFeatureIfVisible(UseCounter::InputTypeSearch);
 }
 
 void SearchInputType::addSearchResult()

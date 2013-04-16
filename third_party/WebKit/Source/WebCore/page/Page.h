@@ -21,7 +21,7 @@
 #ifndef Page_h
 #define Page_h
 
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "FindOptions.h"
 #include "FrameLoaderTypes.h"
 #include "LayoutMilestones.h"
@@ -191,7 +191,7 @@ public:
     ProgressTracker* progress() const { return m_progress.get(); }
     BackForwardController* backForward() const { return m_backForwardController.get(); }
 
-    FeatureObserver* featureObserver() { return &m_featureObserver; }
+    UseCounter* useCounter() { return &m_UseCounter; }
 
     enum ViewMode {
         ViewModeInvalid,
@@ -378,7 +378,7 @@ private:
     PlugInClient* m_plugInClient;
     ValidationMessageClient* m_validationMessageClient;
 
-    FeatureObserver m_featureObserver;
+    UseCounter m_UseCounter;
 
     int m_subframeCount;
     String m_groupName;

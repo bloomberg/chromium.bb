@@ -31,7 +31,7 @@
 #include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "Frame.h"
 #include "HTMLBRElement.h"
 #include "HTMLFormElement.h"
@@ -511,7 +511,7 @@ void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const
 {
     if (name == placeholderAttr) {
         updatePlaceholderVisibility(true);
-        FeatureObserver::observe(document(), FeatureObserver::PlaceholderAttribute);
+        UseCounter::observe(document(), UseCounter::PlaceholderAttribute);
     } else
         HTMLFormControlElementWithState::parseAttribute(name, value);
 }

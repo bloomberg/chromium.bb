@@ -25,7 +25,7 @@
 #include "config.h"
 #include "RenderDeprecatedFlexibleBox.h"
 
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 #include "Font.h"
 #include "LayoutRepainter.h"
 #include "RenderLayer.h"
@@ -128,11 +128,11 @@ RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
     if (!isAnonymous()) {
         const KURL& url = document()->url();
         if (url.protocolIs("chrome"))
-            FeatureObserver::observe(document(), FeatureObserver::DeprecatedFlexboxChrome);
+            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxChrome);
         else if (url.protocolIs("chrome-extension"))
-            FeatureObserver::observe(document(), FeatureObserver::DeprecatedFlexboxChromeExtension);
+            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxChromeExtension);
         else
-            FeatureObserver::observe(document(), FeatureObserver::DeprecatedFlexboxWebContent);
+            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxWebContent);
     }
 }
 

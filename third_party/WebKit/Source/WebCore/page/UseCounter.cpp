@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "FeatureObserver.h"
+#include "UseCounter.h"
 
 #include "DOMWindow.h"
 #include "Document.h"
@@ -33,11 +33,11 @@
 
 namespace WebCore {
 
-FeatureObserver::FeatureObserver()
+UseCounter::UseCounter()
 {
 }
 
-FeatureObserver::~FeatureObserver()
+UseCounter::~UseCounter()
 {
     // We always log PageDestruction so that we have a scale for the rest of the features.
     HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", PageDestruction, NumberOfFeatures);
@@ -45,29 +45,28 @@ FeatureObserver::~FeatureObserver()
     updateMeasurements();
 }
 
-void FeatureObserver::updateMeasurements()
+void UseCounter::updateMeasurements()
 {
     HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
 
-    if (!m_featureBits)
+    if (!m_countBits)
         return;
 
     for (unsigned i = 0; i < NumberOfFeatures; ++i) {
-        if (m_featureBits->quickGet(i))
+        if (m_countBits->quickGet(i))
             HistogramSupport::histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
     }
 
-    // Clearing feature bits is timing sensitive. Ports other than chromium do not use HistogramSupport,
-    // and pull the results on certain navigation events instead.
-    m_featureBits->clearAll();
+    // Clearing count bits is timing sensitive.
+    m_countBits->clearAll();
 }
 
-void FeatureObserver::didCommitLoad()
+void UseCounter::didCommitLoad()
 {
     updateMeasurements();
 }
 
-void FeatureObserver::observe(Document* document, Feature feature)
+void UseCounter::observe(Document* document, Feature feature)
 {
     if (!document)
         return;
@@ -76,10 +75,10 @@ void FeatureObserver::observe(Document* document, Feature feature)
     if (!page)
         return;
 
-    page->featureObserver()->didObserve(feature);
+    page->useCounter()->didObserve(feature);
 }
 
-void FeatureObserver::observe(DOMWindow* domWindow, Feature feature)
+void UseCounter::observe(DOMWindow* domWindow, Feature feature)
 {
     ASSERT(domWindow);
     observe(domWindow->document(), feature);

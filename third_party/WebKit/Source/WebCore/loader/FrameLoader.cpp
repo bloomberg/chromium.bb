@@ -2816,7 +2816,7 @@ void FrameLoader::applyUserAgent(ResourceRequest& request)
 
 bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, const KURL& url, unsigned long requestIdentifier)
 {
-    FeatureObserver::observe(m_frame->document(), FeatureObserver::XFrameOptions);
+    UseCounter::observe(m_frame->document(), UseCounter::XFrameOptions);
 
     Frame* topFrame = m_frame->tree()->top();
     if (m_frame == topFrame)
@@ -2826,13 +2826,13 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 
     switch (disposition) {
     case XFrameOptionsSameOrigin: {
-        FeatureObserver::observe(m_frame->document(), FeatureObserver::XFrameOptionsSameOrigin);
+        UseCounter::observe(m_frame->document(), UseCounter::XFrameOptionsSameOrigin);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
         if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
             return true;
         for (Frame* frame = m_frame->tree()->parent(); frame; frame = frame->tree()->parent()) {
             if (!origin->isSameSchemeHostPort(frame->document()->securityOrigin())) {
-                FeatureObserver::observe(m_frame->document(), FeatureObserver::XFrameOptionsSameOriginWithBadAncestorChain);
+                UseCounter::observe(m_frame->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
                 break;
             }
         }
@@ -3131,7 +3131,7 @@ void FrameLoader::dispatchDidCommitLoad()
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
 
     if (m_frame->page()->mainFrame() == m_frame)
-        m_frame->page()->featureObserver()->didCommitLoad();
+        m_frame->page()->useCounter()->didCommitLoad();
 
 }
 

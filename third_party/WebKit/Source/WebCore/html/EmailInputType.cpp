@@ -61,7 +61,7 @@ PassOwnPtr<InputType> EmailInputType::create(HTMLInputElement* element)
 void EmailInputType::attach()
 {
     TextFieldInputType::attach();
-    observeFeatureIfVisible(FeatureObserver::InputTypeEmail);
+    observeFeatureIfVisible(UseCounter::InputTypeEmail);
 }
 
 const AtomicString& EmailInputType::formControlType() const
