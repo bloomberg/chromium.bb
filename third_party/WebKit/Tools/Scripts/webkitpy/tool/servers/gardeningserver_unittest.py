@@ -48,15 +48,15 @@ class TestPortFactory(object):
         return host.port_factory.get("test-win-xp")
 
     @classmethod
-    def path_to_test_expectations_file(cls):
-        return cls.create().path_to_test_expectations_file()
+    def path_to_generic_test_expectations_file(cls):
+        return cls.create().path_to_generic_test_expectations_file()
 
 
 class MockServer(object):
     def __init__(self):
         self.tool = MockTool()
         self.tool.executive = MockExecutive(should_log=True)
-        self.tool.filesystem.files[TestPortFactory.path_to_test_expectations_file()] = ""
+        self.tool.filesystem.files[TestPortFactory.path_to_generic_test_expectations_file()] = ""
 
 
 # The real GardeningHTTPRequestHandler has a constructor that's too hard to

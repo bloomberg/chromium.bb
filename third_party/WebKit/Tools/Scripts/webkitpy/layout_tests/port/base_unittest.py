@@ -293,14 +293,6 @@ class PortTest(unittest.TestCase):
         self.assertEqual(environment['FOO'], 'BAR')
         self.assertEqual(environment['BAR'], 'FOO')
 
-    def test_uses_test_expectations_file(self):
-        port = self.make_port(port_name='foo')
-        port.port_name = 'foo'
-        port.path_to_test_expectations_file = lambda: '/mock-results/TestExpectations'
-        self.assertFalse(port.uses_test_expectations_file())
-        port._filesystem = MockFileSystem({'/mock-results/TestExpectations': ''})
-        self.assertTrue(port.uses_test_expectations_file())
-
     def test_find_no_paths_specified(self):
         port = self.make_port(with_tests=True)
         layout_tests_dir = port.layout_tests_dir()

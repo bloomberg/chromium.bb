@@ -795,22 +795,6 @@ class Port(object):
     def path_to_generic_test_expectations_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'TestExpectations')
 
-    @memoized
-    def path_to_test_expectations_file(self):
-        """Update the test expectations to the passed-in string.
-
-        This is used by the rebaselining tool. Raises NotImplementedError
-        if the port does not use expectations files."""
-
-        # FIXME: We need to remove this when we make rebaselining work with multiple files and just generalize expectations_files().
-
-        # test_expectations are always in mac/ not mac-leopard/ by convention, hence we use port_name instead of name().
-        port_name = self.port_name
-        if port_name.startswith('chromium'):
-            port_name = 'chromium'
-
-        return self._filesystem.join(self._webkit_baseline_path(port_name), 'TestExpectations')
-
     def relative_test_filename(self, filename):
         """Returns a test_name a relative unix-style path for a filename under the LayoutTests
         directory. Ports may legitimately return abspaths here if no relpath makes sense."""
@@ -1029,9 +1013,8 @@ class Port(object):
         raise NotImplementedError
 
     def uses_test_expectations_file(self):
-        # This is different from checking test_expectations() is None, because
-        # some ports have Skipped files which are returned as part of test_expectations().
-        return self._filesystem.exists(self.path_to_test_expectations_file())
+        # FIXME: Remove this method.
+        return True
 
     def warn_if_bug_missing_in_test_expectations(self):
         return False

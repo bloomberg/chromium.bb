@@ -48,7 +48,7 @@ class _BaseTestCase(unittest.TestCase):
         self.command = self.command_constructor()  # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
         self.command.bind_to_tool(self.tool)
         self.lion_port = self.tool.port_factory.get_from_builder_name("WebKit Mac10.7")
-        self.lion_expectations_path = self.lion_port.path_to_test_expectations_file()
+        self.lion_expectations_path = self.lion_port.path_to_generic_test_expectations_file()
 
         # FIXME: we should override builders._exact_matches here to point to a set
         # of test ports and restore the value in tearDown(), and that way the

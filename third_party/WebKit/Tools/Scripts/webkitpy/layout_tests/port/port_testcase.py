@@ -425,7 +425,6 @@ class PortTestCase(unittest.TestCase):
             port._filesystem.write_text_file(path, '')
         ordered_dict = port.expectations_dict()
         self.assertEqual(port.path_to_generic_test_expectations_file(), ordered_dict.keys()[0])
-        self.assertEqual(port.path_to_test_expectations_file(), ordered_dict.keys()[1])
 
         options = MockOptions(additional_expectations=['/tmp/foo', '/tmp/bar'])
         port = self.make_port(options=options)
@@ -436,16 +435,6 @@ class PortTestCase(unittest.TestCase):
         ordered_dict = port.expectations_dict()
         self.assertEqual(ordered_dict.keys()[-2:], options.additional_expectations)  # pylint: disable=E1101
         self.assertEqual(ordered_dict.values()[-2:], ['foo', 'bar'])
-
-    def test_path_to_test_expectations_file(self):
-        port = TestWebKitPort()
-        port._options = MockOptions()
-        self.assertEqual(port.path_to_test_expectations_file(), '/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations')
-
-        port = TestWebKitPort()
-        port.host.filesystem.files['/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations'] = 'some content'
-        port._options = MockOptions()
-        self.assertEqual(port.path_to_test_expectations_file(), '/mock-checkout/LayoutTests/platform/testwebkitport/TestExpectations')
 
     def test_skipped_directories_for_symbols(self):
         # This first test confirms that the commonly found symbols result in the expected skipped directories.
