@@ -124,6 +124,13 @@ GLvoid StubGLCompressedTexImage2D(GLenum target, GLint level,
                          imageSize, data);
 }
 
+GLvoid StubGLCopyTexSubImage2D(GLenum target, GLint level,
+                               GLint xoffset, GLint yoffset,
+                               GLint x, GLint y,
+                               GLsizei width, GLsizei height) {
+  glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+}
+
 GLuint StubGLCreateProgram(void) {
   return glCreateProgram();
 }
@@ -587,6 +594,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fColorMask = StubGLColorMask;
   interface->fCompileShader = StubGLCompileShader;
   interface->fCompressedTexImage2D = StubGLCompressedTexImage2D;
+  interface->fCopyTexSubImage2D = StubGLCopyTexSubImage2D;
   interface->fCreateProgram = StubGLCreateProgram;
   interface->fCreateShader = StubGLCreateShader;
   interface->fCullFace = StubGLCullFace;
