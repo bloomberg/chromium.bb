@@ -52,7 +52,6 @@
 #include "MouseEvent.h"
 #include "Page.h"
 #include "PluginData.h"
-#include "PluginDataChromium.h"
 #include "ProgressTracker.h"
 #include "ResourceHandleInternal.h"
 #include "ResourceLoader.h"

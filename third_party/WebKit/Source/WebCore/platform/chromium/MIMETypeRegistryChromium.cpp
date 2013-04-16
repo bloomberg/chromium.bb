@@ -32,7 +32,7 @@
 #include "MIMETypeRegistry.h"
 
 #include "MediaPlayer.h"
-#include "PluginDataChromium.h"
+#include "PluginData.h"
 
 #include <public/Platform.h>
 #include <public/WebMimeRegistry.h>
