@@ -70,7 +70,9 @@ public:
     virtual ThreadableWebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual ThreadableWebSocketChannel::SendResult send(const Blob&) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
-    virtual void close(int code, const String& reason) OVERRIDE; // Start closing handshake.
+    // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
+    // argument to omit payload.
+    virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason) OVERRIDE;
     virtual void disconnect() OVERRIDE;
 
@@ -172,8 +174,9 @@ private:
         OutgoingFrameQueueClosed
     };
 
-    // If you are going to send a hybi-10 frame, you need to use the outgoing frame queue
-    // instead of call sendFrame() directly.
+    // In principle, this method is called only by processOutgoingFrameQueue().
+    // It does work necessary to build frames including Blob loading for queued
+    // data in order. Calling this method directly jumps in the process.
     bool sendFrame(WebSocketFrame::OpCode, const char* data, size_t dataLength);
 
     enum BlobLoaderStatus {

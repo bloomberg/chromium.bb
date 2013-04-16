@@ -73,9 +73,14 @@ public:
     bool send(ArrayBufferView*, ExceptionCode&);
     bool send(Blob*, ExceptionCode&);
 
-    void close(int code, const String& reason, ExceptionCode&);
-    void close(ExceptionCode& ec) { close(MainThreadWebSocketChannel::CloseEventCodeNotSpecified, String(), ec); }
-    void close(int code, ExceptionCode& ec) { close(code, String(), ec); }
+    // To distinguish close method call with the code parameter from one
+    // without, we have these three signatures. Use of
+    // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
+    // it's bound to a value of 0 which is indistinguishable from the case 0
+    // is passed as code parameter.
+    void close(unsigned short code, const String& reason, ExceptionCode& ec) { closeInternal(code, reason, ec); }
+    void close(ExceptionCode& ec) { closeInternal(MainThreadWebSocketChannel::CloseEventCodeNotSpecified, String(), ec); }
+    void close(unsigned short code, ExceptionCode& ec) { closeInternal(code, String(), ec); }
 
     const KURL& url() const;
     State readyState() const;
@@ -117,6 +122,11 @@ public:
 
 private:
     explicit WebSocket(ScriptExecutionContext*);
+
+    // Handle the JavaScript close method call. close() methods on this class
+    // are just for determining if the optional code argument is supplied or
+    // not.
+    void closeInternal(int, const String&, ExceptionCode&);
 
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }

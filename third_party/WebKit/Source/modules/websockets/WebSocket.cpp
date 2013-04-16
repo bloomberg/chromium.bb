@@ -355,7 +355,7 @@ bool WebSocket::send(Blob* binaryData, ExceptionCode& ec)
     return m_channel->send(*binaryData) == ThreadableWebSocketChannel::SendSuccess;
 }
 
-void WebSocket::close(int code, const String& reason, ExceptionCode& ec)
+void WebSocket::closeInternal(int code, const String& reason, ExceptionCode& ec)
 {
     if (code == MainThreadWebSocketChannel::CloseEventCodeNotSpecified)
         LOG(Network, "WebSocket %p close() without code and reason", this);
