@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 
-#include <Windowsx.h>
+#include <algorithm>
 
 int SystemMenuInsertionDelegateWin::GetInsertionIndex(HMENU native_menu) {
   return std::max(0, GetMenuItemCount(native_menu) - 1);

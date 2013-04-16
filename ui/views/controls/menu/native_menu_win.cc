@@ -25,8 +25,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_win.h"
-#include "ui/views/controls/menu/menu_2.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_insertion_delegate.h"
 #include "ui/views/controls/menu/menu_listener.h"
 
 using ui::NativeTheme;
@@ -54,7 +54,7 @@ struct NativeMenuWin::ItemData {
   string16 label;
 
   // Someone needs to own submenus, it may as well be us.
-  scoped_ptr<Menu2> submenu;
+  scoped_ptr<NativeMenuWin> submenu;
 
   // We need a pointer back to the containing menu in various circumstances.
   NativeMenuWin* native_menu_win;
@@ -152,7 +152,7 @@ class NativeMenuWin::MenuHostWindow {
 
     // Only notify the model if it didn't already send out notification.
     // See comment in MenuMessageHook for details.
-    if (root_menu->menu_action_ == MenuWrapper::MENU_ACTION_NONE)
+    if (root_menu->menu_action_ == MENU_ACTION_NONE)
       model->ActivatedAt(position);
   }
 
@@ -410,9 +410,6 @@ NativeMenuWin::~NativeMenuWin() {
   DestroyMenu(menu_);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeMenuWin, MenuWrapper implementation:
-
 void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   CreateHostWindow();
   UpdateStates();
@@ -469,7 +466,7 @@ void NativeMenuWin::CancelMenu() {
   EndMenu();
 }
 
-void NativeMenuWin::Rebuild(InsertionDelegate* delegate) {
+void NativeMenuWin::Rebuild(MenuInsertionDelegate* delegate) {
   ResetNativeMenu();
   items_.clear();
 
@@ -498,7 +495,7 @@ void NativeMenuWin::UpdateStates() {
       SetMenuItemLabel(menu_index, model_index,
                        model_->GetLabelAt(model_index));
     }
-    Menu2* submenu = (*it)->submenu.get();
+    NativeMenuWin* submenu = (*it)->submenu.get();
     if (submenu)
       submenu->UpdateStates();
   }
@@ -629,7 +626,8 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
   item_data->label = string16();
   ui::MenuModel::ItemType type = model_->GetTypeAt(model_index);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
-    item_data->submenu.reset(new Menu2(model_->GetSubmenuModelAt(model_index)));
+    item_data->submenu.reset(
+        new NativeMenuWin(model_->GetSubmenuModelAt(model_index), NULL));
     mii.fMask |= MIIM_SUBMENU;
     mii.hSubMenu = item_data->submenu->GetNativeMenu();
     GetNativeMenuWinFromHMENU(mii.hSubMenu)->parent_ = this;
@@ -717,9 +715,9 @@ void NativeMenuWin::UpdateMenuItemInfoForString(MENUITEMINFO* mii,
 
 UINT NativeMenuWin::GetAlignmentFlags(int alignment) const {
   UINT alignment_flags = TPM_TOPALIGN;
-  if (alignment == Menu2::ALIGN_TOPLEFT)
+  if (alignment == ALIGN_TOPLEFT)
     alignment_flags |= TPM_LEFTALIGN;
-  else if (alignment == Menu2::ALIGN_TOPRIGHT)
+  else if (alignment == ALIGN_TOPRIGHT)
     alignment_flags |= TPM_RIGHTALIGN;
   return alignment_flags;
 }
@@ -751,14 +749,6 @@ void NativeMenuWin::CreateHostWindow() {
   // exist wrapping submenus.
   if (!host_window_.get())
     host_window_.reset(new MenuHostWindow(this));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// MenuWrapper, public:
-
-// static
-MenuWrapper* MenuWrapper::CreateWrapper(ui::MenuModel* model) {
-  return new NativeMenuWin(model, NULL);
 }
 
 }  // namespace views
