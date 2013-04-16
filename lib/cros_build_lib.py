@@ -610,10 +610,14 @@ def GetHostName(fully_qualified=False):
 
 
 def GetHostDomain():
-  """Return domain of current machine, or None if there is no domain."""
+  """Return domain of current machine.
+
+  If there is no domain, return 'localdomain'.
+  """
+
   hostname = GetHostName(fully_qualified=True)
   domain = hostname.partition('.')[2]
-  return domain if domain else None
+  return domain if domain else 'localdomain'
 
 
 class RetriesExhausted(Exception):
