@@ -316,6 +316,7 @@ class GitWrapper(SCMWrapper):
       quiet = []
       if not options.verbose:
         quiet = ['--quiet']
+      self._UpdateBranchHeads(options, fetch=False)
       self._Run(['fetch', 'origin', '--prune'] + quiet, options)
       self._Run(['reset', '--hard', revision] + quiet, options)
       self.UpdateSubmoduleConfig()
@@ -383,6 +384,8 @@ class GitWrapper(SCMWrapper):
 
       if verbose:
         print(remote_output.strip())
+
+      self._UpdateBranchHeads(options, fetch=True)
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
@@ -692,31 +695,9 @@ class GitWrapper(SCMWrapper):
           continue
         raise e
 
-    for _ in range(3):
-      try:
-        # Add the "branch-heads" refspecs. Do this separately from the clone
-        # command since apparently some versions of git don't support 'clone
-        # --config'.
-        # Don't assume 'with_branch_heads' is added by 'gclient sync' setup,
-        # since _Clone() can by reached in roundabout ways (e.g. 'gclient
-        # revert').
-        if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
-          config_cmd = ['config', 'remote.origin.fetch',
-                        '+refs/branch-heads/*:refs/remotes/branch-heads/*',
-                        '^\\+refs/branch-heads/\\*:.*$']
-          self._Run(config_cmd, options)
-
-          # Update the "branch-heads" remote-tracking branches, since we might
-          # need it to checkout a specific revision below.
-          fetch_cmd = ['fetch', 'origin']
-          if options.verbose:
-            fetch_cmd.append('--verbose')
-          self._Run(fetch_cmd, options)
-        break
-      except subprocess2.CalledProcessError, e:
-        print(str(e))
-        print('Retrying...')
-        continue
+    # Update the "branch-heads" remote-tracking branches, since we might need it
+    # to checkout a specific revision below.
+    self._UpdateBranchHeads(options, fetch=True)
 
     if detach_head:
       # Squelch git's very verbose detached HEAD warning and use our own
@@ -869,6 +850,28 @@ class GitWrapper(SCMWrapper):
         ['git'] + args,
         stderr=subprocess2.PIPE,
         cwd=self.checkout_path).strip()
+
+  def _UpdateBranchHeads(self, options, fetch=False):
+    """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
+    if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
+      backoff_time = 5
+      for _ in range(3):
+        try:
+          config_cmd = ['config', 'remote.origin.fetch',
+                        '+refs/branch-heads/*:refs/remotes/branch-heads/*',
+                        '^\\+refs/branch-heads/\\*:.*$']
+          self._Run(config_cmd, options)
+          if fetch:
+            fetch_cmd = ['fetch', 'origin']
+            if options.verbose:
+              fetch_cmd.append('--verbose')
+            self._Run(fetch_cmd, options)
+          break
+        except subprocess2.CalledProcessError, e:
+          print(str(e))
+          print('Retrying in %.1f seconds...' % backoff_time)
+          time.sleep(backoff_time)
+          backoff_time *= 1.3
 
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
