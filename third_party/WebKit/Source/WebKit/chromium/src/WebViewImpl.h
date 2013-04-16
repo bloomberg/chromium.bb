@@ -536,6 +536,8 @@ public:
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
 
+    void didProgrammaticallyScroll(const WebCore::IntPoint& scrollPoint);
+
     virtual void setVisibilityState(WebPageVisibilityState, bool);
 
     WebCore::PopupContainer* selectPopup() const { return m_selectPopup.get(); }

@@ -81,6 +81,7 @@
             'tests/PlatformContextSkiaTest.cpp',
             'tests/PopupContainerTest.cpp',
             'tests/PrerenderingTest.cpp',
+            'tests/ProgrammaticScrollTest.cpp',
             'tests/RegionTest.cpp',
             'tests/RenderLayerBackingTest.cpp',
             'tests/RenderTableCellTest.cpp',

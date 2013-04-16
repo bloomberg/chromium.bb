@@ -126,6 +126,7 @@ public:
     virtual PlatformPageClient platformPageClient() const { return PlatformPageClient(this); }
     virtual void contentsSizeChanged(WebCore::Frame*, const WebCore::IntSize&) const;
     virtual void deviceOrPageScaleFactorChanged() const;
+    virtual void didProgrammaticallyScroll(WebCore::Frame*, const WebCore::IntPoint&) const;
     virtual void layoutUpdated(WebCore::Frame*) const;
     virtual void scrollRectIntoView(
         const WebCore::IntRect&) const { }
