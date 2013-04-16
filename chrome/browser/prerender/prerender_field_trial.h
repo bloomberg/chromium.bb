@@ -24,6 +24,9 @@ bool IsOmniboxEnabled(Profile* profile);
 // Returns true iff the Prerender Local Predictor is enabled.
 bool IsLocalPredictorEnabled();
 
+// Returns true iff the LoggedIn Predictor is enabled.
+bool IsLoggedInPredictorEnabled();
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
