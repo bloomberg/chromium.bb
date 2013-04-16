@@ -45,6 +45,18 @@ function setupAndWaitUntilReady(path, callback) {
 }
 
 /**
+ * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
+ * list as they are not expected in "Recent".
+ * @type {Array.<Array.<string>>}
+ * @const
+ */
+var EXPECTED_FILES_IN_RECENT = [
+  ['hello.txt', '123 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
+  ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
+  ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
+].sort();
+
+/**
  * Namespace for test cases.
  */
 var testcase = {};
@@ -137,3 +149,27 @@ testcase.keyboardDeleteDrive = function() {
   testcase.intermediate.keyboardDelete('/drive/root');
 };
 
+/**
+ * Tests opening the "Recent" on the sidebar navigation by clicking the icon,
+ * and verifies the directory contents. We test if there are only files, since
+ * directories are not allowed in "Recent". This test is only available for
+ * Drive.
+ */
+testcase.openSidebarRecent = function() {
+  var onFileListChange = chrome.test.callbackPass(function(actualFilesAfter) {
+    chrome.test.assertEq(EXPECTED_FILES_IN_RECENT, actualFilesAfter);
+  });
+
+  setupAndWaitUntilReady('/drive/root', function(appId) {
+    // Use the icon for a click target.
+    callRemoteTestUtil(
+        'fakeMouseClick', appId, ['[volume-type-icon=drive_recent]'],
+        function(result) {
+          chrome.test.assertFalse(!result);
+          callRemoteTestUtil('waitForFileListChange',
+                             appId,
+                             [EXPECTED_FILES_BEFORE.length],
+                             onFileListChange);
+        });
+  });
+};

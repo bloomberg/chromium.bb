@@ -699,4 +699,12 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
   DoTestKeyboardDelete(kDriveVolume);
 }
 
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
+  ResultCatcher catcher;
+  StartTest("openSidebarRecent");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 }  // namespace

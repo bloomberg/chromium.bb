@@ -155,20 +155,30 @@ test.util.selectFile = function(contentWindow, filename) {
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
  */
 test.util.fakeKeyDown = function(contentWindow, keyIdentifier, ctrl) {
-  var event = contentWindow.document.createEvent('KeyboardEvent');
-  event.initKeyboardEvent(
+  var event = new KeyboardEvent(
       'keydown',
-      true,    // canBubble
-      true,    // cancelable
-      window,
-      keyIdentifier,
-      0,       // keyLocation
-      ctrl,
-      false,   // alt
-      false,   // shift
-      false);  // meta
+      { bubbles: true, keyIdentifier: keyIdentifier, ctrlKey: ctrl });
   var detailTable = contentWindow.document.querySelector('#detail-table');
   detailTable.querySelector('list').dispatchEvent(event);
+};
+
+/**
+ * Sends a fake mouse click event to the element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @return {boolean} True if file got selected, false otherwise.
+ */
+test.util.fakeMouseClick = function(contentWindow, targetQuery) {
+  var event = new MouseEvent('click', { bubbles: true });
+  var target = contentWindow.document.querySelector(targetQuery);
+  if (target) {
+    target.dispatchEvent(event);
+    return true;
+  } else {
+    console.error('Target element for ' + targetQuery + ' not found.');
+    return false;
+  }
 };
 
 /**
@@ -252,6 +262,10 @@ test.util.registerRemoteTestUtils = function() {
         case 'fakeKeyDown':
           test.util.fakeKeyDown(
               contentWindow, request.args[0], request.request[1]);
+          return false;
+        case 'fakeMouseClick':
+          sendResponse(test.util.fakeMouseClick(
+              contentWindow, request.args[0]));
           return false;
         case 'copyFile':
           sendResponse(test.util.copyFile(contentWindow, request.args[0]));
