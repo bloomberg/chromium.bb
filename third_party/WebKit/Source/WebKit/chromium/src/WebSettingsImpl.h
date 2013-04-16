@@ -145,6 +145,7 @@ public:
     virtual void setShowPaintRects(bool);
     virtual void setShrinksStandaloneImagesToFit(bool);
     virtual void setSmartInsertDeleteEnabled(bool);
+    virtual void setSpatialNavigationEnabled(bool);
     virtual void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
     virtual void setSupportDeprecatedTargetDensityDPI(bool);
     virtual void setSupportsMultipleWindows(bool);

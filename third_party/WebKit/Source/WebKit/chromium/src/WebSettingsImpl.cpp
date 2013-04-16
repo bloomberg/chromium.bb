@@ -223,6 +223,11 @@ void WebSettingsImpl::setShrinksStandaloneImagesToFit(bool shrinkImages)
     m_settings->setShrinksStandaloneImagesToFit(shrinkImages);
 }
 
+void WebSettingsImpl::setSpatialNavigationEnabled(bool enabled)
+{
+    m_settings->setSpatialNavigationEnabled(enabled);
+}
+
 void WebSettingsImpl::setUsesEncodingDetector(bool usesDetector)
 {
     m_settings->setUsesEncodingDetector(usesDetector);
