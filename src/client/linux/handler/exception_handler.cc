@@ -549,6 +549,13 @@ bool ExceptionHandler::WriteMinidump(const string& dump_path,
   return eh.WriteMinidump();
 }
 
+// In order to making using EBP to calculate the desired value for ESP
+// a valid operation, ensure that this function is compiled with a
+// frame pointer using the following attribute. This attribute
+// is supported on GCC but not on clang.
+#if defined(__i386__) && defined(__GNUC__) && !defined(__clang__)
+__attribute__((optimize("no-omit-frame-pointer")))
+#endif
 bool ExceptionHandler::WriteMinidump() {
   if (!IsOutOfProcess() && !minidump_descriptor_.IsFD()) {
     // Update the path of the minidump so that this can be called multiple times
@@ -570,6 +577,29 @@ bool ExceptionHandler::WriteMinidump() {
   int getcontext_result = getcontext(&context.context);
   if (getcontext_result)
     return false;
+
+#if defined(__i386__)
+  // In CPUFillFromUContext in minidumpwriter.cc the stack pointer is retrieved
+  // from REG_UESP instead of from REG_ESP. REG_UESP is the user stack pointer
+  // and it only makes sense when running in kernel mode with a different stack
+  // pointer. When WriteMiniDump is called during normal processing REG_UESP is
+  // zero which leads to bad minidump files.
+  if (!context.context.uc_mcontext.gregs[REG_UESP]) {
+    // If REG_UESP is set to REG_ESP then that includes the stack space for the
+    // CrashContext object in this function, which is about 128 KB. Since the
+    // Linux dumper only records 32 KB of stack this would mean that nothing
+    // useful would be recorded. A better option is to set REG_UESP to REG_EBP,
+    // perhaps with a small negative offset in case there is any code that
+    // objects to them being equal.
+    context.context.uc_mcontext.gregs[REG_UESP] =
+      context.context.uc_mcontext.gregs[REG_EBP] - 16;
+    // The stack saving is based off of REG_ESP so it must be set to match the
+    // new REG_UESP.
+    context.context.uc_mcontext.gregs[REG_ESP] =
+      context.context.uc_mcontext.gregs[REG_UESP];
+  }
+#endif
+
 #if !defined(__ARM_EABI__)
   // FPU state is not part of ARM EABI ucontext_t.
   memcpy(&context.float_state, context.context.uc_mcontext.fpregs,
