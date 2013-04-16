@@ -117,7 +117,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
         base::TimeDelta::FromSeconds(denominator) / numerator);
   } else if (!last_timebase_.is_null()) {
     base::TimeDelta timebase_diff = timebase - last_timebase_;
-    uint64 counter_diff = media_stream_counter -
+    int64 counter_diff = media_stream_counter -
         last_media_stream_counter_;
     if (counter_diff > 0 && timebase > last_timebase_)
       last_computed_intervals_.push(timebase_diff / counter_diff);
