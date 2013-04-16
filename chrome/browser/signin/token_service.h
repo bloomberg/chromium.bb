@@ -102,6 +102,9 @@ class TokenService : public GaiaAuthConsumer,
     GoogleServiceAuthError error_;
   };
 
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   // Methods to register or remove SigninDiagnosticObservers
   void AddSigninDiagnosticsObserver(
       signin_internals_util::SigninDiagnosticsObserver* observer);

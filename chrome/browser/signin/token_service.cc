@@ -59,10 +59,14 @@ TokenService::TokenService()
 }
 
 TokenService::~TokenService() {
+}
+
+void TokenService::Shutdown() {
   if (!source_.empty()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ResetCredentialsInMemory();
   }
+  web_data_service_ = NULL;
 }
 
 void TokenService::Initialize(const char* const source,
