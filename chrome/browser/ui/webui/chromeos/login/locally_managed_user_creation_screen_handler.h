@@ -31,16 +31,21 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
         LocallyManagedUserCreationScreenHandler* actor) = 0;
 
     // Starts managed user creation flow, with manager identified by
+    // |manager_id| and |manager_password|.
+    virtual void AuthenticateManager(std::string& manager_id,
+                                     std::string& manager_password) = 0;
+
+    // Starts managed user creation flow, with manager identified by
     // |manager_id| and |manager_password|, and locally managed user that would
     // have |display_name| and authenticated by the |managed_user_password|.
-    virtual void RunFlow(string16& display_name,
-                         std::string& managed_user_password,
-                         std::string& manager_id,
-                         std::string& manager_password) = 0;
+    virtual void CreateManagedUser(string16& display_name,
+                                   std::string& managed_user_password) = 0;
+
+    // Starts picture selection for created managed user.
+    virtual void SelectPicture() = 0;
+
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
-    virtual void RetryLastStep() = 0;
-    virtual void SelectPicture() = 0;
   };
 
   LocallyManagedUserCreationScreenHandler();
@@ -51,13 +56,18 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   virtual void Hide();
   virtual void SetDelegate(Delegate* delegate);
 
-  void ShowManagerInconsistentStateErrorScreen();
   void ShowManagerPasswordError();
-  void ShowInitialScreen();
-  void ShowProgressScreen();
-  void ShowPostImageSelectionScreen();
-  virtual void ShowSuccessMessage();
-  virtual void ShowErrorMessage(string16 message, bool recoverable);
+
+  void ShowIntroPage();
+  void ShowManagerSelectionPage();
+  void ShowUsernamePage();
+  void ShowProgressPage();
+  void ShowTutorialPage();
+
+  void ShowSuccessMessage();
+
+  void ShowManagerInconsistentStateErrorPage();
+  void ShowErrorPage(const string16& message, bool recoverable);
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
@@ -68,12 +78,18 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
  private:
   // WebUI message handlers.
+  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
+
+  void HandleManagerSelected(const base::ListValue* args);
+
   void HandleFinishLocalManagedUserCreation(const base::ListValue* args);
   void HandleAbortLocalManagedUserCreation(const base::ListValue* args);
   void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
 
-  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
-  void HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args);
+  void HandleAuthenticateManager(const base::ListValue* args);
+  void HandleCreateManagedUser(const base::ListValue* args);
+
+  void UpdateText(const std::string& element_id, const string16& text);
 
   Delegate* delegate_;
 

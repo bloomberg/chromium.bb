@@ -73,11 +73,10 @@ void LocallyManagedUserCreationScreen::Show() {
     actor_->Show();
     // TODO(antrim) : temorary hack (until upcoming hackaton). Should be
     // removed once we have screens reworked.
-    if (on_image_screen_) {
-      actor_->ShowPostImageSelectionScreen();
-    } else {
-      actor_->ShowInitialScreen();
-    }
+    if (on_image_screen_)
+      actor_->ShowTutorialPage();
+    else
+      actor_->ShowIntroPage();
   }
 
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
@@ -104,7 +103,7 @@ void LocallyManagedUserCreationScreen::
     ShowManagerInconsistentStateErrorScreen() {
   if (!actor_)
     return;
-  actor_->ShowErrorMessage(
+  actor_->ShowErrorPage(
       l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
       false);
@@ -112,7 +111,7 @@ void LocallyManagedUserCreationScreen::
 
 void LocallyManagedUserCreationScreen::ShowInitialScreen() {
   if (actor_)
-    actor_->ShowInitialScreen();
+    actor_->ShowIntroPage();
 }
 
 void LocallyManagedUserCreationScreen::Hide() {
@@ -135,20 +134,12 @@ void LocallyManagedUserCreationScreen::FinishFlow() {
   controller_->FinishCreation();
 }
 
-void LocallyManagedUserCreationScreen::RetryLastStep() {
-  controller_->RetryLastStep();
-}
-
-void LocallyManagedUserCreationScreen::RunFlow(
-    string16& display_name,
-    std::string& managed_user_password,
+void LocallyManagedUserCreationScreen::AuthenticateManager(
     std::string& manager_id,
     std::string& manager_password) {
-
   // Make sure no two controllers exist at the same time.
   controller_.reset();
   controller_.reset(new LocallyManagedUserController(this));
-  controller_->SetUpCreation(display_name, managed_user_password);
 
   ExistingUserController::current_controller()->
       Login(UserContext(manager_id,
@@ -156,15 +147,27 @@ void LocallyManagedUserCreationScreen::RunFlow(
                         std::string()  /* auth_code */));
 }
 
+void LocallyManagedUserCreationScreen::CreateManagedUser(
+    string16& display_name,
+    std::string& managed_user_password) {
+  DCHECK(controller_.get());
+  controller_->SetUpCreation(display_name, managed_user_password);
+  controller_->StartCreation();
+}
+
 void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
   if (actor_)
     actor_->ShowManagerPasswordError();
 }
 
-void LocallyManagedUserCreationScreen::OnManagerSignIn() {
+void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated() {
   if (actor_)
-    actor_->ShowProgressScreen();
-  controller_->StartCreation();
+    actor_->ShowUsernamePage();
+}
+
+void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
+  if (actor_)
+    actor_->ShowProgressPage();
 }
 
 void LocallyManagedUserCreationScreen::OnExit() {}
@@ -204,7 +207,7 @@ void LocallyManagedUserCreationScreen::OnCreationError(
       NOTREACHED();
   }
   if (actor_)
-    actor_->ShowErrorMessage(message, recoverable);
+    actor_->ShowErrorPage(message, recoverable);
 }
 
 void LocallyManagedUserCreationScreen::SelectPicture() {

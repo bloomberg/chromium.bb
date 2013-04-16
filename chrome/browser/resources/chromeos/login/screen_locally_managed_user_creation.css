@@ -5,34 +5,50 @@
  * This is the stylesheet used by the Locally managed user creation flow screen.
  */
 
+.screen-horizontal-splitter {
+  background: -webkit-linear-gradient(rgba(128,128,128,0),
+                                      rgba(128,128,128,0.3));
+  height: 10px;
+  width: 100%;
+}
+
 #managed-user-creation-flow {
   height: 488px;
   padding: 70px 17px 50px;
   width: 704px;
 }
 
-#managed-user-creation-flow-success-title {
+#managed-user-creation-flow-intro-title {
   font-size: x-large;
-}
-
-#managed-user-creation-flow-success-image {
-  background-color: #d3d3d3;
-  color: gray;
-  height: 237px;
-  margin-left: 127px;
-  margin-top: 25px;
-  width: 417px;
-}
-
-#managed-user-creation-flow-success-image-text {
-  color: gray;
-  margin-left: 25px;
-  margin-top: 25px;
   text-align: center;
 }
 
-#managed-user-creation-flow-success-email-instructions {
-  margin-top: 12px;
+#managed-user-creation-flow-intro-placeholder {
+  background-color: gray;
+  font-size: x-large;
+  height: 150px;
+  text-align: center;
+}
+
+#managed-user-creation-flow-intro-text-1,
+#managed-user-creation-flow-intro-text-2 {
+  margin-top: 25px;
+}
+
+#managed-user-creation-flow-tutorial-created-text {
+  font-size: x-large;
+  text-align: center;
+}
+
+#managed-user-creation-flow-tutorial-instructions-text {
+  font-size: large;
+}
+
+#managed-user-creation-flow-tutorial-placeholder {
+  background-color: gray;
+  font-size: x-large;
+  height: 150px;
+  text-align: center;
 }
 
 #managed-user-creation-flow-name-block,
@@ -68,6 +84,7 @@
 }
 
 #managed-user-creation-flow-managers-pane {
+  border: 1px solid #f0f0f0;
   height: 140px;
   margin-top: 6px;
   overflow-y: auto;
@@ -75,11 +92,11 @@
 }
 
 .manager-pod {
-  margin-bottom: 4px;
   opacity: 0.8;
-  padding-bottom: 5px;
-  padding-top: 5px;
-  width: 625px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-top: 10px;
+  width: 635px;
 }
 
 #managed-user-creation-flow-managers-pane .focused {
@@ -92,6 +109,7 @@
 }
 
 .manager-pod .managed-user-creation-flow-manager-image {
+  border: 1px solid gray;
   display: inline-block;
   height: 30px;
   width: 30px;

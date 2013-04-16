@@ -24,13 +24,10 @@ LocallyManagedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
 } // namespace
 
 LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
-    const std::string& manager_id,
-    string16 name,
-    const std::string& password) : ExtendedUserFlow(manager_id),
-                            name_(name),
-                            password_(password),
-                            token_validated_(false),
-                            logged_in_(false) {}
+    const std::string& manager_id)
+        : ExtendedUserFlow(manager_id),
+        token_validated_(false),
+        logged_in_(false) {}
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
 
@@ -56,7 +53,7 @@ void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
   token_validated_ = true;
 
   if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerSignIn();
+    GetScreen(host())->OnManagerFullyAuthenticated();
 }
 
 
@@ -76,10 +73,11 @@ bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected() {
 
 void LocallyManagedUserCreationFlow::LaunchExtraSteps(
     Profile* profile) {
-
   logged_in_ = true;
   if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerSignIn();
+    GetScreen(host())->OnManagerFullyAuthenticated();
+  else
+    GetScreen(host())->OnManagerCryptohomeAuthenticated();
 }
 
 }  // namespace chromeos

@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -36,13 +37,6 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("managedUserCreationErrorTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE);
-  builder->Add("managedUserCreationSuccessTitle",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_TITLE);
-  builder->Add("managedUserCreationSuccessImageText",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_IMAGE_TEXT);
-  builder->Add(
-      "managedUserCreationSuccessSendEmailInstructionsText",
-      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_EMAIL_INSTRUCTIONS);
   builder->Add(
       "managedUserCreationFlowRetryButtonTitle",
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE);
@@ -51,7 +45,11 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE);
   builder->Add(
       "managedUserCreationFlowFinishButtonTitle",
-      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE);
+       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE);
+  builder->Add("managedUserProfileCreatedMessageTemplate",
+               IDS_CREATE_LOCALLY_MANAGED_USER_PROFILE_CREATED_TEXT);
+  builder->Add("managedUserInstructionTemplate",
+               IDS_CREATE_LOCALLY_MANAGED_USER_INSTRUCTIONS_TEXT);
   builder->Add("createManagedUserNameTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE);
   builder->Add("createManagedUserPasswordTitle",
@@ -62,6 +60,12 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT);
   builder->Add("managedUserCreationFlowProceedButtonTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT);
+  builder->Add("managedUserCreationFlowStartButtonTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_START_BUTTON_TEXT);
+  builder->Add("managedUserCreationFlowPreviousButtonTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PREVIOUS_BUTTON_TEXT);
+  builder->Add("managedUserCreationFlowNextButtonTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_NEXT_BUTTON_TEXT);
   builder->Add("createManagedUserPasswordMismatchError",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR);
   builder->Add("createManagedUserSelectManagerTitle",
@@ -81,15 +85,18 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("abortLocalManagedUserCreation",
               &LocallyManagedUserCreationScreenHandler::
                   HandleAbortLocalManagedUserCreation);
-  AddCallback("retryLocalManagedUserCreation",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleRetryLocalManagedUserCreation);
   AddCallback("checkLocallyManagedUserName",
               &LocallyManagedUserCreationScreenHandler::
                   HandleCheckLocallyManagedUserName);
-  AddCallback("runLocallyManagedUserCreationFlow",
+  AddCallback("authenticateManagerInLocallyManagedUserCreationFlow",
               &LocallyManagedUserCreationScreenHandler::
-                  HandleRunLocallyManagedUserCreationFlow);
+                  HandleAuthenticateManager);
+  AddCallback("specifyLocallyManagedUserCreationFlowUserData",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleCreateManagedUser);
+  AddCallback("managerSelectedOnLocallyManagedUserCreationFlow",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleManagerSelected);
 }
 
 void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
@@ -115,37 +122,40 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 
 void LocallyManagedUserCreationScreenHandler::Hide() {}
 
-void LocallyManagedUserCreationScreenHandler::ShowInitialScreen() {
-  CallJS("login.LocallyManagedUserCreationScreen.showIntialScreen");
-}
-
-
 void LocallyManagedUserCreationScreenHandler::
-    ShowManagerInconsistentStateErrorScreen() {
-  ShowErrorMessage(
+    ShowManagerInconsistentStateErrorPage() {
+  ShowErrorPage(
       l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
       false);
+}
+
+void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
+  CallJS("login.LocallyManagedUserCreationScreen.showIntroPage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
   CallJS("login.LocallyManagedUserCreationScreen.showManagerPasswordError");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowProgressScreen() {
-  CallJS("login.LocallyManagedUserCreationScreen.showProgressScreen");
+void LocallyManagedUserCreationScreenHandler::ShowProgressPage() {
+  CallJS("login.LocallyManagedUserCreationScreen.showProgressPage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowPostImageSelectionScreen() {
-  CallJS("login.LocallyManagedUserCreationScreen.showPostImageSelectionScreen");
+void LocallyManagedUserCreationScreenHandler::ShowUsernamePage() {
+  CallJS("login.LocallyManagedUserCreationScreen.showUsernamePage");
+}
+
+void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
+  CallJS("login.LocallyManagedUserCreationScreen.showTutorialPage");
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
   CallJS("login.LocallyManagedUserCreationScreen.showFinishedMessage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowErrorMessage(
-    string16 message,
+void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
+    const string16& message,
     bool recoverable) {
   CallJS("login.LocallyManagedUserCreationScreen.showErrorMessage",
          base::StringValue(message),
@@ -162,13 +172,23 @@ void LocallyManagedUserCreationScreenHandler::
 }
 
 void LocallyManagedUserCreationScreenHandler::
-    HandleRetryLocalManagedUserCreation(const base::ListValue* args) {
-  delegate_->RetryLastStep();
-}
-
-void LocallyManagedUserCreationScreenHandler::
     HandleAbortLocalManagedUserCreation(const base::ListValue* args) {
   delegate_->AbortFlow();
+}
+
+void LocallyManagedUserCreationScreenHandler::HandleManagerSelected(
+    const base::ListValue* args) {
+  if (!delegate_)
+    return;
+  DCHECK(args && args->GetSize() == 1);
+
+  std::string manager_id;
+  if (!args->GetString(0, &manager_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  WallpaperManager::Get()->SetUserWallpaper(manager_id);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
@@ -193,20 +213,16 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
   }
 }
 
-void LocallyManagedUserCreationScreenHandler::
-    HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args) {
+void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
+    const base::ListValue* args) {
   if (!delegate_)
     return;
-  DCHECK(args && args->GetSize() == 4);
+  DCHECK(args && args->GetSize() == 2);
 
   string16 new_user_name;
   std::string new_user_password;
-  std::string manager_username;
-  std::string manager_password;
   if (!args->GetString(0, &new_user_name) ||
-      !args->GetString(1, &new_user_password) ||
-      !args->GetString(2, &manager_username) ||
-      !args->GetString(3, &manager_password)) {
+      !args->GetString(1, &new_user_password)) {
     NOTREACHED();
     return;
   }
@@ -229,16 +245,29 @@ void LocallyManagedUserCreationScreenHandler::
     return;
   }
 
+  delegate_->CreateManagedUser(new_user_name, new_user_password);
+}
+
+void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(
+    const base::ListValue* args) {
+  if (!delegate_)
+    return;
+  DCHECK(args && args->GetSize() == 2);
+
+  std::string manager_username;
+  std::string manager_password;
+  if (!args->GetString(0, &manager_username) ||
+      !args->GetString(1, &manager_password)) {
+    NOTREACHED();
+    return;
+  }
+
   manager_username = gaia::SanitizeEmail(manager_username);
 
-  UserFlow* flow =
-      new LocallyManagedUserCreationFlow(manager_username,
-                                         new_user_name,
-                                         new_user_password);
+  UserFlow* flow = new LocallyManagedUserCreationFlow(manager_username);
   UserManager::Get()->SetUserFlow(manager_username, flow);
 
-  delegate_->RunFlow(new_user_name, new_user_password,
-                     manager_username, manager_password);
+  delegate_->AuthenticateManager(manager_username, manager_password);
 }
 
 }  // namespace chromeos

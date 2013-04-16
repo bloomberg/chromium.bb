@@ -1,6 +1,34 @@
 <div class="step hidden" id="managed-user-creation-flow">
   <div class="step-contents">
-    <div id="managed-user-creation-flow-initial" >
+    <div id="managed-user-creation-flow-intro" class="step-no-logo">
+      <div id="managed-user-creation-flow-intro-title">What is TBD mode?</div>
+      <div id="managed-user-creation-flow-intro-placeholder">
+        Lorem ipsum dolor...
+      </div>
+      <div class="screen-horizontal-splitter"></div>
+      <div id="managed-user-creation-flow-intro-text-1">
+        Some text on TBD mode.
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      </div>
+      <div id="managed-user-creation-flow-intro-text-2">
+        Some longer text on TBD mode.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+        qui officia deserunt mollit anim id est laborum.
+        This text has link to <b>www.chrome.com/dashboard</b> in bold.
+      </div>
+    </div>
+    <div id="managed-user-creation-flow-manager" hidden>
+      <div id="managed-user-creation-flow-managers-block" hidden>
+        <div id="managed-user-creation-flow-managers-block-title"
+            i18n-content="createManagedUserSelectManagerTitle"></div>
+        <div id="managed-user-creation-flow-managers-pane"></div>
+      </div>
+    </div>
+    <div id="managed-user-creation-flow-username" hidden>
       <div id="managed-user-creation-flow-name-title"
           i18n-content="createManagedUserNameTitle"></div>
       <div id="managed-user-creation-flow-name-block">
@@ -13,21 +41,24 @@
       <div id="managed-user-creation-flow-password-block">
         <div>
           <input id="managed-user-creation-flow-password" type="password"
-              i18n-values="placeholder:createManagedUserPasswordHint"/>
+              i18n-values="placeholder:createManagedUserPasswordHint" />
           </div>
         <div>
           <input id="managed-user-creation-flow-password-confirm"
               type="password"
-              i18n-values="placeholder:createManagedUserPasswordConfirmHint"/>
+              i18n-values="placeholder:createManagedUserPasswordConfirmHint" />
         </div>
       </div>
       <div id="managed-user-creation-flow-password-error" class="no-error">
       </div>
-      <div id="managed-user-creation-flow-managers-block" hidden>
-        <div id="managed-user-creation-flow-managers-block-title"
-            i18n-content="createManagedUserSelectManagerTitle"></div>
-        <div id="managed-user-creation-flow-managers-pane"></div>
+    </div>
+    <div id="managed-user-creation-flow-tutorial" class="step-no-logo" hidden>
+      <div id="managed-user-creation-flow-tutorial-placeholder">
+        Lorem ipsum dolor...
       </div>
+      <div class="screen-horizontal-splitter"></div>
+      <div id="managed-user-creation-flow-tutorial-created-text"></div>
+      <div id="managed-user-creation-flow-tutorial-instructions-text"></div>
     </div>
     <div id="managed-user-creation-flow-progress" hidden>
       <div class="spinner"></div>
@@ -38,17 +69,6 @@
       </div>
       <div id="managed-user-creation-flow-error-value">
       </div>
-    </div>
-    <div id="managed-user-creation-flow-success" hidden>
-      <div id="managed-user-creation-flow-success-title"
-          i18n-content="managedUserCreationSuccessTitle"></div>
-      <div id="managed-user-creation-flow-success-image">
-        <!-- TODO(antrim) -->Iconografic or screenshot or video!</div>
-      <div id="managed-user-creation-flow-success-image-text"
-           i18n-content="managedUserCreationSuccessImageText"></div>
-      <div id="managed-user-creation-flow-success-email-instructions"
-           i18n-content="managedUserCreationSuccessSendEmailInstructionsText">
-       </div>
     </div>
   </div>
   <div id="managed-user-creation-flow-controls" class="step-controls">
@@ -64,10 +84,10 @@
     </div>
     <div class="managed-user-creation-flow-manager-password-block" hidden>
       <input class="managed-user-creation-flow-manager-password" type="password"
-          i18n-values="placeholder:createManagedUserManagerPasswordHint"/>
+          i18n-values="placeholder:createManagedUserManagerPasswordHint" />
       <span class="managed-user-creation-flow-manager-wrong-password"
           i18n-content="createManagedUserWrongManagerPasswordText"
-          hidden/>
+          hidden />
     </div>
   </div>
 </div>

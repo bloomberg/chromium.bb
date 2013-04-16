@@ -15,9 +15,7 @@ namespace chromeos {
 // UserFlow implementation for creating new locally managed user.
 class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
  public:
-  LocallyManagedUserCreationFlow(const std::string& manager_id,
-                                 string16 name,
-                                 const std::string& password);
+  explicit LocallyManagedUserCreationFlow(const std::string& manager_id);
   virtual ~LocallyManagedUserCreationFlow();
 
   virtual bool ShouldLaunchBrowser() OVERRIDE;
