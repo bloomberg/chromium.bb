@@ -166,6 +166,8 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::AUTHENTICATED:
+      SetState(AUTHENTICATED, OK);
+
       control_dispatcher_.reset(new ClientControlDispatcher());
       control_dispatcher_->Init(
           session_.get(), session_->config().control_config(),
@@ -192,8 +194,6 @@ void ConnectionToHost::OnSessionStateChange(
                        base::Unretained(this)));
         audio_reader_->set_audio_stub(audio_stub_);
       }
-
-      SetState(AUTHENTICATED, OK);
       break;
 
     case Session::CLOSED:
@@ -260,7 +260,7 @@ void ConnectionToHost::NotifyIfChannelsReady() {
       session_->config().is_audio_enabled()) {
     return;
   }
-  if (state_ != CONNECTING)
+  if (state_ != AUTHENTICATED)
     return;
 
   // Start forwarding clipboard and input events.
