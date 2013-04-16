@@ -84,12 +84,27 @@ class NET_EXPORT HostResolverProc
 // |addrlist| with a list of socket addresses. Otherwise returns a
 // network error code, and fills |os_error| with a more specific error if it
 // was non-NULL.
-NET_EXPORT_PRIVATE int SystemHostResolverProc(
+NET_EXPORT_PRIVATE int SystemHostResolverCall(
     const std::string& host,
     AddressFamily address_family,
     HostResolverFlags host_resolver_flags,
     AddressList* addrlist,
     int* os_error);
+
+// Wraps call to SystemHostResolverCall as an instance of HostResolverProc.
+class SystemHostResolverProc : public HostResolverProc {
+ public:
+  SystemHostResolverProc();
+  virtual int Resolve(const std::string& hostname,
+                      AddressFamily address_family,
+                      HostResolverFlags host_resolver_flags,
+                      AddressList* addr_list,
+                      int* os_error) OVERRIDE;
+ protected:
+  virtual ~SystemHostResolverProc();
+
+  DISALLOW_COPY_AND_ASSIGN(SystemHostResolverProc);
+};
 
 }  // namespace net
 

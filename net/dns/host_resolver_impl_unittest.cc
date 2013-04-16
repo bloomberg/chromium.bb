@@ -46,7 +46,7 @@ HostResolverImpl::ProcTaskParams DefaultParams(
 
 // A HostResolverProc that pushes each host mapped into a list and allows
 // waiting for a specific number of requests. Unlike RuleBasedHostResolverProc
-// it never calls SystemHostResolverProc. By default resolves all hostnames to
+// it never calls SystemHostResolverCall. By default resolves all hostnames to
 // "127.0.0.1". After AddRule(), it resolves only names explicitly specified.
 class MockHostResolverProc : public HostResolverProc {
  public:

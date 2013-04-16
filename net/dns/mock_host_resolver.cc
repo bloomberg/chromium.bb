@@ -369,7 +369,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
 #if defined(OS_WIN)
           net::EnsureWinsockInit();
 #endif
-          return SystemHostResolverProc(effective_host,
+          return SystemHostResolverCall(effective_host,
                                         address_family,
                                         host_resolver_flags,
                                         addrlist, os_error);

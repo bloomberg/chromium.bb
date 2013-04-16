@@ -25,7 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_proc.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_pipelined_host_capability.h"
 #include "net/http/http_transaction_factory.h"
@@ -57,11 +57,7 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
   if (net_error == net::OK) {
     // If |net_error| does not indicate an error, convert |ip_literal| to a
     // net::AddressList, so it can be used with the cache.
-    int rv = net::SystemHostResolverProc(ip_literal,
-                                         net::ADDRESS_FAMILY_UNSPECIFIED,
-                                         0,
-                                         &address_list,
-                                         NULL);
+    int rv = net::ParseAddressList(ip_literal, hostname, &address_list);
     ASSERT_EQ(net::OK, rv);
   } else {
     ASSERT_TRUE(ip_literal.empty());

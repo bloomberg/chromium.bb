@@ -244,27 +244,6 @@ void RecordTTL(base::TimeDelta ttl) {
 
 //-----------------------------------------------------------------------------
 
-// Wraps call to SystemHostResolverProc as an instance of HostResolverProc.
-// TODO(szym): This should probably be declared in host_resolver_proc.h.
-class CallSystemHostResolverProc : public HostResolverProc {
- public:
-  CallSystemHostResolverProc() : HostResolverProc(NULL) {}
-  virtual int Resolve(const std::string& hostname,
-                      AddressFamily address_family,
-                      HostResolverFlags host_resolver_flags,
-                      AddressList* addr_list,
-                      int* os_error) OVERRIDE {
-    return SystemHostResolverProc(hostname,
-                                  address_family,
-                                  host_resolver_flags,
-                                  addr_list,
-                                  os_error);
-  }
-
- protected:
-  virtual ~CallSystemHostResolverProc() {}
-};
-
 AddressList EnsurePortOnAddressList(const AddressList& list, uint16 port) {
   if (list.empty() || list.front().port() == port)
     return list;
@@ -567,7 +546,7 @@ class HostResolverImpl::ProcTask
       params_.resolver_proc = HostResolverProc::GetDefault();
     // If default is unset, use the system proc.
     if (!params_.resolver_proc)
-      params_.resolver_proc = new CallSystemHostResolverProc();
+      params_.resolver_proc = new SystemHostResolverProc();
   }
 
   void Start() {
