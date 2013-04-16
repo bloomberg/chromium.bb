@@ -53,8 +53,8 @@ function replaceNotificationOptionURLs(notification_details, callback) {
   if (notification_details.imageUrl) {
     url_specs.push({
       path: notification_details.imageUrl,
-      width: 300,
-      height: 300,
+      width: 360,
+      height: 540,
       callback: url_setter(notification_details, 'imageUrl')
     });
   }
