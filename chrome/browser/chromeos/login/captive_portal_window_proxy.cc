@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -46,7 +46,7 @@ void CaptivePortalWindowProxy::ShowIfRedirected() {
   // Dialog is not initialized yet.
   if (!captive_portal_view_.get()) {
     captive_portal_view_.reset(
-        new CaptivePortalView(ProfileManager::GetDefaultProfile(), this));
+        new CaptivePortalView(ProfileHelper::GetSigninProfile(), this));
   }
 
   // If dialog has been created (but not shown) previously, force reload.

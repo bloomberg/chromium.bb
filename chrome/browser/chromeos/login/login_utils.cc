@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -131,7 +132,7 @@ class LoginUtilsImpl
       registrar_.Add(
           this,
           chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
-          content::Source<Profile>(ProfileManager::GetDefaultProfile()));
+          content::Source<Profile>(ProfileHelper::GetSigninProfile()));
     }
   }
 
@@ -800,7 +801,7 @@ class WarmingObserver : public ConnectivityStateHelperObserver,
       registrar_.Add(
           this,
           chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
-          content::Source<Profile>(ProfileManager::GetDefaultProfile()));
+          content::Source<Profile>(ProfileHelper::GetSigninProfile()));
     }
   }
 

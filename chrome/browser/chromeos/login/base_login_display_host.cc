@@ -164,10 +164,8 @@ void BaseLoginDisplayHost::BeforeSessionStart() {
 
 void BaseLoginDisplayHost::OnSessionStart() {
   DVLOG(1) << "Session starting";
-  if (chromeos::UserManager::Get()->IsCurrentUserNew()) {
-    ash::Shell::GetInstance()->
-        desktop_background_controller()->MoveDesktopToUnlockedContainer();
-  }
+  ash::Shell::GetInstance()->
+      desktop_background_controller()->MoveDesktopToUnlockedContainer();
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
   // Display host is deleted once animation is completed

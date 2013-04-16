@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "googleurl/src/gurl.h"
@@ -82,7 +82,7 @@ void TermsOfServiceScreen::OnActorDestroyed(TermsOfServiceScreenActor* actor) {
 }
 
 void TermsOfServiceScreen::StartDownload() {
-  const PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
+  const PrefService* prefs = ProfileHelper::GetSigninProfile()->GetPrefs();
   // If an URL from which the Terms of Service can be downloaded has not been
   // set, show an error message to the user.
   std::string terms_of_service_url =

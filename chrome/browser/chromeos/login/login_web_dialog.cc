@@ -6,7 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -57,7 +58,7 @@ LoginWebDialog::~LoginWebDialog() {
 
 void LoginWebDialog::Show() {
   chrome::ShowWebDialog(parent_window_,
-                        ProfileManager::GetDefaultProfile(),
+                        ProfileHelper::GetSigninProfile(),
                         this);
   is_open_ = true;
 }
