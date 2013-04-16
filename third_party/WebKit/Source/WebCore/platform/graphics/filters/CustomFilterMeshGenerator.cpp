@@ -32,6 +32,10 @@
 #if USE(3D_GRAPHICS)
 #include "CustomFilterMeshGenerator.h"
 
+#ifndef NDEBUG
+#include <stdio.h> // Needed for printf used in dumpBuffers.
+#endif
+
 namespace WebCore {
 
 #ifndef NDEBUG
@@ -170,4 +174,3 @@ void CustomFilterMeshGenerator::dumpBuffers() const
 } // namespace WebCore
 
 #endif // USE(3D_GRAPHICS)
-
