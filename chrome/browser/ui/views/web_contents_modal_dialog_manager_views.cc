@@ -59,6 +59,12 @@ class NativeWebContentsModalDialogManagerViews
     // TODO(wittman): remove once the new visual style is complete
     widget->GetNativeWindow()->SetProperty(aura::client::kConstrainedWindowKey,
                                            true);
+
+    if (views::DialogDelegate::UseNewStyle()) {
+      views::corewm::SetWindowVisibilityAnimationType(
+          widget->GetNativeWindow(),
+          views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
+    }
 #endif
 
 #if defined(USE_ASH)
