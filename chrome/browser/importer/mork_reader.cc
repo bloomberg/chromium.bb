@@ -222,7 +222,7 @@ bool MorkReader::ParseMap(const std::string& first_line,
         }
         case '>':
           // End of the map.
-          DLOG_IF(WARNING, key.empty()) <<
+          DLOG_IF(WARNING, !key.empty()) <<
               "map terminates inside of key/value pair";
           return true;
       }
