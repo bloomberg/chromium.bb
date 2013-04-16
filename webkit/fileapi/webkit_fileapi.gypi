@@ -148,4 +148,17 @@
       '../fileapi/media/mtp_device_map_service.h',
     ],
   },
+  'targets': [
+    {
+      'target_name': 'dump_file_system',
+      'type': 'executable',
+      'sources': [
+        '../fileapi/dump_file_system.cc',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../support/webkit_support.gyp:webkit_storage',
+      ],
+    },
+  ],
 }
