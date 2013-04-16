@@ -57,7 +57,6 @@
                 # Needed by tests/RunAllTests.cpp, as well as ChromiumCurrentTime.cpp and
                 # ChromiumThreading.cpp in chromium shared library configuration.
                 '<(source_dir)/WebKit/chromium/public',
-                '<(tools_dir)/TestWebKitAPI/ForwardingHeaders',
             ],
             'sources': [
                 # Reuse the same testing driver of Chromium's webkit_unit_tests.
@@ -67,7 +66,7 @@
             'conditions': [
                 ['component!="shared_library"', {
                     'sources': [
-		        '../Tests/WebCore/HeapGraphSerializerTest.cpp'
+                        '../Tests/WebCore/HeapGraphSerializerTest.cpp'
                     ],
                 }],
                 ['component=="shared_library"', {

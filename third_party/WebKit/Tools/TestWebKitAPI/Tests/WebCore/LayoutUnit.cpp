@@ -32,7 +32,7 @@
 #define ENABLE_SATURATED_LAYOUT_ARITHMETIC 1
 #include "config.h"
 
-#include <WebCore/LayoutUnit.h>
+#include "LayoutUnit.h"
 
 using namespace WebCore;
 
