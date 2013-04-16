@@ -87,6 +87,11 @@ struct HardwareProperties {
 #define GESTURES_FINGER_WARP_Y_TAP_MOVE   (1 << 8)
 // If a finger is a merged finger or one of close fingers
 #define GESTURES_FINGER_MERGE   (1 << 9)
+// If a finger is showing a trend of moving (see the TrendClassifyingFilter).
+#define GESTURES_FINGER_TREND_INC_X (1 << 10)
+#define GESTURES_FINGER_TREND_DEC_X (1 << 11)
+#define GESTURES_FINGER_TREND_INC_Y (1 << 12)
+#define GESTURES_FINGER_TREND_DEC_Y (1 << 13)
 
 #define GESTURES_FINGER_WARP_X    (GESTURES_FINGER_WARP_X_NON_MOVE | \
                                    GESTURES_FINGER_WARP_X_MOVE)

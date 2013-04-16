@@ -149,14 +149,25 @@ bool MapContainsKey(const Map& the_map, const Key& the_key) {
 template<typename Data, size_t kSetSize>
 void RemoveMissingIdsFromMap(map<short, Data, kSetSize>* the_map,
                              const HardwareState& hs) {
-  short old_ids[the_map->size()];
-  size_t old_ids_len = 0;
+  map<short, Data, kSetSize> removed;
+  RemoveMissingIdsFromMap(the_map, hs, &removed);
+}
+
+// Removes any ids from the map that are not finger ids in hs.
+// This implementation supports returning removed elements for
+// further processing.
+template<typename Data, size_t kSetSize>
+void RemoveMissingIdsFromMap(map<short, Data, kSetSize>* the_map,
+                             const HardwareState& hs,
+                             map<short, Data, kSetSize>* removed) {
+  removed->clear();
   for (typename map<short, Data, kSetSize>::const_iterator it =
-           the_map->begin(); it != the_map->end(); ++it)
+      the_map->begin(); it != the_map->end(); ++it)
     if (!hs.GetFingerState((*it).first))
-      old_ids[old_ids_len++] = (*it).first;
-  for (size_t i = 0; i < old_ids_len; i++)
-    the_map->erase(old_ids[i]);
+      (*removed)[it->first] = it->second;
+  for (typename map<short, Data, kSetSize>::const_iterator it =
+      removed->begin(); it != removed->end(); ++it)
+    the_map->erase(it->first);
 }
 
 // Erases the element in the map given by the iterator, returns an iterator

@@ -1276,6 +1276,15 @@ bool ImmediateInterpreter::TwoFingersGesturing(
       !(finger1.flags & GESTURES_FINGER_MERGE))
     return false;
 
+  // If both fingers have a tendency of moving at the same direction, they
+  // are gesturing together.
+  unsigned and_flags = finger1.flags & finger2.flags;
+  if ((and_flags & GESTURES_FINGER_TREND_INC_X) ||
+      (and_flags & GESTURES_FINGER_TREND_DEC_X) ||
+      (and_flags & GESTURES_FINGER_TREND_INC_Y) ||
+      (and_flags & GESTURES_FINGER_TREND_DEC_Y))
+    return true;
+
   // Next, if fingers are vertically aligned and one is in the bottom zone,
   // consider that one a resting thumb (thus, do not scroll/right click)
   if (xdist < ydist && (FingerInDampenedZone(finger1) ||

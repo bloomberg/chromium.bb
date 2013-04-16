@@ -34,6 +34,7 @@
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
 #include "gestures/include/trace_marker.h"
 #include "gestures/include/tracer.h"
+#include "gestures/include/trend_classifying_filter_interpreter.h"
 #include "gestures/include/util.h"
 
 using std::string;
@@ -481,6 +482,8 @@ void GestureInterpreter::InitializeTouchpad(void) {
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp,
                                               tracer_.get());
+  temp = new TrendClassifyingFilterInterpreter(prop_reg_.get(), temp,
+                                               tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
   temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());

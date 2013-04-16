@@ -35,6 +35,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/t5r2_correcting_filter_interpreter.o \
 	$(OBJDIR)/trace_marker.o \
 	$(OBJDIR)/tracer.o \
+	$(OBJDIR)/trend_classifying_filter_interpreter.o \
 	$(OBJDIR)/util.o
 
 # Objects for unittests

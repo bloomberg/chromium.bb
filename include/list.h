@@ -9,11 +9,23 @@
 
 namespace gestures {
 
+// A default Deallocator class which performs the delete operator on
+// the element to remove. One may provide a customized version, which
+// for example, remove the element from a memory manager instead.
+
+template<typename Elt>
+class DefaultDeallocator {
+ public:
+  void Deallocate(Elt* elt) {
+    delete elt;
+  }
+};
+
 // Elt must have the following members:
 // Elt* next_;
 // Elt* prev_;
 
-template<typename Elt>
+template<typename Elt, class Deallocator = DefaultDeallocator<Elt>>
 class List {
  public:
   List() : size_(0) { sentinel_.next_ = sentinel_.prev_ = &sentinel_; }
@@ -48,7 +60,7 @@ class List {
 
   void DeleteAll() {
     while (!Empty())
-      delete PopFront();
+      deallocator_.Deallocate(PopFront());
   }
 
   Elt* Head() const { return sentinel_.next_; }
@@ -65,6 +77,7 @@ class List {
   Elt sentinel_;
 
   size_t size_;
+  Deallocator deallocator_;
 };
 
 }  // namespace gestures
