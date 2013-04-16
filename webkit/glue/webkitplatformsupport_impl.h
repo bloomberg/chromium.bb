@@ -83,6 +83,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
+  virtual int cancelledErrorCode() const;
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual void decrementStatsCounter(const char* name);
   virtual void incrementStatsCounter(const char* name);

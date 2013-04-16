@@ -28,6 +28,7 @@
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCookie.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebDiscardableMemory.h"
@@ -396,6 +397,10 @@ WebSocketStreamHandle* WebKitPlatformSupportImpl::createSocketStreamHandle() {
 
 WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
   return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
+}
+
+int WebKitPlatformSupportImpl::cancelledErrorCode() const {
+  return net::ERR_ABORTED;
 }
 
 void WebKitPlatformSupportImpl::getPluginList(bool refresh,
