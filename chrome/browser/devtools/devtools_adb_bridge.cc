@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/tethering_adb_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -198,11 +199,14 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
  public:
   AgentHostDelegate(
       const std::string& id,
+      const std::string& serial,
       scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread,
       net::StreamSocket* socket)
       : id_(id),
+        serial_(serial),
         adb_thread_(adb_thread),
-        socket_(socket) {
+        socket_(socket),
+        tethering_adb_filter_(kAdbPort, serial) {
     AddRef();  // Balanced in SelfDestruct.
     proxy_.reset(content::DevToolsExternalAgentProxy::Create(this));
     g_host_delegates.Get()[id] = this;
@@ -268,8 +272,10 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
 
     while (parse_result == WebSocket::FRAME_OK) {
       response_buffer_ = response_buffer_.substr(bytes_consumed);
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&AgentHostDelegate::OnFrameRead, this, output));
+      if (!tethering_adb_filter_.ProcessIncomingMessage(output)) {
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+            base::Bind(&AgentHostDelegate::OnFrameRead, this, output));
+      }
       parse_result = WebSocket::DecodeFrameHybi17(
           response_buffer_, false, &bytes_consumed, &output);
     }
@@ -287,6 +293,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   }
 
   void SendFrameOnHandlerThread(const std::string& data) {
+    tethering_adb_filter_.ProcessOutgoingMessage(data);
     int mask = base::RandInt(0, 0x7FFFFFFF);
     std::string encoded_frame = WebSocket::EncodeFrameHybi17(data, mask);
     scoped_refptr<net::StringIOBuffer> request_buffer =
@@ -323,10 +330,6 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   }
 
   void OnFrameRead(const std::string& message) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(message));
-    DictionaryValue* dvalue;
-    if (!value || !value->GetAsDictionary(&dvalue))
-      return;
     proxy_->DispatchOnClientHost(message);
   }
 
@@ -335,10 +338,12 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   }
 
   std::string id_;
+  std::string serial_;
   scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread> adb_thread_;
   scoped_ptr<net::StreamSocket> socket_;
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
   std::string response_buffer_;
+  TetheringAdbFilter tethering_adb_filter_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };
 
@@ -387,7 +392,8 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
     if (it != g_host_delegates.Get().end())
       delegate = it->second;
     else
-      delegate = new AgentHostDelegate(id, bridge->adb_thread_, socket);
+      delegate = new AgentHostDelegate(id, serial_, bridge->adb_thread_,
+                                       socket);
     DevToolsWindow::OpenExternalFrontend(bridge->profile_,
                                          frontend_url_,
                                          delegate->GetAgentHost());

@@ -220,6 +220,8 @@
             'browser/devtools/devtools_window.h',
             'browser/devtools/remote_debugging_server.cc',
             'browser/devtools/remote_debugging_server.h',
+            'browser/devtools/tethering_adb_filter.cc',
+            'browser/devtools/tethering_adb_filter.h',
           ],
           'conditions': [
             ['toolkit_uses_gtk == 1', {

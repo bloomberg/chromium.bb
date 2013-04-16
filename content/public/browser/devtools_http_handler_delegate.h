@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "net/socket/stream_listen_socket.h"
 
 class GURL;
 
@@ -47,6 +49,12 @@ class DevToolsHttpHandlerDelegate {
 
   // Provides the delegate with an ability to supply a description for views.
   virtual std::string GetViewDescription(content::RenderViewHost*) = 0;
+
+  // Creates named socket for reversed tethering implementation (used with
+  // remote debugging, primarily for mobile).
+  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+      net::StreamListenSocket::Delegate* delegate,
+      std::string* name) = 0;
 };
 
 }  // namespace content

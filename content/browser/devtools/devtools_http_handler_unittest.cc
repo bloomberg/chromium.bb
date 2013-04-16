@@ -71,6 +71,11 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
     return std::string();
   }
+  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+    net::StreamListenSocket::Delegate* delegate,
+    std::string* name) OVERRIDE {
+    return NULL;
+  }
 };
 
 }

@@ -32,13 +32,15 @@ namespace {
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/static/%s/devtools.html";
 const char kSocketName[] = "chrome_devtools_remote";
+const char kTetheringSocketName[] = "chrome_devtools_tethering_%d";
 
 // Delegate implementation for the devtools http handler on android. A new
 // instance of this gets created each time devtools is enabled.
 class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
  public:
   explicit DevToolsServerDelegate(bool use_bundled_frontend_resources)
-      : use_bundled_frontend_resources_(use_bundled_frontend_resources) {
+      : use_bundled_frontend_resources_(use_bundled_frontend_resources),
+        last_tethering_socket_(0) {
   }
 
   virtual std::string GetDiscoveryPageHTML() OVERRIDE {
@@ -85,6 +87,16 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
+  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+      net::StreamListenSocket::Delegate* delegate,
+      std::string* name) OVERRIDE {
+    *name = base::StringPrintf(kTetheringSocketName, ++last_tethering_socket_);
+    return net::UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+        *name,
+        delegate,
+        base::Bind(&content::CanUserConnectToDevTools));
+  }
+
  private:
   static void PopulatePageThumbnails() {
     Profile* profile =
@@ -95,6 +107,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   }
 
   bool use_bundled_frontend_resources_;
+  int last_tethering_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
 };

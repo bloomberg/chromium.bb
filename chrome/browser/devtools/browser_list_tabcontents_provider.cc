@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_discovery_page_resources.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -132,3 +134,25 @@ std::string BrowserListTabContentsProvider::GetViewDescription(
 
   return extension_host->extension()->name();
 }
+
+#if defined(DEBUG_DEVTOOLS)
+static int g_last_tethering_port_ = 9333;
+
+scoped_refptr<net::StreamListenSocket>
+BrowserListTabContentsProvider::CreateSocketForTethering(
+    net::StreamListenSocket::Delegate* delegate,
+    std::string* name) {
+  if (g_last_tethering_port_ == 9444)
+    g_last_tethering_port_ = 9333;
+  int port = ++g_last_tethering_port_;
+  *name = base::IntToString(port);
+  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate);
+}
+#else
+scoped_refptr<net::StreamListenSocket>
+BrowserListTabContentsProvider::CreateSocketForTethering(
+    net::StreamListenSocket::Delegate* delegate,
+    std::string* name) {
+  return NULL;
+}
+#endif  // defined(DEBUG_DEVTOOLS)

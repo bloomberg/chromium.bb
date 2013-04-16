@@ -14,12 +14,14 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_browser_target.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
+#include "content/browser/devtools/tethering_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -367,6 +369,30 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketMessage(
     int connection_id,
     const std::string& data) {
+  std::string error_response;
+  scoped_ptr<DevToolsProtocol::Command> command(
+      DevToolsProtocol::ParseCommand(data, &error_response));
+  if (command && command->domain() == TetheringHandler::kDomain) {
+    TetheringHandlers::iterator it = tethering_handlers_.find(connection_id);
+    TetheringHandler* tethering_handler;
+    if (it == tethering_handlers_.end()) {
+      tethering_handler = new TetheringHandler(delegate_.get());
+      tethering_handlers_[connection_id] = tethering_handler;
+      tethering_handler->SetNotifier(
+          base::Bind(&net::HttpServer::SendOverWebSocket,
+                     server_,
+                     connection_id));
+    } else {
+      tethering_handler = it->second;
+    }
+    scoped_ptr<DevToolsProtocol::Response> response(
+        tethering_handler->HandleCommand(command.get()));
+    if (!response)
+      response = command->NoSuchMethodErrorResponse();
+    server_->SendOverWebSocket(connection_id, response->Serialize());
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -378,6 +404,12 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessage(
 }
 
 void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
+  TetheringHandlers::iterator it = tethering_handlers_.find(connection_id);
+  if (it != tethering_handlers_.end()) {
+    delete it->second;
+    tethering_handlers_.erase(connection_id);
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -686,6 +718,8 @@ void DevToolsHttpHandlerImpl::Init() {
 
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Teardown() {
+  STLDeleteContainerPairSecondPointers(tethering_handlers_.begin(),
+                                       tethering_handlers_.end());
   server_ = NULL;
 }
 
