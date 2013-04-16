@@ -387,7 +387,7 @@ OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
     OmniboxResultViewModel* model,
     int model_index,
     const gfx::Font& font) {
-  return new OmniboxResultView(model, model_index, font);
+  return new OmniboxResultView(model, model_index, location_bar_, font);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

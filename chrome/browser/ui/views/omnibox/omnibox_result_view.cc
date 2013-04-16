@@ -21,10 +21,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/render_text.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -105,12 +106,14 @@ class OmniboxResultView::MirroringContext {
 OmniboxResultView::OmniboxResultView(
     OmniboxResultViewModel* model,
     int model_index,
+    views::View* location_bar,
     const gfx::Font& font)
     : edge_item_padding_(LocationBarView::GetItemPadding()),
       item_padding_(LocationBarView::GetItemPadding()),
       minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
       model_(model),
       model_index_(model_index),
+      location_bar_(location_bar),
       font_(font),
       font_height_(std::max(font.GetHeight(),
                             font.DeriveFont(0, gfx::BOLD).GetHeight())),
@@ -122,7 +125,7 @@ OmniboxResultView::OmniboxResultView(
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        location_bar_->GetThemeProvider()->GetImageSkiaNamed(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }
@@ -323,13 +326,13 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
         break;
     }
   }
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
+  return *(location_bar_->GetThemeProvider()->GetImageSkiaNamed(icon));
 }
 
 const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  return location_bar_->GetThemeProvider()->GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 

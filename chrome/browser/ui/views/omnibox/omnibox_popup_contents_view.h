@@ -81,6 +81,8 @@ class OmniboxPopupContentsView : public views::View,
                            views::View* location_bar);
   virtual ~OmniboxPopupContentsView();
 
+  views::View* location_bar() { return location_bar_; }
+
   virtual void PaintResultViews(gfx::Canvas* canvas);
 
   // Calculates the height needed to show all the results in the model.

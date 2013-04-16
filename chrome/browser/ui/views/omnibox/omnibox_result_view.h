@@ -46,6 +46,7 @@ class OmniboxResultView : public views::View,
 
   OmniboxResultView(OmniboxResultViewModel* model,
                     int model_index,
+                    views::View* location_bar,
                     const gfx::Font& font);
   virtual ~OmniboxResultView();
 
@@ -143,6 +144,8 @@ class OmniboxResultView : public views::View,
   // This row's model and model index.
   OmniboxResultViewModel* model_;
   size_t model_index_;
+
+  views::View* location_bar_;
 
   const gfx::Font font_;
   int font_height_;

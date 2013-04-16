@@ -24,6 +24,7 @@ class TouchOmniboxResultView : public OmniboxResultView {
  public:
   TouchOmniboxResultView(OmniboxResultViewModel* model,
                          int model_index,
+                         views::View* location_bar,
                          const gfx::Font& font);
 
  private:
