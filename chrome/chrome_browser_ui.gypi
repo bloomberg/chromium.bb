@@ -1530,8 +1530,6 @@
         'browser/ui/views/extensions/browser_action_overflow_menu_controller.cc',
         'browser/ui/views/extensions/browser_action_overflow_menu_controller.h',
         'browser/ui/views/extensions/bundle_installed_bubble.cc',
-        'browser/ui/views/extensions/disabled_extensions_view.cc',
-        'browser/ui/views/extensions/disabled_extensions_view.h',
         'browser/ui/views/extensions/extension_dialog.cc',
         'browser/ui/views/extensions/extension_dialog.h',
         'browser/ui/views/extensions/extension_dialog_observer.cc',

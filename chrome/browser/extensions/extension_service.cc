@@ -356,8 +356,6 @@ ExtensionService::ExtensionService(Profile* profile,
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
       installs_delayed_(false),
-      wipeout_is_active_(false),
-      wipeout_count_(0u),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -424,10 +422,6 @@ ExtensionService::ExtensionService(Profile* profile,
       new extensions::ExtensionActionStorageManager(profile_));
 #endif
 
-  // Before loading any extensions, determine whether Sideload Wipeout is on.
-  wipeout_is_active_ = FeatureSwitch::sideload_wipeout()->IsEnabled() &&
-                       !extension_prefs_->GetSideloadWipeoutDone();
-
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
                               install_directory_.value().length(), 0, 500, 100);
@@ -457,17 +451,6 @@ scoped_ptr<const ExtensionSet>
   installed_extensions->InsertAll(terminated_extensions_);
   installed_extensions->InsertAll(blacklisted_extensions_);
   return installed_extensions.PassAs<const ExtensionSet>();
-}
-
-scoped_ptr<const ExtensionSet> ExtensionService::GetWipedOutExtensions() const {
-  scoped_ptr<ExtensionSet> extension_set(new ExtensionSet());
-  for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
-       iter != disabled_extensions_.end(); ++iter) {
-    int disabled_reason = extension_prefs_->GetDisableReasons((*iter)->id());
-    if ((disabled_reason & Extension::DISABLE_SIDELOAD_WIPEOUT) != 0)
-      extension_set->Insert(*iter);
-  }
-  return extension_set.PassAs<const ExtensionSet>();
 }
 
 extensions::PendingExtensionManager*
@@ -927,7 +910,6 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   if (IsExtensionEnabled(extension_id))
     return;
 
-  int disable_reasons = extension_prefs_->GetDisableReasons(extension_id);
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
   extension_prefs_->ClearDisableReasons(extension_id);
 
@@ -943,9 +925,6 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
                               EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
     AcknowledgeExternalExtension(extension->id());
   }
-
-  if (disable_reasons & Extension::DISABLE_SIDELOAD_WIPEOUT)
-    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", false);
 
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
@@ -2035,15 +2014,6 @@ void ExtensionService::OnLoadedInstalledExtensions() {
 
   OnBlacklistUpdated();
 
-  // The Sideload Wipeout effort takes place during load (see above), so once
-  // that is done the flag can be set so that we don't have to check again.
-  if (wipeout_is_active_) {
-    extension_prefs_->SetSideloadWipeoutDone();
-    wipeout_is_active_ = false;  // Wipeout is only on during load.
-    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.SideloadWipeoutNeeded",
-                          wipeout_count_ > 0u);
-  }
-
   SetReadyAndNotifyListeners();
 }
 
@@ -2073,10 +2043,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // Check if the extension's privileges have changed and disable the
   // extension if necessary.
   InitializePermissions(extension);
-
-  // If this extension is a sideloaded extension and we've not performed a
-  // wipeout before, we might disable this extension here.
-  MaybeWipeout(extension);
 
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
     // Only prefs is checked for the blacklist. We rely on callers to check the
@@ -2271,33 +2237,6 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     extension_prefs_->AddDisableReason(
         extension->id(),
         static_cast<Extension::DisableReason>(disable_reasons));
-  }
-}
-
-void ExtensionService::MaybeWipeout(
-    const extensions::Extension* extension) {
-  if (!wipeout_is_active_)
-    return;
-
-  if (extension->GetType() != Manifest::TYPE_EXTENSION)
-    return;
-
-  Manifest::Location location = extension->location();
-  if (location != Manifest::EXTERNAL_REGISTRY)
-    return;
-
-  if (extension_prefs_->IsExternalExtensionExcludedFromWipeout(extension->id()))
-    return;
-
-  int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
-  if (disable_reasons == Extension::DISABLE_NONE) {
-    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
-    extension_prefs_->AddDisableReason(
-        extension->id(),
-        static_cast<Extension::DisableReason>(
-        Extension::DISABLE_SIDELOAD_WIPEOUT));
-    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", true);
-    wipeout_count_++;
   }
 }
 

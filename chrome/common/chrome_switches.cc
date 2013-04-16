@@ -1264,9 +1264,6 @@ const char kShowLauncherAlignmentMenu[]     = "show-launcher-alignment-menu";
 // Marks a renderer as the signin process.
 const char kSigninProcess[]                 = "signin-process";
 
-// Enables or disables sideload wipeout extension effort.
-const char kSideloadWipeout[]               = "sideload-wipeout";
-
 // Changes the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is
 // specified.

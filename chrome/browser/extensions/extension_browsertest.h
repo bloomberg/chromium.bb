@@ -298,10 +298,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   extensions::FeatureSwitch::ScopedOverride
       override_prompt_for_external_extensions_;
 
-  // Disable the sideload wipeout UI.
-  extensions::FeatureSwitch::ScopedOverride
-      override_sideload_wipeout_;
-
   // The default profile to be used.
   Profile* profile_;
 };

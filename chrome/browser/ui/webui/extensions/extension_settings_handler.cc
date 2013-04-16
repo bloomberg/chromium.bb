@@ -169,26 +169,6 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("homepageProvided",
       extensions::ManifestURL::GetHomepageURL(extension).is_valid());
 
-  string16 automatically_disabled_text;
-  int disable_reasons =
-      extension_service_->extension_prefs()->GetDisableReasons(extension->id());
-  if ((disable_reasons & Extension::DISABLE_SIDELOAD_WIPEOUT) != 0) {
-    automatically_disabled_text = l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SIDELOAD_WIPEOUT_AUTOMATIC_DISABLE);
-  }
-  extension_data->SetString("disableReason", automatically_disabled_text);
-
-  string16 location_text;
-  if (extension->location() == Manifest::INTERNAL &&
-      !extension->UpdatesFromGallery()) {
-    location_text = l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_UNKNOWN);
-  } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {
-    location_text = l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_3RD_PARTY);
-  }
-  extension_data->SetString("locationText", location_text);
-
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
   if (Manifest::IsUnpackedLocation(extension->location()))
@@ -326,8 +306,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   source->AddString("extensionSettingsManagedMode",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_MODE));
-  source->AddString("extensionSettingsSideloadWipeout",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_BANNER));
   source->AddString("sideloadWipeoutUrl",
       chrome::kSideloadWipeoutHelpURL);
   source->AddString("sideloadWipoutLearnMore",
@@ -671,13 +649,6 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   results.SetBoolean("profileIsManaged", is_managed);
   results.SetBoolean("profileIsElevated", is_elevated);
   results.SetBoolean("developerMode", developer_mode);
-
-  // Check to see if we have any wiped out extensions.
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  scoped_ptr<const ExtensionSet> wiped_out(
-      extension_service->GetWipedOutExtensions());
-  results.SetBoolean("showDisabledExtensionsWarning", wiped_out->size() > 0);
 
   bool load_unpacked_disabled =
       extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();

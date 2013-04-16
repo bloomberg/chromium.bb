@@ -29,11 +29,6 @@ class CommonSwitches {
         script_bubble(
             switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
-        sideload_wipeout(
-            switches::kSideloadWipeout,
-            base::FieldTrialList::FindFullName("SideloadWipeout") == "Enabled" ?
-                FeatureSwitch::DEFAULT_ENABLED :
-                FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
 #if defined(OS_WIN)
@@ -49,7 +44,6 @@ class CommonSwitches {
   FeatureSwitch easy_off_store_install;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
-  FeatureSwitch sideload_wipeout;
   FeatureSwitch prompt_for_external_extensions;
   FeatureSwitch tab_capture;
 };
@@ -71,9 +65,6 @@ FeatureSwitch* FeatureSwitch::script_badges() {
 }
 FeatureSwitch* FeatureSwitch::script_bubble() {
   return &g_common_switches.Get().script_bubble;
-}
-FeatureSwitch* FeatureSwitch::sideload_wipeout() {
-  return &g_common_switches.Get().sideload_wipeout;
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;

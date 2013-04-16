@@ -330,7 +330,6 @@ extern const char kScriptBadges[];
 extern const char kScriptBubble[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceProcess[];
-extern const char kSideloadWipeout[];
 extern const char kSilentLaunch[];
 extern const char kSetToken[];
 extern const char kShowAppList[];

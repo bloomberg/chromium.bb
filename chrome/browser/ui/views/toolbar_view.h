@@ -114,10 +114,6 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE;
-
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -215,9 +211,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
-
-  // A pref that counts how often the bubble has been shown.
-  IntegerPrefMember sideload_wipeout_bubble_shown_;
 
   // The display mode used when laying out the toolbar.
   DisplayMode display_mode_;

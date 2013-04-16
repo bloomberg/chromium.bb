@@ -77,9 +77,6 @@ const char kPrefBlacklist[] = "blacklist";
 // extension.
 const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 
-// If true, this extension should be excluded from the sideload wipeout UI.
-const char kPrefExcludeFromSideloadWipeout[] = "exclude_from_sideload_wipeout";
-
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
@@ -225,9 +222,6 @@ const char kPrefGeometryCache[] = "geometry_cache";
 
 // Key for what version chrome was last time the extension prefs were loaded.
 const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
-
-// Key for whether the sideload wipeout effort is done.
-const char kSideloadWipeoutDone[] = "extensions.sideload_wipeout_done";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
@@ -607,18 +601,10 @@ bool ExtensionPrefs::IsExternalExtensionAcknowledged(
   return ReadExtensionPrefBoolean(extension_id, kPrefExternalAcknowledged);
 }
 
-bool ExtensionPrefs::IsExternalExtensionExcludedFromWipeout(
-    const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id,
-                                  kPrefExcludeFromSideloadWipeout);
-}
-
 void ExtensionPrefs::AcknowledgeExternalExtension(
     const std::string& extension_id) {
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefExternalAcknowledged,
-                      Value::CreateBooleanValue(true));
-  UpdateExtensionPref(extension_id, kPrefExcludeFromSideloadWipeout,
                       Value::CreateBooleanValue(true));
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }
@@ -1801,14 +1787,6 @@ void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
   prefs_->SetString(kWebStoreLogin, login);
 }
 
-bool ExtensionPrefs::GetSideloadWipeoutDone() const {
-  return prefs_->GetBoolean(kSideloadWipeoutDone);
-}
-
-void ExtensionPrefs::SetSideloadWipeoutDone() {
-  prefs_->SetBoolean(kSideloadWipeoutDone, true);
-}
-
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefUserDraggedApp);
 }
@@ -2251,9 +2229,6 @@ void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(kExtensionsLastChromeVersion,
                                std::string(),  // default value
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(kSideloadWipeoutDone,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if defined (TOOLKIT_VIEWS)
   registry->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,

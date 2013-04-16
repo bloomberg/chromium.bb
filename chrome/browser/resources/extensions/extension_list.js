@@ -105,12 +105,6 @@ cr.define('options', function() {
       var version = node.querySelector('.extension-version');
       version.textContent = extension.version;
 
-      var disableReason = node.querySelector('.extension-disable-reason');
-      disableReason.textContent = extension.disableReason;
-
-      var locationText = node.querySelector('.location-text');
-      locationText.textContent = extension.locationText;
-
       var description = node.querySelector('.extension-description span');
       description.textContent = extension.description;
 

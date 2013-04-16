@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
-#include "chrome/browser/ui/views/extensions/disabled_extensions_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/home_button.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
@@ -202,8 +201,6 @@ ToolbarView::~ToolbarView() {
 }
 
 void ToolbarView::Init() {
-  GetWidget()->AddObserver(this);
-
   back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -467,14 +464,6 @@ void ToolbarView::ButtonPressed(views::Button* sender,
     location_bar_->Revert();
   }
   chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
-}
-
-void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                            bool visible) {
-  if (visible) {
-    DisabledExtensionsView::MaybeShow(browser_, app_menu_);
-    GetWidget()->RemoveObserver(this);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

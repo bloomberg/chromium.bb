@@ -977,8 +977,6 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
              IDS_EXTENSIONS_POLICY_CONTROLLED);
   SET_STRING("extensionSettingsManagedMode",
              IDS_EXTENSIONS_LOCKED_MANAGED_MODE);
-  SET_STRING("extensionSettingsSideloadWipeout",
-             IDS_OPTIONS_SIDELOAD_WIPEOUT_BANNER);
   SET_STRING("extensionSettingsShowButton", IDS_EXTENSIONS_SHOW_BUTTON);
   SET_STRING("appsDevtoolLoadUnpackedButton",
              IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON);

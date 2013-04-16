@@ -30,9 +30,6 @@ void RegisterBrowserUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kShowHomeButton,
                                 false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kExtensionsSideloadWipeoutBubbleShown,
-                                0,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created

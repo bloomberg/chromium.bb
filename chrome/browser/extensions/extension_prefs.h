@@ -213,10 +213,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   bool IsExternalExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeExternalExtension(const std::string& extension_id);
 
-  // Whether the extension has been marked as excluded from the the sideload
-  // wipeout initiative.
-  bool IsExternalExtensionExcludedFromWipeout(const std::string& extension_id);
-
   // Whether the user has acknowledged a blacklisted extension.
   bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeBlacklistedExtension(const std::string& extension_id);
@@ -405,11 +401,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // otherwise. The Set will overwrite any previous login.
   bool GetWebStoreLogin(std::string* result);
   void SetWebStoreLogin(const std::string& login);
-
-  // Returns true if the one-time Sideload Wipeout effort has been executed.
-  bool GetSideloadWipeoutDone() const;
-  // Mark the one-time Sideload Wipeout effort as finished.
-  void SetSideloadWipeoutDone();
 
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.

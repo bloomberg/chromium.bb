@@ -268,11 +268,6 @@ cr.define('extensions', function() {
       $('toggle-dev-on').disabled = false;
     }
 
-    if (extensionsData.showDisabledExtensionsWarning) {
-      pageDiv.classList.add('showing-banner');
-      pageDiv.classList.add('sideload-wipeout');
-      marginTop += 60;
-    }
     pageDiv.style.marginTop = marginTop + 'px';
 
     if (extensionsData.developerMode) {

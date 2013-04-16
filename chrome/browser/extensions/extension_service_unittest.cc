@@ -419,9 +419,7 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
       file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING, &loop_),
-      io_thread_(BrowserThread::IO, &loop_),
-      override_sideload_wipeout_(
-          FeatureSwitch::sideload_wipeout(), false) {
+      io_thread_(BrowserThread::IO, &loop_) {
   base::FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
@@ -5876,35 +5874,4 @@ TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   service_->EnableExtension(good_crx);
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
-}
-
-// Test that a sideloaded extension gets wiped out.
-TEST_F(ExtensionServiceTest, WipeOutExtension) {
-  FeatureSwitch::ScopedOverride prompt(
-      FeatureSwitch::sideload_wipeout(), true);
-
-  InitializeEmptyExtensionService();
-  MockExtensionProvider* provider_registry =
-      new MockExtensionProvider(service_, Manifest::EXTERNAL_REGISTRY);
-  AddMockExternalProvider(provider_registry);
-  MockExtensionProvider* provider_pref =
-      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
-  AddMockExternalProvider(provider_pref);
-
-  provider_registry->UpdateOrAddExtension(good_crx, "1.0.0.0",
-      data_dir_.AppendASCII("good.crx"));
-  provider_pref->UpdateOrAddExtension(good_crx, "1.0.0.0",
-      data_dir_.AppendASCII("good.crx"));
-
-  service_->CheckForExternalUpdates();
-  loop_.RunUntilIdle();
-  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
-  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_TRUE(service_->IsExtensionEnabled(page_action));
-
-  ExtensionPrefs* prefs = service_->extension_prefs();
-  EXPECT_NE(0, prefs->GetDisableReasons(good_crx) &
-      Extension::DISABLE_SIDELOAD_WIPEOUT);
-  EXPECT_EQ(0, prefs->GetDisableReasons(page_action) &
-      Extension::DISABLE_SIDELOAD_WIPEOUT);
 }

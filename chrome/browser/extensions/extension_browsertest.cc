@@ -65,8 +65,6 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       current_channel_(chrome::VersionInfo::CHANNEL_DEV),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(), false),
-      override_sideload_wipeout_(
-          FeatureSwitch::sideload_wipeout(), false),
       profile_(NULL) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 }

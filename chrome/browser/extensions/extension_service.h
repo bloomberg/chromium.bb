@@ -212,10 +212,6 @@ class ExtensionService
   // extensions.
   scoped_ptr<const ExtensionSet> GenerateInstalledExtensionsSet() const;
 
-  // Returns a set of all extensions disabled by the sideload wipeout
-  // initiative.
-  scoped_ptr<const ExtensionSet> GetWipedOutExtensions() const;
-
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager*
       pending_extension_manager() OVERRIDE;
@@ -457,10 +453,6 @@ class ExtensionService
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).
   void InitializePermissions(const extensions::Extension* extension);
-
-  // Check to see if this extension needs to be disabled, as per the sideload
-  // wipeout initiative.
-  void MaybeWipeout(const extensions::Extension* extension);
 
   // Go through each extension and unload those that are not allowed to run by
   // management policy providers (ie. network admin and Google-managed
@@ -976,12 +968,6 @@ class ExtensionService
   // on-disk state without needing to worry about race conditions caused
   // by extension installation and reinstallation.
   bool installs_delayed_;
-
-  // Whether any extension should be considered for wipeout.
-  bool wipeout_is_active_;
-
-  // How many extensions were wiped out.
-  size_t wipeout_count_;
 
   NaClModuleInfoList nacl_module_list_;
 

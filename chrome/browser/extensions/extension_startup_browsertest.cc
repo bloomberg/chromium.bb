@@ -37,8 +37,7 @@ using extensions::FeatureSwitch;
 class ExtensionStartupTestBase : public InProcessBrowserTest {
  public:
   ExtensionStartupTestBase() :
-      enable_extensions_(false),
-      override_sideload_wipeout_(FeatureSwitch::sideload_wipeout(), false) {
+      enable_extensions_(false) {
     num_expected_extensions_ = 3;
   }
 
@@ -148,9 +147,6 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   bool enable_extensions_;
   // Extensions to load from the command line.
   std::vector<base::FilePath::StringType> load_extensions_;
-
-  // Disable the sideload wipeout UI.
-  FeatureSwitch::ScopedOverride override_sideload_wipeout_;
 
   int num_expected_extensions_;
 };

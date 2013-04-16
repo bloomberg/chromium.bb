@@ -950,10 +950,6 @@ const char kExtensionToolbarSize[] = "extensions.toolbarsize";
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";
 
-// Integer pref that tracks how often the bubble has been shown to the user.
-const char kExtensionsSideloadWipeoutBubbleShown[] =
-    "extensions.sideload_wipeout_bubble_shown";
-
 // Pref containing the directory for internal plugins as written to the plugins
 // list (below).
 const char kPluginsLastInternalDirectory[] = "plugins.last_internal_directory";

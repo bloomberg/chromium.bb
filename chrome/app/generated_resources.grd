@@ -10851,39 +10851,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         These settings are enforced by an extension.
       </message>
 
-      <!-- Sideload Wipout strings -->
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_BANNER" desc="The banner shown at the top of the Extensions page to warn that some extensions have been disabled.">
-        To make Chrome even faster, we've automatically disabled some extensions that may have been added without your knowledge. You can enable or disable any extension below.
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_WHAT_HAPPENED" desc="Text in the bubble that explains why the extensions were disabled.">
-        To make Chrome even faster, we've automatically disabled some extensions that may have been added without your knowledge:
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_AUTOMATIC_DISABLE" desc="The text explaining what happened to the extension.">
-        This extension was automatically disabled.
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_UNKNOWN" desc="The text explaining the the installation location is unknown.">
-        Not from Chrome Web Store.
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
-        Installed by a third party.
-      </message>
-
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_OVERFLOW" desc="Text in the bubble that describes that more extensions than can be listed were disabled.">
-        ... and <ph name="EXTENSION_COUNT">$1<ex>42</ex></ph> more.
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_BUBBLE_HEADLINE" desc="Text in headline of the bubble explaining that extensions have been disabled.">
-        Time for a tune-up
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_RECOURSE" desc="Text in the bubble that explains what the user can do after the extension has been disabled.">
-        You can always enable or disable any extension in the extension settings page.
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_SETTINGS" desc="Text in the button that takes the user to Extension Settings.">
-        Extension Settings
-      </message>
-      <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_DISMISS" desc="Text in the button that acknowledges the change and dismisses the bubble.">
-        OK, Great
-      </message>
-
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search results
