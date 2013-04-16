@@ -4,41 +4,70 @@
 
 #include "net/disk_cache/simple/simple_index.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/file_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/pickle.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
-#include "third_party/zlib/zlib.h"
-
-namespace {
-
-const uint64 kMaxEntiresInIndex = 100000000;
-
-bool CheckHeader(disk_cache::SimpleIndexFile::Header header) {
-  return header.number_of_entries <= kMaxEntiresInIndex &&
-      header.initial_magic_number ==
-      disk_cache::kSimpleIndexInitialMagicNumber &&
-      header.version == disk_cache::kSimpleVersion;
-}
-
-class FileAutoCloser {
- public:
-  explicit FileAutoCloser(const base::PlatformFile& file) : file_(file) { }
-  ~FileAutoCloser() {
-    base::ClosePlatformFile(file_);
-  }
- private:
-  base::PlatformFile file_;
-  DISALLOW_COPY_AND_ASSIGN(FileAutoCloser);
-};
-
-}  // namespace
+#include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_index_file.h"
+#include "net/disk_cache/simple/simple_util.h"
 
 namespace disk_cache {
+
+EntryMetadata::EntryMetadata() :
+    hash_key_(0),
+    last_used_time_(0),
+    entry_size_(0)
+{}
+
+
+EntryMetadata::EntryMetadata(uint64 hash_key,
+                             base::Time last_used_time,
+                             uint64 entry_size) :
+    hash_key_(hash_key),
+    last_used_time_(last_used_time.ToInternalValue()),
+    entry_size_(entry_size)
+{}
+
+base::Time EntryMetadata::GetLastUsedTime() const {
+  return base::Time::FromInternalValue(last_used_time_);
+}
+
+void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
+  last_used_time_ = last_used_time.ToInternalValue();
+}
+
+void EntryMetadata::Serialize(Pickle* pickle) const {
+  DCHECK(pickle);
+  COMPILE_ASSERT(sizeof(EntryMetadata) ==
+                 (sizeof(uint64) + sizeof(int64) + sizeof(uint64)),
+                 EntryMetadata_has_three_member_variables);
+  pickle->WriteUInt64(hash_key_);
+  pickle->WriteInt64(last_used_time_);
+  pickle->WriteUInt64(entry_size_);
+}
+
+bool EntryMetadata::Deserialize(PickleIterator* it) {
+  DCHECK(it);
+  return it->ReadUInt64(&hash_key_) &&
+      it->ReadInt64(&last_used_time_) &&
+      it->ReadUInt64(&entry_size_);
+}
+
+void EntryMetadata::MergeWith(const EntryMetadata& from) {
+  DCHECK_EQ(hash_key_, from.hash_key_);
+  if (last_used_time_ == 0)
+    last_used_time_ = from.last_used_time_;
+  if (entry_size_ == 0)
+    entry_size_ = from.entry_size_;
+}
 
 SimpleIndex::SimpleIndex(
     const scoped_refptr<base::TaskRunner>& cache_thread,
@@ -57,8 +86,8 @@ SimpleIndex::~SimpleIndex() {
 
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  MergeCallback merge_callback = base::Bind(&SimpleIndex::MergeInitializingSet,
-                                            this->AsWeakPtr());
+  IndexCompletionCallback merge_callback =
+      base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&SimpleIndex::LoadFromDisk,
                                         index_filename_,
@@ -67,97 +96,14 @@ void SimpleIndex::Initialize() {
                              true);
 }
 
-// static
-void SimpleIndex::LoadFromDisk(
-    const base::FilePath& index_filename,
-    const scoped_refptr<base::TaskRunner>& io_thread,
-    const MergeCallback& merge_callback) {
-  // Open the index file.
-  base::PlatformFileError error;
-  base::PlatformFile index_file = base::CreatePlatformFile(
-      index_filename,
-      base::PLATFORM_FILE_OPEN_ALWAYS |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_WRITE,
-      NULL,
-      &error);
-  FileAutoCloser auto_close_index_file(index_file);
-  if (error != base::PLATFORM_FILE_OK) {
-    LOG(ERROR) << "Error opening file " << index_filename.value();
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-  }
-
-  uLong incremental_crc = crc32(0L, Z_NULL, 0);
-  int64 index_file_offset = 0;
-  SimpleIndexFile::Header header;
-  if (base::ReadPlatformFile(index_file,
-                             index_file_offset,
-                             reinterpret_cast<char*>(&header),
-                             sizeof(header)) != sizeof(header)) {
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-  }
-  index_file_offset += sizeof(header);
-  incremental_crc = crc32(incremental_crc,
-                          reinterpret_cast<const Bytef*>(&header),
-                          implicit_cast<uInt>(sizeof(header)));
-
-  if (!CheckHeader(header)) {
-    LOG(ERROR) << "Invalid header on Simple Cache Index.";
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-  }
-
-  const int entries_buffer_size =
-      header.number_of_entries * SimpleIndexFile::kEntryMetadataSize;
-
-  scoped_ptr<char[]> entries_buffer(new char[entries_buffer_size]);
-  if (base::ReadPlatformFile(index_file,
-                             index_file_offset,
-                             entries_buffer.get(),
-                             entries_buffer_size) != entries_buffer_size) {
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-  }
-  index_file_offset += entries_buffer_size;
-  incremental_crc = crc32(incremental_crc,
-                          reinterpret_cast<const Bytef*>(entries_buffer.get()),
-                          implicit_cast<uInt>(entries_buffer_size));
-
-  SimpleIndexFile::Footer footer;
-  if (base::ReadPlatformFile(index_file,
-                             index_file_offset,
-                             reinterpret_cast<char*>(&footer),
-                             sizeof(footer)) != sizeof(footer)) {
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-  }
-  const uint32 crc_read = footer.crc;
-  const uint32 crc_calculated = incremental_crc;
-  if (crc_read != crc_calculated)
-    return RestoreFromDisk(index_filename, io_thread, merge_callback);
-
-  scoped_ptr<EntrySet> index_file_entries(new EntrySet());
-  int entries_buffer_offset = 0;
-  while(entries_buffer_offset < entries_buffer_size) {
-    SimpleIndexFile::EntryMetadata entry_metadata;
-    SimpleIndexFile::EntryMetadata::DeSerialize(
-        &entries_buffer.get()[entries_buffer_offset], &entry_metadata);
-    InsertInternal(index_file_entries.get(), entry_metadata);
-    entries_buffer_offset += SimpleIndexFile::kEntryMetadataSize;
-  }
-  DCHECK_EQ(header.number_of_entries, index_file_entries->size());
-
-  io_thread->PostTask(FROM_HERE,
-                      base::Bind(merge_callback,
-                                 base::Passed(&index_file_entries)));
-}
-
 void SimpleIndex::Insert(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Upon insert we don't know yet the size of the entry.
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
-  const uint64 hash_key = GetEntryHashKey(key);
-  InsertInternal(&entries_set_, SimpleIndexFile::EntryMetadata(
-      hash_key,
-      base::Time::Now(), 0));
+  const uint64 hash_key = simple_util::GetEntryHashKey(key);
+  InsertInEntrySet(EntryMetadata(hash_key, base::Time::Now(), 0),
+                   &entries_set_);
   if (!initialized_)
     removed_entries_.erase(hash_key);
 }
@@ -165,7 +111,7 @@ void SimpleIndex::Insert(const std::string& key) {
 void SimpleIndex::Remove(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   UpdateEntrySize(key, 0);
-  const uint64 hash_key = GetEntryHashKey(key);
+  const uint64 hash_key = simple_util::GetEntryHashKey(key);
   entries_set_.erase(hash_key);
 
   if (!initialized_)
@@ -175,14 +121,15 @@ void SimpleIndex::Remove(const std::string& key) {
 bool SimpleIndex::Has(const std::string& key) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // If not initialized, always return true, forcing it to go to the disk.
-  return !initialized_ || entries_set_.count(GetEntryHashKey(key)) != 0;
+  return !initialized_ ||
+      entries_set_.count(simple_util::GetEntryHashKey(key)) != 0;
 }
 
 bool SimpleIndex::UseIfExists(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Always update the last used time, even if it is during initialization.
   // It will be merged later.
-  EntrySet::iterator it = entries_set_.find(GetEntryHashKey(key));
+  EntrySet::iterator it = entries_set_.find(simple_util::GetEntryHashKey(key));
   if (it == entries_set_.end())
     // If not initialized, always return true, forcing it to go to the disk.
     return !initialized_;
@@ -192,33 +139,46 @@ bool SimpleIndex::UseIfExists(const std::string& key) {
 
 bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(GetEntryHashKey(key));
+  EntrySet::iterator it = entries_set_.find(simple_util::GetEntryHashKey(key));
   if (it == entries_set_.end())
     return false;
 
   // Update the total cache size with the new entry size.
-  cache_size_ -= it->second.entry_size;
+  cache_size_ -= it->second.GetEntrySize();
   cache_size_ += entry_size;
-  it->second.entry_size = entry_size;
+  it->second.SetEntrySize(entry_size);
 
   return true;
 }
 
 // static
-void SimpleIndex::InsertInternal(
-    EntrySet* entry_set,
-    const SimpleIndexFile::EntryMetadata& entry_metadata) {
-  // TODO(felipeg): Use a hash_set instead of a hash_map.
+void SimpleIndex::InsertInEntrySet(
+    const disk_cache::EntryMetadata& entry_metadata,
+    EntrySet* entry_set) {
   DCHECK(entry_set);
   entry_set->insert(
       std::make_pair(entry_metadata.GetHashKey(), entry_metadata));
 }
 
 // static
-void SimpleIndex::RestoreFromDisk(
+void SimpleIndex::LoadFromDisk(
     const base::FilePath& index_filename,
     const scoped_refptr<base::TaskRunner>& io_thread,
-    const MergeCallback& merge_callback) {
+    const IndexCompletionCallback& completion_callback) {
+  scoped_ptr<EntrySet> index_file_entries =
+      SimpleIndexFile::LoadFromDisk(index_filename);
+
+  if (!index_file_entries.get())
+      index_file_entries = SimpleIndex::RestoreFromDisk(index_filename);
+
+  io_thread->PostTask(FROM_HERE,
+                      base::Bind(completion_callback,
+                                 base::Passed(&index_file_entries)));
+}
+
+// static
+scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
+    const base::FilePath& index_filename) {
   using file_util::FileEnumerator;
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
 
@@ -228,6 +188,8 @@ void SimpleIndex::RestoreFromDisk(
   // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
   COMPILE_ASSERT(kSimpleEntryFileCount == 3,
                  file_pattern_must_match_file_count);
+
+  const int kFileSuffixLenght = std::string("_0").size();
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
   FileEnumerator enumerator(index_filename.DirName(),
                             false /* recursive */,
@@ -240,9 +202,10 @@ void SimpleIndex::RestoreFromDisk(
     // file names.
     const std::string hash_name(base_name.begin(), base_name.end());
     const std::string hash_key_string =
-        hash_name.substr(0, kEntryHashKeyAsHexStringSize);
+        hash_name.substr(0, hash_name.size() - kFileSuffixLenght);
     uint64 hash_key = 0;
-    if (!GetEntryHashKeyFromHexString(hash_key_string, &hash_key)) {
+    if (!simple_util::GetEntryHashKeyFromHexString(
+            hash_key_string, &hash_key)) {
       LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
                    << "Simple Index from disk: " << hash_name;
       // TODO(felipeg): Should we delete the invalid file here ?
@@ -263,17 +226,21 @@ void SimpleIndex::RestoreFromDisk(
     int64 file_size = FileEnumerator::GetFilesize(find_info);
     EntrySet::iterator it = index_file_entries->find(hash_key);
     if (it == index_file_entries->end()) {
-      InsertInternal(index_file_entries.get(), SimpleIndexFile::EntryMetadata(
-          hash_key, last_used_time, file_size));
+      InsertInEntrySet(EntryMetadata(hash_key, last_used_time, file_size),
+                       index_file_entries.get());
     } else {
       // Summing up the total size of the entry through all the *_[0-2] files
-      it->second.entry_size += file_size;
+      it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
     }
   }
+  return index_file_entries.Pass();
+}
 
-  io_thread->PostTask(FROM_HERE,
-                      base::Bind(merge_callback,
-                                 base::Passed(&index_file_entries)));
+
+// static
+void SimpleIndex::WriteToDiskInternal(const base::FilePath& index_filename,
+                                      scoped_ptr<Pickle> pickle) {
+  SimpleIndexFile::WriteToDisk(index_filename, *pickle);
 }
 
 void SimpleIndex::MergeInitializingSet(
@@ -296,79 +263,27 @@ void SimpleIndex::MergeInitializingSet(
     EntrySet::iterator current_entry = entries_set_.find(it->first);
     if (current_entry != entries_set_.end()) {
       // When Merging, existing valid data in the |current_entry| will prevail.
-      SimpleIndexFile::EntryMetadata::Merge(
-          it->second, &(current_entry->second));
-      cache_size_ += current_entry->second.entry_size;
+      current_entry->second.MergeWith(it->second);
+      cache_size_ += current_entry->second.GetEntrySize();
     } else {
-      InsertInternal(&entries_set_, it->second);
-      cache_size_ += it->second.entry_size;
+      InsertInEntrySet(it->second, &entries_set_);
+      cache_size_ += it->second.GetEntrySize();
     }
   }
 
   initialized_ = true;
 }
 
-void SimpleIndex::Serialize(std::string* out_buffer) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(out_buffer);
-  SimpleIndexFile::Header header;
-  SimpleIndexFile::Footer footer;
-
-  header.initial_magic_number = kSimpleIndexInitialMagicNumber;
-  header.version = kSimpleVersion;
-  header.number_of_entries = entries_set_.size();
-
-  out_buffer->reserve(
-      sizeof(header) +
-      sizeof(SimpleIndexFile::EntryMetadata) * entries_set_.size() +
-      sizeof(footer));
-
-  // The Header goes first.
-  out_buffer->append(reinterpret_cast<const char*>(&header),
-                     sizeof(header));
-
-  // Then all the entries from |entries_set_|.
-  for (EntrySet::const_iterator it = entries_set_.begin();
-       it != entries_set_.end(); ++it) {
-    SimpleIndexFile::EntryMetadata::Serialize(it->second, out_buffer);
-  }
-
-  // Then, CRC.
-  footer.crc = crc32(crc32(0, Z_NULL, 0),
-                     reinterpret_cast<const Bytef*>(out_buffer->data()),
-                     implicit_cast<uInt>(out_buffer->size()));
-
-  out_buffer->append(reinterpret_cast<const char*>(&footer), sizeof(footer));
-}
-
 void SimpleIndex::WriteToDisk() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  scoped_ptr<std::string> buffer(new std::string());
-  Serialize(buffer.get());
+  SimpleIndexFile::IndexMetadata index_metadata(entries_set_.size(),
+                                                cache_size_);
+  scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(index_metadata,
+                                                         entries_set_);
   cache_thread_->PostTask(FROM_HERE, base::Bind(
-      &SimpleIndex::UpdateFile,
+      &SimpleIndex::WriteToDiskInternal,
       index_filename_,
-      index_filename_.DirName().AppendASCII("index_temp"),
-      base::Passed(&buffer)));
-}
-
-// static
-void SimpleIndex::UpdateFile(const base::FilePath& index_filename,
-                             const base::FilePath& temp_filename,
-                             scoped_ptr<std::string> buffer) {
-  int bytes_written = file_util::WriteFile(
-      temp_filename, buffer->data(), buffer->size());
-  DCHECK_EQ(bytes_written, implicit_cast<int>(buffer->size()));
-  if (bytes_written != static_cast<int>(buffer->size())) {
-    // TODO(felipeg): Add better error handling.
-    LOG(ERROR) << "Could not write Simple Cache index to temporary file: "
-               << temp_filename.value();
-    file_util::Delete(temp_filename, /* recursive = */ false);
-    return;
-  }
-  // Swap temp and index_file.
-  bool result = file_util::ReplaceFile(temp_filename, index_filename);
-  DCHECK(result);
+      base::Passed(&pickle)));
 }
 
 }  // namespace disk_cache

@@ -14,6 +14,23 @@ namespace disk_cache {
 
 namespace simple_util {
 
+NET_EXPORT_PRIVATE std::string ConvertEntryHashKeyToHexString(uint64 hash_key);
+
+// |key| is the regular cache key, such as an URL.
+// Returns the Hex ascii representation of the uint64 hash_key.
+NET_EXPORT_PRIVATE std::string GetEntryHashKeyAsHexString(
+    const std::string& key);
+
+// |key| is the regular HTTP Cache key, which is a URL.
+// Returns the hash of the key as uint64.
+NET_EXPORT_PRIVATE uint64 GetEntryHashKey(const std::string& key);
+
+// Parses the |hash_key| string into a uint64 buffer.
+// |hash_key| string must be of the form: FFFFFFFFFFFFFFFF .
+NET_EXPORT_PRIVATE bool GetEntryHashKeyFromHexString(
+    const std::string& hash_key,
+    uint64* hash_key_out);
+
 // Given a |key| for a (potential) entry in the simple backend and the |index|
 // of a stream on that entry, returns the filename in which that stream would be
 // stored.

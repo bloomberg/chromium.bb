@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 
 

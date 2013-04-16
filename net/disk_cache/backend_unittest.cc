@@ -21,7 +21,7 @@
 #include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/mapped_file.h"
 #include "net/disk_cache/mem_backend_impl.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "net/disk_cache/tracing_cache_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"

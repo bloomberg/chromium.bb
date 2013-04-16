@@ -9,13 +9,17 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
+#include "base/time.h"
+#include "net/base/net_export.h"
+
+class Pickle;
+class PickleIterator;
 
 namespace base {
 class TaskRunner;
@@ -23,8 +27,46 @@ class TaskRunner;
 
 namespace disk_cache {
 
+class NET_EXPORT_PRIVATE EntryMetadata {
+ public:
+  EntryMetadata();
+  EntryMetadata(uint64 hash_key,
+                base::Time last_used_time,
+                uint64 entry_size);
+
+  uint64 GetHashKey() const { return hash_key_; }
+  base::Time GetLastUsedTime() const;
+  void SetLastUsedTime(const base::Time& last_used_time);
+
+  uint64 GetEntrySize() const { return entry_size_; }
+  void SetEntrySize(uint64 entry_size) { entry_size_ = entry_size; }
+
+  // Serialize the data into the provided pickle.
+  void Serialize(Pickle* pickle) const;
+  bool Deserialize(PickleIterator* it);
+
+  // Merge two EntryMetadata instances.
+  // The existing current valid data in |this| will prevail.
+  void MergeWith(const EntryMetadata& entry_metadata);
+
+ private:
+  friend class SimpleIndexFileTest;
+
+  // When adding new members here, you should update the Serialize() and
+  // Deserialize() methods.
+  uint64 hash_key_;
+
+  // This is the serialized format from Time::ToInternalValue().
+  // If you want to make calculations/comparisons, you should use the
+  // base::Time() class. Use the GetLastUsedTime() method above.
+  // TODO(felipeg): Use Time() here.
+  int64 last_used_time_;
+
+  uint64 entry_size_;  // Storage size in bytes.
+};
+
 // This class is not Thread-safe.
-class SimpleIndex
+class NET_EXPORT_PRIVATE SimpleIndex
     : public base::SupportsWeakPtr<SimpleIndex> {
  public:
   SimpleIndex(
@@ -52,43 +94,31 @@ class SimpleIndex
   // entry.
   bool UpdateEntrySize(const std::string& key, uint64 entry_size);
 
- private:
-  // TODO(felipeg): This way we are storing the hash_key twice (as the
+  // TODO(felipeg): This way we are storing the hash_key twice, as the
   // hash_map::key and as a member of EntryMetadata. We could save space if we
   // use a hash_set.
-  typedef base::hash_map<uint64, SimpleIndexFile::EntryMetadata> EntrySet;
+  typedef base::hash_map<uint64, EntryMetadata> EntrySet;
 
-  typedef base::Callback<void(scoped_ptr<EntrySet>)> MergeCallback;
+  static void InsertInEntrySet(const EntryMetadata& entry_metadata,
+                               EntrySet* entry_set);
 
-  static void InsertInternal(
-      EntrySet* entry_set,
-      const SimpleIndexFile::EntryMetadata& entry_metadata);
+ private:
+  typedef base::Callback<void(scoped_ptr<EntrySet>)> IndexCompletionCallback;
 
-  // Load index from disk. If it is corrupted, call RestoreFromDisk().
   static void LoadFromDisk(
       const base::FilePath& index_filename,
       const scoped_refptr<base::TaskRunner>& io_thread,
-      const MergeCallback& merge_callback);
+      const IndexCompletionCallback& completion_callback);
 
   // Enumerates all entries' files on disk and regenerates the index.
-  static void RestoreFromDisk(
-      const base::FilePath& index_filename,
-      const scoped_refptr<base::TaskRunner>& io_thread,
-      const MergeCallback& merge_callback);
+  static scoped_ptr<SimpleIndex::EntrySet> RestoreFromDisk(
+      const base::FilePath& index_filename);
+
+  static void WriteToDiskInternal(const base::FilePath& index_filename,
+                                  scoped_ptr<Pickle> pickle);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries);
-
-  // |out_buffer| needs to be pre-allocated. The serialized index is stored in
-  // |out_buffer|.
-  void Serialize(std::string* out_buffer);
-
-  bool OpenIndexFile();
-  bool CloseIndexFile();
-
-  static void UpdateFile(const base::FilePath& index_filename,
-                         const base::FilePath& temp_filename,
-                         scoped_ptr<std::string> buffer);
 
   EntrySet entries_set_;
   uint64 cache_size_;  // Total cache storage size in bytes.

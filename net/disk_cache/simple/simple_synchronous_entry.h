@@ -14,7 +14,7 @@
 #include "base/task_runner.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
 
 namespace base {
 class SingleThreadTaskRunner;
