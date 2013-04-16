@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
-#include "base/sys_byteorder.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -20,6 +19,15 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+
+// Include libvpx header files.
+// VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
+// backwards compatibility for legacy applications using the library.
+#define VPX_CODEC_DISABLE_COMPAT 1
+extern "C" {
+#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
+}
 
 namespace media {
 
@@ -50,11 +58,13 @@ static int GetThreadCount() {
 VpxVideoDecoder::VpxVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
-      state_(kUninitialized) {
+      state_(kUninitialized),
+      vpx_codec_(NULL) {
 }
 
 VpxVideoDecoder::~VpxVideoDecoder() {
   DCHECK_EQ(kUninitialized, state_);
+  CloseDecoder();
 }
 
 void VpxVideoDecoder::Initialize(
@@ -82,28 +92,6 @@ void VpxVideoDecoder::Initialize(
   status_cb.Run(PIPELINE_OK);
 }
 
-static scoped_ptr<vpx_codec_ctx, VpxDeleter> InitializeVpxContext(
-    scoped_ptr<vpx_codec_ctx, VpxDeleter> context,
-    const VideoDecoderConfig& config) {
-  context.reset(new vpx_codec_ctx());
-  vpx_codec_dec_cfg_t vpx_config = {0};
-  vpx_config.w = config.coded_size().width();
-  vpx_config.h = config.coded_size().height();
-  vpx_config.threads = GetThreadCount();
-
-  vpx_codec_err_t status = vpx_codec_dec_init(context.get(),
-                                              config.codec() == kCodecVP9 ?
-                                                  vpx_codec_vp9_dx() :
-                                                  vpx_codec_vp8_dx(),
-                                              &vpx_config,
-                                              0);
-  if (status != VPX_CODEC_OK) {
-    LOG(ERROR) << "vpx_codec_dec_init failed, status=" << status;
-    context.reset();
-  }
-  return context.Pass();
-}
-
 bool VpxVideoDecoder::ConfigureDecoder() {
   const VideoDecoderConfig& config = demuxer_stream_->video_decoder_config();
   if (!config.IsValidConfig()) {
@@ -112,30 +100,37 @@ bool VpxVideoDecoder::ConfigureDecoder() {
     return false;
   }
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  bool can_handle = false;
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback) &&
-      config.codec() == kCodecVP9) {
-    can_handle = true;
-  }
-  if (cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback) &&
-      config.codec() == kCodecVP8 && config.format() == VideoFrame::YV12A) {
-    can_handle = true;
-  }
-  if (!can_handle)
+  if (config.codec() != kCodecVP9)
     return false;
 
-  vpx_codec_ = InitializeVpxContext(vpx_codec_.Pass(), config);
-  if (!vpx_codec_.get())
-    return false;
+  CloseDecoder();
 
-  if (config.format() == VideoFrame::YV12A) {
-    vpx_codec_alpha_ = InitializeVpxContext(vpx_codec_alpha_.Pass(), config);
-    if (!vpx_codec_alpha_.get())
-      return false;
+  vpx_codec_ = new vpx_codec_ctx();
+  vpx_codec_dec_cfg_t vpx_config = {0};
+  vpx_config.w = config.coded_size().width();
+  vpx_config.h = config.coded_size().height();
+  vpx_config.threads = GetThreadCount();
+
+  vpx_codec_err_t status = vpx_codec_dec_init(vpx_codec_,
+                                              vpx_codec_vp9_dx(),
+                                              &vpx_config,
+                                              0);
+  if (status != VPX_CODEC_OK) {
+    LOG(ERROR) << "vpx_codec_dec_init failed, status=" << status;
+    delete vpx_codec_;
+    vpx_codec_ = NULL;
+    return false;
   }
 
   return true;
+}
+
+void VpxVideoDecoder::CloseDecoder() {
+  if (vpx_codec_) {
+    vpx_codec_destroy(vpx_codec_);
+    delete vpx_codec_;
+    vpx_codec_ = NULL;
+  }
 }
 
 void VpxVideoDecoder::Read(const ReadCB& read_cb) {
@@ -251,7 +246,7 @@ void VpxVideoDecoder::DecodeBuffer(
   }
 
   // Any successful decode counts!
-  if (buffer->GetDataSize() && buffer->GetSideDataSize()) {
+  if (buffer->GetDataSize()) {
     PipelineStatistics statistics;
     statistics.video_bytes_decoded = buffer->GetDataSize();
     statistics_cb_.Run(statistics);
@@ -275,7 +270,7 @@ bool VpxVideoDecoder::Decode(
   // Pass |buffer| to libvpx.
   int64 timestamp = buffer->GetTimestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
-  vpx_codec_err_t status = vpx_codec_decode(vpx_codec_.get(),
+  vpx_codec_err_t status = vpx_codec_decode(vpx_codec_,
                                             buffer->GetData(),
                                             buffer->GetDataSize(),
                                             user_priv,
@@ -287,7 +282,7 @@ bool VpxVideoDecoder::Decode(
 
   // Gets pointer to decoded data.
   vpx_codec_iter_t iter = NULL;
-  const vpx_image_t* vpx_image = vpx_codec_get_frame(vpx_codec_.get(), &iter);
+  const vpx_image_t* vpx_image = vpx_codec_get_frame(vpx_codec_, &iter);
   if (!vpx_image) {
     *video_frame = NULL;
     return true;
@@ -298,45 +293,7 @@ bool VpxVideoDecoder::Decode(
     return false;
   }
 
-  const vpx_image_t* vpx_image_alpha = NULL;
-  if (vpx_codec_alpha_.get() && buffer->GetSideDataSize() >= 8) {
-    // Pass alpha data to libvpx.
-    int64 timestamp_alpha = buffer->GetTimestamp().InMicroseconds();
-    void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
-
-    // First 8 bytes of side data is side_data_id in big endian.
-    const uint64 side_data_id = base::NetToHost64(
-        *(reinterpret_cast<const uint64*>(buffer->GetSideData())));
-    if (side_data_id == 1) {
-      status = vpx_codec_decode(vpx_codec_alpha_.get(),
-                                buffer->GetSideData() + 8,
-                                buffer->GetSideDataSize() - 8,
-                                user_priv_alpha,
-                                0);
-
-      if (status != VPX_CODEC_OK) {
-        LOG(ERROR) << "vpx_codec_decode() failed on alpha, status=" << status;
-        return false;
-      }
-
-      // Gets pointer to decoded data.
-      vpx_codec_iter_t iter_alpha = NULL;
-      vpx_image_alpha = vpx_codec_get_frame(vpx_codec_alpha_.get(),
-                                            &iter_alpha);
-      if (!vpx_image_alpha) {
-        *video_frame = NULL;
-        return true;
-      }
-
-      if (vpx_image_alpha->user_priv !=
-          reinterpret_cast<void*>(&timestamp_alpha)) {
-        LOG(ERROR) << "Invalid output timestamp on alpha.";
-        return false;
-      }
-    }
-  }
-
-  CopyVpxImageTo(vpx_image, vpx_image_alpha, video_frame);
+  CopyVpxImageTo(vpx_image, video_frame);
   (*video_frame)->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
   return true;
 }
@@ -350,8 +307,7 @@ void VpxVideoDecoder::DoReset() {
 }
 
 void VpxVideoDecoder::CopyVpxImageTo(
-    const struct vpx_image* vpx_image,
-    const struct vpx_image* vpx_image_alpha,
+    const vpx_image* vpx_image,
     scoped_refptr<VideoFrame>* video_frame) {
   CHECK(vpx_image);
   CHECK_EQ(vpx_image->d_w % 2, 0U);
@@ -363,14 +319,11 @@ void VpxVideoDecoder::CopyVpxImageTo(
   gfx::Size natural_size =
       demuxer_stream_->video_decoder_config().natural_size();
 
-  *video_frame = VideoFrame::CreateFrame(vpx_codec_alpha_.get() ?
-                                             VideoFrame::YV12A :
-                                             VideoFrame::YV12,
+  *video_frame = VideoFrame::CreateFrame(VideoFrame::YV12,
                                          size,
                                          gfx::Rect(size),
                                          natural_size,
                                          kNoTimestamp());
-
   CopyYPlane(vpx_image->planes[VPX_PLANE_Y],
              vpx_image->stride[VPX_PLANE_Y],
              vpx_image->d_h,
@@ -382,17 +335,6 @@ void VpxVideoDecoder::CopyVpxImageTo(
   CopyVPlane(vpx_image->planes[VPX_PLANE_V],
              vpx_image->stride[VPX_PLANE_V],
              vpx_image->d_h / 2,
-             *video_frame);
-  if (!vpx_codec_alpha_.get())
-    return;
-  if (!vpx_image_alpha) {
-    MakeOpaqueAPlane(vpx_image->stride[VPX_PLANE_Y], vpx_image->d_h,
-                     *video_frame);
-    return;
-  }
-  CopyAPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
-             vpx_image->stride[VPX_PLANE_Y],
-             vpx_image->d_h,
              *video_frame);
 }
 

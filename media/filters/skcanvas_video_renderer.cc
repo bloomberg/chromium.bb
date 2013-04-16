@@ -21,17 +21,6 @@ static bool IsEitherYV12OrYV16OrNative(media::VideoFrame::Format format) {
       format == media::VideoFrame::NATIVE_TEXTURE;
 }
 
-static bool IsEitherYV12OrYV12AOrYV16(media::VideoFrame::Format format) {
-  return IsEitherYV12OrYV16(format) ||
-      format == media::VideoFrame::YV12A;
-}
-
-static bool IsEitherYV12OrYV12AOrYV16OrNative(
-    media::VideoFrame::Format format) {
-  return IsEitherYV12OrYV16OrNative(format) ||
-      format == media::VideoFrame::YV12A;
-}
-
 // CanFastPaint is a helper method to determine the conditions for fast
 // painting. The conditions are:
 // 1. No skew in canvas matrix.
@@ -81,8 +70,7 @@ static void FastPaint(
   const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(true);
   media::YUVType yuv_type = media::YV16;
   int y_shift = 0;
-  if (video_frame->format() == media::VideoFrame::YV12 ||
-      video_frame->format() == media::VideoFrame::YV12A) {
+  if (video_frame->format() == media::VideoFrame::YV12) {
     yuv_type = media::YV12;
     y_shift = 1;
   }
@@ -182,9 +170,9 @@ static void FastPaint(
 static void ConvertVideoFrameToBitmap(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkBitmap* bitmap) {
-  DCHECK(IsEitherYV12OrYV12AOrYV16OrNative(video_frame->format()))
+  DCHECK(IsEitherYV12OrYV16OrNative(video_frame->format()))
       << video_frame->format();
-  if (IsEitherYV12OrYV12AOrYV16(video_frame->format())) {
+  if (IsEitherYV12OrYV16(video_frame->format())) {
     DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
               video_frame->stride(media::VideoFrame::kVPlane));
   }
@@ -201,75 +189,45 @@ static void ConvertVideoFrameToBitmap(
   }
 
   bitmap->lockPixels();
+  if (IsEitherYV12OrYV16(video_frame->format())) {
+    media::YUVType yuv_type = media::YV16;
+    int y_shift = 0;
+    if (video_frame->format() == media::VideoFrame::YV12) {
+      yuv_type = media::YV12;
+      y_shift = 1;
+    }
 
-  size_t y_offset = 0;
-  size_t uv_offset = 0;
-  if (IsEitherYV12OrYV12AOrYV16(video_frame->format())) {
-    int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
     // Use the "left" and "top" of the destination rect to locate the offset
     // in Y, U and V planes.
-    y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
-                video_frame->visible_rect().y()) +
-                video_frame->visible_rect().x();
+    size_t y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
+                       video_frame->visible_rect().y()) +
+                      video_frame->visible_rect().x();
+
     // For format YV12, there is one U, V value per 2x2 block.
     // For format YV16, there is one U, V value per 2x1 block.
-    uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
-                (video_frame->visible_rect().y() >> y_shift)) +
-                (video_frame->visible_rect().x() >> 1);
-  }
-  switch (video_frame->format()) {
-    case media::VideoFrame::YV12:
-      media::ConvertYUVToRGB32(
-          video_frame->data(media::VideoFrame::kYPlane) + y_offset,
-          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(bitmap->getPixels()),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(media::VideoFrame::kYPlane),
-          video_frame->stride(media::VideoFrame::kUPlane),
-          bitmap->rowBytes(),
-          media::YV12);
-      break;
+    size_t uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
+                        (video_frame->visible_rect().y() >> y_shift)) +
+                       (video_frame->visible_rect().x() >> 1);
+    uint8* frame_clip_y =
+        video_frame->data(media::VideoFrame::kYPlane) + y_offset;
+    uint8* frame_clip_u =
+        video_frame->data(media::VideoFrame::kUPlane) + uv_offset;
+    uint8* frame_clip_v =
+        video_frame->data(media::VideoFrame::kVPlane) + uv_offset;
 
-    case media::VideoFrame::YV16:
-      media::ConvertYUVToRGB32(
-          video_frame->data(media::VideoFrame::kYPlane) + y_offset,
-          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(bitmap->getPixels()),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(media::VideoFrame::kYPlane),
-          video_frame->stride(media::VideoFrame::kUPlane),
-          bitmap->rowBytes(),
-          media::YV16);
-      break;
-
-    case media::VideoFrame::YV12A:
-      media::ConvertYUVAToARGB(
-          video_frame->data(media::VideoFrame::kYPlane) + y_offset,
-          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kAPlane),
-          static_cast<uint8*>(bitmap->getPixels()),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(media::VideoFrame::kYPlane),
-          video_frame->stride(media::VideoFrame::kUPlane),
-          video_frame->stride(media::VideoFrame::kAPlane),
-          bitmap->rowBytes(),
-          media::YV12);
-      break;
-
-    case media::VideoFrame::NATIVE_TEXTURE:
-      DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
-      video_frame->ReadPixelsFromNativeTexture(*bitmap);
-      break;
-
-    default:
-      NOTREACHED();
-      break;
+    media::ConvertYUVToRGB32(frame_clip_y,
+                             frame_clip_u,
+                             frame_clip_v,
+                             static_cast<uint8*>(bitmap->getPixels()),
+                             video_frame->visible_rect().width(),
+                             video_frame->visible_rect().height(),
+                             video_frame->stride(media::VideoFrame::kYPlane),
+                             video_frame->stride(media::VideoFrame::kUPlane),
+                             bitmap->rowBytes(),
+                             yuv_type);
+  } else {
+    DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
+    video_frame->ReadPixelsFromNativeTexture(*bitmap);
   }
   bitmap->notifyPixelsChanged();
   bitmap->unlockPixels();
@@ -297,8 +255,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
 
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
-  if (!video_frame ||
-      !IsEitherYV12OrYV12AOrYV16OrNative(video_frame->format())) {
+  if (!video_frame || !IsEitherYV12OrYV16OrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     return;
   }

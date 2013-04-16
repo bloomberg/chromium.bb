@@ -32,7 +32,6 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
       frame->AllocateRGB(4u);
       break;
     case VideoFrame::YV12:
-    case VideoFrame::YV12A:
     case VideoFrame::YV16:
       frame->AllocateYUV();
       break;
@@ -168,8 +167,6 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV12:
     case VideoFrame::YV16:
       return 3;
-    case VideoFrame::YV12A:
-      return 4;
     case VideoFrame::EMPTY:
     case VideoFrame::I420:
     case VideoFrame::INVALID:
@@ -207,8 +204,7 @@ void VideoFrame::AllocateRGB(size_t bytes_per_pixel) {
 }
 
 void VideoFrame::AllocateYUV() {
-  DCHECK(format_ == VideoFrame::YV12 || format_ == VideoFrame::YV16 ||
-         format_ == VideoFrame::YV12A);
+  DCHECK(format_ == VideoFrame::YV12 || format_ == VideoFrame::YV16);
   // Align Y rows at least at 16 byte boundaries.  The stride for both
   // YV12 and YV16 is 1/2 of the stride of Y.  For YV12, every row of bytes for
   // U and V applies to two rows of Y (one byte of UV for 4 bytes of Y), so in
@@ -217,9 +213,7 @@ void VideoFrame::AllocateYUV() {
   // YV16. We also round the height of the surface allocated to be an even
   // number to avoid any potential of faulting by code that attempts to access
   // the Y values of the final row, but assumes that the last row of U & V
-  // applies to a full two rows of Y. YV12A is the same as YV12, but with an
-  // additional alpha plane that has the same size and alignment as the Y plane.
-
+  // applies to a full two rows of Y.
   size_t y_stride = RoundUp(row_bytes(VideoFrame::kYPlane),
                             kFrameSizeAlignment);
   size_t uv_stride = RoundUp(row_bytes(VideoFrame::kUPlane),
@@ -228,12 +222,9 @@ void VideoFrame::AllocateYUV() {
   // and then the size needs to be a multiple of two macroblocks (vertically).
   // See libavcodec/utils.c:avcodec_align_dimensions2().
   size_t y_height = RoundUp(coded_size_.height(), kFrameSizeAlignment * 2);
-  size_t uv_height = (format_ == VideoFrame::YV12 ||
-                      format_ == VideoFrame::YV12A) ?
-                              y_height / 2 : y_height;
+  size_t uv_height = format_ == VideoFrame::YV12 ? y_height / 2 : y_height;
   size_t y_bytes = y_height * y_stride;
   size_t uv_bytes = uv_height * uv_stride;
-  size_t a_bytes = format_ == VideoFrame::YV12A ? y_bytes : 0;
 
   // The extra line of UV being allocated is because h264 chroma MC
   // overreads by one line in some cases, see libavcodec/utils.c:
@@ -241,7 +232,7 @@ void VideoFrame::AllocateYUV() {
   // put_h264_chroma_mc4_ssse3().
   uint8* data = reinterpret_cast<uint8*>(
       base::AlignedAlloc(
-          y_bytes + (uv_bytes * 2 + uv_stride) + a_bytes + kFrameSizePadding,
+          y_bytes + (uv_bytes * 2 + uv_stride) + kFrameSizePadding,
           kFrameAddressAlignment));
   no_longer_needed_cb_ = base::Bind(&ReleaseData, data);
   COMPILE_ASSERT(0 == VideoFrame::kYPlane, y_plane_data_must_be_index_0);
@@ -251,10 +242,6 @@ void VideoFrame::AllocateYUV() {
   strides_[VideoFrame::kYPlane] = y_stride;
   strides_[VideoFrame::kUPlane] = uv_stride;
   strides_[VideoFrame::kVPlane] = uv_stride;
-  if (format_ == YV12A) {
-    data_[VideoFrame::kAPlane] = data + y_bytes + (2 * uv_bytes);
-    strides_[VideoFrame::kAPlane] = y_stride;
-  }
 }
 
 VideoFrame::VideoFrame(VideoFrame::Format format,
@@ -298,8 +285,7 @@ int VideoFrame::row_bytes(size_t plane) const {
     // Planar, 8bpp.
     case YV12:
     case YV16:
-    case YV12A:
-      if (plane == kYPlane || plane == kAPlane)
+      if (plane == kYPlane)
         return width;
       return RoundUp(width, 2) / 2;
 
@@ -321,8 +307,7 @@ int VideoFrame::rows(size_t plane) const {
       return height;
 
     case YV12:
-    case YV12A:
-      if (plane == kYPlane || plane == kAPlane)
+      if (plane == kYPlane)
         return height;
       return RoundUp(height, 2) / 2;
 

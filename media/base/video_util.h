@@ -19,7 +19,7 @@ MEDIA_EXPORT gfx::Size GetNaturalSize(const gfx::Size& visible_size,
                                       int aspect_ratio_numerator,
                                       int aspect_ratio_denominator);
 
-// Copies a plane of YUV(A) source into a VideoFrame object, taking into account
+// Copies a plane of YUV source into a VideoFrame object, taking into account
 // source and destinations dimensions.
 //
 // NOTE: rows is *not* the same as height!
@@ -29,14 +29,8 @@ MEDIA_EXPORT void CopyUPlane(const uint8* source, int stride, int rows,
                              VideoFrame* frame);
 MEDIA_EXPORT void CopyVPlane(const uint8* source, int stride, int rows,
                              VideoFrame* frame);
-MEDIA_EXPORT void CopyAPlane(const uint8* source, int stride, int rows,
-                             VideoFrame* frame);
-
-// Sets alpha plane values to be completely opaque (all 255's).
-MEDIA_EXPORT void MakeOpaqueAPlane(int stride, int rows, VideoFrame* frame);
-
 // |plane| is one of VideoFrame::kYPlane, VideoFrame::kUPlane,
-// VideoFrame::kVPlane or VideoFrame::kAPlane
+// or VideoFrame::kVPlane.
 MEDIA_EXPORT void CopyPlane(size_t plane, const uint8* source, int stride,
                             int rows, VideoFrame* frame);
 

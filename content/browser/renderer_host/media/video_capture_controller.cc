@@ -398,7 +398,6 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
   const int kYPlane = media::VideoFrame::kYPlane;
   const int kUPlane = media::VideoFrame::kUPlane;
   const int kVPlane = media::VideoFrame::kVPlane;
-  const int kAPlane = media::VideoFrame::kAPlane;
   const int kRGBPlane = media::VideoFrame::kRGBPlane;
 
   // Do color conversion from the camera format to I420.
@@ -428,26 +427,6 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
       media::CopyVPlane(frame->data(kVPlane),
                         frame->stride(kVPlane),
                         frame->rows(kVPlane),
-                        target);
-      break;
-    }
-    case media::VideoFrame::YV12A: {
-      DCHECK(!chopped_width_ && !chopped_height_);
-      media::CopyYPlane(frame->data(kYPlane),
-                        frame->stride(kYPlane),
-                        frame->rows(kYPlane),
-                        target);
-      media::CopyUPlane(frame->data(kUPlane),
-                        frame->stride(kUPlane),
-                        frame->rows(kUPlane),
-                        target);
-      media::CopyVPlane(frame->data(kVPlane),
-                        frame->stride(kVPlane),
-                        frame->rows(kVPlane),
-                        target);
-      media::CopyAPlane(frame->data(kAPlane),
-                        frame->stride(kAPlane),
-                        frame->rows(kAPlane),
                         target);
       break;
     }

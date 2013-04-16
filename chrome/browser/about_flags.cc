@@ -722,13 +722,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableVp9Playback)
   },
   {
-    "enable-vp8-alpha-playback",
-    IDS_FLAGS_ENABLE_VP8_ALPHA_PLAYBACK_NAME,
-    IDS_FLAGS_ENABLE_VP8_ALPHA_PLAYBACK_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableVp8AlphaPlayback)
-  },
-  {
     "enable-managed-users",
     IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME,
     IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION,

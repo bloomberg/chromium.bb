@@ -10,14 +10,12 @@
 namespace media {
 
 DecoderBuffer::DecoderBuffer(int size)
-    : size_(size),
-      side_data_size_(0) {
+    : size_(size) {
   Initialize();
 }
 
 DecoderBuffer::DecoderBuffer(const uint8* data, int size)
-    : size_(size),
-      side_data_size_(0) {
+    : size_(size) {
   if (!data) {
     CHECK_EQ(size_, 0);
     return;
@@ -25,20 +23,6 @@ DecoderBuffer::DecoderBuffer(const uint8* data, int size)
 
   Initialize();
   memcpy(data_.get(), data, size_);
-}
-
-DecoderBuffer::DecoderBuffer(const uint8* data, int size,
-                             const uint8* side_data, int side_data_size)
-    : size_(size),
-      side_data_size_(side_data_size) {
-  if (!data) {
-    CHECK_EQ(size_, 0);
-    return;
-  }
-
-  Initialize();
-  memcpy(data_.get(), data, size_);
-  memcpy(side_data_.get(), side_data, side_data_size_);
 }
 
 DecoderBuffer::~DecoderBuffer() {}
@@ -48,11 +32,6 @@ void DecoderBuffer::Initialize() {
   data_.reset(reinterpret_cast<uint8*>(
       base::AlignedAlloc(size_ + kPaddingSize, kAlignmentSize)));
   memset(data_.get() + size_, 0, kPaddingSize);
-  if (side_data_size_ > 0) {
-    side_data_.reset(reinterpret_cast<uint8*>(
-        base::AlignedAlloc(side_data_size_ + kPaddingSize, kAlignmentSize)));
-    memset(side_data_.get() + side_data_size_, 0, kPaddingSize);
-  }
 }
 
 // static
@@ -61,18 +40,6 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
   return make_scoped_refptr(new DecoderBuffer(data, data_size));
-}
-
-// static
-scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
-                                                     int data_size,
-                                                     const uint8* side_data,
-                                                     int side_data_size) {
-  // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
-  CHECK(data);
-  CHECK(side_data);
-  return make_scoped_refptr(new DecoderBuffer(data, data_size,
-                                              side_data, side_data_size));
 }
 
 // static
@@ -115,16 +82,6 @@ int DecoderBuffer::GetDataSize() const {
   return size_;
 }
 
-const uint8* DecoderBuffer::GetSideData() const {
-  DCHECK(!IsEndOfStream());
-  return side_data_.get();
-}
-
-int DecoderBuffer::GetSideDataSize() const {
-  DCHECK(!IsEndOfStream());
-  return side_data_size_;
-}
-
 const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
   DCHECK(!IsEndOfStream());
   return decrypt_config_.get();
@@ -148,7 +105,6 @@ std::string DecoderBuffer::AsHumanReadableString() {
   s << "timestamp: " << timestamp_.InMicroseconds()
     << " duration: " << duration_.InMicroseconds()
     << " size: " << size_
-    << " side_data_size: " << side_data_size_
     << " encrypted: " << (decrypt_config_ != NULL);
   return s.str();
 }

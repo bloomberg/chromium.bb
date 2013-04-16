@@ -62,16 +62,6 @@ void CopyVPlane(const uint8* source, int stride, int rows, VideoFrame* frame) {
   CopyPlane(VideoFrame::kVPlane, source, stride, rows, frame);
 }
 
-void CopyAPlane(const uint8* source, int stride, int rows, VideoFrame* frame) {
-  CopyPlane(VideoFrame::kAPlane, source, stride, rows, frame);
-}
-
-void MakeOpaqueAPlane(int stride, int rows, VideoFrame* frame) {
-  int rows_to_clear = std::min(frame->rows(VideoFrame::kAPlane), rows);
-  memset(frame->data(VideoFrame::kAPlane), 255,
-         frame->stride(VideoFrame::kAPlane) * rows_to_clear);
-}
-
 void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v) {
   // Fill the Y plane.
   uint8* y_plane = frame->data(VideoFrame::kYPlane);

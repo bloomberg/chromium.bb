@@ -36,21 +36,20 @@ static void AddDefaultDecodersToCollection(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::FilterCollection* filter_collection) {
 
+  scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
+      new media::FFmpegVideoDecoder(message_loop);
+  filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
+
   // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
   // (http://crbug.com/174287) .
 #if !defined(MEDIA_DISABLE_LIBVPX)
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback) ||
-      cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback) ) {
+  if (cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
     scoped_refptr<media::VpxVideoDecoder> vpx_video_decoder =
         new media::VpxVideoDecoder(message_loop);
     filter_collection->GetVideoDecoders()->push_back(vpx_video_decoder);
   }
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
-
-  scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
-      new media::FFmpegVideoDecoder(message_loop);
-  filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
 
 void BuildMediaSourceCollection(

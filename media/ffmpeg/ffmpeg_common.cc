@@ -382,12 +382,6 @@ void AVStreamToVideoDecoderConfig(
   if (key)
     is_encrypted = true;
 
-  AVDictionaryEntry* webm_alpha =
-      av_dict_get(stream->metadata, "alpha_mode", NULL, 0);
-  if (webm_alpha && !strcmp(webm_alpha->value, "1")) {
-    format = VideoFrame::YV12A;
-  }
-
   config->Initialize(codec,
                      profile,
                      format,
@@ -496,8 +490,6 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUVJ420P:
       return VideoFrame::YV12;
-    case PIX_FMT_YUVA420P:
-      return VideoFrame::YV12A;
     default:
       DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;
   }
@@ -510,8 +502,6 @@ PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
       return PIX_FMT_YUV422P;
     case VideoFrame::YV12:
       return PIX_FMT_YUV420P;
-    case VideoFrame::YV12A:
-      return PIX_FMT_YUVA420P;
     default:
       DVLOG(1) << "Unsupported VideoFrame::Format: " << video_format;
   }

@@ -9,16 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
-#include "media/base/video_frame.h"
-
-// Include libvpx header files.
-// VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
-// backwards compatibility for legacy applications using the library.
-#define VPX_CODEC_DISABLE_COMPAT 1
-extern "C" {
-#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
-#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-}
 
 struct vpx_codec_ctx;
 struct vpx_image;
@@ -28,15 +18,6 @@ class MessageLoopProxy;
 }
 
 namespace media {
-
-struct VpxDeleter {
-  inline void operator()(vpx_codec_ctx* ptr) const {
-    if (ptr) {
-      vpx_codec_destroy(ptr);
-      delete ptr;
-    }
-  }
-};
 
 class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
@@ -66,6 +47,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   // Returns true when initialization was successful.
   bool ConfigureDecoder();
 
+  void CloseDecoder();
   void ReadFromDemuxerStream();
 
   // Carries out the buffer processing operation scheduled by
@@ -80,8 +62,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   // Reset decoder and call |reset_cb_|.
   void DoReset();
 
-  void CopyVpxImageTo(const struct vpx_image* vpx_image,
-                      const struct vpx_image* vpx_image_alpha,
+  void CopyVpxImageTo(const vpx_image* vpx_image,
                       scoped_refptr<VideoFrame>* video_frame);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -95,8 +76,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
 
-  scoped_ptr<vpx_codec_ctx, VpxDeleter> vpx_codec_;
-  scoped_ptr<vpx_codec_ctx, VpxDeleter> vpx_codec_alpha_;
+  vpx_codec_ctx* vpx_codec_;
 
   DISALLOW_COPY_AND_ASSIGN(VpxVideoDecoder);
 };
