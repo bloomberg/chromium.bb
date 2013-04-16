@@ -83,7 +83,7 @@ double MediaSourcePrivateImpl::duration()
         duration = std::min(std::max(duration, minDuration), maxDuration);
     }
 
-    return duration;
+    return static_cast<float>(duration);
 }
 
 void MediaSourcePrivateImpl::setDuration(double duration)
