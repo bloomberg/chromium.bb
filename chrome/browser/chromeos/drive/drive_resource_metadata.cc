@@ -17,85 +17,6 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-const base::FilePath::CharType kProtoFileName[] =
-    FILE_PATH_LITERAL("file_system.pb");
-
-// Schedule for dumping root file system proto buffers to disk depending its
-// total protobuffer size in MB.
-struct SerializationTimetable {
-  double size;
-  int timeout;
-};
-
-SerializationTimetable kSerializeTimetable[] = {
-#ifndef NDEBUG
-    {0.5, 0},    // Less than 0.5MB, dump immediately.
-    {-1,  1},    // Any size, dump if older than 1 minute.
-#else
-    {0.5, 0},    // Less than 0.5MB, dump immediately.
-    {1.0, 15},   // Less than 1.0MB, dump after 15 minutes.
-    {2.0, 30},
-    {4.0, 60},
-    {-1,  120},  // Any size, dump if older than 120 minutes.
-#endif
-};
-
-// Returns true if file system is due to be serialized on disk based on it
-// |serialized_size| and |last_serialized| timestamp.
-bool ShouldSerializeFileSystemNow(size_t serialized_size,
-                                  const base::Time& last_serialized) {
-  const double size_in_mb = serialized_size / 1048576.0;
-  const int last_proto_dump_in_min =
-      (base::Time::Now() - last_serialized).InMinutes();
-  for (size_t i = 0; i < arraysize(kSerializeTimetable); i++) {
-    if ((size_in_mb < kSerializeTimetable[i].size ||
-         kSerializeTimetable[i].size == -1) &&
-        last_proto_dump_in_min >= kSerializeTimetable[i].timeout) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Writes the string to the file.
-void WriteStringToFile(const base::FilePath& path,
-                       scoped_ptr<std::string> string) {
-  const int size = static_cast<int>(string->length());
-  if (file_util::WriteFile(path, string->data(), size) != size) {
-    LOG(WARNING) << "Drive proto file can't be stored at " << path.value();
-    if (!file_util::Delete(path, true))
-      LOG(WARNING) << "Drive proto file can't be deleted at " << path.value();
-  }
-}
-
-// Reads the file into the string and gets the last modified date.
-bool ReadFileToString(const base::FilePath& path,
-                      base::Time* last_modified,
-                      std::string* string) {
-  base::PlatformFileInfo info;
-  if (!file_util::GetFileInfo(path, &info) ||
-      !file_util::ReadFileToString(path, string)) {
-    LOG(WARNING) << "Failed to read file: " << path.value();
-    return false;
-  }
-  *last_modified = info.last_modified;
-  return true;
-}
-
-// Adds per-directory changestamps to |root| and all sub directories.
-void AddPerDirectoryChangestamps(DriveDirectoryProto* root, int64 changestamp) {
-  std::stack<DriveDirectoryProto*> stack;
-  stack.push(root);
-  while (!stack.empty()) {
-    DriveDirectoryProto* directory = stack.top();
-    stack.pop();
-    directory->mutable_drive_entry()->mutable_directory_specific_info()
-        ->set_changestamp(changestamp);
-    for (int i = 0; i < directory->child_directories_size(); ++i)
-      stack.push(directory->mutable_child_directories(i));
-  }
-}
-
 // Sets entry's base name from its title and other attributes.
 void SetBaseNameFromTitle(DriveEntryProto* entry) {
   std::string base_name = entry->title();
@@ -236,7 +157,6 @@ DriveResourceMetadata::DriveResourceMetadata(
     : data_directory_path_(data_directory_path),
       blocking_task_runner_(blocking_task_runner),
       storage_(new DriveResourceMetadataStorageDB(data_directory_path)),
-      serialized_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -285,12 +205,6 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
   if (!storage_->Initialize())
     return DRIVE_FILE_ERROR_FAILED;
 
-  // Remove unneeded proto file.
-  if (storage_->IsPersistentStorage()) {
-    file_util::Delete(data_directory_path_.Append(kProtoFileName),
-                      true /* recursive */);
-  }
-
   SetUpDefaultEntries();
 
   return DRIVE_FILE_OK;
@@ -322,8 +236,6 @@ void DriveResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   RemoveAllOnBlockingPool();
-  last_serialized_ = base::Time();
-  serialized_size_ = 0;
   storage_->SetLargestChangestamp(0);
 }
 
@@ -529,25 +441,6 @@ void DriveResourceMetadata::IterateEntries(
                  base::Unretained(this),
                  iterate_callback),
       completion_callback);
-}
-
-void DriveResourceMetadata::MaybeSave() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveResourceMetadata::MaybeSaveOnBlockingPool,
-                 base::Unretained(this)));
-}
-
-void DriveResourceMetadata::Load(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&DriveResourceMetadata::LoadOnBlockingPool,
-                 base::Unretained(this)),
-      callback);
 }
 
 int64 DriveResourceMetadata::GetLargestChangestampOnBlockingPool() {
@@ -924,30 +817,6 @@ void DriveResourceMetadata::IterateEntriesOnBlockingPool(
   storage_->Iterate(callback);
 }
 
-void DriveResourceMetadata::MaybeSaveOnBlockingPool() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  if (storage_->IsPersistentStorage() ||
-      !ShouldSerializeFileSystemNow(serialized_size_, last_serialized_))
-    return;
-
-  const base::FilePath path = data_directory_path_.Append(kProtoFileName);
-
-  DriveRootDirectoryProto proto;
-  DirectoryToProto(util::kDriveGrandRootSpecialResourceId,
-                   proto.mutable_drive_directory());
-  proto.set_largest_changestamp(storage_->GetLargestChangestamp());
-  proto.set_version(kProtoVersion);
-
-  scoped_ptr<std::string> serialized_proto(new std::string());
-  const bool ok = proto.SerializeToString(serialized_proto.get());
-  DCHECK(ok);
-
-  last_serialized_ = base::Time::Now();
-  serialized_size_ = serialized_proto->size();
-  WriteStringToFile(path, serialized_proto.Pass());
-}
-
 void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
@@ -1065,60 +934,6 @@ void DriveResourceMetadata::RemoveDirectoryChildren(
     RemoveDirectoryChild(children[i]);
 }
 
-void DriveResourceMetadata::AddDescendantsFromProto(
-    const DriveDirectoryProto& proto) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(proto.drive_entry().file_info().is_directory());
-  DCHECK(!proto.drive_entry().has_file_specific_info());
-
-#if !defined(NDEBUG)
-  std::vector<std::string> children;
-  storage_->GetChildren(proto.drive_entry().resource_id(), &children);
-  DCHECK(proto.drive_entry().resource_id() ==
-             util::kDriveGrandRootSpecialResourceId ||
-         children.empty());
-#endif
-
-  // Add child files.
-  for (int i = 0; i < proto.child_files_size(); ++i) {
-    DriveEntryProto file(CreateEntryWithProperBaseName(proto.child_files(i)));
-    DCHECK_EQ(proto.drive_entry().resource_id(), file.parent_resource_id());
-    AddEntryToDirectory(file);
-  }
-  // Add child directories recursively.
-  for (int i = 0; i < proto.child_directories_size(); ++i) {
-    DriveEntryProto child_dir(CreateEntryWithProperBaseName(
-        proto.child_directories(i).drive_entry()));
-    DCHECK_EQ(proto.drive_entry().resource_id(),
-              child_dir.parent_resource_id());
-    AddEntryToDirectory(child_dir);
-    AddDescendantsFromProto(proto.child_directories(i));
-  }
-}
-
-void DriveResourceMetadata::DirectoryToProto(
-    const std::string& directory_resource_id,
-    DriveDirectoryProto* proto) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  scoped_ptr<DriveEntryProto> directory =
-      storage_->GetEntry(directory_resource_id);
-  DCHECK(directory);
-  *proto->mutable_drive_entry() = *directory;
-  DCHECK(proto->drive_entry().file_info().is_directory());
-
-  std::vector<std::string> children;
-  storage_->GetChildren(directory_resource_id, &children);
-  for (size_t i = 0; i < children.size(); ++i) {
-    scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(children[i]);
-    DCHECK(entry);
-    if (entry->file_info().is_directory())
-      DirectoryToProto(entry->resource_id(), proto->add_child_directories());
-    else
-      *proto->add_child_files() = *entry;
-  }
-}
-
 scoped_ptr<DriveEntryProtoVector>
 DriveResourceMetadata::DirectoryChildrenToProtoVector(
     const std::string& directory_resource_id) {
@@ -1133,71 +948,6 @@ DriveResourceMetadata::DirectoryChildrenToProtoVector(
     entries->push_back(*child);
   }
   return entries.Pass();
-}
-
-DriveFileError DriveResourceMetadata::LoadOnBlockingPool() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  // If the storage is persistent, do nothing and just return whether the stored
-  // data is non-trivial.
-  if (storage_->IsPersistentStorage()) {
-    return storage_->GetLargestChangestamp() > 0 ?
-        DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
-  }
-
-  const base::FilePath path = data_directory_path_.Append(kProtoFileName);
-  base::Time last_modified;
-  std::string serialized_proto;
-  const bool read_succeeded =
-      ReadFileToString(path, &last_modified, &serialized_proto);
-
-  DriveFileError error = DRIVE_FILE_OK;
-  if (read_succeeded && ParseFromString(serialized_proto)) {
-    last_serialized_ = last_modified;
-    serialized_size_ = serialized_proto.size();
-  } else {
-    error = DRIVE_FILE_ERROR_FAILED;
-    LOG(WARNING) << "Proto loading failed.";
-  }
-  return error;
-}
-
-bool DriveResourceMetadata::ParseFromString(
-    const std::string& serialized_proto) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  DriveRootDirectoryProto proto;
-  if (!proto.ParseFromString(serialized_proto))
-    return false;
-
-  if (proto.version() != kProtoVersion) {
-    LOG(ERROR) << "Incompatible proto detected (incompatible version): "
-               << proto.version();
-    return false;
-  }
-
-  // An old proto file might not have per-directory changestamps. Add them if
-  // needed.
-  const DriveDirectoryProto& root = proto.drive_directory();
-  if (!root.drive_entry().directory_specific_info().has_changestamp()) {
-    AddPerDirectoryChangestamps(proto.mutable_drive_directory(),
-                                proto.largest_changestamp());
-  }
-
-  if (proto.drive_directory().drive_entry().resource_id() !=
-      util::kDriveGrandRootSpecialResourceId) {
-    LOG(ERROR) << "Incompatible proto detected (incompatible root ID): "
-               << proto.drive_directory().drive_entry().resource_id();
-    return false;
-  }
-
-  storage_->PutEntry(
-      CreateEntryWithProperBaseName(proto.drive_directory().drive_entry()));
-  AddDescendantsFromProto(proto.drive_directory());
-
-  storage_->SetLargestChangestamp(proto.largest_changestamp());
-
-  return true;
 }
 
 }  // namespace drive

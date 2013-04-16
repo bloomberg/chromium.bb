@@ -427,10 +427,6 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // Write resource metadata.
-    resource_metadata->MaybeSave();
-    google_apis::test_util::RunBlockingPoolTask();
-
     // Recreate resource metadata.
     SetUpResourceMetadataAndFileSystem();
 

@@ -24,7 +24,6 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class DriveDirectoryProto;
 class DriveEntryProto;
 class DriveResourceMetadataStorage;
 
@@ -67,10 +66,6 @@ enum DriveFileType {
   REGULAR_FILE,
   HOSTED_DOCUMENT,
 };
-
-// This should be incremented when incompatibility change is made in
-// drive.proto.
-const int32 kProtoVersion = 3;
 
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
@@ -235,15 +230,7 @@ class DriveResourceMetadata {
   void IterateEntries(const IterateCallback& iterate_callback,
                       const base::Closure& completion_callback);
 
-  // Saves metadata to the data directory when appropriate.
-  void MaybeSave();
-
-  // Loads metadata from the data directory.
-  void Load(const FileOperationCallback& callback);
-
  private:
-  friend class DriveResourceMetadataTest;
-
   struct FileMoveResult;
   struct GetEntryInfoResult;
   struct GetEntryInfoWithFilePathResult;
@@ -316,9 +303,6 @@ class DriveResourceMetadata {
   // Used to implement IterateEntries().
   void IterateEntriesOnBlockingPool(const IterateCallback& callback);
 
-  // Used to implement MaybeSave().
-  void MaybeSaveOnBlockingPool();
-
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
   // first was found.
@@ -369,31 +353,15 @@ class DriveResourceMetadata {
   // Removes child elements of directory.
   void RemoveDirectoryChildren(const std::string& directory_resource_id);
 
-  // Adds directory children recursively from |proto|.
-  void AddDescendantsFromProto(const DriveDirectoryProto& proto);
-
-  // Converts directory to proto.
-  void DirectoryToProto(const std::string& directory_resource_id,
-                        DriveDirectoryProto* proto);
-
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
       const std::string& directory_resource_id);
-
-  // Used to implement Load().
-  DriveFileError LoadOnBlockingPool();
-
-  // Parses metadata from string and set up directory structure.
-  bool ParseFromString(const std::string& serialized_proto);
 
   const base::FilePath data_directory_path_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   scoped_ptr<DriveResourceMetadataStorage> storage_;
-
-  base::Time last_serialized_;
-  size_t serialized_size_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

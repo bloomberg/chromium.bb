@@ -131,34 +131,6 @@ class DriveResourceMetadataTest : public testing::Test {
     return entries.Pass();
   }
 
-  bool ParseMetadataFromString(DriveResourceMetadata* resource_metadata,
-                               const std::string& serialized_proto) {
-    // ParseFromString should run on the blocking pool.
-    bool result = false;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
-        FROM_HERE,
-        base::Bind(&DriveResourceMetadata::ParseFromString,
-                   base::Unretained(resource_metadata),
-                   serialized_proto),
-        google_apis::test_util::CreateCopyResultCallback(&result));
-    google_apis::test_util::RunBlockingPoolTask();
-    return result;
-  }
-
-  // Forces |resource_metadata| to use DriveResourceMetadataStorageMemory.
-  // Some tests are expecting memory storage's behavior.
-  void ForceUsingMemoryStorage(DriveResourceMetadata* resource_metadata) {
-    // The existing DriveResourceMetadataStorage must be destructed on the
-    // blocking pool.
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&scoped_ptr<DriveResourceMetadataStorage>::reset,
-                   base::Unretained(&resource_metadata->storage_),
-                   new DriveResourceMetadataStorageMemory));
-    google_apis::test_util::RunBlockingPoolTask();
-  }
-
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
@@ -265,54 +237,6 @@ bool DriveResourceMetadataTest::AddDriveEntryProto(
       google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
   google_apis::test_util::RunBlockingPoolTask();
   return DRIVE_FILE_OK == error;
-}
-
-TEST_F(DriveResourceMetadataTest, VersionCheck) {
-  // Set up the root directory.
-  DriveRootDirectoryProto proto;
-  DriveEntryProto* mutable_entry =
-      proto.mutable_drive_directory()->mutable_drive_entry();
-  mutable_entry->mutable_file_info()->set_is_directory(true);
-  mutable_entry->set_resource_id(util::kDriveGrandRootSpecialResourceId);
-  mutable_entry->set_title("drive");
-
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
-                                                  blocking_task_runner_));
-  ForceUsingMemoryStorage(resource_metadata.get());
-
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  resource_metadata->Initialize(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  std::string serialized_proto;
-  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
-  // This should fail as the version is empty.
-  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
-                                       serialized_proto));
-
-  // Set an older version, and serialize.
-  proto.set_version(kProtoVersion - 1);
-  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
-  // This should fail as the version is older.
-  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
-                                       serialized_proto));
-
-  // Set the current version, and serialize.
-  proto.set_version(kProtoVersion);
-  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
-  // This should succeed as the version matches the current number.
-  EXPECT_TRUE(ParseMetadataFromString(resource_metadata.get(),
-                                      serialized_proto));
-
-  // Set a newer version, and serialize.
-  proto.set_version(kProtoVersion + 1);
-  EXPECT_TRUE(proto.SerializeToString(&serialized_proto));
-  // This should fail as the version is newer.
-  EXPECT_FALSE(ParseMetadataFromString(resource_metadata.get(),
-                                       serialized_proto));
 }
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
@@ -1251,115 +1175,6 @@ TEST_F(DriveResourceMetadataTest, IterateEntries) {
 
   EXPECT_EQ(7, count);
   EXPECT_TRUE(completed);
-}
-
-TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
-  const int kNewChangestamp = kTestChangestamp + 1;
-  const char kSubDirectoryResourceId[] = "sub-directory-id";
-
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata_original(new DriveResourceMetadata(
-          temp_dir_.path(), blocking_task_runner_));
-  ForceUsingMemoryStorage(resource_metadata_original.get());
-
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  resource_metadata_original->Initialize(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  resource_metadata_original->SetLargestChangestamp(
-      kNewChangestamp,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-
-  // Add "/drive/root" directory.
-  base::FilePath file_path;
-  resource_metadata_original->AddEntry(
-      util::CreateMyDriveRootEntry(kTestRootResourceId),
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  // Add a sub directory.
-  DriveEntryProto directory_entry;
-  directory_entry.mutable_file_info()->set_is_directory(true);
-  directory_entry.set_resource_id(kSubDirectoryResourceId);
-  directory_entry.set_parent_resource_id(kTestRootResourceId);
-  directory_entry.set_title("directory");
-  resource_metadata_original->AddEntry(
-      directory_entry,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  // At this point, both the root and the sub directory do not contain the
-  // per-directory changestamp.
-  resource_metadata_original->MaybeSave();
-  google_apis::test_util::RunBlockingPoolTask();
-
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
-                                                  blocking_task_runner_));
-  ForceUsingMemoryStorage(resource_metadata.get());
-
-  resource_metadata->Initialize(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  // Load. This should propagate the largest changestamp to every directory.
-  resource_metadata->Load(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-
-  // Confirm that the root directory contains the changestamp.
-  scoped_ptr<DriveEntryProto> entry_proto;
-  resource_metadata->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(kNewChangestamp,
-            entry_proto->directory_specific_info().changestamp());
-
-  // Confirm that the sub directory contains the changestamp.
-  resource_metadata->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/root/directory"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(kNewChangestamp,
-            entry_proto->directory_specific_info().changestamp());
-}
-
-TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
-  // Save metadata and reset.
-  resource_metadata_->MaybeSave();
-
-  resource_metadata_.reset(new DriveResourceMetadata(temp_dir_.path(),
-                                                     blocking_task_runner_));
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  resource_metadata_->Initialize(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-
-  // Load metadata.
-  resource_metadata_->Load(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-
-  // Try to get some data.
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file9"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file9", entry->base_name());
-  ASSERT_TRUE(!entry->file_info().is_directory());
-  EXPECT_EQ("md5:file9", entry->file_specific_info().file_md5());
 }
 
 }  // namespace drive
