@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
 
 #include <list>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -94,6 +95,9 @@ class DriveScheduler
   // Initializes the object. This function should be called before any
   // other functions.
   void Initialize();
+
+  // Returns the list of jobs currently managed by the scheduler.
+  std::vector<JobInfo> GetJobInfoList();
 
   // Adds a GetAccountMetadata operation to the queue.
   // |callback| must not be null.
@@ -430,9 +434,6 @@ class DriveScheduler
 
   // Number of jobs in flight for each queue.
   int jobs_running_[NUM_QUEUES];
-
-  // Next value that should be assigned as a job id.
-  int next_job_id_;
 
   // The number of times operations have failed in a row, capped at
   // kMaxThrottleCount.  This is used to calculate the delay before running the

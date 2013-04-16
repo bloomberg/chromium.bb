@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -646,6 +648,84 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
   // The content is "x"s of the file size specified in root_feed.json.
   EXPECT_EQ("xxxxxxxxxx", content);
+}
+
+TEST_F(DriveSchedulerTest, JobInfo) {
+  // Disable background upload/download.
+  ConnectToWimax();
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
+  base::FilePath path;
+
+  std::set<DriveScheduler::JobType> expected_types;
+
+  // Add many jobs.
+  expected_types.insert(DriveScheduler::TYPE_ADD_NEW_DIRECTORY);
+  scheduler_->AddNewDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      "New Directory",
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  expected_types.insert(DriveScheduler::TYPE_GET_ACCOUNT_METADATA);
+  scheduler_->GetAccountMetadata(
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &account_metadata));
+  expected_types.insert(DriveScheduler::TYPE_RENAME_RESOURCE);
+  scheduler_->RenameResource(
+      "file:2_file_resource_id",
+      "New Name",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  expected_types.insert(DriveScheduler::TYPE_DOWNLOAD_FILE);
+  scheduler_->DownloadFile(
+      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      temp_dir.path().AppendASCII("whatever.txt"),
+      GURL("https://file_content_url/"),
+      DriveClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(&error, &path),
+      google_apis::GetContentCallback());
+
+  // The number of jobs queued so far.
+  EXPECT_EQ(4U, scheduler_->GetJobInfoList().size());
+
+  // Add more jobs.
+  expected_types.insert(DriveScheduler::TYPE_ADD_RESOURCE_TO_DIRECTORY);
+  scheduler_->AddResourceToDirectory(
+      "folder:1_folder_resource_id",
+      "file:2_file_resource_id",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  expected_types.insert(DriveScheduler::TYPE_COPY_HOSTED_DOCUMENT);
+  scheduler_->CopyHostedDocument(
+      "document:5_document_resource_id",
+      "New Document",
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+
+  // 6 jobs in total were queued.
+  std::vector<DriveScheduler::JobInfo> jobs = scheduler_->GetJobInfoList();
+  EXPECT_EQ(6U, jobs.size());
+  std::set<DriveScheduler::JobType> actual_types;
+  for (size_t i = 0; i < jobs.size(); ++i)
+    actual_types.insert(jobs[i].job_type);
+  EXPECT_EQ(expected_types, actual_types);
+
+  // Run the jobs.
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // All jobs except the BACKGROUND job should have finished.
+  jobs = scheduler_->GetJobInfoList();
+  ASSERT_EQ(1U, jobs.size());
+  EXPECT_EQ(DriveScheduler::TYPE_DOWNLOAD_FILE, jobs[0].job_type);
+
+  // Run the background downloading job as well.
+  ConnectToWifi();
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // All jobs should have finished.
+  EXPECT_EQ(0U, scheduler_->GetJobInfoList().size());
 }
 
 }  // namespace drive

@@ -58,8 +58,7 @@ bool DriveScheduler::QueueEntry::Compare(
 DriveScheduler::DriveScheduler(
     Profile* profile,
     google_apis::DriveServiceInterface* drive_service)
-    : next_job_id_(0),
-      throttle_count_(0),
+    : throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
       uploader_(new google_apis::DriveUploader(drive_service)),
@@ -100,6 +99,13 @@ void DriveScheduler::Initialize() {
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   initialized_ = true;
+}
+
+std::vector<DriveScheduler::JobInfo> DriveScheduler::GetJobInfoList() {
+  std::vector<JobInfo> job_info_list;
+  for (JobIDMap::iterator iter(&job_map_); !iter.IsAtEnd(); iter.Advance())
+    job_info_list.push_back(*iter.GetCurrentValue());
+  return job_info_list;
 }
 
 void DriveScheduler::GetAccountMetadata(
