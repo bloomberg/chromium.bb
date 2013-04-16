@@ -639,8 +639,6 @@
         'browser/extensions/install_tracker.h',
         'browser/extensions/install_tracker_factory.cc',
         'browser/extensions/install_tracker_factory.h',
-        'browser/extensions/key_identifier_conversion_views.cc',
-        'browser/extensions/key_identifier_conversion_views.h',
         'browser/extensions/lazy_background_task_queue.cc',
         'browser/extensions/lazy_background_task_queue.h',
         'browser/extensions/location_bar_controller.h',

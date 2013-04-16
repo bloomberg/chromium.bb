@@ -765,7 +765,6 @@
         'browser/extensions/page_action_controller_unittest.cc',
         'browser/extensions/permissions_updater_unittest.cc',
         'browser/extensions/image_loader_unittest.cc',
-        'browser/extensions/key_identifier_conversion_views_unittest.cc',
         'browser/extensions/management_policy_unittest.cc',
         'browser/extensions/pack_extension_unittest.cc',
         'browser/extensions/process_map_unittest.cc',
@@ -2278,7 +2277,6 @@
           'sources/': [
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
-            ['exclude', '^browser/extensions/key_identifier_conversion_views_unittest.cc'],
           ],
         }],
         ['use_nss==0 and use_openssl==0', {

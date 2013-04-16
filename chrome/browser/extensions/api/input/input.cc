@@ -11,10 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/key_identifier_conversion_views.h"
 #include "chrome/browser/ui/top_level_widget.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/key_identifier_conversion.h"
 
 #if defined(USE_ASH) && defined(USE_AURA)
 #include "ash/shell.h"
@@ -84,7 +85,9 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kKeyIdentifier, &identifier));
   TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
 
-  const ui::KeyEvent& prototype_event = KeyEventFromKeyIdentifier(identifier);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  const ui::KeyEvent& prototype_event =
+      ui::KeyEventFromKeyIdentifier(identifier);
   uint16 character = 0;
   if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
     // Check if |identifier| is "U+NNNN" format.

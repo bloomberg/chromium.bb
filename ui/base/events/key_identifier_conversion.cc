@@ -2,24 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/key_identifier_conversion_views.h"
+#include "ui/base/events/key_identifier_conversion.h"
 
 #include <string.h>
-
 #include <utility>
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "base/logging.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-using content::BrowserThread;
-
 namespace {
 
-static const int kNumIdentifierTypes = 3;
+const int kNumIdentifierTypes = 3;
 
 typedef struct KeyIdentifier {
   // In order: key identifier, character and unicode codepoint.  They are
@@ -34,8 +29,8 @@ typedef struct KeyIdentifier {
 
 // Taken from Section 6.3.3 here:
 // http://www.w3.org/TR/DOM-Level-3-Events/#keyset-keyidentifiers
-// TODO(bryeung): keycodes could be wrong: I took the keydown code only
-static const KeyIdentifier kKeyIdentifiers[] = {
+// WARNING: keycodes could be wrong, as they are based soley on keydown
+const KeyIdentifier kKeyIdentifiers[] = {
   { {"Accept", "", ""}, ui::VKEY_ACCEPT, 0 },
   { {"Add", "", ""}, ui::VKEY_ADD, 0 },
   { {"Again", "", ""}, ui::VKEY_UNKNOWN, 0 },
@@ -286,15 +281,15 @@ static const KeyIdentifier kKeyIdentifiers[] = {
   { {"DeadSemivoicedSound", "", "U+309A"}, ui::VKEY_UNKNOWN, 0 }
 };
 
-static const int kNumKeyIdentifiers = arraysize(kKeyIdentifiers);
+const int kNumKeyIdentifiers = arraysize(kKeyIdentifiers);
 
 typedef base::hash_map<std::string, const ui::KeyEvent*> IdentifierMap;
 typedef std::pair<std::string, const ui::KeyEvent*> IdentifierPair;
-static IdentifierMap* identifierMaps[kNumIdentifierTypes] = { NULL };
+IdentifierMap* identifierMaps[kNumIdentifierTypes] = { NULL };
 
-static ui::KeyEvent* kUnknownKeyEvent = NULL;
+ui::KeyEvent* kUnknownKeyEvent = NULL;
 
-static void InitializeMaps() {
+void InitializeMaps() {
   if (identifierMaps[0])
     return;
 
@@ -326,10 +321,12 @@ static void InitializeMaps() {
 
 }  // namespace
 
+namespace ui {
 
 const ui::KeyEvent& KeyEventFromKeyIdentifier(
     const std::string& key_identifier) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // This lazily initializes lookup tables for the conversion.  To prevent
+  // races, it should only ever be called from a single thread.
   InitializeMaps();
 
   for (int i = 0; i < kNumIdentifierTypes; ++i) {
@@ -342,3 +339,5 @@ const ui::KeyEvent& KeyEventFromKeyIdentifier(
 
   return *kUnknownKeyEvent;
 }
+
+}  // namespace ui
