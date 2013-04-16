@@ -82,26 +82,6 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 
 static char kFakeIrtName[] = "\0IRT";
 
-static void ValidationMetadataForFD(int file_desc,
-                                    const char* file_name,
-                                    size_t file_name_length,
-                                    struct NaClValidationMetadata *metadata) {
-  struct NaClHostDesc wrapper;
-  nacl_host_stat_t stat;
-
-  memset(metadata, 0, sizeof(*metadata));
-  wrapper.d = file_desc;
-  if(!NaClHostDescFstat(&wrapper, &stat)) {
-    metadata->identity_type = NaClCodeIdentityFile;
-    /* TODO(ncbray) plumb the real filename in from Chrome. */
-    metadata->file_name = file_name;
-    metadata->file_name_length = file_name_length;
-    metadata->file_size = stat.st_size;
-    metadata->mtime = stat.st_mtime;
-    /* TODO(ncbray) dev / ino where available. */
-  }
-}
-
 static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   int file_desc;
   struct GioPio gio_pio;
@@ -122,8 +102,9 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
    * For the IRT use a fake file name with null characters at the begining and
    * the end of the name.
    */
-  ValidationMetadataForFD(file_desc, kFakeIrtName, sizeof(kFakeIrtName),
-                          &metadata);
+  /* TODO(ncbray) plumb the real filename in from Chrome. */
+  ConstructMetadataForFD(file_desc, kFakeIrtName, sizeof(kFakeIrtName),
+                         &metadata);
 
   /*
    * The GioPio type is safe to use when this file descriptor is shared

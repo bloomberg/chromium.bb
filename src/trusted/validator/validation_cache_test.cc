@@ -232,7 +232,7 @@ TEST_F(ValidationCachingInterfaceTests, Metadata) {
   metadata.file_size = CODE_SIZE;
   metadata.mtime = 100;
   metadata_ptr = &metadata;
-  context.add_count_expected = 8;
+  context.add_count_expected = 12;
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);

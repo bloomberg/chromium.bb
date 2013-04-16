@@ -12,6 +12,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'arm_validator_core': [
         'cpu_features',
         ],
+    'validation_cache': [
+        'platform',
+        ],
     'debug_stub': [
         'sel',
         ],
@@ -38,6 +41,7 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'platform',
         'platform_qual_lib',
         'gio',
+        'validation_cache',
         'validators',
         ],
     'sel_main_chrome': [
