@@ -2379,8 +2379,14 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onScanStarted_ = function() {
+    if (this.scanInProgress_ && !this.scanUpdatedAtLeastOnceOrCompleted_) {
+      this.table_.list.endBatchUpdates();
+      this.grid_.endBatchUpdates();
+    }
+
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
+    this.scanInProgress_ = true;
 
     if (!util.platform.newUI()) {
       this.breadcrumbs_.update(
@@ -2418,9 +2424,14 @@ DialogType.isModal = function(type) {
       if (this.scanUpdatedAtLeastOnceOrCompleted_)
         return;
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-
+      this.scanInProgress_ = false;
+      if (this.scanUpdatedTimer_) {
+        clearTimeout(this.scanUpdatedTimer_);
+        this.scanUpdatedTimer_ = null;
+      }
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
+      this.scanCompletedTimer_ = null;
     }.bind(this), 50);
   };
 
@@ -2438,10 +2449,16 @@ DialogType.isModal = function(type) {
       // We need to hide the spinner only once.
       if (this.scanUpdatedAtLeastOnceOrCompleted_)
         return;
+      if (this.scanCompletedTimer_) {
+        clearTimeout(this.scanCompletedTimer_);
+        this.scanCompletedTimer_ = null;
+      }
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
+      this.scanInProgress_ = false;
       this.hideSpinnerLater_();
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
+      this.scanUpdatedTimer_ = null;
     }.bind(this), 200);
   };
 
