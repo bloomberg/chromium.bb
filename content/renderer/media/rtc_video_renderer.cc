@@ -11,7 +11,6 @@
 #include "base/message_loop_proxy.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "third_party/libjingle/source/talk/base/timeutils.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
 
 using media::CopyYPlane;
@@ -74,15 +73,22 @@ void RTCVideoRenderer::SetSize(int width, int height) {
 }
 
 void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
-  base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
-      frame->GetTimeStamp() / talk_base::kNumNanosecsPerMillisec);
+  TRACE_EVENT_INSTANT2("rtc_video_renderer",
+                       "RenderFrame",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "elapsed time",
+                       frame->GetElapsedTime(),
+                       "timestamp",
+                       frame->GetTimeStamp());
+
   gfx::Size size(frame->GetWidth(), frame->GetHeight());
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                      size,
                                      gfx::Rect(size),
                                      size,
-                                     timestamp);
+                                     base::TimeDelta::FromMilliseconds(
+                                         frame->GetTimeStamp()));
 
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.
   DCHECK_EQ(frame->GetPixelWidth(), 1u);
