@@ -155,9 +155,6 @@ class DriveFileSystemInterface {
   virtual void AddObserver(DriveFileSystemObserver* observer) = 0;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) = 0;
 
-  // Starts initial feed fetch from the server.
-  virtual void StartInitialFeedFetch() = 0;
-
   // Notifies the file system was just mounted.
   virtual void NotifyFileSystemMounted() = 0;
 

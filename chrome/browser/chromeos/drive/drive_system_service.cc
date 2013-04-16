@@ -379,12 +379,6 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
   }
 
   AddDriveMountPoint();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDriveMetadataPrefetch)) {
-    // Start prefetching of Drive metadata.
-    file_system_->StartInitialFeedFetch();
-  }
 }
 
 void DriveSystemService::DisableDrive() {

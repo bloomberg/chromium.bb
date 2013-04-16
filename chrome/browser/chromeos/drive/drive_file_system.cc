@@ -43,31 +43,6 @@ const char kEmptyFilePath[] = "/dev/null";
 
 //================================ Helper functions ============================
 
-// The class to wait for the drive service to be ready to start operation.
-class OperationReadinessObserver : public google_apis::DriveServiceObserver {
- public:
-  OperationReadinessObserver(google_apis::DriveServiceInterface* drive_service,
-                             const base::Closure& callback)
-      : drive_service_(drive_service),
-        callback_(callback) {
-    DCHECK(!callback_.is_null());
-    drive_service_->AddObserver(this);
-  }
-
-  // DriveServiceObserver override.
-  virtual void OnReadyToPerformOperations() OVERRIDE {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback_);
-    drive_service_->RemoveObserver(this);
-    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
-  }
-
- private:
-  google_apis::DriveServiceInterface* drive_service_;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
-};
-
 // Creates a temporary JSON file representing a document with |edit_url|
 // and |resource_id| under |document_dir| on blocking pool.
 DriveFileError CreateDocumentJsonFileOnBlockingPool(
@@ -336,22 +311,6 @@ void DriveFileSystem::AddObserver(DriveFileSystemObserver* observer) {
 void DriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
-}
-
-void DriveFileSystem::StartInitialFeedFetch() {
-  if (drive_service_->CanStartOperation()) {
-    LoadIfNeeded(DirectoryFetchInfo(),
-                 base::Bind(&util::EmptyFileOperationCallback));
-  } else {
-    // Wait for the service to get ready. The observer deletes itself after
-    // OnReadyToPerformOperations() gets called.
-    new OperationReadinessObserver(
-        drive_service_,
-        base::Bind(&DriveFileSystem::LoadIfNeeded,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   DirectoryFetchInfo(),
-                   base::Bind(&util::EmptyFileOperationCallback)));
-  }
 }
 
 void DriveFileSystem::GetEntryInfoByResourceId(
