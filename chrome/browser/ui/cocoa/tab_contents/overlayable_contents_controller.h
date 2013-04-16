@@ -97,6 +97,8 @@ class WebContents;
 
 - (InstantOverlayControllerMac*)instantOverlayController;
 
+- (void)onWebContentsDestroyed:(content::WebContents*)webContents;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_OVERLAYABLE_CONTENTS_CONTROLLER_H_
