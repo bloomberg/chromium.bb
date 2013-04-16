@@ -338,7 +338,8 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
     if (m_propertyRangeStart == UINT_MAX || m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)
         return;
 
-    if (m_parsedText[offset] == ';') // Include semicolon into the property text.
+    ASSERT(offset <= m_parsedText.length());
+    if (offset < m_parsedText.length() && m_parsedText[offset] == ';') // Include semicolon into the property text.
         ++offset;
 
     const unsigned start = m_propertyRangeStart;

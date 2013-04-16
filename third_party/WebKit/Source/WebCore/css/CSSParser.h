@@ -388,6 +388,7 @@ public:
 
     // tokenizer methods and data
     size_t m_parsedTextPrefixLength;
+    size_t m_parsedTextSuffixLength;
     SourceDataHandler* m_sourceDataHandler;
 
     void startRuleHeader(CSSRuleSourceData::Type);
@@ -635,7 +636,9 @@ private:
     int colorIntFromValue(CSSParserValue*);
     double parsedDouble(CSSParserValue*, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
     bool isCalculation(CSSParserValue*);
-    
+
+    inline unsigned safeUserStringTokenOffset();
+
     friend class TransformOperationInfo;
 #if ENABLE(CSS_FILTERS)
     friend class FilterOperationInfo;

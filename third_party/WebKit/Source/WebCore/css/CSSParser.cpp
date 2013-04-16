@@ -306,6 +306,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_inFilterRule(false)
     , m_defaultNamespace(starAtom)
     , m_parsedTextPrefixLength(0)
+    , m_parsedTextSuffixLength(0)
     , m_sourceDataHandler(0)
     , m_parsingMode(NormalMode)
     , m_is8BitSource(false)
@@ -389,8 +390,9 @@ AtomicString CSSParserString::lowerSubstring(unsigned position, unsigned length)
 void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const String& string, const char* suffix, unsigned suffixLength)
 {
     m_parsedTextPrefixLength = prefixLength;
+    m_parsedTextSuffixLength = suffixLength;
     unsigned stringLength = string.length();
-    unsigned length = stringLength + m_parsedTextPrefixLength + suffixLength + 1;
+    unsigned length = stringLength + m_parsedTextPrefixLength + m_parsedTextSuffixLength + 1;
     m_length = length;
 
     if (!stringLength || string.is8Bit()) {
@@ -11314,55 +11316,60 @@ void CSSParser::updateLastMediaLine(MediaQuerySet* media)
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->startRuleHeader(ruleType, tokenStartOffset());
+        m_sourceDataHandler->startRuleHeader(ruleType, safeUserStringTokenOffset());
 }
 
 void CSSParser::endRuleHeader()
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->endRuleHeader(tokenStartOffset());
+        m_sourceDataHandler->endRuleHeader(safeUserStringTokenOffset());
 }
 
 void CSSParser::startSelector()
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->startSelector(tokenStartOffset());
+        m_sourceDataHandler->startSelector(safeUserStringTokenOffset());
 }
 
 void CSSParser::endSelector()
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->endSelector(tokenStartOffset());
+        m_sourceDataHandler->endSelector(safeUserStringTokenOffset());
 }
 
 void CSSParser::startRuleBody()
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->startRuleBody(tokenStartOffset());
+        m_sourceDataHandler->startRuleBody(safeUserStringTokenOffset());
 }
 
 void CSSParser::endRuleBody(bool discard)
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->endRuleBody(tokenStartOffset(), discard);
+        m_sourceDataHandler->endRuleBody(safeUserStringTokenOffset(), discard);
 }
 
 void CSSParser::startProperty()
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->startProperty(tokenStartOffset() - m_parsedTextPrefixLength);
+        m_sourceDataHandler->startProperty(safeUserStringTokenOffset());
 }
 
 void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed)
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, tokenStartOffset() - m_parsedTextPrefixLength);
+        m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, safeUserStringTokenOffset());
 }
 
 void CSSParser::startEndUnknownRule()
 {
     if (m_sourceDataHandler)
         m_sourceDataHandler->startEndUnknownRule();
+}
+
+unsigned CSSParser::safeUserStringTokenOffset()
+{
+    return std::min(tokenStartOffset(), static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength)) - m_parsedTextPrefixLength;
 }
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
