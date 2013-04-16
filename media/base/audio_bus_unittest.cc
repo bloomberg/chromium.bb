@@ -9,6 +9,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
+#include "media/base/fake_audio_render_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -384,6 +385,62 @@ TEST_F(AudioBusTest, Scale) {
   for (int i = 0; i < bus->channels(); ++i) {
     SCOPED_TRACE("Zero Scale");
     VerifyValue(bus->channel(i), bus->frames(), 0);
+  }
+}
+
+// Benchmark the FromInterleaved() and ToInterleaved() methods.
+TEST_F(AudioBusTest, DISABLED_InterleaveBench) {
+  scoped_ptr<AudioBus> bus = AudioBus::Create(2, 48000 * 120);
+  const int frame_size = bus->frames() * bus->channels();
+  FakeAudioRenderCallback callback(0.2);
+  callback.Render(bus.get(), 0);
+  {
+    SCOPED_TRACE("uint8");
+    scoped_ptr<uint8> interleaved(new uint8[frame_size]);
+    const int byte_size = sizeof(*interleaved);
+
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    bus->ToInterleaved(bus->frames(), byte_size, interleaved.get());
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("ToInterleaved uint8 took %.2fms.\n", total_time_ms);
+
+    start = base::TimeTicks::HighResNow();
+    bus->FromInterleaved(interleaved.get(), bus->frames(), byte_size);
+    total_time_ms = (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("FromInterleaved uint8 took %.2fms.\n", total_time_ms);
+  }
+  {
+    SCOPED_TRACE("int16");
+    scoped_ptr<int16> interleaved(new int16[frame_size]);
+    const int byte_size = sizeof(*interleaved);
+
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    bus->ToInterleaved(bus->frames(), byte_size, interleaved.get());
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("ToInterleaved int16 took %.2fms.\n", total_time_ms);
+
+    start = base::TimeTicks::HighResNow();
+    bus->FromInterleaved(interleaved.get(), bus->frames(), byte_size);
+    total_time_ms = (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("FromInterleaved int16 took %.2fms.\n", total_time_ms);
+  }
+  {
+    SCOPED_TRACE("int32");
+    scoped_ptr<int32> interleaved(new int32[frame_size]);
+    const int byte_size = sizeof(*interleaved);
+
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    bus->ToInterleaved(bus->frames(), byte_size, interleaved.get());
+    double total_time_ms =
+        (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("ToInterleaved int32 took %.2fms.\n", total_time_ms);
+
+    start = base::TimeTicks::HighResNow();
+    bus->FromInterleaved(interleaved.get(), bus->frames(), byte_size);
+    total_time_ms = (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+    printf("FromInterleaved int32 took %.2fms.\n", total_time_ms);
   }
 }
 

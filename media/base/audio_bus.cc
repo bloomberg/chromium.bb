@@ -13,6 +13,10 @@
 
 namespace media {
 
+static const uint8 kUint8Bias = 128;
+static const int16 kUint8Min = -kUint8Bias;
+static const int16 kUint8Max = kUint8Bias - 1;
+
 static bool IsAligned(void* ptr) {
   return (reinterpret_cast<uintptr_t>(ptr) &
           (AudioBus::kChannelAlignment - 1)) == 0U;
@@ -38,23 +42,16 @@ static int CalculateMemorySizeInternal(int channels, int frames,
 // such that operations can be made without overflowing.
 template<class Format, class Fixed>
 static void FromInterleavedInternal(const void* src, int start_frame,
-                                    int frames, AudioBus* dest) {
+                                    int frames, AudioBus* dest,
+                                    Format bias, float min, float max) {
   const Format* source = static_cast<const Format*>(src);
-
-  static const Fixed kBias = std::numeric_limits<Format>::is_signed ? 0 :
-      std::numeric_limits<Format>::max() / 2 + 1;
-  static const float kMaxScale = 1.0f / (kBias ? kBias - 1 :
-      std::numeric_limits<Format>::max());
-  static const float kMinScale = 1.0f / (kBias ? kBias :
-      -static_cast<Fixed>(std::numeric_limits<Format>::min()));
-
-  int channels = dest->channels();
+  const int channels = dest->channels();
   for (int ch = 0; ch < channels; ++ch) {
     float* channel_data = dest->channel(ch);
     for (int i = start_frame, offset = ch; i < start_frame + frames;
          ++i, offset += channels) {
-      Fixed v = static_cast<Fixed>(source[offset]) - kBias;
-      channel_data[i] = v * (v < 0 ? kMinScale : kMaxScale);
+      const Fixed v = static_cast<Fixed>(source[offset]) - bias;
+      channel_data[i] = v * (v < 0 ? -min : max);
     }
   }
 }
@@ -63,30 +60,23 @@ static void FromInterleavedInternal(const void* src, int start_frame,
 // such that operations can be made without overflowing.
 template<class Format, class Fixed>
 static void ToInterleavedInternal(const AudioBus* source, int start_frame,
-                                  int frames, void* dst) {
+                                  int frames, void* dst,
+                                  Format bias, Fixed min, Fixed max) {
   Format* dest = static_cast<Format*>(dst);
-
-  static const Format kBias = std::numeric_limits<Format>::is_signed ? 0 :
-      std::numeric_limits<Format>::max() / 2 + 1;
-  static const Fixed kMaxValue = kBias ? kBias - 1 :
-      std::numeric_limits<Format>::max();
-  static const Fixed kMinValue = kBias ? -kBias :
-      std::numeric_limits<Format>::min();
-
-  int channels = source->channels();
+  const int channels = source->channels();
   for (int ch = 0; ch < channels; ++ch) {
     const float* channel_data = source->channel(ch);
     for (int i = start_frame, offset = ch; i < start_frame + frames;
          ++i, offset += channels) {
-      float v = channel_data[i];
-      Fixed sample = v * (v < 0 ? -kMinValue : kMaxValue);
+      const float v = channel_data[i];
 
-      if (sample > kMaxValue)
-        sample = kMaxValue;
-      else if (sample < kMinValue)
-        sample = kMinValue;
+      Fixed sample;
+      if (v < 0)
+        sample = v <= -1 ? -min : static_cast<Fixed>(v * -min);
+      else
+        sample = v >= 1 ? max : static_cast<Fixed>(v * max);
 
-      dest[offset] = static_cast<Format>(sample) + kBias;
+      dest[offset] = static_cast<Format>(sample) + bias;
     }
   }
 }
@@ -246,13 +236,19 @@ void AudioBus::FromInterleavedPartial(const void* source, int start_frame,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      FromInterleavedInternal<uint8, int16>(source, start_frame, frames, this);
+      FromInterleavedInternal<uint8, int16>(
+          source, start_frame, frames, this,
+          kUint8Bias, 1.0f / kUint8Min, 1.0f / kUint8Max);
       break;
     case 2:
-      FromInterleavedInternal<int16, int32>(source, start_frame, frames, this);
+      FromInterleavedInternal<int16, int32>(
+          source, start_frame, frames, this,
+          0, 1.0f / kint16min, 1.0f / kint16max);
       break;
     case 4:
-      FromInterleavedInternal<int32, int64>(source, start_frame, frames, this);
+      FromInterleavedInternal<int32, int64>(
+          source, start_frame, frames, this,
+          0, 1.0f / kint32min, 1.0f / kint32max);
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
@@ -283,13 +279,17 @@ void AudioBus::ToInterleavedPartial(int start_frame, int frames,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      ToInterleavedInternal<uint8, int16>(this, start_frame, frames, dest);
+      ToInterleavedInternal<uint8, int16>(
+          this, start_frame, frames, dest,
+          kUint8Bias, kUint8Min, kUint8Max);
       break;
     case 2:
-      ToInterleavedInternal<int16, int32>(this, start_frame, frames, dest);
+      ToInterleavedInternal<int16, int32>(
+          this, start_frame, frames, dest, 0, kint16min, kint16max);
       break;
     case 4:
-      ToInterleavedInternal<int32, int64>(this, start_frame, frames, dest);
+      ToInterleavedInternal<int32, int64>(
+          this, start_frame, frames, dest, 0, kint32min, kint32max);
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
