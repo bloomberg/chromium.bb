@@ -1043,7 +1043,7 @@ class RemoteInspectorClient(object):
       }
     """
     # TODO(yurys): Remove this hack after M27 is released.
-    if self._IsWebkitVersionNotOlderThan(537, 31):
+    if self._IsContentVersionNotOlderThan(537, 31):
       return self._GetMemoryObjectCountsNew()
 
     MEMORY_COUNT_MESSAGES = [
