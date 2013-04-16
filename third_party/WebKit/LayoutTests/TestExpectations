@@ -3117,10 +3117,6 @@ webkit.org/b/110362 [ Linux Win ] css3/filters/filter-change-repaint-composited.
 
 webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ ImageOnlyFailure Pass ]
 
-# The Following two tests will need rebaseline after crbug.com/231489 is fixed:
-crbug.com/231489 css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure Pass ]
-crbug.com/231489 css3/filters/effect-reference-composite-hw.html [ ImageOnlyFailure Failure Pass ]
-
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
 webkit.org/b/95581 http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
