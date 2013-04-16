@@ -157,7 +157,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestOverloadedConstructor
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestOverloadedConstructors::constructorCallback);
-    
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

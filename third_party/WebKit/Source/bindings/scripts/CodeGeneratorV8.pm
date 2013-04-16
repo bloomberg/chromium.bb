@@ -3190,7 +3190,9 @@ END
 END
     }
 
-    push(@implContent,  "    $access_check\n");
+    if ($access_check) {
+        push(@implContent,  "    $access_check\n");
+    }
 
     # Setup the enable-at-runtime attrs if we have them
     foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
