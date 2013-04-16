@@ -9,6 +9,9 @@
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
+#if defined(OS_ANDROID)
+#include "jni/AudioManagerAndroid_jni.h"
+#endif
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_output_resampler.h"
@@ -30,6 +33,11 @@ static const int kDefaultMaxOutputStreams = 16;
 static const int kDefaultMaxInputStreams = 16;
 
 static const int kMaxInputChannels = 2;
+
+#if defined(OS_ANDROID)
+static const int kAudioModeNormal = 0x00000000;
+static const int kAudioModeInCommunication = 0x00000003;
+#endif
 
 const char AudioManagerBase::kDefaultDeviceName[] = "Default";
 const char AudioManagerBase::kDefaultDeviceId[] = "default";
@@ -55,6 +63,13 @@ AudioManagerBase::AudioManagerBase()
   CHECK(audio_thread_->Start());
 #endif
   message_loop_ = audio_thread_->message_loop_proxy();
+
+#if defined(OS_ANDROID)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jobject context = base::android::GetApplicationContext();
+  j_audio_manager_.Reset(
+      Java_AudioManagerAndroid_createAudioManagerAndroid(env, context));
+#endif
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -119,6 +134,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
 
   if (stream) {
     ++num_output_streams_;
+#if defined(OS_ANDROID)
+    if (num_output_streams_ == 1)
+      RegisterHeadsetReceiver();
+#endif
   }
 
   return stream;
@@ -161,6 +180,10 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 
   if (stream) {
     ++num_input_streams_;
+#if defined(OS_ANDROID)
+    if (num_input_streams_ == 1)
+      SetAudioMode(kAudioModeInCommunication);
+#endif
   }
 
   return stream;
@@ -245,6 +268,10 @@ void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {
   // streams.
   --num_output_streams_;
   delete stream;
+#if defined(OS_ANDROID)
+  if (!num_output_streams_)
+    UnregisterHeadsetReceiver();
+#endif
 }
 
 void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
@@ -252,6 +279,10 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
   // TODO(xians) : Have a clearer destruction path for the AudioInputStream.
   --num_input_streams_;
   delete stream;
+#if defined(OS_ANDROID)
+  if (!num_input_streams_)
+    SetAudioMode(kAudioModeNormal);
+#endif
 }
 
 void AudioManagerBase::IncreaseActiveInputStreamCount() {
@@ -319,6 +350,13 @@ void AudioManagerBase::ShutdownOnAudioThread() {
 #endif  // defined(OS_IOS)
 }
 
+#if defined(OS_ANDROID)
+// static
+bool AudioManagerBase::RegisterAudioManager(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+#endif
+
 void AudioManagerBase::AddOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -346,5 +384,25 @@ AudioParameters AudioManagerBase::GetInputStreamParameters(
   NOTREACHED();
   return AudioParameters();
 }
+
+#if defined(OS_ANDROID)
+void AudioManagerBase::SetAudioMode(int mode) {
+  Java_AudioManagerAndroid_setMode(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj(), mode);
+}
+
+void AudioManagerBase::RegisterHeadsetReceiver() {
+  Java_AudioManagerAndroid_registerHeadsetReceiver(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+
+void AudioManagerBase::UnregisterHeadsetReceiver() {
+  Java_AudioManagerAndroid_unregisterHeadsetReceiver(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace media
