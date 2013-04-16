@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketChannel_h
-#define WebSocketChannel_h
+#ifndef MainThreadWebSocketChannel_h
+#define MainThreadWebSocketChannel_h
 
 #include "FileReaderLoaderClient.h"
 #include "SocketStreamHandleClient.h"
@@ -53,13 +53,12 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class WebSocketChannel : public RefCounted<WebSocketChannel>, public SocketStreamHandleClient, public ThreadableWebSocketChannel
-                       , public FileReaderLoaderClient
-{
+class MainThreadWebSocketChannel : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public ThreadableWebSocketChannel
+                                 , public FileReaderLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<WebSocketChannel> create(Document* document, WebSocketChannelClient* client) { return adoptRef(new WebSocketChannel(document, client)); }
-    virtual ~WebSocketChannel();
+    static PassRefPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client) { return adoptRef(new MainThreadWebSocketChannel(document, client)); }
+    virtual ~MainThreadWebSocketChannel();
 
     bool send(const char* data, int length);
 
@@ -113,22 +112,23 @@ public:
     virtual void didFinishLoading();
     virtual void didFail(int errorCode);
 
-    using RefCounted<WebSocketChannel>::ref;
-    using RefCounted<WebSocketChannel>::deref;
+    using RefCounted<MainThreadWebSocketChannel>::ref;
+    using RefCounted<MainThreadWebSocketChannel>::deref;
 
 protected:
-    virtual void refThreadableWebSocketChannel() { ref(); }
-    virtual void derefThreadableWebSocketChannel() { deref(); }
+    // ThreadableWebSocketChannel functions.
+    virtual void refThreadableWebSocketChannel() OVERRIDE { ref(); }
+    virtual void derefThreadableWebSocketChannel() OVERRIDE { deref(); }
 
 private:
-    WebSocketChannel(Document*, WebSocketChannelClient*);
+    MainThreadWebSocketChannel(Document*, WebSocketChannelClient*);
 
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
     bool processBuffer();
-    void resumeTimerFired(Timer<WebSocketChannel>*);
+    void resumeTimerFired(Timer<MainThreadWebSocketChannel>*);
     void startClosingHandshake(int code, const String& reason);
-    void closingTimerFired(Timer<WebSocketChannel>*);
+    void closingTimerFired(Timer<MainThreadWebSocketChannel>*);
 
     bool processFrame();
 
@@ -189,11 +189,11 @@ private:
     RefPtr<SocketStreamHandle> m_handle;
     Vector<char> m_buffer;
 
-    Timer<WebSocketChannel> m_resumeTimer;
+    Timer<MainThreadWebSocketChannel> m_resumeTimer;
     bool m_suspended;
     bool m_closing;
     bool m_receivedClosingHandshake;
-    Timer<WebSocketChannel> m_closingTimer;
+    Timer<MainThreadWebSocketChannel> m_closingTimer;
     bool m_closed;
     bool m_shouldDiscardReceivedData;
     unsigned long m_unhandledBufferedAmount;
@@ -219,4 +219,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebSocketChannel_h
+#endif // MainThreadWebSocketChannel_h

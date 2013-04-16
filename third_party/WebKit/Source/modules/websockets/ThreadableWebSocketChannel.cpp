@@ -33,9 +33,9 @@
 #include "ThreadableWebSocketChannel.h"
 
 #include "Document.h"
+#include "MainThreadWebSocketChannel.h"
 #include "ScriptExecutionContext.h"
 #include "ThreadableWebSocketChannelClientWrapper.h"
-#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WorkerContext.h"
 #include "WorkerRunLoop.h"
@@ -61,7 +61,7 @@ PassRefPtr<ThreadableWebSocketChannel> ThreadableWebSocketChannel::create(Script
         return WorkerThreadableWebSocketChannel::create(workerContext, client, mode);
     }
 
-    return WebSocketChannel::create(toDocument(context), client);
+    return MainThreadWebSocketChannel::create(toDocument(context), client);
 }
 
 } // namespace WebCore

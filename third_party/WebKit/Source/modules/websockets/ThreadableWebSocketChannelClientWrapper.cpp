@@ -34,6 +34,7 @@
 #include "CrossThreadCopier.h"
 #include "CrossThreadTask.h"
 #include "ScriptExecutionContext.h"
+#include "ThreadableWebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

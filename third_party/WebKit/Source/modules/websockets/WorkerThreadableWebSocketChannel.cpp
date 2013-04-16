@@ -35,9 +35,10 @@
 #include "Blob.h"
 #include "CrossThreadTask.h"
 #include "Document.h"
+#include "MainThreadWebSocketChannel.h"
 #include "ScriptExecutionContext.h"
+#include "ThreadableWebSocketChannel.h"
 #include "ThreadableWebSocketChannelClientWrapper.h"
-#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
@@ -145,7 +146,7 @@ void WorkerThreadableWebSocketChannel::resume()
 WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode)
     : m_workerClientWrapper(clientWrapper)
     , m_loaderProxy(loaderProxy)
-    , m_mainWebSocketChannel(WebSocketChannel::create(toDocument(context), this))
+    , m_mainWebSocketChannel(MainThreadWebSocketChannel::create(toDocument(context), this))
     , m_taskMode(taskMode)
 {
     ASSERT(isMainThread());
@@ -338,8 +339,8 @@ static void workerContextDidReceiveMessageError(ScriptExecutionContext* context,
 
 void WorkerThreadableWebSocketChannel::Peer::didReceiveMessageError()
 {
-     ASSERT(isMainThread());
-     m_loaderProxy.postTaskForModeToWorkerContext(createCallbackTask(&workerContextDidReceiveMessageError, m_workerClientWrapper), m_taskMode);
+    ASSERT(isMainThread());
+    m_loaderProxy.postTaskForModeToWorkerContext(createCallbackTask(&workerContextDidReceiveMessageError, m_workerClientWrapper), m_taskMode);
 }
 
 WorkerThreadableWebSocketChannel::Bridge::Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassRefPtr<WorkerContext> workerContext, const String& taskMode)

@@ -33,9 +33,10 @@
 
 #include "Document.h"
 #include "KURL.h"
+#include "MainThreadWebSocketChannel.h"
+#include "ThreadableWebSocketChannel.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
-#include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WebSocketClient.h"
 
@@ -51,7 +52,7 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     : m_client(client)
     , m_binaryType(BinaryTypeBlob)
 {
-    m_private = WebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
+    m_private = MainThreadWebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
 }
 
 WebSocketImpl::~WebSocketImpl()

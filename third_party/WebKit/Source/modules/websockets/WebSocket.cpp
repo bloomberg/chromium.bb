@@ -45,12 +45,12 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "Logging.h"
+#include "MainThreadWebSocketChannel.h"
 #include "MessageEvent.h"
 #include "ScriptCallStack.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "ThreadableWebSocketChannel.h"
-#include "WebSocketChannel.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/HashSet.h>
@@ -357,11 +357,11 @@ bool WebSocket::send(Blob* binaryData, ExceptionCode& ec)
 
 void WebSocket::close(int code, const String& reason, ExceptionCode& ec)
 {
-    if (code == WebSocketChannel::CloseEventCodeNotSpecified)
+    if (code == MainThreadWebSocketChannel::CloseEventCodeNotSpecified)
         LOG(Network, "WebSocket %p close() without code and reason", this);
     else {
         LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
-        if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
+        if (!(code == MainThreadWebSocketChannel::CloseEventCodeNormalClosure || (MainThreadWebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= MainThreadWebSocketChannel::CloseEventCodeMaximumUserDefined))) {
             ec = INVALID_ACCESS_ERR;
             return;
         }
@@ -486,7 +486,7 @@ void WebSocket::didConnect()
 {
     LOG(Network, "WebSocket %p didConnect()", this);
     if (m_state != CONNECTING) {
-        didClose(0, ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, "");
+        didClose(0, ClosingHandshakeIncomplete, MainThreadWebSocketChannel::CloseEventCodeAbnormalClosure, "");
         return;
     }
     ASSERT(scriptExecutionContext());
@@ -552,7 +552,7 @@ void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshake
     LOG(Network, "WebSocket %p didClose()", this);
     if (!m_channel)
         return;
-    bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
+    bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != MainThreadWebSocketChannel::CloseEventCodeAbnormalClosure;
     m_state = CLOSED;
     m_bufferedAmount = unhandledBufferedAmount;
     ASSERT(scriptExecutionContext());
