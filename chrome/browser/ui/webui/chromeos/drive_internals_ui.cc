@@ -520,8 +520,6 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
   base::DictionaryValue delta_update_status;
   delta_update_status.SetBoolean("push-notification-enabled",
                                  metadata.push_notification_enabled);
-  delta_update_status.SetInteger("polling-interval-sec",
-                                 metadata.polling_interval_sec);
   delta_update_status.SetString(
       "last-update-check-time",
       google_apis::util::FormatTimeAsStringLocaltime(

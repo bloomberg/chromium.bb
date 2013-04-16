@@ -29,10 +29,6 @@ struct DriveFileSystemMetadata {
   // True if push notification is enabled.
   bool push_notification_enabled;
 
-  // Polling interval time in seconds used for fetching delta feeds
-  // periodically.
-  int polling_interval_sec;
-
   // Time of the last update check.
   base::Time last_update_check_time;
 

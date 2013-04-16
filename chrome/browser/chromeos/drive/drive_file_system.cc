@@ -41,14 +41,6 @@ namespace {
 const char kMimeTypeJson[] = "application/json";
 const char kEmptyFilePath[] = "/dev/null";
 
-// Drive update polling interval for polling only mode (in seconds).
-const int kFastPollingIntervalInSec = 60;
-
-// Drive update polling interval when update notification is available (in
-// seconds). Ideally we don't need this, but we do polling in case update
-// notification doesn't work. http://crbug.com/157080
-const int kSlowPollingIntervalInSec = 300;
-
 //================================ Helper functions ============================
 
 // The class to wait for the drive service to be ready to start operation.
@@ -221,12 +213,10 @@ DriveFileSystem::DriveFileSystem(
       drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       resource_metadata_(resource_metadata),
-      update_timer_(true /* retain_user_task */, true /* is_repeating */),
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
       scheduler_(new DriveScheduler(profile, drive_service)),
-      polling_interval_sec_(kFastPollingIntervalInSec),
       push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Should be created from the file browser extension API on UI thread.
@@ -334,26 +324,8 @@ void DriveFileSystem::StartInitialFeedFetch() {
   }
 }
 
-void DriveFileSystem::StartPolling() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DCHECK(!update_timer_.IsRunning());
-  update_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(polling_interval_sec_),
-                      base::Bind(&DriveFileSystem::CheckForUpdates,
-                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DriveFileSystem::StopPolling() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (update_timer_.IsRunning())
-    update_timer_.Stop();
-}
-
 void DriveFileSystem::SetPushNotificationEnabled(bool enabled) {
   push_notification_enabled_ = enabled;
-  polling_interval_sec_ = enabled ? kSlowPollingIntervalInSec :
-                          kFastPollingIntervalInSec;
 }
 
 void DriveFileSystem::GetEntryInfoByResourceId(
@@ -1364,7 +1336,6 @@ void DriveFileSystem::GetMetadata(
 
   // Metadata related to delta update.
   metadata.push_notification_enabled = push_notification_enabled_;
-  metadata.polling_interval_sec = polling_interval_sec_;
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 

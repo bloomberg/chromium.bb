@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
@@ -167,11 +166,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
-
-  // Starts and stops periodic polling.
-  // TODO(satorux): Remove them. crbug.com/231202
-  void StartPolling();
-  void StopPolling();
 
   // Used to implement Reload().
   void ReloadAfterReset();
@@ -454,9 +448,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveWebAppsRegistry* webapps_registry_;
 
   DriveResourceMetadata* resource_metadata_;
-
-  // Periodic timer for checking updates.
-  base::Timer update_timer_;
 
   // Time of the last update check.
   base::Time last_update_check_time_;
