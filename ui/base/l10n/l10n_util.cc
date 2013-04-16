@@ -246,6 +246,14 @@ bool IsLocaleAvailable(const std::string& locale) {
   if (!l10n_util::IsLocaleSupportedByOS(locale))
     return false;
 
+  // If the ResourceBundle is not yet initialized, return false to avoid the
+  // CHECK failure in ResourceBundle::GetSharedInstance().
+  if (!ResourceBundle::HasSharedInstance())
+    return false;
+
+  // TODO(hshi): make ResourceBundle::LocaleDataPakExists() a static function
+  // so that this can be invoked without initializing the global instance.
+  // See crbug.com/230432: CHECK failure in GetUserDataDir().
   return ResourceBundle::GetSharedInstance().LocaleDataPakExists(locale);
 }
 
