@@ -111,3 +111,57 @@ GifParser.prototype.parseHeader = function(metadata, br) {
 };
 
 MetadataDispatcher.registerParserClass(GifParser);
+
+
+function WebpParser(parent) {
+  SimpleImageParser.call(this, parent, 'webp', /\.webp$/i, 30);
+}
+
+WebpParser.prototype = {__proto__: SimpleImageParser.prototype};
+
+/**
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
+ */
+WebpParser.prototype.parseHeader = function(metadata, br) {
+  br.setByteOrder(ByteReader.LITTLE_ENDIAN);
+
+  var riffSignature = br.readString(4);
+  if (riffSignature != 'RIFF')
+    throw new Error('Invalid RIFF signature: ' + riffSignature);
+
+  br.seek(8);
+  var webpSignature = br.readString(4);
+  if (webpSignature != 'WEBP')
+    throw new Error('Invalid WEBP signature: ' + webpSignature);
+
+  var chunkFormat = br.readString(4);
+  if (chunkFormat != 'VP8 ' && chunkFormat != 'VP8L')
+    throw new Error('Invalid chunk format: ' + chunkFormat);
+
+  if (chunkFormat == 'VP8 ') {
+    // VP8 lossy bitstream format.
+    br.seek(23);
+    var lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
+    if (lossySignature != 0x2a019d)
+      throw new Error('Invalid VP8 lossy bitstream signature: ' +
+        lossySignature);
+
+    var dimensionBits = br.readScalar(4);
+    metadata.width = dimensionBits & 0x3fff;
+    metadata.height = (dimensionBits >> 16) & 0x3fff;
+  } else {
+    // VP8 lossless bitstream format.
+    br.seek(20);
+    var losslessSignature = br.readScalar(1);
+    if (losslessSignature != 0x2f)
+      throw new Error('Invalid VP8 lossless bitstream signature: ' +
+        losslessSignature);
+
+    var dimensionBits = br.readScalar(4);
+    metadata.width = (dimensionBits & 0x3fff) + 1;
+    metadata.height = ((dimensionBits >> 14) & 0x3fff) + 1;
+  }
+};
+
+MetadataDispatcher.registerParserClass(WebpParser);
