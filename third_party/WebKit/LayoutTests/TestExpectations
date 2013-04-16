@@ -231,8 +231,6 @@ webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html
 # Chromium needs larger media files to test buffering this way.
 webkit.org/b/88172 http/tests/media/video-buffered.html
 
-# Proximity Events is not supported.
-webkit.org/b/92942 proximity
 webkit.org/b/92942 fast/events/constructors/device-proximity-event-constructor.html
 
 # Missing support in DRT for Geolocation's Coordinate attributes.
@@ -3643,9 +3641,6 @@ webkit.org/b/111510 [ MountainLion ] fast/regions/region-style-in-columns.html [
 webkit.org/b/111524 [ Debug Win Mac ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
 webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
-
-# CURSOR_VISIBILITY is not enabled in chromium
-webkit.org/b/107601 fullscreen/video-cursor-auto-hide.html [ Failure ]
 
 webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ Slow ]
 
