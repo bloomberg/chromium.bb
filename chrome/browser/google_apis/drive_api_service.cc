@@ -319,13 +319,14 @@ void DriveAPIService::GetResourceListInDirectory(
   // After the migration from GData WAPI to Drive API v2, we should clean the
   // code up by moving the resposibility to include "parents" in the query
   // to client side.
+  // We aren't interested in files in trash in this context, neither.
   runner_->StartOperationWithRetry(
       new GetFilelistOperation(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
           base::StringPrintf(
-              "'%s' in parents",
+              "'%s' in parents and trashed = false",
               EscapeQueryStringValue(directory_resource_id).c_str()),
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
@@ -360,7 +361,7 @@ void DriveAPIService::SearchInDirectory(
           url_request_context_getter_,
           url_generator_,
           base::StringPrintf(
-              "%s and '%s' in parents",
+              "%s and '%s' in parents and trashed = false",
               search_query.c_str(),
               EscapeQueryStringValue(directory_resource_id).c_str()),
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
