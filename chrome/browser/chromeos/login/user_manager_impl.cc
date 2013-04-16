@@ -723,7 +723,6 @@ void UserManagerImpl::Observe(int type,
           !IsLoggedInAsLocallyManagedUser()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
-            // TODO(nkostylev): We should observe all logged in user's profiles.
             profile == ProfileManager::GetDefaultProfile()) {
           DCHECK(NULL == observed_sync_service_);
           observed_sync_service_ =

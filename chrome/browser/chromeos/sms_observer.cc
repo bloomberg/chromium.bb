@@ -17,7 +17,9 @@
 
 namespace chromeos {
 
-SmsObserver::SmsObserver() {
+SmsObserver::SmsObserver(Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile_);
   UpdateObservers(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
 }
 

@@ -22,7 +22,7 @@ struct SMS;
 // Performs monitoring of incoming SMS and shows system notifications.
 class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
  public:
-  SmsObserver();
+  explicit SmsObserver(Profile* profile);
   virtual ~SmsObserver();
 
  private:
@@ -36,6 +36,7 @@ class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
   void UpdateObservers(NetworkLibrary* library);
   void DisconnectAll();
 
+  Profile* profile_;
   ObserversMap observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsObserver);

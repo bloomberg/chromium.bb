@@ -70,7 +70,7 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/profile_startup.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -282,7 +282,7 @@ bool StartupBrowserCreator::LaunchBrowser(
   profile_launch_observer.Get().AddLaunched(profile);
 
 #if defined(OS_CHROMEOS)
-  chromeos::ProfileHelper::ProfileStartup(profile, process_startup);
+  chromeos::ProfileStartup(profile, process_startup);
 #endif
   return true;
 }

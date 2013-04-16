@@ -20,10 +20,11 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -480,7 +481,7 @@ void LoginPerformer::ResolveScreenUnlocked() {
 void LoginPerformer::StartLoginCompletion() {
   DVLOG(1) << "Login completion started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
-  Profile* profile = ProfileHelper::GetSigninProfile();
+  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
@@ -496,7 +497,14 @@ void LoginPerformer::StartLoginCompletion() {
 void LoginPerformer::StartAuthentication() {
   DVLOG(1) << "Auth started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
-  Profile* profile = ProfileHelper::GetSigninProfile();
+  Profile* profile;
+  {
+    // This should be the first place where GetDefaultProfile() is called with
+    // logged_in_ = true. This will trigger a call to Profile::CreateProfile()
+    // which requires IO access.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  }
   if (delegate_) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     BrowserThread::PostTask(

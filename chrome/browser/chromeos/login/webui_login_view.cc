@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
@@ -152,9 +152,7 @@ WebUILoginView::~WebUILoginView() {
 
 void WebUILoginView::Init(views::Widget* login_window) {
   login_window_ = login_window;
-
-  Profile* signin_profile = ProfileHelper::GetSigninProfile();
-  webui_login_ = new views::WebView(signin_profile);
+  webui_login_ = new views::WebView(ProfileManager::GetDefaultProfile());
   AddChildView(webui_login_);
 
   WebContents* web_contents = webui_login_->GetWebContents();
@@ -170,7 +168,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
   web_contents->SetDelegate(this);
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents->GetMutableRendererPrefs(),
-      signin_profile);
+      ProfileManager::GetDefaultProfile());
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
