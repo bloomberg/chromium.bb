@@ -111,15 +111,14 @@ class ChangeListLoader {
   bool refreshing() const { return refreshing_; }
 
  private:
-  // Starts the change list loading from the cache, and runs |callback| to
-  // tell the result to the caller.  |callback| must not be null.
-  void LoadFromCache(const FileOperationCallback& callback);
+  // Checks the local changestamp. |callback| must not be null.
+  void CheckLocalChangestamp(const GetChangestampCallback& callback);
 
-  // Part of Load(). Called after loading from the cache is complete.
-  void LoadAfterLoadFromCache(
+  // Part of Load(). Called after checking the local changestamp completes.
+  void LoadAfterCheckLocalChangestamp(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      DriveFileError error);
+      int64 local_changestamp);
 
   // Callback to fetch all the resource list response from the server.
   // After all the resource list are fetched, |callback|
@@ -243,9 +242,6 @@ class ChangeListLoader {
       const FileOperationCallback& callback,
       ScopedVector<ChangeList> change_lists,
       DriveFileError error);
-
-  // Save filesystem to disk.
-  void SaveFileSystem();
 
   // Callback for ChangeListProcessor::ApplyFeeds.
   void NotifyDirectoryChangedAfterApplyFeed(

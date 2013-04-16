@@ -592,25 +592,26 @@ void ChangeListLoader::LoadIfNeeded(
         base::Bind(&util::EmptyFileOperationCallback));
   }
 
-  // First start loading from the cache.
-  LoadFromCache(base::Bind(&ChangeListLoader::LoadAfterLoadFromCache,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           directory_fetch_info,
-                           callback));
+  // First check if the local data is usable or not.
+  CheckLocalChangestamp(base::Bind(
+      &ChangeListLoader::LoadAfterCheckLocalChangestamp,
+      weak_ptr_factory_.GetWeakPtr(),
+      directory_fetch_info,
+      callback));
 }
 
-void ChangeListLoader::LoadAfterLoadFromCache(
+void ChangeListLoader::LoadAfterCheckLocalChangestamp(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
-    DriveFileError error) {
+    int64 local_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == DRIVE_FILE_OK) {
+  if (local_changestamp > 0) {
     loaded_ = true;
 
-    // The loading from the cache file succeeded. Change the refreshing state
-    // and tell the callback that the loading was successful.
+    // The local data is usable. Change the refreshing state and tell the
+    // callback that the loading was successful.
     OnChangeListLoadComplete(callback, DRIVE_FILE_OK);
     FOR_EACH_OBSERVER(ChangeListLoaderObserver,
                       observers_,
@@ -623,14 +624,15 @@ void ChangeListLoader::LoadAfterLoadFromCache(
     LoadFromServerIfNeeded(directory_fetch_info,
                            base::Bind(&util::EmptyFileOperationCallback));
   } else {
-    // The loading from the cache file failed. Start loading from the
-    // server. Though the function name ends with "IfNeeded", this function
-    // should always start loading as the local changestamp is zero now.
+    // The local data is not usable. Start loading from the server. Though the
+    // function name ends with "IfNeeded", this function should always start
+    // loading as the local changestamp is zero now.
     LoadFromServerIfNeeded(directory_fetch_info, callback);
   }
 }
 
-void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
+void ChangeListLoader::CheckLocalChangestamp(
+    const GetChangestampCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(!loaded_);
@@ -638,17 +640,10 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::LoadFeedIfNeeded).
   //
-  // The flag will be unset when loading from the cache is complete, or
-  // loading from the server is complete.
+  // The flag will be unset when loading completes.
   refreshing_ = true;
 
-  resource_metadata_->Load(callback);
-}
-
-void ChangeListLoader::SaveFileSystem() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  resource_metadata_->MaybeSave();
+  resource_metadata_->GetLargestChangestamp(callback);
 }
 
 void ChangeListLoader::UpdateFromFeed(
@@ -773,9 +768,6 @@ void ChangeListLoader::OnUpdateFromFeed(
                       observers_,
                       OnInitialFeedLoaded());
   }
-
-  // Save file system metadata to disk.
-  SaveFileSystem();
 
   FOR_EACH_OBSERVER(ChangeListLoaderObserver,
                     observers_,
