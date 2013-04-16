@@ -5,14 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_DEPENDENCY_MANAGER_H_
 
-#include <map>
-#include <vector>
-
 #include "base/memory/singleton.h"
+#include "chrome/browser/profiles/dependency_graph.h"
 
 #ifndef NDEBUG
 #include <set>
-#include <string>
 #endif
 
 class Profile;
@@ -64,9 +61,6 @@ class ProfileDependencyManager {
   friend class ProfileDependencyManagerUnittests;
   friend struct DefaultSingletonTraits<ProfileDependencyManager>;
 
-  typedef std::multimap<ProfileKeyedBaseFactory*,
-                        ProfileKeyedBaseFactory*> EdgeMap;
-
   ProfileDependencyManager();
   virtual ~ProfileDependencyManager();
 
@@ -74,23 +68,14 @@ class ProfileDependencyManager {
   // dependency graph.
   void AssertFactoriesBuilt();
 
-  // Using the dependency graph defined in |edges_|, fills |destruction_order_|
-  // so that Observe() can notify each ProfileKeyedBaseFactory in order.
-  void BuildDestructionOrder(Profile* profile);
-
 #ifndef NDEBUG
-  // Creates a dot file with our dependency information.
-  std::string DumpGraphvizDependency();
+  void DumpProfileDependencies(Profile* profile);
 #endif
-
-  std::vector<ProfileKeyedBaseFactory*> all_components_;
-
-  EdgeMap edges_;
-
-  std::vector<ProfileKeyedBaseFactory*> destruction_order_;
 
   // Whether AssertFactoriesBuilt has been done.
   bool built_factories_;
+
+  DependencyGraph dependency_graph_;
 
 #ifndef NDEBUG
   // A list of profile objects that have gone through the Shutdown()

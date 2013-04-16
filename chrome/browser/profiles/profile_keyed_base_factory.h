@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/profiles/dependency_node.h"
 
 class PrefRegistrySyncable;
 class PrefService;
@@ -21,7 +22,8 @@ class ProfileDependencyManager;
 // RefcountedProfileKeyedServiceFactory. This object describes general
 // dependency management between Factories; subclasses react to lifecycle
 // events and implement memory management.
-class ProfileKeyedBaseFactory : public base::NonThreadSafe {
+class ProfileKeyedBaseFactory : public base::NonThreadSafe,
+                                public DependencyNode {
  public:
   // Registers preferences used in this service on the pref service of
   // |profile|. This is the public interface and is safe to be called multiple

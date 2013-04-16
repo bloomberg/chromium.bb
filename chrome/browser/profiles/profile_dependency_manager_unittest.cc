@@ -9,12 +9,6 @@
 
 class ProfileDependencyManagerUnittests : public ::testing::Test {
  protected:
-  virtual ~ProfileDependencyManagerUnittests() {
-    EXPECT_TRUE(dependency_manager_.all_components_.empty());
-    EXPECT_TRUE(dependency_manager_.edges_.empty());
-    EXPECT_TRUE(dependency_manager_.destruction_order_.empty());
-  }
-
   // To get around class access:
   void DependOn(ProfileKeyedServiceFactory* child,
                 ProfileKeyedServiceFactory* parent) {
