@@ -1285,9 +1285,10 @@ void ExynosVideoDecodeAccelerator::EnqueueGsc() {
   }
 
   // Enqueue a GSC output, only if we need one
+  // TODO(ihf): Revert to size > 0 once issue 225563 is fixed.
   if (gsc_input_buffer_queued_count_ != 0 &&
       gsc_output_buffer_queued_count_ == 0 &&
-      !gsc_free_output_buffers_.empty()) {
+      gsc_free_output_buffers_.size() > 2) {
     const int old_gsc_outputs_queued = gsc_output_buffer_queued_count_;
     if (!EnqueueGscOutputRecord())
       return;
