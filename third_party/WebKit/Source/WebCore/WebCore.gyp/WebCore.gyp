@@ -349,7 +349,7 @@
       ],
       'actions': [
         {
-          'action_name': 'generateInspectorProtocolSources',
+          'action_name': 'generateInspectorProtocolBackendSources',
           'inputs': [
             # The python script in action below.
             '../inspector/CodeGeneratorInspector.py',
@@ -365,7 +365,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.h',
             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -378,7 +377,27 @@
             '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
           ],
-          'message': 'Generating Inspector protocol sources from protocol.json',
+          'message': 'Generating Inspector protocol backend sources from protocol.json',
+          'msvs_cygwin_shell': 1,
+        },
+        {
+          'action_name': 'generateInspectorProtocolFrontendSources',
+          'inputs': [
+            # The python script in action below.
+            '../inspector/CodeGeneratorFrontend.py',
+            # Input file for the script.
+            '../../devtools/protocol.json',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js',
+          ],
+          'action': [
+            'python',
+            '../inspector/CodeGeneratorFrontend.py',
+            '../../devtools/protocol.json',
+            '--output_js_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
+          ],
+          'message': 'Generating Inspector protocol frontend sources from protocol.json',
           'msvs_cygwin_shell': 1,
         },
       ]

@@ -84,6 +84,7 @@ except Exception:
     exit(1)
 
 
+# FIXME: move this methods under Capitalizer class below and remove duplications.
 def dash_to_camelcase(word):
     return ''.join(x.capitalize() or '-' for x in word.split('-'))
 
@@ -170,12 +171,9 @@ class DomainNameFixes:
         field_name_res = Capitalizer.upper_camel_case_to_lower(domain_name) + "Agent"
 
         class Res(object):
-            skip_js_bind = domain_name in cls.skip_js_bind_domains
             agent_field_name = field_name_res
 
         return Res
-
-    skip_js_bind_domains = set(["DOMDebugger"])
 
 
 class RawTypes(object):
@@ -242,10 +240,6 @@ class RawTypes(object):
             return "\"\""
 
         @staticmethod
-        def get_js_bind_type():
-            return "string"
-
-        @staticmethod
         def get_validate_method_params():
             class ValidateMethodParams:
                 template_type = "String"
@@ -279,10 +273,6 @@ class RawTypes(object):
         @staticmethod
         def get_c_initializer():
             return "0"
-
-        @staticmethod
-        def get_js_bind_type():
-            return "number"
 
         @classmethod
         def get_raw_validator_call_text(cls):
@@ -318,10 +308,6 @@ class RawTypes(object):
             return "0"
 
         @staticmethod
-        def get_js_bind_type():
-            return "number"
-
-        @staticmethod
         def get_validate_method_params():
             class ValidateMethodParams:
                 template_type = "Number"
@@ -353,10 +339,6 @@ class RawTypes(object):
         @staticmethod
         def get_c_initializer():
             return "false"
-
-        @staticmethod
-        def get_js_bind_type():
-            return "boolean"
 
         @staticmethod
         def get_validate_method_params():
@@ -392,10 +374,6 @@ class RawTypes(object):
         @staticmethod
         def get_c_initializer():
             return "InspectorObject::create()"
-
-        @staticmethod
-        def get_js_bind_type():
-            return "object"
 
         @staticmethod
         def get_output_argument_prefix():
@@ -435,10 +413,6 @@ class RawTypes(object):
             raise Exception("Unsupported")
 
         @staticmethod
-        def get_js_bind_type():
-            raise Exception("Unsupported")
-
-        @staticmethod
         def get_raw_validator_call_text():
             return "RuntimeCastHelper::assertAny"
 
@@ -470,10 +444,6 @@ class RawTypes(object):
         @staticmethod
         def get_c_initializer():
             return "InspectorArray::create()"
-
-        @staticmethod
-        def get_js_bind_type():
-            return "object"
 
         @staticmethod
         def get_output_argument_prefix():
@@ -1687,7 +1657,6 @@ class Templates:
     frontend_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.frontend_cpp)
     typebuilder_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.typebuilder_h)
     typebuilder_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.typebuilder_cpp)
-    backend_js = string.Template(file_header_ + CodeGeneratorInspectorStrings.backend_js)
     param_container_access_code = CodeGeneratorInspectorStrings.param_container_access_code
 
 
@@ -1777,7 +1746,6 @@ class Generator:
     backend_method_name_declaration_list = []
     method_handler_list = []
     frontend_method_list = []
-    backend_js_domain_initializer_list = []
 
     backend_virtual_setters_list = []
     backend_agent_interface_list = []
@@ -1821,23 +1789,6 @@ class Generator:
 
             frontend_method_declaration_lines = []
 
-            Generator.backend_js_domain_initializer_list.append("// %s.\n" % domain_name)
-
-            if not domain_fixes.skip_js_bind:
-                Generator.backend_js_domain_initializer_list.append("InspectorBackend.register%sDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, \"%s\");\n" % (domain_name, domain_name))
-
-            if "types" in json_domain:
-                for json_type in json_domain["types"]:
-                    if "type" in json_type and json_type["type"] == "string" and "enum" in json_type:
-                        enum_name = "%s.%s" % (domain_name, json_type["id"])
-                        Generator.process_enum(json_type, enum_name)
-                    elif json_type["type"] == "object":
-                        if "properties" in json_type:
-                            for json_property in json_type["properties"]:
-                                if "type" in json_property and json_property["type"] == "string" and "enum" in json_property:
-                                    enum_name = "%s.%s%s" % (domain_name, json_type["id"], to_title_case(json_property["name"]))
-                                    Generator.process_enum(json_property, enum_name)
-
             if "events" in json_domain:
                 for json_event in json_domain["events"]:
                     Generator.process_event(json_event, domain_name, frontend_method_declaration_lines)
@@ -1866,17 +1817,6 @@ class Generator:
             Generator.backend_setters_list.append("    virtual void registerAgent(%s* %s) { ASSERT(!m_%s); m_%s = %s; }" % (agent_interface_name, agent_field_name, agent_field_name, agent_field_name, agent_field_name))
             Generator.backend_field_list.append("    %s* m_%s;" % (agent_interface_name, agent_field_name))
 
-            Generator.backend_js_domain_initializer_list.append("\n")
-
-    @staticmethod
-    def process_enum(json_enum, enum_name):
-        enum_members = []
-        for member in json_enum["enum"]:
-            enum_members.append("%s: \"%s\"" % (fix_camel_case(member), member))
-
-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerEnum(\"%s\", {%s});\n" % (
-            enum_name, ", ".join(enum_members)))
-
     @staticmethod
     def process_event(json_event, domain_name, frontend_method_declaration_lines):
         event_name = json_event["name"]
@@ -1893,17 +1833,8 @@ class Generator:
                                        Generator.EventMethodStructTemplate,
                                        Generator.frontend_method_list, Templates.frontend_method, {"eventName": event_name})
 
-        backend_js_event_param_list = []
-        if json_parameters:
-            for parameter in json_parameters:
-                parameter_name = parameter["name"]
-                backend_js_event_param_list.append("\"%s\"" % parameter_name)
-
         frontend_method_declaration_lines.append(
             "        void %s(%s);\n" % (event_name, ", ".join(decl_parameter_list)))
-
-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerEvent(\"%s.%s\", [%s]);\n" % (
-            domain_name, event_name, ", ".join(backend_js_event_param_list)))
 
     class EventMethodStructTemplate:
         @staticmethod
@@ -1937,7 +1868,6 @@ class Generator:
         agent_call_param_list = []
         response_cook_list = []
         request_message_param = ""
-        js_parameters_text = ""
         if "parameters" in json_command:
             json_params = json_command["parameters"]
             method_in_code += Templates.param_container_access_code
@@ -1978,16 +1908,6 @@ class Generator:
                 method_in_code += code
                 agent_call_param_list.append(param)
                 Generator.backend_agent_interface_list.append(", %s in_%s" % (formal_param_type_pattern % non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name))
-
-                js_bind_type = param_raw_type.get_js_bind_type()
-                js_param_text = "{\"name\": \"%s\", \"type\": \"%s\", \"optional\": %s}" % (
-                    json_param_name,
-                    js_bind_type,
-                    ("true" if ("optional" in json_parameter and json_parameter["optional"]) else "false"))
-
-                js_param_list.append(js_param_text)
-
-            js_parameters_text = ", ".join(js_param_list)
 
         response_cook_text = ""
         if json_command.get("async") == True:
@@ -2066,14 +1986,6 @@ class Generator:
                 if len(response_cook_text) != 0:
                     response_cook_text = "        if (!error.length()) {\n" + response_cook_text + "        }"
 
-        backend_js_reply_param_list = []
-        if "returns" in json_command:
-            for json_return in json_command["returns"]:
-                json_return_name = json_return["name"]
-                backend_js_reply_param_list.append("\"%s\"" % json_return_name)
-
-        js_reply_list = "[%s]" % ", ".join(backend_js_reply_param_list)
-
         Generator.backend_method_implementation_list.append(Templates.backend_method.substitute(None,
             domainName=domain_name, methodName=json_command_name,
             agentField="m_" + agent_field_name,
@@ -2085,7 +1997,6 @@ class Generator:
             commandNameIndex=cmd_enum_name))
         Generator.backend_method_name_declaration_list.append("    \"%s.%s\"," % (domain_name, json_command_name))
 
-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerCommand(\"%s.%s\", [%s], %s);\n" % (domain_name, json_command_name, js_parameters_text, js_reply_list))
         Generator.backend_agent_interface_list.append(") = 0;\n")
 
     class CallbackMethodStructTemplate:
@@ -2305,8 +2216,6 @@ frontend_cpp_file = SmartOutput(output_cpp_dirname + "/InspectorFrontend.cpp")
 typebuilder_h_file = SmartOutput(output_header_dirname + "/InspectorTypeBuilder.h")
 typebuilder_cpp_file = SmartOutput(output_cpp_dirname + "/InspectorTypeBuilder.cpp")
 
-backend_js_file = SmartOutput(output_cpp_dirname + "/InspectorBackendCommands.js")
-
 
 backend_h_file.write(Templates.backend_h.substitute(None,
     virtualSetters="\n".join(Generator.backend_virtual_setters_list),
@@ -2341,9 +2250,6 @@ typebuilder_cpp_file.write(Templates.typebuilder_cpp.substitute(None,
     validatorCode="".join(flatten_list(Generator.validator_impl_list)),
     validatorIfdefName=VALIDATOR_IFDEF_NAME))
 
-backend_js_file.write(Templates.backend_js.substitute(None,
-    domainInitializers="".join(Generator.backend_js_domain_initializer_list)))
-
 backend_h_file.close()
 backend_cpp_file.close()
 
@@ -2352,5 +2258,3 @@ frontend_cpp_file.close()
 
 typebuilder_h_file.close()
 typebuilder_cpp_file.close()
-
-backend_js_file.close()

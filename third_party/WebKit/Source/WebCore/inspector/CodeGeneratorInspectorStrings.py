@@ -867,12 +867,6 @@ $validatorCode
 
 """)
 
-backend_js = (
-"""
-
-$domainInitializers
-""")
-
 param_container_access_code = """
     RefPtr<InspectorObject> paramsContainer = requestMessageObject->getObject("params");
     InspectorObject* paramsContainerPtr = paramsContainer.get();
