@@ -59,10 +59,12 @@ void RulesRegistryService::RegisterDefaultRulesRegistries() {
   RulesRegistryStorageDelegate* delegate = new RulesRegistryStorageDelegate();
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
       new WebRequestRulesRegistry(profile_, delegate));
-  delegate->InitOnUIThread(profile_, web_request_rules_registry,
-      GetDeclarativeRuleStorageKey(
-          declarative_webrequest_constants::kOnRequest,
-          profile_->IsOffTheRecord()));
+  delegate->InitOnUIThread(
+      profile_,
+      web_request_rules_registry,
+      GetDeclarativeRuleStorageKey(declarative_webrequest_constants::kOnRequest,
+                                   profile_->IsOffTheRecord()),
+      true /*log_storage_init_delay*/);
   delegates_.push_back(delegate);
 
   RegisterRulesRegistry(declarative_webrequest_constants::kOnRequest,
@@ -76,10 +78,12 @@ void RulesRegistryService::RegisterDefaultRulesRegistries() {
   delegate = new RulesRegistryStorageDelegate();
   scoped_refptr<ContentRulesRegistry> content_rules_registry(
       new ContentRulesRegistry(profile_, delegate));
-  delegate->InitOnUIThread(profile_, content_rules_registry,
-      GetDeclarativeRuleStorageKey(
-          declarative_content_constants::kOnPageChanged,
-          profile_->IsOffTheRecord()));
+  delegate->InitOnUIThread(profile_,
+                           content_rules_registry,
+                           GetDeclarativeRuleStorageKey(
+                               declarative_content_constants::kOnPageChanged,
+                               profile_->IsOffTheRecord()),
+                           false /*log_storage_init_delay*/);
   delegates_.push_back(delegate);
 
   RegisterRulesRegistry(declarative_content_constants::kOnPageChanged,

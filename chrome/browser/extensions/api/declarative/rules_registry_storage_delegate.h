@@ -23,10 +23,12 @@ class RulesRegistryStorageDelegate : public RulesRegistryWithCache::Delegate {
   RulesRegistryStorageDelegate();
   virtual ~RulesRegistryStorageDelegate();
 
-  // Called on the UI thread to initialize the delegate.
+  // Called on the UI thread to initialize the delegate. Set
+  // |log_storage_init_delay| to true to log the time spent on loading rules.
   void InitOnUIThread(Profile* profile,
                       RulesRegistryWithCache* rules_registry,
-                      const std::string& storage_key);
+                      const std::string& storage_key,
+                      bool log_storage_init_delay);
   void CleanupOnUIThread();
 
   // RulesRegistryWithCache::Delegate

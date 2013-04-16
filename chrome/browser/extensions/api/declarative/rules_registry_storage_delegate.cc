@@ -63,7 +63,8 @@ class RulesRegistryStorageDelegate::Inner
  public:
   Inner(Profile* profile,
         RulesRegistryWithCache* rules_registry,
-        const std::string& storage_key);
+        const std::string& storage_key,
+        bool log_storage_init_delay);
 
   // Run this once, just after Inner is constructed.
   void Init();
@@ -87,7 +88,7 @@ class RulesRegistryStorageDelegate::Inner
   // Read/write a list of rules serialized to Values.
   void ReadFromStorage(const std::string& extension_id);
   void ReadFromStorageCallback(const std::string& extension_id,
-                       scoped_ptr<base::Value> value);
+                               scoped_ptr<base::Value> value);
   void WriteToStorage(const std::string& extension_id,
                       scoped_ptr<base::Value> value);
 
@@ -116,6 +117,16 @@ class RulesRegistryStorageDelegate::Inner
   // The thread that our RulesRegistry lives on.
   content::BrowserThread::ID rules_registry_thread_;
 
+  // Each time we request something from the rule store, we measure how long it
+  // takes from the rule store to read the data, and for the registry to
+  // process it. The result is logged with UMA once per the delegate instance,
+  // unless in Incognito. All the logging variables are created and used on UI
+  // thread. The only exception is that |storage_init_time_|, while assigned
+  // once on the UI thread, is read, strictly after the assignment, on the
+  // registry thread.
+  base::Time storage_init_time_;
+  bool log_storage_init_delay_;  // Always use on UI thread.
+
   // The following are only accessible on rules_registry_thread_.
 
   // The RulesRegistry whose delegate we are.
@@ -124,11 +135,6 @@ class RulesRegistryStorageDelegate::Inner
   // True when we have finished reading from storage for all extensions that
   // are loaded on startup.
   bool ready_;
-
-  // We measure the time spent on loading rules on init. The result is logged
-  // with UMA once per the delegate instance, unless in Incognito.
-  base::Time storage_init_time_;
-  bool log_storage_init_delay_;
 };
 
 RulesRegistryStorageDelegate::RulesRegistryStorageDelegate() {
@@ -142,12 +148,14 @@ RulesRegistryStorageDelegate::~RulesRegistryStorageDelegate() {
 void RulesRegistryStorageDelegate::InitOnUIThread(
     Profile* profile,
     RulesRegistryWithCache* rules_registry,
-    const std::string& storage_key) {
+    const std::string& storage_key,
+    bool log_storage_init_delay) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extensions::StateStore* store = ExtensionSystem::Get(profile)->rules_store();
   if (store)
     store->RegisterKey(storage_key);
-  inner_ = new Inner(profile, rules_registry, storage_key);
+  inner_ =
+      new Inner(profile, rules_registry, storage_key, log_storage_init_delay);
   inner_->Init();
 }
 
@@ -178,14 +186,15 @@ void RulesRegistryStorageDelegate::OnRulesChanged(
 RulesRegistryStorageDelegate::Inner::Inner(
     Profile* profile,
     RulesRegistryWithCache* rules_registry,
-    const std::string& storage_key)
+    const std::string& storage_key,
+    bool log_storage_init_delay)
     : registrar_(new content::NotificationRegistrar()),
       profile_(profile),
       storage_key_(storage_key),
       rules_registry_thread_(rules_registry->GetOwnerThread()),
+      log_storage_init_delay_(log_storage_init_delay),
       rules_registry_(rules_registry),
-      ready_(false),
-      log_storage_init_delay_(true) {}
+      ready_(false) {}
 
 void RulesRegistryStorageDelegate::Inner::Init() {
   if (!profile_->IsOffTheRecord()) {
@@ -251,12 +260,11 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
   if (!profile_)
     return;
 
-  if (storage_init_time_.is_null())
-    storage_init_time_ = base::Time::Now();
-
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
+    if (log_storage_init_delay_ && storage_init_time_.is_null())
+      storage_init_time_ = base::Time::Now();
     store->GetExtensionValue(
         extension_id, storage_key_,
         base::Bind(&Inner::ReadFromStorageCallback, this, extension_id));
@@ -264,22 +272,18 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
 }
 
 void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
-    const std::string& extension_id, scoped_ptr<base::Value> value) {
+    const std::string& extension_id,
+    scoped_ptr<base::Value> value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   content::BrowserThread::PostTask(
       rules_registry_thread_,
       FROM_HERE,
       base::Bind(&Inner::ReadFromStorageOnRegistryThread, this, extension_id,
                  base::Passed(&value)));
-
   waiting_for_extensions_.erase(extension_id);
 
   CheckIfReady();
-  if (log_storage_init_delay_ && waiting_for_extensions_.empty()) {
-    UMA_HISTOGRAM_TIMES("Extensions.DeclarativeRulesStorageInitialization",
-                        base::Time::Now() - storage_init_time_);
-    log_storage_init_delay_ = false;
-  }
 }
 
 void RulesRegistryStorageDelegate::Inner::WriteToStorage(
@@ -305,7 +309,8 @@ void RulesRegistryStorageDelegate::Inner::CheckIfReady() {
 }
 
 void RulesRegistryStorageDelegate::Inner::ReadFromStorageOnRegistryThread(
-    const std::string& extension_id, scoped_ptr<base::Value> value) {
+    const std::string& extension_id,
+    scoped_ptr<base::Value> value) {
   DCHECK(content::BrowserThread::CurrentlyOn(rules_registry_thread_));
   if (!rules_registry_)
     return;  // registry went away
@@ -319,6 +324,11 @@ void RulesRegistryStorageDelegate::Inner::NotifyReadyOnRegistryThread() {
     return;  // we've already notified our readiness
 
   ready_ = true;
+
+  if (!storage_init_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Extensions.DeclarativeRulesStorageInitialization",
+                        base::Time::Now() - storage_init_time_);
+  }
 
   if (!rules_registry_)
     return;  // registry went away
