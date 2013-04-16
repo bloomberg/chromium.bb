@@ -165,6 +165,8 @@ class FakeRendererClient : public RendererClient {
     static LayerTreeSettings fake_settings;
     return fake_settings;
   }
+  virtual void DidLoseOutputSurface() OVERRIDE {}
+  virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void SetFullRootLayerDamage() OVERRIDE {
     set_full_root_layer_damage_count_++;
   }

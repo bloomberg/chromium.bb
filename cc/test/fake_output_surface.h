@@ -56,6 +56,7 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(software_device.Pass(), true));
   }
 
+  virtual bool BindToClient(OutputSurfaceClient* client) OVERRIDE;
   virtual void SendFrameToParentCompositor(CompositorFrame* frame) OVERRIDE;
 
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }

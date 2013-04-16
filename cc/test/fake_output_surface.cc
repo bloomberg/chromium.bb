@@ -25,6 +25,15 @@ FakeOutputSurface::FakeOutputSurface(
 
 FakeOutputSurface::~FakeOutputSurface() {}
 
+bool FakeOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  client_ = client;
+  if (!context3d_)
+    return true;
+  return context3d_->makeContextCurrent();
+}
+
 void FakeOutputSurface::SendFrameToParentCompositor(
     CompositorFrame* frame) {
   frame->AssignTo(&last_sent_frame_);

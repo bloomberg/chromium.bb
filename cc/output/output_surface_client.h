@@ -18,8 +18,6 @@ class CC_EXPORT OutputSurfaceClient {
                                         base::TimeDelta interval) = 0;
   virtual void DidVSync(base::TimeTicks frame_time) = 0;
   virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck&) = 0;
-  virtual void OnSwapBuffersComplete() = 0;
-  virtual void DidLoseOutputSurface() = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

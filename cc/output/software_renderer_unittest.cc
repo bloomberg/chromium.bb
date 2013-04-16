@@ -55,6 +55,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     return settings_;
   }
+  virtual void DidLoseOutputSurface() OVERRIDE {}
+  virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE {}

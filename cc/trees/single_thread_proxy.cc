@@ -368,6 +368,8 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
   }
 }
 
+void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() { NOTREACHED(); }
+
 bool SingleThreadProxy::CommitAndComposite(
     base::TimeTicks frame_begin_time,
     gfx::Rect device_viewport_damage_rect,

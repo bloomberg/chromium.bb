@@ -49,7 +49,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 
   // LayerTreeHostImplClient implementation
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
-  virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
+  virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}
   virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE {}
