@@ -51,12 +51,6 @@
 
 /* FIXME: Move out the PLATFORM specific rules into platform specific files. */
 
-#if OS(UNIX)
-#if !defined(ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH)
-#define ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH 1
-#endif
-#endif
-
 /* ENABLE macro defaults for WebCore */
 /* Do not use PLATFORM() tests in this section ! */
 
@@ -136,10 +130,6 @@
 #define ENABLE_DATALIST_ELEMENT 0
 #endif
 
-#if !defined(ENABLE_DELETION_UI)
-#define ENABLE_DELETION_UI 0
-#endif
-
 #if !defined(ENABLE_DIALOG_ELEMENT)
 #define ENABLE_DIALOG_ELEMENT 0
 #endif
@@ -166,10 +156,6 @@
 
 #if !defined(ENABLE_GAMEPAD)
 #define ENABLE_GAMEPAD 0
-#endif
-
-#if !defined(ENABLE_GLIB_SUPPORT)
-#define ENABLE_GLIB_SUPPORT 0
 #endif
 
 #if !defined(ENABLE_HIDDEN_PAGE_DOM_TIMER_THROTTLING)
@@ -266,10 +252,6 @@
 #define ENABLE_PARSED_STYLE_SHEET_CACHING 1
 #endif
 
-#if !defined(ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH)
-#define ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH 0
-#endif
-
 #if !defined(ENABLE_REPAINT_THROTTLING)
 #define ENABLE_REPAINT_THROTTLING 0
 #endif
@@ -294,18 +276,8 @@
 #define ENABLE_SPEECH_SYNTHESIS 0
 #endif
 
-#if !defined(ENABLE_SPELLCHECK)
-#define ENABLE_SPELLCHECK 0
-#endif
-
 #if !defined(ENABLE_SVG)
 #define ENABLE_SVG 1
-#endif
-
-#if ENABLE(SVG)
-#if !defined(ENABLE_SVG_DOM_OBJC_BINDINGS)
-#define ENABLE_SVG_DOM_OBJC_BINDINGS 0
-#endif
 #endif
 
 #if ENABLE(SVG)
@@ -367,10 +339,6 @@
 #endif
 
 /* Asserts, invariants for macro definitions */
-
-#if ENABLE(SVG_DOM_OBJC_BINDINGS) && !ENABLE(SVG)
-#error "ENABLE(SVG_DOM_OBJC_BINDINGS) requires ENABLE(SVG)"
-#endif
 
 #if ENABLE(SVG_FONTS) && !ENABLE(SVG)
 #error "ENABLE(SVG_FONTS) requires ENABLE(SVG)"
