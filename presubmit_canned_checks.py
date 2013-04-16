@@ -95,8 +95,7 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
   _RE_IS_TEST = input_api.re.compile(r'.*tests?.(cc|h)$')
   result = []
 
-  # Initialize cpplint.
-  import cpplint
+  cpplint = input_api.cpplint
   # Access to a protected member _XX of a client class
   # pylint: disable=W0212
   cpplint._cpplint_state.ResetErrorCounts()
@@ -113,14 +112,6 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
   cpplint._SetFilters('-build/include,-build/include_order,-build/namespace,'
                       '-readability/casting,-runtime/int,-runtime/virtual,'
                       '-whitespace/braces')
-
-  # Replace <hash_map> and <hash_set> as headers that need to be included
-  # with "base/hash_tables.h" instead.
-  cpplint._re_pattern_templates = [
-    (a, b, 'base/hash_tables.h')
-      if header in ('<hash_map>', '<hash_set>') else (a, b, header)
-    for (a, b, header) in cpplint._re_pattern_templates
-  ]
 
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through

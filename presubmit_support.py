@@ -6,12 +6,13 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.6.1'
+__version__ = '1.6.2'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
 # change). We should add it as our presubmit scripts start feeling slow.
 
+import cpplint
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
 import contextlib
@@ -247,6 +248,7 @@ class InputApi(object):
     # so that presubmit scripts don't have to import them.
     self.basename = os.path.basename
     self.cPickle = cPickle
+    self.cpplint = cpplint
     self.cStringIO = cStringIO
     self.glob = glob.glob
     self.json = json
@@ -282,6 +284,16 @@ class InputApi(object):
     self.owners_db = owners.Database(change.RepositoryRoot(),
         fopen=file, os_path=self.os_path, glob=self.glob)
     self.verbose = verbose
+
+    # Replace <hash_map> and <hash_set> as headers that need to be included
+    # with "base/hash_tables.h" instead.
+    # Access to a protected member _XX of a client class
+    # pylint: disable=W0212
+    self.cpplint._re_pattern_templates = [
+      (a, b, 'base/hash_tables.h')
+        if header in ('<hash_map>', '<hash_set>') else (a, b, header)
+      for (a, b, header) in cpplint._re_pattern_templates
+    ]
 
   def PresubmitLocalPath(self):
     """Returns the local path of the presubmit script currently being run.

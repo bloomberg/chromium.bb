@@ -161,14 +161,13 @@ class PresubmitUnittest(PresubmitTestsBase):
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
-      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO', 'contextlib',
-      'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils', 'glob',
-      'inspect', 'json', 'load_files',
-      'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
+      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cpplint', 'cStringIO',
+      'contextlib', 'canned_check_filter', 'fix_encoding', 'fnmatch',
+      'gclient_utils', 'glob', 'inspect', 'json', 'load_files', 'logging',
+      'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
-      'subprocess',
-      'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
-      'warn',
+      'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
+      'urllib2', 'warn',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -884,12 +883,12 @@ class InputApiUnittest(PresubmitTestsBase):
       'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths',
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
-      'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
-      'glob', 'host_url', 'is_committing', 'json', 'logging', 'marshal',
-      'os_listdir', 'os_walk',
-      'os_path', 'owners_db', 'pickle', 'platform', 'python_executable', 're',
-      'rietveld', 'subprocess', 'tbr', 'tempfile', 'time', 'traceback',
-      'unittest', 'urllib2', 'version', 'verbose',
+      'basename', 'cPickle', 'cpplint', 'cStringIO', 'canned_checks', 'change',
+      'environ', 'glob', 'host_url', 'is_committing', 'json', 'logging',
+      'marshal', 'os_listdir', 'os_walk', 'os_path', 'owners_db', 'pickle',
+      'platform', 'python_executable', 're', 'rietveld', 'subprocess', 'tbr',
+      'tempfile', 'time', 'traceback', 'unittest', 'urllib2', 'version',
+      'verbose',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
