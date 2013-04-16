@@ -26,6 +26,10 @@ class CC_EXPORT TextureMailbox {
   TextureMailbox(const gpu::Mailbox& mailbox_name,
                  const ReleaseCallback& callback,
                  unsigned sync_point);
+  TextureMailbox(const gpu::Mailbox& mailbox_name,
+                 const ReleaseCallback& callback,
+                 unsigned texture_target,
+                 unsigned sync_point);
 
   ~TextureMailbox();
 
@@ -38,11 +42,13 @@ class CC_EXPORT TextureMailbox {
   void ResetSyncPoint() { sync_point_ = 0; }
   void RunReleaseCallback(unsigned sync_point, bool lost_resource) const;
   void SetName(const gpu::Mailbox&);
+  unsigned target() const { return target_; }
   unsigned sync_point() const { return sync_point_; }
 
  private:
   gpu::Mailbox name_;
   ReleaseCallback callback_;
+  unsigned target_;
   unsigned sync_point_;
 };
 

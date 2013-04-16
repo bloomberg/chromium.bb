@@ -945,6 +945,12 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
   MOCK_METHOD2(bindTexture, void(WGC3Denum target, WebGLId texture));
   MOCK_METHOD3(texParameteri,
                void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
+  MOCK_METHOD1(waitSyncPoint, void(unsigned sync_point));
+  MOCK_METHOD0(insertSyncPoint, unsigned(void));
+  MOCK_METHOD2(produceTextureCHROMIUM, void(WGC3Denum target,
+                                            const WGC3Dbyte* mailbox));
+  MOCK_METHOD2(consumeTextureCHROMIUM, void(WGC3Denum target,
+                                            const WGC3Dbyte* mailbox));
 
   // Force all textures to be "1" so we can test for them.
   virtual WebKit::WebGLId NextTextureId() OVERRIDE { return 1; }
@@ -1061,6 +1067,127 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
+}
+
+static void EmptyReleaseCallback(unsigned sync_point, bool lost_resource) {}
+
+TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
+          new TextureStateTrackingContext)));
+  TextureStateTrackingContext* context =
+      static_cast<TextureStateTrackingContext*>(output_surface->context3d());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  unsigned texture_id = 1;
+  unsigned sync_point = 30;
+  unsigned target = GL_TEXTURE_2D;
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+
+  gpu::Mailbox gpu_mailbox;
+  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
+
+  TextureMailbox mailbox(gpu_mailbox,
+                         callback,
+                         sync_point);
+
+  ResourceProvider::ResourceId id =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+  EXPECT_NE(0u, id);
+
+  Mock::VerifyAndClearExpectations(context);
+
+  {
+    // Using the texture does a consume of the mailbox.
+    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    EXPECT_CALL(*context, waitSyncPoint(sync_point));
+    EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
+
+    EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+
+    ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
+    Mock::VerifyAndClearExpectations(context);
+
+    // When done with it, then it should be produced back to the mailbox.
+    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    EXPECT_CALL(*context, insertSyncPoint());
+    EXPECT_CALL(*context, produceTextureCHROMIUM(target, _));
+
+    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  }
+}
+
+TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
+          new TextureStateTrackingContext)));
+  TextureStateTrackingContext* context =
+      static_cast<TextureStateTrackingContext*>(output_surface->context3d());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  unsigned texture_id = 1;
+  unsigned sync_point = 30;
+  unsigned target = GL_TEXTURE_EXTERNAL_OES;
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+
+  gpu::Mailbox gpu_mailbox;
+  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
+
+  TextureMailbox mailbox(gpu_mailbox,
+                         callback,
+                         target,
+                         sync_point);
+
+  ResourceProvider::ResourceId id =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+  EXPECT_NE(0u, id);
+
+  Mock::VerifyAndClearExpectations(context);
+
+  {
+    // Using the texture does a consume of the mailbox.
+    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    EXPECT_CALL(*context, waitSyncPoint(sync_point));
+    EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
+
+    EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+
+    ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
+    Mock::VerifyAndClearExpectations(context);
+
+    // When done with it, then it should be produced back to the mailbox.
+    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    EXPECT_CALL(*context, insertSyncPoint());
+    EXPECT_CALL(*context, produceTextureCHROMIUM(target, _));
+
+    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  }
 }
 
 class AllocationTrackingContext3D : public TestWebGraphicsContext3D {

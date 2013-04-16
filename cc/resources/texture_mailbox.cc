@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "cc/resources/texture_mailbox.h"
+
+#include "base/logging.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -15,6 +17,7 @@ TextureMailbox::TextureMailbox(
     const std::string& mailbox_name,
     const ReleaseCallback& mailbox_callback)
     : callback_(mailbox_callback),
+      target_(GL_TEXTURE_2D),
       sync_point_(0) {
   DCHECK(mailbox_name.empty() == mailbox_callback.is_null());
   if (!mailbox_name.empty()) {
@@ -27,6 +30,7 @@ TextureMailbox::TextureMailbox(
     const gpu::Mailbox& mailbox_name,
     const ReleaseCallback& mailbox_callback)
     : callback_(mailbox_callback),
+      target_(GL_TEXTURE_2D),
       sync_point_(0) {
   DCHECK(mailbox_name.IsZero() == mailbox_callback.is_null());
   name_.SetName(mailbox_name.name);
@@ -37,6 +41,19 @@ TextureMailbox::TextureMailbox(
     const ReleaseCallback& mailbox_callback,
     unsigned sync_point)
     : callback_(mailbox_callback),
+      target_(GL_TEXTURE_2D),
+      sync_point_(sync_point) {
+  DCHECK(mailbox_name.IsZero() == mailbox_callback.is_null());
+  name_.SetName(mailbox_name.name);
+}
+
+TextureMailbox::TextureMailbox(
+    const gpu::Mailbox& mailbox_name,
+    const ReleaseCallback& mailbox_callback,
+    unsigned texture_target,
+    unsigned sync_point)
+    : callback_(mailbox_callback),
+      target_(texture_target),
       sync_point_(sync_point) {
   DCHECK(mailbox_name.IsZero() == mailbox_callback.is_null());
   name_.SetName(mailbox_name.name);

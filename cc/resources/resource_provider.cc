@@ -319,9 +319,10 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(context3d);
     unsigned sync_point = resource->mailbox.sync_point();
     if (!lost_resource && resource->gl_id) {
-      GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
+      GLC(context3d, context3d->bindTexture(
+          resource->mailbox.target(), resource->gl_id));
       GLC(context3d, context3d->produceTextureCHROMIUM(
-          GL_TEXTURE_2D, resource->mailbox.data()));
+          resource->mailbox.target(), resource->mailbox.data()));
     }
     if (resource->gl_id)
       GLC(context3d, context3d->deleteTexture(resource->gl_id));
@@ -466,9 +467,10 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
       resource->mailbox.ResetSyncPoint();
     }
     resource->gl_id = context3d->createTexture();
-    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
-    GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                                     resource->mailbox.data()));
+    GLC(context3d, context3d->bindTexture(
+        resource->mailbox.target(), resource->gl_id));
+    GLC(context3d, context3d->consumeTextureCHROMIUM(
+        resource->mailbox.target(), resource->mailbox.data()));
   }
 
   resource->lock_for_read_count++;
