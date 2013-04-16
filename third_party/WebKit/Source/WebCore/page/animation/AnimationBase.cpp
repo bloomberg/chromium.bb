@@ -620,20 +620,4 @@ double AnimationBase::getElapsedTime() const
     return beginAnimationUpdateTime() - m_startTime;
 }
 
-void AnimationBase::setElapsedTime(double time)
-{
-    // FIXME: implement this method
-    UNUSED_PARAM(time);
-}
-
-void AnimationBase::play()
-{
-    // FIXME: implement this method
-}
-
-void AnimationBase::pause()
-{
-    // FIXME: implement this method
-}
-
 } // namespace WebCore
