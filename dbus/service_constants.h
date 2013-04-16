@@ -710,6 +710,9 @@ const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 
+// Technology types (augments "Flimflam type options" above).
+const char kTypeEthernetEap[] = "etherneteap";
+
 // Error strings.
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
 const char kErrorEapLocalTlsFailed[] = "eap-local-tls-failed";
