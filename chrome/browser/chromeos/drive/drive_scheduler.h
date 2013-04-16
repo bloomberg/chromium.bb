@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -60,6 +61,9 @@ class DriveScheduler
     STATE_RETRY,
   };
 
+  // Unique ID assigned to each job. It is base::IDMap<JobInfo>::KeyType.
+  typedef int32 JobID;
+
   // Information about a specific job that is visible to other systems.
   struct JobInfo {
     explicit JobInfo(JobType in_job_type);
@@ -68,7 +72,7 @@ class DriveScheduler
     JobType job_type;
 
     // Id of the job, which can be used to query or modify it.
-    int job_id;
+    JobID job_id;
 
     // Number of bytes completed, if applicable.
     int completed_bytes;
@@ -209,12 +213,12 @@ class DriveScheduler
 
   // Represents a single entry in the job queue.
   struct QueueEntry {
-    explicit QueueEntry(JobType in_job_type);
+    QueueEntry();
     ~QueueEntry();
 
     static bool Compare(const QueueEntry* left, const QueueEntry* right);
 
-    JobInfo job_info;
+    JobID job_id;
 
     // Context of the job.
     DriveClientContext context;
@@ -334,6 +338,10 @@ class DriveScheduler
     google_apis::UploadCompletionCallback upload_completion_callback;
   };
 
+  // Adds the specified job to the queue and starts the job loop for the queue
+  // if needed.
+  void StartNewJob(scoped_ptr<QueueEntry> job, JobType type);
+
   // Adds the specified job to the queue.  Takes ownership of |job|
   void QueueJob(scoped_ptr<QueueEntry> job);
 
@@ -357,8 +365,9 @@ class DriveScheduler
   // Resets the throttle delay to the initial value, and continues the job loop.
   void ResetThrottleAndContinueJobLoop(QueueType queue_type);
 
-  // Retries the job if needed, otherwise cleans up the job, invokes the
-  // callback, and continues the job loop.
+  // Retries the |queue_entry| job if needed and returns null. Otherwise cleans
+  // up the job information and returns |queue_entry| as is so that callers can
+  // extract and invoke the callback function object stored there.
   scoped_ptr<QueueEntry> OnJobDone(scoped_ptr<QueueEntry> queue_entry,
                                    DriveFileError error);
 
@@ -435,6 +444,10 @@ class DriveScheduler
 
   // The queues of jobs.
   std::list<QueueEntry*> queue_[NUM_QUEUES];
+
+  // The list of unfinished (= queued or running) job info indexed by job IDs.
+  typedef IDMap<JobInfo, IDMapOwnPointer> JobIDMap;
+  JobIDMap job_map_;
 
   google_apis::DriveServiceInterface* drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> uploader_;

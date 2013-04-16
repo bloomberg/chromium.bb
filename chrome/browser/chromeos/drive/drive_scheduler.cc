@@ -39,8 +39,8 @@ DriveScheduler::JobInfo::JobInfo(JobType in_job_type)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-DriveScheduler::QueueEntry::QueueEntry(JobType in_job_type)
-    : job_info(in_job_type),
+DriveScheduler::QueueEntry::QueueEntry()
+    : job_id(-1),
       context(DriveClientContext(USER_INITIATED)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -75,6 +75,15 @@ DriveScheduler::DriveScheduler(
 DriveScheduler::~DriveScheduler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(initialized_);
+
+  size_t num_pending_jobs = 0;
+  size_t num_running_jobs = 0;
+  for (int i = 0; i < NUM_QUEUES; ++i) {
+    num_pending_jobs += queue_[i].size();
+    num_running_jobs += jobs_running_[i];
+  }
+  DCHECK_EQ(num_pending_jobs + num_running_jobs, job_map_.size());
+
   for (int i = 0; i < NUM_QUEUES; ++i) {
     STLDeleteElements(&queue_[i]);
   }
@@ -98,12 +107,10 @@ void DriveScheduler::GetAccountMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_ACCOUNT_METADATA));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->get_account_metadata_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_ACCOUNT_METADATA));
+  StartNewJob(new_job.Pass(), TYPE_GET_ACCOUNT_METADATA);
 }
 
 void DriveScheduler::GetAboutResource(
@@ -111,12 +118,10 @@ void DriveScheduler::GetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_ABOUT_RESOURCE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->get_about_resource_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_ABOUT_RESOURCE));
+  StartNewJob(new_job.Pass(), TYPE_GET_ABOUT_RESOURCE);
 }
 
 void DriveScheduler::GetAppList(
@@ -124,12 +129,10 @@ void DriveScheduler::GetAppList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_APP_LIST));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->get_app_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_APP_LIST));
+  StartNewJob(new_job.Pass(), TYPE_GET_APP_LIST);
 }
 
 void DriveScheduler::GetAllResourceList(
@@ -137,12 +140,10 @@ void DriveScheduler::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_ALL_RESOURCE_LIST));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->get_resource_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_ALL_RESOURCE_LIST));
+  StartNewJob(new_job.Pass(), TYPE_GET_ALL_RESOURCE_LIST);
 }
 
 void DriveScheduler::GetResourceListInDirectory(
@@ -151,14 +152,11 @@ void DriveScheduler::GetResourceListInDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_GET_RESOURCE_LIST_IN_DIRECTORY));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->directory_resource_id = directory_resource_id;
   new_job->get_resource_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_LIST_IN_DIRECTORY));
+  StartNewJob(new_job.Pass(), TYPE_GET_RESOURCE_LIST_IN_DIRECTORY);
 }
 
 void DriveScheduler::Search(
@@ -167,13 +165,11 @@ void DriveScheduler::Search(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_SEARCH));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->search_query = search_query;
   new_job->get_resource_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_SEARCH));
+  StartNewJob(new_job.Pass(), TYPE_SEARCH);
 }
 
 void DriveScheduler::GetChangeList(
@@ -182,13 +178,11 @@ void DriveScheduler::GetChangeList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_CHANGE_LIST));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->start_changestamp = start_changestamp;
   new_job->get_resource_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_CHANGE_LIST));
+  StartNewJob(new_job.Pass(), TYPE_GET_CHANGE_LIST);
 }
 
 void DriveScheduler::ContinueGetResourceList(
@@ -197,14 +191,11 @@ void DriveScheduler::ContinueGetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_CONTINUE_GET_RESOURCE_LIST));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->feed_url = feed_url;
   new_job->get_resource_list_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_CONTINUE_GET_RESOURCE_LIST));
+  StartNewJob(new_job.Pass(), TYPE_CONTINUE_GET_RESOURCE_LIST);
 }
 
 void DriveScheduler::GetResourceEntry(
@@ -214,14 +205,12 @@ void DriveScheduler::GetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_RESOURCE_ENTRY));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = resource_id;
   new_job->context = context;
   new_job->get_resource_entry_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_ENTRY));
+  StartNewJob(new_job.Pass(), TYPE_GET_RESOURCE_ENTRY);
 }
 
 void DriveScheduler::DeleteResource(
@@ -230,13 +219,11 @@ void DriveScheduler::DeleteResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_DELETE_RESOURCE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_DELETE_RESOURCE));
+  StartNewJob(new_job.Pass(), TYPE_DELETE_RESOURCE);
 }
 
 
@@ -247,14 +234,12 @@ void DriveScheduler::CopyHostedDocument(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_COPY_HOSTED_DOCUMENT));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = resource_id;
   new_job->new_name = new_name;
   new_job->get_resource_entry_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_COPY_HOSTED_DOCUMENT));
+  StartNewJob(new_job.Pass(), TYPE_COPY_HOSTED_DOCUMENT);
 }
 
 void DriveScheduler::RenameResource(
@@ -264,14 +249,12 @@ void DriveScheduler::RenameResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_RENAME_RESOURCE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = resource_id;
   new_job->new_name = new_name;
   new_job->entry_action_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_RENAME_RESOURCE));
+  StartNewJob(new_job.Pass(), TYPE_RENAME_RESOURCE);
 }
 
 void DriveScheduler::AddResourceToDirectory(
@@ -281,15 +264,12 @@ void DriveScheduler::AddResourceToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->parent_resource_id = parent_resource_id;
   new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  StartNewJob(new_job.Pass(), TYPE_ADD_RESOURCE_TO_DIRECTORY);
 }
 
 void DriveScheduler::RemoveResourceFromDirectory(
@@ -298,15 +278,12 @@ void DriveScheduler::RemoveResourceFromDirectory(
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->parent_resource_id = parent_resource_id;
   new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY));
+  StartNewJob(new_job.Pass(), TYPE_REMOVE_RESOURCE_FROM_DIRECTORY);
 }
 
 void DriveScheduler::AddNewDirectory(
@@ -315,14 +292,12 @@ void DriveScheduler::AddNewDirectory(
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_ADD_NEW_DIRECTORY));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->parent_resource_id = parent_resource_id;
   new_job->directory_name = directory_name;
   new_job->get_resource_entry_callback = callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_ADD_NEW_DIRECTORY));
+  StartNewJob(new_job.Pass(), TYPE_ADD_NEW_DIRECTORY);
 }
 
 void DriveScheduler::DownloadFile(
@@ -334,7 +309,7 @@ void DriveScheduler::DownloadFile(
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_DOWNLOAD_FILE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->virtual_path = virtual_path;
   new_job->local_cache_path = local_cache_path;
   new_job->download_url = download_url;
@@ -342,9 +317,7 @@ void DriveScheduler::DownloadFile(
   new_job->download_action_callback = download_action_callback;
   new_job->get_content_callback = get_content_callback;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_DOWNLOAD_FILE));
+  StartNewJob(new_job.Pass(), TYPE_DOWNLOAD_FILE);
 }
 
 void DriveScheduler::UploadNewFile(
@@ -357,7 +330,7 @@ void DriveScheduler::UploadNewFile(
     const google_apis::UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_UPLOAD_NEW_FILE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = parent_resource_id;
   new_job->drive_file_path = drive_file_path;
   new_job->local_file_path = local_file_path;
@@ -366,9 +339,7 @@ void DriveScheduler::UploadNewFile(
   new_job->upload_completion_callback = callback;
   new_job->context = context;
 
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_UPLOAD_NEW_FILE));
+  StartNewJob(new_job.Pass(), TYPE_UPLOAD_NEW_FILE);
 }
 
 void DriveScheduler::UploadExistingFile(
@@ -381,7 +352,7 @@ void DriveScheduler::UploadExistingFile(
     const google_apis::UploadCompletionCallback& upload_completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_UPLOAD_EXISTING_FILE));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
   new_job->resource_id = resource_id;
   new_job->drive_file_path = drive_file_path;
   new_job->local_file_path = local_file_path;
@@ -390,15 +361,25 @@ void DriveScheduler::UploadExistingFile(
   new_job->upload_completion_callback = upload_completion_callback;
   new_job->context = context;
 
-  QueueJob(new_job.Pass());
+  StartNewJob(new_job.Pass(), TYPE_UPLOAD_EXISTING_FILE);
+}
 
-  StartJobLoop(GetJobQueueType(TYPE_UPLOAD_EXISTING_FILE));
+void DriveScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
+  // job_info is owned by job_map_ and released when it is removed in OnJobDone.
+  JobInfo* job_info = new JobInfo(type);
+  job->job_id = job_info->job_id = job_map_.Add(job_info);
+
+  QueueJob(job.Pass());
+  StartJobLoop(GetJobQueueType(type));
 }
 
 void DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  QueueType queue_type = GetJobQueueType(job->job_info.job_type);
+  JobInfo* job_info = job_map_.Lookup(job->job_id);
+  DCHECK(job_info);
+
+  QueueType queue_type = GetJobQueueType(job_info->job_type);
   std::list<QueueEntry*>& queue = queue_[queue_type];
 
   queue.push_back(job.release());
@@ -431,14 +412,15 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
   scoped_ptr<QueueEntry> queue_entry(queue_[queue_type].front());
   queue_[queue_type].pop_front();
 
-  JobInfo& job_info = queue_entry->job_info;
-  job_info.state = STATE_RUNNING;
+  JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
+  DCHECK(job_info);
+  job_info->state = STATE_RUNNING;
 
   // The some arguments are evaluated after bind, so we copy the pointer to the
   // QueueEntry
   QueueEntry* entry = queue_entry.get();
 
-  switch (job_info.job_type) {
+  switch (job_info->job_type) {
     case TYPE_GET_ABOUT_RESOURCE: {
       drive_service_->GetAboutResource(
           base::Bind(&DriveScheduler::OnGetAboutResourceJobDone,
@@ -700,14 +682,16 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  QueueType queue_type = GetJobQueueType(queue_entry->job_info.job_type);
+  JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
+  DCHECK(job_info);
+  QueueType queue_type = GetJobQueueType(job_info->job_type);
 
   // Decrement the number of jobs for this queue.
   --jobs_running_[queue_type];
 
   // Retry, depending on the error.
   if (error == DRIVE_FILE_ERROR_THROTTLED) {
-    queue_entry->job_info.state = STATE_RETRY;
+    job_info->state = STATE_RETRY;
 
     // Requeue the job.
     QueueJob(queue_entry.Pass());
@@ -716,6 +700,10 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
 
     return scoped_ptr<DriveScheduler::QueueEntry>();
   } else {
+    // The job has finished, no retry will happen in the scheduler. Now we can
+    // remove the job info from the map. This is the only place of the removal.
+    job_map_.Remove(queue_entry->job_id);
+
     ResetThrottleAndContinueJobLoop(queue_type);
 
     // Send the entry back.
@@ -731,15 +719,15 @@ void DriveScheduler::OnGetResourceListJobDone(
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(job_info->get_resource_list_callback,
+      base::Bind(queue_entry->get_resource_list_callback,
                  error,
                  base::Passed(&resource_list)));
 }
@@ -752,15 +740,15 @@ void DriveScheduler::OnGetResourceEntryJobDone(
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(job_info->get_resource_entry_callback,
+      base::Bind(queue_entry->get_resource_entry_callback,
                  error,
                  base::Passed(&entry)));
 }
@@ -773,13 +761,13 @@ void DriveScheduler::OnGetAboutResourceJobDone(
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  job_info->get_about_resource_callback.Run(error, about_resource.Pass());
+  queue_entry->get_about_resource_callback.Run(error, about_resource.Pass());
 }
 
 void DriveScheduler::OnGetAccountMetadataJobDone(
@@ -790,13 +778,14 @@ void DriveScheduler::OnGetAccountMetadataJobDone(
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  job_info->get_account_metadata_callback.Run(error, account_metadata.Pass());
+  queue_entry->get_account_metadata_callback.Run(error,
+                                                 account_metadata.Pass());
 }
 
 void DriveScheduler::OnGetAppListJobDone(
@@ -807,13 +796,13 @@ void DriveScheduler::OnGetAppListJobDone(
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  job_info->get_app_list_callback.Run(error, app_list.Pass());
+  queue_entry->get_app_list_callback.Run(error, app_list.Pass());
 }
 
 void DriveScheduler::OnEntryActionJobDone(
@@ -821,14 +810,14 @@ void DriveScheduler::OnEntryActionJobDone(
     google_apis::GDataErrorCode error) {
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  DCHECK(!job_info->entry_action_callback.is_null());
-  job_info->entry_action_callback.Run(error);
+  DCHECK(!queue_entry->entry_action_callback.is_null());
+  queue_entry->entry_action_callback.Run(error);
 }
 
 void DriveScheduler::OnDownloadActionJobDone(
@@ -837,14 +826,14 @@ void DriveScheduler::OnDownloadActionJobDone(
     const base::FilePath& temp_file) {
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  DCHECK(!job_info->download_action_callback.is_null());
-  job_info->download_action_callback.Run(error, temp_file);
+  DCHECK(!queue_entry->download_action_callback.is_null());
+  queue_entry->download_action_callback.Run(error, temp_file);
 }
 
 void DriveScheduler::OnUploadCompletionJobDone(
@@ -855,14 +844,14 @@ void DriveScheduler::OnUploadCompletionJobDone(
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DriveFileError drive_error(DriveUploadErrorToDriveFileError(error));
 
-  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+  queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
-  if (!job_info)
+  if (!queue_entry)
     return;
 
   // Handle the callback.
-  DCHECK(!job_info->upload_completion_callback.is_null());
-  job_info->upload_completion_callback.Run(
+  DCHECK(!queue_entry->upload_completion_callback.is_null());
+  queue_entry->upload_completion_callback.Run(
       error, drive_path, file_path, resource_entry.Pass());
 }
 
