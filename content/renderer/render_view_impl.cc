@@ -93,6 +93,7 @@
 #include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
@@ -5862,6 +5863,11 @@ void RenderViewImpl::OnWasHidden() {
   // only be freed once the tab is destroyed or if the user navigates away
   // via WebMediaPlayerAndroid::Destroy
   media_player_manager_->ReleaseMediaResources();
+
+#if defined(ENABLE_WEBRTC)
+  RenderThreadImpl::current()->video_capture_impl_manager()->
+      SuspendDevices(true);
+#endif
 #endif
 
   if (webview()) {
@@ -5885,6 +5891,11 @@ void RenderViewImpl::OnWasHidden() {
 
 void RenderViewImpl::OnWasShown(bool needs_repainting) {
   RenderWidget::OnWasShown(needs_repainting);
+
+#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
+  RenderThreadImpl::current()->video_capture_impl_manager()->
+      SuspendDevices(false);
+#endif
 
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(

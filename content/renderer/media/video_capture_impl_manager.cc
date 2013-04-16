@@ -37,6 +37,12 @@ media::VideoCapture* VideoCaptureImplManager::AddDevice(
   return it->second->vc;
 }
 
+void VideoCaptureImplManager::SuspendDevices(bool suspend) {
+  base::AutoLock auto_lock(lock_);
+  for (Devices::iterator it = devices_.begin(); it != devices_.end(); ++it)
+    it->second->vc->SuspendCapture(suspend);
+}
+
 void VideoCaptureImplManager::RemoveDevice(
     media::VideoCaptureSessionId id,
     media::VideoCapture::EventHandler* handler) {

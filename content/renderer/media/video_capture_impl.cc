@@ -56,6 +56,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       device_id_(0),
       video_type_(media::VideoCaptureCapability::kI420),
       device_info_available_(false),
+      suspended_(false),
       state_(VIDEO_CAPTURE_STATE_STOPPED) {
   DCHECK(filter);
   memset(&current_params_, 0, sizeof(current_params_));
@@ -136,6 +137,12 @@ void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoDelegateAddedOnCaptureThread,
                  base::Unretained(this), device_id));
+}
+
+void VideoCaptureImpl::SuspendCapture(bool suspend) {
+  capture_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::DoSuspendCaptureOnCaptureThread,
+                 base::Unretained(this), suspend));
 }
 
 void VideoCaptureImpl::DoDeInitOnCaptureThread(base::Closure task) {
@@ -275,7 +282,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
     int buffer_id, base::Time timestamp) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
     return;
   }
@@ -362,6 +369,13 @@ void VideoCaptureImpl::DoDelegateAddedOnCaptureThread(int32 device_id) {
     clients_pending_on_filter_.erase(it++);
     StartCapture(handler, capability);
   }
+}
+
+void VideoCaptureImpl::DoSuspendCaptureOnCaptureThread(bool suspend) {
+  DVLOG(1) << "DoSuspendCapture: suspend " << (suspend ? "yes" : "no");
+  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
+
+  suspended_ = suspend;
 }
 
 void VideoCaptureImpl::StopDevice() {

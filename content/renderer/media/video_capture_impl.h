@@ -57,6 +57,9 @@ class CONTENT_EXPORT VideoCaptureImpl
       const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
 
+  // Stop/resume delivering video frames to clients, based on flag |suspend|.
+  virtual void SuspendCapture(bool suspend);
+
  private:
   friend class VideoCaptureImplManager;
   friend class VideoCaptureImplTest;
@@ -84,6 +87,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoDeviceInfoReceivedOnCaptureThread(
       const media::VideoCaptureParams& device_info);
   void DoDelegateAddedOnCaptureThread(int32 device_id);
+
+  void DoSuspendCaptureOnCaptureThread(bool suspend);
 
   void Init();
   void DeInit(base::Closure task);
@@ -124,6 +129,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   media::VideoCaptureParams device_info_;
   bool device_info_available_;
 
+  bool suspended_;
   VideoCaptureState state_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
