@@ -125,6 +125,9 @@ private:
 #endif
 
 class ShareableElementData : public ElementData {
+    // This is needed because we malloc() space for a ShareableElementData plus
+    // optional following attributes, as a performance tweak.
+    NEW_DELETE_SAME_AS_MALLOC_FREE;
 public:
     static PassRefPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
 

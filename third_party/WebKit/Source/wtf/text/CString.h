@@ -35,6 +35,9 @@ namespace WTF {
 // CStringBuffer is the ref-counted storage class for the characters in a CString.
 // The data is implicitly allocated 1 character longer than length(), as it is zero-terminated.
 class CStringBuffer : public RefCounted<CStringBuffer> {
+    // This is needed because we malloc() space for a CStringBuffer plus an
+    // immediately following buffer, as a performance tweak.
+    NEW_DELETE_SAME_AS_MALLOC_FREE;
 public:
     const char* data() { return m_data; }
     size_t length() const { return m_length; }

@@ -68,6 +68,9 @@ struct GlyphData {
 // although multiple nodes may reference it as their "page" if they are supposed
 // to be overriding the parent's node, but provide no additional information.
 class GlyphPage : public RefCounted<GlyphPage> {
+    // This is needed because we malloc() space for a GlyphPage plus optional
+    // following data, as a performance tweak.
+    NEW_DELETE_SAME_AS_MALLOC_FREE;
 public:
     static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNode* owner)
     {

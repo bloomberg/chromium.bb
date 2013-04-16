@@ -212,6 +212,10 @@ private:
 };
 
 class ImmutableStylePropertySet : public StylePropertySet {
+    // This is needed because we malloc() space for an
+    // ImmutableStylePropertySet plus following properties, as a performance
+    // tweak.
+    NEW_DELETE_SAME_AS_MALLOC_FREE;
 public:
     ImmutableStylePropertySet(const CSSProperty*, unsigned count, CSSParserMode);
     ~ImmutableStylePropertySet();
