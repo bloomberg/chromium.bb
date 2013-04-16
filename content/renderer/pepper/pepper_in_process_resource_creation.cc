@@ -108,7 +108,7 @@ PP_Resource PepperInProcessResourceCreation::CreatePrinting(
 
 PP_Resource PepperInProcessResourceCreation::CreateTrueTypeFont(
     PP_Instance instance,
-    const PP_TrueTypeFontDesc_Dev& desc) {
+    const PP_TrueTypeFontDesc_Dev* desc) {
   NOTIMPLEMENTED();
   return 0;
 }

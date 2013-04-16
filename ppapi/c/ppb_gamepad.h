@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_gamepad.idl modified Thu Mar  1 11:41:21 2012. */
+/* From ppb_gamepad.idl modified Tue Apr 16 09:04:34 2013. */
 
 #ifndef PPAPI_C_PPB_GAMEPAD_H_
 #define PPAPI_C_PPB_GAMEPAD_H_
@@ -98,7 +98,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadsSampleData, 1896);
  */
 struct PPB_Gamepad_1_0 {
   /**
-   * Samples the current state of the connected gamepads.
+   * Samples the current state of the available gamepads.
    */
   void (*Sample)(PP_Instance instance, struct PP_GamepadsSampleData* data);
 };

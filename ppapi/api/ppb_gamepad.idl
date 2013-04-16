@@ -85,10 +85,10 @@ struct PP_GamepadsSampleData {
  * The <code>PPB_Gamepad</code> interface allows retrieving data from
  * gamepad/joystick devices that are connected to the system.
  */
-[version=1.0, macro="PPB_GAMEPAD_INTERFACE", singleton_resource]
+[version=1.0, macro="PPB_GAMEPAD_INTERFACE", singleton]
 interface PPB_Gamepad {
   /**
-   * Samples the current state of the connected gamepads.
+   * Samples the current state of the available gamepads.
    */
   void Sample(
       [in] PP_Instance instance,

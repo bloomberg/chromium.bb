@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_truetype_font_dev.idl modified Mon Mar 11 14:12:14 2013. */
+/* From dev/ppb_truetype_font_dev.idl modified Wed Apr 10 11:41:36 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
@@ -193,14 +193,14 @@ struct PPB_TrueTypeFont_Dev_0_1 {
   PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_TrueTypeFontDesc_Dev* desc);
   /**
-   * Determines if the given resource is a font.
+   * Determines if the given resource is a TrueType font.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a font.
    *
    * @return <code>PP_TRUE</code> if the resource is a
    * <code>PPB_TrueTypeFont_Dev</code>, <code>PP_FALSE</code> otherwise.
    */
-  PP_Bool (*IsFont)(PP_Resource resource);
+  PP_Bool (*IsTrueTypeFont)(PP_Resource resource);
   /**
    * Returns a description of the given font resource. This description may
    * differ from the description passed to Create, reflecting the host's font

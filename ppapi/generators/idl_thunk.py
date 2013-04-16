@@ -101,7 +101,8 @@ def _AddApiHeader(filenode, meta):
   meta.AddApi(api_basename + '_api')
 
 
-def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
+def _MakeEnterLine(filenode, interface, member, arg, handle_errors, callback,
+                   meta):
   """Returns an EnterInstance/EnterResource string for a function."""
   api_name = interface.GetName()
   if api_name.endswith('Trusted'):
@@ -109,20 +110,28 @@ def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
   if api_name.endswith('_Dev'):
     api_name = api_name[:-len('_Dev')]
   api_name += '_API'
+  if member.GetProperty('api'):  # Override API name.
+    manually_provided_api = True
+    # TODO(teravest): Automatically guess the API header file.
+    api_name = member.GetProperty('api')
+  else:
+    manually_provided_api = False
 
   if arg[0] == 'PP_Instance':
     if callback is None:
       arg_string = arg[1]
     else:
       arg_string = '%s, %s' % (arg[1], callback)
-    if interface.GetProperty('singleton_resource'):
-      _AddApiHeader(filenode, meta)
+    if interface.GetProperty('singleton') or member.GetProperty('singleton'):
+      if not manually_provided_api:
+        _AddApiHeader(filenode, meta)
       return 'EnterInstanceAPI<%s> enter(%s);' % (api_name, arg_string)
     else:
       return 'EnterInstance enter(%s);' % arg_string
   elif arg[0] == 'PP_Resource':
     enter_type = 'EnterResource<%s>' % api_name
-    _AddApiHeader(filenode, meta)
+    if not manually_provided_api:
+      _AddApiHeader(filenode, meta)
     if callback is None:
       return '%s enter(%s, %s);' % (enter_type, arg[1],
                                     str(handle_errors).lower())
@@ -245,8 +254,8 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
 
   handle_errors = not (member.GetProperty('report_errors') == 'False')
   if is_callback_func:
-    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                   args[len(args) - 1][1], meta)
+    body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
+                                   handle_errors, args[len(args) - 1][1], meta)
     body += 'if (enter.failed())\n'
     value = member.GetProperty('on_failure')
     if value is None:
@@ -267,8 +276,8 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
           ptype, pname, _, _ = cgen.GetComponents(param, release, 'store')
           out_params.append((pname, ptype))
 
-    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                   None, meta)
+    body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
+                                   handle_errors, None, meta)
     if not out_params:
       body += 'if (enter.succeeded())\n'
       body += '  %s;' % invocation
@@ -288,8 +297,8 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
     if value is None:
       raise TGenError('No default value for rtype %s' % rtype)
 
-    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                   None, meta)
+    body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
+                                   handle_errors, None, meta)
     body += 'if (enter.failed())\n'
     body += '  return %s;\n' % value
     body += 'return %s;' % invocation
@@ -314,7 +323,8 @@ def DefineMember(filenode, node, member, release, include_version, meta):
   body = 'VLOG(4) << \"%s::%s()\";\n' % (node.GetName(), member.GetName())
 
   if _IsTypeCheck(node, member):
-    body += '%s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
+    body += '%s\n' % _MakeEnterLine(filenode, node, member, args[0], False,
+                                    None, meta)
     body += 'return PP_FromBool(enter.succeeded());'
   elif member.GetName() == 'Create':
     body += _MakeCreateMemberBody(node, member, args)
@@ -375,6 +385,9 @@ class TGen(GeneratorByFile):
 
     thunk_out = IDLOutFile(savename)
     body, meta = self.GenerateBody(thunk_out, filenode, releases, options)
+    # TODO(teravest): How do we handle repeated values?
+    if filenode.GetProperty('thunk_include'):
+      meta.AddInclude(filenode.GetProperty('thunk_include'))
     self.WriteHead(thunk_out, filenode, releases, options, meta)
     thunk_out.Write('\n\n'.join(body))
     self.WriteTail(thunk_out, filenode, releases, options)

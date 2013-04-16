@@ -8,6 +8,9 @@
  * interface exposes font table data for 'sfnt' fonts on the host system. These
  * include TrueType and OpenType fonts.
  */
+
+[generate_thunk,thunk_include="ppapi/thunk/ppb_truetype_font_singleton_api.h"]
+
 label Chrome {
   M26 = 0.1
 };
@@ -146,6 +149,7 @@ interface PPB_TrueTypeFont_Dev {
    * @return If >= 0, the number of family names returned, otherwise an error
    * code from <code>pp_errors.h</code>.
    */
+  [singleton,api=PPB_TrueTypeFont_Singleton_API]
   int32_t GetFontFamilies([in] PP_Instance instance,
                           [in] PP_ArrayOutput output,
                           [in] PP_CompletionCallback callback);
@@ -162,14 +166,14 @@ interface PPB_TrueTypeFont_Dev {
                      [in] PP_TrueTypeFontDesc_Dev desc);
 
   /**
-   * Determines if the given resource is a font.
+   * Determines if the given resource is a TrueType font.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a font.
    *
    * @return <code>PP_TRUE</code> if the resource is a
    * <code>PPB_TrueTypeFont_Dev</code>, <code>PP_FALSE</code> otherwise.
    */
-  PP_Bool IsFont([in] PP_Resource resource);
+  PP_Bool IsTrueTypeFont([in] PP_Resource resource);
 
   /**
    * Returns a description of the given font resource. This description may

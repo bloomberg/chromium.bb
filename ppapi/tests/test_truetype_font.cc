@@ -6,6 +6,7 @@
 
 #include "ppapi/tests/test_truetype_font.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <algorithm>
 #include <limits>
@@ -114,7 +115,8 @@ std::string TestTrueTypeFont::TestGetFontFamilies() {
             kInvalidInstance,
             cc.GetCallback().output(),
             cc.GetCallback().pp_completion_callback()));
-    ASSERT_EQ(PP_ERROR_FAILED, cc.result());
+    ASSERT_TRUE(cc.result() == PP_ERROR_FAILED ||
+                cc.result() == PP_ERROR_BADARGUMENT);
     ASSERT_EQ(0, cc.output().size());
   }
 
@@ -134,16 +136,16 @@ std::string TestTrueTypeFont::TestCreate() {
   // Creating a font from an invalid instance returns an invalid resource.
   font = ppb_truetype_font_interface_->Create(kInvalidInstance, &desc);
   ASSERT_EQ(kInvalidResource, font);
-  ASSERT_NE(PP_TRUE, ppb_truetype_font_interface_->IsFont(font));
+  ASSERT_NE(PP_TRUE, ppb_truetype_font_interface_->IsTrueTypeFont(font));
 
   // Creating a font from a valid instance returns a font resource.
   font = ppb_truetype_font_interface_->Create(instance_->pp_instance(), &desc);
   ASSERT_NE(kInvalidResource, font);
-  ASSERT_EQ(PP_TRUE, ppb_truetype_font_interface_->IsFont(font));
+  ASSERT_EQ(PP_TRUE, ppb_truetype_font_interface_->IsTrueTypeFont(font));
 
   ppb_core_interface_->ReleaseResource(font);
   // Once released, the resource shouldn't be a font.
-  ASSERT_NE(PP_TRUE, ppb_truetype_font_interface_->IsFont(font));
+  ASSERT_NE(PP_TRUE, ppb_truetype_font_interface_->IsTrueTypeFont(font));
 
   PASS();
 }

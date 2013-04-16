@@ -2221,9 +2221,9 @@ PP_Resource Pnacl_M26_PPB_TrueTypeFont_Dev_Create(PP_Instance instance, const st
 }
 
 static __attribute__((pnaclcall))
-PP_Bool Pnacl_M26_PPB_TrueTypeFont_Dev_IsFont(PP_Resource resource) {
+PP_Bool Pnacl_M26_PPB_TrueTypeFont_Dev_IsTrueTypeFont(PP_Resource resource) {
   const struct PPB_TrueTypeFont_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1.real_iface;
-  return iface->IsFont(resource);
+  return iface->IsTrueTypeFont(resource);
 }
 
 static __attribute__((pnaclcall))
@@ -4598,7 +4598,7 @@ struct PPB_Testing_Dev_0_91 Pnacl_Wrappers_PPB_Testing_Dev_0_91 = {
 struct PPB_TrueTypeFont_Dev_0_1 Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1 = {
     .GetFontFamilies = (int32_t (*)(PP_Instance instance, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontFamilies,
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_TrueTypeFontDesc_Dev* desc))&Pnacl_M26_PPB_TrueTypeFont_Dev_Create,
-    .IsFont = (PP_Bool (*)(PP_Resource resource))&Pnacl_M26_PPB_TrueTypeFont_Dev_IsFont,
+    .IsTrueTypeFont = (PP_Bool (*)(PP_Resource resource))&Pnacl_M26_PPB_TrueTypeFont_Dev_IsTrueTypeFont,
     .Describe = (int32_t (*)(PP_Resource font, struct PP_TrueTypeFontDesc_Dev* desc, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_Describe,
     .GetTableTags = (int32_t (*)(PP_Resource font, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetTableTags,
     .GetTable = (int32_t (*)(PP_Resource font, uint32_t table, int32_t offset, int32_t max_data_length, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetTable

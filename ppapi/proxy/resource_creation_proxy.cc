@@ -155,9 +155,9 @@ PP_Resource ResourceCreationProxy::CreateResourceArray(
 
 PP_Resource ResourceCreationProxy::CreateTrueTypeFont(
     PP_Instance instance,
-    const PP_TrueTypeFontDesc_Dev& desc) {
+    const PP_TrueTypeFontDesc_Dev* desc) {
   return (new TrueTypeFontResource(GetConnection(),
-                                   instance, desc))->GetReference();
+                                   instance, *desc))->GetReference();
 
 }
 

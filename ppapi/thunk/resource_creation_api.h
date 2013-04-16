@@ -86,7 +86,7 @@ class ResourceCreationAPI {
                                           uint32_t size) = 0;
   virtual PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
-      const PP_TrueTypeFontDesc_Dev& desc) = 0;
+      const PP_TrueTypeFontDesc_Dev* desc) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance) = 0;
