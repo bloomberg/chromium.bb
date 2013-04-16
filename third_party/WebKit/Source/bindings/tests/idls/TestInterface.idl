@@ -34,7 +34,6 @@
     Conditional=Condition1|Condition2,
     CallWith=ScriptExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
-    RaisesException,
-    ConstructorConditional=TEST_INTERFACE
+    RaisesException
 ] interface TestInterface {
 };

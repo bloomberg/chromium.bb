@@ -32,8 +32,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGPropertyTearOff.h"
 #include "SVGStaticPropertyTearOff.h"
-#include "ScriptArguments.h"
-#include "ScriptCallStackFactory.h"
 #include "ScriptProfile.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
@@ -1034,30 +1032,6 @@ static void withScriptExecutionContextAndScriptStateWithSpacesAttributeAttrSette
     TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesAttributeAttrSetter(name, value, info);
 }
 
-static v8::Handle<v8::Value> withScriptArgumentsAndCallStackAttributeAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestObj* imp = V8TestObj::toNative(info.Holder());
-    return toV8Fast(imp->withScriptArgumentsAndCallStackAttribute(), info, imp);
-}
-
-static v8::Handle<v8::Value> withScriptArgumentsAndCallStackAttributeAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestObjV8Internal::withScriptArgumentsAndCallStackAttributeAttrGetter(name, info);
-}
-
-static void withScriptArgumentsAndCallStackAttributeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestObj* imp = V8TestObj::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, v, V8TestObj::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObj::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setWithScriptArgumentsAndCallStackAttribute(WTF::getPtr(v));
-    return;
-}
-
-static void withScriptArgumentsAndCallStackAttributeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestObjV8Internal::withScriptArgumentsAndCallStackAttributeAttrSetter(name, value, info);
-}
-
 static v8::Handle<v8::Value> enforcedRangeLongAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     TestObj* imp = V8TestObj::toNative(info.Holder());
@@ -1772,7 +1746,7 @@ static v8::Handle<v8::Value> perWorldReadOnlyAttributeAttrGetterForMainWorld(v8:
 {
     TestObj* imp = V8TestObj::toNative(info.Holder());
     RefPtr<TestObj> result = imp->perWorldReadOnlyAttribute();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper(result.get(), info.GetIsolate())) : v8Undefined();
+    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapperForMainWorld(result.get())) : v8Undefined();
     if (wrapper.IsEmpty()) {
         wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
         if (!wrapper.IsEmpty())
@@ -2289,19 +2263,6 @@ static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateWithSpacesM
 static v8::Handle<v8::Value> withScriptExecutionContextAndScriptStateWithSpacesMethodCallback(const v8::Arguments& args)
 {
     return TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethod(args);
-}
-
-static v8::Handle<v8::Value> withScriptArgumentsAndCallStackMethod(const v8::Arguments& args)
-{
-    TestObj* imp = V8TestObj::toNative(args.Holder());
-    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(args, 0));
-    imp->withScriptArgumentsAndCallStack(scriptArguments.release());
-    return v8Undefined();
-}
-
-static v8::Handle<v8::Value> withScriptArgumentsAndCallStackMethodCallback(const v8::Arguments& args)
-{
-    return TestObjV8Internal::withScriptArgumentsAndCallStackMethod(args);
 }
 
 static v8::Handle<v8::Value> methodWithOptionalArgMethod(const v8::Arguments& args)
@@ -3371,8 +3332,6 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"withScriptExecutionContextAndScriptStateAttributeRaises", TestObjV8Internal::withScriptExecutionContextAndScriptStateAttributeRaisesAttrGetterCallback, TestObjV8Internal::withScriptExecutionContextAndScriptStateAttributeRaisesAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptExecutionContextAndScriptStateWithSpacesAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
     {"withScriptExecutionContextAndScriptStateWithSpacesAttribute", TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesAttributeAttrGetterCallback, TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'withScriptArgumentsAndCallStackAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
-    {"withScriptArgumentsAndCallStackAttribute", TestObjV8Internal::withScriptArgumentsAndCallStackAttributeAttrGetterCallback, TestObjV8Internal::withScriptArgumentsAndCallStackAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'enforcedRangeLongAttr' (Type: 'attribute' ExtAttr: 'EnforceRange')
     {"enforcedRangeLongAttr", TestObjV8Internal::enforcedRangeLongAttrAttrGetterCallback, TestObjV8Internal::enforcedRangeLongAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'enforcedRangeUnsignedLongAttr' (Type: 'attribute' ExtAttr: 'EnforceRange')
@@ -3471,7 +3430,6 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
     {"withScriptExecutionContextAndScriptState", TestObjV8Internal::withScriptExecutionContextAndScriptStateMethodCallback, 0},
     {"withScriptExecutionContextAndScriptStateObjException", TestObjV8Internal::withScriptExecutionContextAndScriptStateObjExceptionMethodCallback, 0},
     {"withScriptExecutionContextAndScriptStateWithSpaces", TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethodCallback, 0},
-    {"withScriptArgumentsAndCallStack", TestObjV8Internal::withScriptArgumentsAndCallStackMethodCallback, 0},
     {"methodWithOptionalArg", TestObjV8Internal::methodWithOptionalArgMethodCallback, 0},
     {"methodWithNonOptionalArgAndOptionalArg", TestObjV8Internal::methodWithNonOptionalArgAndOptionalArgMethodCallback, 0},
     {"methodWithNonOptionalArgAndTwoOptionalArgs", TestObjV8Internal::methodWithNonOptionalArgAndTwoOptionalArgsMethodCallback, 0},
@@ -3567,7 +3525,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    
     if (RuntimeEnabledFeatures::enabledAtRuntimeAttr1Enabled()) {
         static const V8DOMConfiguration::BatchedAttribute attrData =\
         // Attribute 'enabledAtRuntimeAttr1' (Type: 'attribute' ExtAttr: 'EnabledAtRuntime')

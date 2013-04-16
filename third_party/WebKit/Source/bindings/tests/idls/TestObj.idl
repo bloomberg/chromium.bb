@@ -115,7 +115,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [CallWith=ScriptExecutionContext|ScriptState] void withScriptExecutionContextAndScriptState();
     [CallWith=ScriptExecutionContext|ScriptState, RaisesException] TestObj withScriptExecutionContextAndScriptStateObjException();
     [CallWith=  ScriptExecutionContext  |  ScriptState  ] TestObj withScriptExecutionContextAndScriptStateWithSpaces();
-    [CallWith=ScriptArguments|CallStack] void withScriptArgumentsAndCallStack();
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ScriptExecutionContext] attribute TestObj withScriptExecutionContextAttribute;
@@ -124,7 +123,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [CallWith=ScriptExecutionContext|ScriptState] attribute TestObj withScriptExecutionContextAndScriptStateAttribute;
     [CallWith=ScriptExecutionContext|ScriptState, GetterRaisesException] attribute TestObj withScriptExecutionContextAndScriptStateAttributeRaises;
     [CallWith=  ScriptExecutionContext  |  ScriptState  ] attribute TestObj withScriptExecutionContextAndScriptStateWithSpacesAttribute;
-    [CallWith=ScriptArguments|CallStack] attribute TestObj withScriptArgumentsAndCallStackAttribute;
 
     // optional parameters
     void    methodWithOptionalArg(optional long opt);
