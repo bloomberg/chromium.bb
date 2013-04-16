@@ -492,8 +492,31 @@ class BASE_EXPORT ValueSerializer {
   virtual Value* Deserialize(int* error_code, std::string* error_str) = 0;
 };
 
-// Stream operator so Values can be used in assertion statements.
+// Stream operator so Values can be used in assertion statements.  In order that
+// gtest uses this operator to print readable output on test failures, we must
+// override each specific type. Otherwise, the default template implementation
+// is preferred over an upcast.
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const Value& value);
+
+BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
+                                            const FundamentalValue& value) {
+  return out << static_cast<const Value&>(value);
+}
+
+BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
+                                            const StringValue& value) {
+  return out << static_cast<const Value&>(value);
+}
+
+BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
+                                            const DictionaryValue& value) {
+  return out << static_cast<const Value&>(value);
+}
+
+BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
+                                            const ListValue& value) {
+  return out << static_cast<const Value&>(value);
+}
 
 }  // namespace base
 
