@@ -147,7 +147,8 @@ int SimpleEntryImpl::ReadData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  index_->UseIfExists(key_);
+  if (index_)
+    index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  index_, callback, weak_ptr_factory_.GetWeakPtr(),
@@ -173,7 +174,8 @@ int SimpleEntryImpl::WriteData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  index_->UseIfExists(key_);
+  if (index_)
+    index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  index_, callback, weak_ptr_factory_.GetWeakPtr(),
