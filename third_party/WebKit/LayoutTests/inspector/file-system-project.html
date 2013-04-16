@@ -22,6 +22,16 @@ function test()
         }
     }
 
+    function dumpUISourceCodeLocations(uiSourceCodes, lineNumber)
+    {
+        InspectorTest.addResult("Dumping uiSourceCode location link texts:");
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            var uiSourceCode = uiSourceCodes[i];
+            var uiLocation = new WebInspector.UILocation(uiSourceCode, lineNumber);
+            InspectorTest.addResult(" - " + uiLocation.linkText());
+        }
+    }
+
     InspectorTest.runTestSuite([
         function testFileSystems(next)
         {
@@ -46,6 +56,7 @@ function test()
 
             function uiSourceCodesDumped()
             {
+                dumpUISourceCodeLocations(uiSourceCodes, 5);
                 InspectorTest.addResult("UISourceCode uri to url mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
                     var url = uiSourceCodes[i].url;
