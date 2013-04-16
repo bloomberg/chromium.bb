@@ -810,7 +810,14 @@ def BuildStepTarBundle(pepper_ver, tarfile):
 def BuildStepRunUnittests():
   buildbot_common.BuildStep('Run unittests')
   test_all_py = os.path.join(SDK_SRC_DIR, 'test_all.py')
-  buildbot_common.Run([sys.executable, test_all_py])
+
+  # Our tests shouldn't be using the proxy; they should all be connecting to
+  # localhost. Some slaves can't route HTTP traffic through the proxy to
+  # localhost (we get 504 gateway errors), so we clear it here.
+  env = dict(os.environ)
+  if 'http_proxy' in env:
+    del env['http_proxy']
+  buildbot_common.Run([sys.executable, test_all_py], env=env)
 
 
 def BuildStepTestSDK():
