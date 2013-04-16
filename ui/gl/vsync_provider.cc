@@ -65,9 +65,12 @@ void SyncControlVSyncProvider::GetVSyncParameters(
 
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
   // but a value of 0 for MSC if they cannot access the CRTC data structure
-  // associated with the surfrace.
-  if (media_stream_counter == 0)
+  // associated with the surface. crbug.com/231945
+  if (media_stream_counter == 0) {
+    LOG(ERROR) << "glXGetSyncValuesOML should not return TRUE with a "
+               << "media stream counter of 0.";
     return;
+  }
 
   struct timespec real_time;
   struct timespec monotonic_time;
