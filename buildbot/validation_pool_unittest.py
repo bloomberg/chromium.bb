@@ -44,6 +44,7 @@ class MockPatch(mox.MockObject):
   def __eq__(self, other):
     return self.id == getattr(other, 'id')
 
+
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
 
@@ -517,14 +518,15 @@ class TestPatchSeries(base):
     self.mox.VerifyAll()
 
 
-def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
+def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
              builder_name='foon', is_master=True, dryrun=True, **kwds):
   """Helper for creating ValidationPool objects for tests."""
   kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
   kwds.setdefault('changes', [])
+  build_root = kwds.pop('build_root', '/fake_root')
 
   pool = validation_pool.ValidationPool(
-      overlays, self.build_root, build_number, builder_name, is_master,
+      overlays, build_root, build_number, builder_name, is_master,
       dryrun, **kwds)
   return pool
 
@@ -537,7 +539,8 @@ class TestCoreLogic(base):
   def MakePool(self, *args, **kwds):
     """Helper for creating ValidationPool objects for Mox tests."""
     handlers = kwds.pop('handlers', False)
-    pool = MakePool(self, *args, **kwds)
+    kwds['build_root'] = self.build_root
+    pool = MakePool(*args, **kwds)
     self.mox.StubOutWithMock(pool, '_SendNotification')
     if handlers:
       self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
@@ -1093,10 +1096,7 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
     return dep
 
   def GetPatches(self, how_many=1, **kwargs):
-    if how_many == 1:
-      patches = [base.GetPatches(self, how_many, **kwargs)]
-    else:
-      patches = base.GetPatches(self, how_many, **kwargs)
+    patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
     for i, patch in enumerate(patches):
       self.deps[patch] = [p for p in patches[:i]]
     return patches
@@ -1106,7 +1106,7 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
     for num in range(0, 5):
       expected_plans = [set(self.GetPatches(num)) for _ in range(num)]
       patches = list(itertools.chain.from_iterable(expected_plans))
-      pool = MakePool(self, changes=patches)
+      pool = MakePool(changes=patches)
       plans = pool.CreateDisjointTransactions(None)
       self.assertEqual(set(map(str, plans)), set(map(str, plans)))
 
@@ -1116,7 +1116,7 @@ class TestCreateDisjointTransactions(cros_test_lib.MockTestCase, base):
                               '_SendNotification')
     remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
     changes = self.GetPatches(5, **kwargs)[1:]
-    pool = MakePool(self, changes=changes)
+    pool = MakePool(changes=changes)
     plans = pool.CreateDisjointTransactions(None)
     self.assertEqual(plans, [])
     self.assertEqual(remove.call_count, notify.call_count)

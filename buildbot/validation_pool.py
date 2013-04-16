@@ -353,7 +353,7 @@ class PatchSeries(object):
 
     In this case, a transaction is defined as a group of commits that
     must land for the given change to be merged- specifically its
-    parent deps, and its CQ-DEPENDS.
+    parent deps, and its CQ-DEPEND.
 
     Args:
       change: A cros_patch.GitRepoPatch instance to generate a transaction
@@ -361,12 +361,32 @@ class PatchSeries(object):
       limit_to: If non-None, limit the allowed uncommitted patches to
         what's in that container/mapping.
     Returns:
-      A sequency of the necessary cros_patch.GitRepoPatch objects for
+      A sequence of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
     """
     plan, stack = [], cros_patch.PatchCache()
     self._ResolveChange(change, plan, stack, limit_to=limit_to)
     return plan
+
+  def CreateTransactions(self, changes, limit_to=None):
+    """Create a list of transactions from a list of changes.
+
+    Args:
+      changes: A list of cros_patch.GitRepoPatch instances to generate
+        transactions for.
+      limit_to: See CreateTransaction docs.
+
+    Returns:
+      A list of (change, plan) tuples for the given list of changes. Each
+      plan represents the necessary GitRepoPatch objects for a given change.
+    """
+    for change in changes:
+      try:
+        plan = self.CreateTransaction(change, limit_to=limit_to)
+      except cros_patch.PatchException as exc:
+        yield (change, (), exc)
+      else:
+        yield (change, plan, None)
 
   def _ResolveChange(self, change, plan, stack, limit_to=None):
     """Helper for resolving a node and its dependencies into the plan.
@@ -542,16 +562,14 @@ class PatchSeries(object):
       changes = changes_filter(self, changes)
 
     self.InjectLookupCache(changes)
-    allowed_changes = cros_patch.PatchCache(changes) if frozen else None
+    limit_to = cros_patch.PatchCache(changes) if frozen else None
     resolved, applied, failed = [], [], []
-    for change in changes:
-      try:
-        resolved.append(
-            (change, self.CreateTransaction(change, limit_to=allowed_changes)))
-      except cros_patch.PatchException, e:
-        logging.info("Failed creating transaction for %s: %s", change, e)
-        failed.append(e)
+    for change, plan, ex in self.CreateTransactions(changes, limit_to=limit_to):
+      if ex is not None:
+        logging.info("Failed creating transaction for %s: %s", change, ex)
+        failed.append(ex)
       else:
+        resolved.append((change, plan))
         logging.info("Transaction for %s is %s.",
             change, ', '.join(map(str, resolved[-1][-1])))
 
@@ -928,7 +946,7 @@ class ValidationPool(object):
     return cls(*args, **kwargs)
 
   @classmethod
-  def AcquirePool(cls, overlays, build_root, build_number, builder_name,
+  def AcquirePool(cls, overlays, repo, build_number, builder_name,
                   dryrun=False, changes_query=None, check_tree_open=True,
                   change_filter=None):
     """Acquires the current pool from Gerrit.
@@ -937,8 +955,8 @@ class ValidationPool(object):
 
     Args:
       overlays:  One of constants.VALID_OVERLAYS.
-      build_root: The location of the build root used to filter projects, and
-        to apply patches against.
+      repo: The repo used to sync, to filter projects, and to apply patches
+        against.
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
       dryrun: Don't submit anything to gerrit.
@@ -963,20 +981,25 @@ class ValidationPool(object):
     end_time = time.time() + cls.MAX_TIMEOUT
     while True:
       time_left = end_time - time.time()
+
+      # Wait until the tree opens.
       if check_tree_open and not cros_build_lib.TreeOpen(
           cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left):
         raise TreeIsClosedException()
 
+      # Sync so that we are up-to-date on what is committed.
+      repo.Sync()
+
       # Only master configurations should call this method.
-      pool = ValidationPool(overlays, build_root, build_number, builder_name,
-                            True, dryrun)
+      pool = ValidationPool(overlays, repo.directory, build_number,
+                            builder_name, True, dryrun)
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.Query(changes_query, sort='lastUpdated')
         raw_changes.reverse()
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            raw_changes, git.ManifestCheckout.Cached(build_root))
+            raw_changes, git.ManifestCheckout.Cached(repo.directory))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
@@ -993,13 +1016,16 @@ class ValidationPool(object):
     return pool
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, overlays, build_root, build_number,
+  def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
                               builder_name, is_master, dryrun):
     """Acquires the current pool from a given manifest.
+
+    This function assumes that you have already synced to the given manifest.
 
     Args:
       manifest: path to the manifest where the pool resides.
       overlays:  One of constants.VALID_OVERLAYS.
+      repo: The repo used to filter projects and to apply patches against.
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
       is_master: Boolean that indicates whether this is a pool for a master.
@@ -1008,7 +1034,7 @@ class ValidationPool(object):
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(overlays, build_root, build_number, builder_name,
+    pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
                           is_master, dryrun)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
@@ -1559,15 +1585,12 @@ class ValidationPool(object):
     helper_pool = HelperPool.SimpleCreate()
     patches = PatchSeries(self.build_root, forced_manifest=manifest,
                           helper_pool=helper_pool)
-    edges = {}
-    failed = []
-    for change in self.changes:
-      # Create a transaction for the provided change.
-      try:
-        plan = patches.CreateTransaction(change, limit_to=self.changes)
-      except cros_patch.PatchException, e:
-        logging.info('Failed creating transaction for %s: %s', change, e)
-        failed.append(e)
+    edges, failed = {}, []
+    for change, plan, ex in patches.CreateTransactions(self.changes,
+                                                       limit_to=self.changes):
+      if ex is not None:
+        logging.info("Failed creating transaction for %s: %s", change, ex)
+        failed.append(ex)
       else:
         # Mark everybody in the transaction as bidirectionally connected to the
         # others.
