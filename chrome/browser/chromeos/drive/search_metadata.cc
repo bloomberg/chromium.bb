@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
 #include <algorithm>
+#include <queue>
+
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -17,12 +19,11 @@ namespace drive {
 
 namespace {
 
-// Used to sort the search result per the last accessed/modified time. The
+// Used to sort the result canididates per the last accessed/modified time. The
 // recently accessed/modified files come first.
-bool CompareByTimestamp(const MetadataSearchResult& a,
-                        const MetadataSearchResult& b) {
-  const PlatformFileInfoProto& a_file_info = a.entry_proto.file_info();
-  const PlatformFileInfoProto& b_file_info = b.entry_proto.file_info();
+bool CompareByTimestamp(const DriveEntryProto& a, const DriveEntryProto& b) {
+  const PlatformFileInfoProto& a_file_info = a.file_info();
+  const PlatformFileInfoProto& b_file_info = b.file_info();
 
   if (a_file_info.last_accessed() != b_file_info.last_accessed())
     return a_file_info.last_accessed() > b_file_info.last_accessed();
@@ -32,6 +33,43 @@ bool CompareByTimestamp(const MetadataSearchResult& a,
   // drive.google.com), we use last modified time as the tie breaker.
   return a_file_info.last_modified() > b_file_info.last_modified();
 }
+
+struct MetadataSearchResultComparator {
+  bool operator()(const MetadataSearchResult* a,
+                  const MetadataSearchResult* b) const {
+    return CompareByTimestamp(a->entry_proto, b->entry_proto);
+  }
+};
+
+// A wrapper of std::priority_queue which deals with pointers of values.
+template<typename T, typename Compare>
+class ScopedPriorityQueue {
+ public:
+  ScopedPriorityQueue() {}
+
+  ~ScopedPriorityQueue() {
+    while (!empty())
+      pop();
+  }
+
+  bool empty() const { return queue_.empty(); }
+
+  size_t size() const { return queue_.size(); }
+
+  const T* top() const { return queue_.top(); }
+
+  void push(T* x) { queue_.push(x); }
+
+  void pop() {
+    delete queue_.top();
+    queue_.pop();
+  }
+
+ private:
+  std::priority_queue<T*, std::vector<T*>, Compare> queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPriorityQueue);
+};
 
 // Returns true if |entry| is eligible for the search |options| and should be
 // tested for the match with the query.
@@ -71,15 +109,15 @@ class SearchMetadataHelper {
       callback_(callback),
       results_(new MetadataSearchResultVector),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    DCHECK_LE(0, at_most_num_matches);
   }
 
-  // Starts searching the local resource metadata by reading the root
-  // directory.
+  // Starts searching the local resource metadata.
   void Start() {
     resource_metadata_->IterateEntries(
         base::Bind(&SearchMetadataHelper::MaybeAddEntryToResult,
                    base::Unretained(this)),
-        base::Bind(&SearchMetadataHelper::SortResult,
+        base::Bind(&SearchMetadataHelper::PrepareResults,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -87,58 +125,61 @@ class SearchMetadataHelper {
  private:
   // Adds entry to the result when appropriate.
   void MaybeAddEntryToResult(const DriveEntryProto& entry) {
-    // Add it to the search result if the entry is eligible for the given
+    DCHECK_GE(at_most_num_matches_,
+              static_cast<int>(result_candidates_.size()));
+
+    // Add |entry| to the result if the entry is eligible for the given
     // |options| and matches the query. The base name of the entry must
     // contains |query| to match the query.
     std::string highlighted;
-    if (IsEligibleEntry(entry, options_) &&
-        FindAndHighlight(entry.base_name(), query_, &highlighted)) {
-      results_->push_back(
-          MetadataSearchResult(base::FilePath(), entry, highlighted));
+    if (!IsEligibleEntry(entry, options_) ||
+        !FindAndHighlight(entry.base_name(), query_, &highlighted))
+      return;
+
+    // Make space for |entry| when appropriate.
+    if (static_cast<int>(result_candidates_.size()) == at_most_num_matches_ &&
+        CompareByTimestamp(entry, result_candidates_.top()->entry_proto))
+      result_candidates_.pop();
+
+    // Add |entry| to the result when appropriate.
+    if (static_cast<int>(result_candidates_.size()) < at_most_num_matches_) {
+      result_candidates_.push(new MetadataSearchResult(
+          base::FilePath(), entry, highlighted));
     }
   }
 
-  // Sorts the result by time stamps.
-  void SortResult() {
-    std::sort(results_->begin(), results_->end(), &CompareByTimestamp);
-    if (results_->size() > static_cast<size_t>(at_most_num_matches_)) {
-      // Don't use resize() as it requires a default constructor.
-      results_->erase(results_->begin() + at_most_num_matches_,
-                      results_->end());
-    }
-
-    FillFilePaths(0);
-  }
-
-  // Fills file paths of results.
-  void FillFilePaths(size_t index) {
-    if (index == results_->size()) {
+  // Prepares results by popping candidates one by one.
+  void PrepareResults() {
+    if (result_candidates_.empty()) {
       Finish(DRIVE_FILE_OK);
       return;
     }
     resource_metadata_->GetEntryInfoByResourceId(
-        results_->at(index).entry_proto.resource_id(),
-        base::Bind(&SearchMetadataHelper::ContinueFillFilePaths,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   index));
+        result_candidates_.top()->entry_proto.resource_id(),
+        base::Bind(&SearchMetadataHelper::ContinuePrepareResults,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Implements FillFilePaths().
-  void ContinueFillFilePaths(size_t index,
-                             DriveFileError error,
-                             const base::FilePath& path,
-                             scoped_ptr<DriveEntryProto> unused_entry) {
+  // Implements PrepareResults().
+  void ContinuePrepareResults(DriveFileError error,
+                              const base::FilePath& path,
+                              scoped_ptr<DriveEntryProto> unused_entry) {
     if (error != DRIVE_FILE_OK) {
       Finish(error);
       return;
     }
-    MetadataSearchResult* result = &(*results_)[index];
-    result->path = path;
-    FillFilePaths(index + 1);
+    results_->push_back(*result_candidates_.top());
+    results_->back().path = path;
+    result_candidates_.pop();
+    PrepareResults();
   }
 
   // Sends the result to the callback and deletes this instance.
   void Finish(DriveFileError error) {
+    // Reverse the order here because |result_candidates_| puts the most
+    // uninterested candidate at the top.
+    std::reverse(results_->begin(), results_->end());
+
     if (error != DRIVE_FILE_OK)
       results_.reset();
     callback_.Run(error, results_.Pass());
@@ -150,6 +191,8 @@ class SearchMetadataHelper {
   const int options_;
   const int at_most_num_matches_;
   const SearchMetadataCallback callback_;
+  ScopedPriorityQueue<MetadataSearchResult,
+                      MetadataSearchResultComparator> result_candidates_;
   scoped_ptr<MetadataSearchResultVector> results_;
 
   // Note: This should remain the last member so it'll be destroyed and
