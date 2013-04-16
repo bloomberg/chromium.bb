@@ -11,7 +11,9 @@ EXTRA_DIST = 				\
 	nocross_harness.txt		\
 	ta-ta-g1_harness.txt
 
+HARNESS_DIR = $(top_srcdir)/tests/harness
 harness_ENVIRONMENT =												\
+	HARNESS_DIR=$(HARNESS_DIR)                                                                            \
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables	\
 	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH						\
 	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH						\
