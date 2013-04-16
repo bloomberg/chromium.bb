@@ -118,12 +118,12 @@ chrome.test.runTests([
       // Each search query should return exactly one result (this should be
       // ensured by Chrome part of the test).
       chrome.fileBrowserPrivate.searchDrive(
-          {query: 'empty', sharedWithMe: false, nextFeed: testCase.nextFeed},
+          {query: 'empty', nextFeed: testCase.nextFeed},
           function(entries, nextFeed) {
             chrome.test.assertFalse(!entries);
             chrome.test.assertEq(1, entries.length);
             chrome.test.assertEq(testCase.expectedPath,
-                                 entries[0].entry.fullPath);
+                                 entries[0].fullPath);
             chrome.test.assertEq(testCase.expectedNextFeed, nextFeed);
 
             var verifyEntry = getEntryVerifier(testCase.expectedType);
@@ -131,7 +131,7 @@ chrome.test.runTests([
 
             // The callback will be called only it the entry is successfully
             // verified, otherwise the test function will fail.
-            verifyEntry(entries[0].entry, runNextQuery);
+            verifyEntry(entries[0], runNextQuery);
       });
     }
 

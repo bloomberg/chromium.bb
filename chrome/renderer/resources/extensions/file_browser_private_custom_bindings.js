@@ -27,11 +27,10 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('searchDrive',
                                  function(name, request, response) {
-    if (response && !response.error && response.results) {
-      for (var i = 0; i < response.results.length; i++) {
-        response.results[i].entry =
-            GetExternalFileEntry(response.results[i].entry);
-      }
+    if (response && !response.error && response.entries) {
+      response.entries = response.entries.map(function(entry) {
+        return GetExternalFileEntry(entry);
+      });
     }
 
     // So |request.callback| doesn't break if response is not defined.
@@ -39,7 +38,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       response = {};
 
     if (request.callback)
-      request.callback(response.results, response.nextFeed);
+      request.callback(response.entries, response.nextFeed);
     request.callback = null;
   });
 

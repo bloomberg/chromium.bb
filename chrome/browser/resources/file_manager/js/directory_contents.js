@@ -556,9 +556,9 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
     return;
   }
 
-  var searchCallback = (function(results, nextFeed) {
+  var searchCallback = (function(entries, nextFeed) {
     // TODO(tbarzic): Improve error handling.
-    if (!results) {
+    if (!entries) {
       console.error('Drive search encountered an error.');
       this.lastChunkReceived();
       return;
@@ -566,25 +566,19 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
     this.nextFeed_ = nextFeed;
     var remaining =
         DirectoryContentsDriveSearch.MAX_RESULTS - this.fetchedResultsNum_;
-    if (results.length >= remaining) {
-      results = results.slice(0, remaining);
+    if (entries.length >= remaining) {
+      entries = entries.slice(0, remaining);
       this.nextFeed_ = '';
     }
-    this.fetchedResultsNum_ += results.length;
+    this.fetchedResultsNum_ += entries.length;
 
     this.done_ = (this.nextFeed_ == '');
 
-    // TODO(haruki): Use the file properties as well when we implement the UI
-    // side.
-    var entries = results.map(function(r) { return r.entry; });
     this.onNewEntries(entries);
   }).bind(this);
 
   var searchParams = {
     'query': this.query_,
-    'sharedWithMe':
-        this.type_ ==
-            DirectoryContentsDriveSearch.SearchType.SEARCH_SHARED_WITH_ME,
     'nextFeed': this.nextFeed_
   };
   chrome.fileBrowserPrivate.searchDrive(searchParams, searchCallback);

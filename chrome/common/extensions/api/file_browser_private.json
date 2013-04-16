@@ -1015,11 +1015,6 @@
                 "optional": true,
                 "description": "Search query."
               },
-              "sharedWithMe": {
-                "type": "boolean",
-                "optional": true,
-                "description": "If this is a request for files shared with me or not."
-              },
               "nextFeed": {
                 "type": "string",
                 "optional": true,
@@ -1032,21 +1027,12 @@
             "type": "function",
             "parameters": [
               {
-                "name": "results",
+                "name": "entries",
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "properties": {
-                    "entry": {
-                      "type": "object",
-                      "isInstanceOf": "Entry",
-                      "description": "A dictionary object which represents a Drive file. This will be converted into a kind of FileEntry object. See file_browser_handler_custom_bindings.cc for details. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
-                    },
-                    "properties": {
-                      "$ref": "DriveFileProperties"
-                    }
-                  },
-                  "description": "Entry and Drive-related properties representing a search result."
+                  "isInstanceOf": "Entry",
+                  "description": "An Entry object which represents a Drive file. The conversion into a kind of FileEntry object is done in file_browser_handler_custom_bindings.cc. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
                 }
               },
               {

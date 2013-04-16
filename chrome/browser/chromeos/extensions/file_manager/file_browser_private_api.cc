@@ -2970,30 +2970,21 @@ void SearchDriveFunction::OnSearch(
 
   DCHECK(results.get());
 
-  base::ListValue* results_list = new ListValue();
+  base::ListValue* entries = new ListValue();
 
   // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < results->size(); ++i) {
-    DictionaryValue* result_dict = new DictionaryValue();
-
-    // FileEntry fields.
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("fileSystemName", file_system_name_);
     entry->SetString("fileSystemRoot", file_system_url_.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
     entry->SetBoolean("fileIsDirectory",
                       results->at(i).entry_proto.file_info().is_directory());
-    result_dict->Set("entry", entry);
-
-    // Drive files properties.
-    DictionaryValue* property_dict = new DictionaryValue();
-    FillDriveFilePropertiesValue(results->at(i).entry_proto, property_dict);
-    result_dict->Set("properties", property_dict);
-    results_list->Append(result_dict);
+    entries->Append(entry);
   }
 
   base::DictionaryValue* result = new DictionaryValue();
-  result->Set("results", results_list);
+  result->Set("entries", entries);
   result->SetString("nextFeed", next_feed.spec());
 
   SetResult(result);
