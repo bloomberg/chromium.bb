@@ -1079,46 +1079,6 @@ TransformationMatrix& TransformationMatrix::multiply(const TransformationMatrix&
         : [leftMatrix]"+r"(leftMatrix), [rightMatrix]"+r"(rightMatrix)
         :
         : "memory", "r3", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d16", "d17", "d18", "d19", "d20", "d21", "d22", "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30", "d31");
-#elif CPU(ARM_VFP) && PLATFORM(IOS)
-// FIXME: Decide if we want this for Android, http://crbug.com/230934
-#define MATRIX_MULTIPLY_ONE_LINE \
-    "vldmia.64  %[rightMatrix]!, { d0-d3}\n\t" \
-    "vmul.f64   d4, d0, d16\n\t" \
-    "vmla.f64   d4, d1, d20\n\t" \
-    "vmla.f64   d4, d2, d24\n\t" \
-    "vmla.f64   d4, d3, d28\n\t" \
-    \
-    "vmul.f64   d5, d0, d17\n\t" \
-    "vmla.f64   d5, d1, d21\n\t" \
-    "vmla.f64   d5, d2, d25\n\t" \
-    "vmla.f64   d5, d3, d29\n\t" \
-    \
-    "vmul.f64   d6, d0, d18\n\t" \
-    "vmla.f64   d6, d1, d22\n\t" \
-    "vmla.f64   d6, d2, d26\n\t" \
-    "vmla.f64   d6, d3, d30\n\t" \
-    \
-    "vmul.f64   d7, d0, d19\n\t" \
-    "vmla.f64   d7, d1, d23\n\t" \
-    "vmla.f64   d7, d2, d27\n\t" \
-    "vmla.f64   d7, d3, d31\n\t" \
-    "vstmia.64  %[leftMatrix]!, { d4-d7 }\n\t"
-
-    double* leftMatrix = &(m_matrix[0][0]);
-    const double* rightMatrix = &(mat.m_matrix[0][0]);
-    // We load the full m_matrix at once in d16-d31.
-    asm volatile("vldmia.64  %[leftMatrix], { d16-d31 }\n\t"
-                 :
-                 : [leftMatrix]"r"(leftMatrix)
-                 : "d16", "d17", "d18", "d19", "d20", "d21", "d22", "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30", "d31");
-    for (unsigned i = 0; i < 4; ++i) {
-        asm volatile(MATRIX_MULTIPLY_ONE_LINE
-                     : [leftMatrix]"+r"(leftMatrix), [rightMatrix]"+r"(rightMatrix)
-                     :
-                     : "memory", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
-    }
-#undef MATRIX_MULTIPLY_ONE_LINE
-
 #elif defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
     // x86_64 has 16 XMM registers which is enough to do the multiplication fully in registers.
     __m128d matrixBlockA = _mm_load_pd(&(m_matrix[0][0]));
