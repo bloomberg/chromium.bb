@@ -65,7 +65,7 @@ class DeprecatedPort(object):
             "chromium-android": ChromiumAndroidPort,
             "chromium-xvfb": ChromiumXVFBPort,
         }
-        return ports.get(port_name)()
+        return ports.get(port_name, ChromiumPort)()
 
     def makeArgs(self):
         # FIXME: This shouldn't use a static Executive().
