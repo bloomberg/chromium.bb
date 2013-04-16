@@ -306,12 +306,6 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 }
 
 TemplateURLService::~TemplateURLService() {
-  if (load_handle_) {
-    DCHECK(service_.get());
-    service_->CancelRequest(load_handle_);
-  }
-
-  STLDeleteElements(&template_urls_);
 }
 
 // static
@@ -876,6 +870,18 @@ void TemplateURLService::Observe(int type,
   } else {
     NOTREACHED();
   }
+}
+
+void TemplateURLService::Shutdown() {
+  // This check has to be done at Shutdown() instead of in the dtor to ensure
+  // that no clients of WebDataService are holding ptrs to it after the first
+  // phase of the ProfileKeyedService Shutdown() process.
+  if (load_handle_) {
+    DCHECK(service_.get());
+    service_->CancelRequest(load_handle_);
+  }
+  service_ = NULL;
+  STLDeleteElements(&template_urls_);
 }
 
 void TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged() {

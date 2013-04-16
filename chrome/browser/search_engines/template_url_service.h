@@ -261,6 +261,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   // syncer::SyncableService implementation.
 
   // Returns all syncable TemplateURLs from this model as SyncData. This should
