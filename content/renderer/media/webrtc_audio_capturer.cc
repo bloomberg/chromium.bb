@@ -315,6 +315,9 @@ void WebRtcAudioCapturer::SetCapturerSource(
     source_.swap(old_source);
     source_ = source;
     current_buffer = buffer_;
+
+    // Reset the flag to allow calling Start() for the new source.
+    running_ = false;
   }
 
   const bool no_default_audio_source_exists = !current_buffer;
