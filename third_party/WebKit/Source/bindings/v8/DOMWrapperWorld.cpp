@@ -32,6 +32,7 @@
 #include "DOMWrapperWorld.h"
 
 #include "DOMDataStore.h"
+#include "ScriptExecutionContext.h"
 #include "V8Binding.h"
 #include "V8DOMActivityLogger.h"
 #include "V8DOMWindow.h"
@@ -62,6 +63,16 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
 {
     if (isIsolatedWorld())
         m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
+}
+
+DOMWrapperWorld* DOMWrapperWorld::current(ScriptExecutionContext* scriptExecutionContext)
+{
+    if (scriptExecutionContext->isWorkerContext())
+        return 0;
+    ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
+    DOMWrapperWorld* world = isolatedWorld(v8::Context::GetCurrent());
+    return world ? world : mainThreadNormalWorld();
 }
 
 DOMWrapperWorld* mainThreadNormalWorld()

@@ -345,15 +345,11 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldC
 v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWorld* world)
 {
     if (context->isDocument()) {
-        if (Frame* frame = toDocument(context)->frame()) {
-            // FIXME: Store the DOMWrapperWorld for the main world in the v8::Context so callers
-            // that are looking up their world with DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent())
-            // won't end up passing null here when later trying to get their v8::Context back.
-            if (!world)
-                return frame->script()->mainWorldContext();
+        ASSERT(world);
+        if (Frame* frame = toDocument(context)->frame())
             return v8::Local<v8::Context>::New(frame->script()->windowShell(world)->context());
-        }
     } else if (context->isWorkerContext()) {
+        ASSERT(!world);
         if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())
             return script->context();
     }

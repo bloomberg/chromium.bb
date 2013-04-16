@@ -43,6 +43,7 @@
 namespace WebCore {
 
 class DOMDataStore;
+class ScriptExecutionContext;
 
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
@@ -64,6 +65,9 @@ public:
         ASSERT(contextHasCorrectPrototype(context));
         return static_cast<DOMWrapperWorld*>(context->GetAlignedPointerFromEmbedderData(v8ContextIsolatedWorld));
     }
+
+    // Will return null if there is no DOMWrapperWorld representing the given ScriptExecutionContext.
+    static DOMWrapperWorld* current(ScriptExecutionContext*);
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered

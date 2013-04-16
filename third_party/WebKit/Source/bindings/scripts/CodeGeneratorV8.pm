@@ -3600,7 +3600,7 @@ sub GenerateCallbackImplementation
 ${v8InterfaceName}::${v8InterfaceName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(callback)
-    , m_world(context->isDocument() ? DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent()) : 0)
+    , m_world(DOMWrapperWorld::current(context))
 {
 }
 
