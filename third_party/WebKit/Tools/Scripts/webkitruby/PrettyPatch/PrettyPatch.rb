@@ -87,16 +87,13 @@ private
 
     SMALLEST_EQUAL_OPERATION = 3
 
-    OPENSOURCE_TRAC_URL = "http://trac.webkit.org/"
+    OPENSOURCE_URL = "http://src.chromium.org/viewvc/blink/"
 
     OPENSOURCE_DIRS = Set.new %w[
-        Examples
         LayoutTests
         PerformanceTests
         Source
         Tools
-        WebKitLibraries
-        Websites
     ]
 
     IMAGE_CHECKSUM_ERROR = "INVALID: Image lacks a checksum. This will fail with a MISSING error in run-webkit-tests. Always generate new png files using run-webkit-tests."
@@ -142,7 +139,7 @@ private
         dirname.split(/\//).reverse.inject(basename) do |path, directory|
             path = directory + "/" + path
 
-            return [OPENSOURCE_TRAC_URL, path] if OPENSOURCE_DIRS.include?(directory)
+            return [OPENSOURCE_URL, path] if OPENSOURCE_DIRS.include?(directory)
 
             path
         end
@@ -153,7 +150,7 @@ private
     def self.linkifyFilename(filename)
         url, pathBeneathTrunk = find_url_and_path(filename)
 
-        url.nil? ? filename : "<a href='#{url}browser/trunk/#{pathBeneathTrunk}'>#{filename}</a>"
+        url.nil? ? filename : "<a href='#{url}trunk/#{pathBeneathTrunk}'>#{filename}</a>"
     end
 
 
