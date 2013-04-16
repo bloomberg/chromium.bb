@@ -48,7 +48,7 @@ class TextTrackCue;
 
 // ----------------------------
 
-class TextTrackCueBox : public HTMLElement {
+class TextTrackCueBox : public HTMLDivElement {
 public:
     static PassRefPtr<TextTrackCueBox> create(Document* document, TextTrackCue* cue)
     {

@@ -94,7 +94,7 @@ static const String& verticalGrowingRightKeyword()
 // ----------------------------
 
 TextTrackCueBox::TextTrackCueBox(Document* document, TextTrackCue* cue)
-    : HTMLElement(divTag, document)
+    : HTMLDivElement(divTag, document)
     , m_cue(cue)
 {
     setPseudo(textTrackCueBoxShadowPseudoId());
