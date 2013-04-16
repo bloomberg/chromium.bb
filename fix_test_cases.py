@@ -57,11 +57,11 @@ def load_run_test_cases_results(run_test_cases_file):
       return None, None
   failure = [
     test for test, runs in data['test_cases'].iteritems()
-    if not any(not run['returncode'] for run in runs)
+    if not any(run['returncode'] == 0 for run in runs)
   ]
   success = [
     test for test, runs in data['test_cases'].iteritems()
-    if any(not run['returncode'] for run in runs)
+    if any(run['returncode'] == 0 for run in runs)
   ]
   return success, failure
 
