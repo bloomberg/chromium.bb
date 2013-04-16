@@ -2403,6 +2403,13 @@ other types of suffix sets.
   <summary>The time that a Wi-fi scan takes.</summary>
 </histogram>
 
+<histogram name="Omnibox.EnteredKeywordMode" enum="OmniboxEnteredKeywordMode">
+  <summary>
+    The number of times users enter keyword hint mode &quot;Search ___
+    for:&quot; and how.
+  </summary>
+</histogram>
+
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
   <summary>
     Errors returned by CreateFile on windows that PlatformFileError doesn't yet
@@ -4665,6 +4672,12 @@ other types of suffix sets.
   <int value="6" label="subresource never connected"/>
   <int value="7" label="subresource never used"/>
   <int value="8" label="subresource and used"/>
+</enum>
+
+<enum name="OmniboxEnteredKeywordMode" type="int">
+  <int value="0" label="via tab"/>
+  <int value="1" label="via space at end"/>
+  <int value="2" label="via space in middle"/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">
