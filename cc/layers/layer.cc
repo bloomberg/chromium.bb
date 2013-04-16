@@ -121,6 +121,16 @@ void Layer::SetNeedsFullTreeSync() {
     layer_tree_host_->SetNeedsFullTreeSync();
 }
 
+bool Layer::IsPropertyChangeAllowed() const {
+  if (!layer_tree_host_)
+    return true;
+
+  if (!layer_tree_host_->settings().strict_layer_property_change_checking)
+    return true;
+
+  return !layer_tree_host_->in_paint_layer_contents();
+}
+
 gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
   gfx::RectF content_rect =
       gfx::ScaleRect(layer_rect, contents_scale_x(), contents_scale_y());
@@ -177,6 +187,7 @@ void Layer::AddChild(scoped_refptr<Layer> child) {
 }
 
 void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
+  DCHECK(IsPropertyChangeAllowed());
   child->RemoveFromParent();
   child->SetParent(this);
   child->stacking_order_changed_ = true;
@@ -187,6 +198,7 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
 }
 
 void Layer::RemoveFromParent() {
+  DCHECK(IsPropertyChangeAllowed());
   if (parent_)
     parent_->RemoveChildOrDependent(this);
 }
@@ -221,6 +233,7 @@ void Layer::RemoveChildOrDependent(Layer* child) {
 void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
   DCHECK(reference);
   DCHECK_EQ(reference->parent(), this);
+  DCHECK(IsPropertyChangeAllowed());
 
   if (reference == new_layer)
     return;
@@ -248,6 +261,7 @@ int Layer::IndexOfChild(const Layer* reference) {
 }
 
 void Layer::SetBounds(gfx::Size size) {
+  DCHECK(IsPropertyChangeAllowed());
   if (bounds() == size)
     return;
 
@@ -269,6 +283,7 @@ Layer* Layer::RootLayer() {
 }
 
 void Layer::RemoveAllChildren() {
+  DCHECK(IsPropertyChangeAllowed());
   while (children_.size()) {
     Layer* layer = children_[0].get();
     DCHECK_EQ(this, layer->parent());
@@ -277,6 +292,7 @@ void Layer::RemoveAllChildren() {
 }
 
 void Layer::SetChildren(const LayerList& children) {
+  DCHECK(IsPropertyChangeAllowed());
   if (children == children_)
     return;
 
@@ -286,6 +302,7 @@ void Layer::SetChildren(const LayerList& children) {
 }
 
 void Layer::SetAnchorPoint(gfx::PointF anchor_point) {
+  DCHECK(IsPropertyChangeAllowed());
   if (anchor_point_ == anchor_point)
     return;
   anchor_point_ = anchor_point;
@@ -293,6 +310,7 @@ void Layer::SetAnchorPoint(gfx::PointF anchor_point) {
 }
 
 void Layer::SetAnchorPointZ(float anchor_point_z) {
+  DCHECK(IsPropertyChangeAllowed());
   if (anchor_point_z_ == anchor_point_z)
     return;
   anchor_point_z_ = anchor_point_z;
@@ -300,6 +318,7 @@ void Layer::SetAnchorPointZ(float anchor_point_z) {
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
+  DCHECK(IsPropertyChangeAllowed());
   if (background_color_ == background_color)
     return;
   background_color_ = background_color;
@@ -318,6 +337,7 @@ void Layer::CalculateContentsScale(
 }
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
+  DCHECK(IsPropertyChangeAllowed());
   if (masks_to_bounds_ == masks_to_bounds)
     return;
   masks_to_bounds_ = masks_to_bounds;
@@ -325,6 +345,7 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
 }
 
 void Layer::SetMaskLayer(Layer* mask_layer) {
+  DCHECK(IsPropertyChangeAllowed());
   if (mask_layer_ == mask_layer)
     return;
   if (mask_layer_) {
@@ -342,6 +363,7 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
 }
 
 void Layer::SetReplicaLayer(Layer* layer) {
+  DCHECK(IsPropertyChangeAllowed());
   if (replica_layer_ == layer)
     return;
   if (replica_layer_) {
@@ -358,6 +380,7 @@ void Layer::SetReplicaLayer(Layer* layer) {
 }
 
 void Layer::SetFilters(const WebKit::WebFilterOperations& filters) {
+  DCHECK(IsPropertyChangeAllowed());
   if (filters_ == filters)
     return;
   DCHECK(!filter_);
@@ -368,6 +391,7 @@ void Layer::SetFilters(const WebKit::WebFilterOperations& filters) {
 }
 
 void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
+  DCHECK(IsPropertyChangeAllowed());
   if (filter_.get() == filter.get())
     return;
   DCHECK(filters_.isEmpty());
@@ -378,6 +402,7 @@ void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
 }
 
 void Layer::SetBackgroundFilters(const WebKit::WebFilterOperations& filters) {
+  DCHECK(IsPropertyChangeAllowed());
   if (background_filters_ == filters)
     return;
   background_filters_ = filters;
@@ -387,6 +412,7 @@ void Layer::SetBackgroundFilters(const WebKit::WebFilterOperations& filters) {
 }
 
 void Layer::SetOpacity(float opacity) {
+  DCHECK(IsPropertyChangeAllowed());
   if (opacity_ == opacity)
     return;
   opacity_ = opacity;
@@ -402,6 +428,7 @@ bool Layer::OpacityCanAnimateOnImplThread() const {
 }
 
 void Layer::SetContentsOpaque(bool opaque) {
+  DCHECK(IsPropertyChangeAllowed());
   if (contents_opaque_ == opaque)
     return;
   contents_opaque_ = opaque;
@@ -409,6 +436,7 @@ void Layer::SetContentsOpaque(bool opaque) {
 }
 
 void Layer::SetPosition(gfx::PointF position) {
+  DCHECK(IsPropertyChangeAllowed());
   if (position_ == position)
     return;
   position_ = position;
@@ -424,6 +452,7 @@ bool Layer::IsContainerForFixedPositionLayers() const {
 }
 
 void Layer::SetSublayerTransform(const gfx::Transform& sublayer_transform) {
+  DCHECK(IsPropertyChangeAllowed());
   if (sublayer_transform_ == sublayer_transform)
     return;
   sublayer_transform_ = sublayer_transform;
@@ -431,6 +460,7 @@ void Layer::SetSublayerTransform(const gfx::Transform& sublayer_transform) {
 }
 
 void Layer::SetTransform(const gfx::Transform& transform) {
+  DCHECK(IsPropertyChangeAllowed());
   if (transform_ == transform)
     return;
   transform_ = transform;
@@ -442,6 +472,7 @@ bool Layer::TransformIsAnimating() const {
 }
 
 void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
+  DCHECK(IsPropertyChangeAllowed());
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
@@ -451,6 +482,7 @@ void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
 }
 
 void Layer::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
+  DCHECK(IsPropertyChangeAllowed());
   if (max_scroll_offset_ == max_scroll_offset)
     return;
   max_scroll_offset_ = max_scroll_offset;
@@ -458,6 +490,7 @@ void Layer::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
 }
 
 void Layer::SetScrollable(bool scrollable) {
+  DCHECK(IsPropertyChangeAllowed());
   if (scrollable_ == scrollable)
     return;
   scrollable_ = scrollable;
@@ -465,6 +498,7 @@ void Layer::SetScrollable(bool scrollable) {
 }
 
 void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
+  DCHECK(IsPropertyChangeAllowed());
   if (should_scroll_on_main_thread_ == should_scroll_on_main_thread)
     return;
   should_scroll_on_main_thread_ = should_scroll_on_main_thread;
@@ -472,6 +506,7 @@ void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
 }
 
 void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
+  DCHECK(IsPropertyChangeAllowed());
   if (have_wheel_event_handlers_ == have_wheel_event_handlers)
     return;
   have_wheel_event_handlers_ = have_wheel_event_handlers;
@@ -479,6 +514,7 @@ void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
 }
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {
+  DCHECK(IsPropertyChangeAllowed());
   if (non_fast_scrollable_region_ == region)
     return;
   non_fast_scrollable_region_ = region;
@@ -486,12 +522,14 @@ void Layer::SetNonFastScrollableRegion(const Region& region) {
 }
 
 void Layer::SetTouchEventHandlerRegion(const Region& region) {
+  DCHECK(IsPropertyChangeAllowed());
   if (touch_event_handler_region_ == region)
     return;
   touch_event_handler_region_ = region;
 }
 
 void Layer::SetDrawCheckerboardForMissingTiles(bool checkerboard) {
+  DCHECK(IsPropertyChangeAllowed());
   if (draw_checkerboard_for_missing_tiles_ == checkerboard)
     return;
   draw_checkerboard_for_missing_tiles_ = checkerboard;
@@ -499,6 +537,7 @@ void Layer::SetDrawCheckerboardForMissingTiles(bool checkerboard) {
 }
 
 void Layer::SetForceRenderSurface(bool force) {
+  DCHECK(IsPropertyChangeAllowed());
   if (force_render_surface_ == force)
     return;
   force_render_surface_ = force;
@@ -506,6 +545,7 @@ void Layer::SetForceRenderSurface(bool force) {
 }
 
 void Layer::SetImplTransform(const gfx::Transform& transform) {
+  DCHECK(IsPropertyChangeAllowed());
   if (impl_transform_ == transform)
     return;
   impl_transform_ = transform;
@@ -513,6 +553,7 @@ void Layer::SetImplTransform(const gfx::Transform& transform) {
 }
 
 void Layer::SetDoubleSided(bool double_sided) {
+  DCHECK(IsPropertyChangeAllowed());
   if (double_sided_ == double_sided)
     return;
   double_sided_ = double_sided;
@@ -520,6 +561,7 @@ void Layer::SetDoubleSided(bool double_sided) {
 }
 
 void Layer::SetIsDrawable(bool is_drawable) {
+  DCHECK(IsPropertyChangeAllowed());
   if (is_drawable_ == is_drawable)
     return;
 
@@ -561,17 +603,18 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
 }
 
 void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
-    if (position_constraint_ == constraint)
-        return;
-    position_constraint_ = constraint;
-    SetNeedsCommit();
+  DCHECK(IsPropertyChangeAllowed());
+  if (position_constraint_ == constraint)
+    return;
+  position_constraint_ = constraint;
+  SetNeedsCommit();
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetAnchorPoint(anchor_point_);
   layer->SetAnchorPointZ(anchor_point_z_);
   layer->SetBackgroundColor(background_color_);
-  layer->SetBounds(bounds_);
+  layer->SetBounds(paint_properties_.bounds);
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDebugName(debug_name_);
@@ -648,6 +691,12 @@ scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 
 bool Layer::DrawsContent() const {
   return is_drawable_;
+}
+
+void Layer::SavePaintProperties() {
+  // TODO(reveman): Save all layer properties that we depend on not
+  // changing until PushProperties() has been called. crbug.com/231016
+  paint_properties_.bounds = bounds_;
 }
 
 bool Layer::NeedMoreUpdates() {

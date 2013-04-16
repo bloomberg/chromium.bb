@@ -97,7 +97,8 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       trigger_idle_updates_(true),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
-      partial_texture_update_requests_(0) {
+      partial_texture_update_requests_(0),
+      in_paint_layer_contents_(false) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
@@ -939,6 +940,8 @@ bool LayerTreeHost::PaintLayerContents(
   RenderingStats* stats_ptr =
       debug_state_.RecordRenderingStats() ? &stats : NULL;
 
+  in_paint_layer_contents_ = true;
+
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
            LayerIteratorType::Begin(&render_surface_layer_list);
@@ -951,13 +954,15 @@ bool LayerTreeHost::PaintLayerContents(
              it->render_surface()->draw_opacity_is_animating());
       need_more_updates |= PaintMasksForRenderSurface(*it, queue, stats_ptr);
     } else if (it.represents_itself()) {
-      DCHECK(!it->bounds().IsEmpty());
+      DCHECK(!it->paint_properties().bounds.IsEmpty());
       it->Update(queue, &occlusion_tracker, stats_ptr);
       need_more_updates |= it->NeedMoreUpdates();
     }
 
     occlusion_tracker.LeaveLayer(it);
   }
+
+  in_paint_layer_contents_ = false;
 
   rendering_stats_instrumentation_->AddStats(stats);
 

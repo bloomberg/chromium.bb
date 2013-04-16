@@ -75,7 +75,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 
-  pile_->Resize(bounds());
+  pile_->Resize(paint_properties().bounds);
 
   // Calling paint in WebKit can sometimes cause invalidations, so save
   // off the invalidation prior to calling update.

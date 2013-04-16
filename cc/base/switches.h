@@ -41,6 +41,7 @@ CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
 CC_EXPORT extern const char kEnablePinchZoomScrollbars[];
 CC_EXPORT extern const char kDisablePinchZoomScrollbars[];
 CC_EXPORT extern const char kEnablePartialSwap[];
+CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kUIDisablePartialSwap[];

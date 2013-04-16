@@ -153,6 +153,7 @@
       'output/output_surface_client.h',
       'debug/overdraw_metrics.cc',
       'debug/overdraw_metrics.h',
+      'layers/paint_properties.h',
       'input/page_scale_animation.cc',
       'input/page_scale_animation.h',
       'debug/paint_time_counter.cc',

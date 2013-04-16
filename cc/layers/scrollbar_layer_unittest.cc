@@ -139,7 +139,9 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   layer_tree_root->SetScrollOffset(gfx::Vector2d(10, 20));
   layer_tree_root->SetMaxScrollOffset(gfx::Vector2d(30, 50));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
+  layer_tree_root->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(100, 200));
+  content_layer->SavePaintProperties();
 
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
@@ -158,7 +160,9 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   layer_tree_root->SetScrollOffset(gfx::Vector2d(100, 200));
   layer_tree_root->SetMaxScrollOffset(gfx::Vector2d(300, 500));
   layer_tree_root->SetBounds(gfx::Size(1000, 2000));
+  layer_tree_root->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(1000, 2000));
+  content_layer->SavePaintProperties();
 
   ScrollbarAnimationController* scrollbar_controller =
       layer_impl_tree_root->scrollbar_animation_controller();
@@ -445,7 +449,9 @@ TEST(ScrollbarLayerTest, PinchZoomScrollbarUpdates) {
   layer_tree_root->SetScrollOffset(gfx::Vector2d(10, 20));
   layer_tree_root->SetMaxScrollOffset(gfx::Vector2d(30, 50));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
+  layer_tree_root->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(100, 200));
+  content_layer->SavePaintProperties();
 
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),

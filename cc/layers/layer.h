@@ -17,6 +17,7 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
+#include "cc/layers/paint_properties.h"
 #include "cc/layers/render_surface.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "skia/ext/refptr.h"
@@ -268,6 +269,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // These methods typically need to be overwritten by derived classes.
   virtual bool DrawsContent() const;
+  virtual void SavePaintProperties();
   virtual void Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion,
                       RenderingStats* stats) {}
@@ -370,6 +372,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
+  const PaintProperties& paint_properties() const {
+    return paint_properties_;
+  }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -379,6 +385,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void SetNeedsCommit();
   void SetNeedsFullTreeSync();
+  bool IsPropertyChangeAllowed() const;
 
   // This flag is set when layer need repainting/updating.
   bool needs_display_;
@@ -476,6 +483,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   WebKit::WebLayerScrollClient* layer_scroll_client_;
 
   DrawProperties<Layer, RenderSurface> draw_properties_;
+
+  PaintProperties paint_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

@@ -246,6 +246,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   // Obtains a thorough dump of the LayerTreeHost as a value.
   scoped_ptr<base::Value> AsValue() const;
 
+  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
   bool Initialize(scoped_ptr<Thread> impl_thread);
@@ -314,7 +316,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   RateLimiterMap rate_limiters_;
 
   float page_scale_factor_;
-  float min_page_scale_factor_, max_page_scale_factor_;
+  float min_page_scale_factor_;
+  float max_page_scale_factor_;
   gfx::Transform impl_transform_;
   bool trigger_idle_updates_;
 
@@ -333,6 +336,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
     base::TimeDelta duration;
   };
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  bool in_paint_layer_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

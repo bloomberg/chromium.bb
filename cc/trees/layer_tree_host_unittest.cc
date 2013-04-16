@@ -2272,5 +2272,61 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation);
 
+class LayerTreeHostTestChangeLayerPropertiesInPaintContents
+    : public LayerTreeHostTest {
+ public:
+  class SetBoundsClient : public ContentLayerClient {
+   public:
+    SetBoundsClient() : layer_(0) {}
+
+    void set_layer(Layer* layer) { layer_ = layer; }
+
+    virtual void PaintContents(SkCanvas* canvas,
+                               gfx::Rect clip,
+                               gfx::RectF* opaque) OVERRIDE {
+      layer_->SetBounds(gfx::Size(2, 2));
+    }
+
+    virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
+
+   private:
+    Layer* layer_;
+  };
+
+  LayerTreeHostTestChangeLayerPropertiesInPaintContents() : num_commits_(0) {}
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
+    root_layer->SetIsDrawable(true);
+    root_layer->SetBounds(gfx::Size(1, 1));
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    client_.set_layer(root_layer.get());
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+  virtual void AfterTest() OVERRIDE {}
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    num_commits_++;
+    if (num_commits_ == 1) {
+      LayerImpl* root_layer = host_impl->active_tree()->root_layer();
+      EXPECT_SIZE_EQ(gfx::Size(1, 1), root_layer->bounds());
+    } else {
+      LayerImpl* root_layer = host_impl->active_tree()->root_layer();
+      EXPECT_SIZE_EQ(gfx::Size(2, 2), root_layer->bounds());
+      EndTest();
+    }
+  }
+
+ private:
+  SetBoundsClient client_;
+  int num_commits_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
+
 }  // namespace
 }  // namespace cc

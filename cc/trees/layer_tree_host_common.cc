@@ -268,6 +268,17 @@ static inline void UpdateTilePrioritiesForLayer(LayerImpl* layer) {
 
 static inline void UpdateTilePrioritiesForLayer(Layer* layer) {}
 
+static inline void SavePaintPropertiesLayer(LayerImpl* layer) {}
+
+static inline void SavePaintPropertiesLayer(Layer* layer) {
+  layer->SavePaintProperties();
+
+  if (layer->mask_layer())
+    layer->mask_layer()->SavePaintProperties();
+  if (layer->replica_layer() && layer->replica_layer()->mask_layer())
+    layer->replica_layer()->mask_layer()->SavePaintProperties();
+}
+
 template <typename LayerType>
 static bool SubtreeShouldRenderToSeparateSurface(
     LayerType* layer,
@@ -1409,6 +1420,8 @@ static void CalculateDrawPropertiesInternal(
     layer->render_target()->render_surface()->
         AddContributingDelegatedRenderPassLayer(layer);
   }
+
+  SavePaintPropertiesLayer(layer);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

@@ -265,6 +265,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     }
   }
 
+  settings.strict_layer_property_change_checking =
+      cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
+
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.
   settings.can_use_lcd_text = false;

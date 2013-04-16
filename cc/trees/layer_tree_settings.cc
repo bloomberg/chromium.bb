@@ -52,7 +52,8 @@ LayerTreeSettings::LayerTreeSettings()
       // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
       max_tiles_for_interest_area(128),
       max_unused_resource_memory_percentage(100),
-      highp_threshold_min(0) {
+      highp_threshold_min(0),
+      strict_layer_property_change_checking(false) {
   // TODO(danakj): Renable surface caching when we can do it more realiably.
   // crbug.com/170713
   cache_render_pass_contents = false;

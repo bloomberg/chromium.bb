@@ -86,6 +86,10 @@ const char kDisablePinchZoomScrollbars[]    = "disable-pinch-zoom-scrollbars";
 // Requires --enable-compositor-frame-message.
 const char kCompositeToMailbox[] = "composite-to-mailbox";
 
+// Check that property changes during paint do not occur.
+const char kStrictLayerPropertyChangeChecking[] =
+    "strict-layer-property-change-checking";
+
 const char kEnablePartialSwap[] = "enable-partial-swap";
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
