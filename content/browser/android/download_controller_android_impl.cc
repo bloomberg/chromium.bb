@@ -11,14 +11,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/download/download_item_impl.h"
+#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -222,7 +226,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
       jcookie.obj(), jreferer.obj(), info.total_bytes);
 }
 
-void DownloadControllerAndroidImpl::OnPostDownloadStarted(
+void DownloadControllerAndroidImpl::OnDownloadStarted(
     DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!download_item->GetWebContents())
@@ -239,7 +243,7 @@ void DownloadControllerAndroidImpl::OnPostDownloadStarted(
   if (view.is_null())
     return;
 
-  Java_DownloadController_onHttpPostDownloadStarted(
+  Java_DownloadController_onDownloadStarted(
       env, GetJavaObject()->Controller(env).obj(), view.obj());
 }
 
@@ -271,7 +275,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
     return;
   }
 
-  Java_DownloadController_onHttpPostDownloadCompleted(env,
+  Java_DownloadController_onDownloadCompleted(env,
       GetJavaObject()->Controller(env).obj(), view_core.obj(), jurl.obj(),
       jcontent_disposition.obj(), jmime_type.obj(), jpath.obj(),
       item->GetReceivedBytes(), true);
@@ -314,6 +318,25 @@ DownloadControllerAndroidImpl::JavaObject*
 
   DCHECK(java_object_);
   return java_object_;
+}
+
+void DownloadControllerAndroidImpl::StartContextMenuDownload(
+    const ContextMenuParams& params, WebContents* web_contents, bool is_link) {
+  const GURL& url = is_link ? params.link_url : params.src_url;
+  const GURL& referrer = params.frame_url.is_empty() ?
+      params.page_url : params.frame_url;
+  DownloadManagerImpl* dlm = static_cast<DownloadManagerImpl*>(
+      BrowserContext::GetDownloadManager(web_contents->GetBrowserContext()));
+  scoped_ptr<DownloadUrlParameters> dl_params(
+      DownloadUrlParameters::FromWebContents(web_contents, url));
+  dl_params->set_referrer(
+      Referrer(referrer, params.referrer_policy));
+  if (is_link)
+    dl_params->set_referrer_encoding(params.frame_charset);
+  else
+    dl_params->set_prefer_cache(true);
+  dl_params->set_prompt(false);
+  dlm->DownloadUrl(dl_params.Pass());
 }
 
 DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(

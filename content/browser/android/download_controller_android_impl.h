@@ -77,7 +77,10 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   // DownloadControllerAndroid implementation.
   virtual void CreateGETDownload(int render_process_id, int render_view_id,
                                  int request_id) OVERRIDE;
-  virtual void OnPostDownloadStarted(DownloadItem* download_item) OVERRIDE;
+  virtual void OnDownloadStarted(DownloadItem* download_item) OVERRIDE;
+  virtual void StartContextMenuDownload(
+      const ContextMenuParams& params, WebContents* web_contents,
+      bool is_link) OVERRIDE;
 
   // DownloadItem::Observer interface.
   virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
