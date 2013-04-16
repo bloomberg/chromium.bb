@@ -44,41 +44,47 @@ class IsolateBase(unittest.TestCase):
 
 
 class IsolateTest(IsolateBase):
-  def test_savedstate_load_empty(self):
+  def test_savedstate_load_minimal(self):
+    # The file referenced by 'isolate_file' must exist even if its content is
+    # not read.
+    open(os.path.join(self.cwd, 'fake.isolate'), 'wb').close()
     values = {
+      'isolate_file': 'fake.isolate',
     }
     expected = {
+      'child_isolated_files': [],
       'command': [],
       'files': {},
-      'isolated_files': [],
+      'isolate_file': 'fake.isolate',
       'variables': {
         'OS': isolate.get_flavor(),
       },
     }
-    saved_state = isolate.SavedState()
-    saved_state.load(values)
+    saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_savedstate_load(self):
+    # The file referenced by 'isolate_file' must exist even if its content is
+    # not read.
+    open(os.path.join(self.cwd, 'fake.isolate'), 'wb').close()
     values = {
-      'isolate_file': 'maybe',
-      'isolated_files': [os.path.join(ROOT_DIR, 'random')],
+      'isolate_file': 'fake.isolate',
       'variables': {
         'foo': 42,
         'OS': isolate.get_flavor(),
       },
     }
     expected = {
+      'child_isolated_files': [],
       'command': [],
       'files': {},
-      # isolate_file is not included because it doesn't exist.
-      'isolated_files': [os.path.join(ROOT_DIR, 'random')],
+      'isolate_file': 'fake.isolate',
       'variables': {
         'foo': 42,
         'OS': isolate.get_flavor(),
       },
     }
-    saved_state = isolate.SavedState().load(values)
+    saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_unknown_key(self):
@@ -997,7 +1003,7 @@ class IsolateLoad(IsolateBase):
     #   corresponding to the .state file, which is simply to aid the developer
     #   when re-running the same command multiple times and contain
     #   discardable information.
-    complete_state = isolate.load_complete_state(options, self.cwd, None)
+    complete_state = isolate.load_complete_state(options, self.cwd, None, False)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -1022,22 +1028,24 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': _sha1('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
-        'isolate.py': {
+        u'isolate.py': {
           'm': 488,
           'h': _sha1('isolate.py'),
           's': _size('isolate.py'),
         },
       },
-      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
-      'isolated_files': [],
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'isolate_file': isolate.safe_relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          os.path.dirname(options.isolated)),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'OS': isolate.get_flavor(),
@@ -1057,7 +1065,7 @@ class IsolateLoad(IsolateBase):
     chromeos_value = int(isolate.get_flavor() == 'linux')
     options.variables['chromeos'] = chromeos_value
     complete_state = isolate.load_complete_state(
-        options, self.cwd, os.path.join('tests', 'isolate'))
+        options, self.cwd, os.path.join('tests', 'isolate'), False)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -1077,17 +1085,19 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': _sha1('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
-      'isolated_files': [],
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'isolate_file': isolate.safe_relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          os.path.dirname(options.isolated)),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'OS': isolate.get_flavor(),
@@ -1107,7 +1117,8 @@ class IsolateLoad(IsolateBase):
     chromeos_value = int(isolate.get_flavor() == 'linux')
     options.variables['chromeos'] = chromeos_value
     options.variables['BAZ'] = os.path.join('tests', 'isolate')
-    complete_state = isolate.load_complete_state(options, self.cwd, '<(BAZ)')
+    complete_state = isolate.load_complete_state(
+        options, self.cwd, '<(BAZ)', False)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -1127,17 +1138,19 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': _sha1('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
-      'isolated_files': [],
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'isolate_file': isolate.safe_relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          os.path.dirname(options.isolated)),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'BAZ': os.path.join('tests', 'isolate'),
@@ -1156,7 +1169,7 @@ class IsolateLoad(IsolateBase):
     options.variables['PRODUCT_DIR'] = os.path.join(u'tests', u'isolate')
     native_cwd = isolate.trace_inputs.get_native_path_case(unicode(self.cwd))
     try:
-      isolate.load_complete_state(options, self.cwd, None)
+      isolate.load_complete_state(options, self.cwd, None, False)
       self.fail()
     except isolate.ExecutionError, e:
       self.assertEquals(
@@ -1171,7 +1184,7 @@ class IsolateLoad(IsolateBase):
     chromeos_value = int(isolate.get_flavor() == 'linux')
     options.variables['chromeos'] = chromeos_value
     options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
-    complete_state = isolate.load_complete_state(options, ROOT_DIR, None)
+    complete_state = isolate.load_complete_state(options, ROOT_DIR, None, False)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -1196,22 +1209,24 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
       'files': {
-        'isolate.py': {
+        u'isolate.py': {
           'm': 488,
           'h': _sha1('isolate.py'),
           's': _size('isolate.py'),
         },
-        os.path.join('tests', 'isolate', 'touch_root.py'): {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': _sha1('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
-      'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
-      'isolated_files': [],
-      'relative_cwd': os.path.join('tests', 'isolate'),
+      'isolate_file': isolate.safe_relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          os.path.dirname(options.isolated)),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'PRODUCT_DIR': '.',
@@ -1235,7 +1250,7 @@ class IsolateLoad(IsolateBase):
       'PRODUCT_DIR': os.path.join('files1'),
     }
     complete_state = isolate.load_complete_state(
-        options, os.path.join(ROOT_DIR, 'tests', 'isolate'), None)
+        options, os.path.join(ROOT_DIR, 'tests', 'isolate'), None, False)
     # By saving the files, it forces splitting the data up.
     complete_state.save_files()
 
@@ -1293,7 +1308,12 @@ class IsolateLoad(IsolateBase):
 
     actual_saved_state = isolate.trace_inputs.read_json(
         isolate.isolatedfile_to_state(options.isolated))
+    isolated_base = unicode(os.path.basename(options.isolated))
     expected_saved_state = {
+      u'child_isolated_files': [
+        isolated_base[:-len('.isolated')] + '.0.isolated',
+        isolated_base[:-len('.isolated')] + '.1.isolated',
+      ],
       u'command': [u'python', u'split.py'],
       u'files': {
         os.path.join(u'files1', 'subdir', '42.txt'): {
@@ -1313,14 +1333,9 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
-      u'isolate_file': os.path.relpath(
+      u'isolate_file': isolate.safe_relpath(
           isolate.trace_inputs.get_native_path_case(isolate_file),
           unicode(os.path.dirname(options.isolated))),
-      u'isolated_files': [
-        unicode(options.isolated),
-        unicode(options.isolated[:-len('.isolated')] + '.0.isolated'),
-        unicode(options.isolated[:-len('.isolated')] + '.1.isolated'),
-      ],
       u'relative_cwd': u'.',
       u'variables': {
         u'OS': unicode(isolate.get_flavor()),
@@ -1367,43 +1382,44 @@ class IsolateCommand(IsolateBase):
     expected = "# Foo\n{\n  'conditions': [\n  ],\n}\n"
     self.assertEqual(expected, actual)
 
-  def test_CMDcheck_no_mode_on_windows(self):
-    # Store for Windows, make sure file mode are not included. Hopefully, run
-    # this test on another OS.
-    isolate_file = os.path.join(
-        ROOT_DIR, 'tests', 'isolate', 'symlink_full.isolate')
-    isolated_file = os.path.join(self.cwd, 'foo.isolated')
-    cmd = [
-      '-i', isolate_file,
-      '-V', 'OS', 'win',
-      '-V', 'chromeos', '0',
-      '-s', isolated_file,
-    ]
-    self.assertEqual(0, isolate.CMDcheck(cmd))
-    with open(isolated_file, 'rb') as f:
-      actual = json.load(f)
-    mapped = [
-      os.path.join('files2', 'subdir', '42.txt'),
-      os.path.join('files2', 'test_file1.txt'),
-      os.path.join('files2', 'test_file2.txt'),
-      os.path.join('symlink_full.py'),
-    ]
-    files = dict(
-        (
-          f,
-          {
-            'h': _sha1('tests', 'isolate', f),
-            's': _size('tests', 'isolate', f),
-          }
-        )
-        for f in mapped)
-    expected = {
-      u'command': [u'python', u'symlink_full.py'],
-      u'files': files,
-      u'os': u'win',
-      u'relative_cwd': u'.',
-    }
-    self.assertEqual(expected, actual)
+  if sys.platform != 'win32':
+    def test_CMDcheck_no_mode_on_windows(self):
+      # Store for Windows, make sure file mode are not included. Hopefully, run
+      # this test on another OS.
+      isolate_file = os.path.join(
+          ROOT_DIR, 'tests', 'isolate', 'symlink_full.isolate')
+      isolated_file = os.path.join(self.cwd, 'foo.isolated')
+      cmd = [
+        '-i', isolate_file,
+        '-V', 'OS', 'win',
+        '-V', 'chromeos', '0',
+        '-s', isolated_file,
+      ]
+      self.assertEqual(0, isolate.CMDcheck(cmd))
+      with open(isolated_file, 'rb') as f:
+        actual = json.load(f)
+      mapped = [
+        os.path.join('files2', 'subdir', '42.txt'),
+        os.path.join('files2', 'test_file1.txt'),
+        os.path.join('files2', 'test_file2.txt'),
+        os.path.join('symlink_full.py'),
+      ]
+      files = dict(
+          (
+            f,
+            {
+              'h': _sha1('tests', 'isolate', f),
+              's': _size('tests', 'isolate', f),
+            }
+          )
+          for f in mapped)
+      expected = {
+        u'command': [u'python', u'symlink_full.py'],
+        u'files': files,
+        u'os': u'win',
+        u'relative_cwd': u'.',
+      }
+      self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

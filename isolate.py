@@ -63,6 +63,20 @@ def relpath(path, root):
   return out
 
 
+def safe_relpath(filepath, basepath):
+  """Do not throw on Windows when filepath and basepath are on different drives.
+
+  Different than relpath() above since this one doesn't keep the trailing
+  os.path.sep and it swallows exceptions on Windows and return the original
+  absolute path in the case of different drives.
+  """
+  try:
+    return os.path.relpath(filepath, basepath)
+  except ValueError:
+    assert sys.platform == 'win32'
+    return filepath
+
+
 def normpath(path):
   """os.path.normpath() that keeps trailing os.path.sep."""
   out = os.path.normpath(path)
@@ -1324,6 +1338,8 @@ def chromium_save_isolated(isolated, data, variables):
   This slightly increases the cold cache cost but greatly reduce the warm cache
   cost by splitting low-churn files off the master .isolated file. It also
   reduces overall isolateserver memcache consumption.
+
+  Returns the list of child isolated files that are included by |isolated|.
   """
   slaves = []
 
@@ -1342,13 +1358,13 @@ def chromium_save_isolated(isolated, data, variables):
   if variables.get('PRODUCT_DIR'):
     extract_into_included_isolated(variables['PRODUCT_DIR'])
 
-  files = [isolated]
+  files = []
   for index, f in enumerate(slaves):
     slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
     trace_inputs.write_json(slavepath, f, True)
     data.setdefault('includes', []).append(
         isolateserver_archive.sha1_file(slavepath))
-    files.append(slavepath)
+    files.append(os.path.basename(slavepath))
 
   trace_inputs.write_json(isolated, data, True)
   return files
@@ -1367,10 +1383,10 @@ class Flattenable(object):
     return dict((member, value) for member, value in items if value is not None)
 
   @classmethod
-  def load(cls, data):
+  def load(cls, data, *args, **kwargs):
     """Loads a flattened version."""
     data = data.copy()
-    out = cls()
+    out = cls(*args, **kwargs)
     for member in out.MEMBERS:
       if member in data:
         # Access to a protected member XXX of a client class
@@ -1387,14 +1403,15 @@ class Flattenable(object):
     setattr(self, member, value)
 
   @classmethod
-  def load_file(cls, filename):
+  def load_file(cls, filename, *args, **kwargs):
     """Loads the data from a file or return an empty instance."""
-    out = cls()
     try:
-      out = cls.load(trace_inputs.read_json(filename))
-      logging.debug('Loaded %s(%s)' % (cls.__name__, filename))
+      out = cls.load(trace_inputs.read_json(filename), *args, **kwargs)
+      logging.debug('Loaded %s(%s)', cls.__name__, filename)
     except (IOError, ValueError):
-      logging.warn('Failed to load %s' % filename)
+      # On failure, loads the default instance.
+      out = cls(*args, **kwargs)
+      logging.warn('Failed to load %s', filename)
     return out
 
 
@@ -1409,45 +1426,68 @@ class SavedState(Flattenable):
   separator instead of '/' used in .isolate file.
   """
   MEMBERS = (
+    # Cache of the processed command. This value is saved because .isolated
+    # files are never loaded by isolate.py so it's the only way to load the
+    # command safely.
     'command',
+    # Cache of the files found so the next run can skip sha1 calculation.
     'files',
+    # Path of the original .isolate file. Relative path to isolated_basedir.
     'isolate_file',
-    'isolated_files',
+    # List of included .isolated files. Used to support/remember 'slave'
+    # .isolated files. Relative path to isolated_basedir.
+    'child_isolated_files',
+    # If the generated directory tree should be read-only.
     'read_only',
+    # Relative cwd to use to start the command.
     'relative_cwd',
+    # GYP variables used to generate the .isolated file. Variables are saved so
+    # a user can use isolate.py after building and the GYP variables are still
+    # defined.
     'variables',
   )
 
-  def __init__(self):
+  def __init__(self, isolated_basedir):
+    """Creates an empty SavedState.
+
+    |isolated_basedir| is the directory where the .isolated and .isolated.state
+    files are saved.
+    """
     super(SavedState, self).__init__()
+    assert os.path.isabs(isolated_basedir), isolated_basedir
+    assert os.path.isdir(isolated_basedir), isolated_basedir
+    self.isolated_basedir = isolated_basedir
+
     self.command = []
     self.files = {}
-    # Link back to the .isolate file. It is stored internally as an absolute
-    # path.
     self.isolate_file = None
-    # Used to support/remember 'slave' .isolated files.
-    self.isolated_files = []
+    self.child_isolated_files = []
     self.read_only = None
     self.relative_cwd = None
-    # Variables are saved so a user can use isolate.py after building and the
-    # GYP variables are still defined.
     self.variables = {'OS': get_flavor()}
 
   def update(self, isolate_file, variables):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
-    # The path is absolute here but will be stored as relative to the .isolated
-    # file.
     assert os.path.isabs(isolate_file)
-    if self.isolate_file:
-      assert self.isolate_file == isolate_file, (
-          self.isolate_file, isolate_file)
+    # Convert back to a relative path. On Windows, if the isolate and
+    # isolated files are on different drives, isolate_file will stay an absolute
+    # path.
+    isolate_file = safe_relpath(isolate_file, self.isolated_basedir)
+
+    # The same .isolate file should always be used to generate the .isolated and
+    # .isolated.state.
+    assert isolate_file == self.isolate_file or not self.isolate_file, (
+        isolate_file, self.isolate_file)
     self.isolate_file = isolate_file
     self.variables.update(variables)
 
   def update_isolated(self, command, infiles, touched, read_only, relative_cwd):
     """Updates the saved state with data necessary to generate a .isolated file.
+
+    The new files in |infiles| are added to self.files dict but their sha1 is
+    not calculated here.
     """
     self.command = command
     # Add new files.
@@ -1484,43 +1524,32 @@ class SavedState(Flattenable):
       out['relative_cwd'] = self.relative_cwd
     return out
 
+  @property
+  def isolate_filepath(self):
+    """Returns the absolute path of self.isolate_file."""
+    return os.path.normpath(
+        os.path.join(self.isolated_basedir, self.isolate_file))
+
+  # Arguments number differs from overridden method
   @classmethod
-  def load(cls, data):
-    out = super(SavedState, cls).load(data)
+  def load(cls, data, isolated_basedir):  # pylint: disable=W0221
+    """Special case loading to disallow different OS.
+
+    It is not possible to load a .isolated.state files from a different OS, this
+    file is saved in OS-specific format.
+    """
+    out = super(SavedState, cls).load(data, isolated_basedir)
     if 'os' in data:
       out.variables['OS'] = data['os']
     if out.variables['OS'] != get_flavor():
       raise run_isolated.ConfigError(
           'The .isolated.state file was created on another platform')
-    if out.isolate_file:
-      if not out.isolated_files or os.path.isabs(out.isolate_file):
-        # Forget about it. The reason is that previous version of this code used
-        # to store it as an absolute path. On the next save, it'll be fixed.
-        out.isolate_file = None
-      else:
-        # isolate_file is loaded as a relative path, convert it to an absolute
-        # path. Internally, it's much easier to just keep it as an absolute path
-        # since that's what the SavedState class users expect.
-        base_path = os.path.dirname(out.isolated_files[0])
-        out.isolate_file = os.path.join(base_path, unicode(out.isolate_file))
-        out.isolate_file = os.path.normpath(out.isolate_file)
-        if not os.path.isfile(out.isolate_file):
-          # It doesn't exist.
-          out.isolate_file = None
-        else:
-          out.isolate_file = trace_inputs.get_native_path_case(out.isolate_file)
+    # The .isolate file must be valid. It could be absolute on Windows if the
+    # drive containing the .isolate and the drive containing the .isolated files
+    # differ.
+    assert not os.path.isabs(out.isolate_file) or sys.platform == 'win32'
+    assert os.path.isfile(out.isolate_filepath), out.isolate_filepath
     return out
-
-  def flatten(self):
-    data = super(SavedState, self).flatten()
-    # Store isolate_file as a relative path. The reason is that .state file
-    # could be moved across computers.  While this doesn't make sense in
-    # practice, it still happens and it's less "crashy" to store it as a
-    # relative path.
-    if data.get('isolate_file') and data.get('isolated_files'):
-      base_path = os.path.dirname(data['isolated_files'][0])
-      data['isolate_file'] = os.path.relpath(data['isolate_file'], base_path)
-    return data
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
@@ -1529,7 +1558,7 @@ class SavedState(Flattenable):
     out += '  isolate_file: %s\n' % self.isolate_file
     out += '  read_only: %s\n' % self.read_only
     out += '  relative_cwd: %s\n' % self.relative_cwd
-    out += '  isolated_files: %s\n' % self.isolated_files
+    out += '  child_isolated_files: %s\n' % self.child_isolated_files
     out += '  variables: %s' % ''.join(
         '\n    %s=%s' % (k, self.variables[k]) for k in sorted(self.variables))
     out += ')'
@@ -1540,6 +1569,7 @@ class CompleteState(object):
   """Contains all the state to run the task at hand."""
   def __init__(self, isolated_filepath, saved_state):
     super(CompleteState, self).__init__()
+    assert os.path.isabs(isolated_filepath)
     self.isolated_filepath = isolated_filepath
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
@@ -1549,9 +1579,11 @@ class CompleteState(object):
   def load_files(cls, isolated_filepath):
     """Loads state from disk."""
     assert os.path.isabs(isolated_filepath), isolated_filepath
+    isolated_basedir = os.path.dirname(isolated_filepath)
     return cls(
         isolated_filepath,
-        SavedState.load_file(isolatedfile_to_state(isolated_filepath)))
+        SavedState.load_file(
+            isolatedfile_to_state(isolated_filepath), isolated_basedir))
 
   def load_isolate(self, cwd, isolate_file, variables, ignore_broken_items):
     """Updates self.isolated and self.saved_state with information loaded from a
@@ -1653,7 +1685,7 @@ class CompleteState(object):
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""
     logging.debug('Dumping to %s' % self.isolated_filepath)
-    self.saved_state.isolated_files = chromium_save_isolated(
+    self.saved_state.child_isolated_files = chromium_save_isolated(
         self.isolated_filepath,
         self.saved_state.to_isolated(),
         self.saved_state.variables)
@@ -1668,21 +1700,31 @@ class CompleteState(object):
 
   @property
   def root_dir(self):
-    """isolate_file is always inside relative_cwd relative to root_dir."""
+    """Returns the absolute path of the root_dir to reference the .isolate file
+    via relative_cwd.
+
+    So that join(root_dir, relative_cwd, basename(isolate_file)) is equivalent
+    to isolate_filepath.
+    """
     if not self.saved_state.isolate_file:
       raise ExecutionError('Please specify --isolate')
-    isolate_dir = os.path.dirname(self.saved_state.isolate_file)
+    isolate_dir = os.path.dirname(self.saved_state.isolate_filepath)
     # Special case '.'.
     if self.saved_state.relative_cwd == '.':
-      return isolate_dir
-    assert isolate_dir.endswith(self.saved_state.relative_cwd), (
-        isolate_dir, self.saved_state.relative_cwd)
-    return isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
+      root_dir = isolate_dir
+    else:
+      assert isolate_dir.endswith(self.saved_state.relative_cwd), (
+          isolate_dir, self.saved_state.relative_cwd)
+      # Walk back back to the root directory.
+      root_dir = isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
+    return trace_inputs.get_native_path_case(root_dir)
 
   @property
   def resultdir(self):
-    """Directory containing the results, usually equivalent to the variable
-    PRODUCT_DIR.
+    """Returns the absolute path containing the .isolated file.
+
+    It is usually equivalent to the variable PRODUCT_DIR. Uses the .isolated
+    path as the value.
     """
     return os.path.dirname(self.isolated_filepath)
 
@@ -1698,42 +1740,64 @@ class CompleteState(object):
     return out
 
 
-def load_complete_state(options, cwd, subdir):
+def load_complete_state(options, cwd, subdir, skip_update):
   """Loads a CompleteState.
 
   This includes data from .isolate and .isolated.state files. Never reads the
   .isolated file.
 
   Arguments:
-    options: Options instance generated with OptionParserIsolate.
+    options: Options instance generated with OptionParserIsolate. For either
+             options.isolate and options.isolated, if the value is set, it is an
+             absolute path.
+    cwd: base directory to be used when loading the .isolate file.
+    subdir: optional argument to only process file in the subdirectory, relative
+            to CompleteState.root_dir.
+    skip_update: Skip trying to load the .isolate file and processing the
+                 dependencies. It is useful when not needed, like when tracing.
   """
+  assert not options.isolate or os.path.isabs(options.isolate)
+  assert not options.isolated or os.path.isabs(options.isolated)
   cwd = trace_inputs.get_native_path_case(unicode(cwd))
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
+    # Note: this call doesn't load the .isolate file.
     complete_state = CompleteState.load_files(options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'.
     complete_state = CompleteState(None, SavedState())
-  options.isolate = options.isolate or complete_state.saved_state.isolate_file
-  if not options.isolate:
-    raise ExecutionError('A .isolate file is required.')
-  if (complete_state.saved_state.isolate_file and
-      options.isolate != complete_state.saved_state.isolate_file):
-    raise ExecutionError(
-        '%s and %s do not match.' % (
-          options.isolate, complete_state.saved_state.isolate_file))
 
-  # Then load the .isolate and expands directories.
-  complete_state.load_isolate(
-      cwd, options.isolate, options.variables, options.ignore_broken_items)
+  if not options.isolate:
+    if not complete_state.saved_state.isolate_file:
+      if not skip_update:
+        raise ExecutionError('A .isolate file is required.')
+      isolate = None
+    else:
+      isolate = complete_state.saved_state.isolate_filepath
+  else:
+    isolate = options.isolate
+    if complete_state.saved_state.isolate_file:
+      rel_isolate = safe_relpath(
+          options.isolate, complete_state.saved_state.isolated_basedir)
+      if rel_isolate != complete_state.saved_state.isolate_file:
+        raise ExecutionError(
+            '%s and %s do not match.' % (
+              options.isolate, complete_state.saved_state.isolate_file))
+
+  if not skip_update:
+    # Then load the .isolate and expands directories.
+    complete_state.load_isolate(
+        cwd, isolate, options.variables, options.ignore_broken_items)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
     subdir = unicode(subdir)
     subdir = eval_variables(subdir, complete_state.saved_state.variables)
     subdir = subdir.replace('/', os.path.sep)
-  complete_state.process_inputs(subdir)
+
+  if not skip_update:
+    complete_state.process_inputs(subdir)
   return complete_state
 
 
@@ -1782,9 +1846,9 @@ def merge(complete_state):
   value, exceptions = read_trace_as_isolate_dict(complete_state)
 
   # Now take that data and union it into the original .isolate file.
-  with open(complete_state.saved_state.isolate_file, 'r') as f:
+  with open(complete_state.saved_state.isolate_filepath, 'r') as f:
     prev_content = f.read()
-  isolate_dir = os.path.dirname(complete_state.saved_state.isolate_file)
+  isolate_dir = os.path.dirname(complete_state.saved_state.isolate_filepath)
   prev_config = load_isolate_as_config(
       isolate_dir,
       eval_content(prev_content),
@@ -1793,7 +1857,7 @@ def merge(complete_state):
   config = union(prev_config, new_config)
   data = config.make_isolate_file()
   print('Updating %s' % complete_state.saved_state.isolate_file)
-  with open(complete_state.saved_state.isolate_file, 'wb') as f:
+  with open(complete_state.saved_state.isolate_filepath, 'wb') as f:
     print_all(config.file_comment, data, f)
   if exceptions:
     # It got an exception, raise the first one.
@@ -1810,7 +1874,8 @@ def CMDcheck(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, os.getcwd(), options.subdir)
+  complete_state = load_complete_state(
+      options, os.getcwd(), options.subdir, False)
 
   # Nothing is done specifically. Just store the result and state.
   complete_state.save_files()
@@ -1832,9 +1897,11 @@ def CMDhashtable(args):
   with run_isolated.Profiler('GenerateHashtable'):
     success = False
     try:
-      complete_state = load_complete_state(options, os.getcwd(), options.subdir)
-      options.outdir = (
-          options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
+      complete_state = load_complete_state(
+          options, os.getcwd(), options.subdir, False)
+      if not options.outdir:
+        options.outdir = os.path.join(
+            os.path.dirname(complete_state.isolated_filepath), 'hashtable')
       # Make sure that complete_state isn't modified until save_files() is
       # called, because any changes made to it here will propagate to the files
       # created (which is probably not intended).
@@ -1843,7 +1910,10 @@ def CMDhashtable(args):
       infiles = complete_state.saved_state.files
       # Add all the .isolated files.
       isolated_hash = []
-      for item in complete_state.saved_state.isolated_files:
+      isolated_files = [
+        options.isolated,
+      ] + complete_state.saved_state.child_isolated_files
+      for item in isolated_files:
         item_path = os.path.join(
             os.path.dirname(complete_state.isolated_filepath), item)
         # Do not use isolateserver_archive.sha1_file() here because the file is
@@ -1875,9 +1945,7 @@ def CMDhashtable(args):
             action=run_isolated.HARDLINK,
             as_sha1=True)
       success = True
-      isolated_file = os.path.basename(
-          complete_state.saved_state.isolated_files[0])
-      print('%s  %s' % (isolated_hash[0], isolated_file))
+      print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
     finally:
       # If the command failed, delete the .isolated file if it exists. This is
       # important so no stale swarm job is executed.
@@ -1895,7 +1963,7 @@ def CMDmerge(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, os.getcwd(), None)
+  complete_state = load_complete_state(options, os.getcwd(), None, False)
   merge(complete_state)
   return 0
 
@@ -1906,10 +1974,15 @@ def CMDread(args):
   Ignores --outdir.
   """
   parser = OptionParserIsolate(command='read', require_isolated=False)
+  parser.add_option(
+      '--skip-refresh', action='store_true',
+      help='Skip reading .isolate file and do not refresh the sha1 of '
+           'dependencies')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, os.getcwd(), None)
+  complete_state = load_complete_state(
+      options, os.getcwd(), None, options.skip_refresh)
   value, exceptions = read_trace_as_isolate_dict(complete_state)
   pretty_print(value, sys.stdout)
   if exceptions:
@@ -1931,7 +2004,7 @@ def CMDremap(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, os.getcwd(), None)
+  complete_state = load_complete_state(options, os.getcwd(), None, False)
 
   if not options.outdir:
     options.outdir = run_isolated.make_temp_dir(
@@ -1968,11 +2041,9 @@ def CMDrewrite(args):
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
     complete_state = CompleteState.load_files(options.isolated)
+    isolate = options.isolate or complete_state.saved_state.isolate_filepath
   else:
-    # Constructs a dummy object that cannot be saved. Useful for temporary
-    # commands like 'run'.
-    complete_state = CompleteState(None, SavedState())
-  isolate = options.isolate or complete_state.saved_state.isolate_file
+    isolate = options.isolate
   if not isolate:
     raise ExecutionError('A .isolate file is required.')
   with open(isolate, 'r') as f:
@@ -2000,9 +2071,14 @@ def CMDrun(args):
   use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='run', require_isolated=False)
+  parser.add_option(
+      '--skip-refresh', action='store_true',
+      help='Skip reading .isolate file and do not refresh the sha1 of '
+           'dependencies')
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, os.getcwd(), None)
+  complete_state = load_complete_state(
+      options, os.getcwd(), None, options.skip_refresh)
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
@@ -2011,15 +2087,17 @@ def CMDrun(args):
 
   cmd = trace_inputs.fix_python_path(cmd)
   try:
+    root_dir = complete_state.root_dir
     if not options.outdir:
-      options.outdir = run_isolated.make_temp_dir(
-          'isolate', complete_state.root_dir)
+      if not os.path.isabs(root_dir):
+        root_dir = os.path.join(os.path.dirname(options.isolated), root_dir)
+      options.outdir = run_isolated.make_temp_dir('isolate', root_dir)
     else:
       if not os.path.isdir(options.outdir):
         os.makedirs(options.outdir)
     recreate_tree(
         outdir=options.outdir,
-        indir=complete_state.root_dir,
+        indir=root_dir,
         infiles=complete_state.saved_state.files,
         action=run_isolated.HARDLINK,
         as_sha1=False)
@@ -2047,8 +2125,9 @@ def CMDtrace(args):
   """Traces the target using trace_inputs.py.
 
   It runs the executable without remapping it, and traces all the files it and
-  its child processes access. Then the 'read' command can be used to generate an
-  updated .isolate file out of it.
+  its child processes access. Then the 'merge' command can be used to generate
+  an updated .isolate file out of it or the 'read' command to print it out to
+  stdout.
 
   Argument processing stops at the first non-recognized argument and these
   arguments are appended to the command line of the target to run. For example,
@@ -2059,8 +2138,13 @@ def CMDtrace(args):
   parser.add_option(
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
+  parser.add_option(
+      '--skip-refresh', action='store_true',
+      help='Skip reading .isolate file and do not refresh the sha1 of '
+           'dependencies')
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, os.getcwd(), None)
+  complete_state = load_complete_state(
+      options, os.getcwd(), None, options.skip_refresh)
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')

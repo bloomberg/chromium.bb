@@ -262,12 +262,12 @@ class IsolateModeBase(IsolateBase):
     flavor = isolate.get_flavor()
     chromeos_value = int(flavor == 'linux')
     expected = {
+      u'child_isolated_files': [],
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
-      u'isolate_file': os.path.relpath(
+      u'isolate_file': isolate.safe_relpath(
           isolate.trace_inputs.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
-      u'isolated_files': [unicode(self.isolated)],
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
         u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
@@ -536,9 +536,7 @@ class Isolate_hashtable(IsolateModeBase):
 
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('hashtable')
-    expected = (
-        '26cccbd32449bcba9f8f6a617a651386ae468e35  '
-        'isolate_smoke_test.isolated\n')
+    expected = '%s  isolate_smoke_test.isolated\n' % calc_sha1(self.isolated)
     self.assertEquals(expected, out)
     self._expected_hash_tree(None)
 
@@ -782,8 +780,8 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # canonical format so they shouldn't be changed.
   def _check_merge(self, filename):
     filepath = isolate.trace_inputs.get_native_path_case(
-        os.path.join(unicode(ROOT_DIR), 'tests', 'isolate', filename))
-    expected = 'Updating %s\n' % filepath
+            os.path.join(unicode(ROOT_DIR), 'tests', 'isolate', filename))
+    expected = 'Updating %s\n' % isolate.safe_relpath(filepath, self.tempdir)
     with open(filepath, 'rb') as f:
       old_content = f.read()
     out = self._execute('merge', filename, [], True) or ''
@@ -1086,9 +1084,8 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(self._wrap_in_condition(expected), output)
 
     output = self._execute('merge', [], True)
-    expected = 'Updating %s\n' % isolate.trace_inputs.get_native_path_case(
-        unicode(os.path.join(
-          self.root, 'tests', 'isolate', 'touch_root.isolate')))
+    expected = 'Updating %s\n' % os.path.join(
+        'root', 'tests', 'isolate', 'touch_root.isolate')
     self.assertEquals(expected, output)
     # In theory the file is going to be updated but in practice its content
     # won't change.
@@ -1145,20 +1142,15 @@ class IsolateOther(IsolateBase):
         [
           sys.executable, 'isolate.py', 'run',
           '-s', os.path.join(indir2, 'simple.isolated'),
+          '--skip-refresh',
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd=ROOT_DIR)
+        cwd=ROOT_DIR,
+        universal_newlines=True)
     stdout = proc.communicate()[0]
-    # TODO(maruel): It ran in a third temporary directory created by "isolate.py
-    # run" and was only containing simple.py and nothing else.
-    # Right now it just fails, it shouldn't.
-    # Expected:
-    #self.assertEqual('Simply works.\n', stdout)
-    #self.assertEqual(0, proc.returncode)
-    # Actual:
-    self.assertEqual('\nError: A .isolate file is required.\n', stdout)
-    self.assertEqual(1, proc.returncode)
+    self.assertEqual('Simply works.\n', stdout)
+    self.assertEqual(0, proc.returncode)
 
 
 if __name__ == '__main__':

@@ -108,7 +108,14 @@ def test_xvfb(command, rel_dir):
 
 
 def safely_load_isolated(parser, options):
+  """Loads a .isolated.state to extract the executable information.
+
+  Returns the CompleteState instance, the command and the list of test cases.
+  """
   config = isolate.CompleteState.load_files(options.isolated)
+  logging.debug(
+      'root_dir: %s  relative_cwd: %s  isolated: %s',
+      config.root_dir, config.saved_state.relative_cwd, options.isolated)
   reldir = os.path.join(config.root_dir, config.saved_state.relative_cwd)
   command = config.saved_state.command
   test_cases = []
@@ -139,7 +146,7 @@ def main():
     if not command:
       parser.error('A command must be defined')
     if not test_cases:
-      parser.error('No test case to run')
+      parser.error('No test case to run with command: %s' % ' '.join(command))
 
     config.saved_state.variables.update(options.variables)
     return isolate_test_cases(
@@ -147,7 +154,7 @@ def main():
         test_cases,
         options.jobs,
         config.isolated_filepath,
-        config.saved_state.isolate_file,
+        config.saved_state.isolate_filepath,
         config.root_dir,
         config.saved_state.relative_cwd,
         config.saved_state.variables)
