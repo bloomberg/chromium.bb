@@ -301,7 +301,7 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(
 
   // Copy to the current state to the output buffer, using the mapping
   // function, if there is one available.
-  pads->length = data_.length;
+  pads->length = WebKit::WebGamepads::itemsLengthCap;
   for (size_t i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i) {
     if (associated_[i].mapper)
       associated_[i].mapper(data_.items[i], &pads->items[i]);
