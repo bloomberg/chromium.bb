@@ -3246,6 +3246,27 @@
           ],
         },
         {
+          'target_name': 'interactive_ui_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'interactive_ui_tests',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'interactive_ui_tests.isolate',
+          ],
+          'sources': [
+            'interactive_ui_tests.isolate',
+          ],
+        },
+        {
           'target_name': 'sync_integration_tests_run',
           'type': 'none',
           'dependencies': [
