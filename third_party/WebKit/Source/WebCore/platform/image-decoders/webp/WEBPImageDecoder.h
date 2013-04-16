@@ -31,8 +31,6 @@
 
 #include "ImageDecoder.h"
 
-#if USE(WEBP)
-
 #include "webp/decode.h"
 #if USE(QCMSLIB) && (WEBP_DECODER_ABI_VERSION > 0x200)
 #define QCMS_WEBP_COLOR_CORRECTION
@@ -72,7 +70,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif

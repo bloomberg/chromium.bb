@@ -36,6 +36,7 @@
 #include "RenderObject.h"
 #include "ResourceBuffer.h"
 #include "ResourceLoader.h"
+#include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -45,10 +46,6 @@
 
 #if ENABLE(SVG)
 #include "SVGImage.h"
-#endif
-
-#if USE(WEBP)
-#include "RuntimeEnabledFeatures.h"
 #endif
 
 using std::max;
@@ -302,10 +299,8 @@ void CachedImage::clear()
 
 void CachedImage::setCustomAcceptHeader()
 {
-#if USE(WEBP)
     if (RuntimeEnabledFeatures::webPInAcceptHeaderEnabled())
         setAccept("image/webp,*/*;q=0.8");
-#endif
 }
 
 inline void CachedImage::createImage()

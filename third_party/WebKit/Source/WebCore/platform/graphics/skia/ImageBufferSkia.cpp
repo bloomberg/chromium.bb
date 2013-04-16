@@ -393,14 +393,12 @@ static bool encodeImage(T& source, const String& mimeType, const double* quality
             compressionQuality = static_cast<int>(*quality * 100 + 0.5);
         if (!JPEGImageEncoder::encode(source, compressionQuality, encodedImage))
             return false;
-#if USE(WEBP)
     } else if (mimeType == "image/webp") {
         int compressionQuality = WEBPImageEncoder::DefaultCompressionQuality;
         if (quality && *quality >= 0.0 && *quality <= 1.0)
             compressionQuality = static_cast<int>(*quality * 100 + 0.5);
         if (!WEBPImageEncoder::encode(source, compressionQuality, encodedImage))
             return false;
-#endif
     } else {
         if (!PNGImageEncoder::encode(source, encodedImage))
             return false;

@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WEBPImageEncoder.h"
 
-#if USE(WEBP)
-
 #include "ImageData.h"
 #include "IntSize.h"
 #include "SkBitmap.h"
@@ -134,5 +132,3 @@ bool WEBPImageEncoder::encode(const ImageData& imageData, int quality, Vector<un
 }
 
 } // namespace WebCore
-
-#endif

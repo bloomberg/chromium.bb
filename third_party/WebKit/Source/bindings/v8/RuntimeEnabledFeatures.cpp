@@ -189,8 +189,6 @@ bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 #endif
 
-#if USE(WEBP)
 bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
-#endif
 
 } // namespace WebCore

@@ -29,9 +29,7 @@
 #include "PNGImageDecoder.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "SharedBuffer.h"
-#if USE(WEBP)
 #include "WEBPImageDecoder.h"
-#endif
 
 #include <algorithm>
 #include <cmath>
@@ -73,12 +71,10 @@ bool matchesJPEGSignature(char* contents)
     return !memcmp(contents, "\xFF\xD8\xFF", 3);
 }
 
-#if USE(WEBP)
 bool matchesWebPSignature(char* contents)
 {
     return !memcmp(contents, "RIFF", 4) && !memcmp(contents + 8, "WEBPVP", 6);
 }
-#endif
 
 bool matchesBMPSignature(char* contents)
 {
@@ -117,10 +113,8 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     if (matchesJPEGSignature(contents))
         return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
-#if USE(WEBP)
     if (matchesWebPSignature(contents))
         return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption));
-#endif
 
     if (matchesBMPSignature(contents))
         return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption));

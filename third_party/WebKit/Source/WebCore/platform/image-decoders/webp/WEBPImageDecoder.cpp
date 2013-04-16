@@ -29,8 +29,6 @@
 #include "config.h"
 #include "WEBPImageDecoder.h"
 
-#if USE(WEBP)
-
 #include "PlatformInstrumentation.h"
 
 #ifdef QCMS_WEBP_COLOR_CORRECTION
@@ -296,5 +294,3 @@ bool WEBPImageDecoder::decode(bool onlySize)
 }
 
 } // namespace WebCore
-
-#endif

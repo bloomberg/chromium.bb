@@ -33,8 +33,6 @@
 
 #include <wtf/Vector.h>
 
-#if USE(WEBP)
-
 class SkBitmap;
 
 namespace WebCore {
@@ -52,7 +50,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif

@@ -102,10 +102,8 @@ bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeTyp
 {
     if (mimeType == "image/jpeg" || mimeType == "image/png")
         return true;
-#if USE(WEBP)
     if (mimeType == "image/webp")
         return true;
-#endif
     return false;
 }
 

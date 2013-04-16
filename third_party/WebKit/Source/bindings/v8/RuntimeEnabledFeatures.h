@@ -244,10 +244,8 @@ public:
     static bool requestAutocompleteEnabled() { return isRequestAutocompleteEnabled; }
     static void setRequestAutocompleteEnabled(bool isEnabled) { isRequestAutocompleteEnabled = isEnabled; }
 
-#if USE(WEBP)
     static void setWebPInAcceptHeaderEnabled(bool isEnabled) { isWebPInAcceptHeaderEnabled = isEnabled; }
     static bool webPInAcceptHeaderEnabled() { return isWebPInAcceptHeaderEnabled; }
-#endif
 
     static bool directoryUploadEnabled() { return isDirectoryUploadEnabled; }
     static void setDirectoryUploadEnabled(bool isEnabled) { isDirectoryUploadEnabled = isEnabled; }
@@ -333,9 +331,7 @@ private:
     static bool isFontLoadEventsEnabled;
 #endif
 
-#if USE(WEBP)
     static bool isWebPInAcceptHeaderEnabled;
-#endif
 
     static bool isDirectoryUploadEnabled;
 };
