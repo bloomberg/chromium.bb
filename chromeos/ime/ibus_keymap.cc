@@ -35,7 +35,7 @@ std::string GetIBusKey(int keyval) {
     case XF86XK_MonBrightnessDown:
       return "BrightnessDown";
     case XK_F7:
-    case XF86XK_KbdBrightnessUp:
+    case XF86XK_MonBrightnessUp:
       return "BrightnessUp";
     case XK_F8:
     case XF86XK_AudioMute:
