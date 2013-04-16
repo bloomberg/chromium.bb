@@ -239,7 +239,7 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
 // Make sure directory operation is disabled (when it's configured so).
 TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
-  file_system_.EnableDirectoryOperations(false);
+  SetEnableSyncDirectoryOperation(false);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 

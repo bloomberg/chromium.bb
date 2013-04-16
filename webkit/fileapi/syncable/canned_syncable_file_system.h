@@ -140,13 +140,6 @@ class CannedSyncableFileSystem
   virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
 
-  // Overrides --enable-sync-directory-operation setting which is disabled
-  // by default in production code but enabled in (and only in) an instance
-  // of this helper class for testing.
-  // TODO(kinuko): remove this method when we fully support directory
-  // operations. (http://crbug.com/161442)
-  void EnableDirectoryOperations(bool flag);
-
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.
   void DoCreateDirectory(const fileapi::FileSystemURL& url,

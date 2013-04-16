@@ -12,6 +12,7 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using fileapi::FileSystemURL;
 using fileapi::FileSystemOperationContext;
@@ -340,8 +341,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     return;
   }
   operation_runner_ = file_system_context->sync_context()->operation_runner();
-  is_directory_operation_enabled_ = file_system_context->sandbox_provider()->
-      is_sync_directory_operation_enabled();
+  is_directory_operation_enabled_ = IsSyncDirectoryOperationEnabled();
 }
 
 LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {

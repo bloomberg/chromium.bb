@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+#include "base/command_line.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -16,6 +17,17 @@ using fileapi::FileSystemURL;
 using fileapi::LocalFileSystemOperation;
 
 namespace sync_file_system {
+
+namespace {
+
+// A command switch to enable syncing directory operations in Sync FileSystem
+// API. (http://crbug.com/161442)
+// TODO(kinuko): this command-line switch should be temporary.
+const char kEnableSyncDirectoryOperation[]  = "enable-sync-directory-operation";
+
+bool is_directory_operation_enabled = false;
+
+}
 
 bool RegisterSyncableFileSystem(const std::string& service_name) {
   return ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
@@ -78,6 +90,16 @@ LocalFileSystemOperation* CreateFileSystemOperationForSync(
   DCHECK(file_system_context);
   return file_system_context->sandbox_provider()->
       CreateFileSystemOperationForSync(file_system_context);
+}
+
+void SetEnableSyncDirectoryOperation(bool flag) {
+  is_directory_operation_enabled = flag;
+}
+
+bool IsSyncDirectoryOperationEnabled() {
+  return is_directory_operation_enabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableSyncDirectoryOperation);
 }
 
 }  // namespace sync_file_system

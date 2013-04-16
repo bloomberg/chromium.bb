@@ -75,7 +75,6 @@ WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
 WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, fileapi::FileSystemURL* url);
 
-
 // Returns a new FileSystemOperation that can be used to apply changes
 // for sync.  The operation returned by this method:
 // * does NOT notify the file change tracker, but
@@ -85,6 +84,19 @@ WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
 WEBKIT_STORAGE_EXPORT fileapi::LocalFileSystemOperation*
     CreateFileSystemOperationForSync(
         fileapi::FileSystemContext* file_system_context);
+
+// Enables or disables directory operations in Syncable FileSystem.
+// TODO(nhiroki): This method should be used only for testing and should go
+// away when we fully support directory operations. (http://crbug.com/161442)
+WEBKIT_STORAGE_EXPORT void SetEnableSyncDirectoryOperation(bool flag);
+
+// Returns true if we allow directory operations in syncable file system
+// It is disabled by default but can be overridden by a command-line switch
+// (--enable-sync-directory-operations) or by calling
+// SetEnableSyncDirectoryOperation().
+// TODO(nhiroki): This method should be used only for testing and should go
+// away when we fully support directory operations. (http://crbug.com/161442)
+WEBKIT_STORAGE_EXPORT bool IsSyncDirectoryOperationEnabled();
 
 }  // namespace sync_file_system
 

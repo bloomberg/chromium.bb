@@ -24,6 +24,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 // Example of various paths:
@@ -402,8 +403,7 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
   // operations or clean up the code if we decided not to support directory
   // operations. (http://crbug.com/161442)
   if (url.type() == kFileSystemTypeSyncable &&
-      !context->file_system_context()->sandbox_provider()->
-          is_sync_directory_operation_enabled()) {
+      !sync_file_system::IsSyncDirectoryOperationEnabled()) {
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   }
 

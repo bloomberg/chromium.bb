@@ -178,11 +178,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   friend class SandboxMountPointProviderMigrationTest;
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 
-  // Temporarily allowing them to access enable_sync_directory_operation_
-  friend class ObfuscatedFileUtil;
-  friend class sync_file_system::CannedSyncableFileSystem;
-  friend class sync_file_system::SyncableFileSystemOperation;
-
   // Returns a path to the usage cache file.
   base::FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
@@ -198,15 +193,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
-
-  // Enables or disables directory operations in Syncable FileSystem.
-  void set_enable_sync_directory_operation(bool flag) {
-    enable_sync_directory_operation_ = flag;
-  }
-
-  bool is_sync_directory_operation_enabled() const {
-    return enable_sync_directory_operation_;
-  }
 
   ObfuscatedFileUtil* sandbox_sync_file_util();
 
@@ -244,14 +230,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   ChangeObserverList syncable_change_observers_;
 
   base::Time next_release_time_for_open_filesystem_stat_;
-
-  // Indicates if we allow directory operations in syncable file system
-  // or not. This flag is disabled by default but can be overridden by
-  // a command-line switch (--enable-sync-directory-operations) or by
-  // calling set_enable_sync_directory_operation().
-  // This flag should be used only for testing and should go away when
-  // we fully support directory operations. (http://crbug.com/161442)
-  bool enable_sync_directory_operation_;
 
   // Indicates if the usage tracking for FileSystem is enabled or not.
   // The usage tracking is enabled by default and can be disabled by

@@ -44,11 +44,6 @@ const char kOpenFileSystemDetailNonThrottledLabel[] =
     "FileSystem.OpenFileSystemDetailNonthrottled";
 int64 kMinimumStatsCollectionIntervalHours = 1;
 
-// A command switch to enable syncing directory operations in Sync FileSystem
-// API. (http://crbug.com/161442)
-// TODO(kinuko): this command-line switch should be temporary.
-const char kEnableSyncDirectoryOperation[]  = "enable-sync-directory-operation";
-
 // A command line switch to disable usage tracking.
 const char kDisableUsageTracking[] = "disable-file-system-usage-tracking";
 
@@ -160,9 +155,6 @@ SandboxMountPointProvider::SandboxMountPointProvider(
                       file_task_runner,
                       sandbox_sync_file_util(),
                       file_system_usage_cache_.get())),
-      enable_sync_directory_operation_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              kEnableSyncDirectoryOperation)),
       enable_usage_tracking_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableUsageTracking)),
