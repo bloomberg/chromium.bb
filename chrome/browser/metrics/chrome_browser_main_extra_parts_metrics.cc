@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -20,7 +21,24 @@
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include <gnu/libc-version.h>
+
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#endif
+
 namespace {
+
+enum UMALinuxGlibcVersion {
+  UMA_LINUX_GLIBC_NOT_PARSEABLE,
+  UMA_LINUX_GLIBC_UNKNOWN,
+  UMA_LINUX_GLIBC_2_11,
+  UMA_LINUX_GLIBC_2_19 = UMA_LINUX_GLIBC_2_11 + 8,
+  // NOTE: Add new version above this line and update the enum list in
+  // tools/histograms/histograms.xml accordingly.
+  UMA_LINUX_GLIBC_VERSION_COUNT
+};
 
 enum UMATouchEventsState {
   UMA_TOUCH_EVENTS_ENABLED,
@@ -32,7 +50,7 @@ enum UMATouchEventsState {
   UMA_TOUCH_EVENTS_STATE_COUNT
 };
 
-void LogIntelMicroArchitecture() {
+void RecordIntelMicroArchitecture() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
   base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
@@ -47,6 +65,38 @@ void RecordDefaultBrowserUMAStat() {
       ShellIntegration::GetDefaultBrowser();
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
                             ShellIntegration::NUM_DEFAULT_STATES);
+}
+
+void RecordLinuxGlibcVersion() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  std::string glibc_version_string(gnu_get_libc_version());
+  std::vector<std::string> split_glibc_version;
+  base::SplitString(glibc_version_string, '.', &split_glibc_version);
+
+  UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
+  unsigned glibc_major_version = 0;
+  unsigned glibc_minor_version = 0;
+  if (split_glibc_version.size() == 2 &&
+      base::StringToUint(split_glibc_version[0], &glibc_major_version) &&
+      base::StringToUint(split_glibc_version[1], &glibc_minor_version)) {
+    glibc_version_result = UMA_LINUX_GLIBC_UNKNOWN;
+    if (glibc_major_version == 2) {
+      // A constant to translate glibc 2.x minor versions to their
+      // equivalent UMALinuxGlibcVersion values.
+      const unsigned kGlibcMinorVersionTranslationOffset =
+          11 - UMA_LINUX_GLIBC_2_11;
+      unsigned translated_glibc_minor_version =
+          glibc_minor_version - kGlibcMinorVersionTranslationOffset;
+      if (translated_glibc_minor_version >= UMA_LINUX_GLIBC_2_11 &&
+          translated_glibc_minor_version <= UMA_LINUX_GLIBC_2_19) {
+        glibc_version_result =
+            static_cast<UMALinuxGlibcVersion>(translated_glibc_minor_version);
+      }
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Linux.GlibcVersion", glibc_version_result,
+                            UMA_LINUX_GLIBC_VERSION_COUNT);
+#endif
 }
 
 void RecordTouchEventState() {
@@ -83,7 +133,7 @@ ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
-  LogIntelMicroArchitecture();
+  RecordIntelMicroArchitecture();
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
@@ -97,6 +147,7 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
+  RecordLinuxGlibcVersion();
   RecordTouchEventState();
 }
 
