@@ -137,10 +137,10 @@ private:
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
     enum ConstructStaticStringTag { ConstructStaticString };
     StringImpl(const UChar* characters, unsigned length, ConstructStaticStringTag)
-        : m_refCount(s_refCountFlagIsStaticString)
-        , m_length(length)
-        , m_data16(characters)
+        : m_data16(characters)
         , m_buffer(0)
+        , m_refCount(s_refCountFlagIsStaticString)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlagIsIdentifier | BufferOwned)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
@@ -155,10 +155,10 @@ private:
     // This means that the static string will never be destroyed, which is important because
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
     StringImpl(const LChar* characters, unsigned length, ConstructStaticStringTag)
-        : m_refCount(s_refCountFlagIsStaticString)
-        , m_length(length)
-        , m_data8(characters)
+        : m_data8(characters)
         , m_buffer(0)
+        , m_refCount(s_refCountFlagIsStaticString)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer | s_hashFlagIsIdentifier | BufferOwned)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
@@ -173,10 +173,10 @@ private:
     enum Force8Bit { Force8BitConstructor };
     // Create a normal 8-bit string with internal storage (BufferInternal)
     StringImpl(unsigned length, Force8Bit)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data8(reinterpret_cast<const LChar*>(this + 1))
+        : m_data8(reinterpret_cast<const LChar*>(this + 1))
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal)
     {
         ASSERT(m_data8);
@@ -187,10 +187,10 @@ private:
 
     // Create a normal 16-bit string with internal storage (BufferInternal)
     StringImpl(unsigned length)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data16(reinterpret_cast<const UChar*>(this + 1))
+        : m_data16(reinterpret_cast<const UChar*>(this + 1))
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(BufferInternal)
     {
         ASSERT(m_data16);
@@ -201,10 +201,10 @@ private:
 
     // Create a StringImpl adopting ownership of the provided buffer (BufferOwned)
     StringImpl(const LChar* characters, unsigned length)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data8(characters)
+        : m_data8(characters)
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer | BufferOwned)
     {
         ASSERT(m_data8);
@@ -215,10 +215,10 @@ private:
 
     enum ConstructFromLiteralTag { ConstructFromLiteral };
     StringImpl(const char* characters, unsigned length, ConstructFromLiteralTag)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data8(reinterpret_cast<const LChar*>(characters))
+        : m_data8(reinterpret_cast<const LChar*>(characters))
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal | s_hashFlagHasTerminatingNullCharacter)
     {
         ASSERT(m_data8);
@@ -230,10 +230,10 @@ private:
 
     // Create a StringImpl adopting ownership of the provided buffer (BufferOwned)
     StringImpl(const UChar* characters, unsigned length)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data16(characters)
+        : m_data16(characters)
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(BufferOwned)
     {
         ASSERT(m_data16);
@@ -244,10 +244,10 @@ private:
 
     // Used to create new strings that are a substring of an existing 8-bit StringImpl (BufferSubstring)
     StringImpl(const LChar* characters, unsigned length, PassRefPtr<StringImpl> base)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data8(characters)
+        : m_data8(characters)
         , m_substringBuffer(base.leakRef())
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer | BufferSubstring)
     {
         ASSERT(is8Bit());
@@ -260,10 +260,10 @@ private:
 
     // Used to create new strings that are a substring of an existing 16-bit StringImpl (BufferSubstring)
     StringImpl(const UChar* characters, unsigned length, PassRefPtr<StringImpl> base)
-        : m_refCount(s_refCountIncrement)
-        , m_length(length)
-        , m_data16(characters)
+        : m_data16(characters)
         , m_substringBuffer(base.leakRef())
+        , m_refCount(s_refCountIncrement)
+        , m_length(length)
         , m_hashAndFlags(BufferSubstring)
     {
         ASSERT(!is8Bit());
@@ -276,10 +276,10 @@ private:
 
     enum CreateEmptyUnique_T { CreateEmptyUnique };
     StringImpl(CreateEmptyUnique_T)
-        : m_refCount(s_refCountIncrement)
-        , m_length(0)
-        , m_data16(reinterpret_cast<const UChar*>(1))
+        : m_data16(reinterpret_cast<const UChar*>(1))
         , m_buffer(0)
+        , m_refCount(s_refCountIncrement)
+        , m_length(0)
     {
         ASSERT(m_data16);
         // Set the hash early, so that all empty unique StringImpls have a hash,
@@ -715,10 +715,10 @@ private:
 public:
     struct StaticASCIILiteral {
         // These member variables must match the layout of StringImpl.
-        unsigned m_refCount;
-        unsigned m_length;
         const LChar* m_data8;
         const UChar* m_copyData16;
+        unsigned m_refCount;
+        unsigned m_length;
         unsigned m_hashAndFlags;
 
         static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
@@ -736,9 +736,7 @@ public:
 
 private:
     // These member variables must match the layout of StaticASCIILiteral.
-    unsigned m_refCount;
-    unsigned m_length;
-    union {
+    union {  // Pointers first: crbug.com/232031
         const LChar* m_data8;
         const UChar* m_data16;
     };
@@ -747,6 +745,8 @@ private:
         StringImpl* m_substringBuffer;
         mutable UChar* m_copyData16;
     };
+    unsigned m_refCount;
+    unsigned m_length;
     mutable unsigned m_hashAndFlags;
 };
 

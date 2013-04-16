@@ -74,8 +74,8 @@ public:
     CharType* release() { CharType* data = m_data; m_data = 0; return data; }
 
 private:
+    CharType* m_data;  // Pointers first: crbug.com/232031
     unsigned m_length;
-    CharType* m_data;
 };
 
 } // namespace WTF

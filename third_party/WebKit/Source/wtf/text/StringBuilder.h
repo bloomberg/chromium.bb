@@ -38,10 +38,10 @@ class StringBuilder {
 
 public:
     StringBuilder()
-        : m_length(0)
+        : m_bufferCharacters8(0)
+        , m_length(0)
         , m_is8Bit(true)
         , m_valid16BitShadowLength(0)
-        , m_bufferCharacters8(0)
     {
     }
 
@@ -296,15 +296,15 @@ private:
     ALWAYS_INLINE CharType * getBufferCharacters();
     WTF_EXPORT_PRIVATE void reifyString() const;
 
-    unsigned m_length;
-    mutable String m_string;
+    mutable String m_string;  // Pointers first: crbug.com/232031
     RefPtr<StringImpl> m_buffer;
-    bool m_is8Bit;
-    mutable unsigned m_valid16BitShadowLength;
     union {
         LChar* m_bufferCharacters8;
         UChar* m_bufferCharacters16;
     };
+    unsigned m_length;
+    bool m_is8Bit;
+    mutable unsigned m_valid16BitShadowLength;
 };
 
 template <>
