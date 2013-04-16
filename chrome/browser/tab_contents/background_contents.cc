@@ -61,6 +61,11 @@ BackgroundContents::~BackgroundContents() {
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
       content::Details<BackgroundContents>(this));
+  // Manually clear web_contents_ to try to track down http://crbug.com/164617.
+  // Freeing the WebContents can cause the RenderViewHost to be destroyed, so
+  // we need to do this after sending out BACKGROUND_CONTENTS_DELETED to give
+  // things like the TaskManager a chance to clean up their references first.
+  web_contents_.reset();
 }
 
 const GURL& BackgroundContents::GetURL() const {
