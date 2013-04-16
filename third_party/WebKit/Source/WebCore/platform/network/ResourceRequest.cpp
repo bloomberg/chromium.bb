@@ -48,19 +48,6 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
 
     request->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
 
-    size_t encodingCount = data->m_responseContentDispositionEncodingFallbackArray.size();
-    if (encodingCount > 0) {
-        String encoding1 = data->m_responseContentDispositionEncodingFallbackArray[0];
-        String encoding2;
-        String encoding3;
-        if (encodingCount > 1) {
-            encoding2 = data->m_responseContentDispositionEncodingFallbackArray[1];
-            if (encodingCount > 2)
-                encoding3 = data->m_responseContentDispositionEncodingFallbackArray[2];
-        }
-        ASSERT(encodingCount <= 3);
-        request->setResponseContentDispositionEncodingFallbackArray(encoding1, encoding2, encoding3);
-    }
     request->setHTTPBody(data->m_httpBody);
     request->setAllowCookies(data->m_allowCookies);
     request->setHasUserGesture(data->m_hasUserGesture);
@@ -83,11 +70,6 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_priority = priority();
 
-    data->m_responseContentDispositionEncodingFallbackArray.reserveInitialCapacity(m_responseContentDispositionEncodingFallbackArray.size());
-    size_t encodingArraySize = m_responseContentDispositionEncodingFallbackArray.size();
-    for (size_t index = 0; index < encodingArraySize; ++index) {
-        data->m_responseContentDispositionEncodingFallbackArray.append(m_responseContentDispositionEncodingFallbackArray[index].isolatedCopy());
-    }
     if (m_httpBody)
         data->m_httpBody = m_httpBody->deepCopy();
     data->m_allowCookies = m_allowCookies;
@@ -224,18 +206,6 @@ void ResourceRequest::clearHTTPAccept()
     m_httpHeaderFields.remove("Accept");
 }
 
-void ResourceRequest::setResponseContentDispositionEncodingFallbackArray(const String& encoding1, const String& encoding2, const String& encoding3)
-{
-    m_responseContentDispositionEncodingFallbackArray.clear();
-    m_responseContentDispositionEncodingFallbackArray.reserveInitialCapacity(!encoding1.isNull() + !encoding2.isNull() + !encoding3.isNull());
-    if (!encoding1.isNull())
-        m_responseContentDispositionEncodingFallbackArray.uncheckedAppend(encoding1);
-    if (!encoding2.isNull())
-        m_responseContentDispositionEncodingFallbackArray.uncheckedAppend(encoding2);
-    if (!encoding3.isNull())
-        m_responseContentDispositionEncodingFallbackArray.uncheckedAppend(encoding3);
-}
-
 FormData* ResourceRequest::httpBody() const
 {
     return m_httpBody.get();
@@ -344,7 +314,6 @@ void ResourceRequest::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) cons
     info.addMember(m_firstPartyForCookies, "firstPartyForCookies");
     info.addMember(m_httpMethod, "httpMethod");
     info.addMember(m_httpHeaderFields, "httpHeaderFields");
-    info.addMember(m_responseContentDispositionEncodingFallbackArray, "responseContentDispositionEncodingFallbackArray");
     info.addMember(m_httpBody, "httpBody");
     info.addMember(m_extraData, "extraData");
 }
