@@ -33,7 +33,7 @@ class ErrorBadge : public GlobalError {
 
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual string16 GetBubbleViewMessage() OVERRIDE;
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -81,8 +81,8 @@ string16 ErrorBadge::GetBubbleViewTitle() {
   return string16();
 }
 
-string16 ErrorBadge::GetBubbleViewMessage() {
-  return string16();
+std::vector<string16> ErrorBadge::GetBubbleViewMessages() {
+  return std::vector<string16>();
 }
 
 string16 ErrorBadge::GetBubbleViewAcceptButtonLabel() {

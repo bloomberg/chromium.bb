@@ -40,8 +40,8 @@ class BubbleViewError : public GlobalError {
   virtual string16 GetBubbleViewTitle() OVERRIDE {
     return string16();
   }
-  virtual string16 GetBubbleViewMessage() OVERRIDE {
-    return string16();
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE {
+    return std::vector<string16>();
   }
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
     return string16();

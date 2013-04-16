@@ -79,8 +79,9 @@ string16 ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewTitle() {
   return error_ui_->GetBubbleViewTitle();
 }
 
-string16 ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewMessage() {
-  return error_ui_->GetBubbleViewMessage();
+std::vector<string16>
+ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewMessages() {
+  return error_ui_->GetBubbleViewMessages();
 }
 
 string16 ExtensionErrorUIDefault::ExtensionGlobalError::

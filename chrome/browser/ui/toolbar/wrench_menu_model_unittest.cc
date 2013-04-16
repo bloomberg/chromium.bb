@@ -42,9 +42,9 @@ class MenuError : public GlobalError {
     ADD_FAILURE();
     return string16();
   }
-  virtual string16 GetBubbleViewMessage() OVERRIDE {
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE {
     ADD_FAILURE();
-    return string16();
+    return std::vector<string16>();
   }
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
     ADD_FAILURE();

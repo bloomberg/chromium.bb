@@ -62,13 +62,13 @@ string16 ExtensionErrorUI::GenerateMessage() {
                                 IDS_APP_ALERT_ITEM_BLACKLISTED);
 }
 
-string16 ExtensionErrorUI::GetBubbleViewMessage() {
+std::vector<string16> ExtensionErrorUI::GetBubbleViewMessages() {
   if (message_.empty()) {
     message_ = GenerateMessage();
     if (message_[message_.size()-1] == '\n')
       message_.resize(message_.size()-1);
   }
-  return message_;
+  return std::vector<string16>(1, message_);
 }
 
 string16 ExtensionErrorUI::GetBubbleViewTitle() {

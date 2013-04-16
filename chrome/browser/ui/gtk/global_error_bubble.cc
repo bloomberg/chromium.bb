@@ -55,8 +55,12 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   GtkWidget* title_label = theme_service->BuildLabel(
       UTF16ToUTF8(error_->GetBubbleViewTitle()),
       ui::kGdkBlack);
+  // TODO(yoz): Support multi-line messages.
+  string16 message;
+  if (!error_->GetBubbleViewMessages().empty())
+    message = error_->GetBubbleViewMessages()[0];
   message_label_ = theme_service->BuildLabel(
-      UTF16ToUTF8(error_->GetBubbleViewMessage()),
+      UTF16ToUTF8(message),
       ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(message_label_, kMessageTextSize);
   // Message label will be sized later in "realize" callback because we need

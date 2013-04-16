@@ -119,7 +119,7 @@ class ExternalInstallGlobalError : public GlobalError,
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual string16 GetBubbleViewMessage() OVERRIDE;
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -190,8 +190,8 @@ string16 ExternalInstallGlobalError::GetBubbleViewTitle() {
   return string16();
 }
 
-string16 ExternalInstallGlobalError::GetBubbleViewMessage() {
-  return string16();
+std::vector<string16> ExternalInstallGlobalError::GetBubbleViewMessages() {
+  return std::vector<string16>();
 }
 
 string16 ExternalInstallGlobalError::GetBubbleViewAcceptButtonLabel() {

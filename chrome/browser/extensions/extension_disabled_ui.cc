@@ -142,7 +142,7 @@ class ExtensionDisabledGlobalError : public GlobalError,
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual string16 GetBubbleViewMessage() OVERRIDE;
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
@@ -233,10 +233,12 @@ string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
                                     UTF8ToUTF16(extension_->name()));
 }
 
-string16 ExtensionDisabledGlobalError::GetBubbleViewMessage() {
-  return l10n_util::GetStringFUTF16(extension_->is_app() ?
+std::vector<string16> ExtensionDisabledGlobalError::GetBubbleViewMessages() {
+  string16 message = l10n_util::GetStringFUTF16(
+      extension_->is_app() ?
       IDS_APP_DISABLED_ERROR_LABEL : IDS_EXTENSION_DISABLED_ERROR_LABEL,
       UTF8ToUTF16(extension_->name()));
+  return std::vector<string16>(1, message);
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {

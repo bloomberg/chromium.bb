@@ -80,11 +80,15 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
 
-  string16 message_string(error_->GetBubbleViewMessage());
-  views::Label* message_label = new views::Label(message_string);
-  message_label->SetMultiLine(true);
-  message_label->SizeToFit(kMaxBubbleViewWidth);
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  std::vector<string16> message_strings(error_->GetBubbleViewMessages());
+  std::vector<views::Label*> message_labels;
+  for (size_t i = 0; i < message_strings.size(); ++i) {
+    views::Label* message_label = new views::Label(message_strings[i]);
+    message_label->SetMultiLine(true);
+    message_label->SizeToFit(kMaxBubbleViewWidth);
+    message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    message_labels.push_back(message_label);
+  }
 
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::LabelButton> accept_button(
@@ -113,7 +117,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                 1, views::GridLayout::USE_PREF, 0, 0);
 
-  // Middle row, message label.
+  // Middle rows, message labels.
   cs = layout->AddColumnSet(1);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                 1, views::GridLayout::USE_PREF, 0, 0);
@@ -134,8 +138,12 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   layout->AddView(title_label.release());
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
-  layout->StartRow(1, 1);
-  layout->AddView(message_label);
+  for (size_t i = 0; i < message_labels.size(); ++i) {
+    layout->StartRow(1, 1);
+    layout->AddView(message_labels[i]);
+    if (i < message_labels.size() - 1)
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
   layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
 
   layout->StartRow(0, 2);
@@ -144,7 +152,8 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     layout->AddView(cancel_button.release());
 
   // Adjust the message label size in case buttons are too long.
-  message_label->SizeToFit(layout->GetPreferredSize(this).width());
+  for (size_t i = 0; i < message_labels.size(); ++i)
+    message_labels[i]->SizeToFit(layout->GetPreferredSize(this).width());
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {

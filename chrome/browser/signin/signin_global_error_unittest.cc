@@ -117,7 +117,7 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     // menu item to display auth status/errors.
     EXPECT_EQ(global_error_->HasMenuItem(), table[i].is_error);
     EXPECT_EQ(global_error_->MenuItemLabel().empty(), !table[i].is_error);
-    EXPECT_EQ(global_error_->GetBubbleViewMessage().empty(),
+    EXPECT_EQ(global_error_->GetBubbleViewMessages().empty(),
               !table[i].is_error);
     EXPECT_FALSE(global_error_->GetBubbleViewTitle().empty());
     EXPECT_FALSE(global_error_->GetBubbleViewAcceptButtonLabel().empty());

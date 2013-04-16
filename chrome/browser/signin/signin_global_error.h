@@ -54,7 +54,7 @@ class SigninGlobalError : public GlobalError {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual string16 GetBubbleViewMessage() OVERRIDE;
+  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;

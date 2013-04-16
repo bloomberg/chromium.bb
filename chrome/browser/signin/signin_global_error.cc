@@ -118,17 +118,18 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
 }
 
 bool SigninGlobalError::HasBubbleView() {
-  return !GetBubbleViewMessage().empty();
+  return !GetBubbleViewMessages().empty();
 }
 
 string16 SigninGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE);
 }
 
-string16 SigninGlobalError::GetBubbleViewMessage() {
+std::vector<string16> SigninGlobalError::GetBubbleViewMessages() {
+  std::vector<string16> messages;
   // If the user isn't signed in, no need to display an error bubble.
   if (signin_manager_->GetAuthenticatedUsername().empty()) {
-    return string16();
+    return messages;
   }
 
   switch (auth_error_.state()) {
@@ -136,28 +137,31 @@ string16 SigninGlobalError::GetBubbleViewMessage() {
     // displaying a popup bubble.
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::NONE:
-      return string16();
+      return messages;
 
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      return l10n_util::GetStringFUTF16(
+      messages.push_back(l10n_util::GetStringFUTF16(
           IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      break;
 
     // Sync service is not available for this account's domain.
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return l10n_util::GetStringFUTF16(
+      messages.push_back(l10n_util::GetStringFUTF16(
           IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      break;
 
     // Generic message for "other" errors.
     default:
-      return l10n_util::GetStringFUTF16(
+      messages.push_back(l10n_util::GetStringFUTF16(
           IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   }
+  return messages;
 }
 
 string16 SigninGlobalError::GetBubbleViewAcceptButtonLabel() {

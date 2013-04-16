@@ -57,7 +57,7 @@ class ExtensionErrorUI {
 
   // Model methods for the bubble view.
   string16 GetBubbleViewTitle();
-  string16 GetBubbleViewMessage();
+  std::vector<string16> GetBubbleViewMessages();
   string16 GetBubbleViewAcceptButtonLabel();
   string16 GetBubbleViewCancelButtonLabel();
 
