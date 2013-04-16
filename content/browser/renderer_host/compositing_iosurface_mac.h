@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
 
 #include <deque>
+#include <vector>
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
@@ -188,13 +189,26 @@ class CompositingIOSurfaceMac {
   };
 
   // Keeps track of states and buffers for readback of IOSurface.
+  //
+  // TODO(miu): Major code refactoring is badly needed!  To be done in a
+  // soon-upcoming change.  For now, we blatantly violate the style guide with
+  // respect to struct vs. class usage:
   struct CopyContext {
-    CopyContext();
+    explicit CopyContext(const scoped_refptr<CompositingIOSurfaceContext>& ctx);
     ~CopyContext();
-    void CleanUp();
 
+    // Delete any references to owned OpenGL objects.  This must be called
+    // within the OpenGL context just before destruction.
+    void ReleaseCachedGLObjects();
+
+    // The following two methods assume |num_outputs| has been set, and are
+    // being called within the OpenGL context.
+    void PrepareReadbackFramebuffers();
+    void PrepareForAsynchronousReadback();
+
+    const scoped_ptr<CompositingIOSurfaceTransformer> transformer;
     int num_outputs;
-    GLuint output_textures[3];
+    GLuint output_textures[3];  // Not owned.
     // Note: For YUV, the |output_texture_sizes| widths are in terms of 4-byte
     // quads, not pixels.
     gfx::Size output_texture_sizes[3];
@@ -281,8 +295,8 @@ class CompositingIOSurfaceMac {
   void FinishAllCopiesWithinContext(
       std::vector<base::Closure>* done_callbacks);
 
-  void CleanupAllCopiesWithinContext();
   void FailAllCopies();
+  void DestroyAllCopyContextsWithinContext();
 
   gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect,
                                    float scale_factor) const;
@@ -309,12 +323,15 @@ class CompositingIOSurfaceMac {
   // with it.
   GLuint texture_;
 
-  std::deque<CopyContext> copy_requests_;
+  // A pool of CopyContexts with OpenGL objects ready for re-use.  Prefer to
+  // pull one from the pool before creating a new CopyContext.
+  std::vector<CopyContext*> copy_context_pool_;
+
+  // CopyContexts being used for in-flight copy operations.
+  std::deque<CopyContext*> copy_requests_;
 
   // Timer for finishing a copy operation.
   base::Timer finish_copy_timer_;
-
-  scoped_ptr<CompositingIOSurfaceTransformer> transformer_;
 
   SurfaceQuad quad_;
 
