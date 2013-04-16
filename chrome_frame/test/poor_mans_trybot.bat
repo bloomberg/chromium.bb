@@ -26,37 +26,38 @@ REM a ton of stuff in that directory. Just be aware of it, and check
 REM what files you actually have in the local copy on the VM after
 REM running this script. If you encounter this issue, a reboot of the
 REM VM seems to help.
-REM
-REM ALSO NOTE: At least one test
-REM (ChromeFrameTestWithWebServer.FullTabModeIE_TestPostReissue) fails
-REM until you choose "never show again" in the "did you notice the
-REM infobar" dialog that IE shows, at least if you're running IE7.
-
-if (%1)==() goto usage
 
 setlocal
-set CLIENT_ROOT=%~dp0%..\..
-set CONFIG=%1
 
-if (%2)==() goto setdefault
-if (%3)==() goto usage
-set DRIVE=%2
-set INSTALL_ROOT=%3
-goto pastbase
-:setdefault
-set DRIVE=c:
-set INSTALL_ROOT=\trybot
-:pastbase
+REM Get the path to the build tree's src directory.
+CALL :_canonicalize "%~dp0..\.."
+SET FROM=%RET%
+
+REM Read OUTPUT and/or BUILDTYPE from command line.
+FOR %%a IN (%1 %2) do (
+IF "%%a"=="out" SET OUTPUT=out
+IF "%%a"=="build" SET OUTPUT=build
+IF "%%a"=="Debug" SET BUILDTYPE=Debug
+IF "%%a"=="Release" SET BUILDTYPE=Release
+)
+
+CALL :_find_build
+IF "%OUTPUT%%BUILDTYPE%"=="" (
+ECHO No build found to copy.
+EXIT 1
+)
+
+set CLIENT_ROOT=%FROM%
+SET INSTALL_ROOT=\trybot
 
 @ECHO ON
-%DRIVE%
-mkdir %INSTALL_ROOT%
+IF NOT EXIST "%INSTALL_ROOT%" mkdir "%INSTALL_ROOT%"
 cd %INSTALL_ROOT%
 rmdir /s /q base
-rmdir /s /q build\%CONFIG%
+rmdir /s /q %OUTPUT%\%BUILDTYPE%
 rmdir /s /q chrome_frame
 mkdir base
-mkdir build\%CONFIG%
+mkdir %OUTPUT%\%BUILDTYPE%
 mkdir chrome_frame\test\data
 mkdir chrome_frame\test\html_util_test_data
 mkdir net\data
@@ -64,15 +65,17 @@ mkdir net\tools\testserver
 mkdir third_party\pyftpdlib
 mkdir third_party\pylib
 mkdir third_party\python_26
+mkdir third_party\pywebsocket
 mkdir third_party\tlslite
 copy %CLIENT_ROOT%\base\base_paths_win.cc base\base_paths_win.cc
-xcopy %CLIENT_ROOT%\build\%CONFIG% build\%CONFIG% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
+xcopy %CLIENT_ROOT%\%OUTPUT%\%BUILDTYPE% %OUTPUT%\%BUILDTYPE% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
 xcopy %CLIENT_ROOT%\chrome_frame\test\data chrome_frame\test\data /E
 xcopy %CLIENT_ROOT%\net\data net\data /E
 xcopy %CLIENT_ROOT%\net\tools\testserver net\tools\testserver /E
 xcopy %CLIENT_ROOT%\third_party\pyftpdlib third_party\pyftpdlib /E
 xcopy %CLIENT_ROOT%\third_party\pylib third_party\pylib /E
 xcopy %CLIENT_ROOT%\third_party\python_26 third_party\python_26 /E
+xcopy %CLIENT_ROOT%\third_party\pywebsocket third_party\pywebsocket /E
 xcopy %CLIENT_ROOT%\third_party\tlslite third_party\tlslite /E
 xcopy %CLIENT_ROOT%\chrome_frame\test\html_util_test_data chrome_frame\test\html_util_test_data /E
 copy %CLIENT_ROOT%\chrome_frame\CFInstance.js chrome_frame\CFInstance.js
@@ -81,12 +84,47 @@ copy %CLIENT_ROOT%\chrome_frame\CFInstall.js chrome_frame\CFInstall.js
 echo ************************************
 echo DO THE FOLLOWING IN AN ADMIN PROMPT:
 echo *********************************
-echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_unittests.exe
-echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_tests.exe
-echo %DRIVE%%INSTALL_ROOT%\build\%CONFIG%\chrome_frame_net_tests.exe
+echo %INSTALL_ROOT%\%OUTPUT%\%BUILDTYPE%\chrome_frame_unittests.exe
+echo %INSTALL_ROOT%\%OUTPUT%\%BUILDTYPE%\chrome_frame_tests.exe
+echo %INSTALL_ROOT%\%OUTPUT%\%BUILDTYPE%\chrome_frame_net_tests.exe
 goto end
 
 :usage
-echo "Usage: poor_mans_trybot.bat CONFIG [DRIVE INSTALL_ROOT]"
+echo "Usage: poor_mans_trybot.bat [out|build] [Debug|Release]"
 
 :end
+GOTO :EOF
+
+REM All labels henceforth are subroutines intended to be invoked by CALL.
+
+REM Canonicalize the first argument, returning it in RET.
+:_canonicalize
+SET RET=%~f1
+GOTO :EOF
+
+REM Search for a npchrome_frame.dll in the candidate build outputs.
+:_find_build
+IF "%OUTPUT%"=="" (
+SET OUTPUTS=out build
+) ELSE (
+SET OUTPUTS=%OUTPUT%
+SET OUTPUT=
+)
+
+IF "%BUILDTYPE%"=="" (
+SET BUILDTYPES=Debug Release
+) ELSE (
+SET BUILDTYPES=%BUILDTYPE%
+SET BUILDTYPE=
+)
+
+FOR %%o IN (%OUTPUTS%) DO (
+FOR %%f IN (%BUILDTYPES%) DO (
+IF EXIST "%FROM%\%%o\%%f\npchrome_frame.dll" (
+SET OUTPUT=%%o
+SET BUILDTYPE=%%f
+GOTO :EOF
+)
+)
+)
+GOTO :EOF
