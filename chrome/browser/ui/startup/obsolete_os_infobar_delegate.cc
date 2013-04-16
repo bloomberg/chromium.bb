@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
+#include "chrome/browser/ui/startup/obsolete_os_infobar_delegate.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
@@ -20,7 +20,7 @@ using content::Referrer;
 namespace chrome {
 
 // static
-void ObsoleteOSInfoBar::Create(InfoBarService* infobar_service) {
+void ObsoleteOSInfoBarDelegate::Create(InfoBarService* infobar_service) {
 #if defined(TOOLKIT_GTK)
   // We've deprecated support for Ubuntu Lucid.  Rather than attempting to
   // determine whether you're using that, we instead key off the GTK version;
@@ -44,22 +44,23 @@ void ObsoleteOSInfoBar::Create(InfoBarService* infobar_service) {
   const char* kLearnMoreURL =
       "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new ObsoleteOSInfoBar(infobar_service, message, GURL(kLearnMoreURL))));
+      new ObsoleteOSInfoBarDelegate(infobar_service, message,
+                                    GURL(kLearnMoreURL))));
 }
 
-string16 ObsoleteOSInfoBar::GetMessageText() const {
+string16 ObsoleteOSInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
-int ObsoleteOSInfoBar::GetButtons() const {
+int ObsoleteOSInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
-string16 ObsoleteOSInfoBar::GetLinkText() const {
+string16 ObsoleteOSInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool ObsoleteOSInfoBar::LinkClicked(WindowOpenDisposition disposition) {
+bool ObsoleteOSInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   OpenURLParams params(learn_more_url_, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
@@ -67,15 +68,16 @@ bool ObsoleteOSInfoBar::LinkClicked(WindowOpenDisposition disposition) {
   return false;
 }
 
-ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
-                                     const string16& message,
-                                     const GURL& url)
+ObsoleteOSInfoBarDelegate::ObsoleteOSInfoBarDelegate(
+    InfoBarService* infobar_service,
+    const string16& message,
+    const GURL& url)
     : ConfirmInfoBarDelegate(infobar_service),
       message_(message),
       learn_more_url_(url) {
 }
 
-ObsoleteOSInfoBar::~ObsoleteOSInfoBar() {
+ObsoleteOSInfoBarDelegate::~ObsoleteOSInfoBarDelegate() {
 }
 
 }  // namespace chrome

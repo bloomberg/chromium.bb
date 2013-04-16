@@ -61,7 +61,7 @@
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
-#include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
+#include "chrome/browser/ui/startup/obsolete_os_infobar_delegate.h"
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -905,7 +905,7 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     // TODO(phajdan.jr): Always enable after migrating bots:
     // http://crbug.com/170262 .
     if (!command_line_.HasSwitch(switches::kTestType)) {
-      chrome::ObsoleteOSInfoBar::Create(
+      chrome::ObsoleteOSInfoBarDelegate::Create(
           InfoBarService::FromWebContents(
               browser->tab_strip_model()->GetActiveWebContents()));
     }
