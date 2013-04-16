@@ -108,14 +108,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
   ASSERT_TRUE(RunExtensionSubtest("management/test", "basics.html"));
 }
 
-// Disabled: http://crbug.com/174411
-#if defined(OS_WIN)
-#define MAYBE_Uninstall DISABLED_Uninstall
-#else
-#define MAYBE_Uninstall Uninstall
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Uninstall) {
   LoadExtensions();
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
@@ -158,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
                                   "prohibited.html"));
 }
 
-// Disabled. See http://crbug.com/176023
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, DISABLED_LaunchPanelApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
 
@@ -218,13 +210,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, DISABLED_LaunchPanelApp) {
   ASSERT_TRUE(app_browser->is_app());
 }
 
-// Disabled: http://crbug.com/230165
-#if defined(OS_WIN)
-#define MAYBE_LaunchTabApp DISABLED_LaunchTabApp
-#else
-#define MAYBE_LaunchTabApp LaunchTabApp
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
 
