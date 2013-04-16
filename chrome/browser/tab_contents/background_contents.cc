@@ -57,8 +57,6 @@ BackgroundContents::BackgroundContents()
 BackgroundContents::~BackgroundContents() {
   if (!web_contents_.get())   // Will be null for unit tests.
     return;
-  // Manually clear web_contents_ to try to track down http://crbug.com/164617.
-  web_contents_.reset();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
