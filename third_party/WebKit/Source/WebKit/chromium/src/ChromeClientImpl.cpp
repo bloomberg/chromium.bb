@@ -643,6 +643,11 @@ static float calculateTargetDensityDPIFactor(const ViewportArguments& arguments,
     return targetDPI > 0 ? (deviceScaleFactor * 120.0f) / targetDPI : 1.0f;
 }
 
+static float getLayoutWidthForNonWideViewport(const ViewportArguments& arguments, const FloatSize& deviceSize, float initialScale)
+{
+    return arguments.zoom == ViewportArguments::ValueAuto ? deviceSize.width() : deviceSize.width() / initialScale;
+}
+
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
 {
 #if ENABLE(VIEWPORT)
@@ -663,15 +668,27 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArgumen
         computed.maximumScale = max(computed.maximumScale, m_webView->maxPageScaleFactor);
         computed.userScalable = true;
     }
-    if (arguments.zoom == ViewportArguments::ValueAuto && !m_webView->settingsImpl()->initializeAtMinimumPageScale())
-        computed.initialScale = 1.0f;
-
+    float initialScale = computed.initialScale;
+    if (arguments.zoom == ViewportArguments::ValueAuto && !m_webView->settingsImpl()->initializeAtMinimumPageScale()) {
+        if (arguments.width == ViewportArguments::ValueAuto
+            || (m_webView->settingsImpl()->useWideViewport()
+                && arguments.width != ViewportArguments::ValueAuto && arguments.width != ViewportArguments::ValueDeviceWidth))
+            computed.initialScale = 1.0f;
+    }
     if (m_webView->settingsImpl()->supportDeprecatedTargetDensityDPI()) {
         float targetDensityDPIFactor = calculateTargetDensityDPIFactor(arguments, deviceScaleFactor);
         computed.initialScale *= targetDensityDPIFactor;
         computed.minimumScale *= targetDensityDPIFactor;
         computed.maximumScale *= targetDensityDPIFactor;
-        computed.layoutSize.scale(1.0f / targetDensityDPIFactor);
+
+        if (m_webView->settingsImpl()->useWideViewport() && arguments.width == ViewportArguments::ValueAuto && arguments.zoom != 1.0f)
+            computed.layoutSize.setWidth(m_webView->page()->settings()->layoutFallbackWidth());
+        else {
+            if (!m_webView->settingsImpl()->useWideViewport())
+                computed.layoutSize.setWidth(getLayoutWidthForNonWideViewport(arguments, viewportSize, initialScale));
+            if (!m_webView->settingsImpl()->useWideViewport() || arguments.width == ViewportArguments::ValueAuto || arguments.width == ViewportArguments::ValueDeviceWidth)
+                computed.layoutSize.scale(1.0f / targetDensityDPIFactor);
+        }
     }
 
     m_webView->setInitialPageScaleFactor(computed.initialScale);

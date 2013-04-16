@@ -164,6 +164,7 @@ public:
     virtual void setUserStyleSheetLocation(const WebURL&) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
     virtual void setUsesPageCache(bool) = 0;
+    virtual void setUseWideViewport(bool) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
     virtual void setVisualWordMovementEnabled(bool) = 0;

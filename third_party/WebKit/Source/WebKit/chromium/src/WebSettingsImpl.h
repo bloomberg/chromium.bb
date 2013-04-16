@@ -160,6 +160,7 @@ public:
     virtual void setUserStyleSheetLocation(const WebURL&);
     virtual void setUsesEncodingDetector(bool);
     virtual void setUsesPageCache(bool);
+    virtual void setUseWideViewport(bool);
     virtual void setValidationMessageTimerMagnification(int);
     virtual void setViewportEnabled(bool);
     virtual void setVisualWordMovementEnabled(bool);
@@ -177,6 +178,7 @@ public:
     bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
+    bool useWideViewport() const { return m_useWideViewport; }
 
 private:
     WebCore::Settings* m_settings;
@@ -185,6 +187,7 @@ private:
     bool m_renderVSyncNotificationEnabled;
     bool m_viewportEnabled;
     bool m_initializeAtMinimumPageScale;
+    bool m_useWideViewport;
     bool m_gestureTapHighlightEnabled;
     bool m_autoZoomFocusedNodeToLegibleScale;
     bool m_deferredImageDecodingEnabled;

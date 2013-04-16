@@ -3043,6 +3043,10 @@ void WebViewImpl::computePageScaleFactorLimits()
             viewWidthNotIncludingScrollbars -= view->verticalScrollbar()->width();
         m_minimumPageScaleFactor = max(m_minimumPageScaleFactor, static_cast<float>(viewWidthNotIncludingScrollbars) / contentsSize().width());
         m_maximumPageScaleFactor = max(m_minimumPageScaleFactor, m_maximumPageScaleFactor);
+        if (m_initialPageScaleFactorOverride != -1) {
+            m_minimumPageScaleFactor = min(m_minimumPageScaleFactor, m_initialPageScaleFactorOverride);
+            m_maximumPageScaleFactor = max(m_maximumPageScaleFactor, m_initialPageScaleFactorOverride);
+        }
     }
     ASSERT(m_minimumPageScaleFactor <= m_maximumPageScaleFactor);
 

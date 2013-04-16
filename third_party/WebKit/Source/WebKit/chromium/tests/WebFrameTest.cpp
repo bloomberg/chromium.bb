@@ -366,7 +366,70 @@ TEST_F(WebFrameTest, setInitializeAtMinimumPageScaleToFalse)
     EXPECT_EQ(1.0f, m_webView->pageScaleFactor());
 }
 
-TEST_F(WebFrameTest, PageViewportInitialScaleOverridesInitializeAtMinimumScale)
+TEST_F(WebFrameTest, SetInitializeAtMinimumPageScaleToFalseAndNoWideViewport)
+{
+    registerMockedHttpURLLoad("large-div.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "large-div.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->settings()->setInitializeAtMinimumPageScale(false);
+    m_webView->settings()->setUseWideViewport(false);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    // The page must be displayed at 100% zoom, despite that it hosts a wide div element.
+    EXPECT_EQ(1.0f, m_webView->pageScaleFactor());
+}
+
+TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth)
+{
+    registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-auto-initial-scale.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->settings()->setUseWideViewport(false);
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    // The page sets viewport width to 3000, but with UseWideViewport == false is must be ignored.
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    EXPECT_EQ(viewportWidth, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+}
+
+TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
+{
+    registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->settings()->setUseWideViewport(false);
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    // The page sets viewport width to 3000, but with UseWideViewport == false is must be ignored.
+    // While the initial scale specified by the page must be accounted.
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    EXPECT_EQ(viewportWidth / 2, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+}
+
+TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
 {
     registerMockedHttpURLLoad("viewport-2x-initial-scale.html");
 
@@ -376,6 +439,27 @@ TEST_F(WebFrameTest, PageViewportInitialScaleOverridesInitializeAtMinimumScale)
     int viewportHeight = 480;
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-2x-initial-scale.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    // This behavior is for compatibility with Android WebView, so it is only
+    // activated when support for target-densityDpi is enabled.
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    EXPECT_EQ(980, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+}
+
+TEST_F(WebFrameTest, PageViewportInitialScaleOverridesInitializeAtMinimumScale)
+{
+    registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->settings()->setInitializeAtMinimumPageScale(false);
@@ -440,7 +524,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesInitializeAtMinimum
 
 TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitialScale)
 {
-    registerMockedHttpURLLoad("viewport-2x-initial-scale.html");
+    registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
@@ -448,7 +532,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitial
     int viewportHeight = 480;
     float enforcedPageScalePactor = 0.5f;
 
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-2x-initial-scale.html", true, 0, &client);
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->setInitialPageScaleOverride(enforcedPageScalePactor);

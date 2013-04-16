@@ -53,6 +53,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_renderVSyncNotificationEnabled(false)
     , m_viewportEnabled(false)
     , m_initializeAtMinimumPageScale(true)
+    , m_useWideViewport(true)
     , m_gestureTapHighlightEnabled(true)
     , m_autoZoomFocusedNodeToLegibleScale(false)
     , m_deferredImageDecodingEnabled(false)
@@ -255,6 +256,11 @@ void WebSettingsImpl::setAuthorAndUserStylesEnabled(bool enabled)
 void WebSettingsImpl::setUsesPageCache(bool usesPageCache)
 {
     m_settings->setUsesPageCache(usesPageCache);
+}
+
+void WebSettingsImpl::setUseWideViewport(bool useWideViewport)
+{
+    m_useWideViewport = useWideViewport;
 }
 
 void WebSettingsImpl::setPageCacheSupportsPlugins(bool pageCacheSupportsPlugins)
