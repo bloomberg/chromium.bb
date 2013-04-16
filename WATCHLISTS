@@ -208,6 +208,9 @@
       'filepath': 'chrome/browser/chromeos/drive/|' \
                   'chrome/browser/google_apis/'
     },
+    'drive_resource_metadata': {
+      'filepath': 'chrome/browser/chromeos/drive/drive_resource_metadata'
+    },
     'extension': {
       'filepath': 'extension',
     },
@@ -591,6 +594,7 @@
     'downloads_ext': ['benjhayden+dwatch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org', 'benjhayden+dwatch@chromium.org'],
     'drive': ['tfarina@chromium.org'],
+    'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'extension': ['aa@chromium.org',
                   'chromium-apps-reviews@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org', 'tzik+watch@chromium.org'],
