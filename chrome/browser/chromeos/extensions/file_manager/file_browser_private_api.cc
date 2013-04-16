@@ -53,6 +53,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -1394,7 +1395,8 @@ bool ViewFilesFunction::RunImpl() {
     files.push_back(path);
   }
 
-  Browser* browser = GetCurrentBrowser();
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      profile_, chrome::HOST_DESKTOP_TYPE_ASH);
   bool success = browser;
 
   if (browser) {

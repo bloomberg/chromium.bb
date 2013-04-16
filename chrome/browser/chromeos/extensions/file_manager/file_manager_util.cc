@@ -841,7 +841,6 @@ void OpenFileBrowser() {
 
 bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
     const std::string& internal_task_id) {
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = browser->profile();
