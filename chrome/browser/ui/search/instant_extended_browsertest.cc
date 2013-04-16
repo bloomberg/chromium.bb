@@ -1667,3 +1667,31 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DeniesUnexpectedSuggestions) {
   EXPECT_EQ("result 1", GetOmniboxText());
   EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
+
+// Test that autocomplete results are cleared when the query is cleared.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EmptyAutocompleteResults) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Type a URL, so that there's at least one autocomplete result (a "URL what
+  // you typed" match).
+  SetOmniboxTextAndWaitForOverlayToShow("http://upsamina/");
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+
+  int num_autocomplete_results = 0;
+  EXPECT_TRUE(GetIntFromJS(
+      overlay,
+      "chrome.embeddedSearch.searchBox.nativeSuggestions.length",
+      &num_autocomplete_results));
+  EXPECT_LT(0, num_autocomplete_results);
+
+  // Erase the query in the omnibox.
+  SetOmniboxText("");
+
+  EXPECT_TRUE(GetIntFromJS(
+      overlay,
+      "chrome.embeddedSearch.searchBox.nativeSuggestions.length",
+      &num_autocomplete_results));
+  EXPECT_EQ(0, num_autocomplete_results);
+}

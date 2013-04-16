@@ -226,6 +226,18 @@ void SearchBox::OnChange(const string16& query,
   verbatim_ = verbatim;
   selection_start_ = selection_start;
   selection_end_ = selection_end;
+
+  // If |query| is empty, this is due to the user backspacing away all the text
+  // in the omnibox, or hitting Escape to restore the "permanent URL", or
+  // switching tabs, etc. In all these cases, there will be no corresponding
+  // OnAutocompleteResults(), so clear the autocomplete results ourselves, by
+  // adding an empty set. Don't notify the page using an "onnativesuggestions"
+  // event, though.
+  if (query.empty()) {
+    autocomplete_results_cache_.AddItems(
+        std::vector<InstantAutocompleteResult>());
+  }
+
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnChange";
     extensions_v8::SearchBoxExtension::DispatchChange(
