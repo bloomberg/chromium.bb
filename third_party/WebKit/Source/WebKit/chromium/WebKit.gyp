@@ -793,22 +793,6 @@
                 }],
             ],
         },
-        {
-            # FIXME: Remove this once migrated to the new devtools rules downstream.
-            'target_name': 'inspector_resources',
-            'type': 'none',
-            'dependencies': [
-                '../../devtools/devtools.gyp:devtools_frontend_resources',
-            ],
-        },
-        {
-            # FIXME: Remove this once migrated to the new devtools rules downstream.
-            'target_name': 'generate_devtools_grd',
-            'type': 'none',
-            'dependencies': [
-                '../../devtools/devtools.gyp:generate_devtools_grd',
-            ],
-        }
     ], # targets
     'conditions': [
         ['os_posix==1 and OS!="mac" and OS!="ios" and gcc_version>=46', {

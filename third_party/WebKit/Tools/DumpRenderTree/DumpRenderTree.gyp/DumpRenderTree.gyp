@@ -226,7 +226,7 @@
             'dependencies': [
                 'TestRunner',
                 'DumpRenderTree_resources',
-                '<(source_dir)/WebKit/chromium/WebKit.gyp:inspector_resources',
+                '<(source_dir)/devtools/devtools.gyp:devtools_frontend_resources',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
                 '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
