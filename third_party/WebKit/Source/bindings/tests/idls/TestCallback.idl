@@ -38,5 +38,4 @@
   [Custom] long customCallback(Class5 class5Param, Class6 class6Param);
   boolean callbackWithStringList(DOMStringList listParam);
   boolean callbackWithBoolean(boolean boolParam);
-  [PassThisToCallback=ThisClass] boolean callbackRequiresThisToPass(Class8 class8Param, ThisClass thisClassParam);
 };

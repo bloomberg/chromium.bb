@@ -22,9 +22,9 @@
 #define V8TestCallback_h
 
 #include "ActiveDOMCallback.h"
+#include "DOMWrapperWorld.h"
 #include "ScopedPersistent.h"
 #include "TestCallback.h"
-#include "WorldContextHandle.h"
 #include <v8.h>
 #include <wtf/Forward.h>
 
@@ -51,7 +51,6 @@ public:
     virtual int customCallback(Class5* class5Param, Class6* class6Param);
     virtual bool callbackWithStringList(RefPtr<DOMStringList> listParam);
     virtual bool callbackWithBoolean(bool boolParam);
-    virtual bool callbackRequiresThisToPass(Class8* class8Param, ThisClass* thisClassParam);
 
     virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextDestructionObserver::scriptExecutionContext(); }
 
@@ -59,7 +58,7 @@ private:
     V8TestCallback(v8::Handle<v8::Object>, ScriptExecutionContext*);
 
     ScopedPersistent<v8::Object> m_callback;
-    WorldContextHandle m_worldContext;
+    RefPtr<DOMWrapperWorld> m_world;
 };
 
 }

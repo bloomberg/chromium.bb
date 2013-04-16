@@ -3626,17 +3626,10 @@ END
 
             my @args = ();
             my @argsCheck = ();
-            my $thisType = $function->signature->extendedAttributes->{"PassThisToCallback"};
             foreach my $param (@params) {
                 my $paramName = $param->name;
                 AddIncludesForType($param->type);
                 push(@args, GetNativeTypeForCallbacks($param->type) . " " . $paramName);
-                if ($thisType and $thisType eq $param->type) {
-                    push(@argsCheck, <<END);
-    ASSERT(${paramName});
-
-END
-                }
             }
             push(@implContent, join(", ", @args));
 
@@ -3671,16 +3664,7 @@ END
                 push(@implContent, "\n    v8::Handle<v8::Value> *argv = 0;\n\n");
             }
             push(@implContent, "    bool callbackReturnValue = false;\n");
-            if ($thisType) {
-                foreach my $param (@params) {
-                    next if $param->type ne $thisType;
-                    my $paramName = $param->name;
-                    push(@implContent, "    return !invokeCallback(m_callback.get(), v8::Handle<v8::Object>::Cast(${paramName}Handle), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n");
-                    last;
-                }
-            } else {
-                push(@implContent, "    return !invokeCallback(m_callback.get(), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n");
-            }
+            push(@implContent, "    return !invokeCallback(m_callback.get(), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n");
             push(@implContent, "}\n");
         }
     }
