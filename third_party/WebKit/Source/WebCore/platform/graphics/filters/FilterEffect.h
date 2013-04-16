@@ -32,10 +32,6 @@
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(OPENCL)
-#include "FilterContextOpenCL.h"
-#endif
-
 static const float kMaxFilterSize = 5000.0f;
 
 class SkImageFilter;
@@ -71,12 +67,6 @@ public:
     void copyUnmultipliedImage(Uint8ClampedArray* destination, const IntRect&);
     void copyPremultipliedImage(Uint8ClampedArray* destination, const IntRect&);
 
-#if ENABLE(OPENCL)
-    OpenCLHandle openCLImage() { return m_openCLImageResult; }
-    void setOpenCLImage(OpenCLHandle openCLImage) { m_openCLImageResult = openCLImage; }
-    ImageBuffer* openCLImageToImageBuffer();
-#endif
-
     FilterEffectVector& inputEffects() { return m_inputEffects; }
     FilterEffect* inputEffect(unsigned) const;
     unsigned numberOfEffectInputs() const { return m_inputEffects.size(); }
@@ -85,9 +75,6 @@ public:
     {
         // This function needs platform specific checks, if the memory managment is not done by FilterEffect.
         return m_imageBufferResult
-#if ENABLE(OPENCL)
-            || m_openCLImageResult
-#endif
             || m_unmultipliedImageResult
             || m_premultipliedImageResult;
     }
@@ -106,11 +93,6 @@ public:
     void setMaxEffectRect(const FloatRect& maxEffectRect) { m_maxEffectRect = maxEffectRect; } 
 
     void apply();
-#if ENABLE(OPENCL)
-    void applyAll();
-#else
-    inline void applyAll() { apply(); }
-#endif
 
     // Correct any invalid pixels, if necessary, in the result of a filter operation.
     // This method is used to ensure valid pixel values on filter inputs and the final result.
@@ -118,9 +100,6 @@ public:
     virtual void correctFilterResultIfNeeded() { }
 
     virtual void platformApplySoftware() = 0;
-#if ENABLE(OPENCL)
-    virtual bool platformApplyOpenCL();
-#endif
     virtual bool platformApplySkia() { return false; }
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*) { return 0; }
     virtual void dump() = 0;
@@ -171,9 +150,6 @@ protected:
     ImageBuffer* createImageBufferResult();
     Uint8ClampedArray* createUnmultipliedImageResult();
     Uint8ClampedArray* createPremultipliedImageResult();
-#if ENABLE(OPENCL)
-    OpenCLHandle createOpenCLImageResult(uint8_t* = 0);
-#endif
 
     // Return true if the filter will only operate correctly on valid RGBA values, with
     // alpha in [0,255] and each color component in [0, alpha].
@@ -187,9 +163,6 @@ private:
     RefPtr<Uint8ClampedArray> m_unmultipliedImageResult;
     RefPtr<Uint8ClampedArray> m_premultipliedImageResult;
     FilterEffectVector m_inputEffects;
-#if ENABLE(OPENCL)
-    OpenCLHandle m_openCLImageResult;
-#endif
 
     bool m_alphaImage;
 

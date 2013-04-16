@@ -33,9 +33,7 @@ public:
     static PassRefPtr<FEMerge> create(Filter*);
 
     virtual void platformApplySoftware();
-#if ENABLE(OPENCL)
-    virtual bool platformApplyOpenCL();
-#endif
+
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
 
     virtual void dump();

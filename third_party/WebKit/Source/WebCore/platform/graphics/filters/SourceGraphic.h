@@ -33,9 +33,7 @@ public:
     static const AtomicString& effectName();
 
     virtual void platformApplySoftware();
-#if ENABLE(OPENCL)
-    virtual bool platformApplyOpenCL();
-#endif
+
     virtual void dump();
 
     virtual void determineAbsolutePaintRect();

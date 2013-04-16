@@ -50,9 +50,6 @@ public:
     virtual void platformApplySoftware();
     virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-#if ENABLE(OPENCL)
-    virtual bool platformApplyOpenCL();
-#endif
     virtual void dump();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;

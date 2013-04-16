@@ -222,10 +222,6 @@
 #define ENABLE_NOTIFICATIONS 0
 #endif
 
-#if !defined(ENABLE_OPENCL)
-#define ENABLE_OPENCL 0
-#endif
-
 #if !defined(ENABLE_OPENTYPE_VERTICAL)
 #define ENABLE_OPENTYPE_VERTICAL 0
 #endif

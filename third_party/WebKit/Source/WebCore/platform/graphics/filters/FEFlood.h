@@ -44,9 +44,7 @@ public:
     void setResultColorSpace(ColorSpace) OVERRIDE { FilterEffect::setResultColorSpace(ColorSpaceDeviceRGB); }
 
     virtual void platformApplySoftware();
-#if ENABLE(OPENCL)
-    virtual bool platformApplyOpenCL();
-#endif
+
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
     virtual void dump();
 
