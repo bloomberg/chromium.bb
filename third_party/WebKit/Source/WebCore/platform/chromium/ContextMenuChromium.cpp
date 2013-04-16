@@ -31,77 +31,29 @@
 #include "config.h"
 #include "ContextMenu.h"
 
+#include "NotImplemented.h"
+
 namespace WebCore {
 
-// This is a stub implementation of WebKit's ContextMenu class that does
-// nothing.
-
-ContextMenu::ContextMenu()
+ContextMenu::ContextMenu(PlatformContextMenu menu)
 {
+    getContextMenuItems(menu, m_items);
 }
 
-ContextMenu::ContextMenu(const PlatformMenuDescription menu)
+void ContextMenu::getContextMenuItems(PlatformContextMenu, Vector<ContextMenuItem>&)
 {
+    notImplemented();
 }
 
-ContextMenu::~ContextMenu()
+PlatformContextMenu ContextMenu::createPlatformContextMenuFromItems(const Vector<ContextMenuItem>&)
 {
-}
-
-unsigned ContextMenu::itemCount() const
-{
-    return m_items.size();
-}
-
-void ContextMenu::insertItem(unsigned position, ContextMenuItem& item)
-{
-    m_items.insert(position, item);
-}
-
-void ContextMenu::appendItem(ContextMenuItem& item)
-{
-    m_items.append(item);
-}
-
-ContextMenuItem* ContextMenu::itemWithAction(unsigned action)
-{
-    Vector<Vector<ContextMenuItem>*> menuItemStack;
-    menuItemStack.append(&m_items);
-    while (!menuItemStack.isEmpty()) {
-        Vector<ContextMenuItem>& items = *(menuItemStack.last());
-        menuItemStack.removeLast();
-        for (size_t i = 0; i < items.size(); ++i) {
-            if (items[i].action() == static_cast<ContextMenuAction>(action))
-                return &items[i];
-            if (items[i].type() == SubmenuType)
-                menuItemStack.append(const_cast<Vector<ContextMenuItem>*>(items[i].platformSubMenu()));
-        }
-    }
+    notImplemented();
     return 0;
 }
 
-ContextMenuItem* ContextMenu::itemAtIndex(unsigned index, const PlatformMenuDescription platformDescription)
+PlatformContextMenu ContextMenu::platformContextMenu() const
 {
-    return &m_items[index];
+    return createPlatformContextMenuFromItems(m_items);
 }
 
-void ContextMenu::setPlatformDescription(PlatformMenuDescription menu)
-{
 }
-
-PlatformMenuDescription ContextMenu::platformDescription() const
-{
-    return &m_items;
-}
-
-PlatformMenuDescription ContextMenu::releasePlatformDescription()
-{
-    return 0;
-}
-
-Vector<ContextMenuItem> contextMenuItemVector(const PlatformMenuDescription menuDescription)
-{
-    return *menuDescription;
-}
-
-} // namespace WebCore

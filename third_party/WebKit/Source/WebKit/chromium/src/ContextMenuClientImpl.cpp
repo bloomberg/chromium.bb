@@ -178,8 +178,7 @@ static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marke
     return markerRange->text();
 }
 
-PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
-    ContextMenu* defaultMenu)
+PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr<WebCore::ContextMenu> defaultMenu)
 {
     // Displaying the context menu in this function is a big hack as we don't
     // have context, i.e. whether this is being invoked via a script or in
@@ -187,7 +186,7 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     // Keyboard events KeyVK_APPS, Shift+F10). Check if this is being invoked
     // in response to the above input events before popping up the context menu.
     if (!m_webView->contextMenuAllowed())
-        return 0;
+        return defaultMenu;
 
     HitTestResult r = m_webView->page()->contextMenuController()->hitTestResult();
     Frame* selectedFrame = r.innerNodeFrame();
@@ -326,7 +325,7 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
                 m_webView->focusedWebCoreFrame()->editor()->isContinuousSpellCheckingEnabled();
             // Spellchecking might be enabled for the field, but could be disabled on the node.
             if (m_webView->focusedWebCoreFrame()->editor()->isSpellCheckingEnabledInFocusedNode()) {
-                data.misspelledWord = selectMisspelledWord(defaultMenu, selectedFrame);
+                data.misspelledWord = selectMisspelledWord(defaultMenu.get(), selectedFrame);
                 if (m_webView->spellCheckClient()) {
                     int misspelledOffset, misspelledLength;
                     m_webView->spellCheckClient()->spellCheck(
@@ -364,7 +363,7 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     data.referrerPolicy = static_cast<WebReferrerPolicy>(selectedFrame->document()->referrerPolicy());
 
     // Filter out custom menu elements and add them into the data.
-    populateCustomMenuItems(defaultMenu, &data);
+    populateCustomMenuItems(defaultMenu.get(), &data);
 
     data.node = r.innerNonSharedNode();
 
@@ -372,14 +371,14 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     if (m_webView->client())
         m_webView->client()->showContextMenu(selected_web_frame, data);
 
-    return 0;
+    return defaultMenu;
 }
 
-static void populateSubMenuItems(PlatformMenuDescription inputMenu, WebVector<WebMenuItemInfo>& subMenuItems)
+static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVector<WebMenuItemInfo>& subMenuItems)
 {
     Vector<WebMenuItemInfo> subItems;
-    for (size_t i = 0; i < inputMenu->size(); ++i) {
-        const ContextMenuItem* inputItem = &inputMenu->at(i);
+    for (size_t i = 0; i < inputMenu.size(); ++i) {
+        const ContextMenuItem* inputItem = &inputMenu.at(i);
         if (inputItem->action() < ContextMenuItemBaseCustomTag || inputItem->action() > ContextMenuItemLastCustomTag)
             continue;
 
@@ -400,7 +399,7 @@ static void populateSubMenuItems(PlatformMenuDescription inputMenu, WebVector<We
             break;
         case SubmenuType:
             outputItem.type = WebMenuItemInfo::SubMenu;
-            populateSubMenuItems(inputItem->platformSubMenu(), outputItem.subMenuItems);
+            populateSubMenuItems(inputItem->subMenuItems(), outputItem.subMenuItems);
             break;
         }
         subItems.append(outputItem);
@@ -414,7 +413,7 @@ static void populateSubMenuItems(PlatformMenuDescription inputMenu, WebVector<We
 
 void ContextMenuClientImpl::populateCustomMenuItems(WebCore::ContextMenu* defaultMenu, WebContextMenuData* data)
 {
-    populateSubMenuItems(defaultMenu->platformDescription(), data->customItems);
+    populateSubMenuItems(defaultMenu->items(), data->customItems);
 }
 
 } // namespace WebKit

@@ -31,102 +31,16 @@
 #include "config.h"
 #include "ContextMenuItem.h"
 
-#include "ContextMenu.h"
+#include "NotImplemented.h"
 
 namespace WebCore {
 
 // This is a stub implementation of WebKit's ContextMenu class that does
 // nothing.
-
-ContextMenuItem::ContextMenuItem(PlatformMenuItemDescription item)
+void* ContextMenuItem::platformContextMenuItem() const
 {
-}
-
-ContextMenuItem::ContextMenuItem(ContextMenu* subMenu)
-{
-}
-
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu* subMenu)
-{
-    m_platformDescription.type = type;
-    m_platformDescription.action = action;
-    m_platformDescription.title = title;
-    if (subMenu)
-        setSubMenu(subMenu);
-}
-
-ContextMenuItem::~ContextMenuItem()
-{
-}
-
-PlatformMenuItemDescription ContextMenuItem::releasePlatformDescription()
-{
-    return m_platformDescription;
-}
-
-ContextMenuItemType ContextMenuItem::type() const
-{
-    return m_platformDescription.type;
-}
-
-ContextMenuAction ContextMenuItem::action() const
-{ 
-    return m_platformDescription.action;
-}
-
-String ContextMenuItem::title() const 
-{
-    return m_platformDescription.title;
-}
-
-bool ContextMenuItem::checked() const
-{
-    return m_platformDescription.checked;
-}
-
-bool ContextMenuItem::enabled() const
-{
-    return m_platformDescription.enabled;
-}
-
-PlatformMenuDescription ContextMenuItem::platformSubMenu() const
-{
-    return &m_platformDescription.subMenuItems;
-}
-
-void ContextMenuItem::setType(ContextMenuItemType type)
-{
-    m_platformDescription.type = type;
-}
-
-void ContextMenuItem::setAction(ContextMenuAction action)
-{
-    m_platformDescription.action = action;
-}
-
-void ContextMenuItem::setTitle(const String& title)
-{
-    m_platformDescription.title = title;
-}
-
-void ContextMenuItem::setSubMenu(ContextMenu* menu)
-{
-    m_platformDescription.subMenuItems = *menu->platformDescription();
-}
-
-void ContextMenuItem::setSubMenu(Vector<ContextMenuItem>& items)
-{
-    m_platformDescription.subMenuItems = items;
-}
-
-void ContextMenuItem::setChecked(bool checked)
-{
-    m_platformDescription.checked = checked;
-}
-
-void ContextMenuItem::setEnabled(bool enabled)
-{
-    m_platformDescription.enabled = enabled;
+    notImplemented();
+    return 0;
 }
 
 } // namespace WebCore

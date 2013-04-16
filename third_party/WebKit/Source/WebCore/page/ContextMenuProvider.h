@@ -43,7 +43,7 @@ public:
     virtual ~ContextMenuProvider() { };
 
     virtual void populateContextMenu(ContextMenu*) = 0;
-    virtual void contextMenuItemSelected(ContextMenuItem*) = 0;
+    virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;
     virtual void contextMenuCleared() = 0;
 };
 

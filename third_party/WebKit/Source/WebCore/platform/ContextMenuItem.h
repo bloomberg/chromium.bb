@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef ContextMenuItem_h
@@ -29,7 +29,6 @@
 
 #if ENABLE(CONTEXT_MENUS)
 
-#include "PlatformMenuDescription.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -38,6 +37,8 @@
 namespace WebCore {
 
     class ContextMenu;
+
+    typedef void* PlatformContextMenuItem;
 
     // This enum needs to be in sync with the WebMenuItemTag enum in WebUIDelegate.h and the
     // extra values in WebUIDelegatePrivate.h
@@ -128,20 +129,6 @@ namespace WebCore {
     };
 
 #if ENABLE(CONTEXT_MENUS)
-    struct PlatformMenuItemDescription {
-        PlatformMenuItemDescription()
-            : type(ActionType)
-            , action(ContextMenuItemTagNoAction)
-            , checked(false)
-            , enabled(true) { }
-        ContextMenuItemType type;
-        ContextMenuAction action;
-        String title;
-        Vector<ContextMenuItem> subMenuItems;
-        bool checked;
-        bool enabled;
-    };
-
     class ContextMenuItem {
         WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -164,46 +151,23 @@ namespace WebCore {
 
         void setSubMenu(ContextMenu*);
 
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
         ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems);
         explicit ContextMenuItem(const PlatformContextMenuItem&);
 
-        // On Windows, the title (dwTypeData of the MENUITEMINFO) is not set in this function. Callers can set the title themselves,
-        // and handle the lifetime of the title, if they need it.
         PlatformContextMenuItem platformContextMenuItem() const;
 
         void setTitle(const String& title) { m_title = title; }
         const String& title() const { return m_title; }
 
         const Vector<ContextMenuItem>& subMenuItems() const { return m_subMenuItems; }
-#else
-    public:
-        explicit ContextMenuItem(PlatformMenuItemDescription);
-        explicit ContextMenuItem(ContextMenu* subMenu = 0);
-        ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, Vector<ContextMenuItem>& submenuItems);
-
-        PlatformMenuItemDescription releasePlatformDescription();
-
-        String title() const;
-        void setTitle(const String&);
-
-        PlatformMenuDescription platformSubMenu() const;
-        void setSubMenu(Vector<ContextMenuItem>&);
-
-#endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
-    private:
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
+   private:
         ContextMenuItemType m_type;
         ContextMenuAction m_action;
         String m_title;
         bool m_enabled;
         bool m_checked;
         Vector<ContextMenuItem> m_subMenuItems;
-#else
-        PlatformMenuItemDescription m_platformDescription;
-#endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
     };
-
 #endif // ENABLE(CONTEXT_MENUS)
 }
 

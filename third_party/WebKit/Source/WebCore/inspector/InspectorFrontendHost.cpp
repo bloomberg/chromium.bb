@@ -89,7 +89,7 @@ private:
             menu->appendItem(m_items[i]);
     }
     
-    virtual void contextMenuItemSelected(ContextMenuItem* item)
+    virtual void contextMenuItemSelected(const ContextMenuItem* item)
     {
         if (m_frontendHost) {
             UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);

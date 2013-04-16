@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef ContextMenu_h
@@ -31,21 +31,21 @@
 #include <wtf/Noncopyable.h>
 
 #include "ContextMenuItem.h"
-#include "PlatformMenuDescription.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
     class ContextMenuController;
 
+    typedef void* PlatformContextMenu;
+
     class ContextMenu {
         WTF_MAKE_NONCOPYABLE(ContextMenu); WTF_MAKE_FAST_ALLOCATED;
     public:
         ContextMenu();
 
-        ContextMenuItem* itemWithAction(unsigned);
+        const ContextMenuItem* itemWithAction(unsigned);
 
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
         explicit ContextMenu(PlatformContextMenu);
 
         PlatformContextMenu platformContextMenu() const;
@@ -53,40 +53,16 @@ namespace WebCore {
         static PlatformContextMenu createPlatformContextMenuFromItems(const Vector<ContextMenuItem>&);
         static void getContextMenuItems(PlatformContextMenu, Vector<ContextMenuItem>&);
 
-        // FIXME: When more platforms switch over, this should return const ContextMenuItem*'s.
-        ContextMenuItem* itemAtIndex(unsigned index) { return &m_items[index]; }
+        const ContextMenuItem* itemAtIndex(unsigned index) { return &m_items[index]; }
 
         void setItems(const Vector<ContextMenuItem>& items) { m_items = items; }
         const Vector<ContextMenuItem>& items() const { return m_items; }
 
-        void appendItem(const ContextMenuItem& item) { m_items.append(item); } 
-#else
-        explicit ContextMenu(const PlatformMenuDescription);
-        ~ContextMenu();
-
-        void insertItem(unsigned position, ContextMenuItem&);
-        void appendItem(ContextMenuItem&);
-
-        ContextMenuItem* itemAtIndex(unsigned, const PlatformMenuDescription);
-
-        unsigned itemCount() const;
-
-        PlatformMenuDescription platformDescription() const;
-        void setPlatformDescription(PlatformMenuDescription);
-
-        PlatformMenuDescription releasePlatformDescription();
-
-#endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
+        void appendItem(const ContextMenuItem& item) { m_items.append(item); }
 
     private:
         Vector<ContextMenuItem> m_items;
     };
-
-#if !USE(CROSS_PLATFORM_CONTEXT_MENUS)
-Vector<ContextMenuItem> contextMenuItemVector(PlatformMenuDescription);
-PlatformMenuDescription platformMenuDescription(Vector<ContextMenuItem>&);
-#endif
-
 }
 
 #endif // ENABLE(CONTEXT_MENUS)

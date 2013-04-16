@@ -162,12 +162,7 @@ void ContextMenuController::showContextMenu(Event* event)
 {
     addInspectElementItem();
 
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
     m_contextMenu = m_client->customizeMenu(m_contextMenu.release());
-#else
-    PlatformMenuDescription customMenu = m_client->getCustomMenuFromDefaultItems(m_contextMenu.get());
-    m_contextMenu->setPlatformDescription(customMenu);
-#endif
     event->setDefaultHandled();
 }
 
@@ -186,7 +181,7 @@ static void openNewWindow(const KURL& urlToLoad, Frame* frame)
     }
 }
 
-void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
+void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
 {
     ASSERT(item->type() == ActionType || item->type() == CheckableActionType);
 
@@ -740,11 +735,7 @@ void ContextMenuController::addInspectElementItem()
         return;
 
     ContextMenuItem InspectElementItem(ActionType, ContextMenuItemTagInspectElement, contextMenuItemTagInspectElement());
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
     if (m_contextMenu && !m_contextMenu->items().isEmpty())
-#else
-    if (m_contextMenu && m_contextMenu->itemCount())
-#endif
         appendItem(*separatorItem(), m_contextMenu.get());
     appendItem(InspectElementItem, m_contextMenu.get());
 }

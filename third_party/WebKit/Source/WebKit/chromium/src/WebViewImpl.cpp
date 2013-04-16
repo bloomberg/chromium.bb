@@ -3512,7 +3512,7 @@ void WebViewImpl::performCustomContextMenuAction(unsigned action)
     ContextMenu* menu = m_page->contextMenuController()->contextMenu();
     if (!menu)
         return;
-    ContextMenuItem* item = menu->itemWithAction(static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + action));
+    const ContextMenuItem* item = menu->itemWithAction(static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + action));
     if (item)
         m_page->contextMenuController()->contextMenuItemSelected(item);
     m_page->contextMenuController()->clearContextMenu();

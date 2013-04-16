@@ -59,7 +59,7 @@ namespace WebCore {
         void showContextMenu(Event*, PassRefPtr<ContextMenuProvider>);
 
         void populate();
-        void contextMenuItemSelected(ContextMenuItem*);
+        void contextMenuItemSelected(const ContextMenuItem*);
         void addInspectElementItem();
 
         void checkOrEnableIfNeeded(ContextMenuItem&) const;

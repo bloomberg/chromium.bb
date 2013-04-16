@@ -26,7 +26,7 @@
 #include "config.h"
 #include "ContextMenu.h"
 
-#if ENABLE(CONTEXT_MENUS) && USE(CROSS_PLATFORM_CONTEXT_MENUS)
+#if ENABLE(CONTEXT_MENUS)
 
 namespace WebCore {
 
@@ -49,13 +49,11 @@ static const ContextMenuItem* findItemWithAction(unsigned action, const Vector<C
     return 0;
 }
 
-ContextMenuItem* ContextMenu::itemWithAction(unsigned action)
+const ContextMenuItem* ContextMenu::itemWithAction(unsigned action)
 {
-    // FIXME: When more platforms switch over, this fucntion should return a const ContextMenuItem*'s, and the const_cast
-    // won't be needed anymore.
-    return const_cast<ContextMenuItem*>(findItemWithAction(action, m_items));
+    return findItemWithAction(action, m_items);
 }
 
 } // namespace WebCore
 
-#endif // ENABLE(CONTEXT_MENUS) && USE(CROSS_PLATFORM_CONTEXT_MENUS)
+#endif // ENABLE(CONTEXT_MENUS)

@@ -123,11 +123,7 @@ v8::Handle<v8::Value> V8InspectorFrontendHost::showContextMenuMethodCustom(const
     populateContextMenuItems(array, menu);
 
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(args.Holder());
-#if !USE(CROSS_PLATFORM_CONTEXT_MENUS)
-    Vector<ContextMenuItem> items = contextMenuItemVector(menu.platformDescription());
-#else
     Vector<ContextMenuItem> items = menu.items();
-#endif
     frontendHost->showContextMenu(event, items);
 
     return v8::Undefined();

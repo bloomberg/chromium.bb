@@ -161,12 +161,10 @@ void EmptyEditorClient::registerRedoStep(PassRefPtr<UndoStep>)
 }
 
 #if ENABLE(CONTEXT_MENUS)
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
 PassOwnPtr<ContextMenu> EmptyContextMenuClient::customizeMenu(PassOwnPtr<ContextMenu>)
 {
     return nullptr;
 }
-#endif
 #endif
 
 void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
