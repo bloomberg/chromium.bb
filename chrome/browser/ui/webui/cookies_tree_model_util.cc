@@ -249,9 +249,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyCreated, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               server_bound_cert.creation_time())));
-      dict->SetString(kKeyExpires, UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(
-              server_bound_cert.expiration_time())));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO: {
