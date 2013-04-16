@@ -30,6 +30,11 @@ struct WhitelistedComponentExtensionIME {
     "fpfbhcjppmaeaijcidgiibchfbnhbelj",
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
+  {
+    // Google input tools.
+    "gjaehgfemfahhmlgpdfknkhdnemmolop",
+    "/usr/share/chromeos-assets/input_methods/input_tools",
+  },
 #else
   {
     // Open-sourced Mozc Japanese Input.
