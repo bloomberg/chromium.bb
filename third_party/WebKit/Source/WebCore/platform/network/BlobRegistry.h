@@ -53,8 +53,6 @@ public:
 
     virtual void unregisterBlobURL(const KURL&) = 0;
 
-    virtual bool isBlobRegistryImpl() const { return false; }
-
 protected:
     virtual ~BlobRegistry();
 };

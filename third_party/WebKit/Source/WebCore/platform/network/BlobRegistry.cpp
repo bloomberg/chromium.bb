@@ -26,7 +26,6 @@
 #include "config.h"
 #include "BlobRegistry.h"
 
-#include "BlobRegistryImpl.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {
