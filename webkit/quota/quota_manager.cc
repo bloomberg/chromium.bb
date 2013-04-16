@@ -187,7 +187,8 @@ int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
 
 int64 CalculateQuotaForInstalledApp(
     int64 available_disk_space, int64 usage, int64 quota) {
-  if (available_disk_space < QuotaManager::kMinimumPreserveForSystem) {
+  if (available_disk_space < QuotaManager::kMinimumPreserveForSystem ||
+      quota < usage) {
     // No more space; cap the quota to the current usage.
     return usage;
   }
@@ -223,16 +224,9 @@ void CallGetUsageAndQuotaCallback(
 
   int64 usage = quota_and_usage.unlimited_usage;
 
-  // Unlimited case: for non-installed apps just return unlimited quota.
-  // TODO(kinuko): We should probably always return the capped disk space
-  // for internal quota clients (while we still would not want to expose
-  // the actual usage to webapps). http://crbug.com/179040
-  if (!is_installed_app) {
-    callback.Run(status, usage, QuotaManager::kNoLimit);
-    return;
-  }
-
-  // For installed unlimited apps.
+  // Unlimited case: this must be only for installed-app and extensions,
+  // or only when --unlimited-storage flag is given.
+  // We return the available disk space (minus kMinimumPreserveForSystem).
   callback.Run(status, usage,
                CalculateQuotaForInstalledApp(
                    quota_and_usage.available_disk_space,

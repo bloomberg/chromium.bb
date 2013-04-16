@@ -37,8 +37,6 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   }
 
   void AddInstalledApp(const GURL& origin) {
-    // Installed implies unlimited.
-    unlimited_.insert(origin);
     installed_.insert(origin);
   }
 
@@ -47,7 +45,7 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   }
 
   void SetAllUnlimited(bool all_unlimited) {
-      all_unlimited_ = all_unlimited;
+    all_unlimited_ = all_unlimited;
   }
 
   void Reset() {
