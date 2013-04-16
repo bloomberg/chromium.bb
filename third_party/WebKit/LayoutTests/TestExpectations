@@ -3351,7 +3351,6 @@ webkit.org/b/97499 http/tests/security/script-no-crossorigin-onerror-should-be-s
 # This test is probably either Failure or ImageOnlyFailure depending on which fonts are installed.
 webkit.org/b/99749 [ MountainLion ] fast/text/midword-break-before-surrogate-pair.html [ Failure ImageOnlyFailure ]
 
-Bug(dpranke) [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 
 # These tests need a special rebaseline from rtoy@, after which they can be un-skipped.
 crbug.com/168425 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Skip ]
@@ -3648,11 +3647,6 @@ webkit.org/b/112219 [ Win Mac Linux ] fast/layers/no-clipping-overflow-hidden-ad
 # Feature not implemented
 webkit.org/b/91611 media/media-higher-prio-audio-stream.html [ Skip ]
 
-# Needs rebaseline on all platforms
-Bug(leviw) fast/text/shaping/shaping-selection-rect.html [ Failure ]
-# Needs rebaseline on all platforms but linux
-Bug(eae) [ Mac Win Release ] fast/block/float/overhanging-tall-block.html [ Failure ]
-
 # Flaky tests
 webkit.org/b/112598 [ Win Mac Linux ] http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 webkit.org/b/112601 http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass ]
@@ -3705,7 +3699,6 @@ webkit.org/b/113673 [ Win ] fast/exclusions/shape-outside-floats/shape-outside-f
 crbug.com/224428 [ Linux ] fast/text/international/khmer-selection.html [ Failure ]
 crbug.com/224428 webkit.org/b/113169 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 
-Bug(ojan) [ Mac Win ] fast/text/whitespace/select-new-line-with-line-break-normal.html [ Missing ]
 
 crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 crbug.com/227354 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
