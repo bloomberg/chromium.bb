@@ -75,8 +75,9 @@ class FindBadConstructsConsumer : public ChromeClassTester {
  public:
   FindBadConstructsConsumer(CompilerInstance& instance,
                             bool check_base_classes,
-                            bool check_virtuals_in_implementations)
-      : ChromeClassTester(instance),
+                            bool check_virtuals_in_implementations,
+                            bool check_url_directory)
+      : ChromeClassTester(instance, check_url_directory),
         check_base_classes_(check_base_classes),
         check_virtuals_in_implementations_(check_virtuals_in_implementations) {
     // Register warning/error messages.
@@ -619,7 +620,8 @@ class FindBadConstructsAction : public PluginASTAction {
  public:
   FindBadConstructsAction()
       : check_base_classes_(false),
-        check_virtuals_in_implementations_(true) {
+        check_virtuals_in_implementations_(true),
+        check_url_directory_(false) {
   }
 
  protected:
@@ -627,7 +629,8 @@ class FindBadConstructsAction : public PluginASTAction {
   virtual ASTConsumer* CreateASTConsumer(CompilerInstance& instance,
                                          llvm::StringRef ref) {
     return new FindBadConstructsConsumer(
-        instance, check_base_classes_, check_virtuals_in_implementations_);
+        instance, check_base_classes_, check_virtuals_in_implementations_,
+        check_url_directory_);
   }
 
   virtual bool ParseArgs(const CompilerInstance& instance,
@@ -641,6 +644,9 @@ class FindBadConstructsAction : public PluginASTAction {
       } else if (args[i] == "check-base-classes") {
         // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
         check_base_classes_ = true;
+      } else if (args[i] == "check-url-directory") {
+        // TODO(tfarina): Remove this once http://crbug.com/229660 is fixed.
+        check_url_directory_ = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
@@ -653,6 +659,7 @@ class FindBadConstructsAction : public PluginASTAction {
  private:
   bool check_base_classes_;
   bool check_virtuals_in_implementations_;
+  bool check_url_directory_;
 };
 
 }  // namespace
