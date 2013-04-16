@@ -34,7 +34,7 @@ InputMethod* CreateInputMethod(internal::InputMethodDelegate* delegate,
 #endif
 }
 
-void SetUpInputMethodFacotryForTesting() {
+void SetUpInputMethodFactoryForTesting() {
   g_input_method_set_for_testing = true;
 }
 

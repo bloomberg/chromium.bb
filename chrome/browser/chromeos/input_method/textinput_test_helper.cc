@@ -28,7 +28,7 @@ ui::MockInputMethod* GetInputMethod() {
 }  // namespace
 
 void TextInputTestBase::SetUpInProcessBrowserTestFixture() {
-  ui::SetUpInputMethodFacotryForTesting();
+  ui::SetUpInputMethodFactoryForTesting();
 }
 
 TextInputTestHelper::TextInputTestHelper()

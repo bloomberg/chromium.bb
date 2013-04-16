@@ -12,7 +12,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/mock_input_method.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/rect.h"
@@ -57,6 +57,7 @@ class KeyboardControllerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
+    ui::SetUpInputMethodFactoryForTesting();
     focus_controller_.reset(new TestFocusController(root_window()));
   }
 
@@ -79,7 +80,8 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
   TestKeyboardControllerProxy()
       : window_(new aura::Window(&delegate_)),
-        input_method_(new ui::MockInputMethod(NULL)) {
+        input_method_(ui::CreateInputMethod(NULL,
+                                            gfx::kNullAcceleratedWidget)) {
     window_->Init(ui::LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
   }

@@ -23,7 +23,7 @@ UI_EXPORT InputMethod* CreateInputMethod(
     gfx::AcceleratedWidget widget);
 
 // With calling this function, CreateInputMethod will return MockInputMethod.
-UI_EXPORT void SetUpInputMethodFacotryForTesting();
+UI_EXPORT void SetUpInputMethodFactoryForTesting();
 
 }  // namespace ui;
 
