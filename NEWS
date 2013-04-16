@@ -40,7 +40,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Further reorganization of the tables to remove
      duplication. Move litdigit opcode common parts and include where needed.
    - Removed obsolete en-us-g1.utb, which has been replaced by en-us-g1.ctb.
-   - en-ueb-g2.ctb, added dictionary harness tests.
+   - Added dictionary harness tests for: en-ueb-g2.ctb, en-us-g2.ctb.
    - Corrections to Nemeth character definitions thanks to Neil Soiffer.
    - Corrections to the Esperanto table thanks to Aaron Cannon.
 
