@@ -49,7 +49,6 @@ IDBVersionChangeEvent
 TouchEvent conditional=TOUCH_EVENTS, runtimeConditional=touchEnabled
 DeviceMotionEvent
 DeviceOrientationEvent
-DeviceProximityEvent conditional=PROXIMITY_EVENTS
 OrientationEvent interfaceName=Event, conditional=ORIENTATION_EVENTS
 MediaKeyEvent conditional=ENCRYPTED_MEDIA
 MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2

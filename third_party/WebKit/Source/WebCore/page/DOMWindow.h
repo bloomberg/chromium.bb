@@ -361,10 +361,6 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(devicemotion);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceorientation);
 
-#if ENABLE(PROXIMITY_EVENTS)
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitdeviceproximity);
-#endif
-
         // HTML 5 key/value storage
         Storage* sessionStorage(ExceptionCode&) const;
         Storage* localStorage(ExceptionCode&) const;

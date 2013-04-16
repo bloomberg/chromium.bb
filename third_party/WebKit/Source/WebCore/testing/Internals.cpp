@@ -105,10 +105,6 @@
 #include "BatteryController.h"
 #endif
 
-#if ENABLE(PROXIMITY_EVENTS)
-#include "DeviceProximityController.h"
-#endif
-
 #if ENABLE(PAGE_POPUP)
 #include "PagePopupController.h"
 #endif
@@ -1383,23 +1379,6 @@ void Internals::setBatteryStatus(Document* document, const String& eventType, bo
     UNUSED_PARAM(chargingTime);
     UNUSED_PARAM(dischargingTime);
     UNUSED_PARAM(level);
-#endif
-}
-
-void Internals::setDeviceProximity(Document* document, const String& eventType, double value, double min, double max, ExceptionCode& ec)
-{
-    if (!document || !document->page()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-#if ENABLE(PROXIMITY_EVENTS)
-    DeviceProximityController::from(document->page())->didChangeDeviceProximity(value, min, max);
-#else
-    UNUSED_PARAM(eventType);
-    UNUSED_PARAM(value);
-    UNUSED_PARAM(min);
-    UNUSED_PARAM(max);
 #endif
 }
 

@@ -193,10 +193,6 @@
     [RaisesException] void setBatteryStatus(Document document, DOMString eventType, boolean charging, double chargingTime, double dischargingTime, double level);
 #endif
 
-#if defined(ENABLE_PROXIMITY_EVENTS) && ENABLE_PROXIMITY_EVENTS
-    [RaisesException] void setDeviceProximity(Document document, DOMString eventType, double value, double min, double max);
-#endif
-
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     sequence<DOMString> consoleMessageArgumentCounts(Document document);

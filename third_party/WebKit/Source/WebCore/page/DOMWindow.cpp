@@ -48,7 +48,6 @@
 #include "DOMWindowNotifications.h"
 #include "DeviceMotionController.h"
 #include "DeviceOrientationController.h"
-#include "DeviceProximityController.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Element.h"
@@ -1597,13 +1596,6 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             controller->addDeviceEventListener(this);
     }
 
-#if ENABLE(PROXIMITY_EVENTS)
-    else if (eventType == eventNames().webkitdeviceproximityEvent) {
-        if (DeviceProximityController* controller = DeviceProximityController::from(page()))
-            controller->addDeviceEventListener(this);
-    }
-#endif
-
     return true;
 }
 
@@ -1630,13 +1622,6 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
         if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
             controller->removeDeviceEventListener(this);
     }
-
-#if ENABLE(PROXIMITY_EVENTS)
-    else if (eventType == eventNames().webkitdeviceproximityEvent) {
-        if (DeviceProximityController* controller = DeviceProximityController::from(page()))
-            controller->removeDeviceEventListener(this);
-    }
-#endif
 
     return true;
 }
@@ -1694,11 +1679,6 @@ void DOMWindow::removeAllEventListeners()
 #if ENABLE(TOUCH_EVENTS)
     if (Document* document = this->document())
         document->didRemoveEventTargetNode(document);
-#endif
-
-#if ENABLE(PROXIMITY_EVENTS)
-    if (DeviceProximityController* controller = DeviceProximityController::from(page()))
-        controller->removeAllDeviceEventListeners(this);
 #endif
 
     removeAllUnloadEventListeners(this);

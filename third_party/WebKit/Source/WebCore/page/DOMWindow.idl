@@ -276,8 +276,6 @@
     [EnabledAtRuntime] attribute EventListener ondevicemotion;
     [EnabledAtRuntime] attribute EventListener ondeviceorientation;
 
-    [Conditional=PROXIMITY_EVENTS] attribute EventListener onwebkitdeviceproximity;
-
     // EventTarget interface
     [Custom] void addEventListener(DOMString type,
                                   EventListener listener,
@@ -527,7 +525,6 @@
     attribute StorageEventConstructor StorageEvent;
     [Conditional=INPUT_SPEECH] attribute SpeechInputEventConstructor SpeechInputEvent;
     [Conditional=WEBGL] attribute WebGLContextEventConstructor WebGLContextEvent;
-    [Conditional=PROXIMITY_EVENTS] attribute DeviceProximityEventConstructor DeviceProximityEvent;
     [EnabledAtRuntime=requestAutocomplete] attribute AutocompleteErrorEventConstructor AutocompleteErrorEvent;
     [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute SecurityPolicyViolationEventConstructor SecurityPolicyViolationEvent;
 

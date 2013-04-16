@@ -34,7 +34,6 @@
 #include "DatabaseManager.h"
 #include "DeviceMotionController.h"
 #include "DeviceOrientationController.h"
-#include "DeviceProximityController.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
@@ -241,12 +240,6 @@ static void logCanCachePageDecision(Page* page)
         PCLOG("   -Page is using DeviceOrientation");
         rejectReasons |= 1 << UsesDeviceOrientation;
     }
-#if ENABLE(PROXIMITY_EVENTS)
-    if (DeviceProximityController::isActiveAt(page)) {
-        PCLOG("   -Page is using DeviceProximity");
-        rejectReasons |= 1 << UsesDeviceMotion;
-    }
-#endif
     FrameLoadType loadType = page->mainFrame()->loader()->loadType();
     if (loadType == FrameLoadTypeReload) {
         PCLOG("   -Load type is: Reload");
@@ -341,9 +334,6 @@ bool PageCache::canCache(Page* page) const
         && page->settings()->usesPageCache()
         && !DeviceMotionController::isActiveAt(page)
         && !DeviceOrientationController::isActiveAt(page)
-#if ENABLE(PROXIMITY_EVENTS)
-        && !DeviceProximityController::isActiveAt(page)
-#endif
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeReloadFromOrigin
         && loadType != FrameLoadTypeSame;
