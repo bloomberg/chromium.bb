@@ -13,16 +13,8 @@ mpcomplete@chromium.org
 yoz@chromium.org
 
 # Additional ChromeOS-specific reviewers
-achuith@chromium.org
-# bshe for wallpaper related files
-bshe@chromium.org
-dgozman@chromium.org
-hashimoto@chromium.org
-hshi@chromium.org
-kaznacheev@chromium.org
-oleg@chromium.org
-satorux@chromium.org
-serya@chromium.org
 tbarzic@chromium.org
 zelidrag@chromium.org
-zvorygin@chromium.org
+
+# bshe for wallpaper related files
+bshe@chromium.org

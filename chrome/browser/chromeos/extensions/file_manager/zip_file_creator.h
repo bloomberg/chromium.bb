@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_ZIP_FILE_CREATOR_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_ZIP_FILE_CREATOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_ZIP_FILE_CREATOR_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_ZIP_FILE_CREATOR_H_
 
 #include <string>
 
@@ -91,4 +91,4 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_ZIP_FILE_CREATOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_ZIP_FILE_CREATOR_H_

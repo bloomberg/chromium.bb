@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
-#include "chrome/browser/chromeos/extensions/zip_file_creator.h"
+#include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/url_util.h"

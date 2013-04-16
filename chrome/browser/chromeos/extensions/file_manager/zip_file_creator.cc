@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/zip_file_creator.h"
+#include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
