@@ -9,11 +9,10 @@ function log(msg) {
 
 function injectPolicy(policy) {
     var meta = document.createElement('meta');
-    meta.setAttribute('http-equiv', 'X-WebKit-CSP');
+    meta.setAttribute('http-equiv', 'Content-Security-Policy');
     meta.setAttribute('content', policy);
     document.head.appendChild(meta);
 }
 
 if (!document.securityPolicy)
     log('FAIL document.securityPolicy is not defined.')
-
