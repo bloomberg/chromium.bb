@@ -8,7 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 
-#include "media/audio/audio_manager_base.h"
+#include "media/audio/android/audio_manager_android.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
 #include "media/base/android/webaudio_media_codec_bridge.h"
@@ -17,8 +17,8 @@
 namespace media {
 
 static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
-  { "AudioManagerBase",
-    AudioManagerBase::RegisterAudioManager },
+  { "AudioManagerAndroid",
+    AudioManagerAndroid::RegisterAudioManager },
   { "MediaPlayerBridge",
     MediaPlayerBridge::RegisterMediaPlayerBridge },
   { "MediaPlayerListener",
