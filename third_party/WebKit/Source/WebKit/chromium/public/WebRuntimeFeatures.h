@@ -169,6 +169,9 @@ public:
     WEBKIT_EXPORT static void enableWebPInAcceptHeader(bool);
     WEBKIT_EXPORT static bool isWebPInAcceptHeaderEnabled();
 
+    WEBKIT_EXPORT static void enableDirectoryUpload(bool);
+    WEBKIT_EXPORT static bool isDirectoryUploadEnabled();
+
 private:
     WebRuntimeFeatures();
 };

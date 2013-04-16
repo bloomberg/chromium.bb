@@ -574,4 +574,14 @@ bool WebRuntimeFeatures::isWebPInAcceptHeaderEnabled()
 #endif
 }
 
+void WebRuntimeFeatures::enableDirectoryUpload(bool enable)
+{
+    RuntimeEnabledFeatures::setDirectoryUploadEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isDirectoryUploadEnabled()
+{
+    return RuntimeEnabledFeatures::directoryUploadEnabled();
+}
+
 } // namespace WebKit

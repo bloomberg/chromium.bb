@@ -740,11 +740,7 @@ void ChromeClientImpl::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileCh
 
     WebFileChooserParams params;
     params.multiSelect = fileChooser->settings().allowsMultipleFiles;
-#if ENABLE(DIRECTORY_UPLOAD)
     params.directory = fileChooser->settings().allowsDirectoryUpload;
-#else
-    params.directory = false;
-#endif
     params.acceptTypes = fileChooser->settings().acceptTypes();
     params.selectedFiles = fileChooser->settings().selectedFiles;
     if (params.selectedFiles.size() > 0)
@@ -773,7 +769,6 @@ void ChromeClientImpl::loadIconForFiles(const Vector<String>& filenames, FileIco
         iconCompletion->didLoadIcon(WebData());
 }
 
-#if ENABLE(DIRECTORY_UPLOAD)
 void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
 {
     WebViewClient* client = m_webView->client();
@@ -789,7 +784,6 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
     if (!client->enumerateChosenDirectory(fileChooser->settings().selectedFiles[0], chooserCompletion))
         chooserCompletion->didChooseFile(WebVector<WebString>());
 }
-#endif
 
 void ChromeClientImpl::popupOpened(PopupContainer* popupContainer,
                                    const IntRect& bounds,

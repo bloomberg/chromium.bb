@@ -211,11 +211,8 @@ void FormData::appendKeyValuePairItems(const FormDataList& list, const TextEncod
                 if (value.blob()->isFile()) {
                     File* file = toFile(value.blob());
                     // For file blob, use the filename (or relative path if it is present) as the name.
-#if ENABLE(DIRECTORY_UPLOAD)                
                     name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
-#else
-                    name = file->name();
-#endif
+
                     // Let the application specify a filename if it's going to generate a replacement file for the upload.
                     const String& path = file->path();
                     if (!path.isEmpty()) {

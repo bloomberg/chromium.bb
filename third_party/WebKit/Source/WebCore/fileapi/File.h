@@ -56,9 +56,7 @@ public:
         return adoptRef(new File(path, srcURL, type));
     }
 
-#if ENABLE(DIRECTORY_UPLOAD)
     static PassRefPtr<File> createWithRelativePath(const String& path, const String& relativePath);
-#endif
 
     // If filesystem files live in the remote filesystem, the port might pass the valid metadata (whose length field is non-negative) and cache in the File object.
     //
@@ -92,10 +90,8 @@ public:
     // This returns the current date and time if the file's last modifiecation date is not known (per spec: http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate).
     double lastModifiedDate() const;
 
-#if ENABLE(DIRECTORY_UPLOAD)
     // Returns the relative path of this file in the context of a directory selection.
     const String& webkitRelativePath() const { return m_relativePath; }
-#endif
 
     // Note that this involves synchronous file operation. Think twice before calling this function.
     void captureSnapshot(long long& snapshotSize, double& snapshotModificationTime) const;
@@ -122,9 +118,7 @@ private:
     const long long m_snapshotSize;
     const double m_snapshotModificationTime;
 
-#if ENABLE(DIRECTORY_UPLOAD)
     String m_relativePath;
-#endif
 };
 
 inline File* toFile(Blob* blob)

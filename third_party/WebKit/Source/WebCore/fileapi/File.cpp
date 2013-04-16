@@ -84,14 +84,12 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
     return blobData.release();
 }
 
-#if ENABLE(DIRECTORY_UPLOAD)
 PassRefPtr<File> File::createWithRelativePath(const String& path, const String& relativePath)
 {
     RefPtr<File> file = adoptRef(new File(path, AllContentTypes));
     file->m_relativePath = relativePath;
     return file.release();
 }
-#endif
 
 File::File(const String& path, ContentTypeLookupPolicy policy)
     : Blob(createBlobDataForFile(path, policy), -1)

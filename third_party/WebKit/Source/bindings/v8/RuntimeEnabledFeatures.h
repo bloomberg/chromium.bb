@@ -251,6 +251,9 @@ public:
     static bool webPInAcceptHeaderEnabled() { return isWebPInAcceptHeaderEnabled; }
 #endif
 
+    static bool directoryUploadEnabled() { return isDirectoryUploadEnabled; }
+    static void setDirectoryUploadEnabled(bool isEnabled) { isDirectoryUploadEnabled = isEnabled; }
+
 private:
     // Never instantiate.
     RuntimeEnabledFeatures() { }
@@ -338,6 +341,7 @@ private:
     static bool isWebPInAcceptHeaderEnabled;
 #endif
 
+    static bool isDirectoryUploadEnabled;
 };
 
 } // namespace WebCore

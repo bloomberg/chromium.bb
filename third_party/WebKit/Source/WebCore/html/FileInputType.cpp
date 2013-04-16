@@ -38,6 +38,7 @@
 #include "InputTypeNames.h"
 #include "LocalizedStrings.h"
 #include "RenderFileUploadControl.h"
+#include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
 #include <wtf/PassOwnPtr.h>
@@ -184,12 +185,8 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     if (Chrome* chrome = this->chrome()) {
         FileChooserSettings settings;
         HTMLInputElement* input = element();
-#if ENABLE(DIRECTORY_UPLOAD)
-        settings.allowsDirectoryUpload = input->fastHasAttribute(webkitdirectoryAttr);
+        settings.allowsDirectoryUpload = RuntimeEnabledFeatures::directoryUploadEnabled() && input->fastHasAttribute(webkitdirectoryAttr);
         settings.allowsMultipleFiles = settings.allowsDirectoryUpload || input->fastHasAttribute(multipleAttr);
-#else
-        settings.allowsMultipleFiles = input->fastHasAttribute(multipleAttr);
-#endif
         settings.acceptMIMETypes = input->acceptMIMETypes();
         settings.acceptFileExtensions = input->acceptFileExtensions();
         settings.selectedFiles = m_fileList->paths();
@@ -264,11 +261,10 @@ PassRefPtr<FileList> FileInputType::createFileList(const Vector<FileChooserFileI
     RefPtr<FileList> fileList(FileList::create());
     size_t size = files.size();
 
-#if ENABLE(DIRECTORY_UPLOAD)
     // If a directory is being selected, the UI allows a directory to be chosen
     // and the paths provided here share a root directory somewhere up the tree;
     // we want to store only the relative paths from that point.
-    if (size && element()->fastHasAttribute(webkitdirectoryAttr)) {
+    if (size && element()->fastHasAttribute(webkitdirectoryAttr) && RuntimeEnabledFeatures::directoryUploadEnabled()) {
         // Find the common root path.
         String rootPath = directoryName(files[0].path);
         for (size_t i = 1; i < size; i++) {
@@ -287,7 +283,6 @@ PassRefPtr<FileList> FileInputType::createFileList(const Vector<FileChooserFileI
         }
         return fileList;
     }
-#endif
 
     for (size_t i = 0; i < size; i++)
         fileList->append(File::createWithName(files[i].path, files[i].displayName, File::AllContentTypes));
@@ -376,7 +371,6 @@ void FileInputType::filesChosen(const Vector<FileChooserFileInfo>& files)
     setFiles(createFileList(files));
 }
 
-#if ENABLE(DIRECTORY_UPLOAD)
 void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
 {
     if (Chrome* chrome = this->chrome()) {
@@ -390,7 +384,6 @@ void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
         chrome->enumerateChosenDirectory(newFileChooser(settings));
     }
 }
-#endif
 
 void FileInputType::updateRendering(PassRefPtr<Icon> icon)
 {
@@ -410,12 +403,10 @@ bool FileInputType::receiveDroppedFiles(const DragData* dragData)
         return false;
 
     HTMLInputElement* input = element();
-#if ENABLE(DIRECTORY_UPLOAD)
-    if (input->fastHasAttribute(webkitdirectoryAttr)) {
+    if (input->fastHasAttribute(webkitdirectoryAttr) && RuntimeEnabledFeatures::directoryUploadEnabled()) {
         receiveDropForDirectoryUpload(paths);
         return true;
     }
-#endif
 
     m_droppedFileSystemId = dragData->droppedFileSystemId();
 

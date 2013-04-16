@@ -26,8 +26,6 @@
 interface File : Blob {
     readonly attribute DOMString name;
     readonly attribute Date lastModifiedDate;
-#if defined(ENABLE_DIRECTORY_UPLOAD) && ENABLE_DIRECTORY_UPLOAD
-    readonly attribute DOMString webkitRelativePath;
-#endif
+    [EnabledAtRuntime=directoryUpload] readonly attribute DOMString webkitRelativePath;
 };
 

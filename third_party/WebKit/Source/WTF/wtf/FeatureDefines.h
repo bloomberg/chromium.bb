@@ -134,10 +134,6 @@
 #define ENABLE_DIALOG_ELEMENT 0
 #endif
 
-#if !defined(ENABLE_DIRECTORY_UPLOAD)
-#define ENABLE_DIRECTORY_UPLOAD 0
-#endif
-
 #if !defined(ENABLE_ENCRYPTED_MEDIA)
 #define ENABLE_ENCRYPTED_MEDIA 0
 #endif

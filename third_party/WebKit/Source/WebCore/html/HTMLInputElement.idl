@@ -88,7 +88,7 @@
 
     // Non-standard attributes
     [Reflect] attribute DOMString align;
-    [Conditional=DIRECTORY_UPLOAD, Reflect] attribute boolean webkitdirectory;
+    [Reflect, EnabledAtRuntime=directoryUpload] attribute boolean webkitdirectory;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitSpeech;

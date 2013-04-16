@@ -56,6 +56,7 @@ bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = false;
 bool RuntimeEnabledFeatures::isCSSRegionsEnabled = false;
 bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
+bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 
 #if ENABLE(SCRIPTED_SPEECH)
 bool RuntimeEnabledFeatures::isScriptedSpeechEnabled = false;
