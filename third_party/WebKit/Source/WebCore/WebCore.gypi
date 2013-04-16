@@ -527,7 +527,6 @@
             'accessibility/AccessibilityTableHeaderContainer.h',
             'accessibility/AccessibilityTableRow.cpp',
             'accessibility/AccessibilityTableRow.h',
-            'config.h',
             'css/BasicShapeFunctions.cpp',
             'css/CSSAspectRatioValue.cpp',
             'css/CSSAspectRatioValue.h',
