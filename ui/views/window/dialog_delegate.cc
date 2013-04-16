@@ -32,9 +32,8 @@ Widget* CreateDialogWidgetImpl(DialogDelegateView* dialog_delegate_view,
   views::Widget::InitParams params;
   params.delegate = dialog_delegate_view;
   if (DialogDelegate::UseNewStyle()) {
-    // TODO(msw): Avoid Windows native controls or support dialog transparency
-    //            with a separate border Widget, like BubbleDelegateView.
-    params.transparent = views::View::get_use_acceleration_when_possible();
+    // Note: Transparent widgets cannot host native Windows textfield controls.
+    params.transparent = true;
     params.remove_standard_frame = true;
   }
   params.context = context;
