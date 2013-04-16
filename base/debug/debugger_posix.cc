@@ -209,8 +209,7 @@ bool BeingDebugged() {
 // should ask for advice from some NaCl experts about the optimum thing here.
 // http://code.google.com/p/nativeclient/issues/detail?id=645
 #define DEBUG_BREAK() abort()
-#elif defined(ARCH_CPU_ARM_FAMILY)
-#if defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
 // Though Android has a "helpful" process called debuggerd to catch native
 // signals on the general assumption that they are fatal errors. The bkpt
 // instruction appears to cause SIGBUS which is trapped by debuggerd, and
@@ -231,10 +230,9 @@ void DebugBreak() {
 }
 }  // namespace
 #define DEBUG_BREAK() DebugBreak()
-#else
+#elif defined(ARCH_CPU_ARM_FAMILY)
 // ARM && !ANDROID
 #define DEBUG_BREAK() asm("bkpt 0")
-#endif
 #elif defined(ARCH_CPU_MIPS_FAMILY)
 #define DEBUG_BREAK() asm("break 2")
 #else
