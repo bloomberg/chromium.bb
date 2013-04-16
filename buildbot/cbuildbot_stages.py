@@ -1259,7 +1259,7 @@ class BuildPackagesStage(ArchivingStage):
   option_name = 'build'
   def __init__(self, options, build_config, board, archive_stage,
                pgo_generate=False, pgo_use=False):
-    useflags = build_config['useflags'] or []
+    useflags = build_config['useflags'][:] if build_config['useflags'] else []
     self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
     suffix = None
     assert not pgo_generate or not pgo_use
