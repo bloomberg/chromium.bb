@@ -546,7 +546,8 @@ bool OneClickInfoBarDelegateImpl::LinkClicked(
     WindowOpenDisposition disposition) {
   RecordHistogramAction(one_click_signin::HISTOGRAM_LEARN_MORE);
   content::OpenURLParams params(
-      GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(), disposition,
+      GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
   owner()->GetWebContents()->OpenURL(params);
   return false;
