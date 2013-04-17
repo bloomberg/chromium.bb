@@ -718,9 +718,7 @@ class GitRepoPatch(object):
   def GerritDependencies(self, git_repo, upstream):
     """Returns an ordered list of dependencies from Gerrit.
 
-    The list of changes are in order from FETCH_HEAD back to m/master. Note that
-    this function only works if your repo is already up to date (i.e. you've run
-    repo sync recently).
+    The list of changes are in order from FETCH_HEAD back to m/master.
 
     Arguments:
       git_repo: The git repository to fetch/access this commit from.
@@ -732,6 +730,7 @@ class GitRepoPatch(object):
     logging.debug('Checking for Gerrit dependencies for change %s', self)
 
     rev = self.Fetch(git_repo)
+    git.RunGit(git_repo, ['remote', 'update'])
 
     try:
       return_obj = git.RunGit(

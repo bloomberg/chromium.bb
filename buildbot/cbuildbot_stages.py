@@ -840,11 +840,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
   def SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
-    # Note that GetNextManifest() calls GetLatestCandidate() in this case,
-    # so the repo will already be sync'd appropriately. This means that
-    # AcquirePoolFromManifest doesn't need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
-        manifest, self._build_config['overlays'], self.repo,
+        manifest, self._build_config['overlays'], self._build_root,
         self._options.buildnumber, self.builder_name,
         self._build_config['master'], self._options.debug)
 
@@ -862,7 +859,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
           self.repo.Initialize()
 
         pool = validation_pool.ValidationPool.AcquirePool(
-            self._build_config['overlays'], self.repo,
+            self._build_config['overlays'], self._build_root,
             self._options.buildnumber, self.builder_name,
             self._options.debug, check_tree_open=not self._options.debug,
             changes_query=self._options.cq_gerrit_override)
@@ -1076,7 +1073,7 @@ class PreCQSyncStage(SyncStage):
   def _PerformStage(self):
     super(PreCQSyncStage, self)._PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
-        self._build_config['overlays'], self.repo,
+        self._build_config['overlays'], self._build_root,
         self._options.buildnumber, self._build_config['name'],
         dryrun=self._options.debug_forced, changes=self.patches)
     self.pool.ApplyPoolIntoRepo()
@@ -1099,7 +1096,7 @@ class PreCQCompletionStage(bs.BuilderStage):
       self.sync_stage.pool.HandleValidationFailure([message])
 
 
-class PreCQLauncherStage(SyncStage):
+class PreCQLauncherStage(bs.BuilderStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
   STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
@@ -1108,7 +1105,7 @@ class PreCQLauncherStage(SyncStage):
 
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
-    self.skip_sync = True
+    self.manifest = git.ManifestCheckout.Cached(self._build_root)
 
   def GetPreCQStatus(self, pool, changes):
     """Get the Pre-CQ status of a list of changes.
@@ -1160,8 +1157,7 @@ class PreCQLauncherStage(SyncStage):
     busy, passed = self.GetPreCQStatus(pool, changes)
 
     # Create a list of disjoint transactions to test.
-    manifest = git.ManifestCheckout.Cached(self._build_root)
-    plans = pool.CreateDisjointTransactions(manifest)
+    plans = pool.CreateDisjointTransactions(self.manifest)
     for plan in plans:
       # If any of the CLs in the plan are currently "busy" being tested,
       # wait until they're done before launching our trybot run. This helps
@@ -1198,12 +1194,9 @@ class PreCQLauncherStage(SyncStage):
     return [], []
 
   def _PerformStage(self):
-    # Setup and initialize the repo.
-    super(PreCQLauncherStage, self)._PerformStage()
-
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
-        self._build_config['overlays'], self.repo,
+        self._build_config['overlays'], self._build_root,
         self._options.buildnumber, constants.PRE_CQ_BUILDER_NAME,
         dryrun=self._options.debug_forced,
         changes_query=self._options.cq_gerrit_override,
