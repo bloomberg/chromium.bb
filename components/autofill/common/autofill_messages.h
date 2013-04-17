@@ -14,6 +14,7 @@
 #include "components/autofill/common/form_field_data_predictions.h"
 #include "components/autofill/common/password_form_fill_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
+#include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"

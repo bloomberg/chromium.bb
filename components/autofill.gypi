@@ -73,6 +73,8 @@
             'autofill/common/autofill_constants.cc',
             'autofill/common/autofill_constants.h',
             'autofill/common/autofill_messages.h',
+            'autofill/common/autofill_message_generator.cc',
+            'autofill/common/autofill_message_generator.h',
             'autofill/common/autofill_pref_names.cc',
             'autofill/common/autofill_pref_names.h',
             'autofill/common/autofill_switches.cc',
