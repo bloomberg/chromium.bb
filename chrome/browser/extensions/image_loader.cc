@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/component_extension_resources_map.h"
+#include "grit/keyboard_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -169,6 +170,21 @@ bool ImageLoader::IsComponentExtensionResource(
     {"settings_app/settings_app_icon_16.png", IDR_SETTINGS_APP_ICON_16},
     {"settings_app/settings_app_icon_32.png", IDR_SETTINGS_APP_ICON_32},
     {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
+#endif
+#if defined(USE_AURA)
+    {"keyboard/index.html", IDR_KEYBOARD_INDEX},
+    {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
+    {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
+    {"keyboard/common.js", IDR_KEYBOARD_COMMON_JS},
+    {"keyboard/layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS},
+    {"keyboard/images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON},
+    {"keyboard/images/del.svg", IDR_KEYBOARD_IMAGES_DEL},
+    {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
+    {"keyboard/images/mic.svg", IDR_KEYBOARD_IMAGES_MIC},
+    {"keyboard/images/ret.svg", IDR_KEYBOARD_IMAGES_RET},
+    {"keyboard/images/shift_down.svg", IDR_KEYBOARD_IMAGES_SHIFT_DOWN},
+    {"keyboard/images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT},
+    {"keyboard/images/tab.svg", IDR_KEYBOARD_IMAGES_TAB},
 #endif
   };
   static const size_t kExtraComponentExtensionResourcesSize =

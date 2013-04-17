@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/id_util.h"
 #include "grit/browser_resources.h"
+#include "grit/keyboard_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OFFICIAL_BUILD)
@@ -333,6 +334,12 @@ void ComponentLoader::AddChromeApp() {
 #endif
 }
 
+void ComponentLoader::AddKeyboardApp() {
+#if defined(USE_ASH)
+  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
+#endif
+}
+
 // static
 void ComponentLoader::EnableBackgroundExtensionsForTesting() {
   enable_background_extensions_during_testing = true;
@@ -386,6 +393,10 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
     AddChromeApp();
   }
+
+#if defined(USE_AURA)
+  AddKeyboardApp();
+#endif
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 }
