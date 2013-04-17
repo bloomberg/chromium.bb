@@ -79,7 +79,6 @@
       'target_name': 'wtf',
       'type': 'static_library',
       'include_dirs': [
-        '.',
         '..',
       ],
       'dependencies': [

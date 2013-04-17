@@ -27,7 +27,7 @@
 #include "config.h"
 #include "wtf/unicode/UTF8.h"
 
-#include "ASCIICType.h"
+#include "wtf/ASCIICType.h"
 #include "wtf/StringHasher.h"
 #include "wtf/unicode/CharacterNames.h"
 

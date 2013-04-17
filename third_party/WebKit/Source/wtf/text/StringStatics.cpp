@@ -31,10 +31,10 @@
 #endif
 
 #include "AtomicString.h"
-#include "DynamicAnnotations.h"
-#include "MainThread.h"
-#include "StaticConstructors.h"
 #include "StringImpl.h"
+#include "wtf/DynamicAnnotations.h"
+#include "wtf/MainThread.h"
+#include "wtf/StaticConstructors.h"
 
 namespace WTF {
 

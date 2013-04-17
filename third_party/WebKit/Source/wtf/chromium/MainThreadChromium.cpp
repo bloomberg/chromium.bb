@@ -29,12 +29,12 @@
 */
 
 #include "config.h"
-#include "MainThread.h"
 
-#include "Assertions.h"
 #include "ChromiumThreading.h"
-#include "Threading.h"
-#include <wtf/Functional.h>
+#include "wtf/Assertions.h"
+#include "wtf/Functional.h"
+#include "wtf/MainThread.h"
+#include "wtf/Threading.h"
 
 namespace WTF {
 
