@@ -41,55 +41,6 @@ static const AtomicString& summaryQuerySelector()
     return selector;
 };
 
-class DetailsContentElement : public HTMLContentElement {
-public:
-    static PassRefPtr<DetailsContentElement> create(Document*);
-
-private:
-    DetailsContentElement(Document* document)
-        : HTMLContentElement(HTMLNames::webkitShadowContentTag, document)
-    {
-    }
-};
-
-PassRefPtr<DetailsContentElement> DetailsContentElement::create(Document* document)
-{
-    return adoptRef(new DetailsContentElement(document));
-}
-
-class DetailsSummaryElement : public HTMLContentElement {
-public:
-    static PassRefPtr<DetailsSummaryElement> create(Document*);
-
-    Element* fallbackSummary()
-    {
-        ASSERT(firstChild() && firstChild()->hasTagName(summaryTag));
-        return toElement(firstChild());
-    }
-
-private:
-    DetailsSummaryElement(Document* document)
-        : HTMLContentElement(HTMLNames::webkitShadowContentTag, document)
-    { }
-
-    virtual MatchType matchTypeFor(Node* node) OVERRIDE
-    {
-        if (node->isElementNode() && node == node->parentNode()->querySelector(summaryQuerySelector(), ASSERT_NO_EXCEPTION))
-            return AlwaysMatches;
-        return NeverMatches;
-    }
-};
-
-PassRefPtr<DetailsSummaryElement> DetailsSummaryElement::create(Document* document)
-{
-    RefPtr<HTMLSummaryElement> summary = HTMLSummaryElement::create(summaryTag, document);
-    summary->appendChild(Text::create(document, defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION);
-
-    RefPtr<DetailsSummaryElement> detailsSummary = adoptRef(new DetailsSummaryElement(document));
-    detailsSummary->appendChild(summary);
-    return detailsSummary.release();
-}
-
 PassRefPtr<HTMLDetailsElement> HTMLDetailsElement::create(const QualifiedName& tagName, Document* document)
 {
     RefPtr<HTMLDetailsElement> details = adoptRef(new HTMLDetailsElement(tagName, document));
@@ -112,8 +63,15 @@ RenderObject* HTMLDetailsElement::createRenderer(RenderArena* arena, RenderStyle
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(DetailsSummaryElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
-    root->appendChild(DetailsContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
+    RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
+    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION);
+
+    RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());
+    content->setSelect(summaryQuerySelector());
+    content->appendChild(defaultSummary);
+
+    root->appendChild(content, ASSERT_NO_EXCEPTION, AttachLazily);
+    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
 Element* HTMLDetailsElement::findMainSummary() const
@@ -123,7 +81,9 @@ Element* HTMLDetailsElement::findMainSummary() const
             return toElement(child);
     }
 
-    return static_cast<DetailsSummaryElement*>(userAgentShadowRoot()->firstChild())->fallbackSummary();
+    HTMLContentElement* content = toHTMLContentElement(userAgentShadowRoot()->firstChild());
+    ASSERT(content->firstChild() && content->firstChild()->hasTagName(summaryTag));
+    return toElement(content->firstChild());
 }
 
 void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
