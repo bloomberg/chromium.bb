@@ -1183,8 +1183,6 @@
         'browser/ui/login/login_model.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',
-        'browser/ui/media_stream_infobar_delegate.h',
-        'browser/ui/media_stream_infobar_delegate.cc',
         'browser/ui/metro_chrome_win.cc',
         'browser/ui/metro_chrome_win.h',
         'browser/ui/metro_pin_tab_helper_win.cc',
