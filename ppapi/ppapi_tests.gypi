@@ -160,6 +160,7 @@
         'proxy/ppp_instance_proxy_unittest.cc',
         'proxy/ppp_messaging_proxy_unittest.cc',
         'proxy/printing_resource_unittest.cc',
+        'proxy/raw_var_data_unittest.cc',
         'proxy/serialized_var_unittest.cc',
         'proxy/websocket_resource_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',

@@ -174,6 +174,11 @@ int VarTracker::GetTrackedWithNoReferenceCountForObject(
   return found->second.track_with_no_reference_count;
 }
 
+// static
+bool VarTracker::IsVarTypeRefcounted(PP_VarType type) {
+  return type >= PP_VARTYPE_STRING;
+}
+
 VarTracker::VarMap::iterator VarTracker::GetLiveVar(const PP_Var& var) {
   return live_vars_.find(static_cast<int32>(var.value.as_id));
 }
@@ -181,10 +186,6 @@ VarTracker::VarMap::iterator VarTracker::GetLiveVar(const PP_Var& var) {
 VarTracker::VarMap::const_iterator VarTracker::GetLiveVar(
     const PP_Var& var) const {
   return live_vars_.find(static_cast<int32>(var.value.as_id));
-}
-
-bool VarTracker::IsVarTypeRefcounted(PP_VarType type) const {
-  return type >= PP_VARTYPE_STRING;
 }
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {

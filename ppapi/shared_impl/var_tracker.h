@@ -97,6 +97,10 @@ class PPAPI_SHARED_EXPORT VarTracker {
   int GetRefCountForObject(const PP_Var& object);
   int GetTrackedWithNoReferenceCountForObject(const PP_Var& object);
 
+  // Returns true if the given vartype is refcounted and has associated objects
+  // (it's not POD).
+  static bool IsVarTypeRefcounted(PP_VarType type);
+
   // Called after an instance is deleted to do var cleanup.
   virtual void DidDeleteInstance(PP_Instance instance) = 0;
 
@@ -161,10 +165,6 @@ class PPAPI_SHARED_EXPORT VarTracker {
   VarMap::iterator GetLiveVar(int32 id);
   VarMap::iterator GetLiveVar(const PP_Var& var);
   VarMap::const_iterator GetLiveVar(const PP_Var& var) const;
-
-  // Returns true if the given vartype is refcounted and has associated objects
-  // (it's not POD).
-  bool IsVarTypeRefcounted(PP_VarType type) const;
 
   // Called when AddRefVar increases a "tracked" ProxyObject's refcount from
   // zero to one. In the plugin side of the proxy, we need to send some

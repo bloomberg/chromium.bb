@@ -18,6 +18,8 @@
           'proxy/ppapi_messages.h',
           'proxy/ppapi_param_traits.cc',
           'proxy/ppapi_param_traits.h',
+          'proxy/raw_var_data.cc',
+          'proxy/raw_var_data.h',
           'proxy/resource_message_params.cc',
           'proxy/resource_message_params.h',
           'proxy/serialized_flash_menu.cc',
