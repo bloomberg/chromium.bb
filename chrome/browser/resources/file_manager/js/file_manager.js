@@ -1664,8 +1664,11 @@ DialogType.isModal = function(type) {
    *     Drive.
    */
   FileManager.prototype.isOnDrive = function() {
-    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE ||
-           this.directoryModel_.getCurrentRootType() === RootType.DRIVE_OFFLINE;
+    var rootType = this.directoryModel_.getCurrentRootType();
+    return rootType === RootType.DRIVE ||
+           rootType === RootType.DRIVE_SHARED_WITH_ME ||
+           rootType === RootType.DRIVE_RECENT ||
+           rootType === RootType.DRIVE_OFFLINE;
   };
 
   /**
@@ -2092,10 +2095,11 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.updateGearMenu_ = function() {
-    this.syncButton.hidden = !this.isOnDrive();
-    this.hostedButton.hidden = !this.isOnDrive();
+    var hideItemsForDrive = !this.isOnDrive();
+    this.syncButton.hidden = hideItemsForDrive;
+    this.hostedButton.hidden = hideItemsForDrive;
     this.document_.getElementById('drive-separator').hidden =
-        !this.isOnDrive();
+        hideItemsForDrive;
 
     // If volume has changed, then fetch remaining space data.
     if (this.previousRootUrl_ != this.directoryModel_.getCurrentMountPointUrl())
