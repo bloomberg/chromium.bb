@@ -36,22 +36,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-class SummaryContentElement : public HTMLContentElement {
-public:
-    static PassRefPtr<SummaryContentElement> create(Document*);
-
-private:
-    SummaryContentElement(Document* document)
-        : HTMLContentElement(HTMLNames::webkitShadowContentTag, document)
-    {
-    }
-};
-
-PassRefPtr<SummaryContentElement> SummaryContentElement::create(Document* document)
-{
-    return adoptRef(new SummaryContentElement(document));
-}
-
 PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(const QualifiedName& tagName, Document* document)
 {
     RefPtr<HTMLSummaryElement> summary = adoptRef(new HTMLSummaryElement(tagName, document));
@@ -80,7 +64,7 @@ bool HTMLSummaryElement::childShouldCreateRenderer(const NodeRenderingContext& c
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
     root->appendChild(DetailsMarkerControl::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
-    root->appendChild(SummaryContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
+    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
