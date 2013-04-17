@@ -121,6 +121,7 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
 }
 
 scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
+  stale_page_timer_.Stop();
   contents_->SetDelegate(NULL);
 
   // Undo tab helper work done in SetContents().
