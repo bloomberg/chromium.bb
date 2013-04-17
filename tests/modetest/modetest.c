@@ -429,7 +429,7 @@ static void dump_planes(void)
 	}
 
 	printf("Planes:\n");
-	printf("id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\n");
+	printf("id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\tpossible crtcs\n");
 	for (i = 0; i < plane_resources->count_planes; i++) {
 		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
 		if (!ovr) {
@@ -438,10 +438,10 @@ static void dump_planes(void)
 			continue;
 		}
 
-		printf("%d\t%d\t%d\t%d,%d\t\t%d,%d\t%d\n",
+		printf("%d\t%d\t%d\t%d,%d\t\t%d,%d\t%-8d\t0x%08x\n",
 		       ovr->plane_id, ovr->crtc_id, ovr->fb_id,
 		       ovr->crtc_x, ovr->crtc_y, ovr->x, ovr->y,
-		       ovr->gamma_size);
+		       ovr->gamma_size, ovr->possible_crtcs);
 
 		if (!ovr->count_formats)
 			continue;
