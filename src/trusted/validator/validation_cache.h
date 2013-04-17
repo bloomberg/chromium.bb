@@ -56,9 +56,11 @@ struct NaClValidationCache {
   int (*QueryKnownToValidate)(void *query);
   void (*SetKnownToValidate)(void *query);
   void (*DestroyQuery)(void *query);
+  int (*CachingIsInexpensive)(const struct NaClValidationMetadata *metadata);
 };
 
-extern int CachingIsInexpensive(const struct NaClValidationMetadata *metadata);
+extern int CachingIsInexpensive(struct NaClValidationCache *cache,
+                                const struct NaClValidationMetadata *metadata);
 
 /* Helper function for identifying the code being validated. */
 extern void AddCodeIdentity(uint8_t *data,

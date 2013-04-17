@@ -21,8 +21,13 @@
 #define ADD_LITERAL(cache, query, data) \
   ((cache)->AddData((query), (uint8_t*)&(data), sizeof(data)))
 
-int CachingIsInexpensive(const struct NaClValidationMetadata *metadata) {
-  return NULL != metadata && metadata->identity_type == NaClCodeIdentityFile;
+int CachingIsInexpensive(struct NaClValidationCache *cache,
+                         const struct NaClValidationMetadata *metadata) {
+  if (cache->CachingIsInexpensive != NULL) {
+    return cache->CachingIsInexpensive(metadata);
+  } else {
+    return NULL != metadata && metadata->identity_type == NaClCodeIdentityFile;
+  }
 }
 
 void ConstructMetadataForFD(int file_desc,

@@ -103,6 +103,12 @@ void MockDestroyQuery(void *query) {
   free(mquery);
 }
 
+/* Hint that the validation should use the (fake) cache. */
+int MockCachingIsInexpensive(const struct NaClValidationMetadata *metadata) {
+  UNREFERENCED_PARAMETER(metadata);
+  return 1;
+}
+
 class ValidationCachingInterfaceTests : public ::testing::Test {
  protected:
   MockContext context;
@@ -128,6 +134,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
     cache.QueryKnownToValidate = MockQueryCodeValidates;
     cache.SetKnownToValidate = MockSetCodeValidates;
     cache.DestroyQuery = MockDestroyQuery;
+    cache.CachingIsInexpensive = MockCachingIsInexpensive;
 
     validator = NaClCreateValidator();
     cpu_features = (NaClCPUFeatures *) malloc(validator->CPUFeatureSize);

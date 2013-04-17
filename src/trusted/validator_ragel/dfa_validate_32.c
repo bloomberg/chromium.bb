@@ -51,7 +51,7 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
    * If the validation caching interface is available and it would be
    * inexpensive to do so, perform a query.
    */
-  if (cache != NULL && CachingIsInexpensive(metadata))
+  if (cache != NULL && CachingIsInexpensive(cache, metadata))
     query = cache->CreateQuery(cache->handle);
   if (query != NULL) {
     const char validator_id[] = "x86-32 dfa";
