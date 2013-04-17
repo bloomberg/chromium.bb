@@ -131,9 +131,6 @@ public:
     // WebFileSystemCallbacks::didFail() must be called otherwise.
     virtual void createSnapshotFileAndReadMetadata(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
 
-    // DEPRECATED
-    virtual void createSnapshotFileAndReadMetadata(const WebURL& blobURL, const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-
 protected:
     virtual ~WebFileSystem() { }
 };
