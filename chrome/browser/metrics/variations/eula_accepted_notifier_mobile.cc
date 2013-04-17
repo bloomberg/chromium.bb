@@ -7,12 +7,7 @@
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-
-namespace {
-
-const char kEulaAccepted[] = "EulaAccepted";
-
-}  // namespace
+#include "chrome/common/pref_names.h"
 
 EulaAcceptedNotifierMobile::EulaAcceptedNotifierMobile(
     PrefService* local_state)
@@ -23,13 +18,13 @@ EulaAcceptedNotifierMobile::~EulaAcceptedNotifierMobile() {
 }
 
 bool EulaAcceptedNotifierMobile::IsEulaAccepted() {
-  if (local_state_->GetBoolean(kEulaAccepted))
+  if (local_state_->GetBoolean(prefs::kEulaAccepted))
     return true;
 
   // Register for the notification, if this is the first time.
   if (registrar_.IsEmpty()) {
     registrar_.Init(local_state_);
-    registrar_.Add(kEulaAccepted,
+    registrar_.Add(prefs::kEulaAccepted,
                    base::Bind(&EulaAcceptedNotifierMobile::OnPrefChanged,
                               base::Unretained(this)));
   }
@@ -40,7 +35,7 @@ void EulaAcceptedNotifierMobile::OnPrefChanged() {
   DCHECK(!registrar_.IsEmpty());
   registrar_.RemoveAll();
 
-  DCHECK(local_state_->GetBoolean(kEulaAccepted));
+  DCHECK(local_state_->GetBoolean(prefs::kEulaAccepted));
   NotifyObserver();
 }
 
@@ -50,7 +45,7 @@ EulaAcceptedNotifier* EulaAcceptedNotifier::Create() {
   // If the |kEulaAccepted| pref is not registered, return NULL which is
   // equivalent to not needing to check the EULA. This is the case for some
   // tests for higher-level classes that use the EulaAcceptNotifier.
-  if (local_state->FindPreference(kEulaAccepted) == NULL)
+  if (local_state->FindPreference(prefs::kEulaAccepted) == NULL)
     return NULL;
   return new EulaAcceptedNotifierMobile(local_state);
 }

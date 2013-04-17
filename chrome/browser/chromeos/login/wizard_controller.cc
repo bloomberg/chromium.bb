@@ -67,9 +67,6 @@ using content::BrowserThread;
 
 namespace {
 
-// A boolean pref of the EULA accepted flag.
-const char kEulaAccepted[] = "EulaAccepted";
-
 // A string pref with initial locale set in VPD or manifest.
 const char kInitialLocale[] = "intl.initial_locale";
 
@@ -424,7 +421,7 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 void WizardController::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kOobeComplete, false);
   registry->RegisterIntegerPref(kDeviceRegistered, -1);
-  registry->RegisterBooleanPref(kEulaAccepted, false);
+  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
   registry->RegisterStringPref(kInitialLocale, "en-US");
 }
 
@@ -701,7 +698,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
 
 // static
 bool WizardController::IsEulaAccepted() {
-  return g_browser_process->local_state()->GetBoolean(kEulaAccepted);
+  return g_browser_process->local_state()->GetBoolean(prefs::kEulaAccepted);
 }
 
 // static
@@ -711,7 +708,7 @@ bool WizardController::IsOobeCompleted() {
 
 // static
 void WizardController::MarkEulaAccepted() {
-  SaveBoolPreferenceForced(kEulaAccepted, true);
+  SaveBoolPreferenceForced(prefs::kEulaAccepted, true);
 }
 
 // static

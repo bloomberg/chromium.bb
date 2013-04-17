@@ -435,6 +435,8 @@ extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];
 
+extern const char kEulaAccepted[];
+
 extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
 extern const char kMetricsLowEntropySource[];

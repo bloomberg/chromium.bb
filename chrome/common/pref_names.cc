@@ -1237,6 +1237,9 @@ const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kEnableOriginBoundCerts[] = "ssl.origin_bound_certs.enabled";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
+// A boolean pref of the EULA accepted flag.
+const char kEulaAccepted[] = "EulaAccepted";
+
 // The metrics client GUID, entropy source and session ID.
 const char kMetricsClientID[] = "user_experience_metrics.client_id";
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
