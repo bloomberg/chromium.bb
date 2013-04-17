@@ -6,7 +6,7 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
-#
+
 
 #
 # Toolchain
@@ -23,6 +23,13 @@ TOOLCHAIN?=$(word 1,$(VALID_TOOLCHAINS))
 # Top Make file, which we want to trigger a rebuild on if it changes
 #
 TOP_MAKE:=$(word 1,$(MAKEFILE_LIST))
+
+
+#
+# Figure out which OS we are running on.
+#
+GETOS=python $(NACL_SDK_ROOT)/tools/getos.py
+OSNAME:=$(shell $(GETOS))
 
 
 #
@@ -44,6 +51,7 @@ endif
 CONFIG?=Debug
 
 
+#
 # Note for Windows:
 #   The GCC and LLVM toolchains (include the version of Make.exe that comes
 # with the SDK) expect and are capable of dealing with the '/' seperator.
@@ -115,8 +123,6 @@ endif
 #
 # Compute path to requested NaCl Toolchain
 #
-GETOS=python $(NACL_SDK_ROOT)/tools/getos.py
-OSNAME:=$(shell $(GETOS))
 TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
 
 
