@@ -952,7 +952,7 @@ alphabetic
 #endif
 
 // position
--webkit-sticky
+sticky
 
 // (pointer:) media feature
 // none
