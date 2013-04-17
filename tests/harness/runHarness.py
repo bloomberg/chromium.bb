@@ -210,12 +210,13 @@ def test_allCases():
         # make sure local test braille tables are found
         os.environ['LOUIS_TABLEPATH'] = '../tables,../../tables'
 
-    # Process all *_harness.txt files in the harness directory.
     testfiles=[]
     if len(sys.argv)>1:
-        for i in range(1, len(sys.argv)):
-            testfiles=testfiles+list(iglob(os.path.join(harness_dir, sys.argv[i])))
+        # grab the test files from the arguments
+        for test_file in sys.argv[1:]:
+            testfiles.extend(iglob(os.path.join(harness_dir, test_file)))
     else:
+        # Process all *_harness.txt files in the harness directory.
         testfiles=iglob(os.path.join(harness_dir, '*_harness.txt'))
     for harness in testfiles:
         f = open(harness, 'r')
