@@ -11,6 +11,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "ui/gfx/rect.h"
 
 class SkPicture;
 
@@ -39,6 +40,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
                               bool enable_showing,
                               bool animate);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
+  void SetNeedsRedrawRect(gfx::Rect damage_rect);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

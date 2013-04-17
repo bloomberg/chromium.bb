@@ -308,7 +308,7 @@ class CONTENT_EXPORT RenderWidget
                      int tag,
                      const gfx::Size& page_size,
                      const gfx::Size& desired_size);
-  void OnRepaint(const gfx::Size& size_to_paint);
+  void OnRepaint(gfx::Size size_to_paint);
   void OnSmoothScrollCompleted(int gesture_id);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();

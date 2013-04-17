@@ -1871,16 +1871,20 @@ bool RenderWidget::OnSnapshotHelper(const gfx::Rect& src_subrect,
   return true;
 }
 
-void RenderWidget::OnRepaint(const gfx::Size& size_to_paint) {
+void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   // During shutdown we can just ignore this message.
   if (!webwidget_)
     return;
 
+  // Even if the browser provides an empty damage rect, it's still expecting to
+  // receive a repaint ack so just damage the entire widget bounds.
+  if (size_to_paint.IsEmpty()) {
+    size_to_paint = size_;
+  }
+
   set_next_paint_is_repaint_ack();
-  if (is_accelerated_compositing_active_) {
-    if (compositor_)
-      compositor_->setNeedsRedraw();
-    scheduleComposite();
+  if (is_accelerated_compositing_active_ && compositor_) {
+    compositor_->SetNeedsRedrawRect(gfx::Rect(size_to_paint));
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
     didInvalidateRect(repaint_rect);

@@ -274,6 +274,10 @@ void RenderWidgetHostImpl::CompositingSurfaceUpdated() {
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
   resize_ack_pending_ = false;
+  if (repaint_ack_pending_) {
+    TRACE_EVENT_ASYNC_END0(
+        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
+  }
   repaint_ack_pending_ = false;
   in_flight_size_.SetSize(0, 0);
 }
@@ -699,6 +703,8 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
   if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
     Send(new ViewMsg_Repaint(routing_id_, view_size));
   }
 
@@ -760,7 +766,8 @@ void RenderWidgetHostImpl::DonePaintingToBackingStore() {
 }
 
 void RenderWidgetHostImpl::ScheduleComposite() {
-  if (is_hidden_ || !is_accelerated_compositing_active_) {
+  if (is_hidden_ || !is_accelerated_compositing_active_ ||
+      current_size_.IsEmpty()) {
       return;
   }
 
@@ -768,6 +775,8 @@ void RenderWidgetHostImpl::ScheduleComposite() {
   if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
     Send(new ViewMsg_Repaint(routing_id_, current_size_));
   }
 }
@@ -1651,6 +1660,9 @@ void RenderWidgetHostImpl::OnUpdateRect(
   bool is_repaint_ack =
       ViewHostMsg_UpdateRect_Flags::is_repaint_ack(params.flags);
   if (is_repaint_ack) {
+    DCHECK(repaint_ack_pending_);
+    TRACE_EVENT_ASYNC_END0(
+        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
     repaint_ack_pending_ = false;
     TimeDelta delta = TimeTicks::Now() - repaint_start_time_;
     UMA_HISTOGRAM_TIMES("MPArch.RWH_RepaintDelta", delta);
@@ -2159,7 +2171,10 @@ bool RenderWidgetHostImpl::PaintBackingStoreRect(
                                            &scheduled_completion_callback);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
+    DCHECK(!repaint_ack_pending_);
     repaint_ack_pending_ = true;
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
     Send(new ViewMsg_Repaint(routing_id_, view_size));
   }
 

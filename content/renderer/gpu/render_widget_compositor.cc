@@ -334,6 +334,10 @@ void RenderWidgetCompositor::SetOverdrawBottomHeight(
   layer_tree_host_->SetOverdrawBottomHeight(overdraw_bottom_height);
 }
 
+void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+  layer_tree_host_->SetNeedsRedrawRect(damage_rect);
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =

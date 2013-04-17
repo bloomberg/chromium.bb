@@ -322,6 +322,7 @@ void PassThroughImageTransportSurface::OnResizeViewACK() {
   DCHECK(transport_);
   Resize(new_size_);
 
+  TRACE_EVENT_ASYNC_END0("gpu", "OnResize", this);
   helper_->SetScheduled(true);
 }
 
@@ -331,6 +332,8 @@ void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
   if (transport_) {
     helper_->SendResizeView(size);
     helper_->SetScheduled(false);
+    TRACE_EVENT_ASYNC_BEGIN2("gpu", "OnResize", this,
+                             "width", size.width(), "height", size.height());
   } else {
     Resize(new_size_);
   }
