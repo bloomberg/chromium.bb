@@ -290,6 +290,7 @@ class GitWrapper(SCMWrapper):
       return
 
     if not managed:
+      self._UpdateBranchHeads(options, fetch=False)
       self.UpdateSubmoduleConfig()
       print ('________ unmanaged solution; skipping %s' % self.relpath)
       return
