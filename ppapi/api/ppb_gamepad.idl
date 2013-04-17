@@ -90,6 +90,7 @@ interface PPB_Gamepad {
   /**
    * Samples the current state of the available gamepads.
    */
+  [always_set_output_parameters]
   void Sample(
       [in] PP_Instance instance,
       [out] PP_GamepadsSampleData data);

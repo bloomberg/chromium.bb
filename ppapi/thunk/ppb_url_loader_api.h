@@ -47,7 +47,8 @@ class PPB_URLLoader_API {
 
   // Trusted API.
   virtual void GrantUniversalAccess() = 0;
-  virtual void SetStatusCallback(PP_URLLoaderTrusted_StatusCallback cb) = 0;
+  virtual void RegisterStatusCallback(
+      PP_URLLoaderTrusted_StatusCallback cb) = 0;
 
   // Internal function. This will fill in the given response info data and
   // return true on sucesss. If the dowbload was to a file, there will be one

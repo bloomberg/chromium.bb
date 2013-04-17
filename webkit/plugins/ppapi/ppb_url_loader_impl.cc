@@ -311,7 +311,7 @@ void PPB_URLLoader_Impl::GrantUniversalAccess() {
   has_universal_access_ = true;
 }
 
-void PPB_URLLoader_Impl::SetStatusCallback(
+void PPB_URLLoader_Impl::RegisterStatusCallback(
     PP_URLLoaderTrusted_StatusCallback cb) {
   status_callback_ = cb;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_gamepad.idl modified Mon Apr  1 08:24:03 2013.
+// From ppb_gamepad.idl modified Wed Apr 17 10:03:38 2013.
 
 #include <string.h>
 
@@ -27,7 +27,7 @@ void Sample(PP_Instance instance, struct PP_GamepadsSampleData* data) {
     enter.functions()->Sample(instance, data);
     return;
   }
-  memset(data, 0, sizeof(struct PP_GamepadsSampleData));
+  memset(data, 0, sizeof(data));
 }
 
 const PPB_Gamepad_1_0 g_ppb_gamepad_thunk_1_0 = {
