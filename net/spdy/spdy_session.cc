@@ -1103,13 +1103,22 @@ void SpdySession::WriteSocket() {
     }
 
     write_pending_ = true;
+    // Explicitly store in a scoped_refptr<IOBuffer> to avoid problems
+    // with net::Socket implementations that don't store their
+    // IOBuffer argument in a scoped_refptr<IOBuffer> (see
+    // crbug.com/232345).
+    scoped_refptr<IOBuffer> write_io_buffer =
+        in_flight_write_->GetIOBufferForRemainingData();
     // We keep |in_flight_write_| alive until OnWriteComplete(), so
     // it's okay to use GetIOBufferForRemainingData() since the socket
     // doesn't use the IOBuffer past OnWriteComplete().
     int rv = connection_->socket()->Write(
-        in_flight_write_->GetIOBufferForRemainingData(),
+        write_io_buffer,
         in_flight_write_->GetRemainingSize(),
         base::Bind(&SpdySession::OnWriteComplete, weak_factory_.GetWeakPtr()));
+    // Avoid persisting |write_io_buffer| past |in_flight_write_|'s
+    // lifetime (which will end if OnWriteComplete() is called below).
+    write_io_buffer = NULL;
     if (rv == net::ERR_IO_PENDING)
       break;
 
