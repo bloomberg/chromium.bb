@@ -222,6 +222,14 @@ class StartupTest : public UIPerfTest {
 #endif
       }
       UITest::SetUp();
+      if (test_cold == COLD) {
+        // Kick out the profile files, this must happen after SetUp which
+        // creates the profile.
+        file_util::FileEnumerator en(user_data_dir(), true,
+                                     file_util::FileEnumerator::FILES);
+        for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next())
+          EvictFileFromSystemCacheWrapper(cur);
+      }
       TimeTicks end_time = TimeTicks::Now();
 
       if (num_tabs > 0) {
