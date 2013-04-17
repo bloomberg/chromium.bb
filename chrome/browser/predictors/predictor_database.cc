@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
+#include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -58,6 +59,7 @@ class PredictorDatabaseInternal
   // TODO(shishir): These tables may not need to be refcounted. Maybe move them
   // to using a WeakPtr instead.
   scoped_refptr<AutocompleteActionPredictorTable> autocomplete_table_;
+  scoped_refptr<LoggedInPredictorTable> logged_in_table_;
   scoped_refptr<ResourcePrefetchPredictorTables> resource_prefetch_tables_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorDatabaseInternal);
@@ -68,8 +70,8 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
       db_(new sql::Connection()),
       autocomplete_table_(new AutocompleteActionPredictorTable()),
+      logged_in_table_(new LoggedInPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
-  // TODO (tburkard): initialize logged_in_table_ member.
   ResourcePrefetchPredictorConfig config;
   is_resource_prefetch_predictor_enabled_ =
       IsSpeculativeResourcePrefetchingEnabled(profile, &config);
@@ -83,13 +85,15 @@ PredictorDatabaseInternal::~PredictorDatabaseInternal() {
 
 void PredictorDatabaseInternal::Initialize() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  db_->set_exclusive_locking();
+  // TODO(tburkard): figure out if we need this.
+  //  db_->set_exclusive_locking();
   bool success = db_->Open(db_path_);
 
   if (!success)
     return;
 
   autocomplete_table_->Initialize(db_.get());
+  logged_in_table_->Initialize(db_.get());
   resource_prefetch_tables_->Initialize(db_.get());
 
   LogDatabaseStats();
@@ -99,6 +103,7 @@ void PredictorDatabaseInternal::SetCancelled() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   autocomplete_table_->SetCancelled();
+  logged_in_table_->SetCancelled();
   resource_prefetch_tables_->SetCancelled();
 }
 
@@ -112,6 +117,7 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
                           static_cast<int>(db_size / 1024));
 
   autocomplete_table_->LogDatabaseStats();
+  logged_in_table_->LogDatabaseStats();
   if (is_resource_prefetch_predictor_enabled_)
     resource_prefetch_tables_->LogDatabaseStats();
 }
@@ -132,6 +138,11 @@ void PredictorDatabase::Shutdown() {
 scoped_refptr<AutocompleteActionPredictorTable>
     PredictorDatabase::autocomplete_table() {
   return db_->autocomplete_table_;
+}
+
+scoped_refptr<LoggedInPredictorTable>
+    PredictorDatabase::logged_in_table() {
+  return db_->logged_in_table_;
 }
 
 scoped_refptr<ResourcePrefetchPredictorTables>

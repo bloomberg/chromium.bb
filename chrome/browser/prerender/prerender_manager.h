@@ -40,6 +40,10 @@ namespace gfx {
 class Size;
 }
 
+namespace predictors {
+class LoggedInPredictorTable;
+}
+
 #if defined(COMPILER_GCC)
 
 namespace BASE_HASH_NAMESPACE {
@@ -271,6 +275,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // mock advancing/retarding time.
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
+
+  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_predictor_table();
 
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -572,6 +578,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<PrerenderHistograms> histograms_;
 
   scoped_ptr<PrerenderLocalPredictor> local_predictor_;
+
+  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_predictor_table_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
