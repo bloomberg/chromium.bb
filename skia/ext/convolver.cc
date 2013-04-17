@@ -4,10 +4,8 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "skia/ext/convolver.h"
 #include "skia/ext/convolver_SSE2.h"
-#include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace skia {
@@ -22,17 +20,6 @@ inline unsigned char ClampTo8(int a) {
   if (a < 0)
     return 0;
   return 255;
-}
-
-// Takes the value produced by accumulating element-wise product of image with
-// a kernel and brings it back into range.
-// All of the filter scaling factors are in fixed point with kShiftBits bits of
-// fractional part.
-inline unsigned char BringBackTo8(int a, bool take_absolute) {
-  a >>= ConvolutionFilter1D::kShiftBits;
-  if (take_absolute)
-    a = std::abs(a);
-  return ClampTo8(a);
 }
 
 // Stores a list of rows in a circular buffer. The usage is you write into it
@@ -284,7 +271,6 @@ void ConvolutionFilter1D::AddFilter(int filter_offset,
   // cases it is beneficial to only store the central factors.
   // For a scaling to 1/4th in each dimension using a Lanczos-2 filter on
   // a 1080p image this optimization gives a ~10% speed improvement.
-  int filter_size = filter_length;
   int first_non_zero = 0;
   while (first_non_zero < filter_length && filter_values[first_non_zero] == 0)
     first_non_zero++;
@@ -312,25 +298,10 @@ void ConvolutionFilter1D::AddFilter(int filter_offset,
   instance.data_location = (static_cast<int>(filter_values_.size()) -
                             filter_length);
   instance.offset = filter_offset;
-  instance.trimmed_length = filter_length;
-  instance.length = filter_size;
+  instance.length = filter_length;
   filters_.push_back(instance);
 
   max_filter_ = std::max(max_filter_, filter_length);
-}
-
-const ConvolutionFilter1D::Fixed* ConvolutionFilter1D::GetSingleFilter(
-    int* specified_filter_length,
-    int* filter_offset,
-    int* filter_length) const {
-  const FilterInstance& filter = filters_[0];
-  *filter_offset = filter.offset;
-  *filter_length = filter.trimmed_length;
-  *specified_filter_length = filter.length;
-  if (filter.trimmed_length == 0)
-    return NULL;
-
-  return &filter_values_[filter.data_location];
 }
 
 typedef void (*ConvolveVertically_pointer)(
@@ -503,171 +474,6 @@ void BGRAConvolve2D(const unsigned char* source_data,
                          first_row_for_filter,
                          filter_x.num_values(), cur_output_row,
                          source_has_alpha);
-    }
-  }
-}
-
-void SingleChannelConvolveX1D(const unsigned char* source_data,
-                              int source_byte_row_stride,
-                              int input_channel_index,
-                              int input_channel_count,
-                              const ConvolutionFilter1D& filter,
-                              const SkISize& image_size,
-                              unsigned char* output,
-                              int output_byte_row_stride,
-                              int output_channel_index,
-                              int output_channel_count,
-                              bool absolute_values) {
-  int filter_offset, filter_length, filter_size;
-  // Very much unlike BGRAConvolve2D, here we expect to have the same filter
-  // for all pixels.
-  const ConvolutionFilter1D::Fixed* filter_values =
-      filter.GetSingleFilter(&filter_size, &filter_offset, &filter_length);
-
-  if (filter_values == NULL || image_size.width() < filter_size) {
-    NOTREACHED();
-    return;
-  }
-
-  int centrepoint = filter_length / 2;
-  if (filter_size - filter_offset != 2 * filter_offset) {
-    // This means the original filter was not symmetrical AND
-    // got clipped from one side more than from the other.
-    centrepoint = filter_size / 2 - filter_offset;
-  }
-
-  const unsigned char* source_data_row = source_data;
-  unsigned char* output_row = output;
-
-  for (int r = 0; r < image_size.height(); ++r) {
-    unsigned char* target_byte = output_row + output_channel_index;
-    // Process the lead part, padding image to the left with the first pixel.
-    int c = 0;
-    for (; c < centrepoint; ++c, target_byte += output_channel_count) {
-      int accval = 0;
-      int i = 0;
-      int pixel_byte_index = input_channel_index;
-      for (; i < centrepoint - c; ++i)  // Padding part.
-        accval += filter_values[i] * source_data_row[pixel_byte_index];
-
-      for (; i < filter_length; ++i, pixel_byte_index += input_channel_count)
-        accval += filter_values[i] * source_data_row[pixel_byte_index];
-
-      *target_byte = BringBackTo8(accval, absolute_values);
-    }
-
-    // Now for the main event.
-    for (; c < image_size.width() - centrepoint;
-         ++c, target_byte += output_channel_count) {
-      int accval = 0;
-      int pixel_byte_index = (c - centrepoint) * input_channel_count +
-          input_channel_index;
-
-      for (int i = 0; i < filter_length;
-           ++i, pixel_byte_index += input_channel_count) {
-        accval += filter_values[i] * source_data_row[pixel_byte_index];
-      }
-
-      *target_byte = BringBackTo8(accval, absolute_values);
-    }
-
-    for (; c < image_size.width(); ++c, target_byte += output_channel_count) {
-      int accval = 0;
-      int overlap_taps = image_size.width() - c + centrepoint;
-      int pixel_byte_index = (c - centrepoint) * input_channel_count +
-          input_channel_index;
-      int i = 0;
-      for (; i < overlap_taps - 1; ++i, pixel_byte_index += input_channel_count)
-        accval += filter_values[i] * source_data_row[pixel_byte_index];
-
-      for (; i < filter_length; ++i)
-        accval += filter_values[i] * source_data_row[pixel_byte_index];
-
-      *target_byte = BringBackTo8(accval, absolute_values);
-    }
-
-    source_data_row += source_byte_row_stride;
-    output_row += output_byte_row_stride;
-  }
-}
-
-void SingleChannelConvolveY1D(const unsigned char* source_data,
-                              int source_byte_row_stride,
-                              int input_channel_index,
-                              int input_channel_count,
-                              const ConvolutionFilter1D& filter,
-                              const SkISize& image_size,
-                              unsigned char* output,
-                              int output_byte_row_stride,
-                              int output_channel_index,
-                              int output_channel_count,
-                              bool absolute_values) {
-  int filter_offset, filter_length, filter_size;
-  // Very much unlike BGRAConvolve2D, here we expect to have the same filter
-  // for all pixels.
-  const ConvolutionFilter1D::Fixed* filter_values =
-      filter.GetSingleFilter(&filter_size, &filter_offset, &filter_length);
-
-  if (filter_values == NULL || image_size.height() < filter_size) {
-    NOTREACHED();
-    return;
-  }
-
-  int centrepoint = filter_length / 2;
-  if (filter_size - filter_offset != 2 * filter_offset) {
-    // This means the original filter was not symmetrical AND
-    // got clipped from one side more than from the other.
-    centrepoint = filter_size / 2 - filter_offset;
-  }
-
-  for (int c = 0; c < image_size.width(); ++c) {
-    unsigned char* target_byte = output + c * output_channel_count +
-        output_channel_index;
-    int r = 0;
-
-    for (; r < centrepoint; ++r, target_byte += output_byte_row_stride) {
-      int accval = 0;
-      int i = 0;
-      int pixel_byte_index = c * input_channel_count + input_channel_index;
-
-      for (; i < centrepoint - r; ++i)  // Padding part.
-        accval += filter_values[i] * source_data[pixel_byte_index];
-
-      for (; i < filter_length; ++i, pixel_byte_index += source_byte_row_stride)
-        accval += filter_values[i] * source_data[pixel_byte_index];
-
-      *target_byte = BringBackTo8(accval, absolute_values);
-    }
-
-    for (; r < image_size.height() - centrepoint;
-         ++r, target_byte += output_byte_row_stride) {
-      int accval = 0;
-      int pixel_byte_index = (r - centrepoint) * source_byte_row_stride +
-          c * input_channel_count + input_channel_index;
-      for (int i = 0; i < filter_length;
-           ++i, pixel_byte_index += source_byte_row_stride) {
-        accval += filter_values[i] * source_data[pixel_byte_index];
-      }
-
-      *target_byte = BringBackTo8(accval, absolute_values);
-    }
-
-    for (; r < image_size.height();
-         ++r, target_byte += output_byte_row_stride) {
-      int accval = 0;
-      int overlap_taps = image_size.height() - r + centrepoint;
-      int pixel_byte_index = (r - centrepoint) * source_byte_row_stride +
-          c * input_channel_count + input_channel_index;
-      int i = 0;
-      for (; i < overlap_taps - 1;
-           ++i, pixel_byte_index += source_byte_row_stride) {
-        accval += filter_values[i] * source_data[pixel_byte_index];
-      }
-
-      for (; i < filter_length; ++i)
-        accval += filter_values[i] * source_data[pixel_byte_index];
-
-      *target_byte = BringBackTo8(accval, absolute_values);
     }
   }
 }
