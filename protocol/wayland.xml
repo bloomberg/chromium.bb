@@ -1217,8 +1217,8 @@
 
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
-      <arg name="hotspot_x" type="fixed" summary="x coordinate in surface-relative coordinates"/>
-      <arg name="hotspot_y" type="fixed" summary="y coordinate in surface-relative coordinates"/>
+      <arg name="hotspot_x" type="int" summary="x coordinate in surface-relative coordinates"/>
+      <arg name="hotspot_y" type="int" summary="y coordinate in surface-relative coordinates"/>
     </request>
 
     <event name="enter">
