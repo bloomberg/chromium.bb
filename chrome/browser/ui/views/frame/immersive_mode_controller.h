@@ -9,6 +9,10 @@
 
 class BrowserView;
 
+namespace views {
+class Widget;
+}
+
 // Controller for an "immersive mode" similar to MacOS presentation mode where
 // the top-of-window views are hidden until the mouse hits the top of the
 // screen. The tab strip is optionally painted with miniature "tab indicator"
@@ -55,6 +59,27 @@ class ImmersiveModeController {
   // enabled / disabled.
   // The caller takes ownership of the returned lock.
   virtual RevealedLock* GetRevealedLock() WARN_UNUSED_RESULT = 0;
+
+  // Anchor |widget| to the top-of-window views. This repositions |widget| such
+  // that it stays |y_offset| below the top-of-window views when the
+  // top-of-window views are animating (top-of-window views reveal / unreveal)
+  // or the top container's bounds change (eg the bookmark bar is shown).
+  // If the top-of-window views are revealed (or become revealed), |widget|
+  // will keep the top-of-window views revealed till either |widget| is hidden
+  // or UnanchorWidgetFromTopContainer() is called.
+  // It is legal for a widget to be anchored when immersive fullscreen is
+  // disabled, however it will have no effect till immersive fullscreen is
+  // enabled.
+  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
+                                          int y_offset) = 0;
+
+  // Stops managing |widget|'s y position.
+  // Closes the top-of-window views if no locks or other anchored widgets are
+  // keeping the top-of-window views revealed.
+  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) = 0;
+
+  // Called by the TopContainerView to indicate that its bounds have changed.
+  virtual void OnTopContainerBoundsChanged() = 0;
 };
 
 namespace chrome {

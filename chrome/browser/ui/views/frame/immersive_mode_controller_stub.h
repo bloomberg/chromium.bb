@@ -27,6 +27,10 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
   virtual void MaybeStackViewAtTop() OVERRIDE;
   virtual ImmersiveModeController::RevealedLock*
       GetRevealedLock() OVERRIDE WARN_UNUSED_RESULT;
+  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
+                                          int y_offset) OVERRIDE;
+  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
+  virtual void OnTopContainerBoundsChanged() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerStub);

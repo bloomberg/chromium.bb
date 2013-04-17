@@ -15,6 +15,24 @@ TopContainerView::TopContainerView(BrowserView* browser_view)
 TopContainerView::~TopContainerView() {
 }
 
+gfx::Rect TopContainerView::GetTargetBoundsInScreen() const {
+  if (!parent())
+    return bounds();
+
+  // Compute transform relative to parent.
+  gfx::Transform transform;
+  if (layer())
+    transform = layer()->GetTargetTransform();
+  gfx::Transform translation;
+  translation.Translate(static_cast<float>(GetMirroredX()),
+                        static_cast<float>(y()));
+  transform.ConcatTransform(translation);
+
+  gfx::Point origin(parent()->GetBoundsInScreen().origin());
+  transform.TransformPoint(origin);
+  return gfx::Rect(origin, size());
+}
+
 gfx::Size TopContainerView::GetPreferredSize() {
   // The view wants to be as wide as its parent and tall enough to fully show
   // its last child view.
@@ -25,6 +43,13 @@ gfx::Size TopContainerView::GetPreferredSize() {
 
 std::string TopContainerView::GetClassName() const {
   return "TopContainerView";
+}
+
+void TopContainerView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImmersiveModeController* immersive_controller =
+      browser_view_->immersive_mode_controller();
+  if (immersive_controller->IsEnabled())
+    immersive_controller->OnTopContainerBoundsChanged();
 }
 
 void TopContainerView::PaintChildren(gfx::Canvas* canvas) {

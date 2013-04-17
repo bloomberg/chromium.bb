@@ -17,8 +17,10 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -402,6 +404,107 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
 
   lock2.reset();
   EXPECT_FALSE(controller->IsRevealed());
+}
+
+// Test how changing the bounds of the top container repositions anchored
+// widgets and how the visibility of anchored widgets affects whether the
+// top-of-window views stay revealed.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, AnchoredWidgets) {
+  gfx::Rect kInitialBounds(100, 100, 100, 100);
+
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  BookmarkBarView::DisableAnimationsForTesting(true);
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
+
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(controller->IsEnabled());
+
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = kInitialBounds;
+  views::Widget anchored_widget;
+  anchored_widget.Init(params);
+
+  // 1) Test that an anchored widget does not cause the top-of-window views to
+  // reveal but instead prolongs the duration of the reveal till either the
+  // widget is unanchored or is hidden.
+  EXPECT_FALSE(controller->IsRevealed());
+
+  anchored_widget.Show();
+  controller->AnchorWidgetToTopContainer(&anchored_widget, 10);
+
+  // Anchoring a widget should not cause the top-of-window views to reveal.
+  EXPECT_FALSE(controller->IsRevealed());
+
+  controller->StartRevealForTest(true);
+  EXPECT_TRUE(controller->IsRevealed());
+
+  // Once the top-of-window views are revealed, the top-of-window views should
+  // stay revealed as long as there is a visible anchored widget (or something
+  // else like the mouse hover is keeping the top-of-window views revealed).
+  controller->SetMouseHoveredForTest(false);
+  EXPECT_TRUE(controller->IsRevealed());
+  anchored_widget.Hide();
+  EXPECT_FALSE(controller->IsRevealed());
+
+  anchored_widget.Show();
+  EXPECT_FALSE(controller->IsRevealed());
+  controller->StartRevealForTest(true);
+  EXPECT_TRUE(controller->IsRevealed());
+
+  controller->UnanchorWidgetFromTopContainer(&anchored_widget);
+  EXPECT_TRUE(controller->IsRevealed());
+  controller->SetMouseHoveredForTest(false);
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // 2) Test that the anchored widget is repositioned to |y_offset| below
+  // the bottom of the top container when the top container bounds are changed.
+  //
+  // Make sure that the bookmark bar is hidden.
+  ui_test_utils::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(browser()->profile()));
+  if (browser_view->IsBookmarkBarVisible())
+    chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_FALSE(browser_view->IsBookmarkBarVisible());
+
+  anchored_widget.SetBounds(kInitialBounds);
+
+  // Anchoring the widget should adjust the top-of-window bounds.
+  controller->AnchorWidgetToTopContainer(&anchored_widget, 10);
+  gfx::Rect bounds1 = anchored_widget.GetWindowBoundsInScreen();
+  EXPECT_EQ(bounds1.y(),
+            browser_view->top_container()->GetBoundsInScreen().bottom() + 10);
+  EXPECT_EQ(kInitialBounds.x(), bounds1.x());
+  EXPECT_EQ(kInitialBounds.size(), bounds1.size());
+
+  controller->StartRevealForTest(true);
+  gfx::Rect bounds2 = anchored_widget.GetWindowBoundsInScreen();
+
+  // The top-of-window bounds changed in the immersive reveal. |anchored_widget|
+  // should have been repositioned.
+  EXPECT_EQ(bounds2.y(),
+            browser_view->top_container()->GetBoundsInScreen().bottom() + 10);
+  EXPECT_EQ(kInitialBounds.x(), bounds2.x());
+  EXPECT_EQ(kInitialBounds.size(), bounds2.size());
+
+  // Showing the bookmark bar changes the top container bounds and should
+  // reposition the anchored widget.
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_TRUE(browser_view->IsBookmarkBarVisible());
+  gfx::Rect bounds3 = anchored_widget.GetWindowBoundsInScreen();
+  EXPECT_EQ(bounds3.y(),
+            browser_view->top_container()->GetBoundsInScreen().bottom() + 10);
+  EXPECT_GT(bounds3.y(), bounds2.y());
+  EXPECT_EQ(kInitialBounds.x(), bounds3.x());
+  EXPECT_EQ(kInitialBounds.size(), bounds3.size());
+
+  BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
 // Shelf-specific immersive mode tests.

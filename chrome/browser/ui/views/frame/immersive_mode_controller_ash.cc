@@ -45,9 +45,22 @@ const int kAnimationOffsetY = 3;
 const int kRevealSlowAnimationDurationMs = 400;
 const int kRevealFastAnimationDurationMs = 200;
 
+// If |hovered| is true, moves the mouse above |view|. Moves it outside of
+// |view| otherwise.
+// Should not be called outside of tests.
+void MoveMouse(views::View* view, bool hovered) {
+  gfx::Point cursor_pos;
+  if (!hovered) {
+    int bottom_edge = view->bounds().bottom();
+    cursor_pos = gfx::Point(0, bottom_edge + 100);
+  }
+  views::View::ConvertPointToScreen(view, &cursor_pos);
+  aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
+}
+
 // Returns true if the currently active window is a transient child of
 // |toplevel|.
-bool IsActiveWindowTransientChildOf(gfx::NativeWindow toplevel) {
+bool IsActiveWindowTransientChildOf(aura::Window* toplevel) {
   aura::Window* active_window = aura::client::GetActivationClient(
       toplevel->GetRootWindow())->GetActiveWindow();
 
@@ -85,6 +98,177 @@ class RevealedLockAsh : public ImmersiveModeController::RevealedLock {
 };
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Manages widgets which should move in sync with the top-of-window views.
+class ImmersiveModeControllerAsh::AnchoredWidgetManager
+    : public views::WidgetObserver {
+ public:
+  explicit AnchoredWidgetManager(ImmersiveModeControllerAsh* controller);
+  virtual ~AnchoredWidgetManager();
+
+  // Anchors |widget| such that it stays |y_offset| below the top-of-window
+  // views. |widget| will be repositioned whenever the top-of-window views are
+  // animated (top-of-window views revealing / unrevealing) or the top-of-window
+  // bounds change (eg the bookmark bar is shown).
+  // If the top-of-window views are revealed (or become revealed), |widget| will
+  // keep the top-of-window views revealed till |widget| is hidden or
+  // RemoveAnchoredWidget() is called.
+  void AddAnchoredWidget(views::Widget* widget, int y_offset);
+
+  // Stops managing |widget|'s y position.
+  // Closes the top-of-window views if no locks or other anchored widgets are
+  // keeping the top-of-window views revealed.
+  void RemoveAnchoredWidget(views::Widget* widget);
+
+  // Adjusts the y positions of the anchored widgets for the new top container
+  // bounds.
+  void OnTopContainerBoundsChanged();
+
+  const std::set<views::Widget*>& visible_anchored_widgets() const {
+    return visible_;
+  }
+
+ private:
+  // Updates |revealed_lock_| based on the visible anchored widgets.
+  void UpdateRevealedLock();
+
+  // Updates the y position of |widget| given |y_offset| and the top
+  // container's target bounds.
+  void UpdateWidgetBounds(views::Widget* widget, int y_offset);
+
+  // views::WidgetObserver overrides:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE;
+
+  ImmersiveModeControllerAsh* controller_;
+
+  // Mapping of anchored widgets to the y offset below the top-of-window views
+  // that they should be positioned at.
+  std::map<views::Widget*, int> widgets_;
+
+  // The subset of |widgets_| which are visible.
+  std::set<views::Widget*> visible_;
+
+  // Lock which keeps the top-of-window views revealed based on the visible
+  // anchored widgets.
+  scoped_ptr<ImmersiveModeController::RevealedLock> revealed_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnchoredWidgetManager);
+};
+
+ImmersiveModeControllerAsh::AnchoredWidgetManager::AnchoredWidgetManager(
+    ImmersiveModeControllerAsh* controller)
+    : controller_(controller) {
+}
+
+ImmersiveModeControllerAsh::AnchoredWidgetManager::~AnchoredWidgetManager() {
+  for (std::map<views::Widget*, int>::iterator it = widgets_.begin();
+       it != widgets_.end(); ++it) {
+    RemoveAnchoredWidget(it->first);
+  }
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::AddAnchoredWidget(
+    views::Widget* widget,
+    int y_offset) {
+  DCHECK(widget);
+  bool already_added = widgets_.count(widget) > 0;
+  widgets_[widget] = y_offset;
+
+  if (already_added)
+    return;
+
+  widget->AddObserver(this);
+
+  if (widget->IsVisible())
+    visible_.insert(widget);
+
+  UpdateRevealedLock();
+  UpdateWidgetBounds(widget, y_offset);
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::RemoveAnchoredWidget(
+    views::Widget* widget) {
+  if (!widgets_.count(widget))
+    return;
+
+  widget->RemoveObserver(this);
+  widgets_.erase(widget);
+  visible_.erase(widget);
+
+  UpdateRevealedLock();
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::
+    OnTopContainerBoundsChanged() {
+  for (std::map<views::Widget*, int>::iterator it = widgets_.begin();
+       it != widgets_.end(); ++it) {
+    UpdateWidgetBounds(it->first, it->second);
+  }
+
+  UpdateRevealedLock();
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
+  if (visible_.empty()) {
+    revealed_lock_.reset();
+  } else if (controller_->IsRevealed()) {
+    // It is hard to determine the required initial transforms and the required
+    // durations of the animations of |visible_| such that they appear to be
+    // anchored to the top-of-window views while the top-of-window views are
+    // animating. Skip to the end of the reveal animation instead.
+    // We do not query the controller's reveal state because we may be called
+    // as a result of LayoutBrowserView() in MaybeStartReveal() when
+    // |reveal_state_| is SLIDING_OPEN but no animation is running yet.
+    ui::Layer* top_container_layer =
+        controller_->browser_view_->top_container()->layer();
+    if (top_container_layer &&
+        top_container_layer->GetAnimator()->is_animating()) {
+      controller_->MaybeRevealWithoutAnimation();
+    }
+
+    if (!revealed_lock_.get())
+      revealed_lock_.reset(controller_->GetRevealedLock());
+  }
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateWidgetBounds(
+    views::Widget* widget,
+    int y_offset) {
+  if (!widget->IsVisible())
+    return;
+
+  gfx::Rect top_container_target_bounds =
+      controller_->browser_view_->top_container()->GetTargetBoundsInScreen();
+  gfx::Rect bounds(widget->GetWindowBoundsInScreen());
+  bounds.set_y(
+      top_container_target_bounds.bottom() + y_offset);
+   widget->SetBounds(bounds);
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::OnWidgetDestroying(
+    views::Widget* widget) {
+  RemoveAnchoredWidget(widget);
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::
+    OnWidgetVisibilityChanged(
+        views::Widget* widget,
+        bool visible) {
+  if (visible)
+    visible_.insert(widget);
+  else
+    visible_.erase(widget);
+
+  UpdateRevealedLock();
+
+  std::map<views::Widget*, int>::iterator it = widgets_.find(widget);
+  DCHECK(it != widgets_.end());
+  UpdateWidgetBounds(it->first, it->second);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -133,37 +317,6 @@ class ImmersiveModeControllerAsh::WindowObserver : public aura::WindowObserver {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class ImmersiveModeControllerAsh::AnimationObserver
-    : public ui::ImplicitAnimationObserver {
- public:
-  enum AnimationType {
-    SLIDE_OPEN,
-    SLIDE_CLOSED,
-  };
-
-  AnimationObserver(ImmersiveModeControllerAsh* controller, AnimationType type)
-      : controller_(controller), animation_type_(type) {}
-  virtual ~AnimationObserver() {}
-
-  // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    if (animation_type_ == SLIDE_OPEN)
-      controller_->OnSlideOpenAnimationCompleted();
-    else if (animation_type_ == SLIDE_CLOSED)
-      controller_->OnSlideClosedAnimationCompleted();
-    else
-      NOTREACHED();
-  }
-
- private:
-  ImmersiveModeControllerAsh* controller_;
-  AnimationType animation_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : browser_view_(NULL),
       enabled_(false),
@@ -184,7 +337,7 @@ ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
 void ImmersiveModeControllerAsh::LockRevealedState() {
   ++revealed_lock_count_;
   if (revealed_lock_count_ == 1)
-    MaybeStartReveal();
+    MaybeStartReveal(ANIMATE_FAST);
 }
 
 void ImmersiveModeControllerAsh::UnlockRevealedState() {
@@ -192,6 +345,10 @@ void ImmersiveModeControllerAsh::UnlockRevealedState() {
   DCHECK_GE(revealed_lock_count_, 0);
   if (revealed_lock_count_ == 0)
     MaybeEndReveal(ANIMATE_FAST);
+}
+
+void ImmersiveModeControllerAsh::MaybeRevealWithoutAnimation() {
+  MaybeStartReveal(ANIMATE_NO);
 }
 
 void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
@@ -202,14 +359,11 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   DCHECK(native_window_);
   EnableWindowObservers(true);
 
-  slide_open_observer_.reset(
-      new AnimationObserver(this, AnimationObserver::SLIDE_OPEN));
-  slide_closed_observer_.reset(
-      new AnimationObserver(this, AnimationObserver::SLIDE_CLOSED));
-
   // Optionally allow the tab indicators to be hidden.
   hide_tab_indicators_ = CommandLine::ForCurrentProcess()->
       HasSwitch(ash::switches::kAshImmersiveHideTabIndicators);
+
+  anchored_widget_manager_.reset(new AnchoredWidgetManager(this));
 }
 
 void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
@@ -225,7 +379,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     // Do a reveal to set the initial state for the animation. (And any
     // required state in case the animation cannot run because of a lock holding
     // the top-of-window views open.)
-    StartReveal(ANIMATE_NO);
+    MaybeStartReveal(ANIMATE_NO);
 
     // Reset the mouse and the focus revealed locks so that they do not affect
     // whether the top-of-window views are hidden. Reacquire the locks if ending
@@ -293,6 +447,21 @@ void ImmersiveModeControllerAsh::MaybeStackViewAtTop() {
 ImmersiveModeControllerAsh::RevealedLock*
     ImmersiveModeControllerAsh::GetRevealedLock() {
   return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr());
+}
+
+void ImmersiveModeControllerAsh::AnchorWidgetToTopContainer(
+    views::Widget* widget,
+    int y_offset) {
+  anchored_widget_manager_->AddAnchoredWidget(widget, y_offset);
+}
+
+void ImmersiveModeControllerAsh::UnanchorWidgetFromTopContainer(
+    views::Widget* widget) {
+  anchored_widget_manager_->RemoveAnchoredWidget(widget);
+}
+
+void ImmersiveModeControllerAsh::OnTopContainerBoundsChanged() {
+  anchored_widget_manager_->OnTopContainerBoundsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,6 +538,16 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Animation observer:
+
+void ImmersiveModeControllerAsh::OnImplicitAnimationsCompleted() {
+  if (reveal_state_ == SLIDING_OPEN)
+    OnSlideOpenAnimationCompleted();
+  else if (reveal_state_ == SLIDING_CLOSED)
+    OnSlideClosedAnimationCompleted();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
 void ImmersiveModeControllerAsh::SetHideTabIndicatorsForTest(bool hide) {
@@ -376,20 +555,13 @@ void ImmersiveModeControllerAsh::SetHideTabIndicatorsForTest(bool hide) {
 }
 
 void ImmersiveModeControllerAsh::StartRevealForTest(bool hovered) {
-  StartReveal(ANIMATE_NO);
-  SetMouseHoveredForTest(hovered);
+  MaybeStartReveal(ANIMATE_NO);
+  MoveMouse(browser_view_->top_container(), hovered);
+  UpdateMouseRevealedLock(false);
 }
 
 void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
-  views::View* top_container = browser_view_->top_container();
-  gfx::Point cursor_pos;
-  if (!hovered) {
-    int bottom_edge = top_container->bounds().bottom();
-    cursor_pos = gfx::Point(0, bottom_edge + 100);
-  }
-  views::View::ConvertPointToScreen(top_container, &cursor_pos);
-  aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
-
+  MoveMouse(browser_view_->top_container(), hovered);
   UpdateMouseRevealedLock(false);
 }
 
@@ -420,6 +592,9 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
 
   // The window observer adds and removes itself from the native window.
   window_observer_.reset(enable ? new WindowObserver(this) : NULL);
+
+  if (!enable)
+    StopObservingImplicitAnimations();
 }
 
 void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {
@@ -507,14 +682,22 @@ int ImmersiveModeControllerAsh::GetAnimationDuration(Animate animate) const {
   return 0;
 }
 
-void ImmersiveModeControllerAsh::MaybeStartReveal() {
-  if (enabled_ && reveal_state_ != REVEALED)
-    StartReveal(ANIMATE_FAST);
-}
+void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
+  if (!enabled_)
+    return;
 
-void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
-  if (reveal_state_ == CLOSED) {
-    reveal_state_ = SLIDING_OPEN;
+  // Callers with ANIMATE_NO expect this function to synchronously reveal the
+  // top-of-window views. In particular, this property is used to terminate the
+  // reveal animation if an equivalent animation for the anchored widgets
+  // cannot be created.
+  if (reveal_state_ == REVEALED ||
+      (reveal_state_ == SLIDING_OPEN && animate != ANIMATE_NO)) {
+    return;
+  }
+
+  RevealState previous_reveal_state = reveal_state_;
+  reveal_state_ = SLIDING_OPEN;
+  if (previous_reveal_state == CLOSED) {
     // Turn on layer painting so we can smoothly animate.
     EnablePaintToLayer(true);
 
@@ -522,20 +705,29 @@ void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
     // computed at normal (non-immersive-style) size.
     LayoutBrowserView(false);
 
+    // Do not do any more processing if LayoutBrowserView() changed
+    // |reveal_state_|.
+    if (reveal_state_ != SLIDING_OPEN)
+      return;
+
     if (animate != ANIMATE_NO) {
       // Now that we have a layer, move it to the initial offscreen position.
       ui::Layer* layer = browser_view_->top_container()->layer();
       gfx::Transform transform;
       transform.Translate(0, -layer->bounds().height() + kAnimationOffsetY);
       layer->SetTransform(transform);
+
+      typedef std::set<views::Widget*> WidgetSet;
+      const WidgetSet& visible_widgets =
+          anchored_widget_manager_->visible_anchored_widgets();
+      for (WidgetSet::const_iterator it = visible_widgets.begin();
+           it != visible_widgets.end(); ++it) {
+        (*it)->GetNativeWindow()->SetTransform(transform);
+      }
     }
-    // Slide in the reveal view.
-    AnimateSlideOpen(GetAnimationDuration(animate));
-  } else if (reveal_state_ == SLIDING_CLOSED) {
-    reveal_state_ = SLIDING_OPEN;
-    // Reverse the animation.
-    AnimateSlideOpen(GetAnimationDuration(animate));
   }
+  // Slide in the reveal view.
+  DoAnimation(gfx::Transform(), GetAnimationDuration(animate));
 }
 
 void ImmersiveModeControllerAsh::EnablePaintToLayer(bool enable) {
@@ -565,71 +757,91 @@ void ImmersiveModeControllerAsh::LayoutBrowserView(bool immersive_style) {
   browser_view_->frame()->GetRootView()->Layout();
 }
 
-void ImmersiveModeControllerAsh::AnimateSlideOpen(int duration_ms) {
-  ui::Layer* layer = browser_view_->top_container()->layer();
-  // Stop any slide closed animation in progress.
-  layer->GetAnimator()->AbortAllAnimations();
-
-  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-  settings.AddObserver(slide_open_observer_.get());
-  settings.SetTweenType(ui::Tween::EASE_OUT);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(duration_ms));
-  layer->SetTransform(gfx::Transform());
-}
-
 void ImmersiveModeControllerAsh::OnSlideOpenAnimationCompleted() {
-  if (reveal_state_ == SLIDING_OPEN) {
-    reveal_state_ = REVEALED;
+  DCHECK_EQ(SLIDING_OPEN, reveal_state_);
+  reveal_state_ = REVEALED;
 
-    // The user may not have moved the mouse since the reveal was initiated.
-    // Update the revealed lock to reflect the mouse's current state.
-    UpdateMouseRevealedLock(true);
-  }
+  // The user may not have moved the mouse since the reveal was initiated.
+  // Update the revealed lock to reflect the mouse's current state.
+  UpdateMouseRevealedLock(true);
 }
 
 void ImmersiveModeControllerAsh::MaybeEndReveal(Animate animate) {
-  if (enabled_ && reveal_state_ != CLOSED && revealed_lock_count_ == 0)
-    EndReveal(animate);
-}
+  if (!enabled_ || revealed_lock_count_ != 0)
+    return;
 
-void ImmersiveModeControllerAsh::EndReveal(Animate animate) {
-  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
-    reveal_state_ = SLIDING_CLOSED;
-    int duration_ms = GetAnimationDuration(animate);
-    if (duration_ms > 0) {
-      // Bookmark bar have become detached during the reveal so ensure
-      // layers are available. This is a no-op for top container.
-      EnablePaintToLayer(true);
-      AnimateSlideClosed(duration_ms);
-    } else {
-      OnSlideClosedAnimationCompleted();
-    }
+  // Callers with ANIMATE_NO expect this function to synchronously close the
+  // top-of-window views.
+  if (reveal_state_ == CLOSED ||
+      (reveal_state_ == SLIDING_CLOSED && animate != ANIMATE_NO)) {
+    return;
+  }
+
+  // Visible anchored widgets keep the top-of-window views revealed.
+  DCHECK(anchored_widget_manager_->visible_anchored_widgets().empty());
+
+  reveal_state_ = SLIDING_CLOSED;
+  int duration_ms = GetAnimationDuration(animate);
+  if (duration_ms > 0) {
+    // The bookmark bar may have become detached during the reveal so ensure
+    // layers are available. This is a no-op for the top container.
+    EnablePaintToLayer(true);
+
+    ui::Layer* top_container_layer = browser_view_->top_container()->layer();
+    gfx::Transform target_transform;
+    target_transform.Translate(0,
+        -top_container_layer->bounds().height() + kAnimationOffsetY);
+
+    DoAnimation(target_transform, duration_ms);
+  } else {
+    OnSlideClosedAnimationCompleted();
   }
 }
 
-void ImmersiveModeControllerAsh::AnimateSlideClosed(int duration_ms) {
-  // Stop any slide open animation in progress, but don't skip to the end. This
-  // avoids a visual "pop" when starting a hide in the middle of a show.
-  ui::Layer* layer = browser_view_->top_container()->layer();
-  layer->GetAnimator()->AbortAllAnimations();
+void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
+  DCHECK_EQ(SLIDING_CLOSED, reveal_state_);
+  reveal_state_ = CLOSED;
+  // Layers aren't needed after animation completes.
+  EnablePaintToLayer(false);
+  // Update tabstrip for closed state.
+  LayoutBrowserView(true);
+}
 
+void ImmersiveModeControllerAsh::DoAnimation(
+    const gfx::Transform& target_transform,
+    int duration_ms) {
+  StopObservingImplicitAnimations();
+  DoLayerAnimation(browser_view_->top_container()->layer(), target_transform,
+      duration_ms, this);
+
+  typedef std::set<views::Widget*> WidgetSet;
+  const WidgetSet& visible_widgets =
+      anchored_widget_manager_->visible_anchored_widgets();
+  for (WidgetSet::const_iterator it = visible_widgets.begin();
+       it != visible_widgets.end(); ++it) {
+    // The anchored widget's bounds are set to the target bounds right when the
+    // animation starts. The transform is used to animate the widget's position.
+    // Using the target bounds allows us to "stay anchored" if other code
+    // changes the widget bounds in the middle of the animation. (This is the
+    // case if the fullscreen exit bubble type is changed during the immersive
+    // reveal animation).
+    DoLayerAnimation((*it)->GetNativeWindow()->layer(), gfx::Transform(),
+        duration_ms, NULL);
+  }
+}
+
+void ImmersiveModeControllerAsh::DoLayerAnimation(
+    ui::Layer* layer,
+    const gfx::Transform& target_transform,
+    int duration_ms,
+    ui::ImplicitAnimationObserver* observer) {
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_ms));
-  settings.AddObserver(slide_closed_observer_.get());
-  gfx::Transform transform;
-  transform.Translate(0, -layer->bounds().height() + kAnimationOffsetY);
-  layer->SetTransform(transform);
-}
-
-void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
-  if (reveal_state_ == SLIDING_CLOSED) {
-    reveal_state_ = CLOSED;
-    // Layers aren't needed after animation completes.
-    EnablePaintToLayer(false);
-    // Update tabstrip for closed state.
-    LayoutBrowserView(true);
-  }
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  if (observer)
+    settings.AddObserver(observer);
+  layer->SetTransform(target_transform);
 }

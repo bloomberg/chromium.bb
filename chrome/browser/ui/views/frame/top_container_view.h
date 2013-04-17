@@ -20,9 +20,16 @@ class TopContainerView : public views::View {
   explicit TopContainerView(BrowserView* browser_view);
   virtual ~TopContainerView();
 
+  // If the view is animating its bounds, returns the target bounds. Otheriwse,
+  // returns the view's bounds.
+  // TODO(pkotwicz): Investigate if GetBoundsInScreen() can return the view's
+  // target bounds.
+  gfx::Rect GetTargetBoundsInScreen() const;
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
  private:
