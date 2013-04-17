@@ -119,10 +119,6 @@ void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(PassRefPtr<FormState>)
 {
 }
 
-void EmptyFrameLoaderClient::dispatchWillSubmitForm(FramePolicyFunction, PassRefPtr<FormState>)
-{
-}
-
 PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(const ResourceRequest& request, const SubstituteData& substituteData)
 {
     return DocumentLoader::create(request, substituteData);
