@@ -36,7 +36,6 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "Node.h"
-#include "ScriptController.h"
 #include "TouchList.h"
 #include "XPathNSResolver.h"
 #include "XPathResult.h"

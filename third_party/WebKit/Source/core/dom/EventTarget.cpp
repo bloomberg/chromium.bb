@@ -35,7 +35,6 @@
 #include "Event.h"
 #include "EventException.h"
 #include "InspectorInstrumentation.h"
-#include "ScriptController.h"
 #include "TransitionEvent.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>

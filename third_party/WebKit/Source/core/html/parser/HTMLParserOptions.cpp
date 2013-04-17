@@ -29,7 +29,6 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "ScriptController.h"
 #include "Settings.h"
 
 namespace WebCore {

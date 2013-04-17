@@ -33,7 +33,6 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "ScriptController.h"
 
 namespace WebCore {
 

@@ -34,7 +34,6 @@
 #include "Language.h"
 #include "Page.h"
 #include "PluginData.h"
-#include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StorageNamespace.h"

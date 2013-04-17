@@ -34,7 +34,6 @@
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendImpl.h"
 #include "IDBTransactionCoordinator.h"
-#include "ScriptController.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"

@@ -45,7 +45,6 @@
 #include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "RenderHTMLCanvas.h"
-#include "ScriptController.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <math.h>

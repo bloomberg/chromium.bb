@@ -38,7 +38,6 @@
 #include "HTMLCollection.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
-#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"
 #include "V8DOMWindowShell.h"

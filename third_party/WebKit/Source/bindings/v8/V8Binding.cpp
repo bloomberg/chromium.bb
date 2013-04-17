@@ -38,7 +38,6 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "QualifiedName.h"
-#include "ScriptController.h"
 #include "Settings.h"
 #include "V8DOMStringList.h"
 #include "V8DOMWindow.h"

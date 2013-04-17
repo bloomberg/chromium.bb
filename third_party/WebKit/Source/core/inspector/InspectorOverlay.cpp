@@ -43,7 +43,6 @@
 #include "RenderBoxModelObject.h"
 #include "RenderInline.h"
 #include "RenderObject.h"
-#include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "Settings.h"

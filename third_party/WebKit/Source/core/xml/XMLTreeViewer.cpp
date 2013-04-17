@@ -34,7 +34,6 @@
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
 #include "Page.h"
-#include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "Settings.h"

@@ -34,7 +34,6 @@
 #include "V8SVGDocument.h"
 
 #include "Frame.h"
-#include "ScriptController.h"
 #include "V8DOMWindowShell.h"
 
 namespace WebCore {

@@ -35,7 +35,6 @@
 #include "ContextMenuController.h"
 #include "ContextMenuProvider.h"
 #include "DOMFileSystem.h"
-#include "DOMWrapperWorld.h"
 #include "Element.h"
 #include "Frame.h"
 #include "FrameLoader.h"

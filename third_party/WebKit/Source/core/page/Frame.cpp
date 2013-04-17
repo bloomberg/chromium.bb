@@ -159,7 +159,7 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_loader(this, frameLoaderClient)
     , m_navigationScheduler(this)
     , m_ownerElement(ownerElement)
-    , m_script(adoptPtr(new ScriptController(this)))
+    , m_script(this)
     , m_editor(this)
     , m_selection(this)
     , m_eventHandler(this)
@@ -287,7 +287,7 @@ void Frame::setDocument(PassRefPtr<Document> newDoc)
         m_doc->attach();
 
     if (m_doc) {
-        m_script->updateDocument();
+        m_script.updateDocument();
         m_doc->updateViewportArguments();
     }
 

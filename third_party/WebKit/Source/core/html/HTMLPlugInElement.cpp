@@ -37,7 +37,6 @@
 #include "PluginViewBase.h"
 #include "RenderEmbeddedObject.h"
 #include "RenderWidget.h"
-#include "ScriptController.h"
 #include "Settings.h"
 #include "Widget.h"
 #include "npruntime_impl.h"

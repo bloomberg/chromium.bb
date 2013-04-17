@@ -37,6 +37,7 @@
 #include "FrameSelection.h"
 #include "FrameTree.h"
 #include "NavigationScheduler.h"
+#include "ScriptController.h"
 
 namespace WebCore {
 
@@ -46,8 +47,8 @@ namespace WebCore {
     class HTMLTableCellElement;
     class RegularExpression;
     class RenderPart;
+
     class TreeScope;
-    class ScriptController;
 
     enum {
         LayerTreeFlagsIncludeDebugInfo = 1 << 0,
@@ -177,7 +178,7 @@ namespace WebCore {
         RefPtr<FrameView> m_view;
         RefPtr<Document> m_doc;
 
-        OwnPtr<ScriptController> m_script;
+        ScriptController m_script;
 
         mutable Editor m_editor;
         mutable FrameSelection m_selection;
@@ -216,7 +217,7 @@ namespace WebCore {
 
     inline ScriptController* Frame::script()
     {
-        return m_script.get();
+        return &m_script;
     }
 
     inline Document* Frame::document() const

@@ -50,7 +50,6 @@
 #include "MemoryCache.h"
 #include "Performance.h"
 #include "PingLoader.h"
-#include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

@@ -29,7 +29,6 @@
 #include "CaptionUserPreferences.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
-#include "DOMWrapperWorld.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Frame.h"

@@ -42,7 +42,6 @@
 #include "Page.h"
 #include "PageCache.h"
 #include "PageTransitionEvent.h"
-#include "ScriptController.h"
 #include "SerializedScriptValue.h"
 #include <wtf/text/CString.h>
 #include <wtf/RefCountedLeakCounter.h>

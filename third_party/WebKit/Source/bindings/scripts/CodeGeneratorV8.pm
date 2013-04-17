@@ -3698,7 +3698,6 @@ sub GenerateToV8Converters
     }
 
     AddToImplIncludes("Frame.h");
-    AddToImplIncludes("ScriptController.h");
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
