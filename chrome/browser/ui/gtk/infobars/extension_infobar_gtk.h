@@ -32,6 +32,7 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
+  virtual void InitWidgets() OVERRIDE;
 
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;
@@ -40,9 +41,6 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   virtual void OnDelegateDeleted() OVERRIDE;
 
  private:
-  // Build the widgets of the Infobar.
-  void BuildWidgets();
-
   void OnImageLoaded(const gfx::Image& image);
 
   // Looks at the window the infobar is in and gets the browser. Can return

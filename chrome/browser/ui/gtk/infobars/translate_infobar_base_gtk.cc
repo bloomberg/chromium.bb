@@ -58,20 +58,6 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
 TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
-void TranslateInfoBarBase::Init() {
-  if (!ShowOptionsMenuButton())
-    return;
-
-  // The options button sits outside the translate_box so that it can be end
-  // packed in hbox_.
-  GtkWidget* options_menu_button = CreateMenuButton(
-      l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_OPTIONS));
-  Signals()->Connect(options_menu_button, "clicked",
-                     G_CALLBACK(&OnOptionsClickedThunk), this);
-  gtk_widget_show_all(options_menu_button);
-  gtk_util::CenterWidgetInHBox(hbox_, options_menu_button, true, 0);
-}
-
 void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
                                        double* r, double* g, double* b) {
   if (background_error_percent_ <= 0) {
@@ -122,7 +108,24 @@ void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
   }
 }
 
+void TranslateInfoBarBase::InitWidgets() {
+  InfoBarGtk::InitWidgets();
+
+  if (!ShowOptionsMenuButton())
+    return;
+
+  // The options button sits outside the translate_box so that it can be end
+  // packed in hbox_.
+  GtkWidget* options_menu_button = CreateMenuButton(
+      l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_OPTIONS));
+  Signals()->Connect(options_menu_button, "clicked",
+                     G_CALLBACK(&OnOptionsClickedThunk), this);
+  gtk_widget_show_all(options_menu_button);
+  gtk_util::CenterWidgetInHBox(hbox_, options_menu_button, true, 0);
+}
+
 void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
+  DCHECK(widget());
   if (animation == background_color_animation_.get()) {
     background_error_percent_ = animation->GetCurrentValue();
     // Queue the info bar widget for redisplay so it repaints its background.
@@ -214,6 +217,5 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
     default:
       NOTREACHED();
   }
-  infobar->Init();
   return infobar;
 }

@@ -57,7 +57,7 @@ void TranslateMessageInfoBar::ViewHierarchyChanged(bool is_add,
 
 void TranslateMessageInfoBar::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
-  if (!owned())
+  if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == button_)
     GetDelegate()->MessageInfoBarButtonPressed();

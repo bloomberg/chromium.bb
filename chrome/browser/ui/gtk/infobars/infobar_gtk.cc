@@ -52,10 +52,21 @@ const int InfoBarGtk::kEndOfLabelSpacing = 6;
 
 InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
-      theme_service_(GtkThemeService::GetFrom(Profile::FromBrowserContext(
-          owner->GetWebContents()->GetBrowserContext()))),
+      bg_box_(NULL),
+      hbox_(NULL),
+      theme_service_(NULL),
       signals_(new ui::GtkSignalRegistrar) {
-  DCHECK(delegate);
+}
+
+InfoBarGtk::~InfoBarGtk() {
+}
+
+void InfoBarGtk::InitWidgets() {
+  DCHECK(owner());
+  DCHECK(!theme_service_);
+  theme_service_ = GtkThemeService::GetFrom(Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext()));
+
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
 
@@ -74,7 +85,7 @@ InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
   gtk_container_add(GTK_CONTAINER(bg_box_), padding);
 
   // Add the icon on the left, if any.
-  gfx::Image* icon = delegate->GetIcon();
+  gfx::Image* icon = delegate()->GetIcon();
   if (icon) {
     GtkWidget* image = gtk_image_new_from_pixbuf(icon->ToGdkPixbuf());
 
@@ -101,14 +112,12 @@ InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
   UpdateBorderColor();
 }
 
-InfoBarGtk::~InfoBarGtk() {
-}
-
 GtkWidget* InfoBarGtk::widget() {
   return widget_.get();
 }
 
 GdkColor InfoBarGtk::GetBorderColor() const {
+  DCHECK(theme_service_);
   return theme_service_->GetBorderColor();
 }
 
@@ -121,10 +130,12 @@ ui::GtkSignalRegistrar* InfoBarGtk::Signals() {
 }
 
 GtkWidget* InfoBarGtk::CreateLabel(const std::string& text) {
+  DCHECK(theme_service_);
   return theme_service_->BuildLabel(text, ui::kGdkBlack);
 }
 
 GtkWidget* InfoBarGtk::CreateLinkButton(const std::string& text) {
+  DCHECK(theme_service_);
   return theme_service_->BuildChromeLinkButton(text);
 }
 
@@ -158,6 +169,7 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
                                         const string16& link_text,
                                         size_t link_offset,
                                         GCallback callback) {
+  DCHECK(hbox_);
   GtkWidget* link_button = CreateLinkButton(UTF16ToUTF8(link_text));
   gtk_util::ForceFontSizePixels(
       GTK_CHROME_LINK_BUTTON(link_button)->label, 13.4);
@@ -200,6 +212,7 @@ void InfoBarGtk::ShowMenuWithModel(GtkWidget* sender,
 
 void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
                              double* r, double* g, double* b) {
+  DCHECK(theme_service_);
   SkColor color = theme_service_->UsingNativeTheme() ?
                   theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
                   GetInfoBarTopColor(type);
@@ -210,6 +223,7 @@ void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
 
 void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
                                 double* r, double* g, double* b) {
+  DCHECK(theme_service_);
   SkColor color = theme_service_->UsingNativeTheme() ?
                   theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
                   GetInfoBarBottomColor(type);
@@ -219,13 +233,14 @@ void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
 }
 
 void InfoBarGtk::UpdateBorderColor() {
+  DCHECK(widget());
   gtk_widget_queue_draw(widget());
 }
 
 void InfoBarGtk::OnCloseButton(GtkWidget* button) {
   // If we're not owned, we're already closing, so don't call
   // InfoBarDismissed(), since this can lead to us double-recording dismissals.
-  if (delegate() && owned())
+  if (delegate() && owner())
     delegate()->InfoBarDismissed();
   RemoveSelf();
 }
@@ -233,6 +248,7 @@ void InfoBarGtk::OnCloseButton(GtkWidget* button) {
 gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
                                         GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "InfoBarGtk::OnBackgroundExpose");
+  DCHECK(theme_service_);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(sender, &allocation);
@@ -277,6 +293,9 @@ gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
 }
 
 void InfoBarGtk::PlatformSpecificShow(bool animate) {
+  DCHECK(bg_box_);
+
+  DCHECK(widget());
   gtk_widget_show_all(widget_.get());
   gtk_widget_set_size_request(widget_.get(), -1, bar_height());
 
@@ -293,6 +312,8 @@ void InfoBarGtk::PlatformSpecificOnCloseSoon() {
 }
 
 void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
+  DCHECK(bg_box_);
+  DCHECK(widget());
   gtk_widget_set_size_request(bg_box_, -1, bar_target_height());
   gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
                               bg_box_, 0,
@@ -305,6 +326,7 @@ void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
 void InfoBarGtk::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
+  DCHECK(widget());
   UpdateBorderColor();
 }
 

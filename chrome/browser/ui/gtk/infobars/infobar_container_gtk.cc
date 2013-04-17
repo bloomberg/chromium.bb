@@ -54,6 +54,7 @@ bool InfoBarContainerGtk::ContainsInfobars() const {
 void InfoBarContainerGtk::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                      size_t position) {
   InfoBarGtk* infobar_gtk = static_cast<InfoBarGtk*>(infobar);
+  infobar_gtk->InitWidgets();
   infobars_gtk_.insert(infobars_gtk_.begin() + position, infobar_gtk);
 
   if (infobars_gtk_.back() == infobar_gtk) {

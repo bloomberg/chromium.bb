@@ -76,7 +76,7 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(bool is_add,
 
 void AlternateNavInfoBarView::LinkClicked(views::Link* source,
                                           int event_flags) {
-  if (!owned())
+  if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);

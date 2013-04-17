@@ -19,15 +19,12 @@ class TranslateInfoBarBase : public InfoBarGtk {
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
-  // Initializes the infobar widgets. Should be called after the object has been
-  // created.
-  virtual void Init();
-
   // Overridden from InfoBar:
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
+  virtual void InitWidgets() OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

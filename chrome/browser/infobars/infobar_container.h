@@ -95,9 +95,9 @@ class InfoBarContainer : public content::NotificationObserver,
   // anything necessary to respond, e.g. re-layout.
   void OnInfoBarStateChanged(bool is_animating);
 
-  // Called by |infobar| to request that it be removed from the container, as it
-  // is about to delete itself.  At this point, |infobar| should already be
-  // hidden.
+  // Called by |infobar| to request that it be removed from the container.  At
+  // this point, |infobar| should already be hidden.  Once the infobar is
+  // removed, it is guaranteed to delete itself and will not be re-added again.
   void RemoveInfoBar(InfoBar* infobar);
 
   const Delegate* delegate() const { return delegate_; }
@@ -109,7 +109,9 @@ class InfoBarContainer : public content::NotificationObserver,
   void RemoveAllInfoBarsForDestruction();
 
   // These must be implemented on each platform to e.g. adjust the visible
-  // object hierarchy.
+  // object hierarchy.  The first two functions should each be called exactly
+  // once during an infobar's life (see comments on RemoveInfoBar() and
+  // AddInfoBar()).
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
                                           size_t position) = 0;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
@@ -144,6 +146,10 @@ class InfoBarContainer : public content::NotificationObserver,
   // infobar->Show().  Depending on the value of |callback_status|, this calls
   // infobar->set_container(this) either before or after the call to Show() so
   // that OnInfoBarStateChanged() either will or won't be called as a result.
+  //
+  // This should be called only once for an infobar -- once it's added, it can
+  // be repeatedly shown and hidden, but not removed and then re-added (see
+  // comments on RemoveInfoBar()).
   enum CallbackStatus { NO_CALLBACK, WANT_CALLBACK };
   void AddInfoBar(InfoBar* infobar,
                   size_t position,

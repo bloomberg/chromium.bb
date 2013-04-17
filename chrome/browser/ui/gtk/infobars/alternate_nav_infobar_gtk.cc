@@ -19,14 +19,19 @@ AlternateNavInfoBarGtk::AlternateNavInfoBarGtk(
     InfoBarService* owner,
     AlternateNavInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate) {
-  size_t link_offset;
-  string16 display_text = delegate->GetMessageTextWithOffset(&link_offset);
-  string16 link_text = delegate->GetLinkText();
-  AddLabelWithInlineLink(display_text, link_text, link_offset,
-                         G_CALLBACK(OnLinkClickedThunk));
 }
 
 AlternateNavInfoBarGtk::~AlternateNavInfoBarGtk() {
+}
+
+void AlternateNavInfoBarGtk::InitWidgets() {
+  InfoBarGtk::InitWidgets();
+
+  size_t link_offset;
+  string16 display_text = GetDelegate()->GetMessageTextWithOffset(&link_offset);
+  string16 link_text = GetDelegate()->GetLinkText();
+  AddLabelWithInlineLink(display_text, link_text, link_offset,
+                         G_CALLBACK(OnLinkClickedThunk));
 }
 
 void AlternateNavInfoBarGtk::OnLinkClicked(GtkWidget* button) {
