@@ -111,11 +111,6 @@
 #ifndef TCMALLOC_PACKED_CACHE_INL_H__
 #define TCMALLOC_PACKED_CACHE_INL_H__
 
-#ifndef WTF_CHANGES
-#include "base/basictypes.h"  // for COMPILE_ASSERT
-#include "base/logging.h"     // for DCHECK
-#endif
-
 #ifndef DCHECK_EQ
 #define DCHECK_EQ(val1, val2) ASSERT((val1) == (val2))
 #endif

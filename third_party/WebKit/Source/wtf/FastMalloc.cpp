@@ -90,9 +90,7 @@
 #include <wtf/UnusedParam.h>
 
 #ifndef NO_TCMALLOC_SAMPLES
-#ifdef WTF_CHANGES
 #define NO_TCMALLOC_SAMPLES
-#endif
 #endif
 
 #if !USE(SYSTEM_MALLOC) && defined(NDEBUG)
@@ -439,8 +437,6 @@ extern "C" WTF_EXPORT_PRIVATE const int jscore_fastmalloc_introspection = 0;
 #endif
 #include <windows.h>
 #endif
-
-#ifdef WTF_CHANGES
 
 #if OS(DARWIN)
 #include "MallocZoneSupport.h"
@@ -997,25 +993,6 @@ static void InitSizeClasses() {
   for (size_t cl = 1; cl  < kNumClasses; ++cl) {
     num_objects_to_move[cl] = NumMoveSize(ByteSizeForClass(cl));
   }
-
-#ifndef WTF_CHANGES
-  if (false) {
-    // Dump class sizes and maximum external wastage per size class
-    for (size_t cl = 1; cl  < kNumClasses; ++cl) {
-      const int alloc_size = class_to_pages[cl] << kPageShift;
-      const int alloc_objs = alloc_size / class_to_size[cl];
-      const int min_used = (class_to_size[cl-1] + 1) * alloc_objs;
-      const int max_waste = alloc_size - min_used;
-      MESSAGE("SC %3d [ %8d .. %8d ] from %8d ; %2.0f%% maxwaste\n",
-              int(cl),
-              int(class_to_size[cl-1] + 1),
-              int(class_to_size[cl]),
-              int(class_to_pages[cl] << kPageShift),
-              max_waste * 100.0 / alloc_size
-              );
-    }
-  }
-#endif
 }
 
 // -------------------------------------------------------------------------
@@ -1104,7 +1081,7 @@ class PageHeapAllocator {
 
   int inuse() const { return inuse_; }
 
-#if defined(WTF_CHANGES) && OS(DARWIN)
+#if OS(DARWIN)
   template <class Recorder>
   void recordAdministrativeRegions(Recorder& recorder, const RemoteMemoryReader& reader)
   {
@@ -1314,7 +1291,6 @@ class TCMalloc_Central_FreeList {
     return used_slots_ * num_objects_to_move[size_class_];
   }
 
-#ifdef WTF_CHANGES
   template <class Finder, class Reader>
   void enumerateFreeObjects(Finder& finder, const Reader& reader, TCMalloc_Central_FreeList* remoteCentralFreeList)
   {
@@ -1338,7 +1314,6 @@ class TCMalloc_Central_FreeList {
       }
     }
   }
-#endif
 
   uintptr_t entropy() const { return entropy_; }
  private:
@@ -1479,19 +1454,6 @@ private:
 
 #endif
 
-#endif
-
-#ifndef WTF_CHANGES
-// This #ifdef should almost never be set.  Set NO_TCMALLOC_SAMPLES if
-// you're porting to a system where you really can't get a stacktrace.
-#ifdef NO_TCMALLOC_SAMPLES
-// We use #define so code compiles even if you #include stacktrace.h somehow.
-# define GetStackTrace(stack, depth, skip)  (0)
-#else
-# include <google/stacktrace.h>
-#endif
-#endif
-
 // Even if we have support for thread-local storage in the compiler
 // and linker, the OS may not support it.  We need to check that at
 // runtime.  Right now, we have to keep a manual set of "bad" OSes.
@@ -1567,7 +1529,6 @@ template <int BITS> class MapSelector {
   typedef PackedCache<BITS, uint64_t> CacheType;
 };
 
-#if defined(WTF_CHANGES)
 #if CPU(X86_64)
 // On all known X86-64 platforms, the upper 16 bits are always unused and therefore 
 // can be excluded from the PageMap key.
@@ -1584,7 +1545,6 @@ template <> class MapSelector<64> {
   typedef TCMalloc_PageMap3<64 - kPageShift - kBitsUnusedOn64Bit> Type;
   typedef PackedCache<64, uint64_t> CacheType;
 };
-#endif
 
 // A two-level map for 32-bit machines
 template <> class MapSelector<32> {
@@ -1667,7 +1627,6 @@ class TCMalloc_PageHeap {
     return reinterpret_cast<Span*>(pagemap_.get(p));
   }
 
-#ifdef WTF_CHANGES
   inline Span* GetDescriptorEnsureSafe(PageID p)
   {
       pagemap_.Ensure(p, 1);
@@ -1675,12 +1634,6 @@ class TCMalloc_PageHeap {
   }
     
   size_t ReturnedBytes() const;
-#endif
-
-  // Dump state to stderr
-#ifndef WTF_CHANGES
-  void Dump(TCMalloc_Printer* out);
-#endif
 
   // Return number of bytes allocated from system
   inline uint64_t SystemBytes() const { return system_bytes_; }
@@ -1780,7 +1733,7 @@ class TCMalloc_PageHeap {
   // Index of last free list we scavenged
   size_t scavenge_index_;
   
-#if defined(WTF_CHANGES) && OS(DARWIN)
+#if OS(DARWIN)
   friend class FastMallocZone;
 #endif
 
@@ -2328,7 +2281,6 @@ void TCMalloc_PageHeap::RegisterSizeClass(Span* span, size_t sc) {
   }
 }
     
-#ifdef WTF_CHANGES
 size_t TCMalloc_PageHeap::ReturnedBytes() const {
     size_t result = 0;
     for (unsigned s = 0; s < kMaxPages; s++) {
@@ -2341,74 +2293,6 @@ size_t TCMalloc_PageHeap::ReturnedBytes() const {
         result += s->length << kPageShift;
     return result;
 }
-#endif
-
-#ifndef WTF_CHANGES
-static double PagesToMB(uint64_t pages) {
-  return (pages << kPageShift) / 1048576.0;
-}
-
-void TCMalloc_PageHeap::Dump(TCMalloc_Printer* out) {
-  int nonempty_sizes = 0;
-  for (int s = 0; s < kMaxPages; s++) {
-    if (!DLL_IsEmpty(&free_[s].normal) || !DLL_IsEmpty(&free_[s].returned)) {
-      nonempty_sizes++;
-    }
-  }
-  out->printf("------------------------------------------------\n");
-  out->printf("PageHeap: %d sizes; %6.1f MB free\n",
-              nonempty_sizes, PagesToMB(free_pages_));
-  out->printf("------------------------------------------------\n");
-  uint64_t total_normal = 0;
-  uint64_t total_returned = 0;
-  for (int s = 0; s < kMaxPages; s++) {
-    const int n_length = DLL_Length(&free_[s].normal);
-    const int r_length = DLL_Length(&free_[s].returned);
-    if (n_length + r_length > 0) {
-      uint64_t n_pages = s * n_length;
-      uint64_t r_pages = s * r_length;
-      total_normal += n_pages;
-      total_returned += r_pages;
-      out->printf("%6u pages * %6u spans ~ %6.1f MB; %6.1f MB cum"
-                  "; unmapped: %6.1f MB; %6.1f MB cum\n",
-                  s,
-                  (n_length + r_length),
-                  PagesToMB(n_pages + r_pages),
-                  PagesToMB(total_normal + total_returned),
-                  PagesToMB(r_pages),
-                  PagesToMB(total_returned));
-    }
-  }
-
-  uint64_t n_pages = 0;
-  uint64_t r_pages = 0;
-  int n_spans = 0;
-  int r_spans = 0;
-  out->printf("Normal large spans:\n");
-  for (Span* s = large_.normal.next; s != &large_.normal; s = s->next) {
-    out->printf("   [ %6" PRIuS " pages ] %6.1f MB\n",
-                s->length, PagesToMB(s->length));
-    n_pages += s->length;
-    n_spans++;
-  }
-  out->printf("Unmapped large spans:\n");
-  for (Span* s = large_.returned.next; s != &large_.returned; s = s->next) {
-    out->printf("   [ %6" PRIuS " pages ] %6.1f MB\n",
-                s->length, PagesToMB(s->length));
-    r_pages += s->length;
-    r_spans++;
-  }
-  total_normal += n_pages;
-  total_returned += r_pages;
-  out->printf(">255   large * %6u spans ~ %6.1f MB; %6.1f MB cum"
-              "; unmapped: %6.1f MB; %6.1f MB cum\n",
-              (n_spans + r_spans),
-              PagesToMB(n_pages + r_pages),
-              PagesToMB(total_normal + total_returned),
-              PagesToMB(r_pages),
-              PagesToMB(total_returned));
-}
-#endif
 
 bool TCMalloc_PageHeap::GrowHeap(Length n) {
   ASSERT(kMaxPages >= kMinSystemAlloc);
@@ -2614,14 +2498,12 @@ class TCMalloc_ThreadCache_FreeList {
         }
     }
 
-#ifdef WTF_CHANGES
   template <class Finder, class Reader>
   void enumerateFreeObjects(Finder& finder, const Reader& reader)
   {
       for (HardenedSLL nextObject = list_; nextObject; nextObject.setValue(reader.nextEntryInHardenedLinkedList(reinterpret_cast<void**>(nextObject.value()), entropy_)))
           finder.visit(nextObject.value());
   }
-#endif
 };
 
 //-------------------------------------------------------------------
@@ -2692,14 +2574,12 @@ class TCMalloc_ThreadCache {
   static void                  BecomeIdle();
   static void                  RecomputeThreadCacheSize();
 
-#ifdef WTF_CHANGES
   template <class Finder, class Reader>
   void enumerateFreeObjects(Finder& finder, const Reader& reader)
   {
       for (unsigned sizeClass = 0; sizeClass < kNumClasses; sizeClass++)
           list_[sizeClass].enumerateFreeObjects(finder, reader);
   }
-#endif
 };
 
 //-------------------------------------------------------------------
@@ -3349,9 +3229,7 @@ void TCMalloc_ThreadCache::InitModule() {
   SpinLockHolder h(&pageheap_lock);
   if (!phinited) {
     uintptr_t entropy = HARDENING_ENTROPY;
-#ifdef WTF_CHANGES
     InitTSD();
-#endif
     InitSizeClasses();
     threadheap_allocator.Init(entropy);
     span_allocator.Init(entropy);
@@ -3364,7 +3242,7 @@ void TCMalloc_ThreadCache::InitModule() {
     }
     pageheap->init();
     phinited = 1;
-#if defined(WTF_CHANGES) && OS(DARWIN)
+#if OS(DARWIN)
     FastMallocZone::init();
 #endif
   }
@@ -3432,11 +3310,7 @@ void TCMalloc_ThreadCache::InitTSD() {
   pthread_t zero;
   memset(&zero, 0, sizeof(zero));
 #endif
-#ifndef WTF_CHANGES
-  SpinLockHolder h(&pageheap_lock);
-#else
   ASSERT(pageheap_lock.IsHeld());
-#endif
   for (TCMalloc_ThreadCache* h = thread_heaps; h != NULL; h = h->next_) {
 #if OS(WINDOWS)
     if (h->tid_ == 0) {
@@ -3582,243 +3456,6 @@ struct TCMallocStats {
   uint64_t metadata_bytes;      // Bytes alloced for metadata
 };
 
-#ifndef WTF_CHANGES
-// Get stats into "r".  Also get per-size-class counts if class_count != NULL
-static void ExtractStats(TCMallocStats* r, uint64_t* class_count) {
-  r->central_bytes = 0;
-  r->transfer_bytes = 0;
-  for (int cl = 0; cl < kNumClasses; ++cl) {
-    const int length = central_cache[cl].length();
-    const int tc_length = central_cache[cl].tc_length();
-    r->central_bytes += static_cast<uint64_t>(ByteSizeForClass(cl)) * length;
-    r->transfer_bytes +=
-      static_cast<uint64_t>(ByteSizeForClass(cl)) * tc_length;
-    if (class_count) class_count[cl] = length + tc_length;
-  }
-
-  // Add stats from per-thread heaps
-  r->thread_bytes = 0;
-  { // scope
-    SpinLockHolder h(&pageheap_lock);
-    for (TCMalloc_ThreadCache* h = thread_heaps; h != NULL; h = h->next_) {
-      r->thread_bytes += h->Size();
-      if (class_count) {
-        for (size_t cl = 0; cl < kNumClasses; ++cl) {
-          class_count[cl] += h->freelist_length(cl);
-        }
-      }
-    }
-  }
-
-  { //scope
-    SpinLockHolder h(&pageheap_lock);
-    r->system_bytes = pageheap->SystemBytes();
-    r->metadata_bytes = metadata_system_bytes;
-    r->pageheap_bytes = pageheap->FreeBytes();
-  }
-}
-#endif
-
-#ifndef WTF_CHANGES
-// WRITE stats to "out"
-static void DumpStats(TCMalloc_Printer* out, int level) {
-  TCMallocStats stats;
-  uint64_t class_count[kNumClasses];
-  ExtractStats(&stats, (level >= 2 ? class_count : NULL));
-
-  if (level >= 2) {
-    out->printf("------------------------------------------------\n");
-    uint64_t cumulative = 0;
-    for (int cl = 0; cl < kNumClasses; ++cl) {
-      if (class_count[cl] > 0) {
-        uint64_t class_bytes = class_count[cl] * ByteSizeForClass(cl);
-        cumulative += class_bytes;
-        out->printf("class %3d [ %8" PRIuS " bytes ] : "
-                "%8" PRIu64 " objs; %5.1f MB; %5.1f cum MB\n",
-                cl, ByteSizeForClass(cl),
-                class_count[cl],
-                class_bytes / 1048576.0,
-                cumulative / 1048576.0);
-      }
-    }
-
-    SpinLockHolder h(&pageheap_lock);
-    pageheap->Dump(out);
-  }
-
-  const uint64_t bytes_in_use = stats.system_bytes
-                                - stats.pageheap_bytes
-                                - stats.central_bytes
-                                - stats.transfer_bytes
-                                - stats.thread_bytes;
-
-  out->printf("------------------------------------------------\n"
-              "MALLOC: %12" PRIu64 " Heap size\n"
-              "MALLOC: %12" PRIu64 " Bytes in use by application\n"
-              "MALLOC: %12" PRIu64 " Bytes free in page heap\n"
-              "MALLOC: %12" PRIu64 " Bytes free in central cache\n"
-              "MALLOC: %12" PRIu64 " Bytes free in transfer cache\n"
-              "MALLOC: %12" PRIu64 " Bytes free in thread caches\n"
-              "MALLOC: %12" PRIu64 " Spans in use\n"
-              "MALLOC: %12" PRIu64 " Thread heaps in use\n"
-              "MALLOC: %12" PRIu64 " Metadata allocated\n"
-              "------------------------------------------------\n",
-              stats.system_bytes,
-              bytes_in_use,
-              stats.pageheap_bytes,
-              stats.central_bytes,
-              stats.transfer_bytes,
-              stats.thread_bytes,
-              uint64_t(span_allocator.inuse()),
-              uint64_t(threadheap_allocator.inuse()),
-              stats.metadata_bytes);
-}
-
-static void PrintStats(int level) {
-  const int kBufferSize = 16 << 10;
-  char* buffer = new char[kBufferSize];
-  TCMalloc_Printer printer(buffer, kBufferSize);
-  DumpStats(&printer, level);
-  write(STDERR_FILENO, buffer, strlen(buffer));
-  delete[] buffer;
-}
-
-static void** DumpStackTraces() {
-  // Count how much space we need
-  int needed_slots = 0;
-  {
-    SpinLockHolder h(&pageheap_lock);
-    for (Span* s = sampled_objects.next; s != &sampled_objects; s = s->next) {
-      StackTrace* stack = reinterpret_cast<StackTrace*>(s->objects);
-      needed_slots += 3 + stack->depth;
-    }
-    needed_slots += 100;            // Slop in case sample grows
-    needed_slots += needed_slots/8; // An extra 12.5% slop
-  }
-
-  void** result = new void*[needed_slots];
-  if (result == NULL) {
-    MESSAGE("tcmalloc: could not allocate %d slots for stack traces\n",
-            needed_slots);
-    return NULL;
-  }
-
-  SpinLockHolder h(&pageheap_lock);
-  int used_slots = 0;
-  for (Span* s = sampled_objects.next; s != &sampled_objects; s = s->next) {
-    ASSERT(used_slots < needed_slots);  // Need to leave room for terminator
-    StackTrace* stack = reinterpret_cast<StackTrace*>(s->objects);
-    if (used_slots + 3 + stack->depth >= needed_slots) {
-      // No more room
-      break;
-    }
-
-    result[used_slots+0] = reinterpret_cast<void*>(static_cast<uintptr_t>(1));
-    result[used_slots+1] = reinterpret_cast<void*>(stack->size);
-    result[used_slots+2] = reinterpret_cast<void*>(stack->depth);
-    for (int d = 0; d < stack->depth; d++) {
-      result[used_slots+3+d] = stack->stack[d];
-    }
-    used_slots += 3 + stack->depth;
-  }
-  result[used_slots] = reinterpret_cast<void*>(static_cast<uintptr_t>(0));
-  return result;
-}
-#endif
-
-#ifndef WTF_CHANGES
-
-// TCMalloc's support for extra malloc interfaces
-class TCMallocImplementation : public MallocExtension {
- public:
-  virtual void GetStats(char* buffer, int buffer_length) {
-    ASSERT(buffer_length > 0);
-    TCMalloc_Printer printer(buffer, buffer_length);
-
-    // Print level one stats unless lots of space is available
-    if (buffer_length < 10000) {
-      DumpStats(&printer, 1);
-    } else {
-      DumpStats(&printer, 2);
-    }
-  }
-
-  virtual void** ReadStackTraces() {
-    return DumpStackTraces();
-  }
-
-  virtual bool GetNumericProperty(const char* name, size_t* value) {
-    ASSERT(name != NULL);
-
-    if (strcmp(name, "generic.current_allocated_bytes") == 0) {
-      TCMallocStats stats;
-      ExtractStats(&stats, NULL);
-      *value = stats.system_bytes
-               - stats.thread_bytes
-               - stats.central_bytes
-               - stats.pageheap_bytes;
-      return true;
-    }
-
-    if (strcmp(name, "generic.heap_size") == 0) {
-      TCMallocStats stats;
-      ExtractStats(&stats, NULL);
-      *value = stats.system_bytes;
-      return true;
-    }
-
-    if (strcmp(name, "tcmalloc.slack_bytes") == 0) {
-      // We assume that bytes in the page heap are not fragmented too
-      // badly, and are therefore available for allocation.
-      SpinLockHolder l(&pageheap_lock);
-      *value = pageheap->FreeBytes();
-      return true;
-    }
-
-    if (strcmp(name, "tcmalloc.max_total_thread_cache_bytes") == 0) {
-      SpinLockHolder l(&pageheap_lock);
-      *value = overall_thread_cache_size;
-      return true;
-    }
-
-    if (strcmp(name, "tcmalloc.current_total_thread_cache_bytes") == 0) {
-      TCMallocStats stats;
-      ExtractStats(&stats, NULL);
-      *value = stats.thread_bytes;
-      return true;
-    }
-
-    return false;
-  }
-
-  virtual bool SetNumericProperty(const char* name, size_t value) {
-    ASSERT(name != NULL);
-
-    if (strcmp(name, "tcmalloc.max_total_thread_cache_bytes") == 0) {
-      // Clip the value to a reasonable range
-      if (value < kMinThreadCacheSize) value = kMinThreadCacheSize;
-      if (value > (1<<30)) value = (1<<30);     // Limit to 1GB
-
-      SpinLockHolder l(&pageheap_lock);
-      overall_thread_cache_size = static_cast<size_t>(value);
-      TCMalloc_ThreadCache::RecomputeThreadCacheSize();
-      return true;
-    }
-
-    return false;
-  }
-
-  virtual void MarkThreadIdle() {
-    TCMalloc_ThreadCache::BecomeIdle();
-  }
-
-  virtual void ReleaseFreeMemory() {
-    SpinLockHolder h(&pageheap_lock);
-    pageheap->ReleaseFreePages();
-  }
-};
-#endif
-
 // The constructor allocates an object to ensure that initialization
 // runs before main(), and therefore we do not have a chance to become
 // multi-threaded before initialization.  We also create the TSD key
@@ -3839,74 +3476,15 @@ class TCMallocGuard {
     // Check whether the kernel also supports TLS (needs to happen at runtime)
     CheckIfKernelSupportsTLS();
 #endif
-#ifndef WTF_CHANGES
-#ifdef WIN32                    // patch the windows VirtualAlloc, etc.
-    PatchWindowsFunctions();    // defined in windows/patch_functions.cc
-#endif
-#endif
     free(malloc(1));
     TCMalloc_ThreadCache::InitTSD();
     free(malloc(1));
-#ifndef WTF_CHANGES
-    MallocExtension::Register(new TCMallocImplementation);
-#endif
   }
-
-#ifndef WTF_CHANGES
-  ~TCMallocGuard() {
-    const char* env = getenv("MALLOCSTATS");
-    if (env != NULL) {
-      int level = atoi(env);
-      if (level < 1) level = 1;
-      PrintStats(level);
-    }
-#ifdef WIN32
-    UnpatchWindowsFunctions();
-#endif
-  }
-#endif
 };
-
-#ifndef WTF_CHANGES
-static TCMallocGuard module_enter_exit_hook;
-#endif
-
 
 //-------------------------------------------------------------------
 // Helpers for the exported routines below
 //-------------------------------------------------------------------
-
-#ifndef WTF_CHANGES
-
-static Span* DoSampledAllocation(size_t size) {
-
-  // Grab the stack trace outside the heap lock
-  StackTrace tmp;
-  tmp.depth = GetStackTrace(tmp.stack, kMaxStackDepth, 1);
-  tmp.size = size;
-
-  SpinLockHolder h(&pageheap_lock);
-  // Allocate span
-  Span *span = pageheap->New(pages(size == 0 ? 1 : size));
-  if (span == NULL) {
-    return NULL;
-  }
-
-  // Allocate stack trace
-  StackTrace *stack = stacktrace_allocator.New();
-  if (stack == NULL) {
-    // Sampling failed because of lack of memory
-    return span;
-  }
-
-  *stack = tmp;
-  span->sample = 1;
-  span->objects = stack;
-  DLL_Prepend(&sampled_objects, span);
-
-  return span;
-}
-#endif
 
 static inline bool CheckCachedSizeClass(void *ptr) {
   PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
@@ -3929,26 +3507,14 @@ static inline void* SpanToMallocResult(Span *span) {
   return CheckedMallocResult(result);
 }
 
-#ifdef WTF_CHANGES
 template <bool crashOnFailure>
-#endif
 static ALWAYS_INLINE void* do_malloc(size_t size) {
   void* ret = NULL;
 
-#ifdef WTF_CHANGES
     ASSERT(!isForbidden());
-#endif
 
   // The following call forces module initialization
   TCMalloc_ThreadCache* heap = TCMalloc_ThreadCache::GetCache();
-#ifndef WTF_CHANGES
-  if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
-    Span* span = DoSampledAllocation(size);
-    if (span != NULL) {
-      ret = SpanToMallocResult(span);
-    }
-  } else
-#endif
   if (size > kMaxSize) {
     // Use page-level allocator
     SpinLockHolder h(&pageheap_lock);
@@ -3962,12 +3528,8 @@ static ALWAYS_INLINE void* do_malloc(size_t size) {
     ret = CheckedMallocResult(heap->Allocate(size));
   }
   if (!ret) {
-#ifdef WTF_CHANGES
     if (crashOnFailure) // This branch should be optimized out by the compiler.
         CRASH();
-#else
-    errno = ENOMEM;
-#endif
   }
   return ret;
 }
@@ -4015,85 +3577,7 @@ static ALWAYS_INLINE void do_free(void* ptr) {
   }
 }
 
-#ifndef WTF_CHANGES
-// For use by exported routines below that want specific alignments
-//
-// Note: this code can be slow, and can significantly fragment memory.
-// The expectation is that memalign/posix_memalign/valloc/pvalloc will
-// not be invoked very often.  This requirement simplifies our
-// implementation and allows us to tune for expected allocation
-// patterns.
-static void* do_memalign(size_t align, size_t size) {
-  ASSERT((align & (align - 1)) == 0);
-  ASSERT(align > 0);
-  if (pageheap == NULL) TCMalloc_ThreadCache::InitModule();
-
-  // Allocate at least one byte to avoid boundary conditions below
-  if (size == 0) size = 1;
-
-  if (size <= kMaxSize && align < kPageSize) {
-    // Search through acceptable size classes looking for one with
-    // enough alignment.  This depends on the fact that
-    // InitSizeClasses() currently produces several size classes that
-    // are aligned at powers of two.  We will waste time and space if
-    // we miss in the size class array, but that is deemed acceptable
-    // since memalign() should be used rarely.
-    size_t cl = SizeClass(size);
-    while (cl < kNumClasses && ((class_to_size[cl] & (align - 1)) != 0)) {
-      cl++;
-    }
-    if (cl < kNumClasses) {
-      TCMalloc_ThreadCache* heap = TCMalloc_ThreadCache::GetCache();
-      return CheckedMallocResult(heap->Allocate(class_to_size[cl]));
-    }
-  }
-
-  // We will allocate directly from the page heap
-  SpinLockHolder h(&pageheap_lock);
-
-  if (align <= kPageSize) {
-    // Any page-level allocation will be fine
-    // TODO: We could put the rest of this page in the appropriate
-    // TODO: cache but it does not seem worth it.
-    Span* span = pageheap->New(pages(size));
-    return span == NULL ? NULL : SpanToMallocResult(span);
-  }
-
-  // Allocate extra pages and carve off an aligned portion
-  const Length alloc = pages(size + align);
-  Span* span = pageheap->New(alloc);
-  if (span == NULL) return NULL;
-
-  // Skip starting portion so that we end up aligned
-  Length skip = 0;
-  while ((((span->start+skip) << kPageShift) & (align - 1)) != 0) {
-    skip++;
-  }
-  ASSERT(skip < alloc);
-  if (skip > 0) {
-    Span* rest = pageheap->Split(span, skip);
-    pageheap->Delete(span);
-    span = rest;
-  }
-
-  // Skip trailing portion that we do not need to return
-  const Length needed = pages(size);
-  ASSERT(span->length >= needed);
-  if (span->length > needed) {
-    Span* trailer = pageheap->Split(span, needed);
-    pageheap->Delete(trailer);
-  }
-  return SpanToMallocResult(span);
-}
-#endif
-
 // Helpers for use by exported routines below:
-
-#ifndef WTF_CHANGES
-static inline void do_malloc_stats() {
-  PrintStats(1);
-}
-#endif
 
 static inline int do_mallopt(int, int) {
   return 1;     // Indicates error
@@ -4134,9 +3618,6 @@ static inline struct mallinfo do_mallinfo() {
 //         heap-checker.cc depends on this to start a stack trace from
 //         the call to the (de)allocation function.
 
-#ifndef WTF_CHANGES
-extern "C" 
-#else
 #define do_malloc do_malloc<crashOnFailure>
 
 template <bool crashOnFailure>
@@ -4154,7 +3635,6 @@ TryMallocReturnValue tryFastMalloc(size_t size)
 
 template <bool crashOnFailure>
 ALWAYS_INLINE
-#endif
 void* malloc(size_t size) {
 #if ENABLE(WTF_MALLOC_VALIDATION)
     if (std::numeric_limits<size_t>::max() - Internal::ValidationBufferSize <= size)  // If overflow would occur...
@@ -4174,20 +3654,10 @@ void* malloc(size_t size) {
     void* result = do_malloc(size);
 #endif
 
-#ifndef WTF_CHANGES
-  MallocHook::InvokeNewHook(result, size);
-#endif
   return result;
 }
 
-#ifndef WTF_CHANGES
-extern "C" 
-#endif
 void free(void* ptr) {
-#ifndef WTF_CHANGES
-  MallocHook::InvokeDeleteHook(ptr);
-#endif
-
 #if ENABLE(WTF_MALLOC_VALIDATION)
     if (!ptr)
         return;
@@ -4201,9 +3671,6 @@ void free(void* ptr) {
 #endif
 }
 
-#ifndef WTF_CHANGES
-extern "C" 
-#else
 template <bool crashOnFailure>
 ALWAYS_INLINE void* calloc(size_t, size_t);
 
@@ -4227,7 +3694,6 @@ TryMallocReturnValue tryFastCalloc(size_t n, size_t elem_size)
 
 template <bool crashOnFailure>
 ALWAYS_INLINE
-#endif
 void* calloc(size_t n, size_t elem_size) {
   size_t totalBytes = n * elem_size;
     
@@ -4249,28 +3715,10 @@ void* calloc(size_t n, size_t elem_size) {
     }
 #endif
 
-#ifndef WTF_CHANGES
-  MallocHook::InvokeNewHook(result, totalBytes);
-#endif
   return result;
 }
 
 // Since cfree isn't used anywhere, we don't compile it in.
-#ifndef WTF_CHANGES
-#ifndef WTF_CHANGES
-extern "C" 
-#endif
-void cfree(void* ptr) {
-#ifndef WTF_CHANGES
-    MallocHook::InvokeDeleteHook(ptr);
-#endif
-  do_free(ptr);
-}
-#endif
-
-#ifndef WTF_CHANGES
-extern "C" 
-#else
 template <bool crashOnFailure>
 ALWAYS_INLINE void* realloc(void*, size_t);
 
@@ -4300,23 +3748,16 @@ TryMallocReturnValue tryFastRealloc(void* old_ptr, size_t new_size)
 
 template <bool crashOnFailure>
 ALWAYS_INLINE
-#endif
 void* realloc(void* old_ptr, size_t new_size) {
   if (old_ptr == NULL) {
 #if ENABLE(WTF_MALLOC_VALIDATION)
     void* result = malloc<crashOnFailure>(new_size);
 #else
     void* result = do_malloc(new_size);
-#ifndef WTF_CHANGES
-    MallocHook::InvokeNewHook(result, new_size);
-#endif
 #endif
     return result;
   }
   if (new_size == 0) {
-#ifndef WTF_CHANGES
-    MallocHook::InvokeDeleteHook(old_ptr);
-#endif
     free(old_ptr);
     return NULL;
   }
@@ -4356,13 +3797,7 @@ void* realloc(void* old_ptr, size_t new_size) {
     if (new_ptr == NULL) {
       return NULL;
     }
-#ifndef WTF_CHANGES
-    MallocHook::InvokeNewHook(new_ptr, new_size);
-#endif
     memcpy(new_ptr, old_ptr, ((old_size < new_size) ? old_size : new_size));
-#ifndef WTF_CHANGES
-    MallocHook::InvokeDeleteHook(old_ptr);
-#endif
     // We could use a variant of do_free() that leverages the fact
     // that we already know the sizeclass of old_ptr.  The benefit
     // would be small, so don't bother.
@@ -4381,166 +3816,8 @@ void* realloc(void* old_ptr, size_t new_size) {
   }
 }
 
-#ifdef WTF_CHANGES
 #undef do_malloc
-#else
 
-static SpinLock set_new_handler_lock = SPINLOCK_INITIALIZER;
-
-static inline void* cpp_alloc(size_t size, bool nothrow) {
-  for (;;) {
-    void* p = do_malloc(size);
-#ifdef PREANSINEW
-    return p;
-#else
-    if (p == NULL) {  // allocation failed
-      // Get the current new handler.  NB: this function is not
-      // thread-safe.  We make a feeble stab at making it so here, but
-      // this lock only protects against tcmalloc interfering with
-      // itself, not with other libraries calling set_new_handler.
-      std::new_handler nh;
-      {
-        SpinLockHolder h(&set_new_handler_lock);
-        nh = std::set_new_handler(0);
-        (void) std::set_new_handler(nh);
-      }
-      // If no new_handler is established, the allocation failed.
-      if (!nh) {
-        if (nothrow) return 0;
-        throw std::bad_alloc();
-      }
-      // Otherwise, try the new_handler.  If it returns, retry the
-      // allocation.  If it throws std::bad_alloc, fail the allocation.
-      // if it throws something else, don't interfere.
-      try {
-        (*nh)();
-      } catch (const std::bad_alloc&) {
-        if (!nothrow) throw;
-        return p;
-      }
-    } else {  // allocation success
-      return p;
-    }
-#endif
-  }
-}
-
-extern "C" void* memalign(size_t align, size_t size) __THROW {
-  void* result = do_memalign(align, size);
-  MallocHook::InvokeNewHook(result, size);
-  return result;
-}
-
-extern "C" int posix_memalign(void** result_ptr, size_t align, size_t size)
-    __THROW {
-  if (((align % sizeof(void*)) != 0) ||
-      ((align & (align - 1)) != 0) ||
-      (align == 0)) {
-    return EINVAL;
-  }
-
-  void* result = do_memalign(align, size);
-  MallocHook::InvokeNewHook(result, size);
-  if (result == NULL) {
-    return ENOMEM;
-  } else {
-    *result_ptr = result;
-    return 0;
-  }
-}
-
-static size_t pagesize = 0;
-
-extern "C" void* valloc(size_t size) __THROW {
-  // Allocate page-aligned object of length >= size bytes
-  if (pagesize == 0) pagesize = getpagesize();
-  void* result = do_memalign(pagesize, size);
-  MallocHook::InvokeNewHook(result, size);
-  return result;
-}
-
-extern "C" void* pvalloc(size_t size) __THROW {
-  // Round up size to a multiple of pagesize
-  if (pagesize == 0) pagesize = getpagesize();
-  size = (size + pagesize - 1) & ~(pagesize - 1);
-  void* result = do_memalign(pagesize, size);
-  MallocHook::InvokeNewHook(result, size);
-  return result;
-}
-
-extern "C" void malloc_stats(void) {
-  do_malloc_stats();
-}
-
-extern "C" int mallopt(int cmd, int value) {
-  return do_mallopt(cmd, value);
-}
-
-#ifdef HAVE_STRUCT_MALLINFO
-extern "C" struct mallinfo mallinfo(void) {
-  return do_mallinfo();
-}
-#endif
-
-//-------------------------------------------------------------------
-// Some library routines on RedHat 9 allocate memory using malloc()
-// and free it using __libc_free() (or vice-versa).  Since we provide
-// our own implementations of malloc/free, we need to make sure that
-// the __libc_XXX variants (defined as part of glibc) also point to
-// the same implementations.
-//-------------------------------------------------------------------
-
-#if defined(__GLIBC__)
-extern "C" {
-#if COMPILER(GCC) && !defined(__MACH__) && defined(HAVE___ATTRIBUTE__)
-  // Potentially faster variants that use the gcc alias extension.
-  // Mach-O (Darwin) does not support weak aliases, hence the __MACH__ check.
-# define ALIAS(x) __attribute__ ((weak, alias (x)))
-  void* __libc_malloc(size_t size)              ALIAS("malloc");
-  void  __libc_free(void* ptr)                  ALIAS("free");
-  void* __libc_realloc(void* ptr, size_t size)  ALIAS("realloc");
-  void* __libc_calloc(size_t n, size_t size)    ALIAS("calloc");
-  void  __libc_cfree(void* ptr)                 ALIAS("cfree");
-  void* __libc_memalign(size_t align, size_t s) ALIAS("memalign");
-  void* __libc_valloc(size_t size)              ALIAS("valloc");
-  void* __libc_pvalloc(size_t size)             ALIAS("pvalloc");
-  int __posix_memalign(void** r, size_t a, size_t s) ALIAS("posix_memalign");
-# undef ALIAS
-# else   /* not __GNUC__ */
-  // Portable wrappers
-  void* __libc_malloc(size_t size)              { return malloc(size);       }
-  void  __libc_free(void* ptr)                  { free(ptr);                 }
-  void* __libc_realloc(void* ptr, size_t size)  { return realloc(ptr, size); }
-  void* __libc_calloc(size_t n, size_t size)    { return calloc(n, size);    }
-  void  __libc_cfree(void* ptr)                 { cfree(ptr);                }
-  void* __libc_memalign(size_t align, size_t s) { return memalign(align, s); }
-  void* __libc_valloc(size_t size)              { return valloc(size);       }
-  void* __libc_pvalloc(size_t size)             { return pvalloc(size);      }
-  int __posix_memalign(void** r, size_t a, size_t s) {
-    return posix_memalign(r, a, s);
-  }
-# endif  /* __GNUC__ */
-}
-#endif   /* __GLIBC__ */
-
-// Override __libc_memalign in libc on linux boxes specially.
-// They have a bug in libc that causes them to (very rarely) allocate
-// with __libc_memalign() yet deallocate with free() and the
-// definitions above don't catch it.
-// This function is an exception to the rule of calling MallocHook method
-// from the stack frame of the allocation function;
-// heap-checker handles this special case explicitly.
-static void *MemalignOverride(size_t align, size_t size, const void *caller)
-    __THROW {
-  void* result = do_memalign(align, size);
-  MallocHook::InvokeNewHook(result, size);
-  return result;
-}
-void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
-
-#endif
-
-#ifdef WTF_CHANGES
 void releaseFastMallocFreeMemory()
 {
     // Flush free pages in the current thread cache back to the page heap.
@@ -4929,6 +4206,5 @@ void FastMallocZone::init()
 #endif // OS(DARWIN)
 
 } // namespace WTF
-#endif // WTF_CHANGES
 
 #endif // FORCE_SYSTEM_MALLOC

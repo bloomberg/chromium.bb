@@ -72,8 +72,3 @@
 #else
 #define SKIP_STATIC_CONSTRUCTORS_ON_GCC 1
 #endif
-
-// Chromium uses this file instead of JavaScriptCore/config.h to compile
-// JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,
-// this define is required.
-#define WTF_CHANGES 1

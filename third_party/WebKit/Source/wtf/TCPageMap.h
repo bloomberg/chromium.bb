@@ -154,7 +154,6 @@ class TCMalloc_PageMap2 {
     Ensure(0, 1 << BITS);
   }
 
-#ifdef WTF_CHANGES
   template<class Visitor, class MemoryReader>
   void visitValues(Visitor& visitor, const MemoryReader& reader)
   {
@@ -175,7 +174,6 @@ class TCMalloc_PageMap2 {
         visitor.visit(root_[i], sizeof(Leaf));
     }
   }
-#endif
 };
 
 // Three-level radix tree
@@ -264,7 +262,6 @@ class TCMalloc_PageMap3 {
   void PreallocateMoreMemory() {
   }
 
-#ifdef WTF_CHANGES
   template<class Visitor, class MemoryReader>
   void visitValues(Visitor& visitor, const MemoryReader& reader) {
     Node* root = reader(root_);
@@ -303,7 +300,6 @@ class TCMalloc_PageMap3 {
       }
     }
   }
-#endif
 };
 
 #endif  // TCMALLOC_PAGEMAP_H__
