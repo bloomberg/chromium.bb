@@ -399,6 +399,7 @@ class BluetoothDeviceChromeOS
   // Tracked device state, updated by the adapter managing the lifecyle of
   // the device.
   bool paired_;
+  bool trusted_;
   bool connected_;
 
   // Indicates whether the device normally accepts connections initiated from

@@ -52,6 +52,7 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
       adapter_(adapter),
       bluetooth_class_(0),
       paired_(false),
+      trusted_(false),
       connected_(false),
       connectable_(true),
       connecting_(false),
@@ -78,7 +79,7 @@ std::string BluetoothDeviceChromeOS::GetAddress() const {
 }
 
 bool BluetoothDeviceChromeOS::IsPaired() const {
-  return paired_;
+  return paired_ || trusted_;
 }
 
 bool BluetoothDeviceChromeOS::IsConnected() const {
@@ -390,6 +391,7 @@ void BluetoothDeviceChromeOS::Update(
                         base::Bind(&base::DoNothing));
 
     paired_ = properties->paired.value();
+    trusted_ = properties->trusted.value();
     connected_ = properties->connected.value();
   }
 }
