@@ -19,7 +19,6 @@
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu/chrome_gpu_util.h"
-#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile_manager.h"
