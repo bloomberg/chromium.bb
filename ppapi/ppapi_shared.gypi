@@ -235,7 +235,6 @@
           'thunk/ppb_udp_socket_private_thunk.cc',
           'thunk/ppb_url_loader_api.h',
           'thunk/ppb_url_loader_thunk.cc',
-          'thunk/ppb_url_loader_trusted_thunk.cc',
           'thunk/ppb_url_request_info_api.h',
           'thunk/ppb_url_request_info_thunk.cc',
           'thunk/ppb_url_response_info_api.h',
