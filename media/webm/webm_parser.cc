@@ -599,7 +599,9 @@ static int ParseBinary(const uint8* buf, int size, int id,
 
 static int ParseString(const uint8* buf, int size, int id,
                        WebMParserClient* client) {
-  std::string str(reinterpret_cast<const char*>(buf), size);
+  const uint8* end = static_cast<const uint8*>(memchr(buf, '\0', size));
+  int length = (end != NULL) ? static_cast<int>(end - buf) : size;
+  std::string str(reinterpret_cast<const char*>(buf), length);
   return client->OnString(id, str) ? size : -1;
 }
 

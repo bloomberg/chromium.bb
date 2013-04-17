@@ -367,4 +367,29 @@ TEST_F(WebMParserTest, ReservedSizes) {
   }
 }
 
+TEST_F(WebMParserTest, ZeroPaddedStrings) {
+  const uint8 kBuffer[] = {
+    0x1A, 0x45, 0xDF, 0xA3, 0x91,  // EBMLHEADER (size = 17)
+    0x42, 0x82, 0x80,  // DocType (size = 0)
+    0x42, 0x82, 0x81, 0x00,  // DocType (size = 1) ""
+    0x42, 0x82, 0x81, 'a',  // DocType (size = 1) "a"
+    0x42, 0x82, 0x83, 'a', 0x00, 0x00  // DocType (size = 3) "a"
+  };
+  int size = sizeof(kBuffer);
+
+  InSequence s;
+  EXPECT_CALL(client_, OnListStart(kWebMIdEBMLHeader))
+      .WillOnce(Return(&client_));
+  EXPECT_CALL(client_, OnString(kWebMIdDocType, "")).WillOnce(Return(true));
+  EXPECT_CALL(client_, OnString(kWebMIdDocType, "")).WillOnce(Return(true));
+  EXPECT_CALL(client_, OnString(kWebMIdDocType, "a")).WillOnce(Return(true));
+  EXPECT_CALL(client_, OnString(kWebMIdDocType, "a")).WillOnce(Return(true));
+  EXPECT_CALL(client_, OnListEnd(kWebMIdEBMLHeader)).WillOnce(Return(true));
+
+  WebMListParser parser(kWebMIdEBMLHeader, &client_);
+  int result = parser.Parse(kBuffer, size);
+  EXPECT_EQ(size, result);
+  EXPECT_TRUE(parser.IsParsingComplete());
+}
+
 }  // namespace media
