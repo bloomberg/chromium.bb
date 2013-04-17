@@ -184,10 +184,10 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const content::IndexedDBInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
 
-      dict->SetString(kKeyOrigin, indexed_db_info.origin.spec());
-      dict->SetString(kKeySize, ui::FormatBytes(indexed_db_info.size));
+      dict->SetString(kKeyOrigin, indexed_db_info.origin_.spec());
+      dict->SetString(kKeySize, ui::FormatBytes(indexed_db_info.size_));
       dict->SetString(kKeyModified, UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified)));
+          base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified_)));
 
       break;
     }

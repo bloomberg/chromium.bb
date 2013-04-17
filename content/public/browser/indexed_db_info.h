@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_INDEXED_DB_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_INDEXED_DB_INFO_H_
 
+#include "base/files/file_path.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
@@ -15,11 +16,13 @@ class CONTENT_EXPORT IndexedDBInfo {
  public:
   IndexedDBInfo(const GURL& origin,
                 int64 size,
-                const base::Time& last_modified);
+                const base::Time& last_modified,
+                const base::FilePath& path);
 
-  GURL origin;
-  int64 size;
-  base::Time last_modified;
+  GURL origin_;
+  int64 size_;
+  base::Time last_modified_;
+  base::FilePath path_;
 };
 
 }  // namespace content

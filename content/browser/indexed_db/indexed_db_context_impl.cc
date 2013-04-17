@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -130,9 +132,12 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
        iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
 
+    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin);
+    base::FilePath idb_directory = GetIndexedDBFilePath(origin_id);
     result.push_back(IndexedDBInfo(origin,
                                    GetOriginDiskUsage(origin),
-                                   GetOriginLastModified(origin)));
+                                   GetOriginLastModified(origin),
+                                   idb_directory));
   }
   return result;
 }

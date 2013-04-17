@@ -110,7 +110,7 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   for (std::vector<IndexedDBInfo>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
     const IndexedDBInfo& origin = *iter;
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin_))
       continue;  // Non-websafe state is not considered browsing data.
 
     indexed_db_info_.push_back(origin);
@@ -231,13 +231,13 @@ void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
   for (std::set<PendingIndexedDBInfo>::const_iterator
        pending_info = pending_indexed_db_info_.begin();
        pending_info != pending_indexed_db_info_.end(); ++pending_info) {
-    IndexedDBInfo info(pending_info->origin, 0, base::Time());
+    IndexedDBInfo info(pending_info->origin, 0, base::Time(), base::FilePath());
     indexed_db_info_.push_back(info);
   }
 
- BrowserThread::PostTask(
-     BrowserThread::UI, FROM_HERE,
-     base::Bind(&CannedBrowsingDataIndexedDBHelper::NotifyInUIThread, this));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CannedBrowsingDataIndexedDBHelper::NotifyInUIThread, this));
 }
 
 void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {

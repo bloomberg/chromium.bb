@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -24,8 +25,7 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->RegisterMessageCallback(
       "getAllOrigins",
-      base::Bind(&IndexedDBInternalsUI::GetAllOrigins,
-                 base::Unretained(this)));
+      base::Bind(&IndexedDBInternalsUI::GetAllOrigins, base::Unretained(this)));
 
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIIndexedDBInternalsHost);
@@ -42,7 +42,15 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
   WebUIDataSource::Add(browser_context, source);
 }
 
-IndexedDBInternalsUI::~IndexedDBInternalsUI() {
+IndexedDBInternalsUI::~IndexedDBInternalsUI() {}
+
+void IndexedDBInternalsUI::AddContextFromStoragePartition(
+    ContextList* contexts,
+    std::vector<base::FilePath>* paths,
+    StoragePartition* partition) {
+  scoped_refptr<IndexedDBContext> context = partition->GetIndexedDBContext();
+  contexts->push_back(context);
+  paths->push_back(partition->GetPath());
 }
 
 void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
@@ -51,50 +59,69 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
-  // TODO(alecflett): do this for each storage partition in the context
-  StoragePartition* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context);
-  scoped_refptr<IndexedDBContext> context = partition->GetIndexedDBContext();
+  scoped_ptr<std::vector<base::FilePath> > paths(
+      new std::vector<base::FilePath>);
+  scoped_ptr<ContextList> contexts(new ContextList);
+  BrowserContext::StoragePartitionCallback cb =
+      base::Bind(&AddContextFromStoragePartition, contexts.get(), paths.get());
+  BrowserContext::ForEachStoragePartition(browser_context, cb);
 
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-      base::Bind(
-          &IndexedDBInternalsUI::GetAllOriginsOnWebkitThread,
-          base::Unretained(this),
-          context));
+      BrowserThread::WEBKIT_DEPRECATED,
+      FROM_HERE,
+      base::Bind(&IndexedDBInternalsUI::GetAllOriginsOnWebkitThread,
+                 base::Unretained(this),
+                 base::Passed(&contexts),
+                 base::Passed(&paths)));
 }
 
 bool HostNameComparator(const IndexedDBInfo& i, const IndexedDBInfo& j) {
-  return i.origin.host() < j.origin.host();
+  return i.origin_.host() < j.origin_.host();
 }
 
 void IndexedDBInternalsUI::GetAllOriginsOnWebkitThread(
-    scoped_refptr<IndexedDBContext> context) {
+    scoped_ptr<ContextList> contexts,
+    scoped_ptr<std::vector<base::FilePath> > context_paths) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK_EQ(contexts->size(), context_paths->size());
 
-  scoped_ptr<std::vector<IndexedDBInfo> > origins(
-      new std::vector<IndexedDBInfo>(context->GetAllOriginsInfo()));
-  std::sort(origins->begin(), origins->end(), HostNameComparator);
+  std::vector<base::FilePath>::const_iterator path_iter =
+      context_paths->begin();
+  for (ContextList::const_iterator iter = contexts->begin();
+       iter != contexts->end();
+       ++iter, ++path_iter) {
+    IndexedDBContext* context = *iter;
+    const base::FilePath& context_path = *path_iter;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&IndexedDBInternalsUI::OnOriginsReady, base::Unretained(this),
-                 base::Passed(&origins)));
+    scoped_ptr<std::vector<IndexedDBInfo> > info_list(
+        new std::vector<IndexedDBInfo>(context->GetAllOriginsInfo()));
+    std::sort(info_list->begin(), info_list->end(), HostNameComparator);
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&IndexedDBInternalsUI::OnOriginsReady,
+                                       base::Unretained(this),
+                                       base::Passed(&info_list),
+                                       context_path));
+  }
 }
 
 void IndexedDBInternalsUI::OnOriginsReady(
-    scoped_ptr<std::vector<IndexedDBInfo> > origins) {
+    scoped_ptr<std::vector<IndexedDBInfo> > origins,
+    const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::ListValue urls;
   for (std::vector<IndexedDBInfo>::const_iterator iter = origins->begin();
-       iter != origins->end(); ++iter) {
+       iter != origins->end();
+       ++iter) {
     base::DictionaryValue* info = new DictionaryValue;
-    info->SetString("url", iter->origin.spec());
-    info->SetDouble("size", iter->size);
-    info->SetDouble("last_modified", iter->last_modified.ToJsTime());
+    info->SetString("url", iter->origin_.spec());
+    info->SetDouble("size", iter->size_);
+    info->SetDouble("last_modified", iter->last_modified_.ToJsTime());
+    info->SetString("path", iter->path_.value());
     urls.Append(info);
   }
-  web_ui()->CallJavascriptFunction("indexeddb.onOriginsReady", urls);
+  web_ui()->CallJavascriptFunction(
+      "indexeddb.onOriginsReady", urls, base::StringValue(path.value()));
 }
 
 }  // namespace content

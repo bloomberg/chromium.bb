@@ -45,9 +45,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   ASSERT_EQ(2U, result.size());
   std::list<content::IndexedDBInfo>::iterator info =
       result.begin();
-  EXPECT_EQ(origin1, info->origin);
+  EXPECT_EQ(origin1, info->origin_);
   info++;
-  EXPECT_EQ(origin2, info->origin);
+  EXPECT_EQ(origin2, info->origin_);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
@@ -68,6 +68,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
       callback.result();
 
   ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(origin, result.begin()->origin);
+  EXPECT_EQ(origin, result.begin()->origin_);
 }
 }  // namespace

@@ -12,10 +12,11 @@
     <div style="display:none">
         <div id="indexeddb-list-template">
             <div class="indexeddb-summary">
-                <span>IndexedDB instances</span>
-                <span jscontent="'(' + $this.length + ')'"></span>
+                <span>Instances in: </span>
+                <span jscontent="$this.path"></span>
+                <span jscontent="'(' + $this.idbs.length + ')'"></span>
             </div>
-            <div class="indexeddb-item" jsselect="$this">
+            <div class="indexeddb-item" jsselect="$this.idbs">
                 <a class="indexeddb-url" jscontent="url" jsvalues="href:url"
                    target="_blank"></a>
                 <div class="indexeddb-size">
@@ -25,6 +26,10 @@
                 <div class="indexeddb-last-modified">
                     <span>Last modified:</span>
                     <span jscontent="new Date(last_modified)"></span>
+                </div>
+                <div class="indexeddb-last-modified">
+                    <span>Path:</span>
+                    <span jscontent="path"></span>
                 </div>
             </div>
         </div>

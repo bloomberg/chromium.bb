@@ -8,7 +8,9 @@ namespace content {
 
 IndexedDBInfo::IndexedDBInfo(const GURL& origin,
                              int64 size,
-                             const base::Time& last_modified)
-    : origin(origin), size(size), last_modified(last_modified) {}
+                             const base::Time& last_modified,
+                             const base::FilePath& path)
+    : origin_(origin), size_(size), last_modified_(last_modified), path_(path) {
+}
 
 }  // namespace content

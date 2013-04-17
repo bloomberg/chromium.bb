@@ -245,12 +245,12 @@
     type_ = kCocoaCookieDetailsTypeTreeIndexedDB;
     canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(
-        indexedDBInfo->origin.spec()) retain]);
+        indexedDBInfo->origin_.spec()) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(
-        ui::FormatBytes(indexedDBInfo->size)) retain]);
+        ui::FormatBytes(indexedDBInfo->size_)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
-            indexedDBInfo->last_modified)) retain]);
+            indexedDBInfo->last_modified_)) retain]);
   }
   return self;
 }

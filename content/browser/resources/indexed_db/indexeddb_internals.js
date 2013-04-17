@@ -9,13 +9,11 @@ cr.define('indexeddb', function() {
     chrome.send('getAllOrigins');
   }
 
-  function onOriginsReady(origins) {
-    console.log('Origins: ', origins);
-
+  function onOriginsReady(origins, path) {
     var template = jstGetTemplate('indexeddb-list-template');
     var container = $('indexeddb-list');
     container.appendChild(template);
-    jstProcess(new JsEvalContext(origins), template);
+    jstProcess(new JsEvalContext({ idbs: origins, path: path}), template);
   }
 
   return {

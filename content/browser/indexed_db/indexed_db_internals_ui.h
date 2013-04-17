@@ -12,11 +12,11 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
 
-namespace base {
-  class ListValue;
-}
+namespace base { class ListValue; }
 
 namespace content {
+
+class StoragePartition;
 
 // The implementation for the chrome://indexeddb-internals page.
 class IndexedDBInternalsUI : public WebUIController {
@@ -25,9 +25,17 @@ class IndexedDBInternalsUI : public WebUIController {
   virtual ~IndexedDBInternalsUI();
 
  private:
+  typedef std::vector<scoped_refptr<IndexedDBContext> > ContextList;
   void GetAllOrigins(const base::ListValue* args);
-  void GetAllOriginsOnWebkitThread(scoped_refptr<IndexedDBContext> context);
-  void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins);
+  void GetAllOriginsOnWebkitThread(
+      scoped_ptr<ContextList> contexts,
+      scoped_ptr<std::vector<base::FilePath> > context_paths);
+  void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins,
+                      const base::FilePath& path);
+
+  static void AddContextFromStoragePartition(ContextList* contexts,
+                                             std::vector<base::FilePath>* paths,
+                                             StoragePartition* partition);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBInternalsUI);
 };
