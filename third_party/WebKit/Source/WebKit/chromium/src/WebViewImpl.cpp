@@ -1806,6 +1806,12 @@ void WebViewImpl::layout()
 
     if (m_linkHighlight)
         m_linkHighlight->updateGeometry();
+
+    if (!m_page)
+        return;
+
+    FrameView* view = m_page->mainFrame()->view();
+    setBackgroundColor(view->documentBackgroundColor());
 }
 
 void WebViewImpl::enterForceCompositingMode(bool enter)
@@ -1822,6 +1828,7 @@ void WebViewImpl::enterForceCompositingMode(bool enter)
         if (!mainFrame)
             return;
         mainFrame->view()->updateCompositingLayersAfterStyleChange();
+        setBackgroundColor(mainFrame->view()->documentBackgroundColor());
     }
 }
 
@@ -3913,6 +3920,9 @@ NonCompositedContentHost* WebViewImpl::nonCompositedContentHost()
 
 void WebViewImpl::setBackgroundColor(const WebCore::Color& color)
 {
+    if (!m_nonCompositedContentHost)
+        return;
+
     WebCore::Color documentBackgroundColor = color.isValid() ? color : WebCore::Color::white;
     WebColor webDocumentBackgroundColor = documentBackgroundColor.rgb();
     m_nonCompositedContentHost->setBackgroundColor(documentBackgroundColor);
@@ -3960,8 +3970,7 @@ void WebViewImpl::paintRootLayer(GraphicsContext& context, const IntRect& conten
     double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart);
     WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
     WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
-
-    setBackgroundColor(view->documentBackgroundColor());
+    ASSERT(m_nonCompositedContentHost->backgroundColor() == view->documentBackgroundColor());
 }
 
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)

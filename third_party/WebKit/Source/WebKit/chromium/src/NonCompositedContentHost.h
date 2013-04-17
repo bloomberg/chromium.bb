@@ -55,12 +55,14 @@ public:
     }
     virtual ~NonCompositedContentHost();
 
-    void invalidateRect(const WebCore::IntRect&);
+    WebCore::Color backgroundColor() const;
     void setBackgroundColor(const WebCore::Color&);
     void setOpaque(bool);
     void setScrollLayer(WebCore::GraphicsLayer*);
     void setViewport(const WebCore::IntSize& viewportSize, const WebCore::IntSize& contentsSize, const WebCore::IntPoint& scrollPosition, const WebCore::IntPoint& scrollOrigin);
     WebCore::GraphicsLayer* topLevelRootLayer() const { return m_graphicsLayer.get(); }
+
+    void invalidateRect(const WebCore::IntRect&);
 
     void setShowDebugBorders(bool);
 
