@@ -1245,6 +1245,7 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
     param->drive_metadata.set_md5_checksum(file_md5);
     param->drive_metadata.set_conflicted(false);
     param->drive_metadata.set_to_be_fetched(false);
+    param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
     const DriveMetadata& metadata = param->drive_metadata;
     metadata_store_->UpdateEntry(
         url, metadata,
@@ -1274,6 +1275,7 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
       param->drive_metadata.set_md5_checksum(file_md5);
       param->drive_metadata.set_conflicted(false);
       param->drive_metadata.set_to_be_fetched(false);
+      param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
       const DriveMetadata& metadata = param->drive_metadata;
       metadata_store_->UpdateEntry(
           url, metadata,

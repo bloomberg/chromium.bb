@@ -18,4 +18,11 @@ message DriveMetadata {
   // When true, indicates that the remote file identified by |resource_id|
   // should be fetched for solving the conflict (resolve-to-remote resolution).
   required bool to_be_fetched = 4;
+
+  enum ResourceType {
+    RESOURCE_TYPE_FILE = 0;
+    RESOURCE_TYPE_FOLDER = 1;
+  }
+
+  optional ResourceType type = 5 [default = RESOURCE_TYPE_FILE];
 }
