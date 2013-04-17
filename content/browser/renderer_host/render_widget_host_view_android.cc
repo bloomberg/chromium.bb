@@ -504,6 +504,22 @@ void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
+  // Always let ContentViewCore know about the new frame first, so it can decide
+  // to schedule a Draw immediately when it sees the texture layer invalidation.
+  if (content_view_core_) {
+    // All offsets and sizes are in CSS pixels.
+    content_view_core_->UpdateFrameInfo(
+        frame->metadata.root_scroll_offset,
+        frame->metadata.page_scale_factor,
+        gfx::Vector2dF(frame->metadata.min_page_scale_factor,
+                       frame->metadata.max_page_scale_factor),
+        frame->metadata.root_layer_size,
+        frame->metadata.viewport_size,
+        frame->metadata.location_bar_offset,
+        frame->metadata.location_bar_content_translation,
+        frame->metadata.overdraw_bottom_height);
+  }
+
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
@@ -584,12 +600,6 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
 
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
       texture_id_in_layer_, mailbox.name);
-
-  // We need to tell ContentViewCore about the new frame before calling
-  // setNeedsDisplay() below so that it has the needed information schedule the
-  // next compositor frame.
-  if (content_view_core_)
-    content_view_core_->DidProduceRendererFrame();
 
   texture_layer_->SetNeedsDisplay();
   texture_layer_->SetBounds(gfx::Size(content_size.width(),
@@ -743,24 +753,6 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
-}
-
-void RenderWidgetHostViewAndroid::UpdateFrameInfo(
-    const gfx::Vector2dF& scroll_offset,
-    float page_scale_factor,
-    const gfx::Vector2dF& page_scale_factor_limits,
-    const gfx::SizeF& content_size,
-    const gfx::SizeF& viewport_size,
-    const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset,
-    float overdraw_bottom_height) {
-  if (content_view_core_) {
-    // All offsets and sizes are in CSS pixels.
-    content_view_core_->UpdateFrameInfo(
-        scroll_offset, page_scale_factor, page_scale_factor_limits,
-        content_size, viewport_size, controls_offset, content_offset,
-        overdraw_bottom_height);
-  }
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(

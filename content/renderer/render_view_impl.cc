@@ -663,7 +663,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       body_background_color_(SK_ColorWHITE),
-      update_frame_info_scheduled_(false),
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
       enumeration_completion_id_(0),

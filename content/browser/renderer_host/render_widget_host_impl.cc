@@ -1607,19 +1607,6 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   param.a.AssignTo(frame.get());
 
   if (view_) {
-#if defined(OS_ANDROID)
-    view_->UpdateFrameInfo(
-        frame->metadata.root_scroll_offset,
-        frame->metadata.page_scale_factor,
-        gfx::Vector2dF(
-            frame->metadata.min_page_scale_factor,
-            frame->metadata.max_page_scale_factor),
-        frame->metadata.root_layer_size,
-        frame->metadata.viewport_size,
-        frame->metadata.location_bar_offset,
-        frame->metadata.location_bar_content_translation,
-        frame->metadata.overdraw_bottom_height);
-#endif
     view_->OnSwapCompositorFrame(frame.Pass());
   } else {
     cc::CompositorFrameAck ack;

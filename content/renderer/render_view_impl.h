@@ -1426,9 +1426,6 @@ class CONTENT_EXPORT RenderViewImpl
   // have the actual content.
   SkColor body_background_color_;
 
-  // True if SendUpdateFrameInfo is pending.
-  bool update_frame_info_scheduled_;
-
   // Expected id of the next content intent launched. Used to prevent scheduled
   // intents to be launched if aborted.
   size_t expected_content_intent_id_;

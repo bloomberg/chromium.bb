@@ -141,14 +141,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}
-  virtual void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
-                               float page_scale_factor,
-                               const gfx::Vector2dF& page_scale_factor_limits,
-                               const gfx::SizeF& content_size,
-                               const gfx::SizeF& viewport_size,
-                               const gfx::Vector2dF& controls_offset,
-                               const gfx::Vector2dF& content_offset,
-                               float overdraw_bottom_height) OVERRIDE {}
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;

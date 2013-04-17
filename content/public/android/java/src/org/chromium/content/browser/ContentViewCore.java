@@ -248,6 +248,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Whether we use hardware-accelerated drawing.
     private boolean mHardwareAccelerated = false;
 
+    // Whether we received a new frame since consumePendingRendererFrame() was last called.
+    private boolean mPendingRendererFrame = false;
+
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -796,13 +799,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * Indicate that the browser compositor has consumed a pending renderer frame.
+     * Mark any new frames that have arrived since this function was last called as non-pending.
      *
-     * @return Whether there was a pending renderer frame.
+     * @return Whether there was a pending frame from the renderer.
      */
     public boolean consumePendingRendererFrame() {
-        return mNativeContentViewCore == 0 ?
-                false : nativeConsumePendingRendererFrame(mNativeContentViewCore);
+        boolean hadPendingFrame = mPendingRendererFrame;
+        mPendingRendererFrame = false;
+        return hadPendingFrame;
     }
 
     /**
@@ -2056,6 +2060,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         final float overdrawBottomHeightPix = overdrawBottomHeightCss * deviceScale;
         getContentViewClient().onOffsetsForFullscreenChanged(
                 controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);
+
+        mPendingRendererFrame = true;
     }
 
     @SuppressWarnings("unused")
@@ -2669,8 +2675,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativeShowInterstitialPage(
             int nativeContentViewCoreImpl, String url, int nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(int nativeContentViewCoreImpl);
-
-    private native boolean nativeConsumePendingRendererFrame(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsIncognito(int nativeContentViewCoreImpl);
 

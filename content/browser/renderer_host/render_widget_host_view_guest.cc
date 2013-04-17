@@ -415,17 +415,6 @@ void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
     const SkBitmap& zoomed_bitmap) {
 }
 
-void RenderWidgetHostViewGuest::UpdateFrameInfo(
-    const gfx::Vector2dF& scroll_offset,
-    float page_scale_factor,
-    const gfx::Vector2dF& page_scale_factor_limits,
-    const gfx::SizeF& content_size,
-    const gfx::SizeF& viewport_size,
-    const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset,
-    float overdraw_bottom_height) {
-}
-
 void RenderWidgetHostViewGuest::HasTouchEventHandlers(bool need_touch_events) {
 }
 #endif  // defined(OS_ANDROID)

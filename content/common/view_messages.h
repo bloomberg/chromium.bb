@@ -2341,15 +2341,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
                     uint32  /* bg_color */)
 
-// Information about current document scroll, scale and size. Sent on a
-// best-effort basis.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_UpdateFrameInfo,
-                    gfx::Vector2d /* scroll_offset */,
-                    float /* page_scale_factor */,
-                    float /* min_page_scale_factor */,
-                    float /* max_page_scale_factor */,
-                    gfx::Size /* content_size */)
-
 // This message is an ACK that the batch state change has been received by
 // the renderer and all IME related messages should be processed accordingly.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
