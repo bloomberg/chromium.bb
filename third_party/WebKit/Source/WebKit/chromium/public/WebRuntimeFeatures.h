@@ -122,6 +122,9 @@ public:
     WEBKIT_EXPORT static void enableShadowDOM(bool);
     WEBKIT_EXPORT static bool isShadowDOMEnabled();
 
+    WEBKIT_EXPORT static void enableExperimentalShadowDOM(bool);
+    WEBKIT_EXPORT static bool isExperimentalShadowDOMEnabled();
+
     WEBKIT_EXPORT static void enableCustomDOMElements(bool);
     WEBKIT_EXPORT static bool isCustomDOMElementsEnabled();
 

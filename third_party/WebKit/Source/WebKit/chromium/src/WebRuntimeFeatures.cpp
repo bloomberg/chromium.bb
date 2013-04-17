@@ -395,6 +395,16 @@ bool WebRuntimeFeatures::isShadowDOMEnabled()
     return RuntimeEnabledFeatures::shadowDOMEnabled();
 }
 
+void WebRuntimeFeatures::enableExperimentalShadowDOM(bool enable)
+{
+    RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isExperimentalShadowDOMEnabled()
+{
+    return RuntimeEnabledFeatures::experimentalShadowDOMEnabled();
+}
+
 void WebRuntimeFeatures::enableCustomDOMElements(bool enable)
 {
 #if ENABLE(CUSTOM_ELEMENTS)
