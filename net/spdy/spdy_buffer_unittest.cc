@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
@@ -53,18 +54,45 @@ TEST_F(SpdyBufferTest, DataConstructor) {
   EXPECT_EQ(std::string(kData, kDataSize), BufferToString(buffer));
 }
 
+void IncrementBy(size_t* x, size_t delta) {
+  *x += delta;
+}
+
 // Construct a SpdyBuffer and call Consume() on it, which should
-// update the remaining data pointer and size appropriately.
+// update the remaining data pointer and size appropriately, as well
+// as calling the consume callbacks.
 TEST_F(SpdyBufferTest, Consume) {
   SpdyBuffer buffer(kData, kDataSize);
+
+  size_t x1 = 0;
+  size_t x2 = 0;
+  buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x1));
+  buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x2));
 
   EXPECT_EQ(std::string(kData, kDataSize), BufferToString(buffer));
 
   buffer.Consume(5);
   EXPECT_EQ(std::string(kData + 5, kDataSize - 5), BufferToString(buffer));
+  EXPECT_EQ(5u, x1);
+  EXPECT_EQ(5u, x2);
 
   buffer.Consume(kDataSize - 5);
   EXPECT_EQ(0u, buffer.GetRemainingSize());
+  EXPECT_EQ(kDataSize, x1);
+  EXPECT_EQ(kDataSize, x2);
+}
+
+// Construct a SpdyBuffer and attach a ConsumeCallback to it. The
+// callback should be called when the SpdyBuffer is destroyed.
+TEST_F(SpdyBufferTest, ConsumeOnDestruction) {
+  size_t x = 0;
+
+  {
+    SpdyBuffer buffer(kData, kDataSize);
+    buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x));
+  }
+
+  EXPECT_EQ(kDataSize, x);
 }
 
 // Make sure the IOBuffer returned by GetIOBufferForRemainingData()

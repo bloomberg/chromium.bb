@@ -316,13 +316,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   void SendStreamWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size);
 
-  // Called by a stream to increase this session's receive window size
-  // by |delta_window_size|, which must be at least 1 and must not
-  // cause this session's receive window size to overflow, possibly
-  // also sending a WINDOW_UPDATE frame. Does nothing if session flow
-  // control is turned off.
-  void IncreaseRecvWindowSize(int32 delta_window_size);
-
   // If session is closed, no new streams/transactions should be created.
   bool IsClosed() const { return state_ == STATE_CLOSED; }
 
@@ -470,6 +463,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustSendWindowSize31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
                            SessionFlowControlInactiveStream31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
+                           SessionFlowControlNoReceiveLeaks31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
 
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
@@ -683,6 +678,15 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // and at most kMaxSpdyFrameChunkSize.  |delta_window_size| must not
   // cause this session's send window size to go negative.
   void DecreaseSendWindowSize(int32 delta_window_size);
+
+  // Called by SpdyBuffers (via ConsumeCallbacks) to increase this
+  // session's receive window size by |delta_window_size|, which must
+  // be at least 1 and must not cause this session's receive window
+  // size to overflow, possibly also sending a WINDOW_UPDATE
+  // frame. Also called during initialization to set the initial
+  // receive window size. Does nothing if session flow control is
+  // turned off.
+  void IncreaseRecvWindowSize(size_t delta_window_size);
 
   // If session flow control is turned on, called by OnStreamFrameData
   // (which is in turn called by the framer) to decrease this

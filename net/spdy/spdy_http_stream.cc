@@ -136,10 +136,7 @@ int SpdyHttpStream::ReadResponseBody(
 
   // If we have data buffered, complete the IO immediately.
   if (!response_body_queue_.IsEmpty()) {
-    size_t bytes_consumed = response_body_queue_.Dequeue(buf->data(), buf_len);
-    if (stream_)
-      stream_->IncreaseRecvWindowSize(bytes_consumed);
-    return bytes_consumed;
+    return response_body_queue_.Dequeue(buf->data(), buf_len);
   } else if (stream_closed_) {
     return closed_stream_status_;
   }

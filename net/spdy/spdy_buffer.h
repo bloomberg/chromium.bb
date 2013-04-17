@@ -6,8 +6,10 @@
 #define NET_SPDY_SPDY_BUFFER_H_
 
 #include <cstddef>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
@@ -26,6 +28,10 @@ class SpdyFrame;
 // fact that IOBuffer member functions are not virtual.
 class NET_EXPORT_PRIVATE SpdyBuffer {
  public:
+  // A Callback that gets called whenever Consume() is called with the
+  // number of bytes consumed.
+  typedef base::Callback<void(size_t)> ConsumeCallback;
+
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.
   explicit SpdyBuffer(scoped_ptr<SpdyFrame> frame);
@@ -42,10 +48,15 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   // Returns the number of remaining (unconsumed) bytes.
   size_t GetRemainingSize() const;
 
+  // Add a callback which is called whenever Consume() is called. Used
+  // mainly to update flow control windows. The ConsumeCallback should
+  // not do anything complicated; ideally it should only update a
+  // counter. In particular, it must *not* cause the SpdyBuffer itself
+  // to be destroyed.
+  void AddConsumeCallback(const ConsumeCallback& consume_callback);
+
   // Consume the given number of bytes, which must be positive but not
   // greater than GetRemainingSize().
-  //
-  // TODO(akalin): Add a way to get notified when Consume() is called.
   void Consume(size_t consume_size);
 
   // Returns an IOBuffer pointing to the data starting at
@@ -56,6 +67,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
 
  private:
   const scoped_ptr<SpdyFrame> frame_;
+  std::vector<ConsumeCallback> consume_callbacks_;
   size_t offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyBuffer);

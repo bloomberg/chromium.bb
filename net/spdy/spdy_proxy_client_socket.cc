@@ -217,12 +217,7 @@ int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
 }
 
 size_t SpdyProxyClientSocket::PopulateUserReadBuffer(char* data, size_t len) {
-  size_t bytes_consumed = read_buffer_queue_.Dequeue(data, len);
-
-  if (bytes_consumed > 0 && spdy_stream_)
-    spdy_stream_->IncreaseRecvWindowSize(bytes_consumed);
-
-  return bytes_consumed;
+  return read_buffer_queue_.Dequeue(data, len);
 }
 
 int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,

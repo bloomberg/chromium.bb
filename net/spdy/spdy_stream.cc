@@ -311,41 +311,6 @@ void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
                  stream_id_, -delta_window_size, send_window_size_));
 }
 
-void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
-  if (session_->flow_control_state() < SpdySession::FLOW_CONTROL_STREAM)
-    return;
-
-  // Call back into the session, since this is the only
-  // window-size-related function that is called by the delegate
-  // instead of by the session.
-  session_->IncreaseRecvWindowSize(delta_window_size);
-
-  // By the time a read is processed by the delegate, this stream may
-  // already be inactive.
-  if (!session_->IsStreamActive(stream_id_))
-    return;
-
-  DCHECK_GE(unacked_recv_window_bytes_, 0);
-  DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
-  DCHECK_GE(delta_window_size, 1);
-  // Check for overflow.
-  DCHECK_LE(delta_window_size, kint32max - recv_window_size_);
-
-  recv_window_size_ += delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
-                 stream_id_, delta_window_size, recv_window_size_));
-
-  unacked_recv_window_bytes_ += delta_window_size;
-  if (unacked_recv_window_bytes_ >
-      session_->stream_initial_recv_window_size() / 2) {
-    session_->SendStreamWindowUpdate(
-        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
-    unacked_recv_window_bytes_ = 0;
-  }
-}
-
 int SpdyStream::GetPeerAddress(IPEndPoint* address) const {
   return session_->GetPeerAddress(address);
 }
@@ -488,8 +453,12 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   size_t length = buffer->GetRemainingSize();
   DCHECK_LE(length, session_->GetDataFrameMaximumPayload());
-  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM)
+  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
     DecreaseRecvWindowSize(static_cast<int32>(length));
+    buffer->AddConsumeCallback(
+        base::Bind(&SpdyStream::IncreaseRecvWindowSize,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // Track our bandwidth.
   metrics_.RecordBytes(length);
@@ -918,6 +887,37 @@ void SpdyStream::UpdateHistograms() {
 
   UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
   UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);
+}
+
+void SpdyStream::IncreaseRecvWindowSize(size_t delta_window_size) {
+  if (session_->flow_control_state() < SpdySession::FLOW_CONTROL_STREAM)
+    return;
+
+  // By the time a read is processed by the delegate, this stream may
+  // already be inactive.
+  if (!session_->IsStreamActive(stream_id_))
+    return;
+
+  DCHECK_GE(unacked_recv_window_bytes_, 0);
+  DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
+  DCHECK_GE(delta_window_size, 1u);
+  // Check for overflow.
+  DCHECK_LE(delta_window_size,
+            static_cast<size_t>(kint32max - recv_window_size_));
+
+  recv_window_size_ += delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
+                 stream_id_, delta_window_size, recv_window_size_));
+
+  unacked_recv_window_bytes_ += delta_window_size;
+  if (unacked_recv_window_bytes_ >
+      session_->stream_initial_recv_window_size() / 2) {
+    session_->SendStreamWindowUpdate(
+        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
+    unacked_recv_window_bytes_ = 0;
+  }
 }
 
 void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {

@@ -1439,14 +1439,17 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   if (it == active_streams_.end())
     return;
 
-  // Only decrease the window size for data for active streams.
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION && len > 0)
-    DecreaseRecvWindowSize(static_cast<int32>(len));
-
   scoped_ptr<SpdyBuffer> buffer;
   if (data) {
     DCHECK_GT(len, 0u);
     buffer.reset(new SpdyBuffer(data, len));
+
+    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+      DecreaseRecvWindowSize(static_cast<int32>(len));
+      buffer->AddConsumeCallback(
+          base::Bind(&SpdySession::IncreaseRecvWindowSize,
+                     weak_factory_.GetWeakPtr()));
+    }
   } else {
     DCHECK_EQ(len, 0u);
   }
@@ -1840,31 +1843,6 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
   CHECK_EQ(stream->stream_id(), stream_id);
   SendWindowUpdateFrame(stream_id, delta_window_size, stream->priority());
-}
-
-void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
-  if (flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION)
-    return;
-
-  DCHECK_GE(session_unacked_recv_window_bytes_, 0);
-  DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
-  DCHECK_GE(delta_window_size, 1);
-  // Check for overflow.
-  DCHECK_LE(delta_window_size, kint32max - session_recv_window_size_);
-
-  session_recv_window_size_ += delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
-                 delta_window_size, session_recv_window_size_));
-
-  session_unacked_recv_window_bytes_ += delta_window_size;
-  if (session_unacked_recv_window_bytes_ > kSpdySessionInitialWindowSize / 2) {
-    SendWindowUpdateFrame(kSessionFlowControlStreamId,
-                          session_unacked_recv_window_bytes_,
-                          HIGHEST);
-    session_unacked_recv_window_bytes_ = 0;
-  }
 }
 
 // Given a cwnd that we would have sent to the server, modify it based on the
@@ -2315,6 +2293,32 @@ void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
       NetLog::TYPE_SPDY_SESSION_UPDATE_SEND_WINDOW,
       base::Bind(&NetLogSpdySessionWindowUpdateCallback,
                  -delta_window_size, session_send_window_size_));
+}
+
+void SpdySession::IncreaseRecvWindowSize(size_t delta_window_size) {
+  if (flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION)
+    return;
+
+  DCHECK_GE(session_unacked_recv_window_bytes_, 0);
+  DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
+  DCHECK_GE(delta_window_size, 1u);
+  // Check for overflow.
+  DCHECK_LE(delta_window_size,
+            static_cast<size_t>(kint32max - session_recv_window_size_));
+
+  session_recv_window_size_ += delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
+                 delta_window_size, session_recv_window_size_));
+
+  session_unacked_recv_window_bytes_ += delta_window_size;
+  if (session_unacked_recv_window_bytes_ > kSpdySessionInitialWindowSize / 2) {
+    SendWindowUpdateFrame(kSessionFlowControlStreamId,
+                          session_unacked_recv_window_bytes_,
+                          HIGHEST);
+    session_unacked_recv_window_bytes_ = 0;
+  }
 }
 
 void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {

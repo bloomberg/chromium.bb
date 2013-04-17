@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -38,7 +39,10 @@ SpdyBuffer::SpdyBuffer(const char* data, size_t size) :
     frame_(MakeSpdyFrame(data, size)),
     offset_(0) {}
 
-SpdyBuffer::~SpdyBuffer() {}
+SpdyBuffer::~SpdyBuffer() {
+  if (GetRemainingSize() > 0)
+    Consume(GetRemainingSize());
+}
 
 const char* SpdyBuffer::GetRemainingData() const {
   return frame_->data() + offset_;
@@ -48,10 +52,18 @@ size_t SpdyBuffer::GetRemainingSize() const {
   return frame_->size() - offset_;
 }
 
+void SpdyBuffer::AddConsumeCallback(const ConsumeCallback& consume_callback) {
+  consume_callbacks_.push_back(consume_callback);
+}
+
 void SpdyBuffer::Consume(size_t consume_size) {
   DCHECK_GE(consume_size, 1u);
   DCHECK_LE(consume_size, GetRemainingSize());
   offset_ += consume_size;
+  for (std::vector<ConsumeCallback>::const_iterator it =
+           consume_callbacks_.begin(); it != consume_callbacks_.end(); ++it) {
+    it->Run(consume_size);
+  }
 };
 
 IOBuffer* SpdyBuffer::GetIOBufferForRemainingData() {

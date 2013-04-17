@@ -178,16 +178,6 @@ class NET_EXPORT_PRIVATE SpdyStream
   // If stream flow control is turned off, this must not be called.
   void DecreaseSendWindowSize(int32 delta_window_size);
 
-  // Called by the delegate to increase this stream's receive window
-  // size by |delta_window_size|, which must be at least 1 and must
-  // not cause this stream's receive window size to overflow, possibly
-  // also sending a WINDOW_UPDATE frame.
-  //
-  // Unlike the functions above, this may be called even when stream
-  // flow control is turned off, although this does nothing in that
-  // case (and also if the stream is inactive).
-  void IncreaseRecvWindowSize(int32 delta_window_size);
-
   int GetPeerAddress(IPEndPoint* address) const;
   int GetLocalAddress(IPEndPoint* address) const;
 
@@ -347,6 +337,16 @@ class NET_EXPORT_PRIVATE SpdyStream
   // block. The stream must already be activated.
   scoped_ptr<SpdyFrame> ProduceHeaderFrame(
       scoped_ptr<SpdyHeaderBlock> header_block);
+
+  // Called by SpdyBuffers (via ConsumeCallbacks) to increase this
+  // stream's receive window size by |delta_window_size|, which must
+  // be at least 1 and must not cause this stream's receive window
+  // size to overflow, possibly also sending a WINDOW_UPDATE frame.
+  //
+  // Unlike the functions above, this may be called even when stream
+  // flow control is turned off, although this does nothing in that
+  // case (and also if the stream is inactive).
+  void IncreaseRecvWindowSize(size_t delta_window_size);
 
   // If the stream is active and stream flow control is turned on,
   // called by OnDataReceived (which is in turn called by the session)

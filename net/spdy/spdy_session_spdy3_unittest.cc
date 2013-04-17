@@ -2274,6 +2274,108 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
+// A delegate that drops any received data.
+class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
+ public:
+  DropReceivedDataDelegate(const scoped_refptr<SpdyStream>& stream,
+                           base::StringPiece data)
+      : StreamDelegateSendImmediate(
+          stream, scoped_ptr<SpdyHeaderBlock>(), data) {}
+
+  virtual ~DropReceivedDataDelegate() {}
+
+  // Drop any received data.
+  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {
+    return OK;
+  }
+};
+
+// Send data back and forth but use a delegate that drops its received
+// data. The receive window should still increase to its original
+// value, i.e. we shouldn't "leak" receive window bytes.
+TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoReceiveLeaks31) {
+  const char kStreamUrl[] = "http://www.google.com/";
+
+  session_deps_.enable_spdy_31 = true;
+
+  const int32 msg_data_size = 100;
+  const std::string msg_data(msg_data_size, 'a');
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, msg_data_size, MEDIUM, NULL, 0));
+  scoped_ptr<SpdyFrame> msg(
+      ConstructSpdyBodyFrame(1, msg_data.data(), msg_data_size, false));
+  MockWrite writes[] = {
+    CreateMockWrite(*initial_window_update, 0),
+    CreateMockWrite(*req, 1),
+    CreateMockWrite(*msg, 3),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> echo(
+      ConstructSpdyBodyFrame(1, msg_data.data(), msg_data_size, false));
+  scoped_ptr<SpdyFrame> window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId, msg_data_size));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 2),
+    CreateMockRead(*echo, 4),
+    MockRead(ASYNC, 0, 5)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  GURL url(kStreamUrl);
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+  EXPECT_EQ(0u, stream->stream_id());
+
+  DropReceivedDataDelegate delegate(stream, msg_data);
+  stream->SetDelegate(&delegate);
+
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(url.spec(), msg_data_size));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+
+  data.RunFor(5);
+
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
+
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
+
+  stream->Close();
+
+  EXPECT_EQ(OK, delegate.WaitForClose());
+
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
+}
+
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
@@ -2384,15 +2486,19 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   EXPECT_TRUE(data.at_write_eof());
   EXPECT_TRUE(data.at_read_eof());
 
-  // Normally done by the delegate, but not by our test delegate.
-  session->IncreaseRecvWindowSize(msg_data_size);
+  EXPECT_EQ(msg_data, delegate.TakeReceivedData());
 
+  // Draining the delegate's read queue should increase our receive
+  // window.
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
   stream->Close();
 
   EXPECT_EQ(OK, delegate.WaitForClose());
+
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }
 
 // Cause a stall by reducing the flow control send window to 0. The
@@ -2478,7 +2584,7 @@ TEST_F(SpdySessionSpdy3Test, ResumeAfterSendWindowSizeIncrease31) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate.received_data());
+  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate.body_data_sent());
 }
 
@@ -2614,13 +2720,13 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate1.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate1.received_data());
+  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate1.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate2.received_data());
+  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate2.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate2.body_data_sent());
 }
 
@@ -2808,19 +2914,19 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate1.GetResponseHeaderValue(":version"));
-  EXPECT_EQ("", delegate1.received_data());
+  EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
   EXPECT_EQ(0, delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate2.received_data());
+  EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate2.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate2.body_data_sent());
 
   EXPECT_TRUE(delegate3.send_headers_completed());
   EXPECT_EQ("200", delegate3.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate3.GetResponseHeaderValue(":version"));
-  EXPECT_EQ("", delegate3.received_data());
+  EXPECT_EQ(std::string(), delegate3.TakeReceivedData());
   EXPECT_EQ(0, delegate3.body_data_sent());
 }
 
@@ -2969,13 +3075,13 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate1.GetResponseHeaderValue(":version"));
-  EXPECT_EQ("", delegate1.received_data());
+  EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
   EXPECT_EQ(0, delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
-  EXPECT_EQ("", delegate2.received_data());
+  EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
   EXPECT_EQ(0, delegate2.body_data_sent());
 }
 

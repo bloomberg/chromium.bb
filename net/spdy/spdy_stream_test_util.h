@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
+#include "net/spdy/spdy_read_queue.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -62,9 +63,12 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   // to OnClose().
   int WaitForClose();
 
+  // Drains all data from the underlying read queue and returns it as
+  // a string.
+  std::string TakeReceivedData();
+
   std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
-  const std::string& received_data() const { return received_data_; }
   int headers_sent() const { return headers_sent_; }
   int data_sent() const { return data_sent_; }
 
@@ -76,7 +80,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   TestCompletionCallback callback_;
   bool send_headers_completed_;
   SpdyHeaderBlock response_;
-  std::string received_data_;
+  SpdyReadQueue received_data_queue_;
   int headers_sent_;
   int data_sent_;
 };

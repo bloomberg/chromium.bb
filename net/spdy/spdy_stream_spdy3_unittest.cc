@@ -131,7 +131,8 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
+            delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
 }
 
@@ -209,7 +210,7 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("101", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ(1, delegate.headers_sent());
-  EXPECT_EQ(std::string(), delegate.received_data());
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_EQ(6, delegate.data_sent());
 }
 
@@ -328,7 +329,8 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
+            delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
 
   // Check that the NetLog was filled reasonably.
@@ -478,7 +480,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncrease) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
+            delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
 }
 
@@ -569,7 +572,8 @@ TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjust) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
-  EXPECT_EQ(std::string(kPostBody, kPostBodyLength), delegate.received_data());
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
+            delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
 }
 

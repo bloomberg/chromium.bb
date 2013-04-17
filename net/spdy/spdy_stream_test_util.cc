@@ -4,6 +4,9 @@
 
 #include "net/spdy/spdy_stream_test_util.h"
 
+#include <cstddef>
+
+#include "base/stl_util.h"
 #include "net/base/completion_callback.h"
 #include "net/spdy/spdy_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,10 +81,8 @@ void StreamDelegateBase::OnHeadersSent() {
 }
 
 int StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
-  if (buffer) {
-    received_data_ += std::string(buffer->GetRemainingData(),
-                                  buffer->GetRemainingSize());
-  }
+  if (buffer)
+    received_data_queue_.Enqueue(buffer.Pass());
   return OK;
 }
 
@@ -100,6 +101,17 @@ int StreamDelegateBase::WaitForClose() {
   int result = callback_.WaitForResult();
   EXPECT_TRUE(!stream_.get());
   return result;
+}
+
+std::string StreamDelegateBase::TakeReceivedData() {
+  size_t len = received_data_queue_.GetTotalSize();
+  std::string received_data(len, '\0');
+  if (len > 0) {
+    EXPECT_EQ(
+        len,
+        received_data_queue_.Dequeue(string_as_array(&received_data), len));
+  }
+  return received_data;
 }
 
 std::string StreamDelegateBase::GetResponseHeaderValue(
