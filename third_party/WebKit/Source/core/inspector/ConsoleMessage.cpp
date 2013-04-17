@@ -48,7 +48,7 @@
 
 namespace WebCore {
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned long requestIdentifier)
+ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -56,7 +56,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_url()
     , m_line(0)
     , m_repeatCount(1)
-    , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
+    , m_requestId(IdentifiersFactory::requestId(0))
 {
     autogenerateMetadata(canGenerateCallStack);
 }
