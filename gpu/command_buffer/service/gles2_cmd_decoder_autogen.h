@@ -3048,7 +3048,7 @@ error::Error GLES2DecoderImpl::HandleProduceTextureCHROMIUM(
   }
   const GLbyte* mailbox = GetSharedMemoryAs<const GLbyte*>(
       c.mailbox_shm_id, c.mailbox_shm_offset, data_size);
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glProduceTextureCHROMIUM", target,
     "target");
     return error::kNoError;
@@ -3073,7 +3073,7 @@ error::Error GLES2DecoderImpl::HandleProduceTextureCHROMIUMImmediate(
   }
   const GLbyte* mailbox = GetImmediateDataAs<const GLbyte*>(
       c, data_size, immediate_data_size);
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glProduceTextureCHROMIUM", target,
     "target");
     return error::kNoError;
@@ -3094,7 +3094,7 @@ error::Error GLES2DecoderImpl::HandleConsumeTextureCHROMIUM(
   }
   const GLbyte* mailbox = GetSharedMemoryAs<const GLbyte*>(
       c.mailbox_shm_id, c.mailbox_shm_offset, data_size);
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glConsumeTextureCHROMIUM", target,
     "target");
     return error::kNoError;
@@ -3119,7 +3119,7 @@ error::Error GLES2DecoderImpl::HandleConsumeTextureCHROMIUMImmediate(
   }
   const GLbyte* mailbox = GetImmediateDataAs<const GLbyte*>(
       c, data_size, immediate_data_size);
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glConsumeTextureCHROMIUM", target,
     "target");
     return error::kNoError;

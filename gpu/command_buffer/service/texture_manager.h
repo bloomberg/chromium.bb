@@ -142,7 +142,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     stream_texture_ = stream_texture;
   }
 
-  int IsStreamTexture() {
+  bool IsStreamTexture() {
     return stream_texture_;
   }
 

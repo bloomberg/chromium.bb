@@ -54,6 +54,7 @@ class GPU_EXPORT TextureDefinition {
                     GLenum wrap_t,
                     GLenum usage,
                     bool immutable,
+                    bool stream_texture,
                     const LevelInfos& level_infos);
   ~TextureDefinition();
 
@@ -70,6 +71,7 @@ class GPU_EXPORT TextureDefinition {
   GLenum usage() const { return usage_; }
 
   bool immutable() const { return immutable_; }
+  bool stream_texture() const { return stream_texture_; }
 
   const LevelInfos& level_infos() const {
     return level_infos_;
@@ -84,6 +86,7 @@ class GPU_EXPORT TextureDefinition {
   GLenum wrap_t_;
   GLenum usage_;
   bool immutable_;
+  bool stream_texture_;
   std::vector<std::vector<LevelInfo> > level_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureDefinition);

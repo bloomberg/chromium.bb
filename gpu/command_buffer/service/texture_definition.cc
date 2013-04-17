@@ -47,6 +47,7 @@ TextureDefinition::TextureDefinition(GLenum target,
                                      GLenum wrap_t,
                                      GLenum usage,
                                      bool immutable,
+                                     bool stream_texture,
                                      const LevelInfos& level_infos)
     : target_(target),
       service_id_(service_id),
@@ -56,6 +57,7 @@ TextureDefinition::TextureDefinition(GLenum target,
       wrap_t_(wrap_t),
       usage_(usage),
       immutable_(immutable),
+      stream_texture_(stream_texture),
       level_infos_(level_infos) {
 }
 

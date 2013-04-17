@@ -368,9 +368,16 @@ class TextureTestBase : public testing::Test {
   }
 
  protected:
-  void SetUpBase(MemoryTracker* memory_tracker) {
+  void SetUpBase(MemoryTracker* memory_tracker, std::string extensions) {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
+
+    if (!extensions.empty()) {
+      TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
+                                                   extensions.c_str());
+      feature_info_->Initialize(NULL);
+    }
+
     manager_.reset(new TextureManager(
         memory_tracker, feature_info_.get(),
         kMaxTextureSize, kMaxCubeMapTextureSize));
@@ -418,7 +425,7 @@ class TextureTestBase : public testing::Test {
 class TextureTest : public TextureTestBase {
  protected:
   virtual void SetUp() {
-    SetUpBase(NULL);
+    SetUpBase(NULL, std::string());
   }
 };
 
@@ -426,7 +433,7 @@ class TextureMemoryTrackerTest : public TextureTestBase {
  protected:
   virtual void SetUp() {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
-    SetUpBase(mock_memory_tracker_.get());
+    SetUpBase(mock_memory_tracker_.get(), std::string());
   }
 
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
@@ -1283,7 +1290,7 @@ TEST_F(TextureTest, AddToSignature) {
 class SaveRestoreTextureTest : public TextureTest {
  public:
   virtual void SetUp() {
-    TextureTest::SetUp();
+    TextureTest::SetUpBase(NULL, "GL_OES_EGL_image_external");
     manager_->CreateTexture(kClient2Id, kService2Id);
     texture2_ = manager_->GetTexture(kClient2Id);
   }
@@ -1380,7 +1387,7 @@ class SaveRestoreTextureTest : public TextureTest {
 
   TextureDefinition* Save(Texture* texture) {
     EXPECT_CALL(*gl_, GenTextures(_, _))
-        .WillOnce(SetArgumentPointee<1>(kService2Id));
+        .WillOnce(SetArgumentPointee<1>(kEmptyTextureServiceId));
     TextureDefinition* definition = manager_->Save(texture);
     EXPECT_TRUE(definition != NULL);
     return definition;
@@ -1467,6 +1474,20 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
       .WillRepeatedly(Return(true));
   EXPECT_TRUE(manager_->ClearTextureLevel(
       decoder_.get(), texture2_, GL_TEXTURE_RECTANGLE_ARB, 0));
+}
+
+TEST_F(SaveRestoreTextureTest, SaveRestoreStreamTexture) {
+  manager_->SetTarget(texture_, GL_TEXTURE_EXTERNAL_OES);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture_->target());
+  texture_->SetStreamTexture(true);
+  GLuint service_id = texture_->service_id();
+  scoped_ptr<TextureDefinition> definition(Save(texture_));
+  EXPECT_FALSE(texture_->IsStreamTexture());
+  manager_->SetTarget(texture2_, GL_TEXTURE_EXTERNAL_OES);
+  Restore(texture2_, definition.release());
+  EXPECT_TRUE(texture2_->IsStreamTexture());
+  EXPECT_TRUE(texture2_->IsImmutable());
+  EXPECT_EQ(service_id, texture2_->service_id());
 }
 
 TEST_F(SaveRestoreTextureTest, SaveRestoreCube) {

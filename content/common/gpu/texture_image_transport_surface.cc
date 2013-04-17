@@ -469,6 +469,7 @@ TextureDefinition* TextureImageTransportSurface::CreateTextureDefinition(
       GL_CLAMP_TO_EDGE,
       GL_NONE,
       true,
+      false,
       level_infos);
 }
 

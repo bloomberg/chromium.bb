@@ -975,11 +975,13 @@ TextureDefinition* TextureManager::Save(Texture* texture) {
 
   GLuint old_service_id = texture->service_id();
   bool immutable = texture->IsImmutable();
+  bool stream_texture = texture->IsStreamTexture();
 
   GLuint new_service_id = 0;
   glGenTextures(1, &new_service_id);
   texture->SetServiceId(new_service_id);
   texture->SetImmutable(false);
+  texture->SetStreamTexture(false);
 
   return new TextureDefinition(texture->target(),
                                old_service_id,
@@ -989,6 +991,7 @@ TextureDefinition* TextureManager::Save(Texture* texture) {
                                texture->wrap_t(),
                                texture->usage(),
                                immutable,
+                               stream_texture,
                                level_infos);
 }
 
@@ -1043,6 +1046,7 @@ bool TextureManager::Restore(
   texture->SetServiceId(definition->ReleaseServiceId());
   glBindTexture(texture->target(), texture->service_id());
   texture->SetImmutable(definition->immutable());
+  texture->SetStreamTexture(definition->stream_texture());
   SetParameter(function_name, decoder, texture, GL_TEXTURE_MIN_FILTER,
                definition->min_filter());
   SetParameter(function_name, decoder, texture, GL_TEXTURE_MAG_FILTER,

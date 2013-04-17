@@ -5923,6 +5923,105 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
   EXPECT_TRUE(texture->IsStreamTexture());
 }
 
+TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
+  InitDecoder(
+      "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  StrictMock<MockStreamTextureManager> manager;
+  StrictMock<MockStreamTexture> stream_texture;
+  decoder_->SetStreamTextureManager(&manager);
+
+  Texture* texture = GetTexture(client_texture_id_);
+  texture->SetStreamTexture(true);
+
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(manager, LookupStreamTexture(kServiceTextureId))
+      .WillOnce(Return(&stream_texture))
+      .RetiresOnSaturation();
+  EXPECT_CALL(stream_texture, Update())
+      .Times(1)
+      .RetiresOnSaturation();
+
+  BindTexture cmd;
+  cmd.Init(GL_TEXTURE_EXTERNAL_OES, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
+  group().mailbox_manager()->GenerateMailboxName(
+      reinterpret_cast<MailboxName*>(mailbox));
+
+  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
+
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  // Assigns and binds new service side texture ID.
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  ProduceTextureCHROMIUM produce_cmd;
+  produce_cmd.Init(
+      GL_TEXTURE_EXTERNAL_OES, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(produce_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Assigns and binds original service size texture ID.
+  EXPECT_CALL(*gl_, DeleteTextures(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  // TextureManager::Restore will set TexParameters.
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE))
+      .Times(1)
+      .RetiresOnSaturation();
+  #if 0
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_NONE))
+      .Times(1)
+      .RetiresOnSaturation();
+  #endif
+
+  // Shared mem got clobbered from GetError() above.
+  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
+  ConsumeTextureCHROMIUM consume_cmd;
+  consume_cmd.Init(
+      GL_TEXTURE_EXTERNAL_OES, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(consume_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Service ID is restored.
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+}
+
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
