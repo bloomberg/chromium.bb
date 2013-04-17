@@ -83,7 +83,7 @@ class NET_EXPORT WebSocketJob
   virtual int OnReceivedSpdyResponseHeader(
       const SpdyHeaderBlock& headers, int status) OVERRIDE;
   virtual void OnSentSpdyData(size_t bytes_sent) OVERRIDE;
-  virtual void OnReceivedSpdyData(const char* data, int length) OVERRIDE;
+  virtual void OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnCloseSpdyStream() OVERRIDE;
 
  private:
