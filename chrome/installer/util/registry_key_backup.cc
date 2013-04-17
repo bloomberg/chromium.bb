@@ -5,7 +5,8 @@
 #include "chrome/installer/util/registry_key_backup.h"
 
 #include <algorithm>
-#include <limits>
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -14,47 +15,11 @@
 using base::win::RegKey;
 
 namespace {
+
 const REGSAM kKeyReadNoNotify = (KEY_READ) & ~(KEY_NOTIFY);
-}  // namespace
-
-// A container for a registry key, its values, and its subkeys.
-class RegistryKeyBackup::KeyData {
- public:
-  KeyData();
-  ~KeyData();
-
-  // Initializes this object by reading the values and subkeys of |key|.
-  // Security descriptors are not backed up.  Returns true if the operation was
-  // successful; false otherwise, in which case the state of this object is not
-  // modified.
-  bool Initialize(const RegKey& key);
-
-  // Writes the contents of this object to |key|, which must have been opened
-  // with at least REG_SET_VALUE and KEY_CREATE_SUB_KEY access rights.  Returns
-  // true if the operation was successful; false otherwise, in which case the
-  // contents of |key| may have been modified.
-  bool WriteTo(RegKey* key) const;
-
- private:
-  class ValueData;
-
-  // The values of this key.
-  scoped_array<ValueData> values_;
-  // The names of this key's sub-keys (the data for subkey_names_[i] is in
-  // subkeys_[i]).
-  scoped_array<std::wstring> subkey_names_;
-  // The key data of this key's sub-keys.
-  scoped_array<KeyData> subkeys_;
-  // The number of values for this key.
-  DWORD num_values_;
-  // The number of subkeys for this key.
-  DWORD num_subkeys_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyData);
-};
 
 // A container for a registry value.
-class RegistryKeyBackup::KeyData::ValueData {
+class ValueData {
  public:
   ValueData();
   ~ValueData();
@@ -89,18 +54,45 @@ class RegistryKeyBackup::KeyData::ValueData {
   // This value's type (e.g., REG_DWORD, REG_SZ, REG_QWORD, etc).
   DWORD type_;
 
-  DISALLOW_COPY_AND_ASSIGN(ValueData);
+  // Copy constructible and assignable for use in STL containers.
 };
 
-RegistryKeyBackup::KeyData::ValueData::ValueData()
-    : type_(REG_NONE) {
+}  // namespace
+
+// A container for a registry key, its values, and its subkeys.
+class RegistryKeyBackup::KeyData {
+ public:
+  KeyData();
+  ~KeyData();
+
+  // Initializes this object by reading the values and subkeys of |key|.
+  // Security descriptors are not backed up.  Returns true if the operation was
+  // successful; false otherwise, in which case the state of this object is not
+  // modified.
+  bool Initialize(const RegKey& key);
+
+  // Writes the contents of this object to |key|, which must have been opened
+  // with at least REG_SET_VALUE and KEY_CREATE_SUB_KEY access rights.  Returns
+  // true if the operation was successful; false otherwise, in which case the
+  // contents of |key| may have been modified.
+  bool WriteTo(RegKey* key) const;
+
+ private:
+  // The values of this key.
+  std::vector<ValueData> values_;
+  // Map of subkey names to the corresponding KeyData.
+  std::map<std::wstring, KeyData> subkeys_;
+
+  // Copy constructible and assignable for use in STL containers.
+};
+
+ValueData::ValueData() : type_(REG_NONE) {
 }
 
-RegistryKeyBackup::KeyData::ValueData::~ValueData()
-{
+ValueData::~ValueData() {
 }
 
-void RegistryKeyBackup::KeyData::ValueData::Initialize(
+void ValueData::Initialize(
     const wchar_t* name_buffer,
     DWORD name_size,
     DWORD type,
@@ -111,19 +103,15 @@ void RegistryKeyBackup::KeyData::ValueData::Initialize(
   data_.assign(data, data + data_size);
 }
 
-RegistryKeyBackup::KeyData::KeyData()
-    : num_values_(0),
-      num_subkeys_(0) {
+RegistryKeyBackup::KeyData::KeyData() {
 }
 
-RegistryKeyBackup::KeyData::~KeyData()
-{
+RegistryKeyBackup::KeyData::~KeyData() {
 }
 
 bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
-  scoped_array<ValueData> values;
-  scoped_array<std::wstring> subkey_names;
-  scoped_array<KeyData> subkeys;
+  std::vector<ValueData> values;
+  std::map<std::wstring, KeyData> subkeys;
 
   DWORD num_subkeys = 0;
   DWORD max_subkey_name_len = 0;
@@ -138,52 +126,38 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
     LOG(ERROR) << "Failed getting info of key to backup, result: " << result;
     return false;
   }
-  if (max_subkey_name_len >= std::numeric_limits<DWORD>::max() - 1 ||
-      max_value_name_len >= std::numeric_limits<DWORD>::max() - 1) {
-    LOG(ERROR)
-        << "Failed backing up key; subkeys and/or names are out of range.";
-    return false;
-  }
   DWORD max_name_len = std::max(max_subkey_name_len, max_value_name_len) + 1;
-  scoped_array<wchar_t> name_buffer(new wchar_t[max_name_len]);
+  std::vector<wchar_t> name_buffer(max_name_len);
 
   // Backup the values.
   if (num_values != 0) {
-    values.reset(new ValueData[num_values]);
-    scoped_array<uint8> value_buffer(new uint8[max_value_len]);
+    values.reserve(num_values);
+    std::vector<uint8> value_buffer(max_value_len != 0 ? max_value_len : 1);
     DWORD name_size = 0;
     DWORD value_type = REG_NONE;
     DWORD value_size = 0;
 
     for (DWORD i = 0; i < num_values; ) {
-      name_size = max_name_len;
-      value_size = max_value_len;
-      result = RegEnumValue(key.Handle(), i, name_buffer.get(), &name_size,
-                            NULL, &value_type, value_buffer.get(), &value_size);
+      name_size = static_cast<DWORD>(name_buffer.size());
+      value_size = static_cast<DWORD>(value_buffer.size());
+      result = RegEnumValue(key.Handle(), i, &name_buffer[0], &name_size,
+                            NULL, &value_type, &value_buffer[0], &value_size);
       switch (result) {
         case ERROR_NO_MORE_ITEMS:
           num_values = i;
           break;
         case ERROR_SUCCESS:
-          values[i].Initialize(name_buffer.get(), name_size, value_type,
-                               value_buffer.get(), value_size);
+          values.push_back(ValueData());
+          values.back().Initialize(&name_buffer[0], name_size, value_type,
+                                   &value_buffer[0], value_size);
           ++i;
           break;
         case ERROR_MORE_DATA:
-          if (value_size > max_value_len) {
-            max_value_len = value_size;
-            value_buffer.reset();  // Release to heap before new allocation.
-            value_buffer.reset(new uint8[max_value_len]);
-          } else {
-            DCHECK_LT(max_name_len - 1, name_size);
-            if (name_size >= std::numeric_limits<DWORD>::max() - 1) {
-              LOG(ERROR) << "Failed backing up key; value name out of range.";
-              return false;
-            }
-            max_name_len = name_size + 1;
-            name_buffer.reset();  // Release to heap before new allocation.
-            name_buffer.reset(new wchar_t[max_name_len]);
-          }
+          if (value_size > value_buffer.size())
+            value_buffer.resize(value_size);
+          // |name_size| does not include space for the terminating NULL.
+          if (name_size + 1 > name_buffer.size())
+            name_buffer.resize(name_size + 1);
           break;
         default:
           LOG(ERROR) << "Failed backing up value " << i << ", result: "
@@ -191,7 +165,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
           return false;
       }
     }
-    DLOG_IF(WARNING, RegEnumValue(key.Handle(), num_values, name_buffer.get(),
+    DLOG_IF(WARNING, RegEnumValue(key.Handle(), num_values, &name_buffer[0],
                                   &name_size, NULL, &value_type, NULL,
                                   NULL) != ERROR_NO_MORE_ITEMS)
         << "Concurrent modifications to registry key during backup operation.";
@@ -199,30 +173,23 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
 
   // Backup the subkeys.
   if (num_subkeys != 0) {
-    subkey_names.reset(new std::wstring[num_subkeys]);
-    subkeys.reset(new KeyData[num_subkeys]);
     DWORD name_size = 0;
 
     // Get the names of them.
     for (DWORD i = 0; i < num_subkeys; ) {
-      name_size = max_name_len;
-      result = RegEnumKeyEx(key.Handle(), i, name_buffer.get(), &name_size,
+      name_size = static_cast<DWORD>(name_buffer.size());
+      result = RegEnumKeyEx(key.Handle(), i, &name_buffer[0], &name_size,
                             NULL, NULL, NULL, NULL);
       switch (result) {
         case ERROR_NO_MORE_ITEMS:
           num_subkeys = i;
           break;
         case ERROR_SUCCESS:
-          subkey_names[i].assign(name_buffer.get(), name_size);
+          subkeys.insert(std::make_pair(&name_buffer[0], KeyData()));
           ++i;
           break;
         case ERROR_MORE_DATA:
-          if (name_size >= std::numeric_limits<DWORD>::max() - 1) {
-            LOG(ERROR) << "Failed backing up key; subkey name out of range.";
-            return false;
-          }
-          max_name_len = name_size + 1;
-          name_buffer.reset(new wchar_t[max_name_len]);
+          name_buffer.resize(name_size + 1);
           break;
         default:
           LOG(ERROR) << "Failed getting name of subkey " << i
@@ -237,26 +204,23 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
 
     // Get their values.
     RegKey subkey;
-    for (DWORD i = 0; i < num_subkeys; ++i) {
-      result = subkey.Open(key.Handle(), subkey_names[i].c_str(),
-                           kKeyReadNoNotify);
+    for (std::map<std::wstring, KeyData>::iterator it = subkeys.begin();
+         it != subkeys.end(); ++it) {
+      result = subkey.Open(key.Handle(), it->first.c_str(), kKeyReadNoNotify);
       if (result != ERROR_SUCCESS) {
-        LOG(ERROR) << "Failed opening subkey \"" << subkey_names[i]
+        LOG(ERROR) << "Failed opening subkey \"" << it->first
                    << "\" for backup, result: " << result;
         return false;
       }
-      if (!subkeys[i].Initialize(subkey)) {
-        LOG(ERROR) << "Failed backing up subkey \"" << subkey_names[i] << "\"";
+      if (!it->second.Initialize(subkey)) {
+        LOG(ERROR) << "Failed backing up subkey \"" << it->first << "\"";
         return false;
       }
     }
   }
 
   values_.swap(values);
-  subkey_names_.swap(subkey_names);
   subkeys_.swap(subkeys);
-  num_values_ = num_values;
-  num_subkeys_ = num_subkeys;
 
   return true;
 }
@@ -267,8 +231,9 @@ bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
   LONG result = ERROR_SUCCESS;
 
   // Write the values.
-  for (DWORD i = 0; i < num_values_; ++i) {
-    const ValueData& value = values_[i];
+  for (std::vector<ValueData>::const_iterator it = values_.begin();
+       it != values_.end(); ++it) {
+    const ValueData& value = *it;
     result = RegSetValueEx(key->Handle(), value.name(), 0, value.type(),
                            value.data(), value.data_len());
     if (result != ERROR_SUCCESS) {
@@ -280,8 +245,9 @@ bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
 
   // Write the subkeys.
   RegKey subkey;
-  for (DWORD i = 0; i < num_subkeys_; ++i) {
-    const std::wstring& name = subkey_names_[i];
+  for (std::map<std::wstring, KeyData>::const_iterator it = subkeys_.begin();
+       it != subkeys_.end(); ++it) {
+    const std::wstring& name = it->first;
 
     result = subkey.Create(key->Handle(), name.c_str(), KEY_WRITE);
     if (result != ERROR_SUCCESS) {
@@ -289,7 +255,7 @@ bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
                  << result;
       return false;
     }
-    if (!subkeys_[i].WriteTo(&subkey)) {
+    if (!it->second.WriteTo(&subkey)) {
       LOG(ERROR) << "Failed writing subkey \"" << name << "\", result: "
                  << result;
       return false;
