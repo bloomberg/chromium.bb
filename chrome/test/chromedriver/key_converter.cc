@@ -97,6 +97,15 @@ const char16 kWebDriverControlKey = 0xE009U;
 const char16 kWebDriverAltKey = 0xE00AU;
 const char16 kWebDriverCommandKey = 0xE03DU;
 
+// Returns whether the given key code has a corresponding printable char.
+// Notice: The given key code should be a special WebDriver key code.
+bool IsSpecialKeyPrintable(ui::KeyboardCode key_code) {
+  return key_code == ui::VKEY_TAB || key_code == ui::VKEY_SPACE ||
+      key_code == ui::VKEY_OEM_1 || key_code == ui::VKEY_OEM_PLUS ||
+      key_code == ui::VKEY_OEM_COMMA ||
+      (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_DIVIDE);
+}
+
 // Returns whether the given key is a WebDriver key modifier.
 bool IsModifierKey(char16 key) {
   switch (key) {
@@ -242,7 +251,8 @@ Status ConvertKeysToKeyEvents(const string16& client_keys,
 
     // Get the key code, text, and modifiers for the given key.
     bool should_skip = false;
-    if (KeyCodeFromSpecialWebDriverKey(key, &key_code) ||
+    bool is_special_key = KeyCodeFromSpecialWebDriverKey(key, &key_code);
+    if (is_special_key ||
         KeyCodeFromShorthandKey(key, &key_code, &should_skip)) {
       if (should_skip)
         continue;
@@ -255,6 +265,9 @@ Status ConvertKeysToKeyEvents(const string16& client_keys,
       if (key_code == ui::VKEY_RETURN) {
         // For some reason Chrome expects a carriage return for the return key.
         modified_text = unmodified_text = "\r";
+      } else if (is_special_key && !IsSpecialKeyPrintable(key_code)) {
+        // To prevent char event for special keys like DELETE.
+        modified_text = unmodified_text = std::string();
       } else {
         // WebDriver assumes a numpad key should translate to the number,
         // which requires NumLock to be on with some platforms. This isn't
@@ -274,14 +287,15 @@ Status ConvertKeysToKeyEvents(const string16& client_keys,
       if (key_code != ui::VKEY_UNKNOWN) {
         unmodified_text = ConvertKeyCodeToText(key_code, 0);
         modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
-      }
-
-      if (unmodified_text.empty() || modified_text.empty()) {
+        if (unmodified_text.empty() || modified_text.empty()) {
+          // To prevent char event for special cases like CTRL + x (cut).
+          unmodified_text.clear();
+          modified_text.clear();
+        }
+      } else {
         // Do a best effort and use the raw key we were given.
-        if (unmodified_text.empty())
-          unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
-        if (modified_text.empty())
-          modified_text = UTF16ToUTF8(keys.substr(i, 1));
+        unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
+        modified_text = UTF16ToUTF8(keys.substr(i, 1));
       }
     }
 
