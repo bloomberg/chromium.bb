@@ -126,8 +126,8 @@ sub determineSourceDir
     $sourceDir =~ s|/+$||; # Remove trailing '/' as we would die later
 
     # walks up path checking each directory to see if it is the main WebKit project dir, 
-    # defined by containing Sources, WebCore, and WebKit
-    until ((-d "$sourceDir/Source" && -d "$sourceDir/Source/WebCore" && -d "$sourceDir/Source/WebKit") || (-d "$sourceDir/Internal" && -d "$sourceDir/OpenSource"))
+    # defined by containing Sources, core, and WebKit
+    until ((-d "$sourceDir/Source" && -d "$sourceDir/Source/core" && -d "$sourceDir/Source/WebKit") || (-d "$sourceDir/Internal" && -d "$sourceDir/OpenSource"))
     {
         if ($sourceDir !~ s|/[^/]+$||) {
             die "Could not find top level webkit directory above source directory using FindBin.\n";
