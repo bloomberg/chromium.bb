@@ -172,6 +172,7 @@ class Builder(object):
     self.empty = options.empty
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
+    self.finalize_pexe = options.finalize_pexe
 
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
@@ -205,6 +206,11 @@ class Builder(object):
   def GetStrip(self):
     """Helper which returns strip path."""
     return self.GetBinName('strip')
+
+  def GetPnaclFinalize(self):
+    """Helper which returns pnacl-finalize path."""
+    assert self.is_pnacl_toolchain
+    return self.GetBinName('finalize')
 
   def BuildAssembleOptions(self, options):
     options = ArgToList(options)
@@ -281,6 +287,13 @@ class Builder(object):
     if temp_file is not None:
       os.remove(temp_file.name)
     return ecode
+
+  def RunWithRetry(self, cmd_line, out):
+    err = self.Run(cmd_line, out)
+    if sys.platform.startswith('win') and err == 5:
+      # Try again on mystery windows failure.
+      err = self.Run(cmd_line, out)
+    return err
 
   def GetObjectName(self, src):
     if self.strip:
@@ -406,10 +419,7 @@ class Builder(object):
     self.CleanOutput(outd)
     cmd_line = [bin_name, '-c', src, '-o', out,
                 '-MD', '-MF', outd] + extra + self.compile_options
-    err = self.Run(cmd_line, out)
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
+    err = self.RunWithRetry(cmd_line, out)
     if err:
       self.CleanOutput(outd)
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
@@ -431,11 +441,7 @@ class Builder(object):
       cmd_line += srcs
     cmd_line += self.link_options
 
-    err = self.Run(cmd_line, out)
-    # TODO( Retry on windows
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
+    err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
@@ -449,7 +455,7 @@ class Builder(object):
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
     cmd_line += self.link_options
 
-    err = self.Run(cmd_line, out)
+    err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
@@ -473,10 +479,7 @@ class Builder(object):
 
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
-    err = self.Run(cmd_line, out)
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
+    err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
@@ -491,10 +494,21 @@ class Builder(object):
     bin_name = self.GetStrip()
     strip_option = '--strip-all' if self.strip_all else '--strip-debug'
     cmd_line = [bin_name, strip_option, tmp, '-o', out]
-    err = self.Run(cmd_line, out)
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
+    err = self.RunWithRetry(cmd_line, out)
+    if err:
+      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    return out
+
+  def Finalize(self, out):
+    """Finalize the PEXE"""
+    self.Log('\nFinalize %s' % out)
+
+    tmp = out + '.nonfinal'
+    self.CleanOutput(tmp)
+    os.rename(out, tmp)
+    bin_name = self.GetPnaclFinalize()
+    cmd_line = [bin_name, tmp, '-o', out]
+    err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
@@ -506,7 +520,10 @@ class Builder(object):
     """
     if self.outtype in ['nexe', 'pexe', 'nso']:
       out = self.Link(srcs)
-      if self.strip_all or self.strip_debug:
+      if self.is_pnacl_toolchain and self.finalize_pexe:
+        # Note: pnacl-finalize also does stripping.
+        self.Finalize(out)
+      elif self.strip_all or self.strip_debug:
         self.Strip(out)
     elif self.outtype in ['nlib', 'plib']:
       out = self.Archive(srcs)
@@ -532,6 +549,9 @@ def Main(argv):
                     help='Strip the NEXE for production', action='store_true')
   parser.add_option('--strip', dest='strip', default='',
                     help='Strip the filename')
+  parser.add_option('--nonstable-pnacl', dest='finalize_pexe', default=True,
+                    help='Do not finalize pnacl bitcode for ABI stability',
+                    action='store_false')
   parser.add_option('--source-list', dest='source_list',
                     help='Filename to load a source list from')
   parser.add_option('-a', '--arch', dest='arch',
