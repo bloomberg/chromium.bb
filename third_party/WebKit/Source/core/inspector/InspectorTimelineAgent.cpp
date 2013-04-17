@@ -177,7 +177,7 @@ void InspectorTimelineAgent::start(ErrorString*, const int* maxCallStackDepth, c
     if (!m_frontend)
         return;
 
-    if (maxCallStackDepth && *maxCallStackDepth > 0)
+    if (maxCallStackDepth && *maxCallStackDepth >= 0)
         m_maxCallStackDepth = *maxCallStackDepth;
     else
         m_maxCallStackDepth = 5;
