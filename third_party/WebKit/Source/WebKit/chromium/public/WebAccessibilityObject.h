@@ -181,6 +181,17 @@ public:
     WEBKIT_EXPORT unsigned columnCount() const;
     WEBKIT_EXPORT unsigned rowCount() const;
     WEBKIT_EXPORT WebAccessibilityObject cellForColumnAndRow(unsigned column, unsigned row) const;
+    WEBKIT_EXPORT WebAccessibilityObject headerContainerObject() const;
+    WEBKIT_EXPORT WebAccessibilityObject rowAtIndex(unsigned rowIndex) const;
+    WEBKIT_EXPORT WebAccessibilityObject columnAtIndex(unsigned columnIndex) const;
+
+    // For a table row
+    WEBKIT_EXPORT unsigned rowIndex() const;
+    WEBKIT_EXPORT WebAccessibilityObject rowHeader() const;
+
+    // For a table column
+    WEBKIT_EXPORT unsigned columnIndex() const;
+    WEBKIT_EXPORT WebAccessibilityObject columnHeader() const;
 
     // For a table cell
     WEBKIT_EXPORT unsigned cellColumnIndex() const;

@@ -408,6 +408,8 @@ AccessibilityUIElement::AccessibilityUIElement(const WebAccessibilityObject& obj
     bindProperty("orientation", &AccessibilityUIElement::orientationGetterCallback);
     bindProperty("clickPointX", &AccessibilityUIElement::clickPointXGetterCallback);
     bindProperty("clickPointY", &AccessibilityUIElement::clickPointYGetterCallback);
+    bindProperty("rowCount", &AccessibilityUIElement::rowCountGetterCallback);
+    bindProperty("columnCount", &AccessibilityUIElement::columnCountGetterCallback);
 
     //
     // Methods
@@ -428,6 +430,7 @@ AccessibilityUIElement::AccessibilityUIElement(const WebAccessibilityObject& obj
     bindMethod("attributesOfRows", &AccessibilityUIElement::attributesOfRowsCallback);
     bindMethod("attributesOfVisibleCells", &AccessibilityUIElement::attributesOfVisibleCellsCallback);
     bindMethod("attributesOfHeader", &AccessibilityUIElement::attributesOfHeaderCallback);
+    bindMethod("tableHeader", &AccessibilityUIElement::tableHeaderCallback);
     bindMethod("indexInTable", &AccessibilityUIElement::indexInTableCallback);
     bindMethod("rowIndexRange", &AccessibilityUIElement::rowIndexRangeCallback);
     bindMethod("columnIndexRange", &AccessibilityUIElement::columnIndexRangeCallback);
@@ -674,6 +677,16 @@ void AccessibilityUIElement::clickPointYGetterCallback(CppVariant* result)
     result->set(accessibilityObject().clickPoint().y);
 }
 
+void AccessibilityUIElement::rowCountGetterCallback(CppVariant* result)
+{
+    result->set(static_cast<int32_t>(accessibilityObject().rowCount()));
+}
+
+void AccessibilityUIElement::columnCountGetterCallback(CppVariant* result)
+{
+    result->set(static_cast<int32_t>(accessibilityObject().columnCount()));
+}
+
 //
 // Methods
 //
@@ -798,6 +811,17 @@ void AccessibilityUIElement::attributesOfHeaderCallback(const CppArgumentList&, 
     result->setNull();
 }
 
+void AccessibilityUIElement::tableHeaderCallback(const CppArgumentList&, CppVariant* result)
+{
+    WebAccessibilityObject obj = accessibilityObject().headerContainerObject();
+    if (obj.isNull()) {
+        result->setNull();
+        return;
+    }
+
+    result->set(*(m_factory->getOrCreate(obj)->getAsCppVariant()));
+}
+
 void AccessibilityUIElement::indexInTableCallback(const CppArgumentList&, CppVariant* result)
 {
     result->setNull();
@@ -805,17 +829,37 @@ void AccessibilityUIElement::indexInTableCallback(const CppArgumentList&, CppVar
 
 void AccessibilityUIElement::rowIndexRangeCallback(const CppArgumentList&, CppVariant* result)
 {
-    result->setNull();
+    unsigned rowIndex = accessibilityObject().cellRowIndex();
+    unsigned rowSpan = accessibilityObject().cellRowSpan();
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), "{%d, %d}", rowIndex, rowSpan);
+    string value = buffer;
+    result->set(std::string(buffer));
 }
 
 void AccessibilityUIElement::columnIndexRangeCallback(const CppArgumentList&, CppVariant* result)
 {
-    result->setNull();
+    unsigned columnIndex = accessibilityObject().cellColumnIndex();
+    unsigned columnSpan = accessibilityObject().cellColumnSpan();
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), "{%d, %d}", columnIndex, columnSpan);
+    result->set(std::string(buffer));
 }
 
-void AccessibilityUIElement::cellForColumnAndRowCallback(const CppArgumentList&, CppVariant* result)
+void AccessibilityUIElement::cellForColumnAndRowCallback(const CppArgumentList& arguments, CppVariant* result)
 {
-    result->setNull();
+    if (arguments.size() != 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
+        return;
+
+    int column = arguments[0].toInt32();
+    int row = arguments[1].toInt32();
+    WebAccessibilityObject obj = accessibilityObject().cellForColumnAndRow(column, row);
+    if (obj.isNull()) {
+        result->setNull();
+        return;
+    }
+
+    result->set(*(m_factory->getOrCreate(obj)->getAsCppVariant()));
 }
 
 void AccessibilityUIElement::titleUIElementCallback(const CppArgumentList&, CppVariant* result)

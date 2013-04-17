@@ -95,6 +95,8 @@ private:
     void orientationGetterCallback(CppVariant*);
     void clickPointXGetterCallback(CppVariant*);
     void clickPointYGetterCallback(CppVariant*);
+    void rowCountGetterCallback(CppVariant*);
+    void columnCountGetterCallback(CppVariant*);
 
     // Bound methods.
     void allAttributesCallback(const CppArgumentList&, CppVariant*);
@@ -113,6 +115,7 @@ private:
     void attributesOfRowsCallback(const CppArgumentList&, CppVariant*);
     void attributesOfVisibleCellsCallback(const CppArgumentList&, CppVariant*);
     void attributesOfHeaderCallback(const CppArgumentList&, CppVariant*);
+    void tableHeaderCallback(const CppArgumentList&, CppVariant*);
     void indexInTableCallback(const CppArgumentList&, CppVariant*);
     void rowIndexRangeCallback(const CppArgumentList&, CppVariant*);
     void columnIndexRangeCallback(const CppArgumentList&, CppVariant*);

@@ -35,6 +35,8 @@
 #include "AccessibilityObject.h"
 #include "AccessibilityTable.h"
 #include "AccessibilityTableCell.h"
+#include "AccessibilityTableColumn.h"
+#include "AccessibilityTableRow.h"
 #include "CSSPrimitiveValueMappings.h"
 #include "Document.h"
 #include "EventHandler.h"
@@ -889,6 +891,91 @@ WebAccessibilityObject WebAccessibilityObject::cellForColumnAndRow(unsigned colu
 
     WebCore::AccessibilityTableCell* cell = static_cast<WebCore::AccessibilityTable*>(m_private.get())->cellForColumnAndRow(column, row);
     return WebAccessibilityObject(static_cast<WebCore::AccessibilityObject*>(cell));
+}
+
+WebAccessibilityObject WebAccessibilityObject::headerContainerObject() const
+{
+    if (isDetached())
+        return WebAccessibilityObject();
+
+    if (!m_private->isAccessibilityTable())
+        return WebAccessibilityObject();
+
+    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTable*>(m_private.get())->headerContainer());
+}
+
+WebAccessibilityObject WebAccessibilityObject::rowAtIndex(unsigned int rowIndex) const
+{
+    if (isDetached())
+        return WebAccessibilityObject();
+
+    if (!m_private->isAccessibilityTable())
+        return WebAccessibilityObject();
+
+    const AccessibilityObject::AccessibilityChildrenVector& rows = static_cast<WebCore::AccessibilityTable*>(m_private.get())->rows();
+    if (rowIndex < rows.size())
+        return WebAccessibilityObject(rows[rowIndex]);
+
+    return WebAccessibilityObject();
+}
+
+WebAccessibilityObject WebAccessibilityObject::columnAtIndex(unsigned int columnIndex) const
+{
+    if (isDetached())
+        return WebAccessibilityObject();
+
+    if (!m_private->isAccessibilityTable())
+        return WebAccessibilityObject();
+
+    const AccessibilityObject::AccessibilityChildrenVector& columns = static_cast<WebCore::AccessibilityTable*>(m_private.get())->columns();
+    if (columnIndex < columns.size())
+        return WebAccessibilityObject(columns[columnIndex]);
+
+    return WebAccessibilityObject();
+}
+
+unsigned WebAccessibilityObject::rowIndex() const
+{
+    if (isDetached())
+        return 0;
+
+    if (!m_private->isTableRow())
+        return 0;
+
+    return static_cast<WebCore::AccessibilityTableRow*>(m_private.get())->rowIndex();
+}
+
+WebAccessibilityObject WebAccessibilityObject::rowHeader() const
+{
+    if (isDetached())
+        return WebAccessibilityObject();
+
+    if (!m_private->isTableRow())
+        return WebAccessibilityObject();
+
+    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTableRow*>(m_private.get())->headerObject());
+}
+
+unsigned WebAccessibilityObject::columnIndex() const
+{
+    if (isDetached())
+        return 0;
+
+    if (!m_private->isTableColumn())
+        return 0;
+
+    return static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->columnIndex();
+}
+
+WebAccessibilityObject WebAccessibilityObject::columnHeader() const
+{
+    if (isDetached())
+        return WebAccessibilityObject();
+
+    if (!m_private->isTableColumn())
+        return WebAccessibilityObject();
+
+    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->headerObject());
 }
 
 unsigned WebAccessibilityObject::cellColumnIndex() const
