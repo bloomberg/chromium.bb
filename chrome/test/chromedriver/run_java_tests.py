@@ -240,6 +240,9 @@ def main():
       '', '--filter', type='string', default=None,
       help='Filter for specifying what tests to run, "*" will run all. E.g., '
            '*testShouldReturnTitleOfPageIfSet')
+  parser.add_option(
+      '', '--isolate-tests', action='store_true', default=False,
+      help='Relaunch the jar test harness after each test')
   options, args = parser.parse_args()
 
   if options.chromedriver is None or not os.path.exists(options.chromedriver):
@@ -257,9 +260,13 @@ def main():
   try:
     environment.GlobalSetUp()
     # Run passed tests when filter is not provided.
-    test_filter = options.filter
-    if test_filter is None:
-      test_filter = environment.GetPassedJavaTestFilter()
+    if options.filter:
+      test_filters = [options.filter]
+    else:
+      if options.isolate_tests:
+        test_filters = environment.GetPassedJavaTests()
+      else:
+        test_filters = [environment.GetPassedJavaTestFilter()]
 
     java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                       'chromedriver', 'third_party',
@@ -270,14 +277,17 @@ def main():
           'Should add "deps/third_party/webdriver" to source checkout config')
       return 1
 
-    return PrintTestResults(_Run(
-        java_tests_src_dir=java_tests_src_dir,
-        test_filter=test_filter,
-        chromedriver_path=options.chromedriver,
-        chrome_path=options.chrome,
-        android_package=options.android_package,
-        verbose=options.verbose,
-        debug=options.debug))
+    results = []
+    for filter in test_filters:
+      results += _Run(
+          java_tests_src_dir=java_tests_src_dir,
+          test_filter=filter,
+          chromedriver_path=options.chromedriver,
+          chrome_path=options.chrome,
+          android_package=options.android_package,
+          verbose=options.verbose,
+          debug=options.debug)
+    return PrintTestResults(results)
   finally:
     environment.GlobalTearDown()
 

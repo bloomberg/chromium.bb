@@ -42,6 +42,10 @@ class BaseTestEnvironment(object):
     """
     self._chrome_version = chrome_version
 
+  def GetOS(self):
+    """Name of the OS."""
+    raise NotImplementedError
+
   def GlobalSetUp(self):
     """Sets up the global test environment state."""
     pass
@@ -51,21 +55,32 @@ class BaseTestEnvironment(object):
     pass
 
   def GetPassedJavaTestFilter(self):
-    """Returns the test filter for running all passing tests.
+    """Get the test filter for running all passing tests.
 
     Returns:
       Filter string, in Google Test (C++) format.
     """
-    raise NotImplementedError
+    return _EXPECTATIONS['GetPassedJavaTestFilter'](
+        'android', self._chrome_version)
+
+  def GetPassedJavaTests(self):
+    """Get the list of passed java tests.
+
+    Returns:
+      List of passed test names.
+    """
+    with open(os.path.join(_THIS_DIR, 'java_tests.txt'), 'r') as f:
+      return _EXPECTATIONS['ApplyJavaTestFilter'](
+          'android', self._chrome_version,
+          [t.strip('\n') for t in f.readlines()])
 
 
 class DesktopTestEnvironment(BaseTestEnvironment):
   """Manages the environment java tests require to run on Desktop."""
 
   #override
-  def GetPassedJavaTestFilter(self):
-    return _EXPECTATIONS['GetPassedJavaTestFilter'](
-        util.GetPlatformName(), self._chrome_version)
+  def GetOS(self):
+    return util.GetPlatformName()
 
 
 class AndroidTestEnvironment(DesktopTestEnvironment):
@@ -95,6 +110,5 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
       self._forwarder.Close()
 
   #override
-  def GetPassedJavaTestFilter(self):
-    return _EXPECTATIONS['GetPassedJavaTestFilter'](
-        'android', self._chrome_version)
+  def GetOS(self):
+    return 'android'
