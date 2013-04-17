@@ -371,7 +371,6 @@
     attribute HTMLAreaElementConstructor HTMLAreaElement;
     attribute HTMLBRElementConstructor HTMLBRElement;
     attribute HTMLBaseElementConstructor HTMLBaseElement;
-    attribute HTMLBaseFontElementConstructor HTMLBaseFontElement;
     attribute HTMLBodyElementConstructor HTMLBodyElement;
     attribute HTMLButtonElementConstructor HTMLButtonElement;
     attribute HTMLCanvasElementConstructor HTMLCanvasElement;

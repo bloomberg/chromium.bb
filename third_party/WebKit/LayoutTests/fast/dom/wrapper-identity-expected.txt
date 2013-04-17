@@ -32,7 +32,6 @@ PASS var object = window['HTMLAppletElement']; isEqualJS(object, object); is tru
 PASS var object = window['HTMLAreaElement']; isEqualJS(object, object); is true
 PASS var object = window['HTMLBRElement']; isEqualJS(object, object); is true
 PASS var object = window['HTMLBaseElement']; isEqualJS(object, object); is true
-PASS var object = window['HTMLBaseFontElement']; isEqualJS(object, object); is true
 PASS var object = window['HTMLBodyElement']; isEqualJS(object, object); is true
 PASS var object = window['HTMLButtonElement']; isEqualJS(object, object); is true
 PASS var object = window['HTMLCanvasElement']; isEqualJS(object, object); is true

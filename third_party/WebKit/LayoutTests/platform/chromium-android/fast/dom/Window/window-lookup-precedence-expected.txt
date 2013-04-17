@@ -132,8 +132,6 @@ PASS 'function HTMLBRElement() { [native code] }' is 'function HTMLBRElement() {
 PASS 'function HTMLBRElement() { [native code] }' is 'function HTMLBRElement() { [native code] }'
 PASS 'function HTMLBaseElement() { [native code] }' is 'function HTMLBaseElement() { [native code] }'
 PASS 'function HTMLBaseElement() { [native code] }' is 'function HTMLBaseElement() { [native code] }'
-PASS 'function HTMLBaseFontElement() { [native code] }' is 'function HTMLBaseFontElement() { [native code] }'
-PASS 'function HTMLBaseFontElement() { [native code] }' is 'function HTMLBaseFontElement() { [native code] }'
 PASS 'function HTMLBodyElement() { [native code] }' is 'function HTMLBodyElement() { [native code] }'
 PASS 'function HTMLBodyElement() { [native code] }' is 'function HTMLBodyElement() { [native code] }'
 PASS 'function HTMLButtonElement() { [native code] }' is 'function HTMLButtonElement() { [native code] }'

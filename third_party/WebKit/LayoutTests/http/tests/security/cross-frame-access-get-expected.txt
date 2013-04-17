@@ -187,7 +187,6 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 This test checks cross-frame access security (rdar://problem/5251309).
 
 
@@ -244,7 +243,6 @@ PASS: canGet('targetWindow.HTMLAppletElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLAreaElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLBRElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLBaseElement') should be 'false' and is.
-PASS: canGet('targetWindow.HTMLBaseFontElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLBodyElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLButtonElement') should be 'false' and is.
 PASS: canGet('targetWindow.HTMLCanvasElement') should be 'false' and is.

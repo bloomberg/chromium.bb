@@ -189,7 +189,6 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 ALERT: PASS: window.Attr should be 'function Attr() { [native code] }' and is.
 ALERT: PASS: window.CDATASection should be 'function CDATASection() { [native code] }' and is.
 ALERT: PASS: window.CharacterData should be 'function CharacterData() { [native code] }' and is.
@@ -213,7 +212,6 @@ ALERT: PASS: window.HTMLAnchorElement should be 'function HTMLAnchorElement() { 
 ALERT: PASS: window.HTMLAppletElement should be 'function HTMLAppletElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLAreaElement should be 'function HTMLAreaElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLBaseElement should be 'function HTMLBaseElement() { [native code] }' and is.
-ALERT: PASS: window.HTMLBaseFontElement should be 'function HTMLBaseFontElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLBodyElement should be 'function HTMLBodyElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLBRElement should be 'function HTMLBRElement() { [native code] }' and is.
 ALERT: PASS: window.HTMLButtonElement should be 'function HTMLButtonElement() { [native code] }' and is.

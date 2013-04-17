@@ -176,9 +176,9 @@ FAIL tagJSWrapperConstructorClass('b') should be HTMLElementConstructor. Was Fun
 PASS tagJSWrapperClass('base') is 'HTMLBaseElement'
 FAIL tagJSWrapperPrototypeClass('base') should be HTMLBaseElementPrototype. Was Object.
 FAIL tagJSWrapperConstructorClass('base') should be HTMLBaseElementConstructor. Was Function.
-PASS tagJSWrapperClass('basefont') is 'HTMLBaseFontElement'
-FAIL tagJSWrapperPrototypeClass('basefont') should be HTMLBaseFontElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('basefont') should be HTMLBaseFontElementConstructor. Was Function.
+PASS tagJSWrapperClass('basefont') is 'HTMLElement'
+FAIL tagJSWrapperPrototypeClass('basefont') should be HTMLElementPrototype. Was Object.
+FAIL tagJSWrapperConstructorClass('basefont') should be HTMLElementConstructor. Was Function.
 PASS tagJSWrapperClass('bdo') is 'HTMLElement'
 FAIL tagJSWrapperPrototypeClass('bdo') should be HTMLElementPrototype. Was Object.
 FAIL tagJSWrapperConstructorClass('bdo') should be HTMLElementConstructor. Was Function.

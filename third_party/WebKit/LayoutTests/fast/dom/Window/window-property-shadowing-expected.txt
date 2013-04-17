@@ -106,7 +106,6 @@ PASS: HTMLAppletElement successfully shadowed
 PASS: HTMLAreaElement successfully shadowed
 PASS: HTMLBRElement successfully shadowed
 PASS: HTMLBaseElement successfully shadowed
-PASS: HTMLBaseFontElement successfully shadowed
 PASS: HTMLBlockquoteElement successfully shadowed
 PASS: HTMLBodyElement successfully shadowed
 PASS: HTMLButtonElement successfully shadowed

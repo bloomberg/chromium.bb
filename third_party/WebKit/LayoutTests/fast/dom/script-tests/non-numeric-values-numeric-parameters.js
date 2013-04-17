@@ -391,7 +391,6 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/HTMLAppletElement.idl:                 attribute [ConvertFromString] long hspace;
 ../../../../WebCore/html/HTMLAppletElement.idl:                 attribute [ConvertFromString] long vspace;
 ../../../../WebCore/html/HTMLAreaElement.idl:        attribute long tabIndex;
-../../../../WebCore/html/HTMLBaseFontElement.idl:        attribute long size;
 ../../../../WebCore/html/HTMLBodyElement.idl:                 attribute long scrollLeft;
 ../../../../WebCore/html/HTMLBodyElement.idl:                 attribute long scrollTop;
 ../../../../WebCore/html/HTMLButtonElement.idl:                 attribute  long                 tabIndex;

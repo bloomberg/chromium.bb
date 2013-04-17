@@ -10,8 +10,6 @@ HTMLAreaElement: function HTMLAreaElement() { [native code] }
 
 HTMLBaseElement: function HTMLBaseElement() { [native code] }
 
-HTMLBaseFontElement: function HTMLBaseFontElement() { [native code] }
-
 HTMLBodyElement: function HTMLBodyElement() { [native code] }
 
 HTMLBRElement: function HTMLBRElement() { [native code] }

@@ -24,7 +24,6 @@ var staticWindowProperties = [
     'HTMLAreaElement',
     'HTMLBRElement',
     'HTMLBaseElement',
-    'HTMLBaseFontElement',
     'HTMLBodyElement',
     'HTMLButtonElement',
     'HTMLCanvasElement',

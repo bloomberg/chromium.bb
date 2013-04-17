@@ -14,7 +14,7 @@ aside interfaceName=HTMLElement
 audio wrapperOnlyIfMediaIsAvailable, conditional=VIDEO, constructorNeedsCreatedByParser
 b interfaceName=HTMLElement
 base
-basefont interfaceName=HTMLBaseFontElement
+basefont interfaceName=HTMLElement
 bdi interfaceName=HTMLBDIElement, JSInterfaceName=HTMLElement
 bdo interfaceName=HTMLElement
 bgsound interfaceName=HTMLElement
