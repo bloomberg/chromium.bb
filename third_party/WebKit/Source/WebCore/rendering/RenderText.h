@@ -238,12 +238,6 @@ inline void RenderText::checkConsistency() const
 
 void applyTextTransform(const RenderStyle*, String&, UChar);
 
-// Implemented here so it can be inline.
-inline bool RenderObject::isBR() const
-{
-    return isText() && toRenderText(this)->isLineBreak();
-}
-
 } // namespace WebCore
 
 #endif // RenderText_h
