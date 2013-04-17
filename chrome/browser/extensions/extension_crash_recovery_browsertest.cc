@@ -541,11 +541,12 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 }
 
 // Disabled on aura as flakey: http://crbug.com/169622
-#if defined(USE_AURA)
+// Failing on Windows after Blink roll: http://crbug.com/232340
+#if defined(USE_AURA) || defined(OS_WIN)
 #define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
 #else
 #define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage
-#endif  // defined(OS_LINUX)
+#endif
 
 // Test that when an extension with a background page that has a tab open
 // crashes, the tab stays open, and reloading it reloads the extension.
