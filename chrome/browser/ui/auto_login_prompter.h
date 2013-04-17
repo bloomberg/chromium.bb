@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/auto_login_info_bar_delegate.h"
+#include "chrome/browser/ui/auto_login_infobar_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 

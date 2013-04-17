@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
-#define CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "components/auto_login_parser/auto_login_parser.h"
@@ -77,4 +77,4 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/auto_login_info_bar_delegate.h"
+#include "chrome/browser/ui/auto_login_infobar_delegate.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
