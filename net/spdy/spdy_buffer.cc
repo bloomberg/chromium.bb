@@ -19,7 +19,7 @@ namespace {
 scoped_ptr<SpdyFrame> MakeSpdyFrame(const char* data, size_t size) {
   DCHECK(data);
   DCHECK_GT(size, 0u);
-  scoped_array<char> frame_data(new char[size]);
+  scoped_ptr<char[]> frame_data(new char[size]);
   std::memcpy(frame_data.get(), data, size);
   scoped_ptr<SpdyFrame> frame(
       new SpdyFrame(frame_data.release(), size, true /* owns_buffer */));
