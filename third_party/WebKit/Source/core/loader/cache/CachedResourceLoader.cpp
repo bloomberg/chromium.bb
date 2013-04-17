@@ -464,7 +464,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(co
     
     memoryCache()->remove(resource);
     memoryCache()->add(newResource.get());
-    storeResourceTimingInitiatorInformation(resource, request);
+    storeResourceTimingInitiatorInformation(newResource, request);
     return newResource;
 }
 

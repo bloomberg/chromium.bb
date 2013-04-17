@@ -18,11 +18,12 @@ var image;
 function setup_iframe() {
     iframe = document.getElementById('frameContext');
     d = iframe.contentWindow.document;
-    iframeBody = d.createElement('body');
+    iframeBody = d.body;
 
     image = d.createElement('img');
     image.src = '/w3c/webperf/resources/generate_resource.php?type=image&id=cached';
     iframeBody.appendChild(image);
+    iframe.addEventListener("load", function() { setTimeout(reload_image, 0); }, false);
 }
 function reload_image() {
     iframeBody.removeChild(image);
@@ -41,7 +42,6 @@ function onload_test() {
     done();
 }
 window.setup_iframe = setup_iframe;
-window.addEventListener("load", reload_image, false);
 </script>
 </head>
 <body>
