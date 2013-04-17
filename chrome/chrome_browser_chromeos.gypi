@@ -267,6 +267,7 @@
         'browser/chromeos/drive/file_system/update_operation.h',
         'browser/chromeos/drive/file_write_helper.cc',
         'browser/chromeos/drive/file_write_helper.h',
+        'browser/chromeos/drive/job_list_interface.h',
         'browser/chromeos/drive/resource_entry_conversion.cc',
         'browser/chromeos/drive/resource_entry_conversion.h',
         'browser/chromeos/drive/search_metadata.cc',

@@ -663,24 +663,24 @@ TEST_F(DriveSchedulerTest, JobInfo) {
   scoped_ptr<google_apis::AccountMetadata> account_metadata;
   base::FilePath path;
 
-  std::set<DriveScheduler::JobType> expected_types;
+  std::set<JobType> expected_types;
 
   // Add many jobs.
-  expected_types.insert(DriveScheduler::TYPE_ADD_NEW_DIRECTORY);
+  expected_types.insert(TYPE_ADD_NEW_DIRECTORY);
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       "New Directory",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  expected_types.insert(DriveScheduler::TYPE_GET_ACCOUNT_METADATA);
+  expected_types.insert(TYPE_GET_ACCOUNT_METADATA);
   scheduler_->GetAccountMetadata(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &account_metadata));
-  expected_types.insert(DriveScheduler::TYPE_RENAME_RESOURCE);
+  expected_types.insert(TYPE_RENAME_RESOURCE);
   scheduler_->RenameResource(
       "file:2_file_resource_id",
       "New Name",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  expected_types.insert(DriveScheduler::TYPE_DOWNLOAD_FILE);
+  expected_types.insert(TYPE_DOWNLOAD_FILE);
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
@@ -693,21 +693,21 @@ TEST_F(DriveSchedulerTest, JobInfo) {
   EXPECT_EQ(4U, scheduler_->GetJobInfoList().size());
 
   // Add more jobs.
-  expected_types.insert(DriveScheduler::TYPE_ADD_RESOURCE_TO_DIRECTORY);
+  expected_types.insert(TYPE_ADD_RESOURCE_TO_DIRECTORY);
   scheduler_->AddResourceToDirectory(
       "folder:1_folder_resource_id",
       "file:2_file_resource_id",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  expected_types.insert(DriveScheduler::TYPE_COPY_HOSTED_DOCUMENT);
+  expected_types.insert(TYPE_COPY_HOSTED_DOCUMENT);
   scheduler_->CopyHostedDocument(
       "document:5_document_resource_id",
       "New Document",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
 
   // 6 jobs in total were queued.
-  std::vector<DriveScheduler::JobInfo> jobs = scheduler_->GetJobInfoList();
+  std::vector<JobInfo> jobs = scheduler_->GetJobInfoList();
   EXPECT_EQ(6U, jobs.size());
-  std::set<DriveScheduler::JobType> actual_types;
+  std::set<JobType> actual_types;
   for (size_t i = 0; i < jobs.size(); ++i)
     actual_types.insert(jobs[i].job_type);
   EXPECT_EQ(expected_types, actual_types);
@@ -718,7 +718,7 @@ TEST_F(DriveSchedulerTest, JobInfo) {
   // All jobs except the BACKGROUND job should have finished.
   jobs = scheduler_->GetJobInfoList();
   ASSERT_EQ(1U, jobs.size());
-  EXPECT_EQ(DriveScheduler::TYPE_DOWNLOAD_FILE, jobs[0].job_type);
+  EXPECT_EQ(TYPE_DOWNLOAD_FILE, jobs[0].job_type);
 
   // Run the background downloading job as well.
   ConnectToWifi();

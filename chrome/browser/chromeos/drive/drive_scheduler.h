@@ -10,7 +10,9 @@
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/job_list_interface.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "net/base/network_change_notifier.h"
@@ -22,72 +24,10 @@ namespace drive {
 // The DriveScheduler is responsible for queuing and scheduling drive
 // operations.  It is responsible for handling retry logic, rate limiting, as
 // concurrency as appropriate.
-//
-// TODO(zork): Provide an interface for querying the number of jobs, and state
-// of each.  See: crbug.com/154243
 class DriveScheduler
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public JobListInterface {
  public:
-  // Enum representing the type of job.
-  enum JobType {
-    TYPE_GET_ABOUT_RESOURCE,
-    TYPE_GET_ACCOUNT_METADATA,
-    TYPE_GET_APP_LIST,
-    TYPE_GET_ALL_RESOURCE_LIST,
-    TYPE_GET_RESOURCE_LIST_IN_DIRECTORY,
-    TYPE_SEARCH,
-    TYPE_GET_CHANGE_LIST,
-    TYPE_CONTINUE_GET_RESOURCE_LIST,
-    TYPE_GET_RESOURCE_ENTRY,
-    TYPE_DELETE_RESOURCE,
-    TYPE_COPY_HOSTED_DOCUMENT,
-    TYPE_RENAME_RESOURCE,
-    TYPE_ADD_RESOURCE_TO_DIRECTORY,
-    TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
-    TYPE_ADD_NEW_DIRECTORY,
-    TYPE_DOWNLOAD_FILE,
-    TYPE_UPLOAD_NEW_FILE,
-    TYPE_UPLOAD_EXISTING_FILE,
-  };
-
-  // Current state of the job.
-  enum JobState {
-    // The job is queued, but not yet executed.
-    STATE_NONE,
-
-    // The job is in the process of being handled.
-    STATE_RUNNING,
-
-    // The job failed, but has been re-added to the queue.
-    STATE_RETRY,
-  };
-
-  // Unique ID assigned to each job. It is base::IDMap<JobInfo>::KeyType.
-  typedef int32 JobID;
-
-  // Information about a specific job that is visible to other systems.
-  struct JobInfo {
-    explicit JobInfo(JobType in_job_type);
-
-    // Type of the job.
-    JobType job_type;
-
-    // Id of the job, which can be used to query or modify it.
-    JobID job_id;
-
-    // Number of bytes completed, if applicable.
-    int completed_bytes;
-
-    // Total bytes of this operation, if applicable.
-    int total_bytes;
-
-    // Drive path of the file that this job acts on.
-    base::FilePath file_path;
-
-    // Current state of the operation.
-    JobState state;
-  };
-
   DriveScheduler(Profile* profile,
                  google_apis::DriveServiceInterface* drive_service);
   virtual ~DriveScheduler();
@@ -96,8 +36,10 @@ class DriveScheduler
   // other functions.
   void Initialize();
 
-  // Returns the list of jobs currently managed by the scheduler.
-  std::vector<JobInfo> GetJobInfoList();
+  // JobListInterface overrides.
+  virtual std::vector<JobInfo> GetJobInfoList() OVERRIDE;
+  virtual void AddObserver(JobListObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(JobListObserver* observer) OVERRIDE;
 
   // Adds a GetAccountMetadata operation to the queue.
   // |callback| must not be null.
@@ -432,6 +374,11 @@ class DriveScheduler
   // For testing only.  Disables throttling so that testing is faster.
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
+  // Notifies updates to observers.
+  void NotifyJobAdded(const JobInfo& job_info);
+  void NotifyJobDone(const JobInfo& job_info);
+  void NotifyJobUpdated(const JobInfo& job_info);
+
   // Number of jobs in flight for each queue.
   int jobs_running_[NUM_QUEUES];
 
@@ -449,6 +396,9 @@ class DriveScheduler
   // The list of unfinished (= queued or running) job info indexed by job IDs.
   typedef IDMap<JobInfo, IDMapOwnPointer> JobIDMap;
   JobIDMap job_map_;
+
+  // The list of observers for the scheduler.
+  ObserverList<JobListObserver> observer_list_;
 
   google_apis::DriveServiceInterface* drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> uploader_;

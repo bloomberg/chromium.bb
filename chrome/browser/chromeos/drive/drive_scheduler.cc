@@ -30,15 +30,6 @@ const int DriveScheduler::kMaxJobCount[] = {
   1,  // FILE_QUEUE
 };
 
-DriveScheduler::JobInfo::JobInfo(JobType in_job_type)
-    : job_type(in_job_type),
-      job_id(-1),
-      completed_bytes(0),
-      total_bytes(0),
-      state(STATE_NONE) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 DriveScheduler::QueueEntry::QueueEntry()
     : job_id(-1),
       context(DriveClientContext(USER_INITIATED)) {
@@ -101,11 +92,21 @@ void DriveScheduler::Initialize() {
   initialized_ = true;
 }
 
-std::vector<DriveScheduler::JobInfo> DriveScheduler::GetJobInfoList() {
+std::vector<JobInfo> DriveScheduler::GetJobInfoList() {
   std::vector<JobInfo> job_info_list;
   for (JobIDMap::iterator iter(&job_map_); !iter.IsAtEnd(); iter.Advance())
     job_info_list.push_back(*iter.GetCurrentValue());
   return job_info_list;
+}
+
+void DriveScheduler::AddObserver(JobListObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.AddObserver(observer);
+}
+
+void DriveScheduler::RemoveObserver(JobListObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.RemoveObserver(observer);
 }
 
 void DriveScheduler::GetAccountMetadata(
@@ -901,6 +902,21 @@ DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
   }
   NOTREACHED();
   return FILE_QUEUE;
+}
+
+void DriveScheduler::NotifyJobAdded(const JobInfo& job_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobAdded(job_info));
+}
+
+void DriveScheduler::NotifyJobDone(const JobInfo& job_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobDone(job_info));
+}
+
+void DriveScheduler::NotifyJobUpdated(const JobInfo& job_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobUpdated(job_info));
 }
 
 }  // namespace drive
