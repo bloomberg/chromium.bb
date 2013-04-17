@@ -26,7 +26,6 @@ class MockBluetoothInputClient;
 class MockBluetoothManagerClient;
 class MockBluetoothNodeClient;
 class MockBluetoothOutOfBandClient;
-class MockCrasAudioClient;
 class MockCrosDisksClient;
 class MockCryptohomeClient;
 class MockDebugDaemonClient;
@@ -133,9 +132,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockBluetoothOutOfBandClient* mock_bluetooth_out_of_band_client() {
     return mock_bluetooth_out_of_band_client_.get();
   }
-  MockCrasAudioClient* mock_cras_audio_client() {
-    return mock_cras_audio_client_.get();
-  }
   MockCrosDisksClient* mock_cros_disks_client() {
     return mock_cros_disks_client_.get();
   }
@@ -236,7 +232,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockBluetoothManagerClient> mock_bluetooth_manager_client_;
   scoped_ptr<MockBluetoothNodeClient> mock_bluetooth_node_client_;
   scoped_ptr<MockBluetoothOutOfBandClient> mock_bluetooth_out_of_band_client_;
-  scoped_ptr<MockCrasAudioClient> mock_cras_audio_client_;
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockDebugDaemonClient> mock_debugdaemon_client_;

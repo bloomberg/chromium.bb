@@ -301,8 +301,6 @@
         'dbus/mock_bluetooth_node_client.h',
         'dbus/mock_bluetooth_out_of_band_client.cc',
         'dbus/mock_bluetooth_out_of_band_client.h',
-        'dbus/mock_cras_audio_client.cc',
-        'dbus/mock_cras_audio_client.h',
         'dbus/mock_cros_disks_client.cc',
         'dbus/mock_cros_disks_client.h',
         'dbus/mock_cryptohome_client.cc',
