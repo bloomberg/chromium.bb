@@ -370,6 +370,8 @@ class NinjaWriter:
                                                            generator_flags)
       arch = self.msvs_settings.GetArch(config_name)
       self.ninja.variable('arch', self.win_env[arch])
+      self.ninja.variable('cc', '$cl_' + arch)
+      self.ninja.variable('cxx', '$cl_' + arch)
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -1367,11 +1369,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
   #   to cc/cxx.
   if flavor == 'win':
-    cc = 'cl.exe'
-    cxx = 'cl.exe'
+    cc = 'UNKNOWN'  # Must be overridden by local arch choice.
+    cxx = 'UNKNOWN'
     ld = 'link.exe'
-    gyp.msvs_emulation.GenerateEnvironmentFiles(
-        toplevel_build, generator_flags, OpenOutput)
     ld_host = '$ld'
   else:
     cc = 'gcc'
@@ -1412,6 +1412,17 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
 
+  # Support wrappers from environment variables too.
+  for key, value in os.environ.iteritems():
+    if key.endswith('_wrapper'):
+      wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
+
+  cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
+      toplevel_build, generator_flags, OpenOutput)
+  for arch, path in cl_paths.iteritems():
+    master_ninja.variable('cl_' + arch,
+                          CommandWithWrapper('CC', wrappers, path))
+
   cc = GetEnvironFallback(['CC_target', 'CC'], cc)
   master_ninja.variable('cc', CommandWithWrapper('CC', wrappers, cc))
   cxx = GetEnvironFallback(['CXX_target', 'CXX'], cxx)
@@ -1430,7 +1441,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('rc', 'rc.exe')
     master_ninja.variable('asm', 'ml.exe')
     master_ninja.variable('mt', 'mt.exe')
-    master_ninja.variable('use_dep_database', '1')
   else:
     master_ninja.variable('ld', CommandWithWrapper('LINK', wrappers, ld))
     master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))

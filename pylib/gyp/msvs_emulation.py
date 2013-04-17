@@ -724,6 +724,11 @@ def _FormatAsEnvironmentBlock(envvar_dict):
   block += nul
   return block
 
+def _ExtractCLPath(output_of_where):
+  """Gets the path to cl.exe based on the output of `where`."""
+  # Take the first line, as that's the first found in the PATH.
+  return output_of_where.strip().splitlines()[0].strip()
+
 def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   """It's not sufficient to have the absolute path to the compiler, linker,
   etc. on Windows, as those tools rely on .dlls being in the PATH. We also
@@ -742,7 +747,9 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   if generator_flags.get('ninja_use_custom_environment_files', 0):
     return
   vs = GetVSVersion(generator_flags)
+  cl_paths = {}
   for arch in ('x86', 'x64'):
+    # Extract environment variables for subprocesses.
     args = vs.SetupScript(arch)
     args.extend(('&&', 'set'))
     popen = subprocess.Popen(
@@ -753,6 +760,14 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
     f = open_out(os.path.join(toplevel_build_dir, 'environment.' + arch), 'wb')
     f.write(env_block)
     f.close()
+
+    # Find cl.exe location for this architecture.
+    args = vs.SetupScript(arch)
+    args.extend(('&&', 'where', 'cl.exe'))
+    popen = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE)
+    output, _ = popen.communicate()
+    cl_paths[arch] = _ExtractCLPath(output)
+  return cl_paths
 
 def VerifyMissingSources(sources, build_dir, generator_flags, gyp_to_ninja):
   """Emulate behavior of msvs_error_on_missing_sources present in the msvs
