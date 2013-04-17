@@ -32,6 +32,7 @@
 #include "Frame.h"
 #include "NPObjectWrapper.h"
 #include <wtf/OwnArrayPtr.h>
+#include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "UserGestureIndicator.h"
 #include "V8Binding.h"

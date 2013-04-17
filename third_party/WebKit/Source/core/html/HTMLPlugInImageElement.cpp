@@ -42,6 +42,7 @@
 #include "RenderEmbeddedObject.h"
 #include "RenderImage.h"
 #include "SchemeRegistry.h"
+#include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "ShadowRoot.h"

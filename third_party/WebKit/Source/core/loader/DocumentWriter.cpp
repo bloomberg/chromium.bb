@@ -38,13 +38,13 @@
 #include "FrameView.h"
 #include "PluginDocument.h"
 #include "RawDataDocumentParser.h"
+#include "ScriptController.h"
 #include "ScriptableDocumentParser.h"
 #include "SecurityOrigin.h"
 #include "SegmentedString.h"
 #include "Settings.h"
 #include "SinkDocument.h"
 #include "TextResourceDecoder.h"
-
 
 namespace WebCore {
 

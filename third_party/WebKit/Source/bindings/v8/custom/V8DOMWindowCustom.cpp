@@ -50,6 +50,7 @@
 #include "PlatformScreen.h"
 #include "ScheduledAction.h"
 #include "ScriptCallStack.h"
+#include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "SerializedScriptValue.h"
 #include "Settings.h"

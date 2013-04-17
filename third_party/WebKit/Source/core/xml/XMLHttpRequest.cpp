@@ -46,6 +46,7 @@
 #include "ResourceError.h"
 #include "ResourceRequest.h"
 #include "ScriptCallStack.h"
+#include "ScriptController.h"
 #include "ScriptProfile.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"

@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "EventListener.h"
 #include "Frame.h"
+#include "ScriptController.h"
 #include "ScriptScope.h"
 #include "DocumentParser.h"
 #include "V8AbstractEventListener.h"
