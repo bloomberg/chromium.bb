@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
@@ -30,11 +31,10 @@ namespace disk_cache {
 using base::FilePath;
 using base::MessageLoopProxy;
 using base::Time;
-using base::WeakPtr;
 using base::WorkerPool;
 
 // static
-int SimpleEntryImpl::OpenEntry(WeakPtr<SimpleIndex> index,
+int SimpleEntryImpl::OpenEntry(const scoped_refptr<SimpleIndex>& index,
                                const FilePath& path,
                                const std::string& key,
                                Entry** entry,
@@ -42,9 +42,11 @@ int SimpleEntryImpl::OpenEntry(WeakPtr<SimpleIndex> index,
   // TODO(gavinp): More closely unify the last_used_ in the
   // SimpleSynchronousEntry  and the SimpleIndex.
   if (!index || index->UseIfExists(key)) {
+    scoped_refptr<SimpleEntryImpl> new_entry =
+        new SimpleEntryImpl(index, path, key);
     SynchronousCreationCallback sync_creation_callback =
         base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                   index, callback, key, entry);
+                   new_entry, entry, callback);
     WorkerPool::PostTask(FROM_HERE,
                          base::Bind(&SimpleSynchronousEntry::OpenEntry, path,
                                     key, MessageLoopProxy::current(),
@@ -56,14 +58,16 @@ int SimpleEntryImpl::OpenEntry(WeakPtr<SimpleIndex> index,
 }
 
 // static
-int SimpleEntryImpl::CreateEntry(WeakPtr<SimpleIndex> index,
+int SimpleEntryImpl::CreateEntry(const scoped_refptr<SimpleIndex>& index,
                                  const FilePath& path,
                                  const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
+  scoped_refptr<SimpleEntryImpl> new_entry =
+      new SimpleEntryImpl(index, path, key);
   SynchronousCreationCallback sync_creation_callback =
       base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                 index, callback, key, entry);
+                 new_entry, entry, callback);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::CreateEntry, path,
                                   key, MessageLoopProxy::current(),
@@ -73,12 +77,11 @@ int SimpleEntryImpl::CreateEntry(WeakPtr<SimpleIndex> index,
 }
 
 // static
-int SimpleEntryImpl::DoomEntry(WeakPtr<SimpleIndex> index,
+int SimpleEntryImpl::DoomEntry(const scoped_refptr<SimpleIndex>& index,
                                const FilePath& path,
                                const std::string& key,
                                const CompletionCallback& callback) {
-  if (index)
-    index->Remove(key);
+  index->Remove(key);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::DoomEntry, path, key,
                                   MessageLoopProxy::current(), callback),
@@ -88,6 +91,7 @@ int SimpleEntryImpl::DoomEntry(WeakPtr<SimpleIndex> index,
 
 void SimpleEntryImpl::Doom() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
 #if defined(OS_POSIX)
   // This call to static SimpleEntryImpl::DoomEntry() will just erase the
   // underlying files. On POSIX, this is fine; the files are still open on the
@@ -101,15 +105,7 @@ void SimpleEntryImpl::Doom() {
 
 void SimpleEntryImpl::Close() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (!synchronous_entry_in_use_by_worker_) {
-    WorkerPool::PostTask(FROM_HERE,
-                         base::Bind(&SimpleSynchronousEntry::Close,
-                                    base::Unretained(synchronous_entry_)),
-                         true);
-  }
-  // Entry::Close() is expected to release this entry. See disk_cache.h for
-  // details.
-  delete this;
+  Release();  // Balanced in CreationOperationCompleted().
 }
 
 std::string SimpleEntryImpl::GetKey() const {
@@ -147,12 +143,10 @@ int SimpleEntryImpl::ReadData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  if (index_)
-    index_->UseIfExists(key_);
+  index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 index_, callback, weak_ptr_factory_.GetWeakPtr(),
-                 synchronous_entry_);
+                 this, callback);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::ReadData,
                                   base::Unretained(synchronous_entry_),
@@ -174,12 +168,10 @@ int SimpleEntryImpl::WriteData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  if (index_)
-    index_->UseIfExists(key_);
+  index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 index_, callback, weak_ptr_factory_.GetWeakPtr(),
-                 synchronous_entry_);
+                 this, callback);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::WriteData,
                                   base::Unretained(synchronous_entry_),
@@ -238,70 +230,68 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-SimpleEntryImpl::SimpleEntryImpl(
-    SimpleSynchronousEntry* synchronous_entry,
-    WeakPtr<SimpleIndex> index)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      path_(synchronous_entry->path()),
-      key_(synchronous_entry->key()),
-      synchronous_entry_(synchronous_entry),
-      synchronous_entry_in_use_by_worker_(false),
-      index_(index) {
-  DCHECK(synchronous_entry);
-  SetSynchronousData();
+SimpleEntryImpl::SimpleEntryImpl(const scoped_refptr<SimpleIndex>& index,
+                                 const base::FilePath& path,
+                                 const std::string& key)
+    : constructor_thread_(base::MessageLoopProxy::current()),
+      index_(index),
+      path_(path),
+      key_(key),
+      synchronous_entry_(NULL),
+      synchronous_entry_in_use_by_worker_(false) {
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (synchronous_entry_) {
+    base::Closure close_sync_entry =
+        base::Bind(&SimpleSynchronousEntry::Close,
+                   base::Unretained(synchronous_entry_));
+    // We aren't guaranteed to be able to run IO on our constructor thread, but
+    // we are also not guaranteed to be allowed to run WorkerPool::PostTask on
+    // our other threads.
+    if (constructor_thread_->BelongsToCurrentThread())
+      WorkerPool::PostTask(FROM_HERE, close_sync_entry, true);
+    else
+      close_sync_entry.Run();
+  }
 }
 
-// static
 void SimpleEntryImpl::CreationOperationComplete(
-    WeakPtr<SimpleIndex> index,
-    const CompletionCallback& completion_callback,
-    const std::string& key,
     Entry** out_entry,
+    const CompletionCallback& completion_callback,
     SimpleSynchronousEntry* sync_entry) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (!sync_entry) {
     completion_callback.Run(net::ERR_FAILED);
     // If OpenEntry failed, we must remove it from our index.
-    if (index)
-      index->Remove(key);
+    index_->Remove(key_);
+    // The reference held by the Callback calling us will go out of scope and
+    // delete |this| on leaving this scope.
     return;
   }
-  if (index)
-    index->Insert(sync_entry->key());
-  *out_entry = new SimpleEntryImpl(sync_entry, index);
+  // Adding a reference to self will keep |this| alive after the scope of our
+  // Callback calling us is destroyed.
+  AddRef();  // Balanced in Close().
+  synchronous_entry_ = sync_entry;
+  SetSynchronousData();
+  index_->Insert(key_);
+  *out_entry = this;
   completion_callback.Run(net::OK);
 }
 
-// static
 void SimpleEntryImpl::EntryOperationComplete(
-    base::WeakPtr<SimpleIndex> index,
     const CompletionCallback& completion_callback,
-    base::WeakPtr<SimpleEntryImpl> entry,
-    SimpleSynchronousEntry* sync_entry,
     int result) {
-  DCHECK(sync_entry);
-  if (index) {
-    if (result >= 0)
-      index->UpdateEntrySize(sync_entry->key(), sync_entry->GetFileSize());
-    else
-      index->Remove(sync_entry->key());
-  }
-
-  if (entry) {
-    DCHECK(entry->synchronous_entry_in_use_by_worker_);
-    entry->synchronous_entry_in_use_by_worker_ = false;
-    entry->SetSynchronousData();
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(synchronous_entry_in_use_by_worker_);
+  synchronous_entry_in_use_by_worker_ = false;
+  SetSynchronousData();
+  if (result >= 0) {
+    index_->UpdateEntrySize(synchronous_entry_->key(),
+                            synchronous_entry_->GetFileSize());
   } else {
-    // |entry| must have had Close() called while this operation was in flight.
-    // Since the simple cache now only supports one pending entry operation in
-    // flight at a time, it's safe to now call Close() on |sync_entry|.
-    WorkerPool::PostTask(FROM_HERE,
-                         base::Bind(&SimpleSynchronousEntry::Close,
-                                    base::Unretained(sync_entry)),
-                         true);
+    index_->Remove(synchronous_entry_->key());
   }
   completion_callback.Run(result);
 }

@@ -78,20 +78,18 @@ int32 SimpleBackendImpl::GetEntryCount() const {
 int SimpleBackendImpl::OpenEntry(const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
-  return SimpleEntryImpl::OpenEntry(
-      index_->AsWeakPtr(), path_, key, entry, callback);
+  return SimpleEntryImpl::OpenEntry(index_, path_, key, entry, callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
-  return SimpleEntryImpl::CreateEntry(
-      index_->AsWeakPtr(), path_, key, entry, callback);
+  return SimpleEntryImpl::CreateEntry(index_, path_, key, entry, callback);
 }
 
 int SimpleBackendImpl::DoomEntry(const std::string& key,
                                  const net::CompletionCallback& callback) {
-  return SimpleEntryImpl::DoomEntry(index_->AsWeakPtr(), path_, key, callback);
+  return SimpleEntryImpl::DoomEntry(index_, path_, key, callback);
 }
 
 int SimpleBackendImpl::DoomAllEntries(const CompletionCallback& callback) {

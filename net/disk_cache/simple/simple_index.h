@@ -14,7 +14,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
 
@@ -67,14 +67,13 @@ class NET_EXPORT_PRIVATE EntryMetadata {
 
 // This class is not Thread-safe.
 class NET_EXPORT_PRIVATE SimpleIndex
-    : public base::SupportsWeakPtr<SimpleIndex> {
+    : public base::RefCountedThreadSafe<SimpleIndex> {
+  friend class base::RefCountedThreadSafe<SimpleIndex>;
  public:
   SimpleIndex(
       const scoped_refptr<base::TaskRunner>& cache_thread,
       const scoped_refptr<base::TaskRunner>& io_thread,
       const base::FilePath& path);
-
-  virtual ~SimpleIndex();
 
   void Initialize();
 
@@ -104,6 +103,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
  private:
   typedef base::Callback<void(scoped_ptr<EntrySet>)> IndexCompletionCallback;
+
+  virtual ~SimpleIndex();
 
   static void LoadFromDisk(
       const base::FilePath& index_filename,

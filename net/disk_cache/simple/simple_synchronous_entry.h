@@ -60,7 +60,7 @@ class SimpleSynchronousEntry {
   // run by |callback_runner|.
   static void DoomEntry(const base::FilePath& path,
                         const std::string& key,
-                        scoped_refptr<base::TaskRunner> callback_runner,
+                        const scoped_refptr<base::TaskRunner>& callback_runner,
                         const net::CompletionCallback& callback);
 
   // N.B. Close(), ReadData() and WriteData() may block on IO.

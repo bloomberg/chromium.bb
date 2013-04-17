@@ -85,7 +85,7 @@ void SimpleSynchronousEntry::CreateEntry(
 void SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
-    scoped_refptr<TaskRunner> callback_runner,
+    const scoped_refptr<TaskRunner>& callback_runner,
     const net::CompletionCallback& callback) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath to_delete = path.AppendASCII(GetFilenameFromKeyAndIndex(key, i));

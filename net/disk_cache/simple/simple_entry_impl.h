@@ -8,12 +8,15 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace net {
 class IOBuffer;
@@ -26,21 +29,23 @@ class SimpleSynchronousEntry;
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
-class SimpleEntryImpl : public Entry {
+class SimpleEntryImpl : public Entry,
+                        public base::RefCountedThreadSafe<SimpleEntryImpl> {
+  friend class base::RefCountedThreadSafe<SimpleEntryImpl>;
  public:
-  static int OpenEntry(base::WeakPtr<SimpleIndex> index,
+  static int OpenEntry(const scoped_refptr<SimpleIndex>& index,
                        const base::FilePath& path,
                        const std::string& key,
                        Entry** entry,
                        const CompletionCallback& callback);
 
-  static int CreateEntry(base::WeakPtr<SimpleIndex> index,
+  static int CreateEntry(const scoped_refptr<SimpleIndex>& index,
                          const base::FilePath& path,
                          const std::string& key,
                          Entry** entry,
                          const CompletionCallback& callback);
 
-  static int DoomEntry(base::WeakPtr<SimpleIndex> index,
+  static int DoomEntry(const scoped_refptr<SimpleIndex>& index,
                        const base::FilePath& path,
                        const std::string& key,
                        const CompletionCallback& callback);
@@ -80,34 +85,29 @@ class SimpleEntryImpl : public Entry {
   virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
 
  private:
-  SimpleEntryImpl(SimpleSynchronousEntry* synchronous_entry,
-                  base::WeakPtr<SimpleIndex> index);
+  SimpleEntryImpl(const scoped_refptr<SimpleIndex>& index,
+                  const base::FilePath& path,
+                  const std::string& key);
 
   virtual ~SimpleEntryImpl();
 
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
-  // OpenEntry(). Constructs the new SimpleEntryImpl (if |result| is net::OK)
-  // and passes it back to the caller via |out_entry|. Also runs
+  // OpenEntry(). If |sync_entry| is non-NULL, creation is successful and we
+  // can return |this| SimpleEntryImpl to |*out_entry|. Runs
   // |completion_callback|.
-  static void CreationOperationComplete(
-      base::WeakPtr<SimpleIndex> index,
-      const CompletionCallback& completion_callback,
-      const std::string& key,
+  void CreationOperationComplete(
       Entry** out_entry,
+      const CompletionCallback& completion_callback,
       SimpleSynchronousEntry* sync_entry);
 
   // Called after a SimpleSynchronousEntry has completed an asynchronous IO
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
-  // If |entry| no longer exists, then it ensures |sync_entry| is closed.
-  static void EntryOperationComplete(
-      base::WeakPtr<SimpleIndex> index,
+  void EntryOperationComplete(
       const CompletionCallback& completion_callback,
-      base::WeakPtr<SimpleEntryImpl> entry,
-      SimpleSynchronousEntry* sync_entry,
       int result);
 
-  // Called on construction and also after the completion of asynchronous IO to
-  // initialize the IO thread copies of data returned by synchronous accessor
+  // Called on initialization and also after the completion of asynchronous IO
+  // to initialize the IO thread copies of data returned by synchronous accessor
   // functions. Copies data from |synchronous_entry_| into |this|, so that
   // values can be returned during our next IO operation.
   void SetSynchronousData();
@@ -116,10 +116,8 @@ class SimpleEntryImpl : public Entry {
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  base::WeakPtrFactory<SimpleEntryImpl> weak_ptr_factory_;
-
-  // |path_| and |key_| are copied from the synchronous entry on construction,
-  // and never updated as they are const.
+  const scoped_refptr<base::MessageLoopProxy> constructor_thread_;
+  const scoped_refptr<SimpleIndex> index_;
   const base::FilePath path_;
   const std::string key_;
 
@@ -140,8 +138,6 @@ class SimpleEntryImpl : public Entry {
   // and false after. Used to ensure thread safety by not allowing multiple
   // threads to access the |synchronous_entry_| simultaneously.
   bool synchronous_entry_in_use_by_worker_;
-
-  base::WeakPtr<SimpleIndex> index_;
 };
 
 }  // namespace disk_cache

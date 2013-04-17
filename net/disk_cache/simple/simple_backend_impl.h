@@ -11,9 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -28,8 +30,6 @@ namespace disk_cache {
 // such as eviction.
 
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
-
-class SimpleIndex;
 
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
  public:
@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
       const InitializeIndexCallback& initialize_index_callback);
 
   const base::FilePath path_;
-  scoped_ptr<SimpleIndex> index_;
+  scoped_refptr<SimpleIndex> index_;
   const scoped_refptr<base::TaskRunner> cache_thread_;
 };
 

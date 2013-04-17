@@ -81,13 +81,12 @@ SimpleIndex::SimpleIndex(
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-
 }
 
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   IndexCompletionCallback merge_callback =
-      base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
+      base::Bind(&SimpleIndex::MergeInitializingSet, this);
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&SimpleIndex::LoadFromDisk,
                                         index_filename_,
