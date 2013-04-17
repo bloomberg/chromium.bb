@@ -196,7 +196,7 @@ cr.define('login', function() {
      * @private
      */
     allowGuestSignin_: function(allowed) {
-      this.classList[allowed ? 'add' : 'remove']('allow-guest-signin');
+      this.classList.toggle('allow-guest-signin', allowed);
       this.onContentChange_();
     },
 
@@ -205,7 +205,7 @@ cr.define('login', function() {
      * @private
      */
     allowOfflineLogin_: function(allowed) {
-      this.classList[allowed ? 'add' : 'remove']('allow-offline-login');
+      this.classList.toggle('allow-offline-login', allowed);
       this.onContentChange_();
     },
   };

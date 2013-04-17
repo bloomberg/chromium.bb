@@ -278,7 +278,7 @@ cr.define('login', function() {
                          $('createAccount').hidden &&
                          $('guestSignin').hidden &&
                          $('createLocallyManagedUser').hidden;
-      this.classList[noRightPanel ? 'add' : 'remove']('no-right-panel');
+      this.classList.toggle('no-right-panel', noRightPanel);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
     },

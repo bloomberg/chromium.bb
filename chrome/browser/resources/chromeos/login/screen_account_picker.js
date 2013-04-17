@@ -175,7 +175,7 @@ cr.define('login', function() {
    * @param {boolean} enabled Whether Caps Lock is on.
    */
   AccountPickerScreen.setCapsLockState = function(enabled) {
-    $('pod-row').classList[enabled ? 'add' : 'remove']('capslock-on');
+    $('pod-row').classList.toggle('capslock-on', enabled);
   };
 
   /**

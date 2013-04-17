@@ -466,9 +466,9 @@ cr.define('login', function() {
      */
     set nameErrorVisible(value) {
       $('managed-user-creation-flow-name-error').
-          classList[value ? 'add' : 'remove']('error');
+          classList.toggle('error', value);
       $('managed-user-creation-flow-name').
-          classList[value ? 'add' : 'remove']('duplicate-name');
+          classList.toggle('duplicate-name', value);
       if (!value)
         $('managed-user-creation-flow-name-error').textContent = '';
     },
@@ -479,7 +479,7 @@ cr.define('login', function() {
      */
     set passwordErrorVisible(value) {
       $('managed-user-creation-flow-password-error').
-          classList[value ? 'add' : 'remove']('error');
+          classList.toggle('error', value);
       if (!value)
         $('managed-user-creation-flow-password-error').textContent = '';
     },

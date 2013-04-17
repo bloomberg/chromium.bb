@@ -171,7 +171,7 @@ cr.define('login', function() {
     // It assumes session is about to start so hides login screen controls.
     Oobe.getInstance().headerHidden = false;
     var screen = $('password-changed');
-    screen.classList[showError ? 'add' : 'remove']('password-error');
+    screen.classList.toggle('password-error', showError);
     screen.classList.add('migrate');
     screen.classList.remove('resync');
     $('old-password').value = '';

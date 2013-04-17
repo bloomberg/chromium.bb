@@ -99,7 +99,7 @@ cr.define('cr.ui', function() {
     setAttachment_: function(attachment) {
       for (var k in Bubble.Attachment) {
         var v = Bubble.Attachment[k];
-        this.classList[v == attachment ? 'add' : 'remove'](v);
+        this.classList.toggle(v, v == attachment);
       }
     },
 
