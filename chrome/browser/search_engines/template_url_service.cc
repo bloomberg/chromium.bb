@@ -306,6 +306,9 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 }
 
 TemplateURLService::~TemplateURLService() {
+  if (service_)
+    Shutdown();
+  STLDeleteElements(&template_urls_);
 }
 
 // static
@@ -881,7 +884,6 @@ void TemplateURLService::Shutdown() {
     service_->CancelRequest(load_handle_);
   }
   service_ = NULL;
-  STLDeleteElements(&template_urls_);
 }
 
 void TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged() {
