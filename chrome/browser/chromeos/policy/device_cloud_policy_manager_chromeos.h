@@ -56,6 +56,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Cancels a pending enrollment operation, if any.
   void CancelEnrollment();
 
+  // CloudPolicyManager:
+  virtual void Shutdown() OVERRIDE;
+
   // CloudPolicyStore::Observer:
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
 

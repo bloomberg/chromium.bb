@@ -17,10 +17,6 @@
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chromeos/dbus/session_manager_client.h"
 
-namespace base {
-template <typename T> struct DefaultLazyInstanceTraits;
-}
-
 namespace crypto {
 class RSAPrivateKey;
 }
@@ -110,21 +106,24 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     virtual void DeviceSettingsUpdated() = 0;
   };
 
-  // Creates a device settings service instance. This is meant for unit tests,
-  // production code uses the singleton returned by Get() below.
-  DeviceSettingsService();
-  ~DeviceSettingsService();
-
-  // Returns the singleton instance.
+  // Manage singleton instance.
+  static void Initialize();
+  static bool IsInitialized();
+  static void Shutdown();
   static DeviceSettingsService* Get();
 
+  // Creates a device settings service instance. This is meant for unit tests,
+  // production code uses the singleton returned by Get() above.
+  DeviceSettingsService();
+  virtual ~DeviceSettingsService();
+
   // To be called on startup once threads are initialized and DBus is ready.
-  void Initialize(SessionManagerClient* session_manager_client,
-                  scoped_refptr<OwnerKeyUtil> owner_key_util);
+  void SetSessionManager(SessionManagerClient* session_manager_client,
+                         scoped_refptr<OwnerKeyUtil> owner_key_util);
 
   // Prevents the service from making further calls to session_manager_client
   // and stops any pending operations.
-  void Shutdown();
+  void UnsetSessionManager();
 
   // Returns the currently active device settings. Returns NULL if the device
   // settings have not been retrieved from session_manager yet.

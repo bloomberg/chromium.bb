@@ -116,6 +116,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -204,6 +205,11 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
 
   g_browser_process = NULL;
+
+#if defined(OS_CHROMEOS)
+  // Initialized in PreCreateThreards()
+  chromeos::CrosSettings::Shutdown();
+#endif
 }
 
 void BrowserProcessImpl::StartTearDown() {
@@ -852,6 +858,9 @@ void BrowserProcessImpl::CreateLocalState() {
 }
 
 void BrowserProcessImpl::PreCreateThreads() {
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Initialize();
+#endif
   io_thread_.reset(new IOThread(local_state(), policy_service(), net_log_.get(),
                                 extension_event_router_forwarder_.get()));
 }

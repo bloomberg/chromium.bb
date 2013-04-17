@@ -218,10 +218,9 @@ class ParallelAuthenticatorTest : public testing::Test {
   std::string username_hash_;
   std::string hash_ascii_;
 
-  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
-
-  // Initializes / shuts down a stub CrosLibrary.
   ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
+  ScopedTestCrosSettings test_cros_settings_;
 
   // Mocks, destroyed by CrosLibrary class.
   MockCertLibrary* mock_cert_library_;
@@ -333,8 +332,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   LoginFailure failure = LoginFailure(LoginFailure::OWNER_REQUIRED);
   ExpectLoginFailure(failure);
 
-  MockDBusThreadManager* mock_dbus_thread_manager =
-      new MockDBusThreadManager;
+  MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
   EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
       .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
   DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);

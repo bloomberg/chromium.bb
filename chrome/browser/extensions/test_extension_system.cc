@@ -26,6 +26,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 using content::BrowserThread;
 
 namespace extensions {
@@ -33,6 +37,13 @@ namespace extensions {
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       info_map_(new ExtensionInfoMap()) {
+#if defined OS_CHROMEOS
+  // TestExtensionSystem may or may not be created within
+  // TestExtensionEnvironment, so only create a ScopedTestCrosSettings instance
+  // if none has been created.
+  if (!chromeos::CrosSettings::IsInitialized())
+    test_cros_settings_.reset(new chromeos::ScopedTestCrosSettings);
+#endif
 }
 
 TestExtensionSystem::~TestExtensionSystem() {

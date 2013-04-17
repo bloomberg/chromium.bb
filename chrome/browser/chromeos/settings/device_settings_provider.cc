@@ -683,6 +683,8 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
 }
 
 void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
+  if (!CrosLibrary::Get())
+    return;  // May not be initialized in tests.
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const NetworkDevice* cellular = cros->FindCellularDevice();
   if (cellular) {

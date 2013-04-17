@@ -73,6 +73,8 @@ class KioskModeSettingsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
+  ScopedTestCrosSettings test_cros_settings_;
+
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
 };

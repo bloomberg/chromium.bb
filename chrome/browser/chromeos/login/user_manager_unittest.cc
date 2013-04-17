@@ -84,7 +84,7 @@ class UserManagerTest : public testing::Test {
     UserManager::Set(old_user_manager_);
 
     // Shut down the DeviceSettingsService.
-    DeviceSettingsService::Get()->Shutdown();
+    DeviceSettingsService::Get()->UnsetSessionManager();
 
     // Shut down the remaining UserManager instances.
     if (user_manager_impl)
@@ -146,8 +146,8 @@ class UserManagerTest : public testing::Test {
   StubCrosSettingsProvider stub_settings_provider_;
   scoped_ptr<TestingPrefServiceSimple> local_state_;
 
-  // Initializes / shuts down a stub CrosLibrary.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedTestCrosSettings test_cros_settings_;
 
   scoped_ptr<UserManagerImpl> user_manager_impl;
   UserManager* old_user_manager_;

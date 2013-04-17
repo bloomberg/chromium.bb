@@ -118,11 +118,17 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   MockLoginDisplay* mock_login_display_;
 
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
-  scoped_ptr<ExistingUserController> existing_user_controller_;
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState local_state_;
+
+  // Required by ExistingUserController:
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
+  ScopedTestCrosSettings test_cros_settings_;
+
+  // |existing_user_controller_| must be destroyed before
+  // |device_settings_test_helper_|.
+  scoped_ptr<ExistingUserController> existing_user_controller_;
 };
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {

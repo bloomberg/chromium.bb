@@ -15,6 +15,12 @@ class FilePath;
 class Time;
 }
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class ScopedTestCrosSettings;
+}
+#endif
+
 namespace extensions {
 
 // Test ExtensionSystem, for use with TestingProfile.
@@ -87,6 +93,10 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
+#if defined OS_CHROMEOS
+  // ExtensionService depends on UserManager which depends on CrosSettings.
+  scoped_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;
+#endif
 };
 
 }  // namespace extensions

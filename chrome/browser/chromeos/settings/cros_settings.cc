@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/kiosk_app_local_settings.h"
@@ -24,12 +25,30 @@
 
 namespace chromeos {
 
-static base::LazyInstance<CrosSettings> g_cros_settings =
-    LAZY_INSTANCE_INITIALIZER;
+static CrosSettings*  g_cros_settings = NULL;
 
+// static
+void CrosSettings::Initialize() {
+  CHECK(!g_cros_settings);
+  g_cros_settings = new CrosSettings();
+}
+
+// static
+bool CrosSettings::IsInitialized() {
+  return g_cros_settings;
+}
+
+// static
+void CrosSettings::Shutdown() {
+  CHECK(g_cros_settings);
+  delete g_cros_settings;
+  g_cros_settings = NULL;
+}
+
+// static
 CrosSettings* CrosSettings::Get() {
-  // TODO(xiyaun): Use real stuff when underlying libcros is ready.
-  return g_cros_settings.Pointer();
+  CHECK(g_cros_settings);
+  return g_cros_settings;
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {
@@ -308,6 +327,23 @@ void CrosSettings::FireObservers(const std::string& path) {
                       content::Source<CrosSettings>(this),
                       content::Details<const std::string>(&path));
   }
+}
+
+ScopedTestCrosSettings::ScopedTestCrosSettings()
+    : initialized_device_settings_service_(false) {
+  if (!DeviceSettingsService::IsInitialized()) {
+    DeviceSettingsService::Initialize();
+    initialized_device_settings_service_ = true;
+  }
+  CrosSettings::Initialize();
+}
+
+ScopedTestCrosSettings::~ScopedTestCrosSettings() {
+  // UserManager holds a CrosSettings*, so ensure that it is destroyed.
+  UserManager::Set(NULL);
+  CrosSettings::Shutdown();
+  if (initialized_device_settings_service_)
+    DeviceSettingsService::Shutdown();
 }
 
 }  // namespace chromeos

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -124,6 +125,7 @@ class ProfileManagerTest : public testing::Test {
   // before io_thread_ which requires CrosLibrary to be initialized to construct
   // its data member pref_proxy_config_tracker_ on ChromeOS.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
 #endif
 
   // The path to temporary directory used to contain the test operations.

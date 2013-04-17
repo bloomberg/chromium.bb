@@ -326,8 +326,10 @@ class DBusServices {
     }
 
     // Initialize the device settings service so that we'll take actions per
-    // signals sent from the session manager.
-    DeviceSettingsService::Get()->Initialize(
+    // signals sent from the session manager. This needs to happen before
+    // g_browser_process initializes BrowserPolicyConnector.
+    DeviceSettingsService::Initialize();
+    DeviceSettingsService::Get()->SetSessionManager(
         DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerKeyUtil::Create());
     chromeos::ConnectivityStateHelper::Initialize();
@@ -738,8 +740,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
     detector->Shutdown();
 
-  // Tell DeviceSettingsService to stop talking to session_manager.
-  DeviceSettingsService::Get()->Shutdown();
+  // Tell DeviceSettingsService to stop talking to session_manager. Do not
+  // shutdown DeviceSettingsService yet, it might still be accessed by
+  // BrowserPolicyConnector (owned by g_browser_process).
+  DeviceSettingsService::Get()->UnsetSessionManager();
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
@@ -791,6 +795,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   KioskAppManager::Shutdown();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+}
+
+void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
+  ChromeBrowserMainPartsLinux::PostDestroyThreads();
+  // Destroy DeviceSettingsService after g_browser_process.
+  DeviceSettingsService::Shutdown();
 }
 
 void ChromeBrowserMainPartsChromeos::SetupPlatformFieldTrials() {

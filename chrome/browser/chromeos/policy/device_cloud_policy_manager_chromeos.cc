@@ -104,6 +104,11 @@ void DeviceCloudPolicyManagerChromeOS::CancelEnrollment() {
   }
 }
 
+void DeviceCloudPolicyManagerChromeOS::Shutdown() {
+  CloudPolicyManager::Shutdown();
+  device_status_provider_.reset();
+}
+
 void DeviceCloudPolicyManagerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
   CloudPolicyManager::OnStoreLoaded(store);
 

@@ -927,7 +927,7 @@ void UserManagerImpl::NotifyLocalStateChanged() {
 
 void UserManagerImpl::EnsureUsersLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!g_browser_process)
+  if (!g_browser_process || !g_browser_process->local_state())
     return;
 
   if (users_loaded_)

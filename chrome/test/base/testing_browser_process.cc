@@ -24,10 +24,6 @@
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #else
@@ -380,13 +376,6 @@ void TestingBrowserProcess::SetBrowserPolicyConnector(
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (browser_policy_connector_) {
     browser_policy_connector_->Shutdown();
-#if defined(OS_CHROMEOS)
-    if (!connector) {
-      // If the connector was created then it accessed this global singleton.
-      // It must also be Shutdown() for a clean teardown.
-      chromeos::DeviceSettingsService::Get()->Shutdown();
-    }
-#endif
   }
   browser_policy_connector_.reset(connector);
 #else

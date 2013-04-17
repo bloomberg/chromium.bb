@@ -167,6 +167,8 @@ class DeviceSettingsTestBase : public testing::Test {
 
   DeviceSettingsTestHelper device_settings_test_helper_;
   scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
+  // Local DeviceSettingsService instance for tests. Avoid using in combination
+  // with the global instance (DeviceSettingsService::Get()).
   DeviceSettingsService device_settings_service_;
 
  private:

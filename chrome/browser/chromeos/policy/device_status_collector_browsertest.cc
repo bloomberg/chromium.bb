@@ -233,11 +233,12 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   TestingPrefServiceSimple prefs_;
   chromeos::system::MockStatisticsProvider statistics_provider_;
-  scoped_ptr<TestingDeviceStatusCollector> status_collector_;
-  em::DeviceStatusReportRequest status_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::CrosSettings* cros_settings_;
   chromeos::CrosSettingsProvider* device_settings_provider_;
   chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  em::DeviceStatusReportRequest status_;
+  scoped_ptr<TestingDeviceStatusCollector> status_collector_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {

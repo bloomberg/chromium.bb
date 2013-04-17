@@ -26,7 +26,10 @@
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/mock_connectivity_state_helper.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -290,6 +293,8 @@ class LoginUtilsTest : public testing::Test,
     cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
     EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
+    test_cros_settings_.reset(new ScopedTestCrosSettings);
+
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
@@ -419,7 +424,10 @@ class LoginUtilsTest : public testing::Test,
   }
 
   void PrepareProfile(const std::string& username) {
-    ScopedDeviceSettingsTestHelper device_settings_test_helper;
+    DeviceSettingsTestHelper device_settings_test_helper;
+    DeviceSettingsService::Get()->SetSessionManager(
+        &device_settings_test_helper, new MockOwnerKeyUtil());
+
     MockSessionManagerClient* session_manager_client =
         mock_dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_manager_client, StartSession(_));
@@ -447,6 +455,8 @@ class LoginUtilsTest : public testing::Test,
         std::string(), kUsingOAuth, kHasCookies, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
+
+    DeviceSettingsService::Get()->UnsetSessionManager();
   }
 
   net::TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
@@ -529,6 +539,10 @@ class LoginUtilsTest : public testing::Test,
   policy::BrowserPolicyConnector* connector_;
   MockCryptohomeLibrary* cryptohome_;
   MockCryptohomeClient* cryptohome_client_;
+
+  // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
+  scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
+
   Profile* prepared_profile_;
 
   base::Closure rlz_initialized_cb_;

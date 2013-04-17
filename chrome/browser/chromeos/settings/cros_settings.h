@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
-template <typename T> struct DefaultLazyInstanceTraits;
 class ListValue;
 class Value;
 }
@@ -27,7 +26,10 @@ namespace chromeos {
 // This class manages per-device/global settings.
 class CrosSettings : public base::NonThreadSafe {
  public:
-  // Class factory.
+  // Manage singleton instance.
+  static void Initialize();
+  static bool IsInitialized();
+  static void Shutdown();
   static CrosSettings* Get();
 
   // Helper function to test if the given |path| is a valid cros setting.
@@ -92,12 +94,10 @@ class CrosSettings : public base::NonThreadSafe {
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
   friend class CrosSettingsTest;
 
-  // Public for testing.
   CrosSettings();
-  ~CrosSettings();
+  virtual ~CrosSettings();
 
   // Fires system setting change notification.
   void FireObservers(const std::string& path);
@@ -114,6 +114,20 @@ class CrosSettings : public base::NonThreadSafe {
   SettingsObserverMap settings_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
+};
+
+// Helper class for unit tests. Initializes DeviceSettingsService if it has
+// not already been initialized (e.g. by ScopedDeviceSettingsTestHelper)
+// and initializes CrosSettings.
+class ScopedTestCrosSettings {
+ public:
+  ScopedTestCrosSettings();
+  ~ScopedTestCrosSettings();
+
+ private:
+  bool initialized_device_settings_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestCrosSettings);
 };
 
 }  // namespace chromeos

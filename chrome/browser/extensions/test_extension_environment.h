@@ -13,6 +13,10 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 class ExtensionService;
 class TestingProfile;
 
@@ -59,6 +63,11 @@ class TestExtensionEnvironment {
   // We may need to add the rest of the browser threads here.  This is
   // likely to be indicated by memory leaks in which the object was
   // expected to be freed by a DeleteSoon() call.
+
+#if defined(OS_CHROMEOS)
+  // ExtensionService depends on UserManager which depends on CrosSettings.
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+#endif
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

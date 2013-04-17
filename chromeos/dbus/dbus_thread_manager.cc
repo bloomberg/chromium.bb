@@ -521,8 +521,9 @@ void DBusThreadManager::Shutdown() {
   // If we called InitializeForTesting, this may get called more than once.
   // Ensure that we only shutdown DBusThreadManager once.
   CHECK(g_dbus_thread_manager || g_dbus_thread_manager_set_for_testing);
-  delete g_dbus_thread_manager;
+  DBusThreadManager* dbus_thread_manager = g_dbus_thread_manager;
   g_dbus_thread_manager = NULL;
+  delete dbus_thread_manager;
   VLOG(1) << "DBusThreadManager Shutdown completed";
 }
 
@@ -532,6 +533,17 @@ DBusThreadManager::DBusThreadManager() {
 
 DBusThreadManager::~DBusThreadManager() {
   dbus::statistics::Shutdown();
+  if (g_dbus_thread_manager == NULL)
+    return;  // Called form Shutdown() or local test instance.
+  // There should never be both a global instance and a local instance.
+  CHECK(this == g_dbus_thread_manager);
+  if (g_dbus_thread_manager_set_for_testing) {
+    g_dbus_thread_manager = NULL;
+    g_dbus_thread_manager_set_for_testing = false;
+    VLOG(1) << "DBusThreadManager destroyed";
+  } else {
+    LOG(FATAL) << "~DBusThreadManager() called outside of Shutdown()";
+  }
 }
 
 // static

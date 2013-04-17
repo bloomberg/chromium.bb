@@ -66,6 +66,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void PostBrowserStart() OVERRIDE;
 
   virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PostDestroyThreads() OVERRIDE;
 
   virtual void SetupPlatformFieldTrials() OVERRIDE;
 
