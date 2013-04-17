@@ -452,6 +452,30 @@ TEST_F(WorkspaceManagerTest, DontShowTransientsOnSwitch) {
   EXPECT_FALSE(w3->layer()->IsDrawn());
 }
 
+// Persists-across-all-workspace flag should not cause a transient child
+// to be activated at desktop workspace.
+TEST_F(WorkspaceManagerTest, PersistsTransientChildStayInSameWorkspace) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  SetPersistsAcrossAllWorkspaces(
+      w1.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  ASSERT_EQ("0 M1 active=1", StateString());
+
+  scoped_ptr<Window> w2(CreateTestWindowUnparented());
+  w1->AddTransientChild(w2.get());
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  SetDefaultParentByPrimaryRootWindow(w2.get());
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+
+  ASSERT_EQ("0 M2 active=1", StateString());
+}
+
 // Assertions around minimizing a single window.
 TEST_F(WorkspaceManagerTest, MinimizeSingleWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
