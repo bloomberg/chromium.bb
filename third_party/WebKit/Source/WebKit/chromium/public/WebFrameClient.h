@@ -138,7 +138,7 @@ public:
     // defaultPolicy should just be returned.
     virtual WebNavigationPolicy decidePolicyForNavigation(
         WebFrame*, const WebURLRequest&, WebNavigationType,
-        const WebNode& originatingNode,
+        const WebNode& deprecatedOriginatingNode,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
     // Query if the specified request can be handled.

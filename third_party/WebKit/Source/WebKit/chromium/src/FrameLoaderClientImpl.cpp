@@ -900,16 +900,7 @@ void FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction(
             WebNavigationType webnavType =
                 WebDataSourceImpl::toWebNavigationType(action.type());
 
-            RefPtr<Node> node;
-            for (const Event* event = action.event(); event; event = event->underlyingEvent()) {
-                if (event->isMouseEvent()) {
-                    const MouseEvent* mouseEvent =
-                        static_cast<const MouseEvent*>(event);
-                    node = m_webFrame->frame()->eventHandler()->hitTestResultAtPoint(mouseEvent->absoluteLocation()).innerNonSharedNode();
-                    break;
-                }
-            }
-            WebNode originatingNode(node);
+            WebNode originatingNode; // FIXME: Delete this when the decidePolicyForNavigation API is updated.
 
             navigationPolicy = m_webFrame->client()->decidePolicyForNavigation(
                 m_webFrame, ds->request(), webnavType, originatingNode,

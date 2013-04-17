@@ -118,7 +118,6 @@ webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.ht
 webkit.org/b/110324 [ Debug ] fast/js/regress/nested-function-parsing.html [ Slow ]
 
 webkit.org/b/110924 fast/js/regress/inlined-put-by-id-transition.html [ Pass Crash ]
-webkit.org/b/111038 [ Debug Win ] fast/loader/policy-delegate-action-hit-test-zoomed.html [ Slow ]
 webkit.org/b/111046 [ Debug Mac ] plugins/pass-different-npp-struct.html [ Slow ]
 
 # This test os slow since r144263
