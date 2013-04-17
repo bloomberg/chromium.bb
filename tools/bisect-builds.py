@@ -20,7 +20,8 @@ OFFICIAL_BASE_URL = 'http://master.chrome.corp.google.com/official_builds'
 
 # Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
-                'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d%%3A%d'
+                'perf/dashboard/ui/changelog.html?' \
+                'url=/trunk/src&range=%d%%3A%d'
 
 # Official Changelogs URL.
 OFFICIAL_CHANGELOG_URL = 'http://omahaproxy.appspot.com/'\
@@ -28,9 +29,10 @@ OFFICIAL_CHANGELOG_URL = 'http://omahaproxy.appspot.com/'\
 
 # DEPS file URL.
 DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
-# WebKit Changelogs URL.
-WEBKIT_CHANGELOG_URL = 'http://trac.webkit.org/log/' \
-                       'trunk/?rev=%d&stop_rev=%d&verbose=on&limit=10000'
+# Blink Changelogs URL.
+BLINK_CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
+                      'perf/dashboard/ui/changelog_blink.html?' \
+                      'url=/trunk&range=%d%%3A%d'
 
 DONE_MESSAGE_GOOD_MIN = 'You are probably looking for a change made after %s ' \
                         '(known good), but no later than %s (first known bad).'
@@ -561,18 +563,18 @@ def Bisect(platform,
   return (revlist[minrev], revlist[maxrev])
 
 
-def GetWebKitRevisionForChromiumRevision(rev):
-  """Returns the webkit revision that was in chromium's DEPS file at
+def GetBlinkRevisionForChromiumRevision(rev):
+  """Returns the blink revision that was in chromium's DEPS file at
   chromium revision |rev|."""
   # . doesn't match newlines without re.DOTALL, so this is safe.
-  webkit_re = re.compile(r'webkit_revision.:\D*(\d+)')
+  blink_re = re.compile(r'webkit_revision.:\D*(\d+)')
   url = urllib.urlopen(DEPS_FILE % rev)
-  m = webkit_re.search(url.read())
+  m = blink_re.search(url.read())
   url.close()
   if m:
     return int(m.group(1))
   else:
-    raise Exception('Could not get webkit revision for cr rev %d' % rev)
+    raise Exception('Could not get blink revision for cr rev %d' % rev)
 
 
 def GetChromiumRevision(url):
@@ -670,13 +672,13 @@ def main():
       opts.archive, opts.official_builds, good_rev, bad_rev, opts.times, args,
       opts.profile)
 
-  # Get corresponding webkit revisions.
+  # Get corresponding blink revisions.
   try:
-    min_webkit_rev = GetWebKitRevisionForChromiumRevision(min_chromium_rev)
-    max_webkit_rev = GetWebKitRevisionForChromiumRevision(max_chromium_rev)
+    min_blink_rev = GetBlinkRevisionForChromiumRevision(min_chromium_rev)
+    max_blink_rev = GetBlinkRevisionForChromiumRevision(max_chromium_rev)
   except Exception, e:
     # Silently ignore the failure.
-    min_webkit_rev, max_webkit_rev = 0, 0
+    min_blink_rev, max_blink_rev = 0, 0
 
   # We're done. Let the user know the results in an official manner.
   if good_rev > bad_rev:
@@ -684,9 +686,9 @@ def main():
   else:
     print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev), str(max_chromium_rev))
 
-  if min_webkit_rev != max_webkit_rev:
-    print 'WEBKIT CHANGELOG URL:'
-    print '  ' + WEBKIT_CHANGELOG_URL % (max_webkit_rev, min_webkit_rev)
+  if min_blink_rev != max_blink_rev:
+    print 'BLINK CHANGELOG URL:'
+    print '  ' + BLINK_CHANGELOG_URL % (max_blink_rev, min_blink_rev)
   print 'CHANGELOG URL:'
   if opts.official_builds:
     print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
