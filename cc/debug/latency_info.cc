@@ -48,7 +48,7 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(
       // into this method.
       f->second.event_time += (time - f->second.event_time) * event_count /
           new_count;
-      f->second.event_count += new_count;
+      f->second.event_count = new_count;
     }
   }
 }
