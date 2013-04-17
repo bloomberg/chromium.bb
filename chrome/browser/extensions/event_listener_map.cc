@@ -37,7 +37,7 @@ bool EventListener::Equals(const EventListener* other) const {
 
 scoped_ptr<EventListener> EventListener::Copy() const {
   scoped_ptr<DictionaryValue> filter_copy;
-  if (filter.get())
+  if (filter)
     filter_copy.reset(filter->DeepCopy());
   return scoped_ptr<EventListener>(new EventListener(event_name, extension_id,
                                                      process,
@@ -53,7 +53,7 @@ EventListenerMap::~EventListenerMap() {}
 bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
   if (HasListener(listener.get()))
     return false;
-  if (listener->filter.get()) {
+  if (listener->filter) {
     scoped_ptr<EventMatcher> matcher(ParseEventMatcher(listener->filter.get()));
     MatcherID id = event_filter_.AddEventMatcher(listener->event_name,
                                                  matcher.Pass());

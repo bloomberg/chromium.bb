@@ -70,7 +70,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 }
 
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
-  if (service_weak_.get()) {
+  if (service_weak_) {
     extensions::PermissionsUpdater perms_updater(service_weak_->profile());
     perms_updater.GrantActivePermissions(extension_);
     service_weak_->OnExtensionInstalled(
@@ -123,7 +123,7 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_path_.empty());
 
-  if (!service_weak_.get())
+  if (!service_weak_)
     return;
   // Load extensions from the command line synchronously to avoid a race
   // between extension loading and loading an URL from the command line.
@@ -143,7 +143,7 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
       GetFlags(),
       &error);
 
-  if (!extension_.get()) {
+  if (!extension_) {
     ReportExtensionLoadError(error);
     return;
   }
@@ -230,7 +230,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
       flags,
       &error);
 
-  if (!extension_.get()) {
+  if (!extension_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(
             &UnpackedInstaller::ReportExtensionLoadError,
@@ -244,14 +244,14 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service_weak_.get())
+  if (!service_weak_)
     return;
   service_weak_->ReportExtensionLoadError(extension_path_, error, true);
 }
 
 void UnpackedInstaller::OnLoaded() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service_weak_.get())
+  if (!service_weak_)
     return;
   const ExtensionSet* disabled_extensions =
       service_weak_->disabled_extensions();

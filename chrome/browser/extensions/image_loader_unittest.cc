@@ -81,7 +81,7 @@ class ImageLoaderTest : public testing::Test {
       return NULL;
 
     EXPECT_TRUE(valid_value.get());
-    if (!valid_value.get())
+    if (!valid_value)
       return NULL;
 
     if (location == Manifest::COMPONENT) {

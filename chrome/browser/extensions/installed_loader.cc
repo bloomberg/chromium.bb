@@ -93,7 +93,7 @@ InstalledLoader::~InstalledLoader() {
 void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   std::string error;
   scoped_refptr<const Extension> extension(NULL);
-  if (info.extension_manifest.get()) {
+  if (info.extension_manifest) {
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,
@@ -206,7 +206,7 @@ void InstalledLoader::LoadAllExtensions() {
               GetCreationFlags(info),
               &error));
 
-      if (!extension.get()) {
+      if (!extension) {
         extension_service_->
             ReportExtensionLoadError(info->extension_path, error, false);
         continue;

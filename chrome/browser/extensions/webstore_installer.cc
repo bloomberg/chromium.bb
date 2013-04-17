@@ -301,7 +301,7 @@ void WebstoreInstaller::OnDownloadStarted(
   DCHECK_EQ(net::OK, error);
   download_item_ = item;
   download_item_->AddObserver(this);
-  if (approval_.get())
+  if (approval_)
     download_item_->SetUserData(kApprovalKey, approval_.release());
   if (delegate_)
     delegate_->OnExtensionDownloadStarted(id_, download_item_);

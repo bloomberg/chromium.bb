@@ -75,9 +75,9 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
   }
   // Running the GPU checkers down here removes any race condition that arises
   // from the use of pending_requirement_checks_.
-  if (webgl_checker_.get())
+  if (webgl_checker_)
     webgl_checker_->CheckGPUFeatureAvailability();
-  if (css3d_checker_.get())
+  if (css3d_checker_)
     css3d_checker_->CheckGPUFeatureAvailability();
 }
 

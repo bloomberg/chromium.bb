@@ -233,7 +233,7 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
 void WebstoreStandaloneInstaller::AbortInstall() {
   callback_.Reset();
   // Abort any in-progress fetches.
-  if (webstore_data_fetcher_.get()) {
+  if (webstore_data_fetcher_) {
     webstore_data_fetcher_.reset();
     Release();  // Matches the AddRef in BeginInstall.
   }

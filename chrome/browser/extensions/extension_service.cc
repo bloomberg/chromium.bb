@@ -2009,7 +2009,7 @@ void ExtensionService::SetReadyAndNotifyListeners() {
 }
 
 void ExtensionService::OnLoadedInstalledExtensions() {
-  if (updater_.get())
+  if (updater_)
     updater_->Start();
 
   OnBlacklistUpdated();
@@ -2108,7 +2108,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   scoped_refptr<PermissionSet> active_permissions =
       extension_prefs()->GetActivePermissions(extension->id());
 
-  if (active_permissions.get()) {
+  if (active_permissions) {
     // We restrict the active permissions to be within the bounds defined in the
     // extension's manifest.
     //  a) active permissions must be a subset of optional + default permissions

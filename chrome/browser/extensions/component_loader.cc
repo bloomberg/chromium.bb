@@ -154,7 +154,7 @@ std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
       extension_file_util::LoadManifest(absolute_path, &error));
-  if (!manifest.get()) {
+  if (!manifest) {
     LOG(ERROR) << "Could not load extension from '" <<
                   absolute_path.value() << "'. " << error;
     return NULL;
@@ -188,7 +188,7 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
       *info.manifest,
       flags,
       &error));
-  if (!extension.get()) {
+  if (!extension) {
     LOG(ERROR) << error;
     return;
   }

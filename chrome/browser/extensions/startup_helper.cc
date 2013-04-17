@@ -341,7 +341,7 @@ std::string StartupHelper::WebStoreIdFromLimitedInstallCmdLine(
 }
 
 StartupHelper::~StartupHelper() {
-  if (pack_job_.get())
+  if (pack_job_)
     pack_job_->ClearClient();
 }
 

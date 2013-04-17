@@ -202,7 +202,7 @@ scoped_ptr<DictionaryValue> MenuItem::ToValue() const {
     value->SetBoolean(kCheckedKey, checked_);
   value->SetBoolean(kEnabledKey, enabled_);
   value->Set(kContextsKey, contexts_.ToValue().release());
-  if (parent_id_.get()) {
+  if (parent_id_) {
     DCHECK_EQ(0, parent_id_->uid);
     value->SetString(kParentUIDKey, parent_id_->string_uid);
   }

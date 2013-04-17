@@ -98,7 +98,7 @@ scoped_refptr<Extension> LoadManifest(std::string* error) {
 
   JSONFileValueSerializer serializer(path);
   scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
-  if (!result.get())
+  if (!result)
     return NULL;
 
   scoped_refptr<Extension> extension = Extension::Create(

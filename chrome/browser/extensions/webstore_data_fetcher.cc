@@ -99,7 +99,7 @@ class WebstoreDataFetcher::SafeWebstoreResponseParser
     if (!client_)
       return;
 
-    if (error_.empty() && parsed_webstore_data_.get()) {
+    if (error_.empty() && parsed_webstore_data_) {
       client_->OnWebstoreResponseParseSuccess(parsed_webstore_data_.release());
     } else {
       client_->OnWebstoreResponseParseFailure(error_);

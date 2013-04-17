@@ -162,7 +162,7 @@ class ExtensionIconImageTest : public testing::Test,
       return NULL;
 
     EXPECT_TRUE(valid_value.get());
-    if (!valid_value.get())
+    if (!valid_value)
       return NULL;
 
     return Extension::Create(test_file, location, *valid_value,

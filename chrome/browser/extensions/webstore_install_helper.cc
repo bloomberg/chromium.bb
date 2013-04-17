@@ -193,7 +193,7 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
 
 void WebstoreInstallHelper::ReportResultFromUIThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (error_.empty() && parsed_manifest_.get())
+  if (error_.empty() && parsed_manifest_)
     delegate_->OnWebstoreParseSuccess(id_, icon_, parsed_manifest_.release());
   else
     delegate_->OnWebstoreParseFailure(id_, parse_error_, error_);

@@ -452,7 +452,7 @@ void TabHelper::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      if (script_bubble_controller_.get()) {
+      if (script_bubble_controller_) {
         script_bubble_controller_->OnExtensionUnloaded(
             content::Details<extensions::UnloadedExtensionInfo>(
                 details)->extension->id());

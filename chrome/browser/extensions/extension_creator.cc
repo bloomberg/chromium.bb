@@ -150,7 +150,7 @@ crypto::RSAPrivateKey* ExtensionCreator::GenerateKey(const base::FilePath&
     output_private_key_path) {
   scoped_ptr<crypto::RSAPrivateKey> key_pair(
       crypto::RSAPrivateKey::Create(kRSAKeySize));
-  if (!key_pair.get()) {
+  if (!key_pair) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE);
     return NULL;
@@ -250,7 +250,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
   CrxFile::Error error;
   scoped_ptr<CrxFile> crx(
       CrxFile::Create(public_key.size(), signature.size(), &error));
-  if (!crx.get()) {
+  if (!crx) {
     LOG(ERROR) << "cannot create CrxFileHeader: " << error;
   }
   const CrxFile::Header header = crx->header();
@@ -299,7 +299,7 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
     key_pair.reset(ReadInputKey(private_key_path));
   else
     key_pair.reset(GenerateKey(output_private_key_path));
-  if (!key_pair.get())
+  if (!key_pair)
     return false;
 
   // Perform some extra validation by loading the extension.

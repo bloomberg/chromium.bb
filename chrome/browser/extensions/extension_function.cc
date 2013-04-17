@@ -134,7 +134,7 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
   }
 
   // If results were never set, we send an empty argument list.
-  if (!results_.get())
+  if (!results_)
     results_.reset(new ListValue());
 
   ipc_sender->Send(new ExtensionMsg_Response(

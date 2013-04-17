@@ -91,7 +91,7 @@ bool LoadMediaGalleriesHandlers(
     scoped_ptr<MediaGalleriesHandler> action(
         LoadMediaGalleriesHandler(
             extension_id, reinterpret_cast<DictionaryValue*>(*iter), error));
-    if (!action.get())
+    if (!action)
       return false;  // Failed to parse media galleries action definition.
     result->push_back(linked_ptr<MediaGalleriesHandler>(action.release()));
   }

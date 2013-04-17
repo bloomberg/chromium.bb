@@ -70,7 +70,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 
   JSONFileValueSerializer serializer(path);
   scoped_ptr<Value> result(serializer.Deserialize(NULL, NULL));
-  if (!result.get())
+  if (!result)
     return NULL;
 
   std::string error;

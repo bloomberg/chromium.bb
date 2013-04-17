@@ -236,11 +236,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
-  if (extension_warning_service_.get()) {
+  if (extension_warning_service_) {
     extension_warning_service_->RemoveObserver(
         extension_warning_badge_service_.get());
   }
-  if (extension_service_.get())
+  if (extension_service_)
     extension_service_->Shutdown();
 }
 
@@ -320,7 +320,7 @@ ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
 }
 
 ExtensionSystemImpl::~ExtensionSystemImpl() {
-  if (rules_registry_service_.get())
+  if (rules_registry_service_)
     rules_registry_service_->Shutdown();
 }
 

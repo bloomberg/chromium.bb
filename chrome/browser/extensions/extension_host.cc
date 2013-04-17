@@ -568,7 +568,7 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
 }
 
 content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager() {
-  if (!dialog_manager_.get()) {
+  if (!dialog_manager_) {
     dialog_manager_.reset(CreateJavaScriptDialogManagerInstance(this));
   }
   return dialog_manager_.get();

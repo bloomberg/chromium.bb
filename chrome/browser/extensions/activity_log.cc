@@ -361,7 +361,7 @@ void ActivityLog::GetActions(
     const int day,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (!db_.get()) return;
+  if (!db_) return;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB,
       FROM_HERE,
@@ -415,7 +415,7 @@ void ActivityLog::OnScriptsExecuted(
 }
 
 void ActivityLog::KillActivityLogDatabase() {
-  if (db_.get()) {
+  if (db_) {
     ScheduleAndForget(&ActivityDatabase::KillDatabase);
   }
 }

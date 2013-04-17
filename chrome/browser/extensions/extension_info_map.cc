@@ -148,13 +148,13 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
 
 ExtensionsQuotaService* ExtensionInfoMap::GetQuotaService() {
   CheckOnValidThread();
-  if (!quota_service_.get())
+  if (!quota_service_)
     quota_service_.reset(new ExtensionsQuotaService());
   return quota_service_.get();
 }
 
 ExtensionInfoMap::~ExtensionInfoMap() {
-  if (quota_service_.get()) {
+  if (quota_service_) {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                               quota_service_.release());
   }

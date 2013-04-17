@@ -93,7 +93,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
       AppendASCII("manifest_tests").
       AppendASCII(filename.c_str());
   scoped_ptr<DictionaryValue> value(LoadManifestFile(path, error));
-  if (!value.get())
+  if (!value)
     return NULL;
   return Extension::Create(path.DirName(), Manifest::UNPACKED, *value,
                            Extension::NO_FLAGS, error);

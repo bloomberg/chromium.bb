@@ -90,7 +90,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   // We persist and reload the PrefService's PrefStores because this process
   // deletes all empty dictionaries. The ExtensionPrefs implementation
   // needs to be able to handle this situation.
-  if (pref_service_.get()) {
+  if (pref_service_) {
     // Commit a pending write (which posts a task to task_runner_) and wait for
     // it to finish.
     pref_service_->CommitPendingWrite();

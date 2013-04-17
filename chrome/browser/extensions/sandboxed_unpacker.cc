@@ -344,7 +344,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
   got_response_ = true;
 
   scoped_ptr<DictionaryValue> final_manifest(RewriteManifestFile(manifest));
-  if (!final_manifest.get())
+  if (!final_manifest)
     return;
 
   // Create an extension object that refers to the temporary location the
@@ -376,7 +376,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
       &utf8_error);
 
 
-  if (!extension_.get()) {
+  if (!extension_) {
     ReportFailure(
         INVALID_MANIFEST,
         ASCIIToUTF16("Manifest is invalid: " + utf8_error));
@@ -451,7 +451,7 @@ bool SandboxedUnpacker::ValidateSignature() {
 
   CrxFile::Error error;
   scoped_ptr<CrxFile> crx(CrxFile::Parse(header, &error));
-  if (!crx.get()) {
+  if (!crx) {
     switch (error) {
       case CrxFile::kWrongMagic:
         ReportFailure(

@@ -165,7 +165,7 @@ class ActivityLog : public ProfileKeyedService,
   // separate thread.
   template<typename DatabaseFunc>
   void ScheduleAndForget(DatabaseFunc func) {
-    if (db_.get())
+    if (db_)
       BrowserThread::PostTask(BrowserThread::DB,
                               FROM_HERE,
                               base::Bind(func, db_.get()));
@@ -173,7 +173,7 @@ class ActivityLog : public ProfileKeyedService,
 
   template<typename DatabaseFunc, typename ArgA>
   void ScheduleAndForget(DatabaseFunc func, ArgA a) {
-    if (db_.get())
+    if (db_)
       BrowserThread::PostTask(BrowserThread::DB,
                               FROM_HERE,
                               base::Bind(func, db_.get(), a));
@@ -181,7 +181,7 @@ class ActivityLog : public ProfileKeyedService,
 
   template<typename DatabaseFunc, typename ArgA, typename ArgB>
   void ScheduleAndForget(DatabaseFunc func, ArgA a, ArgB b) {
-    if (db_.get())
+    if (db_)
       BrowserThread::PostTask(BrowserThread::DB,
                               FROM_HERE,
                               base::Bind(func, db_.get(), a, b));

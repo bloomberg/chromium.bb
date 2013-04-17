@@ -149,12 +149,12 @@ ExtensionAction::IconAnimation::ScopedObserver::ScopedObserver(
     Observer* observer)
     : icon_animation_(icon_animation),
       observer_(observer) {
-  if (icon_animation.get())
+  if (icon_animation)
     icon_animation->AddObserver(observer);
 }
 
 ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
-  if (icon_animation_.get())
+  if (icon_animation_)
     icon_animation_->RemoveObserver(observer_);
 }
 
@@ -196,7 +196,7 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->icon_animation_ = icon_animation_;
   copy->id_ = id_;
 
-  if (default_icon_.get())
+  if (default_icon_)
     copy->default_icon_.reset(new ExtensionIconSet(*default_icon_));
 
   return copy.Pass();
@@ -339,7 +339,7 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
     return icon.width();
   // If there is a default icon, the icon width will be set depending on our
   // action type.
-  if (default_icon_.get())
+  if (default_icon_)
     return GetIconSizeForType(action_type());
 
   // If no icon has been set and there is no default icon, we need favicon

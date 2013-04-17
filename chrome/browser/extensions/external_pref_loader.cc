@@ -132,7 +132,7 @@ void ExternalPrefLoader::LoadOnFileThread() {
   ReadStandaloneExtensionPrefFiles(prefs.get());
 
   prefs_.swap(prefs);
-  if (!prefs_.get())
+  if (!prefs_)
     prefs_.reset(new DictionaryValue());
 
   if (base_path_id_ == chrome::DIR_EXTERNAL_EXTENSIONS) {
@@ -184,7 +184,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(DictionaryValue* prefs) {
   JSONFileValueSerializer serializer(json_file);
   scoped_ptr<DictionaryValue> ext_prefs(
       ExtractExtensionPrefs(&serializer, json_file));
-  if (ext_prefs.get())
+  if (ext_prefs)
     prefs->MergeDictionary(ext_prefs.get());
 }
 
@@ -222,7 +222,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
     JSONFileValueSerializer serializer(extension_candidate_path);
     scoped_ptr<DictionaryValue> ext_prefs(
         ExtractExtensionPrefs(&serializer, extension_candidate_path));
-    if (ext_prefs.get()) {
+    if (ext_prefs) {
       DVLOG(1) << "Adding extension with id: " << id;
       prefs->Set(id, ext_prefs.release());
     }
