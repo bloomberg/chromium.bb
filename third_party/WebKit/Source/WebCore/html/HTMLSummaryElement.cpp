@@ -72,6 +72,8 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderArena* arena, RenderStyle
 
 bool HTMLSummaryElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
 {
+    if (childContext.node()->isPseudoElement())
+        return true;
     return childContext.isOnEncapsulationBoundary() && HTMLElement::childShouldCreateRenderer(childContext);
 }
 
