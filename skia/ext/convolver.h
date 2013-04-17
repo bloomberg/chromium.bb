@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/cpu.h"
+#include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 // We can build SSE2 optimized versions for all x86 CPUs
@@ -99,13 +100,24 @@ class ConvolutionFilter1D {
                                      int* filter_length) const {
     const FilterInstance& filter = filters_[value_offset];
     *filter_offset = filter.offset;
-    *filter_length = filter.length;
-    if (filter.length == 0) {
+    *filter_length = filter.trimmed_length;
+    if (filter.trimmed_length == 0) {
       return NULL;
     }
     return &filter_values_[filter.data_location];
   }
 
+  // Retrieves the filter for the offset 0, presumed to be the one and only.
+  // The offset and length of the filter values are put into the corresponding
+  // out arguments (see AddFilter). Note that |filter_legth| and
+  // |specified_filter_length| may be different if leading/trailing zeros of the
+  // original floating point form were clipped.
+  // There will be |filter_length| values in the return array.
+  // Returns NULL if the filter is 0-length (for instance when all floating
+  // point values passed to AddFilter were clipped to 0).
+  const Fixed* GetSingleFilter(int* specified_filter_length,
+                               int* filter_offset,
+                               int* filter_length) const;
 
   inline void PaddingForSIMD() {
     // Padding |padding_count| of more dummy coefficients after the coefficients
@@ -128,6 +140,11 @@ class ConvolutionFilter1D {
     int offset;
 
     // Number of values in this filter instance.
+    int trimmed_length;
+
+    // Filter length as specified. Note that this may be different from
+    // 'trimmed_length' if leading/trailing zeros of the original floating
+    // point form were clipped differently on each tail.
     int length;
   };
 
@@ -169,6 +186,39 @@ SK_API void BGRAConvolve2D(const unsigned char* source_data,
                            int output_byte_row_stride,
                            unsigned char* output,
                            bool use_simd_if_possible);
+
+// Does a 1D convolution of the given source image along the X dimension on
+// a single channel of the bitmap.
+//
+// The function uses the same convolution kernel for each pixel. That kernel
+// must be added to |filter| at offset 0. This is a most straightforward
+// implementation of convolution, intended chiefly for development purposes.
+SK_API void SingleChannelConvolveX1D(const unsigned char* source_data,
+                                     int source_byte_row_stride,
+                                     int input_channel_index,
+                                     int input_channel_count,
+                                     const ConvolutionFilter1D& filter,
+                                     const SkISize& image_size,
+                                     unsigned char* output,
+                                     int output_byte_row_stride,
+                                     int output_channel_index,
+                                     int output_channel_count,
+                                     bool absolute_values);
+
+// Does a 1D convolution of the given source image along the Y dimension on
+// a single channel of the bitmap.
+SK_API void SingleChannelConvolveY1D(const unsigned char* source_data,
+                                     int source_byte_row_stride,
+                                     int input_channel_index,
+                                     int input_channel_count,
+                                     const ConvolutionFilter1D& filter,
+                                     const SkISize& image_size,
+                                     unsigned char* output,
+                                     int output_byte_row_stride,
+                                     int output_channel_index,
+                                     int output_channel_count,
+                                     bool absolute_values);
+
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_H_

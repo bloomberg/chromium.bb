@@ -2042,6 +2042,8 @@
         'browser/themes/theme_syncable_service.h',
         'browser/three_d_api_observer.cc',
         'browser/three_d_api_observer.h',
+        'browser/thumbnails/content_analysis.cc',
+        'browser/thumbnails/content_analysis.h',
         'browser/thumbnails/simple_thumbnail_crop.cc',
         'browser/thumbnails/simple_thumbnail_crop.h',
         'browser/thumbnails/render_widget_snapshot_taker.cc',
