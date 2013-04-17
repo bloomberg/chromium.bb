@@ -331,6 +331,7 @@ void MediaStreamImpl::OnStreamGenerated(
       WebKit::WebMediaConstraints() : request->videoConstraints();
 
   dependency_factory_->CreateNativeMediaSources(
+      RenderViewObserver::routing_id(),
       audio_constraints, video_constraints, description,
       base::Bind(&MediaStreamImpl::OnCreateNativeSourcesComplete, AsWeakPtr()));
 }

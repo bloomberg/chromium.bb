@@ -43,10 +43,11 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   static scoped_refptr<WebRtcAudioCapturer> CreateCapturer();
 
   // Creates and configures the default audio capturing source using the
-  // provided audio parameters, |session_id| is passed to the browser to
-  // decide which device to use.
-  // Called on the main render thread.
-  bool Initialize(media::ChannelLayout channel_layout,
+  // provided audio parameters.  |render_view_id| specifies the render view
+  // consuming audio for capture.  |session_id| is passed to the browser to
+  // decide which device to use.  Called on the main render thread.
+  bool Initialize(int render_view_id,
+                  media::ChannelLayout channel_layout,
                   int sample_rate,
                   int session_id);
 

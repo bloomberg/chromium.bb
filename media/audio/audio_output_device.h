@@ -74,9 +74,13 @@ namespace media {
 
 class MEDIA_EXPORT AudioOutputDevice
     : NON_EXPORTED_BASE(public AudioRendererSink),
-      public AudioOutputIPCDelegate,
+      NON_EXPORTED_BASE(public AudioOutputIPCDelegate),
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
+  // NOTE: Clients must call Initialize() before using.
+  AudioOutputDevice(scoped_ptr<AudioOutputIPC> ipc,
+                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
+
   // AudioRendererSink implementation.
   virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
@@ -94,20 +98,11 @@ class MEDIA_EXPORT AudioOutputDevice
                                int length) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
-  // Creates an uninitialized AudioOutputDevice. Clients must call Initialize()
-  // before using.
-  AudioOutputDevice(AudioOutputIPC* ipc,
-                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
-
  protected:
   // Magic required by ref_counted.h to avoid any code deleting the object
   // accidentally while there are references to it.
   friend class base::RefCountedThreadSafe<AudioOutputDevice>;
   virtual ~AudioOutputDevice();
-
-  // Accessors for subclasses (via IO thread only).
-  int stream_id() const { return stream_id_; }
-  AudioOutputIPC* audio_output_ipc() const { return ipc_; }
 
  private:
   // Note: The ordering of members in this enum is critical to correct behavior!
@@ -120,9 +115,9 @@ class MEDIA_EXPORT AudioOutputDevice
   };
 
   // Methods called on IO thread ----------------------------------------------
-  // The following methods are tasks posted on the IO thread that needs to
-  // be executed on that thread. They interact with AudioMessageFilter and
-  // sends IPC messages on that thread.
+  // The following methods are tasks posted on the IO thread that need to
+  // be executed on that thread.  They use AudioOutputIPC to send IPC messages
+  // upon state changes.
   void CreateStreamOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread();
@@ -138,12 +133,9 @@ class MEDIA_EXPORT AudioOutputDevice
   RenderCallback* callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
-  // the AudioRendererHost.
-  AudioOutputIPC* ipc_;
-
-  // Our stream ID on the message filter. Only accessed on the IO thread.
-  // Must only be modified on the IO thread.
-  int stream_id_;
+  // the AudioRendererHost.  Only valid when state_ != IPC_CLOSED and must only
+  // be accessed on the IO thread.
+  scoped_ptr<AudioOutputIPC> ipc_;
 
   // Current state (must only be accessed from the IO thread).  See comments for
   // State enum above.

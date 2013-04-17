@@ -42,11 +42,6 @@ class AudioRendererHost::AudioEntry
   int render_view_id() const {
     return render_view_id_;
   }
-  // TODO(miu): Remove this setter once my IPC clean-up change (in code review)
-  // lands!
-  void set_render_view_id(int render_view_id) {
-    render_view_id_ = render_view_id;
-  }
 
   media::AudioOutputController* controller() const {
     return controller_;
@@ -74,7 +69,7 @@ class AudioRendererHost::AudioEntry
   const int stream_id_;
 
   // The routing ID of the source render view.
-  int render_view_id_;
+  const int render_view_id_;
 
   // The AudioOutputController that manages the audio stream.
   const scoped_refptr<media::AudioOutputController> controller_;
@@ -257,8 +252,6 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CreateStream, OnCreateStream)
-    IPC_MESSAGE_HANDLER(AudioHostMsg_AssociateStreamWithProducer,
-                        OnAssociateStreamWithProducer)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
@@ -270,8 +263,14 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, const media::AudioParameters& params) {
+    int stream_id, int render_view_id, const media::AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DVLOG(1) << "AudioRendererHost@" << this
+           << "::OnCreateStream(stream_id=" << stream_id
+           << ", render_view_id=" << render_view_id << ")";
+  DCHECK_GT(render_view_id, 0);
+
   // media::AudioParameters is validated in the deserializer.
   int input_channels = params.input_channels();
   if (input_channels < 0 ||
@@ -306,43 +305,16 @@ void AudioRendererHost::OnCreateStream(
     return;
   }
 
-  audio_entries_.insert(std::make_pair(stream_id, new AudioEntry(
-      this, stream_id, MSG_ROUTING_NONE, params, shared_memory.Pass(),
-      reader.PassAs<media::AudioOutputController::SyncReader>())));
-
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamStatus(this, stream_id, "created");
-}
-
-void AudioRendererHost::OnAssociateStreamWithProducer(int stream_id,
-                                                      int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  DVLOG(1) << "AudioRendererHost@" << this
-           << "::OnAssociateStreamWithProducer(stream_id=" << stream_id
-           << ", render_view_id=" << render_view_id << ")";
-
-  AudioEntry* const entry = LookupById(stream_id);
-  if (!entry) {
-    SendErrorMessage(stream_id);
-    return;
-  }
-
-  if (entry->render_view_id() == render_view_id)
-    return;
-
-  // TODO(miu): Merge "AssociateWithProducer" message into "CreateStream"
-  // message so AudioRendererHost can assume a simpler "render_view_id is set
-  // once" scheme. http://crbug.com/166779
-  if (mirroring_manager_) {
-    mirroring_manager_->RemoveDiverter(
-        render_process_id_, entry->render_view_id(), entry->controller());
-  }
-  entry->set_render_view_id(render_view_id);
+  scoped_ptr<AudioEntry> entry(new AudioEntry(
+      this, stream_id, render_view_id, params, shared_memory.Pass(),
+      reader.PassAs<media::AudioOutputController::SyncReader>()));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(
         render_process_id_, entry->render_view_id(), entry->controller());
   }
+  audio_entries_.insert(std::make_pair(stream_id, entry.release()));
+  if (media_internals_)
+    media_internals_->OnSetAudioStreamStatus(this, stream_id, "created");
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

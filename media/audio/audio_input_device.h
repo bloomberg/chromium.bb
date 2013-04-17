@@ -11,8 +11,8 @@
 //           ^                                  ^
 //           |                                  |
 //           v                  IPC             v
-// AudioInputRendererHost  <---------> AudioInputIPCDelegate
-//           ^                       (impl in AudioInputMessageFilter)
+// AudioInputRendererHost  <----------->  AudioInputIPC
+//           ^                            (AudioInputMessageFilter)
 //           |
 //           v
 // AudioInputDeviceManager
@@ -54,7 +54,6 @@
 #define MEDIA_AUDIO_AUDIO_INPUT_DEVICE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -71,6 +70,7 @@ namespace media {
 
 // TODO(henrika): This class is based on the AudioOutputDevice class and it has
 // many components in common. Investigate potential for re-factoring.
+// See http://crbug.com/179597.
 // TODO(henrika): Add support for event handling (e.g. OnStateChanged,
 // OnCaptureStopped etc.) and ensure that we can deliver these notifications
 // to any clients using this class.
@@ -79,7 +79,8 @@ class MEDIA_EXPORT AudioInputDevice
       NON_EXPORTED_BASE(public AudioInputIPCDelegate),
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
-  AudioInputDevice(AudioInputIPC* ipc,
+  // NOTE: Clients must call Initialize() before using.
+  AudioInputDevice(scoped_ptr<AudioInputIPC> ipc,
                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
 
   // AudioCapturerSource implementation.
@@ -92,6 +93,9 @@ class MEDIA_EXPORT AudioInputDevice
   virtual void SetAutomaticGainControl(bool enabled) OVERRIDE;
 
  protected:
+  friend class base::RefCountedThreadSafe<AudioInputDevice>;
+  virtual ~AudioInputDevice();
+
   // Methods called on IO thread ----------------------------------------------
   // AudioInputIPCDelegate implementation.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
@@ -103,16 +107,20 @@ class MEDIA_EXPORT AudioInputDevice
       AudioInputIPCDelegate::State state) OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
-  friend class base::RefCountedThreadSafe<AudioInputDevice>;
-  virtual ~AudioInputDevice();
-
  private:
+  // Note: The ordering of members in this enum is critical to correct behavior!
+  enum State {
+    IPC_CLOSED,  // No more IPCs can take place.
+    IDLE,  // Not started.
+    CREATING_STREAM,  // Waiting for OnStreamCreated() to be called back.
+    RECORDING,  // Receiving audio data.
+  };
+
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioInputMessageFilter and
   // sends IPC messages on that thread.
-  void InitializeOnIOThread();
-  void StartOnIOThread();
+  void StartUpOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
   void SetAutomaticGainControlOnIOThread(bool enabled);
@@ -125,10 +133,14 @@ class MEDIA_EXPORT AudioInputDevice
 
   CaptureCallback* callback_;
 
-  AudioInputIPC* ipc_;
+  // A pointer to the IPC layer that takes care of sending requests over to
+  // the AudioInputRendererHost.  Only valid when state_ != IPC_CLOSED and must
+  // only be accessed on the IO thread.
+  scoped_ptr<AudioInputIPC> ipc_;
 
-  // Our stream ID on the message filter. Only modified on the IO thread.
-  int stream_id_;
+  // Current state (must only be accessed from the IO thread).  See comments for
+  // State enum above.
+  State state_;
 
   // The media session ID used to identify which input device to be started.
   // Only modified in Initialize() and ShutDownOnIOThread().
@@ -146,6 +158,14 @@ class MEDIA_EXPORT AudioInputDevice
   base::Lock audio_thread_lock_;
   AudioDeviceThread audio_thread_;
   scoped_ptr<AudioInputDevice::AudioThreadCallback> audio_callback_;
+
+  // Temporary hack to ignore OnStreamCreated() due to the user calling Stop()
+  // so we don't start the audio thread pointing to a potentially freed
+  // |callback_|.
+  //
+  // TODO(miu): Replace this by changing AudioCapturerSource to accept the
+  // callback via Start(). See http://crbug.com/151051 for details.
+  bool stopping_hack_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };

@@ -12,56 +12,99 @@
 
 namespace content {
 
-AudioMessageFilter* AudioMessageFilter::filter_ = NULL;
-
-// static
-AudioMessageFilter* AudioMessageFilter::Get() {
-  return filter_;
+namespace {
+const int kStreamIDNotSet = -1;
 }
+
+class AudioMessageFilter::AudioOutputIPCImpl
+    : public NON_EXPORTED_BASE(media::AudioOutputIPC) {
+ public:
+  AudioOutputIPCImpl(const scoped_refptr<AudioMessageFilter>& filter,
+                     int render_view_id);
+  virtual ~AudioOutputIPCImpl();
+
+  // media::AudioOutputIPC implementation.
+  virtual void CreateStream(media::AudioOutputIPCDelegate* delegate,
+                            const media::AudioParameters& params) OVERRIDE;
+  virtual void PlayStream() OVERRIDE;
+  virtual void PauseStream() OVERRIDE;
+  virtual void CloseStream() OVERRIDE;
+  virtual void SetVolume(double volume) OVERRIDE;
+
+ private:
+  const scoped_refptr<AudioMessageFilter> filter_;
+  const int render_view_id_;
+  int stream_id_;
+};
+
+AudioMessageFilter* AudioMessageFilter::g_filter = NULL;
 
 AudioMessageFilter::AudioMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : channel_(NULL),
       audio_hardware_config_(NULL),
       io_message_loop_(io_message_loop) {
-  DCHECK(!filter_);
-  filter_ = this;
+  DCHECK(!g_filter);
+  g_filter = this;
 }
 
-int AudioMessageFilter::AddDelegate(media::AudioOutputIPCDelegate* delegate) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  return delegates_.Add(delegate);
+AudioMessageFilter::~AudioMessageFilter() {
+  DCHECK_EQ(g_filter, this);
+  g_filter = NULL;
 }
 
-void AudioMessageFilter::RemoveDelegate(int id) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  delegates_.Remove(id);
+// static
+AudioMessageFilter* AudioMessageFilter::Get() {
+  return g_filter;
 }
 
-void AudioMessageFilter::CreateStream(int stream_id,
-                                      const media::AudioParameters& params) {
-  Send(new AudioHostMsg_CreateStream(stream_id, params));
+AudioMessageFilter::AudioOutputIPCImpl::AudioOutputIPCImpl(
+    const scoped_refptr<AudioMessageFilter>& filter, int render_view_id)
+    : filter_(filter),
+      render_view_id_(render_view_id),
+      stream_id_(kStreamIDNotSet) {}
+
+AudioMessageFilter::AudioOutputIPCImpl::~AudioOutputIPCImpl() {}
+
+scoped_ptr<media::AudioOutputIPC> AudioMessageFilter::CreateAudioOutputIPC(
+    int render_view_id) {
+  DCHECK_GT(render_view_id, 0);
+  return scoped_ptr<media::AudioOutputIPC>(
+      new AudioOutputIPCImpl(this, render_view_id));
 }
 
-void AudioMessageFilter::AssociateStreamWithProducer(int stream_id,
-                                                     int render_view_id) {
-  Send(new AudioHostMsg_AssociateStreamWithProducer(stream_id, render_view_id));
+void AudioMessageFilter::AudioOutputIPCImpl::CreateStream(
+    media::AudioOutputIPCDelegate* delegate,
+    const media::AudioParameters& params) {
+  DCHECK(filter_->io_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate);
+  DCHECK_EQ(stream_id_, kStreamIDNotSet);
+  stream_id_ = filter_->delegates_.Add(delegate);
+  filter_->Send(new AudioHostMsg_CreateStream(
+      stream_id_, render_view_id_, params));
 }
 
-void AudioMessageFilter::PlayStream(int stream_id) {
-  Send(new AudioHostMsg_PlayStream(stream_id));
+void AudioMessageFilter::AudioOutputIPCImpl::PlayStream() {
+  DCHECK_NE(stream_id_, kStreamIDNotSet);
+  filter_->Send(new AudioHostMsg_PlayStream(stream_id_));
 }
 
-void AudioMessageFilter::PauseStream(int stream_id) {
-  Send(new AudioHostMsg_PauseStream(stream_id));
+void AudioMessageFilter::AudioOutputIPCImpl::PauseStream() {
+  DCHECK_NE(stream_id_, kStreamIDNotSet);
+  filter_->Send(new AudioHostMsg_PauseStream(stream_id_));
 }
 
-void AudioMessageFilter::CloseStream(int stream_id) {
-  Send(new AudioHostMsg_CloseStream(stream_id));
+void AudioMessageFilter::AudioOutputIPCImpl::CloseStream() {
+  DCHECK(filter_->io_message_loop_->BelongsToCurrentThread());
+  DCHECK_NE(stream_id_, kStreamIDNotSet);
+  filter_->Send(new AudioHostMsg_CloseStream(stream_id_));
+  filter_->delegates_.Remove(stream_id_);
+  stream_id_ = kStreamIDNotSet;
 }
 
-void AudioMessageFilter::SetVolume(int stream_id, double volume) {
-  Send(new AudioHostMsg_SetVolume(stream_id, volume));
+void AudioMessageFilter::AudioOutputIPCImpl::SetVolume(double volume) {
+  DCHECK_NE(stream_id_, kStreamIDNotSet);
+  filter_->Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
 void AudioMessageFilter::Send(IPC::Message* message) {
@@ -111,11 +154,6 @@ void AudioMessageFilter::OnChannelClosing() {
     delegates_.Remove(it.GetCurrentKey());
     it.Advance();
   }
-}
-
-AudioMessageFilter::~AudioMessageFilter() {
-  DCHECK_EQ(filter_, this);
-  filter_ = NULL;
 }
 
 void AudioMessageFilter::OnStreamCreated(

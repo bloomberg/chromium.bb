@@ -198,18 +198,16 @@ class AudioRendererHostTest : public testing::Test {
   void Create() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
-    // All created streams should ultimately be closed.
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "closed"));
-
-    InSequence s;
-    // We will first receive an OnStreamCreated() signal.
     EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
+    EXPECT_CALL(mirroring_manager_,
+                AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
+        .RetiresOnSaturation();
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
     host_->OnCreateStream(kStreamId,
+                          kRenderViewId,
                           media::AudioParameters(
                               media::AudioParameters::AUDIO_FAKE,
                               media::CHANNEL_LAYOUT_STEREO,
@@ -217,20 +215,15 @@ class AudioRendererHostTest : public testing::Test {
                               media::AudioParameters::kAudioCDSampleRate / 10));
     message_loop_->Run();
 
-    // Simulate the renderer process associating a stream with a render view.
-    EXPECT_CALL(mirroring_manager_,
-                RemoveDiverter(kRenderProcessId, MSG_ROUTING_NONE, _))
-        .RetiresOnSaturation();
-    EXPECT_CALL(mirroring_manager_,
-                AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
-        .RetiresOnSaturation();
-    host_->OnAssociateStreamWithProducer(kStreamId, kRenderViewId);
-    message_loop_->RunUntilIdle();
     // At some point in the future, a corresponding RemoveDiverter() call must
     // be made.
     EXPECT_CALL(mirroring_manager_,
                 RemoveDiverter(kRenderProcessId, kRenderViewId, NotNull()))
         .RetiresOnSaturation();
+
+    // All created streams should ultimately be closed.
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kStreamId, "closed"));
 
     // Expect the audio stream will be deleted at some later point.
     EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));

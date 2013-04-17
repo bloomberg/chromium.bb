@@ -179,7 +179,7 @@ class WebRtcAudioCapturer::ConfiguredBuffer :
 
 // static
 scoped_refptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer() {
-  scoped_refptr<WebRtcAudioCapturer> capturer = new  WebRtcAudioCapturer();
+  scoped_refptr<WebRtcAudioCapturer> capturer = new WebRtcAudioCapturer();
   return capturer;
 }
 
@@ -204,7 +204,8 @@ bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
   return true;
 }
 
-bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
+bool WebRtcAudioCapturer::Initialize(int render_view_id,
+                                     media::ChannelLayout channel_layout,
                                      int sample_rate,
                                      int session_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -245,7 +246,7 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
   // Create and configure the default audio capturing source. The |source_|
   // will be overwritten if an external client later calls SetCapturerSource()
   // providing an alternative media::AudioCapturerSource.
-  SetCapturerSource(AudioDeviceFactory::NewInputDevice(),
+  SetCapturerSource(AudioDeviceFactory::NewInputDevice(render_view_id),
                     channel_layout,
                     static_cast<float>(sample_rate));
 

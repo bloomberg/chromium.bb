@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/media/audio_input_message_filter.h"
+#include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_parameters.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -21,7 +21,6 @@ class AudioParameters;
 
 namespace content {
 
-class AudioInputMessageFilter;
 class PepperPluginDelegateImpl;
 
 // PepperPlatformAudioInputImpl is operated on two threads: the main thread (the
@@ -93,15 +92,8 @@ class PepperPlatformAudioInputImpl
   webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client_;
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
-  // I/O thread except to send messages and get the message loop.
-  scoped_refptr<AudioInputMessageFilter> ipc_;
-
-  // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
-  // or else you could race with the initialize function which sets it.
-  int32 stream_id_;
-
-  // The render view into which the audio is sent.
-  int render_view_id_;
+  // I/O THREAD.
+  scoped_ptr<media::AudioInputIPC> ipc_;
 
   base::MessageLoopProxy* main_message_loop_proxy_;
 
@@ -111,10 +103,6 @@ class PepperPlatformAudioInputImpl
   // The unique ID to identify the opened device. THIS MUST ONLY BE ACCESSED ON
   // THE MAIN THREAD.
   std::string label_;
-
-  // Whether ShutDownOnIOThread() has been called. THIS MUST ONLY BE ACCESSED ON
-  // THE I/O THREAD.
-  bool shutdown_called_;
 
   // Initialized on the main thread and accessed on the I/O thread afterwards.
   media::AudioParameters params_;

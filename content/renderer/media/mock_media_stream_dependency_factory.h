@@ -143,7 +143,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           bool is_screencast,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual bool InitializeAudioSource(
-      const StreamDeviceInfo& device_info) OVERRIDE;
+      int render_view_id, const StreamDeviceInfo& device_info) OVERRIDE;
   virtual bool CreateWebAudioSource(
       WebKit::WebMediaStreamSource* source) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>

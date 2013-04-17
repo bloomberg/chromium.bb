@@ -16,6 +16,7 @@
 
 namespace media {
 class AudioBus;
+class AudioOutputDevice;
 class AudioParameters;
 }
 
@@ -25,7 +26,6 @@ class AudioTrackInterface;
 
 namespace content {
 
-class RendererAudioOutputDevice;
 class WebRtcAudioCapturer;
 
 // WebRtcLocalAudioRenderer is a webkit_media::MediaStreamAudioRenderer
@@ -105,7 +105,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   const int source_render_view_id_;
 
   // The sink (destination) for rendered audio.
-  scoped_refptr<RendererAudioOutputDevice> sink_;
+  scoped_refptr<media::AudioOutputDevice> sink_;
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;

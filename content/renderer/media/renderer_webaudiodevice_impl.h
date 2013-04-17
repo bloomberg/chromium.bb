@@ -12,9 +12,11 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAudioDevice.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
-namespace content {
+namespace media {
+class AudioOutputDevice;
+}
 
-class RendererAudioOutputDevice;
+namespace content {
 
 class RendererWebAudioDeviceImpl
     : public WebKit::WebAudioDevice,
@@ -50,7 +52,7 @@ class RendererWebAudioDeviceImpl
   base::ThreadChecker thread_checker_;
 
   // When non-NULL, we are started.  When NULL, we are stopped.
-  scoped_refptr<RendererAudioOutputDevice> output_device_;
+  scoped_refptr<media::AudioOutputDevice> output_device_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };

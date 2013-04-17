@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/renderer_audio_output_device.h"
+#include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -77,10 +77,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     mixer = new media::AudioRendererMixer(
         params, output_params, sink_for_testing_);
   } else {
-    scoped_refptr<RendererAudioOutputDevice> device =
-        AudioDeviceFactory::NewOutputDevice();
-    device->SetSourceRenderView(source_render_view_id);
-    mixer = new media::AudioRendererMixer(params, output_params, device);
+    mixer = new media::AudioRendererMixer(
+        params, output_params, AudioDeviceFactory::NewOutputDevice(
+            source_render_view_id));
   }
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };

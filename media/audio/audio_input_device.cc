@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_input_device.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -45,20 +46,28 @@ class AudioInputDevice::AudioThreadCallback
 };
 
 AudioInputDevice::AudioInputDevice(
-    AudioInputIPC* ipc,
+    scoped_ptr<AudioInputIPC> ipc,
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
-      ipc_(ipc),
-      stream_id_(0),
+      ipc_(ipc.Pass()),
+      state_(IDLE),
       session_id_(0),
-      agc_is_enabled_(false) {
+      agc_is_enabled_(false),
+      stopping_hack_(false) {
   CHECK(ipc_);
+
+  // The correctness of the code depends on the relative values assigned in the
+  // State enum.
+  COMPILE_ASSERT(IPC_CLOSED < IDLE, invalid_enum_value_assignment_0);
+  COMPILE_ASSERT(IDLE < CREATING_STREAM, invalid_enum_value_assignment_1);
+  COMPILE_ASSERT(CREATING_STREAM < RECORDING, invalid_enum_value_assignment_2);
 }
 
 void AudioInputDevice::Initialize(const AudioParameters& params,
                                   CaptureCallback* callback,
                                   int session_id) {
+  DCHECK(params.IsValid());
   DCHECK(!callback_);
   DCHECK_EQ(0, session_id_);
   audio_parameters_ = params;
@@ -67,9 +76,10 @@ void AudioInputDevice::Initialize(const AudioParameters& params,
 }
 
 void AudioInputDevice::Start() {
+  DCHECK(callback_) << "Initialize hasn't been called";
   DVLOG(1) << "Start()";
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::InitializeOnIOThread, this));
+      base::Bind(&AudioInputDevice::StartUpOnIOThread, this));
 }
 
 void AudioInputDevice::Stop() {
@@ -78,6 +88,7 @@ void AudioInputDevice::Stop() {
   {
     base::AutoLock auto_lock(audio_thread_lock_);
     audio_thread_.Stop(MessageLoop::current());
+    stopping_hack_ = true;
   }
 
   message_loop()->PostTask(FROM_HERE,
@@ -114,17 +125,17 @@ void AudioInputDevice::OnStreamCreated(
   DCHECK_GE(handle.fd, 0);
   DCHECK_GE(socket_handle, 0);
 #endif
-  DCHECK(length);
-  DVLOG(1) << "OnStreamCreated (stream_id=" << stream_id_ << ")";
+  DCHECK_GT(length, 0);
 
-  // We should only get this callback if stream_id_ is valid.  If it is not,
-  // the IPC layer should have closed the shared memory and socket handles
-  // for us and not invoked the callback.  The basic assertion is that when
-  // stream_id_ is 0 the AudioInputDevice instance is not registered as a
-  // delegate and hence it should not receive callbacks.
-  DCHECK(stream_id_);
+  if (state_ != CREATING_STREAM)
+    return;
 
   base::AutoLock auto_lock(audio_thread_lock_);
+  // TODO(miu): See TODO in OnStreamCreated method for AudioOutputDevice.
+  // Interface changes need to be made; likely, after AudioInputDevice is merged
+  // into AudioOutputDevice (http://crbug.com/179597).
+  if (stopping_hack_)
+    return;
 
   DCHECK(audio_thread_.IsStopped());
   audio_callback_.reset(
@@ -132,8 +143,8 @@ void AudioInputDevice::OnStreamCreated(
           audio_parameters_, handle, length, total_segments, callback_));
   audio_thread_.Start(audio_callback_.get(), socket_handle, "AudioInputDevice");
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::StartOnIOThread, this));
+  state_ = RECORDING;
+  ipc_->RecordStream();
 }
 
 void AudioInputDevice::OnVolume(double volume) {
@@ -145,18 +156,14 @@ void AudioInputDevice::OnStateChanged(
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
-  if (!stream_id_)
+  if (state_ < CREATING_STREAM)
     return;
 
+  // TODO(miu): Clean-up inconsistent and incomplete handling here.
+  // http://crbug.com/180640
   switch (state) {
     case AudioInputIPCDelegate::kStopped:
-      // TODO(xians): Should we just call ShutDownOnIOThread here instead?
-      ipc_->RemoveDelegate(stream_id_);
-
-      audio_thread_.Stop(MessageLoop::current());
-      audio_callback_.reset();
-
-      stream_id_ = 0;
+      ShutDownOnIOThread();
       break;
     case AudioInputIPCDelegate::kRecording:
       NOTIMPLEMENTED();
@@ -179,20 +186,22 @@ void AudioInputDevice::OnStateChanged(
 }
 
 void AudioInputDevice::OnIPCClosed() {
-  ipc_ = NULL;
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  state_ = IPC_CLOSED;
+  ipc_.reset();
 }
 
 AudioInputDevice::~AudioInputDevice() {
   // TODO(henrika): The current design requires that the user calls
   // Stop before deleting this class.
-  CHECK_EQ(0, stream_id_);
+  DCHECK(audio_thread_.IsStopped());
 }
 
-void AudioInputDevice::InitializeOnIOThread() {
+void AudioInputDevice::StartUpOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
+
   // Make sure we don't call Start() more than once.
-  DCHECK_EQ(0, stream_id_);
-  if (stream_id_)
+  if (state_ != IDLE)
     return;
 
   if (session_id_ <= 0) {
@@ -200,28 +209,18 @@ void AudioInputDevice::InitializeOnIOThread() {
     return;
   }
 
-  stream_id_ = ipc_->AddDelegate(this);
-  ipc_->CreateStream(stream_id_, session_id_, audio_parameters_,
+  state_ = CREATING_STREAM;
+  ipc_->CreateStream(this, session_id_, audio_parameters_,
                      agc_is_enabled_, kRequestedSharedMemoryCount);
-}
-
-void AudioInputDevice::StartOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  if (stream_id_)
-    ipc_->RecordStream(stream_id_);
 }
 
 void AudioInputDevice::ShutDownOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
-  // NOTE: |completion| may be NULL.
-  // Make sure we don't call shutdown more than once.
-  if (stream_id_) {
-    if (ipc_) {
-      ipc_->CloseStream(stream_id_);
-      ipc_->RemoveDelegate(stream_id_);
-    }
 
-    stream_id_ = 0;
+  // Close the stream, if we haven't already.
+  if (state_ >= CREATING_STREAM) {
+    ipc_->CloseStream();
+    state_ = IDLE;
     agc_is_enabled_ = false;
   }
 
@@ -229,27 +228,30 @@ void AudioInputDevice::ShutDownOnIOThread() {
   // OnStreamCreated is called in cases where Start/Stop are called before we
   // get the OnStreamCreated callback.  To handle that corner case, we call
   // Stop(). In most cases, the thread will already be stopped.
+  //
   // Another situation is when the IO thread goes away before Stop() is called
   // in which case, we cannot use the message loop to close the thread handle
   // and can't not rely on the main thread existing either.
+  base::AutoLock auto_lock_(audio_thread_lock_);
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   audio_thread_.Stop(NULL);
   audio_callback_.reset();
-  session_id_ = 0;
+  stopping_hack_ = false;
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {
   DCHECK(message_loop()->BelongsToCurrentThread());
-  if (stream_id_)
-    ipc_->SetVolume(stream_id_, volume);
+  if (state_ >= CREATING_STREAM)
+    ipc_->SetVolume(volume);
 }
 
 void AudioInputDevice::SetAutomaticGainControlOnIOThread(bool enabled) {
   DCHECK(message_loop()->BelongsToCurrentThread());
-  DCHECK_EQ(0, stream_id_) <<
-      "The AGC state can not be modified while capturing is active.";
-  if (stream_id_)
+
+  if (state_ >= CREATING_STREAM) {
+    DLOG(WARNING) << "The AGC state can not be modified after starting.";
     return;
+  }
 
   // We simply store the new AGC setting here. This value will be used when
   // a new stream is initialized and by GetAutomaticGainControl().

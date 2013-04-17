@@ -71,6 +71,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // WebMediaStreamSource.
   // |audio_constraints| and |video_constraints| set parameters for the sources.
   void CreateNativeMediaSources(
+      int render_view_id,
       const WebKit::WebMediaConstraints& audio_constraints,
       const WebKit::WebMediaConstraints& video_constraints,
       WebKit::WebMediaStream* description,
@@ -147,7 +148,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Initializes the source using audio parameters for the selected
   // capture device and specifies which capture device to use as capture
   // source.
-  virtual bool InitializeAudioSource(const StreamDeviceInfo& device_info);
+  virtual bool InitializeAudioSource(int render_view_id,
+                                     const StreamDeviceInfo& device_info);
 
   // Creates a media::AudioCapturerSource with an implementation that is
   // specific for a WebAudio source. The created WebAudioCapturerSource

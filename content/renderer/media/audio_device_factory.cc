@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
-#include "content/renderer/media/renderer_audio_output_device.h"
 #include "media/audio/audio_input_device.h"
+#include "media/audio/audio_output_device.h"
 
 namespace content {
 
@@ -16,24 +16,33 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 // static
-scoped_refptr<RendererAudioOutputDevice> AudioDeviceFactory::NewOutputDevice() {
-  RendererAudioOutputDevice* device = NULL;
-  if (factory_)
-    device = factory_->CreateOutputDevice();
+scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
+    int render_view_id) {
+  if (factory_) {
+    media::AudioOutputDevice* const device =
+        factory_->CreateOutputDevice(render_view_id);
+    if (device)
+      return device;
+  }
 
-  return device ? device : new RendererAudioOutputDevice(
-      AudioMessageFilter::Get(), AudioMessageFilter::Get()->io_message_loop());
+  AudioMessageFilter* const filter = AudioMessageFilter::Get();
+  return new media::AudioOutputDevice(
+      filter->CreateAudioOutputIPC(render_view_id), filter->io_message_loop());
 }
 
 // static
-scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice() {
-  media::AudioInputDevice* device = NULL;
-  if (factory_)
-    device = factory_->CreateInputDevice();
+scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice(
+    int render_view_id) {
+  if (factory_) {
+    media::AudioInputDevice* const device =
+        factory_->CreateInputDevice(render_view_id);
+    if (device)
+      return device;
+  }
 
-  return device ? device : new media::AudioInputDevice(
-      AudioInputMessageFilter::Get(),
-      AudioInputMessageFilter::Get()->io_message_loop());
+  AudioInputMessageFilter* const filter = AudioInputMessageFilter::Get();
+  return new media::AudioInputDevice(
+      filter->CreateAudioInputIPC(render_view_id), filter->io_message_loop());
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

@@ -9,8 +9,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
+#include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
 
 namespace content {
@@ -158,12 +158,11 @@ void WebRtcLocalAudioRenderer::Start() {
                                      source_params.sample_rate(),
                                      source_params.bits_per_sample(),
                                      2 * source_params.frames_per_buffer());
-  sink_ = AudioDeviceFactory::NewOutputDevice();
+  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
   // TODO(henrika): we could utilize the unified audio here instead and do
   // sink_->InitializeIO(sink_params, 2, callback_.get());
   // It would then be possible to avoid using the WebRtcAudioCapturer.
   sink_->Initialize(sink_params, this);
-  sink_->SetSourceRenderView(source_render_view_id_);
 
   // Start the capturer and local rendering. Note that, the capturer is owned
   // by the WebRTC ADM and might already bee running.

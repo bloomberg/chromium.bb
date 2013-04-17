@@ -14,9 +14,12 @@
 #include "media/base/audio_renderer_sink.h"
 #include "webkit/media/media_stream_audio_renderer.h"
 
+namespace media {
+class AudioOutputDevice;
+}
+
 namespace content {
 
-class RendererAudioOutputDevice;
 class WebRtcAudioRendererSource;
 
 // This renderer handles calls from the pipeline and WebRtc ADM. It is used
@@ -71,7 +74,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   const int source_render_view_id_;
 
   // The sink (destination) for rendered audio.
-  scoped_refptr<RendererAudioOutputDevice> sink_;
+  scoped_refptr<media::AudioOutputDevice> sink_;
 
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;

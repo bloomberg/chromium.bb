@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_output_device.h"
 
+#include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -40,16 +41,22 @@ class AudioOutputDevice::AudioThreadCallback
 };
 
 AudioOutputDevice::AudioOutputDevice(
-    AudioOutputIPC* ipc,
+    scoped_ptr<AudioOutputIPC> ipc,
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
-      ipc_(ipc),
-      stream_id_(0),
+      ipc_(ipc.Pass()),
       state_(IDLE),
       play_on_start_(true),
       stopping_hack_(false) {
   CHECK(ipc_);
+
+  // The correctness of the code depends on the relative values assigned in the
+  // State enum.
+  COMPILE_ASSERT(IPC_CLOSED < IDLE, invalid_enum_value_assignment_0);
+  COMPILE_ASSERT(IDLE < CREATING_STREAM, invalid_enum_value_assignment_1);
+  COMPILE_ASSERT(CREATING_STREAM < PAUSED, invalid_enum_value_assignment_2);
+  COMPILE_ASSERT(PAUSED < PLAYING, invalid_enum_value_assignment_3);
 }
 
 void AudioOutputDevice::Initialize(const AudioParameters& params,
@@ -109,16 +116,15 @@ bool AudioOutputDevice::SetVolume(double volume) {
 void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ == IDLE) {
-    stream_id_ = ipc_->AddDelegate(this);
     state_ = CREATING_STREAM;
-    ipc_->CreateStream(stream_id_, params);
+    ipc_->CreateStream(this, params);
   }
 }
 
 void AudioOutputDevice::PlayOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ == PAUSED) {
-    ipc_->PlayStream(stream_id_);
+    ipc_->PlayStream();
     state_ = PLAYING;
     play_on_start_ = false;
   } else {
@@ -129,7 +135,7 @@ void AudioOutputDevice::PlayOnIOThread() {
 void AudioOutputDevice::PauseOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ == PLAYING) {
-    ipc_->PauseStream(stream_id_);
+    ipc_->PauseStream();
     state_ = PAUSED;
   }
   play_on_start_ = false;
@@ -138,12 +144,10 @@ void AudioOutputDevice::PauseOnIOThread() {
 void AudioOutputDevice::ShutDownOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
-  // Make sure we don't call shutdown more than once.
+  // Close the stream, if we haven't already.
   if (state_ >= CREATING_STREAM) {
-    ipc_->CloseStream(stream_id_);
-    ipc_->RemoveDelegate(stream_id_);
+    ipc_->CloseStream();
     state_ = IDLE;
-    stream_id_ = 0;
   }
 
   // We can run into an issue where ShutDownOnIOThread is called right after
@@ -164,7 +168,7 @@ void AudioOutputDevice::ShutDownOnIOThread() {
 void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ >= CREATING_STREAM)
-    ipc_->SetVolume(stream_id_, volume);
+    ipc_->SetVolume(volume);
 }
 
 void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
@@ -174,16 +178,27 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
   if (state_ < CREATING_STREAM)
     return;
 
-  if (state == AudioOutputIPCDelegate::kError) {
-    DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(kError)";
-    // Don't dereference the callback object if the audio thread
-    // is stopped or stopping.  That could mean that the callback
-    // object has been deleted.
-    // TODO(tommi): Add an explicit contract for clearing the callback
-    // object.  Possibly require calling Initialize again or provide
-    // a callback object via Start() and clear it in Stop().
-    if (!audio_thread_.IsStopped())
-      callback_->OnRenderError();
+  // TODO(miu): Clean-up inconsistent and incomplete handling here.
+  // http://crbug.com/180640
+  switch (state) {
+    case AudioOutputIPCDelegate::kPlaying:
+    case AudioOutputIPCDelegate::kPaused:
+      NOTIMPLEMENTED();
+      break;
+    case AudioOutputIPCDelegate::kError:
+      DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(kError)";
+      // Don't dereference the callback object if the audio thread
+      // is stopped or stopping.  That could mean that the callback
+      // object has been deleted.
+      // TODO(tommi): Add an explicit contract for clearing the callback
+      // object.  Possibly require calling Initialize again or provide
+      // a callback object via Start() and clear it in Stop().
+      if (!audio_thread_.IsStopped())
+        callback_->OnRenderError();
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -199,6 +214,7 @@ void AudioOutputDevice::OnStreamCreated(
   DCHECK_GE(handle.fd, 0);
   DCHECK_GE(socket_handle, 0);
 #endif
+  DCHECK_GT(length, 0);
 
   if (state_ != CREATING_STREAM)
     return;
@@ -235,7 +251,7 @@ void AudioOutputDevice::OnStreamCreated(
 void AudioOutputDevice::OnIPCClosed() {
   DCHECK(message_loop()->BelongsToCurrentThread());
   state_ = IPC_CLOSED;
-  ipc_ = NULL;
+  ipc_.reset();
 }
 
 void AudioOutputDevice::WillDestroyCurrentMessageLoop() {

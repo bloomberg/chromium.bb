@@ -411,7 +411,8 @@ MockMediaStreamDependencyFactory::CreateLocalVideoSource(
 }
 
 bool MockMediaStreamDependencyFactory::InitializeAudioSource(
-  const StreamDeviceInfo& device_info) {
+    int render_view_id,
+    const StreamDeviceInfo& device_info) {
   return true;
 }
 

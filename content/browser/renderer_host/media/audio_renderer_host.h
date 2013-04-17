@@ -93,15 +93,14 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Methods called on IO thread ----------------------------------------------
 
   // Audio related IPC message handlers.
-  // Creates an audio output stream with the specified format. If this call is
-  // successful this object would keep an internal entry of the stream for the
-  // required properties.
-  void OnCreateStream(int stream_id,
-                      const media::AudioParameters& params);
 
-  // Track that the data for the audio stream referenced by |stream_id| is
+  // Creates an audio output stream with the specified format whose data is
   // produced by an entity in the render view referenced by |render_view_id|.
-  void OnAssociateStreamWithProducer(int stream_id, int render_view_id);
+  // Upon success/failure, the peer is notified via the NotifyStreamCreated
+  // message.
+  void OnCreateStream(int stream_id,
+                      int render_view_id,
+                      const media::AudioParameters& params);
 
   // Play the audio stream referenced by |stream_id|.
   void OnPlayStream(int stream_id);
@@ -116,7 +115,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   void OnSetVolume(int stream_id, double volume);
 
   // Complete the process of creating an audio stream. This will set up the
-  // shared memory or shared socket in low latency mode.
+  // shared memory or shared socket in low latency mode and send the
+  // NotifyStreamCreated message to the peer.
   void DoCompleteCreation(AudioEntry* entry);
 
   // Propagate audible signal to MediaObserver.

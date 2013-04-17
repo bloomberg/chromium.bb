@@ -34,6 +34,7 @@
 #include "base/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/shared_memory.h"
+#include "content/common/media/audio_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_controller.h"
@@ -84,20 +85,17 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Methods called on IO thread ----------------------------------------------
 
   // Audio related IPC message handlers.
-  // Creates an audio input stream with the specified session id and format.
-  // |session_id| is used to find out which device to be used for the stream,
-  // when it is AudioInputDeviceManager::kFakeOpenSessionId, it uses the
-  // the default device. If this call is successful this object would keep an
-  // internal entry of the stream for the required properties.
-  void OnCreateStream(int stream_id,
-                      int session_id,
-                      const media::AudioParameters& params,
-                      bool automatic_gain_control,
-                      int shared_memory_count);
 
-  // Track that the data for the audio stream referenced by |stream_id| is
+  // Creates an audio input stream with the specified format whose data is
   // consumed by an entity in the render view referenced by |render_view_id|.
-  void OnAssociateStreamWithConsumer(int stream_id, int render_view_id);
+  // |session_id| is used to find out which device to be used for the stream.
+  // When it is AudioInputDeviceManager::kFakeOpenSessionId, it uses the the
+  // default device.  Upon success/failure, the peer is notified via the
+  // NotifyStreamCreated message.
+  void OnCreateStream(int stream_id,
+                      int render_view_id,
+                      int session_id,
+                      const AudioInputHostMsg_CreateStream_Config& config);
 
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);
@@ -109,7 +107,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   void OnSetVolume(int stream_id, double volume);
 
   // Complete the process of creating an audio input stream. This will set up
-  // the shared memory or shared socket in low latency mode.
+  // the shared memory or shared socket in low latency mode and send the
+  // NotifyStreamCreated message to the peer.
   void DoCompleteCreation(media::AudioInputController* controller);
 
   // Send a state change message to the renderer.

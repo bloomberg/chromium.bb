@@ -10,22 +10,27 @@
 
 namespace media {
 class AudioInputDevice;
+class AudioOutputDevice;
 }
 
 namespace content {
 
-class RendererAudioOutputDevice;
-
-// A factory for creating RendererAudioOutputDevices.  There is a global factory
-// function that can be installed for the purposes of testing to provide
-// a specialized AudioRendererSink class.
+// A factory for creating AudioOutputDevices and AudioInputDevices.  There is a
+// global factory function that can be installed for the purposes of testing to
+// provide specialized implementations.
 class AudioDeviceFactory {
  public:
-  // Creates a RendererAudioOutputDevice using the currently registered factory.
-  static scoped_refptr<RendererAudioOutputDevice> NewOutputDevice();
+  // Creates an AudioOutputDevice using the currently registered factory.
+  // |render_view_id| refers to the render view containing the entity producing
+  // the audio.
+  static scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
+      int render_view_id);
 
-  // Creates an AudioInputDevice using the currently registered factory,
-  static scoped_refptr<media::AudioInputDevice> NewInputDevice();
+  // Creates an AudioInputDevice using the currently registered factory.
+  // |render_view_id| refers to the render view containing the entity consuming
+  // the audio.
+  static scoped_refptr<media::AudioInputDevice> NewInputDevice(
+      int render_view_id);
 
  protected:
   AudioDeviceFactory();
@@ -35,8 +40,8 @@ class AudioDeviceFactory {
   // functions to provide alternate audio device implementations.
   // If the return value of either of these function is NULL, we fall back
   // on the default implementation.
-  virtual RendererAudioOutputDevice* CreateOutputDevice() = 0;
-  virtual media::AudioInputDevice* CreateInputDevice() = 0;
+  virtual media::AudioOutputDevice* CreateOutputDevice(int render_view_id) = 0;
+  virtual media::AudioInputDevice* CreateInputDevice(int render_view_id) = 0;
 
  private:
   // The current globally registered factory. This is NULL when we should

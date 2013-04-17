@@ -43,56 +43,43 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
 
   // Called when the AudioOutputIPC object is going away and/or when the IPC
   // channel has been closed and no more ipc requests can be made.
-  // Implementations must clear any references to the AudioOutputIPC object
-  // at this point.
+  // Implementations should delete their owned AudioOutputIPC instance
+  // immediately.
   virtual void OnIPCClosed() = 0;
 
  protected:
   virtual ~AudioOutputIPCDelegate();
 };
 
-// Provides IPC functionality for an AudioOutputDevice.  The implementation
-// should asynchronously deliver the messages to an AudioOutputController object
-// (or create one in the case of CreateStream()), that may live in a separate
-// process.
+// Provides the IPC functionality for an AudioOutputIPCDelegate (e.g., an
+// AudioOutputDevice).  The implementation should asynchronously deliver the
+// messages to an AudioOutputController object (or create one in the case of
+// CreateStream()), that may live in a separate process.
 class MEDIA_EXPORT AudioOutputIPC {
  public:
-  // Registers an AudioOutputIPCDelegate and returns a |stream_id| that must
-  // be used with all other IPC functions in this interface.
-  virtual int AddDelegate(AudioOutputIPCDelegate* delegate) = 0;
-
-  // Unregisters a delegate that was previously registered via a call to
-  // AddDelegate().  The audio stream should be in a closed state prior to
-  // calling this function.
-  virtual void RemoveDelegate(int stream_id) = 0;
+  virtual ~AudioOutputIPC();
 
   // Sends a request to create an AudioOutputController object in the peer
-  // process, identify it by |stream_id| and configure it to use the specified
-  // audio |params| including number of synchronized input channels.
-  // Once the stream has been created, the implementation must
-  // generate a notification to the AudioOutputIPCDelegate and call
-  // OnStreamCreated().
-  virtual void CreateStream(int stream_id,
+  // process and configures it to use the specified audio |params| including
+  // number of synchronized input channels.  Once the stream has been created,
+  // the implementation will notify |delegate| by calling OnStreamCreated().
+  virtual void CreateStream(AudioOutputIPCDelegate* delegate,
                             const AudioParameters& params) = 0;
 
   // Starts playing the stream.  This should generate a call to
   // AudioOutputController::Play().
-  virtual void PlayStream(int stream_id) = 0;
+  virtual void PlayStream() = 0;
 
   // Pauses an audio stream.  This should generate a call to
   // AudioOutputController::Pause().
-  virtual void PauseStream(int stream_id) = 0;
+  virtual void PauseStream() = 0;
 
-  // Closes the audio stream and deletes the matching AudioOutputController
-  // instance.  Prior to deleting the AudioOutputController object, a call to
-  // AudioOutputController::Close must be made.
-  virtual void CloseStream(int stream_id) = 0;
+  // Closes the audio stream which should shut down the corresponding
+  // AudioOutputController in the peer process.
+  virtual void CloseStream() = 0;
 
   // Sets the volume of the audio stream.
-  virtual void SetVolume(int stream_id, double volume) = 0;
-
- protected:
-  virtual ~AudioOutputIPC();
+  virtual void SetVolume(double volume) = 0;
 };
 
 }  // namespace media

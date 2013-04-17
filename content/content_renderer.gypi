@@ -141,8 +141,6 @@
     'renderer/media/pepper_platform_video_decoder_impl.h',
     'renderer/media/render_media_log.cc',
     'renderer/media/render_media_log.h',
-    'renderer/media/renderer_audio_output_device.cc',
-    'renderer/media/renderer_audio_output_device.h',
     'renderer/media/renderer_gpu_video_decoder_factories.cc',
     'renderer/media/renderer_gpu_video_decoder_factories.h',
     'renderer/media/renderer_webaudiodevice_impl.cc',

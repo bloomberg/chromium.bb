@@ -97,21 +97,19 @@ void PepperPlatformAudioOutputImpl::OnStreamCreated(
 }
 
 void PepperPlatformAudioOutputImpl::OnIPCClosed() {
-  ipc_ = NULL;
+  ipc_.reset();
 }
 
 PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
   // Make sure we have been shut down. Warning: this will usually happen on
   // the I/O thread!
-  DCHECK_EQ(0, stream_id_);
+  DCHECK(!ipc_);
   DCHECK(!client_);
 }
 
 PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
     : client_(NULL),
-      stream_id_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()) {
-  ipc_ = RenderThreadImpl::current()->audio_message_filter();
 }
 
 bool PepperPlatformAudioOutputImpl::Initialize(
@@ -122,11 +120,16 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   DCHECK(client);
   client_ = client;
 
+  RenderThreadImpl* const render_thread = RenderThreadImpl::current();
+  ipc_ = render_thread->audio_message_filter()->
+      CreateAudioOutputIPC(source_render_view_id);
+  CHECK(ipc_);
+
   media::AudioParameters::Format format;
   const int kMaxFramesForLowLatency = 2047;
 
   media::AudioHardwareConfig* hardware_config =
-      RenderThreadImpl::current()->GetAudioHardwareConfig();
+      render_thread->GetAudioHardwareConfig();
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudioOutputResampler)) {
@@ -149,39 +152,42 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioOutputImpl::InitializeOnIOThread,
-                 this, params, source_render_view_id));
+                 this, params));
   return true;
 }
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
-    const media::AudioParameters& params, int source_render_view_id) {
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-  stream_id_ = ipc_->AddDelegate(this);
-  DCHECK_NE(0, stream_id_);
-
-  ipc_->CreateStream(stream_id_, params);
-  ipc_->AssociateStreamWithProducer(stream_id_, source_render_view_id);
+    const media::AudioParameters& params) {
+  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
+      BelongsToCurrentThread());
+  if (ipc_)
+    ipc_->CreateStream(this, params);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {
-  if (stream_id_)
-    ipc_->PlayStream(stream_id_);
+  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
+      BelongsToCurrentThread());
+  if (ipc_)
+    ipc_->PlayStream();
 }
 
 void PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread() {
-  if (stream_id_)
-    ipc_->PauseStream(stream_id_);
+  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
+      BelongsToCurrentThread());
+  if (ipc_)
+    ipc_->PauseStream();
 }
 
 void PepperPlatformAudioOutputImpl::ShutDownOnIOThread() {
+  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
+      BelongsToCurrentThread());
+
   // Make sure we don't call shutdown more than once.
-  if (!stream_id_)
+  if (!ipc_)
     return;
 
-  ipc_->CloseStream(stream_id_);
-  ipc_->RemoveDelegate(stream_id_);
-  stream_id_ = 0;
+  ipc_->CloseStream();
+  ipc_.reset();
 
   Release();  // Release for the delegate, balances out the reference taken in
               // PepperPluginDelegateImpl::CreateAudio.

@@ -227,6 +227,7 @@ MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
 }
 
 void MediaStreamDependencyFactory::CreateNativeMediaSources(
+    int render_view_id,
     const WebKit::WebMediaConstraints& audio_constraints,
     const WebKit::WebMediaConstraints& video_constraints,
     WebKit::WebMediaStream* description,
@@ -284,7 +285,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
     const StreamDeviceInfo device_info = source_data->device_info();
     if (IsAudioMediaType(device_info.device.type)) {
-      if (!InitializeAudioSource(device_info)) {
+      if (!InitializeAudioSource(render_view_id, device_info)) {
         DLOG(WARNING) << "Unsupported audio source";
         sources_created.Run(description, false);
         return;
@@ -486,7 +487,8 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
 }
 
 bool MediaStreamDependencyFactory::InitializeAudioSource(
-  const StreamDeviceInfo& device_info) {
+    int render_view_id,
+    const StreamDeviceInfo& device_info) {
   DVLOG(1) << "MediaStreamDependencyFactory::InitializeAudioSource()";
 
   // TODO(henrika): the current design does not support a unique source
@@ -500,6 +502,7 @@ bool MediaStreamDependencyFactory::InitializeAudioSource(
   // TODO(henrika): refactor \content\public\common\media_stream_request.h
   // to allow dependency of media::ChannelLayout and avoid static_cast.
   if (!capturer->Initialize(
+          render_view_id,
           static_cast<media::ChannelLayout>(device_info.device.channel_layout),
           device_info.device.sample_rate, device_info.session_id))
     return false;

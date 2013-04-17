@@ -23,6 +23,12 @@
 IPC_ENUM_TRAITS(media::AudioInputIPCDelegate::State)
 IPC_ENUM_TRAITS(media::AudioOutputIPCDelegate::State)
 
+IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
+  IPC_STRUCT_MEMBER(media::AudioParameters, params)
+  IPC_STRUCT_MEMBER(bool, automatic_gain_control)
+  IPC_STRUCT_MEMBER(uint32, shared_memory_count)
+IPC_STRUCT_END()
+
 // Messages sent from the browser to the renderer.
 
 // Tell the renderer process that an audio stream has been created.
@@ -87,28 +93,22 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
 
 // Messages sent from the renderer to the browser.
 
-// Request that got sent to browser for creating an audio output stream
-IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
+// Request that is sent to the browser for creating an audio output stream.
+// |render_view_id| is the routing ID for the render view producing the audio
+// data.
+IPC_MESSAGE_CONTROL3(AudioHostMsg_CreateStream,
                      int /* stream_id */,
+                     int /* render_view_id */,
                      media::AudioParameters /* params */)
 
-// Request that got sent to browser for creating an audio input stream
-IPC_MESSAGE_CONTROL5(AudioInputHostMsg_CreateStream,
+// Request that is sent to the browser for creating an audio input stream.
+// |render_view_id| is the routing ID for the render view consuming the audio
+// data.
+IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
+                     int /* render_view_id */,
                      int /* session_id */,
-                     media::AudioParameters /* params */,
-                     bool /* automatic_gain_control */,
-                     uint32 /* shared memory count */)
-
-// Indicate that audio for a stream is produced by the specified render view.
-IPC_MESSAGE_CONTROL2(AudioHostMsg_AssociateStreamWithProducer,
-                     int /* stream_id */,
-                     int /* render_view_id */)
-
-// Indicate that audio for a stream is consumed by the specified render view.
-IPC_MESSAGE_CONTROL2(AudioInputHostMsg_AssociateStreamWithConsumer,
-                     int /* stream_id */,
-                     int /* render_view_id */)
+                     AudioInputHostMsg_CreateStream_Config)
 
 // Start buffering and play the audio stream specified by stream_id.
 IPC_MESSAGE_CONTROL1(AudioHostMsg_PlayStream,

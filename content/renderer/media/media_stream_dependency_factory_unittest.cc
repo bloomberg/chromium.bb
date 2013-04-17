@@ -86,9 +86,12 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
   }
 
   void CreateNativeSources(WebKit::WebMediaStream* descriptor) {
+    static const int kRenderViewId = 1;
+
     MediaSourceCreatedObserver observer;
     WebKit::WebMediaConstraints audio_constraints;
     dependency_factory_->CreateNativeMediaSources(
+        kRenderViewId,
         WebKit::WebMediaConstraints(),
         WebKit::WebMediaConstraints(),
         descriptor,

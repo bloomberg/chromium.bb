@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/web_contents_audio_input_stream.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
-#include "content/common/media/audio_messages.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace content {
@@ -186,8 +185,6 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AudioInputRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CreateStream, OnCreateStream)
-    IPC_MESSAGE_HANDLER(AudioInputHostMsg_AssociateStreamWithConsumer,
-                        OnAssociateStreamWithConsumer)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_RecordStream, OnRecordStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CloseStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_SetVolume, OnSetVolume)
@@ -199,13 +196,17 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
 
 void AudioInputRendererHost::OnCreateStream(
     int stream_id,
+    int render_view_id,
     int session_id,
-    const media::AudioParameters& params,
-    bool automatic_gain_control,
-    int shared_memory_count) {
-  VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
-          << stream_id << ", session_id=" << session_id << ")";
+    const AudioInputHostMsg_CreateStream_Config& config) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DVLOG(1) << "AudioInputRendererHost@" << this
+           << "::OnCreateStream(stream_id=" << stream_id
+           << ", render_view_id=" << render_view_id
+           << ", session_id=" << session_id << ")";
+  DCHECK_GT(render_view_id, 0);
+
   // media::AudioParameters is validated in the deserializer.
   if (LookupById(stream_id) != NULL) {
     SendErrorMessage(stream_id);
@@ -227,23 +228,22 @@ void AudioInputRendererHost::OnCreateStream(
     device_id = info->device.id;
   }
 
-  media::AudioParameters audio_params(params);
+  media::AudioParameters audio_params(config.params);
   if (media_stream_manager_->audio_input_device_manager()->
       ShouldUseFakeDevice()) {
-    audio_params.Reset(media::AudioParameters::AUDIO_FAKE,
-                       params.channel_layout(), params.channels(), 0,
-                       params.sample_rate(),
-                       params.bits_per_sample(), params.frames_per_buffer());
+    audio_params.Reset(
+        media::AudioParameters::AUDIO_FAKE,
+        config.params.channel_layout(), config.params.channels(), 0,
+        config.params.sample_rate(), config.params.bits_per_sample(),
+        config.params.frames_per_buffer());
   }
-
-  uint32 buffer_size = audio_params.GetBytesPerBuffer();
 
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
-  uint32 segment_size =
-      sizeof(media::AudioInputBufferParameters) + buffer_size;
-  entry->shared_memory_segment_count = shared_memory_count;
+  const uint32 segment_size = (sizeof(media::AudioInputBufferParameters) +
+                               audio_params.GetBytesPerBuffer());
+  entry->shared_memory_segment_count = config.shared_memory_count;
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
@@ -292,22 +292,13 @@ void AudioInputRendererHost::OnCreateStream(
 
   // Set the initial AGC state for the audio input stream. Note that, the AGC
   // is only supported in AUDIO_PCM_LOW_LATENCY mode.
-  if (params.format() == media::AudioParameters::AUDIO_PCM_LOW_LATENCY)
-    entry->controller->SetAutomaticGainControl(automatic_gain_control);
+  if (config.params.format() == media::AudioParameters::AUDIO_PCM_LOW_LATENCY)
+    entry->controller->SetAutomaticGainControl(config.automatic_gain_control);
 
-  // If we have created the controller successfully create a entry and add it
+  // Since the controller was created successfully, create an entry and add it
   // to the map.
   entry->stream_id = stream_id;
-
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
-}
-
-void AudioInputRendererHost::OnAssociateStreamWithConsumer(int stream_id,
-                                                           int render_view_id) {
-  // TODO(miu): Will use render_view_id in upcoming change.
-  DVLOG(1) << "AudioInputRendererHost@" << this
-           << "::OnAssociateStreamWithConsumer(stream_id=" << stream_id
-           << ", render_view_id=" << render_view_id << ")";
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {

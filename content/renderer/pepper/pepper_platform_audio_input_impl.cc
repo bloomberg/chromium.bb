@@ -9,7 +9,6 @@
 #include "base/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
-#include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -55,6 +54,10 @@ void PepperPlatformAudioInputImpl::StopCapture() {
 void PepperPlatformAudioInputImpl::ShutDown() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
+  // Make sure we don't call shutdown more than once.
+  if (!client_)
+    return;
+
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
   client_ = NULL;
@@ -80,9 +83,8 @@ void PepperPlatformAudioInputImpl::OnStreamCreated(
   DCHECK_EQ(1, total_segments);
 
   if (base::MessageLoopProxy::current() != main_message_loop_proxy_) {
-    // No need to check |shutdown_called_| here. If shutdown has occurred,
-    // |client_| will be NULL and the handles will be cleaned up on the main
-    // thread.
+    // If shutdown has occurred, |client_| will be NULL and the handles will be
+    // cleaned up on the main thread.
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&PepperPlatformAudioInputImpl::OnStreamCreated, this,
@@ -107,7 +109,7 @@ void PepperPlatformAudioInputImpl::OnStateChanged(
 }
 
 void PepperPlatformAudioInputImpl::OnIPCClosed() {
-  ipc_ = NULL;
+  ipc_.reset();
 }
 
 PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
@@ -116,19 +118,14 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
   // Although these members should be accessed on a specific thread (either the
   // main thread or the I/O thread), it should be fine to examine their value
   // here.
-  DCHECK_EQ(0, stream_id_);
+  DCHECK(!ipc_);
   DCHECK(!client_);
   DCHECK(label_.empty());
-  DCHECK(shutdown_called_);
 }
 
 PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
     : client_(NULL),
-      stream_id_(0),
-      render_view_id_(MSG_ROUTING_NONE),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()),
-      shutdown_called_(false) {
-  ipc_ = RenderThreadImpl::current()->audio_input_message_filter();
+      main_message_loop_proxy_(base::MessageLoopProxy::current()) {
 }
 
 bool PepperPlatformAudioInputImpl::Initialize(
@@ -142,8 +139,10 @@ bool PepperPlatformAudioInputImpl::Initialize(
   if (!plugin_delegate || !client)
     return false;
 
+  ipc_ = RenderThreadImpl::current()->audio_input_message_filter()->
+      CreateAudioInputIPC(plugin_delegate->GetRoutingID());
+
   plugin_delegate_ = plugin_delegate;
-  render_view_id_ = plugin_delegate_->GetRoutingID();
   client_ = client;
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
@@ -164,26 +163,19 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
   DCHECK(ChildProcess::current()->io_message_loop_proxy()->
       BelongsToCurrentThread());
 
-  if (shutdown_called_)
+  if (!ipc_)
     return;
 
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-  stream_id_ = ipc_->AddDelegate(this);
-  DCHECK_NE(0, stream_id_);
-
   // We will be notified by OnStreamCreated().
-  ipc_->CreateStream(stream_id_, session_id, params_, false, 1);
+  ipc_->CreateStream(this, session_id, params_, false, 1);
 }
 
 void PepperPlatformAudioInputImpl::StartCaptureOnIOThread() {
   DCHECK(ChildProcess::current()->io_message_loop_proxy()->
       BelongsToCurrentThread());
 
-  if (stream_id_) {
-    ipc_->AssociateStreamWithConsumer(stream_id_, render_view_id_);
-    ipc_->RecordStream(stream_id_);
-  }
+  if (ipc_)
+    ipc_->RecordStream();
 }
 
 void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
@@ -191,24 +183,17 @@ void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
       BelongsToCurrentThread());
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
-  if (stream_id_)
-    ipc_->CloseStream(stream_id_);
+  if (ipc_) {
+    ipc_->CloseStream();
+    ipc_.reset();
+  }
 }
 
 void PepperPlatformAudioInputImpl::ShutDownOnIOThread() {
   DCHECK(ChildProcess::current()->io_message_loop_proxy()->
       BelongsToCurrentThread());
 
-  // Make sure we don't call shutdown more than once.
-  if (shutdown_called_)
-    return;
-  shutdown_called_ = true;
-
-  if (stream_id_) {
-    ipc_->CloseStream(stream_id_);
-    ipc_->RemoveDelegate(stream_id_);
-    stream_id_ = 0;
-  }
+  StopCaptureOnIOThread();
 
   main_message_loop_proxy_->PostTask(
       FROM_HERE,

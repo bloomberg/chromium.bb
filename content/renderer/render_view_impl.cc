@@ -90,7 +90,6 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/render_media_log.h"
-#include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -113,6 +112,7 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
+#include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
@@ -2723,13 +2723,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           CreateInput(routing_id_);
       DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink;
     } else {
-      scoped_refptr<RendererAudioOutputDevice> device =
-          AudioDeviceFactory::NewOutputDevice();
       // The RenderView creating AudioRendererSink will be the source of
       // the audio (WebMediaPlayer is always associated with a document in a
       // frame at the time RenderAudioSourceProvider is instantiated).
-      device->SetSourceRenderView(routing_id_);
-      sink = device;
+      sink = AudioDeviceFactory::NewOutputDevice(routing_id_);
       DVLOG(1) << "Using AudioDeviceFactory-provided sink: " << sink;
     }
   }
