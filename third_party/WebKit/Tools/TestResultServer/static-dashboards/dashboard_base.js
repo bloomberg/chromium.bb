@@ -105,7 +105,7 @@ var TEST_TYPES = [
     'sync_unit_tests',
     'sync_integration_tests',
     'test_shell_tests',
-    'ui_tests',
+    'ui_unittests',
     'unit_tests',
     'views_unittests',
     'webkit_unit_tests',
