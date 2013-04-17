@@ -60,6 +60,8 @@
     [Custom] void recordSettingChanged(unsigned long settingChanged);
 
     DOMString loadResourceSynchronously(DOMString url);
+    DOMString getSelectionBackgroundColor();
+    DOMString getSelectionForegroundColor();
 
     void requestFileSystems();
     void addFileSystem();

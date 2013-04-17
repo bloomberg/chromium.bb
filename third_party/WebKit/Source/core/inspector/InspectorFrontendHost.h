@@ -79,6 +79,8 @@ public:
     void sendMessageToBackend(const String& message);
 
     String loadResourceSynchronously(const String& url);
+    String getSelectionBackgroundColor();
+    String getSelectionForegroundColor();
 
     void requestFileSystems();
     void addFileSystem();

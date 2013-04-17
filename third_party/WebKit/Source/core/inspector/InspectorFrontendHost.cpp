@@ -45,6 +45,7 @@
 #include "InspectorFrontendClient.h"
 #include "Page.h"
 #include "Pasteboard.h"
+#include "RenderTheme.h"
 #include "ResourceError.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
@@ -280,6 +281,16 @@ String InspectorFrontendHost::loadResourceSynchronously(const String& url)
     ResourceResponse response;
     m_frontendPage->mainFrame()->loader()->loadResourceSynchronously(request, DoNotAllowStoredCredentials, error, response, data);
     return String(data.data(), data.size());
+}
+
+String InspectorFrontendHost::getSelectionBackgroundColor()
+{
+    return m_frontendPage->theme()->activeSelectionBackgroundColor().serialized();
+}
+
+String InspectorFrontendHost::getSelectionForegroundColor()
+{
+    return m_frontendPage->theme()->activeSelectionForegroundColor().serialized();
 }
 
 bool InspectorFrontendHost::supportsFileSystems()
