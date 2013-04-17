@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "ChromiumThreading.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 #include "wtf/Threading.h"
+#include "wtf/chromium/ChromiumThreading.h"
 
 namespace WTF {
 
