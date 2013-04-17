@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_H_
-#define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_H_
+#ifndef CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
+#define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -17,14 +17,16 @@ class Rect;
 // needed to support multiple panels that are stacked together. A native
 // window might be created to enclose all the panels in the stack. The lifetime
 // of the class that implements this interface is managed by itself.
-class NativePanelStack {
+class NativePanelStackWindow {
  public:
-  // Creates and returns a NativePanelStack instance whose lifetime is managed
-  // by itself and it will be valid until Close is called. NativePanelStack
-  // also owns the StackedPanelCollection instance being passed here.
-  static NativePanelStack* Create(scoped_ptr<StackedPanelCollection> stack);
+  // Creates and returns a NativePanelStackWindow instance whose lifetime is
+  // managed by itself and it will be valid until Close is called.
+  // NativePanelStackWindow also owns the StackedPanelCollection instance being
+  // passed here.
+  static NativePanelStackWindow* Create(
+      scoped_ptr<StackedPanelCollection> stack);
 
-  virtual ~NativePanelStack() {}
+  virtual ~NativePanelStackWindow() {}
 
   virtual bool IsMinimized() const = 0;
 
@@ -32,7 +34,7 @@ class NativePanelStack {
   friend class StackedPanelCollection;
 
   // Called when the stack is to be closed. This will destruct the
-  // NativePanelStack instance which causes the StackedPanelCollection
+  // NativePanelStackWindow instance which causes the StackedPanelCollection
   // instance to be also destructed since the former owns the later.
   virtual void Close() = 0;
 
@@ -50,4 +52,4 @@ class NativePanelStack {
   virtual void DrawSystemAttention(bool draw_attention) = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_H_
+#endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_

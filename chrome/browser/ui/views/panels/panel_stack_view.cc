@@ -24,7 +24,7 @@
 #endif
 
 // static
-NativePanelStack* NativePanelStack::Create(
+NativePanelStackWindow* NativePanelStackWindow::Create(
     scoped_ptr<StackedPanelCollection> stacked_collection) {
 #if defined(OS_WIN)
   return new PanelStackView(stacked_collection.Pass());

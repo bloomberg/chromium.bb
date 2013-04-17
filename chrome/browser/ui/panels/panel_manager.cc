@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"
-#include "chrome/browser/ui/panels/native_panel_stack.h"
+#include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
-#include "chrome/browser/ui/panels/native_panel_stack.h"
+#include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -19,7 +19,7 @@ StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
       panel_manager_(panel_manager),
       native_stack_(NULL),
       minimizing_all_(false) {
-  native_stack_ = NativePanelStack::Create(make_scoped_ptr(this).Pass());
+  native_stack_ = NativePanelStackWindow::Create(make_scoped_ptr(this).Pass());
 }
 
 StackedPanelCollection::~StackedPanelCollection() {

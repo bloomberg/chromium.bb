@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/rect.h"
 
-class NativePanelStack;
+class NativePanelStackWindow;
 class PanelManager;
 namespace gfx {
 class Vector2d;
@@ -71,7 +71,7 @@ class StackedPanelCollection : public PanelCollection {
   // panels are collapsed.
   int GetMaximiumAvailableBottomSpace() const;
 
-  NativePanelStack* native_stack() const { return native_stack_; }
+  NativePanelStackWindow* native_stack() const { return native_stack_; }
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
   Panel* top_panel() const { return panels_.empty() ? NULL : panels_.front(); }
@@ -130,7 +130,7 @@ class StackedPanelCollection : public PanelCollection {
 
   PanelManager* panel_manager_;
 
-  NativePanelStack* native_stack_;  // Weak, owns us.
+  NativePanelStackWindow* native_stack_;  // Weak, owns us.
 
   Panels panels_;  // The top panel is in the front of the list.
 

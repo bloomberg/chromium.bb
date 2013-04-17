@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/panels/native_panel_stack.h"
+#include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
@@ -17,7 +17,7 @@ class TaskbarWindowThumbnailerWin;
 
 // A native window that acts as the owner of all panels in the stack, in order
 // to make all panels appear as a single window on the taskbar or launcher.
-class PanelStackView : public NativePanelStack,
+class PanelStackView : public NativePanelStackWindow,
                        public views::WidgetObserver,
                        public views::WidgetDelegateView,
                        public views::WidgetFocusChangeListener {
@@ -27,7 +27,7 @@ class PanelStackView : public NativePanelStack,
   virtual ~PanelStackView();
 
  protected:
-  // Overridden from NativePanelStack:
+  // Overridden from NativePanelStackWindow:
   virtual void Close() OVERRIDE;
   virtual void OnPanelAddedOrRemoved(Panel* panel) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/native_panel_stack.h"
+#include "chrome/browser/ui/panels/native_panel_stack_window.h"
 
 #include "base/logging.h"
 
 // static
 #if !defined(TOOLKIT_VIEWS)
-NativePanelStack* NativePanelStack::Create(
+NativePanelStackWindow* NativePanelStackWindow::Create(
     scoped_ptr<StackedPanelCollection> stack) {
   NOTIMPLEMENTED();
   return NULL;
