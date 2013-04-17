@@ -98,8 +98,6 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/webui/gesture_config_ui.h"
-#include "ui/keyboard/keyboard_constants.h"
-#include "ui/keyboard/keyboard_ui_controller.h"
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -359,8 +357,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(USE_AURA)
   if (url.host() == chrome::kChromeUIGestureConfigHost)
     return &NewWebUI<GestureConfigUI>;
-  if (url.host() == keyboard::kKeyboardWebUIHost)
-    return &NewWebUI<keyboard::KeyboardUIController>;
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
