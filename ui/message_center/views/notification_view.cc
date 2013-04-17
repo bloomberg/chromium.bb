@@ -255,6 +255,7 @@ class NotificationButton : public views::CustomButton {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
   // Overridden from views::CustomButton:
   virtual void StateChanged() OVERRIDE;
@@ -317,6 +318,10 @@ gfx::Size NotificationButton::GetPreferredSize() {
 
 int NotificationButton::GetHeightForWidth(int width) {
   return kButtonHeight;
+}
+
+void NotificationButton::OnFocus() {
+  ScrollRectToVisible(GetLocalBounds());
 }
 
 void NotificationButton::StateChanged() {
@@ -542,6 +547,12 @@ void NotificationView::Layout() {
   expand_button()->SetVisible(IsExpansionNeeded(width()));
   expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
                              expand_size.width(), expand_size.height());
+}
+
+void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
+  // Notification want to show the whole notification when a part of it (like
+  // a button) gets focused.
+  views::View::ScrollRectToVisible(GetLocalBounds());
 }
 
 void NotificationView::ButtonPressed(views::Button* sender,
