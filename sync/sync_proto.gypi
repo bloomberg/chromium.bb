@@ -28,6 +28,7 @@
     'protocol/get_updates_caller_info.proto',
     'protocol/history_delete_directive_specifics.proto',
     'protocol/nigori_specifics.proto',
+    'protocol/managed_user_setting_specifics.proto',
     'protocol/password_specifics.proto',
     'protocol/preference_specifics.proto',
     'protocol/priority_preference_specifics.proto',

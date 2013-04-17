@@ -105,6 +105,9 @@
       case ::syncer::FAVICON_TRACKING: \
         PER_DATA_TYPE_MACRO("FaviconTracking"); \
         break; \
+      case ::syncer::MANAGED_USER_SETTINGS: \
+        PER_DATA_TYPE_MACRO("ManagedUserSetting"); \
+        break; \
       case ::syncer::PROXY_TABS :\
         PER_DATA_TYPE_MACRO("Tabs"); \
         break; \

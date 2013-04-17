@@ -101,6 +101,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case FAVICON_TRACKING:
       specifics->mutable_favicon_tracking();
       break;
+    case MANAGED_USER_SETTINGS:
+      specifics->mutable_managed_user_setting();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -187,6 +190,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kFaviconImageFieldNumber;
     case FAVICON_TRACKING:
       return sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber;
+    case MANAGED_USER_SETTINGS:
+      return sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -303,6 +308,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_favicon_tracking())
     return FAVICON_TRACKING;
 
+  if (specifics.has_managed_user_setting())
+    return MANAGED_USER_SETTINGS;
+
   return UNSPECIFIED;
 }
 
@@ -352,6 +360,8 @@ ModelTypeSet EncryptableUserTypes() {
   // Priority preferences are not encrypted because they might be synced before
   // encryption is ready.
   encryptable_user_types.RemoveAll(PriorityUserTypes());
+  // Managed user settings are not encrypted since they are set server-side.
+  encryptable_user_types.Remove(MANAGED_USER_SETTINGS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
@@ -440,6 +450,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Favicon Images";
     case FAVICON_TRACKING:
       return "Favicon Tracking";
+    case MANAGED_USER_SETTINGS:
+      return "Managed User Settings";
     case PROXY_TABS:
       return "Tabs";
     default:
@@ -507,6 +519,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 24;
     case PROXY_TABS:
       return 25;
+    case MANAGED_USER_SETTINGS:
+      return 26;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -588,6 +602,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return FAVICON_IMAGES;
   else if (model_type_string == "Favicon Tracking")
     return FAVICON_TRACKING;
+  else if (model_type_string == "Managed User Settings")
+    return MANAGED_USER_SETTINGS;
   else if (model_type_string == "Tabs")
     return PROXY_TABS;
   else
@@ -676,6 +692,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_favicon_images";
     case FAVICON_TRACKING:
       return "google_chrome_favicon_tracking";
+    case MANAGED_USER_SETTINGS:
+      return "google_chrome_managed_user_settings";
     case PROXY_TABS:
       return std::string();
     default:
@@ -713,6 +731,7 @@ const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
 const char kDictionaryNotificationType[] = "DICTIONARY";
 const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
 const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
+const char kManagedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -786,6 +805,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case FAVICON_TRACKING:
       *notification_type = kFaviconTrackingNotificationType;
+      return true;
+    case MANAGED_USER_SETTINGS:
+      *notification_type = kManagedUserSettingNotificationType;
       return true;
     default:
       break;
@@ -864,6 +886,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kFaviconTrackingNotificationType) {
     *model_type = FAVICON_TRACKING;
+    return true;
+  } else if (notification_type == kManagedUserSettingNotificationType) {
+    *model_type = MANAGED_USER_SETTINGS;
     return true;
   }
   *model_type = UNSPECIFIED;

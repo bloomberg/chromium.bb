@@ -93,6 +93,8 @@ enum ModelType {
   // These preferences are synced before other user types and are never
   // encrypted.
   PRIORITY_PREFERENCES,
+  // Managed user settings.
+  MANAGED_USER_SETTINGS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

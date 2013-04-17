@@ -1730,27 +1730,28 @@ const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
 // Booleans specifying whether the user has selected to sync the following
 // datatypes.
-const char kSyncBookmarks[] = "sync.bookmarks";
-const char kSyncPasswords[] = "sync.passwords";
-const char kSyncPreferences[] = "sync.preferences";
-const char kSyncPriorityPreferences[] = "sync.priority_preferences";
 const char kSyncAppNotifications[] = "sync.app_notifications";
 const char kSyncAppSettings[] = "sync.app_settings";
 const char kSyncApps[] = "sync.apps";
-const char kSyncAutofill[] = "sync.autofill";
 const char kSyncAutofillProfile[] = "sync.autofill_profile";
-const char kSyncThemes[] = "sync.themes";
-const char kSyncTypedUrls[] = "sync.typed_urls";
-const char kSyncExtensions[] = "sync.extensions";
-const char kSyncExtensionSettings[] = "sync.extension_settings";
-const char kSyncSearchEngines[] = "sync.search_engines";
-const char kSyncSessions[] = "sync.sessions";
-const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
-const char kSyncSyncedNotifications[] = "sync.synced_notifications";
+const char kSyncAutofill[] = "sync.autofill";
+const char kSyncBookmarks[] = "sync.bookmarks";
 const char kSyncDictionary[] = "sync.dictionary";
+const char kSyncExtensionSettings[] = "sync.extension_settings";
+const char kSyncExtensions[] = "sync.extensions";
 const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
+const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
+const char kSyncManagedUserSettings[] = "sync.managed_user_settings";
+const char kSyncPasswords[] = "sync.passwords";
+const char kSyncPreferences[] = "sync.preferences";
+const char kSyncPriorityPreferences[] = "sync.priority_preferences";
+const char kSyncSearchEngines[] = "sync.search_engines";
+const char kSyncSessions[] = "sync.sessions";
+const char kSyncSyncedNotifications[] = "sync.synced_notifications";
 const char kSyncTabs[] = "sync.tabs";
+const char kSyncThemes[] = "sync.themes";
+const char kSyncTypedUrls[] = "sync.typed_urls";
 
 // Boolean used by enterprise configuration management in order to lock down
 // sync.

@@ -402,6 +402,14 @@ base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* ManagedUserSettingSpecificsToValue(
+    const sync_pb::ManagedUserSettingSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(name);
+  SET_STR(value);
+  return value;
+}
+
 base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -530,6 +538,7 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(favicon_image, FaviconImageSpecificsToValue);
   SET_FIELD(favicon_tracking, FaviconTrackingSpecificsToValue);
   SET_FIELD(history_delete_directive, HistoryDeleteDirectiveSpecificsToValue);
+  SET_FIELD(managed_user_setting, ManagedUserSettingSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);
   SET_FIELD(preference, PreferenceSpecificsToValue);

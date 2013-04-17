@@ -340,6 +340,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncFaviconImages;
     case syncer::FAVICON_TRACKING:
       return prefs::kSyncFaviconTracking;
+    case syncer::MANAGED_USER_SETTINGS:
+      return prefs::kSyncManagedUserSettings;
     case syncer::PROXY_TABS:
       return prefs::kSyncTabs;
     case syncer::PRIORITY_PREFERENCES:

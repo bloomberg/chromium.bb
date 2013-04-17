@@ -23,6 +23,7 @@
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"
 #include "sync/protocol/favicon_tracking_specifics.pb.h"
+#include "sync/protocol/managed_user_setting_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -52,7 +53,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(26, MODEL_TYPE_COUNT);
+  EXPECT_EQ(27, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -173,6 +174,10 @@ TEST_F(ProtoValueConversionsTest, HistoryDeleteDirectiveSpecificsToValue) {
   TestSpecificsToValue(HistoryDeleteDirectiveSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, ManagedUserSettingSpecificsToValue) {
+  TestSpecificsToValue(ManagedUserSettingSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, NigoriSpecificsToValue) {
   TestSpecificsToValue(NigoriSpecificsToValue);
 }
@@ -231,6 +236,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(favicon_image);
   SET_FIELD(favicon_tracking);
   SET_FIELD(history_delete_directive);
+  SET_FIELD(managed_user_setting);
   SET_FIELD(nigori);
   SET_FIELD(password);
   SET_FIELD(preference);

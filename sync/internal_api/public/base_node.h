@@ -153,6 +153,11 @@ class SYNC_EXPORT BaseNode {
   // data.  Can only be called if GetModelType() == SESSIONS.
   const sync_pb::SessionSpecifics& GetSessionSpecifics() const;
 
+  // Getter specific to the MANAGED_USER_SETTINGS datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == MANAGED_USER_SETTINGS.
+  const sync_pb::ManagedUserSettingSpecifics&
+      GetManagedUserSettingSpecifics() const;
+
   // Getter specific to the DEVICE_INFO datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == DEVICE_INFO.
   const sync_pb::DeviceInfoSpecifics& GetDeviceInfoSpecifics() const;

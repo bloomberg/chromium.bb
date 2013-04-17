@@ -2391,6 +2391,7 @@
         'browser/sync/test/integration/single_client_bookmarks_sync_test.cc',
         'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
         'browser/sync/test/integration/single_client_extensions_sync_test.cc',
+        'browser/sync/test/integration/single_client_managed_user_settings_sync_test.cc',
         'browser/sync/test/integration/single_client_passwords_sync_test.cc',
         'browser/sync/test/integration/single_client_preferences_sync_test.cc',
         'browser/sync/test/integration/single_client_search_engines_sync_test.cc',
