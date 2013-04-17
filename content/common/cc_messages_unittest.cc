@@ -127,6 +127,7 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const RenderPassDrawQuad* a, const RenderPassDrawQuad* b) {
+    EXPECT_EQ(a->render_pass_id, b->render_pass_id);
     EXPECT_EQ(a->is_replica, b->is_replica);
     EXPECT_EQ(a->mask_resource_id, b->mask_resource_id);
     EXPECT_EQ(a->contents_changed_since_last_frame,
