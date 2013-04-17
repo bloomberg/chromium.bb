@@ -81,7 +81,6 @@
       'include_dirs': [
         '.',
         '..',
-        '../unicode',
       ],
       'dependencies': [
           'wtf_config',
