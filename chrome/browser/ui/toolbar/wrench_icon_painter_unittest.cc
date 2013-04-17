@@ -45,13 +45,13 @@ TEST_F(WrenchIconPainterTest, Paint) {
   painter_.Paint(
       &canvas, theme_provider_, rect, WrenchIconPainter::BEZEL_PRESSED);
 
-  painter_.SetSeverity(WrenchIconPainter::SEVERITY_LOW);
+  painter_.SetSeverity(WrenchIconPainter::SEVERITY_LOW, true);
   painter_.Paint(
       &canvas, theme_provider_, rect, WrenchIconPainter::BEZEL_PRESSED);
-  painter_.SetSeverity(WrenchIconPainter::SEVERITY_MEDIUM);
+  painter_.SetSeverity(WrenchIconPainter::SEVERITY_MEDIUM, true);
   painter_.Paint(
       &canvas, theme_provider_, rect, WrenchIconPainter::BEZEL_PRESSED);
-  painter_.SetSeverity(WrenchIconPainter::SEVERITY_HIGH);
+  painter_.SetSeverity(WrenchIconPainter::SEVERITY_HIGH, true);
   painter_.Paint(
       &canvas, theme_provider_, rect, WrenchIconPainter::BEZEL_PRESSED);
 
@@ -61,7 +61,7 @@ TEST_F(WrenchIconPainterTest, Paint) {
 }
 
 TEST_F(WrenchIconPainterTest, PaintCallback) {
-  painter_.SetSeverity(WrenchIconPainter::SEVERITY_LOW);
+  painter_.SetSeverity(WrenchIconPainter::SEVERITY_LOW, true);
   schedule_paint_count_ = 0;
   painter_.AnimationProgressed(NULL);
   EXPECT_EQ(1, schedule_paint_count_);

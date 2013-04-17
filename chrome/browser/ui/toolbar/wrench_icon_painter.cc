@@ -52,6 +52,19 @@ WrenchIconPainter::Severity WrenchIconPainter::SeverityFromUpgradeLevel(
 }
 
 // static
+bool WrenchIconPainter::ShouldAnimateUpgradeLevel(
+    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
+  bool should_animate = true;
+  if (level == UpgradeDetector::UPGRADE_ANNOYANCE_LOW) {
+    // Only animate low severity upgrades once.
+    static bool should_animate_low_severity = true;
+    should_animate = should_animate_low_severity;
+    should_animate_low_severity = false;
+  }
+  return should_animate;
+}
+
+// static
 WrenchIconPainter::Severity WrenchIconPainter::SeverityFromGlobalErrorSeverity(
     GlobalError::Severity severity) {
   switch (severity) {
@@ -73,14 +86,14 @@ WrenchIconPainter::WrenchIconPainter(Delegate* delegate)
 
 WrenchIconPainter::~WrenchIconPainter() {}
 
-void WrenchIconPainter::SetSeverity(Severity severity) {
+void WrenchIconPainter::SetSeverity(Severity severity, bool animate) {
   if (severity_ == severity)
     return;
 
   severity_ = severity;
   delegate_->ScheduleWrenchIconPaint();
   animation_.reset();
-  if (severity_ == SEVERITY_NONE)
+  if (severity_ == SEVERITY_NONE || !animate)
     return;
 
   ui::MultiAnimation::Parts parts;

@@ -803,15 +803,17 @@ void ToolbarView::UpdateWrenchButtonSeverity() {
   incompatibility_badge_showing = false;
 
   if (ShouldShowUpgradeRecommended()) {
-    app_menu_->SetSeverity(WrenchIconPainter::SeverityFromUpgradeLevel(
-        UpgradeDetector::GetInstance()->upgrade_notification_stage()));
+    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
+        UpgradeDetector::GetInstance()->upgrade_notification_stage();
+    app_menu_->SetSeverity(WrenchIconPainter::SeverityFromUpgradeLevel(level),
+                           WrenchIconPainter::ShouldAnimateUpgradeLevel(level));
     return;
   }
 
   if (ShouldShowIncompatibilityWarning()) {
     if (!was_showing)
       content::RecordAction(UserMetricsAction("ConflictBadge"));
-    app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_HIGH);
+    app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_HIGH, true);
     incompatibility_badge_showing = true;
     return;
   }
@@ -822,11 +824,11 @@ void ToolbarView::UpdateWrenchButtonSeverity() {
       service->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
   if (error) {
     app_menu_->SetSeverity(WrenchIconPainter::SeverityFromGlobalErrorSeverity(
-        error->GetSeverity()));
+        error->GetSeverity()), true);
     return;
   }
 
-  app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_NONE);
+  app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_NONE, true);
 }
 
 void ToolbarView::OnShowHomeButtonChanged() {

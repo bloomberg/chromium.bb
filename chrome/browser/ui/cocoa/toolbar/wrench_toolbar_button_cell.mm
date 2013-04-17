@@ -61,8 +61,9 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
   [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
-- (void)setSeverity:(WrenchIconPainter::Severity)severity {
-  wrenchIconPainter_->SetSeverity(severity);
+- (void)setSeverity:(WrenchIconPainter::Severity)severity
+      shouldAnimate:(BOOL)shouldAnimate {
+  wrenchIconPainter_->SetSeverity(severity, shouldAnimate);
 }
 
 - (void)commonInit {

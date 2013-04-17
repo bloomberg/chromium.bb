@@ -21,7 +21,8 @@ class WrenchIconPainterDelegateMac;
   scoped_ptr<WrenchIconPainterDelegateMac> delegate_;
 }
 
-- (void)setSeverity:(WrenchIconPainter::Severity)severity;
+- (void)setSeverity:(WrenchIconPainter::Severity)severity
+      shouldAnimate:(BOOL)shouldAnimate;
 
 @end
 

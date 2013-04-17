@@ -50,6 +50,10 @@ class WrenchIconPainter : ui::AnimationDelegate {
   static Severity SeverityFromUpgradeLevel(
       UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
 
+  // Checks if the wrench icon should be animated for the given upgrade level.
+  static bool ShouldAnimateUpgradeLevel(
+      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
+
   // Map a global error level to a severity level.
   static Severity SeverityFromGlobalErrorSeverity(
       GlobalError::Severity severity);
@@ -59,7 +63,7 @@ class WrenchIconPainter : ui::AnimationDelegate {
 
   // If |severity| is not |SEVERITY_NONE| then the wrench icon is colored to
   // match the severity level.
-  void SetSeverity(Severity severity);
+  void SetSeverity(Severity severity, bool animate);
 
   // A badge drawn on the top left.
   void set_badge(const gfx::ImageSkia& badge) { badge_ = badge; }

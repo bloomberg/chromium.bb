@@ -14,7 +14,7 @@ class WrenchToolbarButton : public views::MenuButton,
   explicit WrenchToolbarButton(views::MenuButtonListener* menu_button_listener);
   virtual ~WrenchToolbarButton();
 
-  void SetSeverity(WrenchIconPainter::Severity severity);
+  void SetSeverity(WrenchIconPainter::Severity severity, bool animate);
 
  private:
   // views::MenuButton:

@@ -20,8 +20,9 @@ WrenchToolbarButton::WrenchToolbarButton(views::MenuButtonListener* listener)
 WrenchToolbarButton::~WrenchToolbarButton() {
 }
 
-void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity) {
-  wrench_icon_painter_->SetSeverity(severity);
+void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
+                                      bool animate) {
+  wrench_icon_painter_->SetSeverity(severity, animate);
 }
 
 void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {

@@ -561,8 +561,10 @@ class NotificationBridge
   WrenchToolbarButtonCell* cell =
       base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    [cell setSeverity:WrenchIconPainter::SeverityFromUpgradeLevel(
-        UpgradeDetector::GetInstance()->upgrade_notification_stage())];
+    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
+        UpgradeDetector::GetInstance()->upgrade_notification_stage();
+    [cell setSeverity:WrenchIconPainter::SeverityFromUpgradeLevel(level)
+        shouldAnimate:WrenchIconPainter::ShouldAnimateUpgradeLevel(level)];
     return;
   }
 
@@ -570,11 +572,12 @@ class NotificationBridge
       browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
   if (error) {
     [cell setSeverity:WrenchIconPainter::SeverityFromGlobalErrorSeverity(
-        error->GetSeverity())];
+        error->GetSeverity())
+        shouldAnimate:YES];
     return;
   }
 
-  [cell setSeverity:WrenchIconPainter::SEVERITY_NONE];
+  [cell setSeverity:WrenchIconPainter::SEVERITY_NONE shouldAnimate:YES];
 }
 
 - (void)prefChanged:(const std::string&)prefName {
