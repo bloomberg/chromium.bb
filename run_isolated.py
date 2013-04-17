@@ -1672,7 +1672,6 @@ def main():
       usage='%prog <options>', description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
-  parser.add_option('--no-run', action='store_true', help='Skip the run part')
 
   group = optparse.OptionGroup(parser, 'Download')
   group.add_option(
