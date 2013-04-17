@@ -41,6 +41,23 @@ cd+++++++++ new_empty_directory/
 # that would rarely or never be encountered in the wild, rsync quickmerge
 # will exclude all files which contain the substring " -> " in their name.
 
+RSYNC_TEST_OUTPUT_FOR_PACKAGE_UPDATE = \
+""">f..t...... client/ardvark.py
+.d..t...... client/site_tests/
+>f+++++++++ client/site_tests/nothing.py
+.d..t...... client/site_tests/factory_Leds/
+>f+++++++++ client/site_tests/factory_Leds/factory_Leds2.py
+>f..tpog... client/site_tests/login_UserPolicyKeys/control
+>f..tpog... client/site_tests/login_UserPolicyKeys/login_UserPolicyKeys.py
+>f..t...... client/site_tests/platform_Cryptohome/platform_Cryptohome.py
+>f..tpog... server/site_tests/security_DbusFuzzServer/control
+>f..t.og... utils/coverage_suite.py
+.d..t...... client/site_tests/power_Thermal/
+cd+++++++++ client/site_tests/power_Thermal/a/
+cd+++++++++ client/site_tests/power_Thermal/a/b/
+cd+++++++++ client/site_tests/power_Thermal/a/b/c/
+>f+++++++++ client/site_tests/power_Thermal/a/b/c/d.py"""
+
 RSYNC_TEST_DESTINATION_PATH = '/foo/bar/'
 
 TEST_PACKAGE_CP = 'a_cute/little_puppy'
@@ -78,6 +95,20 @@ class ItemizeChangesFromRsyncOutput(unittest.TestCase):
     self.assertEqual(expected_new, set(report.new_files))
     self.assertEqual(expected_mod, set(report.modified_files))
     self.assertEqual(expected_dir, set(report.new_directories))
+
+
+class PackageNameParsingTest(unittest.TestCase):
+
+  def testGetStalePackageNames(self):
+    autotest_sysroot = '/an/arbitrary/path/'
+    change_report = autotest_quickmerge.ItemizeChangesFromRsyncOutput(
+        RSYNC_TEST_OUTPUT_FOR_PACKAGE_UPDATE, autotest_sysroot)
+    package_matches = autotest_quickmerge.GetStalePackageNames(
+        change_report.modified_files + change_report.new_files,
+        autotest_sysroot)
+    expected_set = set(['factory_Leds', 'login_UserPolicyKeys',
+                        'platform_Cryptohome', 'power_Thermal'])
+    self.assertEqual(set(package_matches), expected_set)
 
 
 class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):

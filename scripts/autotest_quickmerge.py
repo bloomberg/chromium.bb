@@ -51,6 +51,30 @@ ItemizedChangeReport = namedtuple('ItemizedChangeReport',
                                    'new_directories'])
 
 
+def GetStalePackageNames(change_list, autotest_sysroot):
+  """
+  Given a rsync change report, returns the names of stale test packages.
+
+  This function pulls out test package names for client-side tests, stored
+  within the client/site_tests directory tree, that had any files added or
+  modified and for whom any existing bzipped test packages may now be stale.
+
+  Arguments:
+    change_list: A list of ItemizedChange objects corresponding to changed
+                 or modified files.
+    autotest_sysroot: Absolute path of autotest in the sysroot,
+                      e.g. '/build/lumpy/usr/local/autotest'
+
+  Returns:
+    A list of test package names, eg ['factory_Leds', 'login_UserPolicyKeys'].
+    May contain duplicate entries if multiple files within a test directory
+    were modified.
+  """
+  exp = os.path.abspath(autotest_sysroot) + r'/client/site_tests/(.*?)/.*'
+  matches = [re.match(exp, change.absolute_path) for change in change_list]
+  return [match.group(1) for match in matches if match]
+
+
 def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
   """Convert the output of an rsync with `-i` to a ItemizedChangeReport object.
 
@@ -184,6 +208,29 @@ def UpdatePackageContents(change_report, package_cp,
   vartree.dbapi.writeContentsToContentsFile(package, contents)
 
 
+def RemoveTestPackages(stale_packages, autotest_sysroot):
+  """
+  Remove bzipped test packages from sysroot.
+
+  Arguments:
+    stale_packages: List of test packages names to be removed.
+                    e.g. ['factory_Leds', 'login_UserPolicyKeys']
+    autotest_sysroot: Absolute path of autotest in the sysroot,
+                      e.g. '/build/lumpy/usr/local/autotest'
+  """
+  for package in set(stale_packages):
+    package_filename = 'test-' + package + '.tar.bz2'
+    package_file_fullpath = os.path.join(autotest_sysroot, 'packages',
+        package_filename)
+    try:
+      os.remove(package_file_fullpath)
+      logging.info('Removed stale %s', package_file_fullpath)
+    except OSError as err:
+      # Suppress no-such-file exceptions. Raise all others.
+      if err.errno != 2:
+        raise
+
+
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
                     include_pattern_file=None, pretend=False,
                     overwrite=False):
@@ -288,6 +335,10 @@ def main(argv):
     if DowngradePackageVersion(sysroot_path, AUTOTEST_TESTS_EBUILD) != 0:
       logging.warning('Unable to downgrade package %s version number.',
           AUTOTEST_TESTS_EBUILD)
+    stale_packages = GetStalePackageNames(
+        change_report.new_files + change_report.modified_files,
+        sysroot_autotest_path)
+    RemoveTestPackages(stale_packages, sysroot_autotest_path)
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '
