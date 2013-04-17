@@ -14,10 +14,20 @@ body {
   text-align: center;
 }
 
-#cell {
+#main-frame-error {
   margin: auto;
   max-width: 540px;
   min-width: 200px;
+}
+
+/* Don't use the main frame div when the error is in a subframe. */
+html[subframe] #main-frame-error {
+  display: none;
+}
+
+/* Don't use the subframe error div when the error is in a main frame. */
+html:not([subframe]) #sub-frame-error {
+  display: none;
 }
 
 #box {
@@ -44,6 +54,17 @@ a {
   text-decoration: none;
 }
 
+.error-img {
+  /**
+   * Can't access chrome://theme/IDR_ERROR_NETWORK_GENERIC from an untrusted
+   * renderer process, so embed the resource manually.
+   */
+  content: -webkit-image-set(
+      url('../../app/theme/default_100_percent/common/error_network_generic.png') 1x,
+      url('../../app/theme/default_200_percent/common/error_network_generic.png') 2x);
+  -webkit-user-select: none;
+}
+
 #content-top {
   margin: 20px 20px 20px 25px;
 }
@@ -65,17 +86,25 @@ a {
   margin-top: 15px;
 }
 
-#details {
+#details, #sub-frame-error-details {
   color: #8F8F8F;
-  margin: 20px;
 <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
   /* Not done on mobile for performance reasons. */
   text-shadow: 0 1px 0 rgba(255,255,255,0.3);
 </if>
 }
 
+#details {
+  margin: 20px;
+}
+
+/**
+ * This is used inside strings from generated_resources.grd as a jscontent
+ * name and then set as a class name by Javascript.
+ * TODO(mmenke):  This is a little weird.  Fix it.
+ */
 .failedUrl {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 button {
@@ -95,17 +124,13 @@ button {
 </if>
 }
 
-#reloadButton {
+#reload-button {
   background-image: linear-gradient(#5499f4 5%, #5294f2 50%, #4b85f1);
   border: 1px solid #5187df;
   border-bottom: 1px solid #3870cf;
   box-shadow: inset 0 1px 0 #5fa8f7;
   color: #fff;
   text-shadow: 0 1px 0 rgba(0,0,0,0.2);
-}
-
-.failedUrl {
-  word-wrap: break-word;
 }
 
 .hidden {
@@ -116,12 +141,12 @@ button {
   margin-top: 18px;
 }
 
-.suggestionHeader {
+.suggestion-header {
   font-weight: bold;
   margin-bottom: 4px;
 }
 
-.suggestionBody {
+.suggestion-body {
   color: #777;
 }
 
@@ -149,14 +174,54 @@ button {
   #help-box-inner {
     padding: 20px;
   }
-  #details {
+  #main-frame-details {
     margin: 15px;
   }
   .suggestions {
     margin-top: 10px;
   }
-  .suggestionHeader {
+  .suggestion-header {
     margin-bottom: 0px;
+  }
+}
+
+/* Don't allow overflow when in a subframe. */
+html[subframe] body {
+  overflow: hidden;
+}
+
+#sub-frame-error {
+  -webkit-align-items: center;
+  background-color: #DDD;
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  height: 100%;
+  -webkit-justify-content: center;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
+#sub-frame-error:hover {
+  background-color: #EEE;
+}
+
+#sub-frame-error-details {
+  margin: 0 10px;
+  visibility: hidden;
+}
+
+/* Show details only when hovering. */
+#sub-frame-error:hover #sub-frame-error-details {
+  visibility: visible;
+}
+
+/* If the iframe is too small, always hide the error code. */
+/* TODO(mmenke): See if overflow: no-display works better, once supported. */
+@media (max-width: 200px), (max-height: 95px) {
+  #sub-frame-error-details {
+    display: none;
   }
 }
 
@@ -186,7 +251,7 @@ document.addEventListener('DOMContentLoaded',
 function toggleHelpBox() {
   var helpBoxOuter = document.getElementById('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
-  var moreLessButton = document.getElementById('moreLessButton');
+  var moreLessButton = document.getElementById('more-less-button');
   if (helpBoxOuter.classList.contains('hidden')) {
     moreLessButton.innerText = moreLessButton.moreText;
   } else {
@@ -194,30 +259,37 @@ function toggleHelpBox() {
   }
 }
 
+// Subframes use a different layout but the same html file.  This is to make it
+// easier to support platforms that load the error page via different
+// mechanisms (Currently just iOS).
+if (window.top.location != window.location)
+  document.documentElement.setAttribute('subframe', '');
+
 </script>
 
 <body id="t">
-<div id="cell">
+<div id="main-frame-error">
  <div id="box">
   <div id="content-top">
     <h1>
+     <div><img class="error-img"></div>
      <span i18n-content="heading"></span>
     </h1>
 
-    <button id="reloadButton" onclick="location = this.url" jsselect="reload" jsvalues=".url:reloadUrl" jscontent="msg"></button>
-    <button id="moreLessButton" onclick="toggleHelpBox()" jsdisplay="more" jsvalues=".moreText:more; .lessText:less;" jscontent="more"></button>
+    <button id="reload-button" onclick="location = this.url" jsselect="reload" jsvalues=".url:reloadUrl" jscontent="msg"></button>
+    <button id="more-less-button" onclick="toggleHelpBox()" jsdisplay="more" jsvalues=".moreText:more; .lessText:less;" jscontent="more"></button>
   </div>
 
   <!-- Outer and inner divs are needed both for margins and sizing. -->
   <div id="help-box-outer" class="hidden">
    <div id="help-box-inner">
-    <div id="errorSummary" jsselect="summary">
+    <div jsselect="summary">
      <span jsvalues=".innerHTML:msg"></span>
     </div>
 
     <div class="suggestions" jsselect="suggestions">
-      <div class="suggestionHeader" jsvalues=".innerHTML:header"></div>
-      <div class="suggestionBody" jsvalues=".innerHTML:body"></div>
+      <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
+      <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
     </div>
    </div>
   </div>
@@ -226,6 +298,12 @@ function toggleHelpBox() {
   <div jsdisplay="errorDetails" jscontent="errorDetails"></div>
   <div jscontent="errorCode"></div>
  </div>
+</div>
+<div id="sub-frame-error">
+  <!-- Show details when hovering over the icon, in case the details are
+       hidden because they're too large. -->
+  <img class="error-img" jsvalues=".title:errorDetails">
+  <div id="sub-frame-error-details" jsvalues=".innerHTML:errorDetails"></div>
 </div>
 </body>
 </html>
