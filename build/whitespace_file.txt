@@ -80,7 +80,7 @@ So in a way, this changes everything. Again.
 I'd like to greet my mom. World peas.
 
 GIT >> SVN
-VI >> EMACS
+VIM > VI >> EMACS
 
 zing!
 
