@@ -843,34 +843,6 @@ void FrameLoaderClientImpl::dispatchShow()
         webView->client()->show(webView->initialNavigationPolicy());
 }
 
-void FrameLoaderClientImpl::dispatchDecidePolicyForResponse(
-     FramePolicyFunction function,
-     const ResourceResponse& response,
-     const ResourceRequest&)
-{
-    PolicyAction action;
-
-    int statusCode = response.httpStatusCode();
-    if (statusCode == 204 || statusCode == 205) {
-        // The server does not want us to replace the page contents.
-        action = PolicyIgnore;
-    } else if (WebCore::contentDispositionType(response.httpHeaderField("Content-Disposition")) == WebCore::ContentDispositionAttachment) {
-        // The server wants us to download instead of replacing the page contents.
-        // Downloading is handled by the embedder, but we still get the initial
-        // response so that we can ignore it and clean up properly.
-        action = PolicyIgnore;
-    } else if (!canShowMIMEType(response.mimeType())) {
-        // Make sure that we can actually handle this type internally.
-        action = PolicyIgnore;
-    } else {
-        // OK, we will render this page.
-        action = PolicyUse;
-    }
-
-    // NOTE: PolicyChangeError will be generated when action is not PolicyUse.
-    (m_webFrame->frame()->loader()->policyChecker()->*function)(action);
-}
-
 void FrameLoaderClientImpl::dispatchDecidePolicyForNewWindowAction(
     FramePolicyFunction function,
     const NavigationAction& action,

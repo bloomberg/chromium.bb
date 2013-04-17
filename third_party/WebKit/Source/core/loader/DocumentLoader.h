@@ -229,9 +229,7 @@ namespace WebCore {
         static void callContinueAfterNavigationPolicy(void*, const ResourceRequest&, PassRefPtr<FormState>, bool shouldContinue);
         void continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue);
 
-        static void callContinueAfterContentPolicy(void*, PolicyAction);
-        void continueAfterContentPolicy(PolicyAction);
-
+        bool shouldContinueForResponse() const;
         void stopLoadingForPolicyChange();
         ResourceError interruptedForPolicyChangeError() const;
 
@@ -314,7 +312,6 @@ namespace WebCore {
         unsigned long m_identifierForLoadWithoutResourceLoader;
 
         DocumentLoaderTimer m_dataLoadTimer;
-        bool m_waitingForContentPolicy;
 
         friend class ApplicationCacheHost;  // for substitute resource delivery
         OwnPtr<ApplicationCacheHost> m_applicationCacheHost;

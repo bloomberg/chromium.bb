@@ -109,7 +109,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_timeOfLastDataReceived(0.0)
     , m_identifierForLoadWithoutResourceLoader(0)
     , m_dataLoadTimer(this, &DocumentLoader::handleSubstituteDataLoadNow)
-    , m_waitingForContentPolicy(false)
     , m_applicationCacheHost(adoptPtr(new ApplicationCacheHost(this)))
 {
 }
@@ -512,6 +511,34 @@ void DocumentLoader::continueAfterNavigationPolicy(const ResourceRequest&, bool 
     }
 }
 
+bool DocumentLoader::shouldContinueForResponse() const
+{
+    if (m_substituteData.isValid())
+        return true;
+
+    int statusCode = m_response.httpStatusCode();
+    if (statusCode == 204 || statusCode == 205) {
+        // The server does not want us to replace the page contents.
+        return false;
+    }
+
+    if (contentDispositionType(m_response.httpHeaderField("Content-Disposition")) == ContentDispositionAttachment) {
+        // The server wants us to download instead of replacing the page contents.
+        // Downloading is handled by the embedder, but we still get the initial
+        // response so that we can ignore it and clean up properly.
+        return false;
+    }
+
+    if (!frameLoader()->client()->canShowMIMEType(m_response.mimeType()))
+        return false;
+
+    // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks.
+    if (equalIgnoringCase("multipart/related", m_response.mimeType()) && !SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol()))
+        return false;
+
+    return true;
+}
+
 void DocumentLoader::responseReceived(CachedResource* resource, const ResourceResponse& response)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
@@ -559,67 +586,10 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
 
-    ASSERT(!m_waitingForContentPolicy);
-    m_waitingForContentPolicy = true;
-
-    // Always show content with valid substitute data.
-    if (m_substituteData.isValid()) {
-        continueAfterContentPolicy(PolicyUse);
-        return;
-    }
-
-    frameLoader()->policyChecker()->checkContentPolicy(m_response, callContinueAfterContentPolicy, this);
-}
-
-void DocumentLoader::callContinueAfterContentPolicy(void* argument, PolicyAction policy)
-{
-    static_cast<DocumentLoader*>(argument)->continueAfterContentPolicy(policy);
-}
-
-void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
-{
-    ASSERT(m_waitingForContentPolicy);
-    m_waitingForContentPolicy = false;
-    if (isStopping())
-        return;
-
-    KURL url = m_request.url();
-    const String& mimeType = m_response.mimeType();
-    
-    switch (policy) {
-    case PolicyUse: {
-        // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks (4120255).
-        bool isRemoteWebArchive = equalIgnoringCase("multipart/related", mimeType)
-            && !m_substituteData.isValid() && !SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol());
-        if (!frameLoader()->client()->canShowMIMEType(mimeType) || isRemoteWebArchive) {
-            frameLoader()->policyChecker()->cannotShowMIMEType(m_response);
-            // Check reachedTerminalState since the load may have already been canceled inside of _handleUnimplementablePolicyWithErrorCode::.
-            stopLoadingForPolicyChange();
-            return;
-        }
-        break;
-    }
-
-    case PolicyDownload: {
-        // m_mainResource can be null, e.g. when loading a substitute resource from application cache.
-        if (!m_mainResource) {
-            mainReceivedError(frameLoader()->client()->cannotShowURLError(m_request));
-            return;
-        }
-        InspectorInstrumentation::continueWithPolicyDownload(m_frame, this, mainResourceLoader()->identifier(), m_response);
-
-        // When starting the request, we didn't know that it would result in download and not navigation. Now we know that main document URL didn't change.
-        // Download may use this knowledge for purposes unrelated to cookies, notably for setting file quarantine data.
-        frameLoader()->setOriginalURLForDownloadRequest(m_request);
-        return;
-    }
-    case PolicyIgnore:
+    if (!shouldContinueForResponse()) {
         InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, mainResourceLoader()->identifier(), m_response);
         stopLoadingForPolicyChange();
         return;
-    
-    default:
-        ASSERT_NOT_REACHED();
     }
 
     if (m_response.isHTTP()) {
@@ -1170,12 +1140,6 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
     ResourceError error = resourceError.isNull() ? frameLoader()->cancelledError(m_request) : resourceError;
 
     m_dataLoadTimer.stop();
-    if (m_waitingForContentPolicy) {
-        frameLoader()->policyChecker()->cancelCheck();
-        ASSERT(m_waitingForContentPolicy);
-        m_waitingForContentPolicy = false;
-    }
-
     if (mainResourceLoader())
         mainResourceLoader()->cancel(error);
 

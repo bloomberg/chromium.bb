@@ -114,13 +114,6 @@ void PolicyChecker::checkNewWindowPolicy(const NavigationAction& action, NewWind
         action, request, formState, frameName);
 }
 
-void PolicyChecker::checkContentPolicy(const ResourceResponse& response, ContentPolicyDecisionFunction function, void* argument)
-{
-    m_callback.set(function, argument);
-    m_frame->loader()->client()->dispatchDecidePolicyForResponse(&PolicyChecker::continueAfterContentPolicy,
-        response, m_frame->loader()->activeDocumentLoader()->request());
-}
-
 void PolicyChecker::cancelCheck()
 {
     m_callback.clear();
@@ -189,13 +182,6 @@ void PolicyChecker::continueAfterNewWindowPolicy(PolicyAction policy)
     }
 
     callback.call(policy == PolicyUse);
-}
-
-void PolicyChecker::continueAfterContentPolicy(PolicyAction policy)
-{
-    PolicyCallback callback = m_callback;
-    m_callback.clear();
-    callback.call(policy);
 }
 
 void PolicyChecker::handleUnimplementablePolicy(const ResourceError& error)
