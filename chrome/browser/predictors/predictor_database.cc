@@ -68,8 +68,8 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
       db_(new sql::Connection()),
       autocomplete_table_(new AutocompleteActionPredictorTable()),
-      logged_in_table_(new LoggedInPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
+  // TODO (tburkard): initialize logged_in_table_ member.
   ResourcePrefetchPredictorConfig config;
   is_resource_prefetch_predictor_enabled_ =
       IsSpeculativeResourcePrefetchingEnabled(profile, &config);
