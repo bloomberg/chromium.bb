@@ -404,7 +404,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
   if (file_info.size == 0) {
     // Empty snapshot file.
     return OnDidWriteDataIntoSnapshotFile(
-        snapshot_file_info, snapshot_request_info->snapshot_file_path);
+        snapshot_file_info, current_snapshot_request_info_->snapshot_file_path);
   }
   WriteDataIntoSnapshotFile(snapshot_file_info);
 }
