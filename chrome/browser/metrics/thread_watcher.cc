@@ -51,6 +51,10 @@ void NullPointerCrash(int line_number) {
 #endif
 }
 
+NOINLINE void ShutdownCrash() {
+  NullPointerCrash(__LINE__);
+}
+
 NOINLINE void ThreadUnresponsive_UI() {
   NullPointerCrash(__LINE__);
 }
@@ -873,7 +877,7 @@ class ShutdownWatchDogThread : public base::Watchdog {
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). We crash the browser if this method is called.
   virtual void Alarm() OVERRIDE {
-    CHECK(false);
+    ShutdownCrash();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatchDogThread);
