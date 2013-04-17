@@ -858,7 +858,8 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   EXPECT_EQ(v_plane_resource_id + 1, quad_new->v_plane_resource_id);
 }
 
-TEST_F(DrawQuadIteratorTest, PictureDrawQuad) {
+// Disabled until picture draw quad is supported for ubercomp: crbug.com/231715
+TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   gfx::Rect opaque_rect(33, 44, 22, 33);
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
