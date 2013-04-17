@@ -864,6 +864,7 @@ function WallpaperManager(dialogDom) {
       if (chrome.runtime.lastError != undefined) {
         self.showError_(chrome.runtime.lastError.message);
         $('set-wallpaper-layout').disabled = true;
+        failure();
       } else {
         success(opt_thumbnail);
       }
