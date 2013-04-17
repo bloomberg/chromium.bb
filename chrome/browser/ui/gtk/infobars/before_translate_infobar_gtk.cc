@@ -21,8 +21,8 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
 BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
 }
 
-void BeforeTranslateInfoBar::InitWidgets() {
-  TranslateInfoBarBase::InitWidgets();
+void BeforeTranslateInfoBar::Init() {
+  TranslateInfoBarBase::Init();
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);

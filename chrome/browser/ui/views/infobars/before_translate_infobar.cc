@@ -164,7 +164,7 @@ int BeforeTranslateInfoBar::ContentMinimumWidth() const {
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  if (!owner())
+  if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   TranslateInfoBarDelegate* delegate = GetDelegate();
   if (sender == accept_button_) {
@@ -183,7 +183,7 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
 
 void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
                                                  const gfx::Point& point) {
-  if (!owner())
+  if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (source == language_menu_button_) {
     RunMenuAt(language_menu_model_.get(), language_menu_button_,

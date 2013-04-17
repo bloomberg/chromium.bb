@@ -19,8 +19,8 @@ TranslateMessageInfoBar::TranslateMessageInfoBar(
 TranslateMessageInfoBar::~TranslateMessageInfoBar() {
 }
 
-void TranslateMessageInfoBar::InitWidgets() {
-  TranslateInfoBarBase::InitWidgets();
+void TranslateMessageInfoBar::Init() {
+  TranslateInfoBarBase::Init();
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);

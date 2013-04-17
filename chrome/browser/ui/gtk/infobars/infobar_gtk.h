@@ -98,17 +98,6 @@ class InfoBarGtk : public InfoBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Called the first time we try to show the infobar.  Inits any widgets and
-  // related objects necessary.
-  //
-  // NOTE: Subclasses who need to init widgets should override this function and
-  // explicitly call their parent's implementation first, then continue with
-  // further work they need to do.  Failing to call the parent implementation
-  // first (or at all), or setting up widgets in the constructor instead of
-  // here, will lead to bad side effects like crashing or having this function
-  // get called repeatedly.
-  virtual void InitWidgets();
-
   // The second highest widget in the hierarchy (after the |widget_|).
   GtkWidget* bg_box_;
 

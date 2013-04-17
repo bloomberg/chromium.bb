@@ -24,8 +24,8 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {
 }
 
-void AfterTranslateInfoBar::InitWidgets() {
-  TranslateInfoBarBase::InitWidgets();
+void AfterTranslateInfoBar::Init() {
+  TranslateInfoBarBase::Init();
 
   bool swapped_language_combos = false;
   std::vector<string16> strings;

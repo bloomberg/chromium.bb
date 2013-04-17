@@ -24,18 +24,7 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 ConfirmInfoBarGtk::ConfirmInfoBarGtk(InfoBarService* owner,
                                      ConfirmInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
-      confirm_hbox_(NULL),
       size_group_(NULL) {
-}
-
-ConfirmInfoBarGtk::~ConfirmInfoBarGtk() {
-  if (size_group_)
-    g_object_unref(size_group_);
-}
-
-void ConfirmInfoBarGtk::InitWidgets() {
-  InfoBarGtk::InitWidgets();
-
   confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE,
                                                  kEndOfLabelSpacing);
   // This alignment allocates the confirm hbox only as much space as it
@@ -49,7 +38,7 @@ void ConfirmInfoBarGtk::InitWidgets() {
   AddButton(ConfirmInfoBarDelegate::BUTTON_OK);
   AddButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
 
-  std::string label_text = UTF16ToUTF8(GetDelegate()->GetMessageText());
+  std::string label_text = UTF16ToUTF8(delegate->GetMessageText());
   GtkWidget* label = CreateLabel(label_text);
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
@@ -58,7 +47,7 @@ void ConfirmInfoBarGtk::InitWidgets() {
                      G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                      NULL);
 
-  std::string link_text = UTF16ToUTF8(GetDelegate()->GetLinkText());
+  std::string link_text = UTF16ToUTF8(delegate->GetLinkText());
   if (link_text.empty())
     return;
 
@@ -72,12 +61,12 @@ void ConfirmInfoBarGtk::InitWidgets() {
   gtk_util::CenterWidgetInHBox(hbox_, link, true, kEndOfLabelSpacing);
 }
 
-ConfirmInfoBarDelegate* ConfirmInfoBarGtk::GetDelegate() {
-  return delegate()->AsConfirmInfoBarDelegate();
+ConfirmInfoBarGtk::~ConfirmInfoBarGtk() {
+  if (size_group_)
+    g_object_unref(size_group_);
 }
 
 void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
-  DCHECK(confirm_hbox_);
   if (delegate()->AsConfirmInfoBarDelegate()->GetButtons() & type) {
     if (!size_group_)
       size_group_ = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);

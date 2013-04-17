@@ -270,7 +270,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
-  if (!owner())
+  if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == close_button_) {
     delegate()->InfoBarDismissed();
@@ -303,7 +303,7 @@ const InfoBarContainer::Delegate* InfoBarView::container_delegate() const {
 void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
                             views::MenuButton* button,
                             views::MenuItemView::AnchorPosition anchor) {
-  DCHECK(owner());  // We'd better not open any menus while we're closing.
+  DCHECK(owned());  // We'd better not open any menus while we're closing.
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(button, &screen_point);
   menu_runner_.reset(new views::MenuRunner(menu_model));

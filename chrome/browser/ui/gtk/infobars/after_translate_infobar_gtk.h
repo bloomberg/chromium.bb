@@ -18,7 +18,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase {
   virtual ~AfterTranslateInfoBar();
 
   // Overridden from TranslateInfoBarBase:
-  virtual void InitWidgets() OVERRIDE;
+  virtual void Init() OVERRIDE;
 
  protected:
   virtual bool ShowOptionsMenuButton() const OVERRIDE;
