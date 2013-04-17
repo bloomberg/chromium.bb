@@ -453,22 +453,25 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
             newHasHorizontalScrollbar = false;
 
+        bool scrollbarIsOverlay = ScrollbarTheme::theme()->usesOverlayScrollbars();
         if (hasHorizontalScrollbar != newHasHorizontalScrollbar && (hasHorizontalScrollbar || !avoidScrollbarCreation())) {
-            if (scrollOrigin().y() && !newHasHorizontalScrollbar)
+            if (!scrollbarIsOverlay)
+                sendContentResizedNotification = true;
+            if (scrollOrigin().y() && !newHasHorizontalScrollbar && !scrollbarIsOverlay)
                 ScrollableArea::setScrollOrigin(IntPoint(scrollOrigin().x(), scrollOrigin().y() - m_horizontalScrollbar->height()));
-            if (m_horizontalScrollbar)
+            if (hasHorizontalScrollbar)
                 m_horizontalScrollbar->invalidate();
             setHasHorizontalScrollbar(newHasHorizontalScrollbar);
-            sendContentResizedNotification = true;
         }
 
         if (hasVerticalScrollbar != newHasVerticalScrollbar && (hasVerticalScrollbar || !avoidScrollbarCreation())) {
-            if (scrollOrigin().x() && !newHasVerticalScrollbar)
+            if (!scrollbarIsOverlay)
+                sendContentResizedNotification = true;
+            if (scrollOrigin().x() && !newHasVerticalScrollbar && !scrollbarIsOverlay)
                 ScrollableArea::setScrollOrigin(IntPoint(scrollOrigin().x() - m_verticalScrollbar->width(), scrollOrigin().y()));
-            if (m_verticalScrollbar)
+            if (hasVerticalScrollbar)
                 m_verticalScrollbar->invalidate();
             setHasVerticalScrollbar(newHasVerticalScrollbar);
-            sendContentResizedNotification = true;
         }
 
         if (sendContentResizedNotification && m_updateScrollbarsPass < cMaxUpdateScrollbarsPass) {

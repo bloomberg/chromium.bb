@@ -635,8 +635,7 @@ void Page::setMediaVolume(float volume)
 
 void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 {
-    Document* document = mainFrame()->document();
-    FrameView* view = document->view();
+    FrameView* view = mainFrame()->view();
 
     if (scale == m_pageScaleFactor) {
         if (view && view->scrollPosition() != origin)
@@ -646,6 +645,9 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
     m_pageScaleFactor = scale;
 
+    if (view)
+        view->setVisibleContentScaleFactor(scale);
+
     mainFrame()->deviceOrPageScaleFactorChanged();
 
     if (view && view->fixedElementsLayoutRelativeToFrame())
@@ -654,7 +656,6 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     if (view && view->scrollPosition() != origin)
         view->setScrollPosition(origin);
 }
-
 
 void Page::setDeviceScaleFactor(float scaleFactor)
 {
