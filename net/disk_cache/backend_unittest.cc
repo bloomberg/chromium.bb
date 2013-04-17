@@ -1561,9 +1561,11 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
 
   net::TestCompletionCallback cb;
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, cache_path_, 0, true,
+  base::FilePath path(cache_path_);
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path, 0, true,
                                           cache_thread.message_loop_proxy(),
                                           NULL, &cache_, cb.callback());
+  path.clear();  // Make sure path was captured by the previous call.
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   base::ThreadRestrictions::SetIOAllowed(prev);
   delete cache_;

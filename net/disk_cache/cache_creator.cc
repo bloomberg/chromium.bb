@@ -38,7 +38,7 @@ class CacheCreator {
 
   void OnIOComplete(int result);
 
-  const base::FilePath& path_;
+  const base::FilePath path_;
   bool force_;
   bool retry_;
   int max_bytes_;
