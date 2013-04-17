@@ -945,6 +945,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
 
+#if defined(OS_CHROMEOS)
+  // Must be done after g_browser_process is constructed, before
+  // SetupMetricsAndFieldTrials().
+  chromeos::CrosSettings::Initialize();
+#endif
+
   // Now the command line has been mutated based on about:flags, we can setup
   // metrics and initialize field trials. The field trials are needed by
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
@@ -1674,6 +1680,10 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // to bypass this code.  Perhaps we need a *final* hook that is called on all
   // paths from content/browser/browser_main.
   CHECK(MetricsService::UmaMetricsProperlyShutdown());
+
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Shutdown();
+#endif
 #endif
 }
 
