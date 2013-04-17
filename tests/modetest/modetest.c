@@ -106,11 +106,11 @@ struct type_name connector_type_names[] = {
 	{ DRM_MODE_CONNECTOR_LVDS, "LVDS" },
 	{ DRM_MODE_CONNECTOR_Component, "component" },
 	{ DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN" },
-	{ DRM_MODE_CONNECTOR_DisplayPort, "displayport" },
+	{ DRM_MODE_CONNECTOR_DisplayPort, "DP" },
 	{ DRM_MODE_CONNECTOR_HDMIA, "HDMI-A" },
 	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI-B" },
 	{ DRM_MODE_CONNECTOR_TV, "TV" },
-	{ DRM_MODE_CONNECTOR_eDP, "embedded displayport" },
+	{ DRM_MODE_CONNECTOR_eDP, "eDP" },
 };
 
 type_name_fn(connector_type)
