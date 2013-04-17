@@ -945,9 +945,9 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
 	case DRM_FORMAT_YVYU:
-		pitches[0] = width * 2;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+		kms_bo_get_prop(bo, KMS_PITCH, &pitches[0]);
 
 		planes[0] = virtual;
 		break;
@@ -956,11 +956,11 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 	case DRM_FORMAT_NV21:
 	case DRM_FORMAT_NV16:
 	case DRM_FORMAT_NV61:
-		pitches[0] = width;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
-		pitches[1] = width;
-		offsets[1] = width * height;
+		kms_bo_get_prop(bo, KMS_PITCH, &pitches[0]);
+		pitches[1] = pitches[0];
+		offsets[1] = pitches[0] * height;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[1]);
 
 		planes[0] = virtual;
@@ -968,14 +968,14 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 		break;
 
 	case DRM_FORMAT_YVU420:
-		pitches[0] = width;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
-		pitches[1] = width / 2;
-		offsets[1] = width * height;
+		kms_bo_get_prop(bo, KMS_PITCH, &pitches[0]);
+		pitches[1] = pitches[0] / 2;
+		offsets[1] = pitches[0] * height;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[1]);
-		pitches[2] = width / 2;
-		offsets[2] = offsets[1] + (width * height) / 4;
+		pitches[2] = pitches[1];
+		offsets[2] = offsets[1] + pitches[1] * height / 2;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[2]);
 
 		planes[0] = virtual;
@@ -986,29 +986,15 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 	case DRM_FORMAT_RGB565:
 	case DRM_FORMAT_ARGB1555:
 	case DRM_FORMAT_XRGB1555:
-		pitches[0] = width * 2;
-		offsets[0] = 0;
-		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
-
-		planes[0] = virtual;
-		break;
-
 	case DRM_FORMAT_BGR888:
 	case DRM_FORMAT_RGB888:
-		pitches[0] = width * 3;
-		offsets[0] = 0;
-		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
-
-		planes[0] = virtual;
-		break;
-
 	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_BGRA8888:
 	case DRM_FORMAT_XRGB8888:
 	case DRM_FORMAT_BGRX8888:
-		pitches[0] = width * 4;
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
+		kms_bo_get_prop(bo, KMS_PITCH, &pitches[0]);
 
 		planes[0] = virtual;
 		break;
