@@ -143,6 +143,10 @@ class MockDriveService : public DriveServiceInterface {
   // Helper stub methods for functions which take callbacks, so that
   // the callbacks get called with testable results.
 
+  // Will call |callback| with HTTP_SUCCESS and a empty ResourceList.
+  void GetChangeListStub(int64 start_changestamp,
+                         const GetResourceListCallback& callback);
+
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |account_metadata_|.
   void GetAccountMetadataStub(const GetAccountMetadataCallback& callback);

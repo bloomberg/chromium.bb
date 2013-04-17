@@ -25,6 +25,8 @@ namespace google_apis {
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetProgressStatusList())
       .WillByDefault(Return(OperationProgressStatusList()));
+  ON_CALL(*this, GetChangeList(_, _))
+      .WillByDefault(Invoke(this, &MockDriveService::GetChangeListStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this, &MockDriveService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteResource(_, _, _))
@@ -52,6 +54,16 @@ MockDriveService::MockDriveService() {
 }
 
 MockDriveService::~MockDriveService() {}
+
+void MockDriveService::GetChangeListStub(
+    int64 start_changestamp,
+    const GetResourceListCallback& callback) {
+  scoped_ptr<ResourceList> resource_list(new ResourceList());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS,
+                 base::Passed(&resource_list)));
+}
 
 void MockDriveService::GetAccountMetadataStub(
     const GetAccountMetadataCallback& callback) {

@@ -41,6 +41,7 @@ using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::NiceMock;
 using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -204,14 +205,6 @@ ACTION(InvokeDidApplyRemoteChange) {
       FROM_HERE, base::Bind(arg3, SYNC_STATUS_OK));
 }
 
-ACTION(InvokeGetChangeListWithEmptyChange) {
-  scoped_ptr<google_apis::ResourceList> resource_list(
-      new google_apis::ResourceList());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1, google_apis::HTTP_SUCCESS,
-                            base::Passed(&resource_list)));
-}
-
 }  // namespace
 
 class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
@@ -264,7 +257,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
     ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
 
-    mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
+    mock_drive_service_ = new NiceMock<google_apis::MockDriveService>;
 
     EXPECT_CALL(*mock_drive_service(), Initialize(profile_.get()));
     EXPECT_CALL(*mock_drive_service(), AddObserver(_));
@@ -437,7 +430,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return sync_service_->metadata_store_.get();
   }
 
-  StrictMock<google_apis::MockDriveService>* mock_drive_service() {
+  NiceMock<google_apis::MockDriveService>* mock_drive_service() {
     return mock_drive_service_;
   }
 
@@ -634,13 +627,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  void SetUpDriveServiceExpectCallsForEmptyRemoteChange() {
-    EXPECT_CALL(*mock_drive_service(),
-                GetChangeList(_, _))
-        .WillOnce(InvokeGetChangeListWithEmptyChange())
-        .RetiresOnSaturation();
-  }
-
   // End of mock setup helpers -----------------------------------------------
 
  private:
@@ -657,7 +643,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   ExtensionService* extension_service_;
 
   // Owned by |sync_client_|.
-  StrictMock<google_apis::MockDriveService>* mock_drive_service_;
+  NiceMock<google_apis::MockDriveService>* mock_drive_service_;
 
   StrictMock<MockRemoteServiceObserver> mock_remote_observer_;
   StrictMock<MockFileStatusObserver> mock_file_status_observer_;
@@ -760,8 +746,6 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
   SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
       "chromeos/sync_file_system/listing_files_in_empty_directory.json",
       kDirectoryResourceId);
-
-  SetUpDriveServiceExpectCallsForEmptyRemoteChange();
 
   SetUpDriveSyncService(true);
   bool done = false;
