@@ -259,6 +259,8 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         sequence = PrintRegister("r9", frame_arm->context.iregs[9], sequence);
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R10)
         sequence = PrintRegister("r10", frame_arm->context.iregs[10], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R12)
+        sequence = PrintRegister("r12", frame_arm->context.iregs[12], sequence);
 
       // Registers with a dedicated or conventional purpose.
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_FP)
