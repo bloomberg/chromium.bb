@@ -39,9 +39,6 @@ class MEDIA_EXPORT FilterCollection {
   void SetVideoRenderer(scoped_ptr<VideoRenderer> video_renderer);
   scoped_ptr<VideoRenderer> GetVideoRenderer();
 
-  // Remove remaining filters.
-  void Clear();
-
   VideoDecoderList* GetVideoDecoders();
 
  private:

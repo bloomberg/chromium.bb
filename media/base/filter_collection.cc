@@ -42,12 +42,6 @@ scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
   return video_renderer_.Pass();
 }
 
-void FilterCollection::Clear() {
-  video_decoders_.clear();
-  audio_renderer_.reset();
-  video_renderer_.reset();
-}
-
 FilterCollection::VideoDecoderList* FilterCollection::GetVideoDecoders() {
   return &video_decoders_;
 }
