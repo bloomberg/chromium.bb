@@ -20,25 +20,26 @@ const size_t kEqualizerColumnCount = 3;
 // The equalizer cycles between these frames. An equalizer frame is 2 columns
 // where each column ranges from 0 to 4.
 const size_t kEqualizerFrames[][kEqualizerColumnCount] = {
-  { 0, 1, 2 },
-  { 1, 2, 3 },
-  { 2, 3, 2 },
-  { 3, 2, 1 },
-  { 2, 1, 0 },
-  { 1, 0, 1 },
-  { 0, 1, 2 },
-  { 0, 0, 2 },
-  { 0, 0, 1 },
-  { 1, 0, 0 },
-  { 2, 1, 0 },
-  { 1, 0, 1 },
+   { 1, 1, 1 },
+   { 1, 2, 2 },
+   { 2, 2, 3 },
+   { 3, 3, 2 },
+   { 3, 2, 1 },
+   { 2, 1, 2 },
+   { 1, 2, 3 },
+   { 2, 1, 2 },
+   { 3, 2, 1 },
+   { 3, 2, 1 },
+   { 2, 3, 2 },
+   { 1, 2, 3 },
+   { 2, 1, 2 },
 };
 
 // The space between equalizer levels.
 const int kEqualizerColumnPadding = 1;
 
 // The duration of each equalizer frame.
-const size_t kAnimationCycleDurationMs = 300;
+const size_t kAnimationCycleDurationMs = 250;
 
 // The duration of the "ending" animation once audio stops playing.
 const size_t kAnimationEndingDurationMs = 1000;
@@ -96,12 +97,12 @@ void TabAudioIndicator::Paint(gfx::Canvas* canvas, const gfx::Rect& rect) {
     int x = rect.right();
     std::vector<int> levels = GetCurrentEqualizerLevels();
     for (int i = levels.size() - 1; i >= 0; --i) {
+      x -= image->width();
       if (levels[i] == 0)
         continue;
 
       // Shift the image down by the level.
       int y = rect.bottom() - levels[i] * 2;
-      x -= image->width();
       canvas->DrawImageInt(*image, x, y);
 
       // Clip the equalizer column so the favicon doesn't obscure it.
