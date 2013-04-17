@@ -223,7 +223,7 @@ class TestGypBase(TestCommon.TestCommon):
 
     This provides common reporting for formats that have complicated
     conditions for checking whether a build is up-to-date.  Formats
-    that expect exact output from the command (make, scons) can
+    that expect exact output from the command (make) can
     just set stdout= when they call the run_build() method.
     """
     print "Build is not up-to-date:"
@@ -864,78 +864,6 @@ class TestGypMSVS(TestGypOnMSToolchain):
     return self.workpath(*result)
 
 
-class TestGypSCons(TestGypBase):
-  """
-  Subclass for testing the GYP SCons generator.
-  """
-  format = 'scons'
-  build_tool_list = ['scons', 'scons.py']
-  ALL = 'all'
-  def build(self, gyp_file, target=None, **kw):
-    """
-    Runs a scons build using the SCons configuration generated from the
-    specified gyp_file.
-    """
-    arguments = kw.get('arguments', [])[:]
-    dirname = os.path.dirname(gyp_file)
-    if dirname:
-      arguments.extend(['-C', dirname])
-    if self.configuration:
-      arguments.append('--mode=' + self.configuration)
-    if target not in (None, self.DEFAULT):
-      arguments.append(target)
-    kw['arguments'] = arguments
-    return self.run(program=self.build_tool, **kw)
-  def up_to_date(self, gyp_file, target=None, **kw):
-    """
-    Verifies that a build of the specified SCons target is up to date.
-    """
-    if target in (None, self.DEFAULT):
-      up_to_date_targets = 'all'
-    else:
-      up_to_date_targets = target
-    up_to_date_lines = []
-    for arg in up_to_date_targets.split():
-      up_to_date_lines.append("scons: `%s' is up to date.\n" % arg)
-    kw['stdout'] = ''.join(up_to_date_lines)
-    arguments = kw.get('arguments', [])[:]
-    arguments.append('-Q')
-    kw['arguments'] = arguments
-    return self.build(gyp_file, target, **kw)
-  def run_built_executable(self, name, *args, **kw):
-    """
-    Runs an executable built by scons.
-    """
-    configuration = self.configuration_dirname()
-    os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
-    # Enclosing the name in a list avoids prepending the original dir.
-    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
-    return self.run(program=program, *args, **kw)
-  def built_file_path(self, name, type=None, **kw):
-    """
-    Returns a path to the specified file name, of the specified type,
-    as built by Scons.
-
-    Built files are in a subdirectory that matches the configuration
-    name.  The default is 'Default'.
-
-    A chdir= keyword argument specifies the source directory
-    relative to which  the output subdirectory can be found.
-
-    "type" values of STATIC_LIB or SHARED_LIB append the necessary
-    prefixes and suffixes to a platform-independent library base name.
-    """
-    result = []
-    chdir = kw.get('chdir')
-    if chdir:
-      result.append(chdir)
-    result.append(self.configuration_dirname())
-    if type in (self.STATIC_LIB, self.SHARED_LIB):
-      result.append('lib')
-    result.append(self.built_file_basename(name, type, **kw))
-    return self.workpath(*result)
-
-
 class TestGypXcode(TestGypBase):
   """
   Subclass for testing the GYP Xcode generator.
@@ -1051,7 +979,6 @@ format_class_list = [
   TestGypMake,
   TestGypMSVS,
   TestGypNinja,
-  TestGypSCons,
   TestGypXcode,
 ]
 

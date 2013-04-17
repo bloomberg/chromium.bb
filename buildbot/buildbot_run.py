@@ -91,8 +91,7 @@ def GypTestFormat(title, format=None, msvs_version=None):
        '--all',
        '--passed',
        '--format', format,
-       '--chdir', 'trunk',
-       '--path', '../scons'])
+       '--chdir', 'trunk'])
   if format == 'android':
     # gyptest needs the environment setup from envsetup/lunch in order to build
     # using the 'android' backend, so this is done in a single shell.
@@ -124,7 +123,6 @@ def GypBuild():
     retcode += GypTestFormat('android')
   elif sys.platform.startswith('linux'):
     retcode += GypTestFormat('ninja')
-    retcode += GypTestFormat('scons')
     retcode += GypTestFormat('make')
   elif sys.platform == 'darwin':
     retcode += GypTestFormat('ninja')
