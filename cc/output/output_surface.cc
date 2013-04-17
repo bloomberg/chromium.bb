@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "cc/output/output_surface_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -22,6 +23,27 @@ using std::string;
 using std::vector;
 
 namespace cc {
+
+class OutputSurfaceCallbacks :
+  public WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
+  public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+ public:
+   explicit OutputSurfaceCallbacks(OutputSurfaceClient* client)
+     : client_(client) {}
+
+   // WK:WGC3D::WGSwapBuffersCompleteCallbackCHROMIUM implementation.
+   virtual void onSwapBuffersComplete() {
+     client_->OnSwapBuffersComplete();
+   }
+
+   // WK:WGC3D::WGContextLostCallback implementation.
+   virtual void onContextLost() {
+     client_->DidLoseOutputSurface();
+   }
+
+ private:
+  OutputSurfaceClient* client_;
+};
 
 OutputSurface::OutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
@@ -65,6 +87,10 @@ bool OutputSurface::BindToClient(
 
   has_gl_discard_backbuffer_ =
       extensions.count("GL_CHROMIUM_discard_backbuffer") > 0;
+
+  callbacks_.reset(new OutputSurfaceCallbacks(client_));
+  context3d_->setSwapBuffersCompleteCallbackCHROMIUM(callbacks_.get());
+  context3d_->setContextLostCallback(callbacks_.get());
 
   return true;
 }

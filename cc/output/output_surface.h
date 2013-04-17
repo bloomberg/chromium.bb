@@ -20,6 +20,7 @@ namespace cc {
 
 class CompositorFrame;
 class OutputSurfaceClient;
+class OutputSurfaceCallbacks;
 struct LatencyInfo;
 
 // Represents the output surface for a compositor. The compositor owns
@@ -101,6 +102,8 @@ class CC_EXPORT OutputSurface {
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
+
+  scoped_ptr<OutputSurfaceCallbacks> callbacks_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

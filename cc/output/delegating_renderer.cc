@@ -70,7 +70,6 @@ bool DelegatingRenderer::Initialize() {
   if (!context3d->makeContextCurrent())
     return false;
 
-  context3d->setContextLostCallback(this);
   context3d->pushGroupMarkerEXT("CompositorContext");
 
   std::string extensions_string =
@@ -118,11 +117,7 @@ bool DelegatingRenderer::Initialize() {
   return true;
 }
 
-DelegatingRenderer::~DelegatingRenderer() {
-  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
-  if (context3d)
-    context3d->setContextLostCallback(NULL);
-}
+DelegatingRenderer::~DelegatingRenderer() {}
 
 const RendererCapabilities& DelegatingRenderer::Capabilities() const {
   return capabilities_;
@@ -173,8 +168,6 @@ void DelegatingRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
 void DelegatingRenderer::ReceiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
   resource_provider_->ReceiveFromParent(ack.resources);
-  if (client_->HasImplThread())
-    client_->OnSwapBuffersComplete();
 }
 
 
@@ -187,10 +180,6 @@ bool DelegatingRenderer::IsContextLost() {
 
 void DelegatingRenderer::SetVisible(bool visible) {
   visible_ = visible;
-}
-
-void DelegatingRenderer::onContextLost() {
-  client_->DidLoseOutputSurface();
 }
 
 }  // namespace cc

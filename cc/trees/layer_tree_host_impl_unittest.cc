@@ -23,6 +23,7 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -74,9 +75,12 @@ class LayerTreeHostImplTest : public testing::Test,
     media::InitializeMediaLibraryForTesting();
   }
 
+  virtual void OverrideSettings(LayerTreeSettings* settings) {}
+
   virtual void SetUp() OVERRIDE {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
+    OverrideSettings(&settings);
 
     host_impl_ = LayerTreeHostImpl::Create(settings,
                                            this,
@@ -4289,8 +4293,6 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     return settings_;
   }
-  virtual void DidLoseOutputSurface() OVERRIDE {}
-  virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE {}
@@ -5405,6 +5407,34 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
     host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
+}
+
+class CompositorFrameMetadataTest : public LayerTreeHostImplTest {
+ public:
+  CompositorFrameMetadataTest()
+      : swap_buffers_complete_(0) {}
+
+  virtual void OverrideSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->compositor_frame_message = true;
+  }
+  virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {
+    swap_buffers_complete_++;
+  }
+
+  int swap_buffers_complete_;
+};
+
+TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
+  SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+    host_impl_->DrawLayers(&frame, base::TimeTicks());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+  CompositorFrameAck ack;
+  host_impl_->OnSendFrameToParentCompositorAck(ack);
+  EXPECT_EQ(swap_buffers_complete_, 1);
 }
 
 }  // namespace

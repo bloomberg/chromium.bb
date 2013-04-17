@@ -32,16 +32,11 @@ class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class CC_EXPORT GLRenderer
-    : public DirectRenderer,
-      public NON_EXPORTED_BASE(
-          WebKit::WebGraphicsContext3D::
-              WebGraphicsSwapBuffersCompleteCallbackCHROMIUM),
-      public NON_EXPORTED_BASE(
-          WebKit::WebGraphicsContext3D::
-              WebGraphicsMemoryAllocationChangedCallbackCHROMIUM),
-      public NON_EXPORTED_BASE(
-          WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
+class CC_EXPORT GLRenderer :
+    public DirectRenderer,
+    public NON_EXPORTED_BASE(
+        WebKit::WebGraphicsContext3D::
+            WebGraphicsMemoryAllocationChangedCallbackCHROMIUM) {
  public:
   static scoped_ptr<GLRenderer> Create(RendererClient* client,
                                        OutputSurface* output_surface,
@@ -55,9 +50,6 @@ class CC_EXPORT GLRenderer
   WebKit::WebGraphicsContext3D* Context();
 
   virtual void ViewportChanged() OVERRIDE;
-
-  virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack)
-      OVERRIDE;
 
   // Waits for rendering to finish.
   virtual void Finish() OVERRIDE;
@@ -186,11 +178,6 @@ class CC_EXPORT GLRenderer
   void CleanupSharedObjects();
 
   // WebKit::
-  // WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM
-  // implementation.
-  virtual void onSwapBuffersComplete() OVERRIDE;
-
-  // WebKit::
   // WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM
   // implementation.
   virtual void onMemoryAllocationChanged(
@@ -198,9 +185,6 @@ class CC_EXPORT GLRenderer
   void DiscardBackbuffer();
   void EnsureBackbuffer();
   void EnforceMemoryPolicy();
-
-  // WebGraphicsContext3D::WebGraphicsContextLostCallback implementation.
-  virtual void onContextLost() OVERRIDE;
 
   RendererCapabilities capabilities_;
 
