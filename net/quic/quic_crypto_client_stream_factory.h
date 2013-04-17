@@ -21,7 +21,10 @@ class NET_EXPORT QuicCryptoClientStreamFactory {
   virtual ~QuicCryptoClientStreamFactory() {}
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      QuicSession* session, const std::string& server_hostname) = 0;
+      const string& server_hostname,
+      const QuicConfig& config,
+      QuicSession* session,
+      QuicCryptoClientConfig* crypto_config) = 0;
 };
 
 }  // namespace net

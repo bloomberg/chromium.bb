@@ -13,6 +13,8 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/tools/flip_server/epoll_server.h"
@@ -140,6 +142,11 @@ class QuicClient : public EpollCallbackInterface {
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.
   bool overflow_supported_;
+
+  // config_ and crypto_config_ contain configuration and cached state about
+  // servers.
+  QuicConfig config_;
+  QuicCryptoClientConfig crypto_config_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

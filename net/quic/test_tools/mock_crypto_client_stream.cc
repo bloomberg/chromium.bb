@@ -6,9 +6,12 @@
 
 namespace net {
 
-MockCryptoClientStream::MockCryptoClientStream(QuicSession* session,
-                                               const string& server_hostname)
-    : QuicCryptoClientStream(session, server_hostname) {
+MockCryptoClientStream::MockCryptoClientStream(
+    const string& server_hostname,
+    const QuicConfig& config,
+    QuicSession* session,
+    QuicCryptoClientConfig* crypto_config)
+    : QuicCryptoClientStream(server_hostname, config, session, crypto_config) {
 }
 
 MockCryptoClientStream::~MockCryptoClientStream() {

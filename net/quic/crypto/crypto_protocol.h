@@ -57,10 +57,13 @@ const CryptoTag kSNI = MAKE_TAG('S', 'N', 'I', '\0');  // Server name
 const CryptoTag kPUBS = MAKE_TAG('P', 'U', 'B', 'S');  // Public key values
 const CryptoTag kSCID = MAKE_TAG('S', 'C', 'I', 'D');  // Server config id
 const CryptoTag kSRCT = MAKE_TAG('S', 'R', 'C', 'T');  // Source-address token
+const CryptoTag kORBT = MAKE_TAG('O', 'B', 'I', 'T');  // Server orbit.
 
 const size_t kMaxEntries = 16;  // Max number of entries in a message.
 
 const size_t kNonceSize = 32;  // Size in bytes of the connection nonce.
+
+const size_t kOrbitSize = 8;  // Number of bytes in an orbit value.
 
 }  // namespace net
 

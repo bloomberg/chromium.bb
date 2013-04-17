@@ -45,7 +45,7 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
   CryptoHandshakeMessage extra_tags;
 
   scoped_ptr<CryptoHandshakeMessage>(
-      server.AddTestingConfig(QuicRandom::GetInstance(), &clock, extra_tags));
+      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock, extra_tags));
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {

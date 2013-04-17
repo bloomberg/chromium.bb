@@ -66,7 +66,9 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
       : addr_(),
         connection_(new PacketSavingConnection(1, addr_, true)),
         session_(connection_, true),
-        stream_(&session_, kServerHostname) {
+        stream_(kServerHostname, config_, &session_, &crypto_config_) {
+    config_.SetDefaults();
+    crypto_config_.SetDefaults();
   }
 
   void CompleteCryptoHandshake() {
@@ -85,6 +87,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
+  QuicConfig config_;
+  QuicCryptoClientConfig crypto_config_;
 };
 
 TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {

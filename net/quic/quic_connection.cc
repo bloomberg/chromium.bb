@@ -1162,7 +1162,8 @@ void QuicConnection::SendConnectionClose(QuicErrorCode error) {
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const string& details) {
   DLOG(INFO) << ENDPOINT << "Force closing with error "
-             << QuicUtils::ErrorToString(error) << " (" << error << ")";
+             << QuicUtils::ErrorToString(error) << " (" << error << ") "
+             << details;
   QuicConnectionCloseFrame frame;
   frame.error_code = error;
   frame.error_details = details;

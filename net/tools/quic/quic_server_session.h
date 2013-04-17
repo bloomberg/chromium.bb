@@ -17,7 +17,9 @@
 
 namespace net {
 
+class QuicConfig;
 class QuicConnection;
+class QuicCryptoServerConfig;
 class ReliableQuicStream;
 
 namespace tools {
@@ -34,7 +36,10 @@ class QuicSessionOwner {
 
 class QuicServerSession : public QuicSession {
  public:
-  QuicServerSession(QuicConnection *connection, QuicSessionOwner* owner);
+  QuicServerSession(const QuicConfig& config,
+                    const QuicCryptoServerConfig& crypto_config,
+                    QuicConnection* connection,
+                    QuicSessionOwner* owner);
 
   // Override the base class to notify the owner of the connection close.
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;

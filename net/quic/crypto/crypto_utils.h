@@ -16,7 +16,7 @@
 
 namespace net {
 
-class QuicClock;
+class QuicTime;
 class QuicRandom;
 struct QuicCryptoNegotiatedParameters;
 
@@ -51,17 +51,19 @@ class NET_EXPORT_PRIVATE CryptoUtils {
   //   <4 bytes> current time
   //   <8 bytes> |orbit| (or random if |orbit| is empty)
   //   <20 bytes> random
-  static void GenerateNonce(const QuicClock* clock,
+  static void GenerateNonce(QuicTime::Delta now,
                             QuicRandom* random_generator,
-                            const std::string& orbit,
+                            base::StringPiece orbit,
                             std::string* nonce);
 
-  // DeriveKeys populates the |encrypter| and |decrypter| members of |params|
-  // given the contents of |premaster_secret|, |nonce| and |hkdf_input|.
-  // |perspective| controls whether the server's keys are assigned to
-  // |encrypter| or |decrypter|.
+  // DeriveKeys populates |params->encrypter| and |params->decrypter| given the
+  // contents of |params->premaster_secret|, |client_nonce|,
+  // |params->server_nonce| and |hkdf_input|. |perspective| controls whether
+  // the server's keys are assigned to |encrypter| or |decrypter|.
+  // |params->server_nonce| is optional and, if non-empty, is mixed into the
+  // key derivation.
   static void DeriveKeys(QuicCryptoNegotiatedParameters* params,
-                         base::StringPiece nonce,
+                         base::StringPiece client_nonce,
                          const std::string& hkdf_input,
                          Perspective perspective);
 };

@@ -12,6 +12,10 @@
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_clock.h"
+#include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -25,6 +29,7 @@
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const int kNumPacketsPerReadCall = 5;  // Arbitrary
+static const char kSourceAddressTokenSecret[] = "secret";
 
 namespace net {
 namespace tools {
@@ -33,10 +38,26 @@ QuicServer::QuicServer()
     : port_(0),
       packets_dropped_(0),
       overflow_supported_(false),
-      use_recvmmsg_(false) {
+      use_recvmmsg_(false),
+      crypto_config_(kSourceAddressTokenSecret) {
   epoll_server_.set_timeout_in_us(50 * 1000);
   // Initialize the in memory cache now.
   QuicInMemoryCache::GetInstance();
+
+  // Use hardcoded crypto parameters for now.
+  config_.SetDefaults();
+  CryptoHandshakeMessage extra_tags;
+  config_.ToHandshakeMessage(&extra_tags);
+  QuicEpollClock clock(&epoll_server_);
+
+  scoped_ptr<CryptoHandshakeMessage> scfg(
+      crypto_config_.AddDefaultConfig(QuicRandom::GetInstance(), &clock,
+                                      extra_tags));
+  // If we were using the same config in many servers then we would have to
+  // parse a QuicConfig from config_tags here.
+  if (!config_.SetFromHandshakeMessage(*scfg)) {
+    CHECK(false) << "Crypto config could not be parsed by QuicConfig.";
+  }
 }
 
 QuicServer::~QuicServer() {
@@ -109,7 +130,8 @@ bool QuicServer::Listen(const IPEndPoint& address) {
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
 
-  dispatcher_.reset(new QuicDispatcher(fd_, &epoll_server_));
+  dispatcher_.reset(new QuicDispatcher(config_, crypto_config_, fd_,
+                                       &epoll_server_));
 
   return true;
 }

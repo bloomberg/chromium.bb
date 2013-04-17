@@ -14,9 +14,12 @@ namespace net {
 
 QuicCryptoClientStream*
 MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
+    const string& server_hostname,
+    const QuicConfig& config,
     QuicSession* session,
-    const string& server_hostname) {
-  return new MockCryptoClientStream(session, server_hostname);
+    QuicCryptoClientConfig* crypto_config) {
+  return new MockCryptoClientStream(server_hostname, config, session,
+                                    crypto_config);
 }
 
 }  // namespace net

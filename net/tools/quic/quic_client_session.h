@@ -26,7 +26,9 @@ class QuicReliableClientStream;
 class QuicClientSession : public QuicSession {
  public:
   QuicClientSession(const std::string& server_hostname,
-                    QuicConnection* connection);
+                    const QuicConfig& config,
+                    QuicConnection* connection,
+                    QuicCryptoClientConfig* crypto_config);
   virtual ~QuicClientSession();
 
   // QuicSession methods:

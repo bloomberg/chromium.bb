@@ -15,8 +15,10 @@ namespace net {
 
 class MockCryptoClientStream : public QuicCryptoClientStream {
  public:
-  MockCryptoClientStream(QuicSession* session,
-                         const std::string& server_hostname);
+  MockCryptoClientStream(const string& server_hostname,
+                         const QuicConfig& config,
+                         QuicSession* session,
+                         QuicCryptoClientConfig* crypto_config);
   virtual ~MockCryptoClientStream();
 
   // CryptoFramerVisitorInterface implementation.

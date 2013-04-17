@@ -16,9 +16,11 @@ namespace tools {
 
 QuicClientSession::QuicClientSession(
     const string& server_hostname,
-    QuicConnection* connection)
+    const QuicConfig& config,
+    QuicConnection* connection,
+    QuicCryptoClientConfig* crypto_config)
     : QuicSession(connection, false),
-      crypto_stream_(this, server_hostname) {
+      crypto_stream_(server_hostname, config, this, crypto_config) {
 }
 
 QuicClientSession::~QuicClientSession() {

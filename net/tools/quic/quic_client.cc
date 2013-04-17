@@ -39,6 +39,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false) {
   epoll_server_.set_timeout_in_us(50 * 1000);
+  config_.SetDefaults();
+  crypto_config_.SetDefaults();
 }
 
 QuicClient::~QuicClient() {
@@ -129,9 +131,13 @@ bool QuicClient::StartConnect() {
   DCHECK(!connected() && initialized_);
 
   QuicGuid guid = QuicRandom::GetInstance()->RandUint64();
-  session_.reset(new QuicClientSession(server_hostname_, new QuicConnection(
-      guid, server_address_,
-      new QuicEpollConnectionHelper(fd_, &epoll_server_), false)));
+  session_.reset(new QuicClientSession(
+      server_hostname_,
+      config_,
+      new QuicConnection(guid, server_address_,
+                         new QuicEpollConnectionHelper(fd_, &epoll_server_),
+                         false),
+      &crypto_config_));
   return session_->CryptoConnect();
 }
 

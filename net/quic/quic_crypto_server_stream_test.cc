@@ -71,7 +71,11 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
               ip_ : IPAddressNumber(), 1),
         connection_(new PacketSavingConnection(guid_, addr_, true)),
         session_(connection_, true),
-        stream_(&session_) {
+        crypto_config_(QuicCryptoServerConfig::TESTING),
+        stream_(config_, crypto_config_, &session_) {
+    CryptoTestUtils::SetupCryptoServerConfigForTest(
+        connection_->clock(), connection_->random_generator(), &config_,
+        &crypto_config_);
   }
 
   void ConstructHandshakeMessage() {
@@ -89,6 +93,8 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
   IPEndPoint addr_;
   PacketSavingConnection* connection_;
   TestSession session_;
+  QuicConfig config_;
+  QuicCryptoServerConfig crypto_config_;
   QuicCryptoServerStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;

@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/synchronization/lock.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -24,6 +25,7 @@ class QuicDecrypter;
 class QuicEncrypter;
 class QuicRandom;
 class QuicServerConfigProtobuf;
+class StrikeRegister;
 
 namespace test {
 class QuicCryptoServerConfigPeer;
@@ -221,6 +223,7 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   scoped_ptr<QuicEncrypter> encrypter;
   scoped_ptr<QuicDecrypter> decrypter;
   std::string server_config_id;
+  std::string server_nonce;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.
@@ -242,7 +245,8 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
 };
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
-// client.
+// client. Note that this object isn't thread-safe. It's designed to be used on
+// a single thread at a time.
 class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
  public:
   // A CachedState contains the information that the client needs in order to
@@ -269,7 +273,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     const std::string& server_config() const;
     const std::string& source_address_token() const;
-    const std::string& orbit() const;
 
     void set_source_address_token(base::StringPiece token);
 
@@ -277,7 +280,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     std::string server_config_id_;  // An opaque id from the server.
     std::string server_config_;  // A serialized handshake message.
     std::string source_address_token_;  // An opaque proof of IP ownership.
-    std::string orbit_;  // An opaque server-id used in nonce generation.
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
@@ -291,14 +293,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // Lookup returns a CachedState for the given hostname, or NULL if no
   // information is known.
-  const CachedState* Lookup(const std::string& server_hostname);
+  const CachedState* Lookup(const std::string& server_hostname) const;
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
   // source-address token will be taken from it.
   void FillInchoateClientHello(const std::string& server_hostname,
                                const CachedState* cached,
-                               CryptoHandshakeMessage* out);
+                               CryptoHandshakeMessage* out) const;
 
   // FillClientHello sets |out| to be a CHLO message based on the configuration
   // of this object. This object must have cached enough information about
@@ -315,13 +317,16 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                                 QuicRandom* rand,
                                 QuicCryptoNegotiatedParameters* out_params,
                                 CryptoHandshakeMessage* out,
-                                std::string* error_details);
+                                std::string* error_details) const;
 
   // ProcessRejection processes a REJ message from a server and updates the
   // cached information about that server. After this, |is_complete| may return
-  // true for that server's CachedState.
+  // true for that server's CachedState. If the rejection message contains
+  // state about a future handshake (i.e. an nonce value from the server), then
+  // it will be saved in |out_params|.
   QuicErrorCode ProcessRejection(const std::string& server_hostname,
                                  const CryptoHandshakeMessage& rej,
+                                 QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
 
   // ProcessServerHello processes the message in |server_hello|, writes the
@@ -348,7 +353,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
  public:
   // |source_address_token_secret|: secret key material used for encrypting and
   //     decrypting source address tokens. It can be of any length as it is fed
-  //     into a KDF before use.
+  //     into a KDF before use. In tests, use TESTING.
   explicit QuicCryptoServerConfig(
       base::StringPiece source_address_token_secret);
   ~QuicCryptoServerConfig();
@@ -356,10 +361,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // TESTING is a magic parameter for passing to the constructor in tests.
   static const char TESTING[];
 
-  // ConfigForTesting generates a QuicServerConfigProtobuf protobuf suitable
+  // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable
   // for using in tests. |extra_tags| contains additional key/value pairs that
   // will be inserted into the config.
-  static QuicServerConfigProtobuf* ConfigForTesting(
+  static QuicServerConfigProtobuf* DefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
       const CryptoHandshakeMessage& extra_tags);
@@ -369,9 +374,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // takes ownership of the CryptoHandshakeMessage.
   CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf);
 
-  // AddTestingConfig creates a test config and then calls AddConfig to add it.
-  // Any tags in |extra_tags| will be copied into the config.
-  CryptoHandshakeMessage* AddTestingConfig(
+  // AddDefaultConfig creates a config and then calls AddConfig to
+  // add it. Any tags in |extra_tags| will be copied into the config.
+  CryptoHandshakeMessage* AddDefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
       const CryptoHandshakeMessage& extra_tags);
@@ -389,17 +394,19 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // now_since_epoch: the current time, as a delta since the unix epoch,
   //     which is used to validate client nonces.
   // rand: an entropy source
+  // params: the state of the handshake. This may be updated with a server
+  //     nonce when we send a rejection. After a successful handshake, this will
+  //     contain the state of the connection.
   // out: the resulting handshake message (either REJ or SHLO)
-  // out_params: the state of the handshake
   // error_details: used to store a string describing any error.
   QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
                                    QuicGuid guid,
                                    const IPEndPoint& client_ip,
                                    QuicTime::Delta now_since_epoch,
                                    QuicRandom* rand,
+                                   QuicCryptoNegotiatedParameters* params,
                                    CryptoHandshakeMessage* out,
-                                   QuicCryptoNegotiatedParameters* out_params,
-                                   std::string* error_details);
+                                   std::string* error_details) const;
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -415,6 +422,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     std::string serialized;
     // id contains the SCID of this server config.
     std::string id;
+    // orbit contains the orbit value for this config: an opaque identifier
+    // used to identify clusters of server frontends.
+    unsigned char orbit[kOrbitSize];
 
     // key_exchanges contains key exchange objects with the private keys
     // already loaded. The values correspond, one-to-one, with the tags in
@@ -432,18 +442,23 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // IP address.
   std::string NewSourceAddressToken(const IPEndPoint& ip,
                                     QuicRandom* rand,
-                                    QuicTime::Delta now_since_epoch);
+                                    QuicTime::Delta now_since_epoch) const;
 
   // ValidateSourceAddressToken returns true if the source address token in
   // |token| is a valid and timely token for the IP address |ip| given that the
   // current time is |now|.
   bool ValidateSourceAddressToken(base::StringPiece token,
                                   const IPEndPoint& ip,
-                                  QuicTime::Delta now_since_epoch);
+                                  QuicTime::Delta now_since_epoch) const;
 
   std::map<ServerConfigID, Config*> configs_;
 
   ServerConfigID active_config_;
+
+  mutable base::Lock strike_register_lock_;
+  // strike_register_ contains a data structure that keeps track of previously
+  // observed client nonces in order to prevent replay attacks.
+  mutable scoped_ptr<StrikeRegister> strike_register_;
 
   // These members are used to encrypt and decrypt the source address tokens
   // that we receive from and send to clients.

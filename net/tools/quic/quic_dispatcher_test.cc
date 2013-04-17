@@ -50,7 +50,7 @@ class TestDispatcher : public QuicDispatcher {
   explicit TestDispatcher(const QuicConfig& config,
                           const QuicCryptoServerConfig& crypto_config,
                           EpollServer* eps)
-      : QuicDispatcher(1, eps) {}
+      : QuicDispatcher(config, crypto_config, 1, eps) {}
 
   MOCK_METHOD4(CreateQuicSession, QuicSession*(
       QuicGuid guid,

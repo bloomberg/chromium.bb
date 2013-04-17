@@ -10,11 +10,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/quic/quic_dispatcher.h"
 
 namespace net {
+
+class QuicCryptoServerConfig;
+
 namespace tools {
 
 class QuicDispatcher;
@@ -81,6 +85,12 @@ class QuicServer : public EpollCallbackInterface {
 
   // If true, use recvmmsg for reading.
   bool use_recvmmsg_;
+
+  // config_ contains non-crypto parameters that are negotiated in the crypto
+  // handshake.
+  QuicConfig config_;
+  // crypto_config_ contains crypto parameters for the handshake.
+  QuicCryptoServerConfig crypto_config_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

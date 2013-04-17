@@ -30,7 +30,9 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, NULL, NULL, NULL, kServerHostname, &net_log_) {
+        session_(connection_, NULL, NULL, NULL, kServerHostname,
+                 &crypto_config_, &net_log_) {
+    crypto_config_.SetDefaults();
   }
 
   void CompleteCryptoHandshake() {
@@ -49,6 +51,8 @@ class QuicClientSessionTest : public ::testing::Test {
   MockRandom random_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
+  QuicConfig* config_;
+  QuicCryptoClientConfig crypto_config_;
 };
 
 TEST_F(QuicClientSessionTest, CryptoConnect) {

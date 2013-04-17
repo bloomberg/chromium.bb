@@ -11,10 +11,13 @@
 namespace net {
 namespace tools {
 
-QuicServerSession::QuicServerSession(QuicConnection* connection,
-                                     QuicSessionOwner* owner)
+QuicServerSession::QuicServerSession(
+    const QuicConfig& config,
+    const QuicCryptoServerConfig& crypto_config,
+    QuicConnection* connection,
+    QuicSessionOwner* owner)
     : QuicSession(connection, true),
-      crypto_stream_(this),
+      crypto_stream_(config, crypto_config, this),
       owner_(owner) {
 }
 

@@ -36,6 +36,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     QuicStreamFactory* stream_factory,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     const std::string& server_hostname,
+                    QuicCryptoClientConfig* crypto_config,
                     NetLog* net_log);
 
   virtual ~QuicClientSession();
@@ -70,6 +71,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   void OnReadComplete(int result);
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
+  // config_ contains non-crypto configuration options negotiated in the crypto
+  // handshake.
+  QuicConfig config_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;

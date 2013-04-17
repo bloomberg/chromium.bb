@@ -14,8 +14,12 @@
 
 namespace net {
 
+class QuicClock;
+class QuicConfig;
 class QuicCryptoClientStream;
+class QuicCryptoServerConfig;
 class QuicCryptoServerStream;
+class QuicRandom;
 
 namespace test {
 
@@ -28,6 +32,14 @@ class CryptoTestUtils {
 
   static void HandshakeWithFakeClient(PacketSavingConnection* server_conn,
                                       QuicCryptoServerStream* server);
+
+  // SetupCryptoServerConfigForTest configures |config| and |crypto_config|
+  // with sensible defaults for testing.
+  static void SetupCryptoServerConfigForTest(
+      const QuicClock* clock,
+      QuicRandom* rand,
+      QuicConfig* config,
+      QuicCryptoServerConfig* crypto_config);
 
   // Returns the value for the tag |tag| in the tag value map of |message|.
   static std::string GetValueForTag(const CryptoHandshakeMessage& message,

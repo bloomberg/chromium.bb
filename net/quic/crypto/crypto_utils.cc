@@ -10,7 +10,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
-#include "net/quic/quic_clock.h"
+#include "net/quic/quic_time.h"
 
 using base::StringPiece;
 using std::string;
@@ -64,14 +64,13 @@ bool CryptoUtils::FindMutualTag(const CryptoTagVector& our_tags_vector,
   return false;
 }
 
-void CryptoUtils::GenerateNonce(const QuicClock* clock,
+void CryptoUtils::GenerateNonce(QuicTime::Delta now,
                                 QuicRandom* random_generator,
-                                const string& orbit,
+                                StringPiece orbit,
                                 string* nonce) {
   // a 4-byte timestamp + 28 random bytes.
   nonce->reserve(kNonceSize);
   nonce->resize(kNonceSize);
-  QuicTime::Delta now = clock->NowAsDeltaSinceUnixEpoch();
   uint32 gmt_unix_time = now.ToSeconds();
   memcpy(&(*nonce)[0], &gmt_unix_time, sizeof(gmt_unix_time));
 
@@ -85,13 +84,20 @@ void CryptoUtils::GenerateNonce(const QuicClock* clock,
 }
 
 void CryptoUtils::DeriveKeys(QuicCryptoNegotiatedParameters* params,
-                             StringPiece nonce,
+                             StringPiece client_nonce,
                              const string& hkdf_input,
                              Perspective perspective) {
   params->encrypter.reset(QuicEncrypter::Create(params->aead));
   params->decrypter.reset(QuicDecrypter::Create(params->aead));
   size_t key_bytes = params->encrypter->GetKeySize();
   size_t nonce_prefix_bytes = params->encrypter->GetNoncePrefixSize();
+
+  StringPiece nonce = client_nonce;
+  string nonce_storage;
+  if (!params->server_nonce.empty()) {
+    nonce_storage = client_nonce.as_string() + params->server_nonce;
+    nonce = nonce_storage;
+  }
 
   crypto::HKDF hkdf(params->premaster_secret, nonce,
                     hkdf_input, key_bytes, nonce_prefix_bytes);

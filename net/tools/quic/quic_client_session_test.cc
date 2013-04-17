@@ -28,7 +28,7 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(kServerHostname, connection_) {
+        session_(kServerHostname, config_, connection_, &crypto_config_) {
     config_.SetDefaults();
     crypto_config_.SetDefaults();
   }

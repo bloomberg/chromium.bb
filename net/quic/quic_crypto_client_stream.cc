@@ -11,14 +11,18 @@
 
 namespace net {
 
-QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session,
-                                               const string& server_hostname)
+QuicCryptoClientStream::QuicCryptoClientStream(
+    const string& server_hostname,
+    const QuicConfig& config,
+    QuicSession* session,
+    QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
       next_state_(STATE_IDLE),
+      num_client_hellos_(0),
+      config_(config),
+      crypto_config_(crypto_config),
       decrypter_pushed_(false),
       server_hostname_(server_hostname) {
-  config_.SetDefaults();
-  crypto_config_.SetDefaults();
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -45,6 +49,13 @@ QuicCryptoClientStream::crypto_negotiated_params() const {
   return crypto_negotiated_params_;
 }
 
+// kMaxClientHellos is the maximum number of times that we'll send a client
+// hello. The value 3 accounts for:
+//   * One failure due to an incorrect or missing source-address token.
+//   * One failure due the server's certificate chain being unavailible and the
+//     server being unwilling to send it without a valid source-address token.
+static const int kMaxClientHellos = 3;
+
 void QuicCryptoClientStream::DoHandshakeLoop(
     const CryptoHandshakeMessage* in) {
   CryptoHandshakeMessage out;
@@ -60,11 +71,17 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_SEND_CHLO: {
+        if (num_client_hellos_ > kMaxClientHellos) {
+          CloseConnection(QUIC_CRYPTO_TOO_MANY_REJECTS);
+          return;
+        }
+        num_client_hellos_++;
+
         const QuicCryptoClientConfig::CachedState* cached =
-            crypto_config_.Lookup(server_hostname_);
+            crypto_config_->Lookup(server_hostname_);
         if (!cached || !cached->is_complete()) {
-          crypto_config_.FillInchoateClientHello(server_hostname_, cached,
-                                                 &out);
+          crypto_config_->FillInchoateClientHello(server_hostname_, cached,
+                                                  &out);
           next_state_ = STATE_RECV_REJ;
           DLOG(INFO) << "Client Sending: " << out.DebugString();
           SendHandshakeMessage(out);
@@ -72,7 +89,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
         config_.ToHandshakeMessage(&out);
-        error = crypto_config_.FillClientHello(
+        error = crypto_config_->FillClientHello(
             server_hostname_,
             session()->connection()->guid(),
             cached,
@@ -102,16 +119,18 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         return;
       }
       case STATE_RECV_REJ:
-        // We sent a dummy CHLO because we don't have enough information to
-        // perform a handshake. Here we hope to have a REJ that contains the
-        // information that we need.
+        // We sent a dummy CHLO because we didn't have enough information to
+        // perform a handshake, or we sent a full hello that the server
+        // rejected. Here we hope to have a REJ that contains the information
+        // that we need.
         if (in->tag() != kREJ) {
             CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
                                        "Expected REJ");
             return;
         }
-        error = crypto_config_.ProcessRejection(server_hostname_, *in,
-                                              &error_details);
+        error = crypto_config_->ProcessRejection(server_hostname_, *in,
+                                                 &crypto_negotiated_params_,
+                                                 &error_details);
         if (error != QUIC_NO_ERROR) {
             CloseConnectionWithDetails(error, error_details);
             return;
@@ -126,10 +145,13 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       case STATE_RECV_SHLO:
         // We sent a CHLO that we expected to be accepted and now we're hoping
         // for a SHLO from the server to confirm that.
+        if (in->tag() == kREJ) {
+          next_state_ = STATE_RECV_REJ;
+          break;
+        }
         if (in->tag() != kSHLO) {
-          // TODO(agl): in the future we would attempt the handshake again.
           CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                     "Expected SHLO");
+                                     "Expected SHLO or REJ");
           return;
         }
         // Receiving SHLO implies the server must have processed our full

@@ -36,9 +36,12 @@ namespace gfe2 {
   class EpollServer;
 }
 
+namespace net {
+
+class QuicConfig;
+class QuicCryptoServerConfig;
 class QuicSession;
 
-namespace net {
 namespace tools {
 
 namespace test {
@@ -46,14 +49,16 @@ class QuicDispatcherPeer;
 }  // namespace test
 
 class DeleteSessionsAlarm;
-
 class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
  public:
   typedef BlockedList<QuicBlockedWriterInterface*> WriteBlockedList;
 
   // Due to the way delete_sessions_closure_ is registered, the Dispatcher
   // must live until epoll_server Shutdown.
-  QuicDispatcher(int fd, EpollServer* epoll_server);
+  QuicDispatcher(const QuicConfig& config,
+                 const QuicCryptoServerConfig& crypto_config,
+                 int fd,
+                 EpollServer* epoll_server);
   virtual ~QuicDispatcher();
 
   // QuicPacketWriter
@@ -97,6 +102,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   const SessionMap& session_map() const { return session_map_; }
 
   WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
+
+ protected:
+  const QuicConfig& config_;
+  const QuicCryptoServerConfig& crypto_config_;
 
  private:
   friend class net::tools::test::QuicDispatcherPeer;

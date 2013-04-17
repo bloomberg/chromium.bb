@@ -5,8 +5,11 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 
 #include "base/strings/string_piece.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_clock.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -75,7 +78,15 @@ void CryptoTestUtils::HandshakeWithFakeServer(
   PacketSavingConnection* server_conn =
       new PacketSavingConnection(guid, addr, true);
   TestSession server_session(server_conn, true);
-  QuicCryptoServerStream server(&server_session);
+
+  QuicConfig config;
+  QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING);
+  SetupCryptoServerConfigForTest(
+      server_session.connection()->clock(),
+      server_session.connection()->random_generator(),
+      &config, &crypto_config);
+
+  QuicCryptoServerStream server(config, crypto_config, &server_session);
 
   // The client's handshake must have been started already.
   CHECK_NE(0u, client_conn->packets_.size());
@@ -96,7 +107,13 @@ void CryptoTestUtils::HandshakeWithFakeClient(
   PacketSavingConnection* client_conn =
       new PacketSavingConnection(guid, addr, false);
   TestSession client_session(client_conn, true);
-  QuicCryptoClientStream client(&client_session, "test.example.com");
+  QuicConfig config;
+  QuicCryptoClientConfig crypto_config;
+
+  config.SetDefaults();
+  crypto_config.SetDefaults();
+  QuicCryptoClientStream client("test.example.com", config, &client_session,
+                                &crypto_config);
 
   CHECK(client.CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
@@ -104,6 +121,23 @@ void CryptoTestUtils::HandshakeWithFakeClient(
   CommunicateHandshakeMessages(client_conn, &client, server_conn, server);
 
   CompareClientAndServerKeys(&client, server);
+}
+
+// static
+void CryptoTestUtils::SetupCryptoServerConfigForTest(
+    const QuicClock* clock,
+    QuicRandom* rand,
+    QuicConfig* config,
+    QuicCryptoServerConfig* crypto_config) {
+  config->SetDefaults();
+  CryptoHandshakeMessage extra_tags;
+  config->ToHandshakeMessage(&extra_tags);
+
+  scoped_ptr<CryptoHandshakeMessage> scfg(
+      crypto_config->AddDefaultConfig(rand, clock, extra_tags));
+  if (!config->SetFromHandshakeMessage(*scfg)) {
+    CHECK(false) << "Crypto config could not be parsed by QuicConfig.";
+  }
 }
 
 // static

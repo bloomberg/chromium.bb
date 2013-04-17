@@ -34,8 +34,13 @@ class DeleteSessionsAlarm : public EpollAlarm {
   QuicDispatcher* dispatcher_;
 };
 
-QuicDispatcher::QuicDispatcher(int fd, EpollServer* epoll_server)
-    : time_wait_list_manager_(
+QuicDispatcher::QuicDispatcher(const QuicConfig& config,
+                               const QuicCryptoServerConfig& crypto_config,
+                               int fd,
+                               EpollServer* epoll_server)
+    : config_(config),
+      crypto_config_(crypto_config),
+      time_wait_list_manager_(
           new QuicTimeWaitListManager(this, epoll_server)),
       delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
       epoll_server_(epoll_server),
@@ -177,6 +182,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
   QuicConnectionHelperInterface* helper =
       new QuicEpollConnectionHelper(this, epoll_server);
   return new QuicServerSession(
+      config_, crypto_config_,
       new QuicConnection(guid, client_address, helper, true), this);
 }
 

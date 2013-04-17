@@ -8,10 +8,12 @@
 #include <string>
 
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 
 namespace net {
 
+class QuicConfig;
 class QuicSession;
 
 namespace test {
@@ -20,7 +22,10 @@ class CryptoTestUtils;
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
  public:
-  QuicCryptoClientStream(QuicSession* session, const string& server_hostname);
+  QuicCryptoClientStream(const string& server_hostname,
+                         const QuicConfig& config,
+                         QuicSession* session,
+                         QuicCryptoClientConfig* crypto_config);
   virtual ~QuicCryptoClientStream();
 
   // CryptoFramerVisitorInterface implementation
@@ -50,13 +55,20 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
 
   State next_state_;
+  // num_client_hellos_ contains the number of client hello messages that this
+  // connection has sent.
+  int num_client_hellos_;
 
-  QuicConfig config_;
-  QuicCryptoClientConfig crypto_config_;
+  const QuicConfig& config_;
+  QuicCryptoClientConfig* const crypto_config_;
 
   QuicNegotiatedParameters negotiated_params_;
   QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
+  // decrypter_pushed_ is true if we have installed a QuicDecrypter in the
+  // connection. We need to track this because, in the event of a handshake
+  // failure, we have to remove any previous decrypters as they will have the
+  // wrong keys.
   bool decrypter_pushed_;
 
   // Client's connection nonce (4-byte timestamp + 28 random bytes)

@@ -734,6 +734,8 @@
         'quic/quic_blocked_writer_interface.h',
         'quic/quic_client_session.cc',
         'quic/quic_client_session.h',
+        'quic/quic_config.cc',
+        'quic/quic_config.h',
         'quic/quic_crypto_client_stream.cc',
         'quic/quic_crypto_client_stream.h',
         'quic/quic_crypto_client_stream_factory.h',

@@ -220,6 +220,8 @@ enum QuicErrorCode {
   // There was no intersection between the crypto primitives supported by the
   // peer and ourselves.
   QUIC_CRYPTO_NO_SUPPORT,
+  // The server rejected our client hello messages too many times.
+  QUIC_CRYPTO_TOO_MANY_REJECTS,
 
   // No error. Used as bound while iterating.
   QUIC_LAST_ERROR,

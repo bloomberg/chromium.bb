@@ -18,7 +18,10 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
   virtual ~MockCryptoClientStreamFactory() {}
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      QuicSession* session, const std::string& server_hostname) OVERRIDE;
+      const string& server_hostname,
+      const QuicConfig& config,
+      QuicSession* session,
+      QuicCryptoClientConfig* crypto_config) OVERRIDE;
 };
 
 }  // namespace net
