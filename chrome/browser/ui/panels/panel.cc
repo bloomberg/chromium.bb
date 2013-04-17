@@ -306,6 +306,10 @@ bool Panel::IsMinimizedBySystem() const {
   return native_panel_->IsPanelMinimizedBySystem();
 }
 
+void Panel::ShowShadow(bool show) {
+  native_panel_->ShowShadow(show);
+}
+
 void Panel::Restore() {
   if (collection_)
     collection_->RestorePanel(this);

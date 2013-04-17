@@ -923,6 +923,12 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   [[self window] invalidateCursorRectsForView:overlayView_];
 }
 
+- (void)showShadow:(BOOL)show {
+  if (![self isWindowLoaded])
+    return;
+  [[self window] setHasShadow:show];
+}
+
 // We have custom implementation of these because our titlebar height is custom
 // and does not match the standard one.
 - (NSRect)frameRectForContentRect:(NSRect)contentRect {

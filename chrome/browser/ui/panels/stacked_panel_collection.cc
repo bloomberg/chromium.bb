@@ -522,6 +522,9 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
   panel->SetAlwaysOnTop(false);
+  // TODO(jianli): Change from true to false when the background window is used
+  // to provide the shadow.
+  panel->ShowShadow(true);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
   UpdatePanelCornerStyle(panel);

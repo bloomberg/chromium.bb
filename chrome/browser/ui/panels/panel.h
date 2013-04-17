@@ -305,6 +305,9 @@ class Panel : public BaseWindow,
 
   bool IsMinimizedBySystem() const;
 
+  // Turns on/off the shadow effect around the window shape.
+  void ShowShadow(bool show);
+
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
   // |app_name| is the default title for Panels when the page content does not

@@ -88,6 +88,9 @@ class NativePanel {
   // iconic.
   virtual bool IsPanelMinimizedBySystem() const = 0;
 
+  // Turns on/off the shadow effect around the window shape.
+  virtual void ShowShadow(bool show) = 0;
+
   // Create testing interface for native panel. (Keep this last to separate
   // it from regular API.)
   virtual NativePanelTesting* CreateNativePanelTesting() = 0;

@@ -644,6 +644,19 @@ bool PanelView::IsPanelMinimizedBySystem() const {
   return window_->IsMinimized();
 }
 
+void PanelView::ShowShadow(bool show) {
+#if defined(OS_WIN)
+  // The overlapped window has the shadow while the popup window does not have
+  // the shadow.
+  int overlap_style = WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU;
+  int popup_style = WS_POPUP;
+  UpdateWindowAttribute(GWL_STYLE,
+                        show ? overlap_style : popup_style,
+                        show ? popup_style : overlap_style,
+                        true);
+#endif
+}
+
 void PanelView::AttachWebContents(content::WebContents* contents) {
   web_view_->SetWebContents(contents);
 }

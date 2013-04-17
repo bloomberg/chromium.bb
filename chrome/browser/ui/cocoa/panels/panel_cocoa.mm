@@ -272,6 +272,10 @@ bool PanelCocoa::IsPanelMinimizedBySystem() const {
   return false;
 }
 
+void PanelCocoa::ShowShadow(bool show) {
+  [controller_ showShadow:show];
+}
+
 void PanelCocoa::PanelExpansionStateChanging(
     Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
   [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];
