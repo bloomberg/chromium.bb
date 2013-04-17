@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_service.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
@@ -484,10 +486,7 @@ class TestAutofillManager : public AutofillManager {
                       TestPersonalDataManager* personal_data)
       : AutofillManager(web_contents, delegate, personal_data),
         personal_data_(personal_data),
-        autofill_enabled_(true),
-        did_finish_async_form_submit_(false),
-        message_loop_is_running_(false) {
-  }
+        autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
 
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
@@ -520,12 +519,7 @@ class TestAutofillManager : public AutofillManager {
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time) OVERRIDE {
-    if (message_loop_is_running_) {
-      MessageLoop::current()->Quit();
-      message_loop_is_running_ = false;
-    } else {
-      did_finish_async_form_submit_ = true;
-    }
+    message_loop_runner_->Quit();
 
     // If we have expected field types set, make sure they match.
     if (!expected_submitted_field_types_.empty()) {
@@ -555,16 +549,15 @@ class TestAutofillManager : public AutofillManager {
                                                  submission_time);
   }
 
+  // Resets the MessageLoopRunner so that it can wait for an asynchronous form
+  // submission to complete.
+  void ResetMessageLoopRunner() {
+    message_loop_runner_ = new content::MessageLoopRunner();
+  }
+
   // Wait for the asynchronous OnFormSubmitted() call to complete.
   void WaitForAsyncFormSubmit() {
-    if (!did_finish_async_form_submit_) {
-      // TODO(isherman): It seems silly to need this variable.  Is there some
-      // way I can just query the message loop's state?
-      message_loop_is_running_ = true;
-      MessageLoop::current()->Run();
-    } else {
-      did_finish_async_form_submit_ = false;
-    }
+    message_loop_runner_->Run();
   }
 
   virtual void UploadFormData(const FormStructure& submitted_form) OVERRIDE {
@@ -633,8 +626,7 @@ class TestAutofillManager : public AutofillManager {
   std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >
       request_autocomplete_results_;
 
-  bool did_finish_async_form_submit_;
-  bool message_loop_is_running_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   std::string autocheckout_url_prefix_;
   std::string submitted_form_signature_;
@@ -731,6 +723,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void FormSubmitted(const FormData& form) {
+    autofill_manager_->ResetMessageLoopRunner();
     if (autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now()))
       autofill_manager_->WaitForAsyncFormSubmit();
   }

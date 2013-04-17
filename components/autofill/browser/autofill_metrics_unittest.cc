@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -23,6 +24,7 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -187,9 +189,7 @@ class TestAutofillManager : public AutofillManager {
                       AutofillManagerDelegate* manager_delegate,
                       TestPersonalDataManager* personal_manager)
       : AutofillManager(web_contents, manager_delegate, personal_manager),
-        autofill_enabled_(true),
-        did_finish_async_form_submit_(false),
-        message_loop_is_running_(false) {
+        autofill_enabled_(true) {
     set_metric_logger(new testing::NiceMock<MockAutofillMetrics>);
   }
   virtual ~TestAutofillManager() {}
@@ -226,18 +226,12 @@ class TestAutofillManager : public AutofillManager {
   }
 
   void FormSubmitted(const FormData& form, const TimeTicks& timestamp) {
+    message_loop_runner_ = new content::MessageLoopRunner();
     if (!OnFormSubmitted(form, timestamp))
       return;
 
     // Wait for the asynchronous FormSubmitted() call to complete.
-    if (!did_finish_async_form_submit_) {
-      // TODO(isherman): It seems silly to need this variable.  Is there some
-      // way I can just query the message loop's state?
-      message_loop_is_running_ = true;
-      MessageLoop::current()->Run();
-    } else {
-      did_finish_async_form_submit_ = false;
-    }
+    message_loop_runner_->Run();
   }
 
   virtual void UploadFormDataAsyncCallback(
@@ -245,12 +239,7 @@ class TestAutofillManager : public AutofillManager {
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time) OVERRIDE {
-    if (message_loop_is_running_) {
-      MessageLoop::current()->Quit();
-      message_loop_is_running_ = false;
-    } else {
-      did_finish_async_form_submit_ = true;
-    }
+    message_loop_runner_->Quit();
 
     AutofillManager::UploadFormDataAsyncCallback(submitted_form,
                                                  load_time,
@@ -260,8 +249,7 @@ class TestAutofillManager : public AutofillManager {
 
  private:
   bool autofill_enabled_;
-  bool did_finish_async_form_submit_;
-  bool message_loop_is_running_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
