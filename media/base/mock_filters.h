@@ -1,13 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A new breed of mock media filters, this time using gmock!  Feel free to add
-// actions if you need interesting side-effects.
-//
-// Don't forget you can use StrictMock<> and NiceMock<> if you want the mock
-// filters to fail the test or do nothing when an unexpected method is called.
-// http://code.google.com/p/googlemock/wiki/CookBook#Nice_Mocks_and_Strict_Mocks
 
 #ifndef MEDIA_BASE_MOCK_FILTERS_H_
 #define MEDIA_BASE_MOCK_FILTERS_H_
@@ -30,27 +23,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
-
-// Use this template to test for object destruction by setting expectations on
-// the method OnDestroy().
-//
-// TODO(scherkus): not sure about the naming...  perhaps contribute this back
-// to gmock itself!
-template<class MockClass>
-class Destroyable : public MockClass {
- public:
-  Destroyable() {}
-
-  MOCK_METHOD0(OnDestroy, void());
-
- protected:
-  virtual ~Destroyable() {
-    OnDestroy();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Destroyable);
-};
 
 class MockDemuxer : public Demuxer {
  public:
