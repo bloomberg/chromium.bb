@@ -160,8 +160,9 @@ uint32 WtsTerminalMonitor::GetSessionIdForEndpoint(
     net::IPEndPoint endpoint;
     if (GetEndpointForSessionId(session_info[i].SessionId, &endpoint) &&
         endpoint == client_endpoint) {
+      uint32 session_id = session_info[i].SessionId;
       WTSFreeMemory(session_info);
-      return session_info[i].SessionId;
+      return session_id;
     }
   }
 
