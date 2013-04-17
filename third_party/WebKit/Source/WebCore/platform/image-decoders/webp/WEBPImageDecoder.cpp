@@ -67,6 +67,7 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_decodedHeight(0)
 #endif
 {
+    WebPInitDecBuffer(&m_decoderBuffer);
 }
 
 WEBPImageDecoder::~WEBPImageDecoder()
@@ -81,6 +82,7 @@ void WEBPImageDecoder::clear()
         qcms_transform_release(m_transform);
     m_transform = 0;
 #endif
+    WebPFreeDecBuffer(&m_decoderBuffer);
     if (m_decoder)
         WebPIDelete(m_decoder);
     m_decoder = 0;
@@ -268,13 +270,16 @@ bool WEBPImageDecoder::decode(bool onlySize)
             mode = outputMode(false);
         if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
             mode = MODE_RGBA; // Decode to RGBA for input to libqcms.
-        int rowStride = size().width() * sizeof(ImageFrame::PixelData);
-        uint8_t* output = reinterpret_cast<uint8_t*>(buffer.getAddr(0, 0));
-        int outputSize = size().height() * rowStride;
-        m_decoder = WebPINewRGB(mode, output, outputSize, rowStride);
+        m_decoderBuffer.colorspace = mode;
+        m_decoderBuffer.u.RGBA.stride = size().width() * sizeof(ImageFrame::PixelData);
+        m_decoderBuffer.u.RGBA.size = m_decoderBuffer.u.RGBA.stride * size().height();
+        m_decoderBuffer.is_external_memory = 1;
+        m_decoder = WebPINewDecoder(&m_decoderBuffer);
         if (!m_decoder)
             return setFailed();
     }
+
+    m_decoderBuffer.u.RGBA.rgba = reinterpret_cast<uint8_t*>(buffer.getAddr(0, 0));
 
     switch (WebPIUpdate(m_decoder, dataBytes, dataSize)) {
     case VP8_STATUS_OK:

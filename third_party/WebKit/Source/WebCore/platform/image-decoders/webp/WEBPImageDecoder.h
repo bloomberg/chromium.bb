@@ -51,6 +51,7 @@ private:
     bool decode(bool onlySize);
 
     WebPIDecoder* m_decoder;
+    WebPDecBuffer m_decoderBuffer;
     bool m_hasAlpha;
     int m_formatFlags;
 
