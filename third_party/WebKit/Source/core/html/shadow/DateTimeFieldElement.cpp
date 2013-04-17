@@ -45,7 +45,7 @@ DateTimeFieldElement::FieldOwner::~FieldOwner()
 }
 
 DateTimeFieldElement::DateTimeFieldElement(Document* document, FieldOwner& fieldOwner)
-    : HTMLElement(spanTag, document)
+    : HTMLSpanElement(spanTag, document)
     , m_fieldOwner(&fieldOwner)
 {
     // On accessibility, DateTimeFieldElement acts like spin button.

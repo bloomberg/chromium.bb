@@ -28,6 +28,7 @@
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "HTMLDivElement.h"
+#include "HTMLSpanElement.h"
 
 namespace WebCore {
 
@@ -36,7 +37,7 @@ class DateTimeFieldsState;
 class Font;
 
 // DateTimeFieldElement is base class of date time field element.
-class DateTimeFieldElement : public HTMLElement {
+class DateTimeFieldElement : public HTMLSpanElement {
     WTF_MAKE_NONCOPYABLE(DateTimeFieldElement);
 
 public:

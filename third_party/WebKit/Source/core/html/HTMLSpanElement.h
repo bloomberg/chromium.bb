@@ -34,7 +34,7 @@ class HTMLSpanElement : public HTMLElement {
 public:
     static PassRefPtr<HTMLSpanElement> create(const QualifiedName&, Document*);
 
-private:
+protected:
     HTMLSpanElement(const QualifiedName&, Document*);
 };
 
