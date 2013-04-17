@@ -33,6 +33,12 @@ const int kIconSize = 69;
 
 class ExtensionUninstallDialogDelegateView;
 
+// TODO(estade): remove this when UseNewStyle() is the default.
+int HorizontalMargin() {
+  return views::DialogDelegate::UseNewStyle() ? views::kButtonHEdgeMarginNew :
+                                                views::kPanelHorizMargin;
+}
+
 // Returns parent window for extension uninstall dialog.
 // For ash, use app list window if it is visible.
 // For other platforms or when app list is not visible on ash,
@@ -202,11 +208,11 @@ string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
 }
 
-
 gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() {
   int width = kRightColumnWidth;
   width += kIconSize;
-  width += views::kPanelHorizMargin * 3;
+  width += HorizontalMargin() * 2;
+  width += views::kRelatedControlHorizontalSpacing;
 
   int height = views::kPanelVertMargin * 2;
   height += heading_->GetHeightForWidth(kRightColumnWidth);
@@ -216,7 +222,7 @@ gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() {
 }
 
 void ExtensionUninstallDialogDelegateView::Layout() {
-  int x = views::kPanelHorizMargin;
+  int x = HorizontalMargin();
   int y = views::kPanelVertMargin;
 
   heading_->SizeToFit(kRightColumnWidth);
@@ -224,7 +230,7 @@ void ExtensionUninstallDialogDelegateView::Layout() {
   if (heading_->height() <= kIconSize) {
     icon_->SetBounds(x, y, kIconSize, kIconSize);
     x += kIconSize;
-    x += views::kPanelHorizMargin;
+    x += views::kRelatedControlHorizontalSpacing;
 
     heading_->SetX(x);
     heading_->SetY(y + (kIconSize - heading_->height()) / 2);
@@ -234,7 +240,7 @@ void ExtensionUninstallDialogDelegateView::Layout() {
                      kIconSize,
                      kIconSize);
     x += kIconSize;
-    x += views::kPanelHorizMargin;
+    x += views::kRelatedControlHorizontalSpacing;
 
     heading_->SetX(x);
     heading_->SetY(y);

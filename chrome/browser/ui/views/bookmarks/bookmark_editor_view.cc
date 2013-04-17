@@ -289,8 +289,6 @@ void BookmarkEditorView::Init() {
   }
 
   GridLayout* layout = GridLayout::CreatePanel(this);
-  if (views::DialogDelegate::UseNewStyle())
-    layout->SetInsets(gfx::Insets());
   SetLayoutManager(layout);
 
   const int labels_column_set_id = 0;

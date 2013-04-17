@@ -137,7 +137,7 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   if (child != this || !is_add)
     return;
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
   const int column_set_id = 0;

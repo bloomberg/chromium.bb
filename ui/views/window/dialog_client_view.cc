@@ -372,7 +372,8 @@ gfx::Insets DialogClientView::GetButtonRowInsets() const {
 
   // NOTE: The insets only apply to the buttons, extra view, and footnote view.
   return DialogDelegate::UseNewStyle() ?
-      gfx::Insets(0, 20, 20, 20) :
+      gfx::Insets(0, kButtonHEdgeMarginNew,
+                  kButtonVEdgeMarginNew, kButtonHEdgeMarginNew) :
       gfx::Insets(0, kButtonHEdgeMargin,
                   kButtonVEdgeMargin, kButtonHEdgeMargin);
 }

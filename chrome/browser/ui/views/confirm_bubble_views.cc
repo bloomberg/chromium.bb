@@ -15,13 +15,7 @@
 ConfirmBubbleViews::ConfirmBubbleViews(ConfirmBubbleModel* model)
     : model_(model),
       link_(NULL) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  // TODO(msw): Use layout constants and fix the new-style sizing.
-  layout->SetInsets(UseNewStyle() ? gfx::Insets(0, 0, 40, 0) :
-      gfx::Insets(views::kUnrelatedControlVerticalSpacing,
-                  views::kUnrelatedControlHorizontalSpacing,
-                  views::kUnrelatedControlVerticalSpacing,
-                  views::kUnrelatedControlHorizontalSpacing));
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   // Use a fixed maximum message width, so longer messages will wrap.

@@ -60,11 +60,19 @@ gfx::Size ImportLockDialogView::GetPreferredSize() {
 }
 
 void ImportLockDialogView::Layout() {
-  description_label_->SetBounds(
-      views::kPanelHorizMargin,
-      views::kPanelVertMargin,
-      width() - 2 * views::kPanelHorizMargin,
-      height() - 2 * views::kPanelVertMargin);
+  if (DialogDelegate::UseNewStyle()) {
+    description_label_->SetBounds(
+        views::kButtonHEdgeMargin,
+        views::kPanelVertMargin,
+        width() - 2 * views::kButtonHEdgeMargin,
+        height() - 2 * views::kPanelVertMargin);
+  } else {
+    description_label_->SetBounds(
+        views::kPanelHorizMargin,
+        views::kPanelVertMargin,
+        width() - 2 * views::kPanelHorizMargin,
+        height() - 2 * views::kPanelVertMargin);
+  }
 }
 
 string16 ImportLockDialogView::GetDialogButtonLabel(

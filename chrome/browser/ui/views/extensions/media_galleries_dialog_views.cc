@@ -101,9 +101,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   contents_->RemoveAllChildViews(true);
   int dialog_content_width = views::Widget::GetLocalizedContentsWidth(
       IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS);
-  views::GridLayout* layout = new views::GridLayout(contents_);
-  layout->SetInsets(views::kPanelVertMargin, views::kPanelHorizMargin,
-                    0, views::kPanelHorizMargin);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(contents_);
+  contents_->SetLayoutManager(layout);
 
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
@@ -113,20 +112,16 @@ void MediaGalleriesDialogViews::InitChildViews() {
                      views::GridLayout::FIXED,
                      dialog_content_width,
                      0);
-  contents_->SetLayoutManager(layout);
-  contents_->set_border(views::Border::CreateEmptyBorder(
-      views::kPanelSubVerticalSpacing,
-      0,
-      views::kPanelSubVerticalSpacing,
-      0));
 
-  // Header text.
-  views::Label* header = new views::Label(controller_->GetHeader());
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  header->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRow(0, column_set_id);
-  layout->AddView(header);
+  if (!DialogDelegate::UseNewStyle()) {
+    // Header text.
+    views::Label* header = new views::Label(controller_->GetHeader());
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    header->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+    header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->StartRow(0, column_set_id);
+    layout->AddView(header);
+  }
 
   // Message text.
   views::Label* subtext = new views::Label(controller_->GetSubtext());
@@ -311,7 +306,7 @@ string16 MediaGalleriesDialogViews::GetWindowTitle() const {
 }
 
 bool MediaGalleriesDialogViews::ShouldShowWindowTitle() const {
-  return false;
+  return DialogDelegate::UseNewStyle();
 }
 
 void MediaGalleriesDialogViews::DeleteDelegate() {

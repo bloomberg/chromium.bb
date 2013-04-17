@@ -48,10 +48,6 @@ class VIEWS_EXPORT MessageBoxView : public View {
     string16 message;
     string16 default_prompt;
     int message_width;
-    int top_inset;
-    int bottom_inset;
-    int left_inset;
-    int right_inset;
     int inter_row_vertical_spacing;
     ui::Clipboard::SourceTag clipboard_source_tag;
   };
@@ -116,12 +112,6 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // Maximum width of the message label.
   int message_width_;
-
-  // Insets for the grid layout.
-  int top_inset_;
-  int bottom_inset_;
-  int left_inset_;
-  int right_inset_;
 
   // Spacing between rows in the grid layout.
   int inter_row_vertical_spacing_;
