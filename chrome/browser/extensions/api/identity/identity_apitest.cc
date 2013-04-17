@@ -38,6 +38,102 @@ namespace utils = extension_function_test_utils;
 
 static const char kAccessToken[] = "auth_token";
 
+// This helps us be able to wait until an AsyncExtensionFunction calls
+// SendResponse.
+class SendResponseDelegate
+    : public UIThreadExtensionFunction::DelegateForTests {
+ public:
+  SendResponseDelegate() : should_post_quit_(false) {}
+
+  virtual ~SendResponseDelegate() {}
+
+  void set_should_post_quit(bool should_quit) {
+    should_post_quit_ = should_quit;
+  }
+
+  bool HasResponse() {
+    return response_.get() != NULL;
+  }
+
+  bool GetResponse() {
+    EXPECT_TRUE(HasResponse());
+    return *response_.get();
+  }
+
+  virtual void OnSendResponse(UIThreadExtensionFunction* function,
+                              bool success,
+                              bool bad_message) OVERRIDE {
+    ASSERT_FALSE(bad_message);
+    ASSERT_FALSE(HasResponse());
+    response_.reset(new bool);
+    *response_ = success;
+    if (should_post_quit_) {
+      MessageLoopForUI::current()->Quit();
+    }
+  }
+
+ private:
+  scoped_ptr<bool> response_;
+  bool should_post_quit_;
+};
+
+class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
+ protected:
+  // Asynchronous function runner allows tests to manipulate the browser window
+  // after the call happens.
+  void RunFunctionAsync(
+      UIThreadExtensionFunction* function,
+      const std::string& args) {
+    response_delegate_.reset(new SendResponseDelegate);
+    function->set_test_delegate(response_delegate_.get());
+    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
+    EXPECT_TRUE(parsed_args.get()) <<
+        "Could not parse extension function arguments: " << args;
+    function->SetArgs(parsed_args.get());
+
+    if (!function->GetExtension()) {
+      scoped_refptr<Extension> empty_extension(
+          utils::CreateEmptyExtension());
+      function->set_extension(empty_extension.get());
+    }
+
+    function->set_profile(browser()->profile());
+    function->set_has_callback(true);
+    function->Run();
+  }
+
+  std::string WaitForError(UIThreadExtensionFunction* function) {
+    RunMessageLoopUntilResponse();
+    EXPECT_FALSE(function->GetResultList()) << "Did not expect a result";
+    return function->GetError();
+  }
+
+  base::Value* WaitForSingleResult(UIThreadExtensionFunction* function) {
+    RunMessageLoopUntilResponse();
+    EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
+                                              << function->GetError();
+    const base::Value* single_result = NULL;
+    if (function->GetResultList() != NULL &&
+        function->GetResultList()->Get(0, &single_result)) {
+      return single_result->DeepCopy();
+    }
+    return NULL;
+  }
+
+ private:
+  void RunMessageLoopUntilResponse() {
+    // If the RunImpl of |function| didn't already call SendResponse, run the
+    // message loop until they do.
+    if (!response_delegate_->HasResponse()) {
+      response_delegate_->set_should_post_quit(true);
+      content::RunMessageLoop();
+    }
+    EXPECT_TRUE(response_delegate_->HasResponse());
+  }
+
+  scoped_ptr<SendResponseDelegate> response_delegate_;
+};
+
 class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
  public:
   enum ResultType {
@@ -83,6 +179,10 @@ class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   ResultType result_;
   OAuth2MintTokenFlow::Delegate* delegate_;
 };
+
+ProfileKeyedService* IdentityAPITestFactory(Profile* profile) {
+  return new IdentityAPI(profile);
+}
 
 }  // namespace
 
@@ -142,7 +242,12 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   bool install_ui_shown_;
 };
 
-class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
+class MockQueuedMintRequest : public IdentityMintRequestQueue::Request {
+ public:
+  MOCK_METHOD1(StartMintToken, void(IdentityMintRequestQueue::MintType));
+};
+
+class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
  protected:
   enum OAuth2Fields {
     NONE = 0,
@@ -166,6 +271,11 @@ class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
       oauth2_info.scopes.push_back("scope2");
     }
     return ext;
+  }
+
+  void InitializeTestAPIFactory() {
+    IdentityAPI::GetFactoryInstance()->SetTestingFactory(
+        browser()->profile(), &IdentityAPITestFactory);
   }
 };
 
@@ -461,46 +571,133 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(func->install_ui_shown());
 }
 
-// This helps us be able to wait until an AsyncExtensionFunction calls
-// SendResponse.
-class SendResponseDelegate
-    : public UIThreadExtensionFunction::DelegateForTests {
- public:
-  SendResponseDelegate() : should_post_quit_(false) {}
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
+  InitializeTestAPIFactory();
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension);
 
-  virtual ~SendResponseDelegate() {}
+  // Create a fake request to block the queue.
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+  IdentityAPI* id_api =
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+          browser()->profile());
+  IdentityMintRequestQueue* queue = id_api->mint_queue();
+  MockQueuedMintRequest queued_request;
+  IdentityMintRequestQueue::MintType type =
+      IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
 
-  void set_should_post_quit(bool should_quit) {
-    should_post_quit_ = should_quit;
-  }
+  EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
+  queue->RequestStart(type, extension->id(), scopes, &queued_request);
 
-  bool HasResponse() {
-    return response_.get() != NULL;
-  }
+  // The real request will start processing, but wait in the queue behind
+  // the blocker.
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  RunFunctionAsync(func, "[{}]");
+  // Verify that we have fetched the login token at this point.
+  testing::Mock::VerifyAndClearExpectations(func);
 
-  bool GetResponse() {
-    EXPECT_TRUE(HasResponse());
-    return *response_.get();
-  }
+  // The flow will be created after the first queued request clears.
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
 
-  virtual void OnSendResponse(UIThreadExtensionFunction* function,
-                              bool success,
-                              bool bad_message) OVERRIDE {
-    ASSERT_FALSE(bad_message);
-    ASSERT_FALSE(HasResponse());
-    response_.reset(new bool);
-    *response_ = success;
-    if (should_post_quit_) {
-      MessageLoopForUI::current()->Quit();
-    }
-  }
+  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
 
- private:
-  scoped_ptr<bool> response_;
-  bool should_post_quit_;
-};
+  scoped_ptr<base::Value> value(WaitForSingleResult(func));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->install_ui_shown());
+}
 
-class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
+  InitializeTestAPIFactory();
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension);
+
+  // Create a fake request to block the queue.
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+  IdentityAPI* id_api =
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+          browser()->profile());
+  IdentityMintRequestQueue* queue = id_api->mint_queue();
+  MockQueuedMintRequest queued_request;
+  IdentityMintRequestQueue::MintType type =
+      IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
+
+  EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
+  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+
+  // The real request will start processing, but wait in the queue behind
+  // the blocker.
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow1));
+  RunFunctionAsync(func, "[{\"interactive\": true}]");
+  // Verify that we have fetched the login token and run the first flow.
+  testing::Mock::VerifyAndClearExpectations(func);
+  EXPECT_FALSE(func->install_ui_shown());
+
+  // The UI will be displayed and the second flow will be created
+  // after the first queued request clears.
+  func->set_install_ui_result(true);
+  TestOAuth2MintTokenFlow* flow2 = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow2));
+
+  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+
+  scoped_ptr<base::Value> value(WaitForSingleResult(func));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_TRUE(func->install_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveQueuedNoninteractiveFails) {
+  InitializeTestAPIFactory();
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension);
+
+  // Create a fake request to block the interactive queue.
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+  IdentityAPI* id_api =
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+          browser()->profile());
+  IdentityMintRequestQueue* queue = id_api->mint_queue();
+  MockQueuedMintRequest queued_request;
+  IdentityMintRequestQueue::MintType type =
+      IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
+
+  EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
+  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+
+  // Non-interactive requests fail without hitting GAIA, because a
+  // consent UI is known to be up.
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{}]", browser());
+  EXPECT_EQ(std::string(errors::kNoGrant), error);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->install_ui_shown());
+
+  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+}
+
+class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
  protected:
   void RunAndCheckBounds(
       const std::string& extra_params,
@@ -534,42 +731,6 @@ class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
 
     web_auth_flow_browser->window()->Close();
   }
-
-  // Asynchronous function runner allows tests to manipulate the browser window
-  // after the call happens.
-  void RunFunctionAsync(
-      UIThreadExtensionFunction* function,
-      const std::string& args) {
-    response_delegate_.reset(new SendResponseDelegate);
-    function->set_test_delegate(response_delegate_.get());
-    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
-    EXPECT_TRUE(parsed_args.get()) <<
-        "Could not parse extension function arguments: " << args;
-    function->SetArgs(parsed_args.get());
-
-    scoped_refptr<Extension> empty_extension(
-        utils::CreateEmptyExtension());
-    function->set_extension(empty_extension.get());
-
-    function->set_profile(browser()->profile());
-    function->set_has_callback(true);
-    function->Run();
-  }
-
-  std::string WaitForError(UIThreadExtensionFunction* function) {
-    // If the RunImpl of |function| didn't already call SendResponse, run the
-    // message loop until they do.
-    if (!response_delegate_->HasResponse()) {
-      response_delegate_->set_should_post_quit(true);
-      content::RunMessageLoop();
-    }
-
-    EXPECT_TRUE(response_delegate_->HasResponse());
-    return function->GetError();
-  }
-
- private:
-  scoped_ptr<SendResponseDelegate> response_delegate_;
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {

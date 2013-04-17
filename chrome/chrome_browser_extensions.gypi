@@ -222,6 +222,8 @@
         'browser/extensions/api/i18n/i18n_api.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
+        'browser/extensions/api/identity/identity_mint_queue.cc',
+        'browser/extensions/api/identity/identity_mint_queue.h',
         'browser/extensions/api/identity/identity_signin_flow.cc',
         'browser/extensions/api/identity/identity_signin_flow.h',
         'browser/extensions/api/identity/web_auth_flow.cc',

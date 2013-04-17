@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -60,6 +64,7 @@ namespace identity = api::experimental_identity;
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false) {}
+
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}
 
 bool IdentityGetAuthTokenFunction::RunImpl() {
@@ -85,8 +90,7 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
     return false;
   }
 
-  // Balanced in OnIssueAdviceSuccess|OnMintTokenSuccess|OnMintTokenFailure|
-  // InstallUIAbort|SigninFailed.
+  // Balanced in CompleteFunctionWithResult|CompleteFunctionWithError
   AddRef();
 
   if (!HasLoginToken()) {
@@ -95,28 +99,107 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
       Release();
       return false;
     }
-    // Display a login prompt. If the subsequent mint fails, don't display the
-    // prompt again.
-    should_prompt_for_signin_ = false;
-    ShowLoginPopup();
+    // Display a login prompt.
+    StartSigninFlow();
   } else {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
     refresh_token_ = token_service->GetOAuth2LoginRefreshToken();
-    StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
   }
 
   return true;
 }
 
-void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
+void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
   SetResult(Value::CreateStringValue(access_token));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
 
+void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
+    const std::string& error) {
+  error_ = error;
+  SendResponse(false);
+  Release();  // Balanced in RunImpl.
+}
+
+void IdentityGetAuthTokenFunction::StartSigninFlow() {
+  // Display a login prompt. If the subsequent mint fails, don't display the
+  // login prompt again.
+  should_prompt_for_signin_ = false;
+  ShowLoginPopup();
+}
+
+void IdentityGetAuthTokenFunction::StartMintTokenFlow(
+    IdentityMintRequestQueue::MintType type) {
+  mint_token_flow_type_ = type;
+
+  // Flows are serialized to prevent excessive traffic to GAIA, and
+  // to consolidate UI pop-ups.
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+  IdentityAPI* id_api =
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(profile_);
+
+  // If there is an interactive flow in progress, non-interactive
+  // requests should complete immediately since a consent UI is
+  // known to be required.
+  if (!should_prompt_for_scopes_ && !id_api->mint_queue()->empty(
+          IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE,
+          GetExtension()->id(), scopes)) {
+    CompleteFunctionWithError(identity_constants::kNoGrant);
+    return;
+  }
+  id_api->mint_queue()->RequestStart(type,
+                                     GetExtension()->id(),
+                                     scopes,
+                                     this);
+}
+
+void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
+  IdentityMintRequestQueue::MintType type = mint_token_flow_type_;
+
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+
+  extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+      profile_)->mint_queue()->RequestComplete(type,
+                                               GetExtension()->id(),
+                                               scopes,
+                                               this);
+}
+
+void IdentityGetAuthTokenFunction::StartMintToken(
+    IdentityMintRequestQueue::MintType type) {
+  switch (type) {
+    case IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE:
+      StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+      break;
+
+    case IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE:
+      install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
+      ShowOAuthApprovalDialog(issue_advice_);
+      break;
+
+    default:
+      NOTREACHED() << "Unexepected mint type in StartMintToken: " << type;
+      break;
+  };
+}
+
+void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
+    const std::string& access_token) {
+  CompleteMintTokenFlow();
+  CompleteFunctionWithResult(access_token);
+}
+
 void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
+  CompleteMintTokenFlow();
+
   switch (error.state()) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
@@ -125,8 +208,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
           profile())->ReportAuthError(error);
       if (should_prompt_for_signin_) {
         // Display a login prompt and try again (once).
-        should_prompt_for_signin_ = false;
-        ShowLoginPopup();
+        StartSigninFlow();
         return;
       }
       break;
@@ -135,52 +217,48 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
       break;
   }
 
-  error_ = std::string(identity_constants::kAuthFailure) + error.ToString();
-  SendResponse(false);
-  Release();  // Balanced in RunImpl.
+  CompleteFunctionWithError(
+      std::string(identity_constants::kAuthFailure) + error.ToString());
 }
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
+  CompleteMintTokenFlow();
+
   should_prompt_for_signin_ = false;
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
   if (should_prompt_for_scopes_) {
-    install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
-    ShowOAuthApprovalDialog(issue_advice);
+    issue_advice_ = issue_advice;
+    StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
   } else {
-    error_ = identity_constants::kNoGrant;
-    SendResponse(false);
-    Release();  // Balanced in RunImpl.
+    CompleteFunctionWithError(identity_constants::kNoGrant);
   }
 }
 
 void IdentityGetAuthTokenFunction::SigninSuccess(const std::string& token) {
   refresh_token_ = token;
-  StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+  StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
 
 void IdentityGetAuthTokenFunction::SigninFailed() {
-  error_ = identity_constants::kUserNotSignedIn;
-  SendResponse(false);
-  Release();
+  CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
 }
 
 void IdentityGetAuthTokenFunction::InstallUIProceed() {
   DCHECK(install_ui_->record_oauth2_grant());
   // The user has accepted the scopes, so we may now force (recording a grant
   // and receiving a token).
-  StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+  StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
 }
 
 void IdentityGetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
-  error_ = identity_constants::kUserRejected;
-  SendResponse(false);
-  Release();  // Balanced in RunImpl.
+  CompleteMintTokenFlow();
+  CompleteFunctionWithError(identity_constants::kUserRejected);
 }
 
-void IdentityGetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
-  signin_flow_.reset(NULL);
+void IdentityGetAuthTokenFunction::StartGaiaRequest(
+    OAuth2MintTokenFlow::Mode mode) {
   mint_token_flow_.reset(CreateMintTokenFlow(mode));
   mint_token_flow_->Start();
 }
@@ -337,6 +415,10 @@ void IdentityAPI::Initialize() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  content::Source<TokenService>(token_service));
+}
+
+IdentityMintRequestQueue* IdentityAPI::mint_queue() {
+    return &mint_queue_;
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
