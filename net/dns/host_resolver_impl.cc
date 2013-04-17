@@ -250,6 +250,25 @@ AddressList EnsurePortOnAddressList(const AddressList& list, uint16 port) {
   return AddressList::CopyWithPort(list, port);
 }
 
+// Returns true if |addresses| contains only IPv4 loopback addresses.
+bool IsAllIPv4Loopback(const AddressList& addresses) {
+  for (unsigned i = 0; i < addresses.size(); ++i) {
+    const IPAddressNumber& address = addresses[i].address();
+    switch (addresses[i].GetFamily()) {
+      case ADDRESS_FAMILY_IPV4:
+        if (address[0] != 127)
+          return false;
+        break;
+      case ADDRESS_FAMILY_IPV6:
+        return false;
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+  return true;
+}
+
 // Creates NetLog parameters when the resolve failed.
 base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
                                           int net_error,
@@ -1950,7 +1969,6 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   DCHECK(addresses);
   if (!HaveDnsConfig())
     return false;
-
   addresses->clear();
 
   // HOSTS lookups are case-insensitive.
@@ -1979,6 +1997,17 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
       addresses->push_back(IPEndPoint(it->second, info.port()));
   }
 
+  // If got only loopback addresses and the family was restricted, resolve
+  // again, without restrictions. See SystemHostResolverCall for rationale.
+  if ((key.host_resolver_flags &
+          HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6) &&
+      IsAllIPv4Loopback(*addresses)) {
+    Key new_key(key);
+    new_key.address_family = ADDRESS_FAMILY_UNSPECIFIED;
+    new_key.host_resolver_flags &=
+        ~HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+    return ServeFromHosts(new_key, info, addresses);
+  }
   return !addresses->empty();
 }
 
@@ -2118,6 +2147,7 @@ void HostResolverImpl::OnIPAddressChanged() {
 void HostResolverImpl::OnDNSChanged() {
   DnsConfig dns_config;
   NetworkChangeNotifier::GetDnsConfig(&dns_config);
+
   if (net_log_) {
     net_log_->AddGlobalEntry(
         NetLog::TYPE_DNS_CONFIG_CHANGED,

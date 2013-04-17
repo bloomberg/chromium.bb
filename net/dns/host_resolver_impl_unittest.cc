@@ -177,6 +177,16 @@ class MockHostResolverProc : public HostResolverProc {
   DISALLOW_COPY_AND_ASSIGN(MockHostResolverProc);
 };
 
+bool AddressListContains(const AddressList& list, const std::string& address,
+                         int port) {
+  IPAddressNumber ip;
+  bool rv = ParseIPLiteralToNumber(address, &ip);
+  DCHECK(rv);
+  return std::find(list.begin(),
+                   list.end(),
+                   IPEndPoint(ip, port)) != list.end();
+}
+
 // A wrapper for requests to a HostResolver.
 class Request {
  public:
@@ -231,12 +241,7 @@ class Request {
   bool pending() const { return handle_ != NULL; }
 
   bool HasAddress(const std::string& address, int port) const {
-    IPAddressNumber ip;
-    bool rv = ParseIPLiteralToNumber(address, &ip);
-    DCHECK(rv);
-    return std::find(list_.begin(),
-                     list_.end(),
-                     IPEndPoint(ip, port)) != list_.end();
+    return AddressListContains(list_, address, port);
   }
 
   // Returns the number of addresses in |list_|.
@@ -1480,6 +1485,69 @@ TEST_F(HostResolverImplDnsTest, DontDisableDnsClientOnSporadicFailure) {
   Request* req = CreateRequest("ok_last", 80);
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
   EXPECT_EQ(OK, req->WaitForResult());
+}
+
+// Confirm that resolving "localhost" is unrestricted even if there are no
+// global IPv6 address. See SystemHostResolverCall for rationale.
+// Test both the DnsClient and system host resolver paths.
+TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
+  // Use regular SystemHostResolverCall!
+  scoped_refptr<HostResolverProc> proc(new SystemHostResolverProc());
+  resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
+                                       DefaultLimits(),
+                                       DefaultParams(proc),
+                                       NULL));
+  resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);
+
+  // Get the expected output.
+  AddressList addrlist;
+  int rv = proc->Resolve("localhost", ADDRESS_FAMILY_UNSPECIFIED, 0, &addrlist,
+                         NULL);
+  if (rv != OK)
+    return;
+
+  for (unsigned i = 0; i < addrlist.size(); ++i)
+    LOG(WARNING) << addrlist[i].ToString();
+
+  bool saw_ipv4 = AddressListContains(addrlist, "127.0.0.1", 0);
+  bool saw_ipv6 = AddressListContains(addrlist, "::1", 0);
+  if (!saw_ipv4 && !saw_ipv6)
+    return;
+
+  HostResolver::RequestInfo info(HostPortPair("localhost", 80));
+  info.set_address_family(ADDRESS_FAMILY_UNSPECIFIED);
+  info.set_host_resolver_flags(HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
+
+  // Try without DnsClient.
+  ChangeDnsConfig(DnsConfig());
+  Request* req = CreateRequest(info);
+  // It is resolved via getaddrinfo, so expect asynchronous result.
+  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+  EXPECT_EQ(OK, req->WaitForResult());
+
+  EXPECT_EQ(saw_ipv4, req->HasAddress("127.0.0.1", 80));
+  EXPECT_EQ(saw_ipv6, req->HasAddress("::1", 80));
+
+  // Configure DnsClient with dual-host HOSTS file.
+  DnsConfig config = CreateValidDnsConfig();
+  DnsHosts hosts;
+  IPAddressNumber local_ipv4, local_ipv6;
+  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &local_ipv4));
+  ASSERT_TRUE(ParseIPLiteralToNumber("::1", &local_ipv6));
+  if (saw_ipv4)
+    hosts[DnsHostsKey("localhost", ADDRESS_FAMILY_IPV4)] = local_ipv4;
+  if (saw_ipv6)
+    hosts[DnsHostsKey("localhost", ADDRESS_FAMILY_IPV6)] = local_ipv6;
+  config.hosts = hosts;
+
+  ChangeDnsConfig(config);
+  req = CreateRequest(info);
+  // Expect synchronous resolution from DnsHosts.
+  EXPECT_EQ(OK, req->Resolve());
+
+  EXPECT_EQ(saw_ipv4, req->HasAddress("127.0.0.1", 80));
+  EXPECT_EQ(saw_ipv6, req->HasAddress("::1", 80));
 }
 
 }  // namespace net

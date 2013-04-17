@@ -92,7 +92,7 @@ NET_EXPORT_PRIVATE int SystemHostResolverCall(
     int* os_error);
 
 // Wraps call to SystemHostResolverCall as an instance of HostResolverProc.
-class SystemHostResolverProc : public HostResolverProc {
+class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
  public:
   SystemHostResolverProc();
   virtual int Resolve(const std::string& hostname,
