@@ -1,0 +1,157 @@
+Tests WebInspector.Color
+
+Dumping 'red' in different formats:
+ - rgb(255, 0, 0)
+ - rgba(255, 0, 0, 1)
+ - hsl(0, 100%, 50%)
+ - hsla(0, 100%, 50%, 1)
+ - hsv(0, 100%, 100%)
+ - hsva(0, 100%, 100%, 1)
+ - #FF0000
+ - #F00
+ - red
+ - default: red
+Dumping 'green' in different formats:
+ - rgb(0, 128, 0)
+ - rgba(0, 128, 0, 1)
+ - hsl(120, 100%, 25%)
+ - hsla(120, 100%, 25%, 1)
+ - hsv(120, 100%, 50%)
+ - hsva(120, 100%, 50%, 1)
+ - #008000
+ - #080
+ - green
+ - default: green
+Dumping 'blue' in different formats:
+ - rgb(0, 0, 255)
+ - rgba(0, 0, 255, 1)
+ - hsl(240, 100%, 50%)
+ - hsla(240, 100%, 50%, 1)
+ - hsv(240, 100%, 100%)
+ - hsva(240, 100%, 100%, 1)
+ - #0000FF
+ - #00F
+ - blue
+ - default: blue
+Dumping 'cyan' in different formats:
+ - rgb(0, 255, 255)
+ - rgba(0, 255, 255, 1)
+ - hsl(180, 100%, 50%)
+ - hsla(180, 100%, 50%, 1)
+ - hsv(180, 100%, 100%)
+ - hsva(180, 100%, 100%, 1)
+ - #00FFFF
+ - #0FF
+ - cyan
+ - default: cyan
+Dumping 'magenta' in different formats:
+ - rgb(255, 0, 255)
+ - rgba(255, 0, 255, 1)
+ - hsl(300, 100%, 50%)
+ - hsla(300, 100%, 50%, 1)
+ - hsv(300, 100%, 100%)
+ - hsva(300, 100%, 100%, 1)
+ - #FF00FF
+ - #F0F
+ - magenta
+ - default: magenta
+Dumping 'yellow' in different formats:
+ - rgb(255, 255, 0)
+ - rgba(255, 255, 0, 1)
+ - hsl(60, 100%, 50%)
+ - hsla(60, 100%, 50%, 1)
+ - hsv(60, 100%, 100%)
+ - hsva(60, 100%, 100%, 1)
+ - #FFFF00
+ - #FF0
+ - yellow
+ - default: yellow
+Dumping 'white' in different formats:
+ - rgb(255, 255, 255)
+ - rgba(255, 255, 255, 1)
+ - hsl(0, 100%, 100%)
+ - hsla(0, 100%, 100%, 1)
+ - hsv(0, 0%, 100%)
+ - hsva(0, 0%, 100%, 1)
+ - #FFFFFF
+ - #FFF
+ - white
+ - default: white
+Dumping 'black' in different formats:
+ - rgb(0, 0, 0)
+ - rgba(0, 0, 0, 1)
+ - hsl(0, 0%, 0%)
+ - hsla(0, 0%, 0%, 1)
+ - hsv(0, 0%, 0%)
+ - hsva(0, 0%, 0%, 1)
+ - #000000
+ - #000
+ - black
+ - default: black
+Dumping 'rgb(94, 126, 91)' in different formats:
+ - rgb(94, 126, 91)
+ - rgba(94, 126, 91, 1)
+ - hsl(115, 16%, 43%)
+ - hsla(115, 16%, 43%, 1)
+ - hsv(115, 28%, 49%)
+ - hsva(115, 28%, 49%, 1)
+ - #5E7E5B
+ - #575
+ - undefined
+ - default: rgb(94, 126, 91)
+Dumping 'rgba(94, 126, 91, 0.5)' in different formats:
+ - rgb(94, 126, 91)
+ - rgba(94, 126, 91, 0.5)
+ - hsl(115, 16%, 43%)
+ - hsla(115, 16%, 43%, 0.5)
+ - hsv(115, 28%, 49%)
+ - hsva(115, 28%, 49%, 0.5)
+ - #5E7E5B
+ - #575
+ - undefined
+ - default: rgba(94, 126, 91, 0.5)
+Dumping 'hsl(212, 55%, 32%)' in different formats:
+ - rgb(37, 79, 126)
+ - rgba(37, 79, 126, 1)
+ - hsl(212, 55%, 32%)
+ - hsla(212, 55%, 32%, 1)
+ - hsv(212, 71%, 50%)
+ - hsva(212, 71%, 50%, 1)
+ - #254F7E
+ - #247
+ - undefined
+ - default: hsl(212, 55%, 32%)
+Dumping 'hsla(212, 55%, 32%, 0.5)' in different formats:
+ - rgb(37, 79, 126)
+ - rgba(37, 79, 126, 0.5)
+ - hsl(212, 55%, 32%)
+ - hsla(212, 55%, 32%, 0.5)
+ - hsv(212, 71%, 50%)
+ - hsva(212, 71%, 50%, 0.5)
+ - #254F7E
+ - #247
+ - undefined
+ - default: hsla(212, 55%, 32%, 0.5)
+Dumping '#00FFFF' in different formats:
+ - rgb(0, 255, 255)
+ - rgba(0, 255, 255, 1)
+ - hsl(180, 100%, 50%)
+ - hsla(180, 100%, 50%, 1)
+ - hsv(180, 100%, 100%)
+ - hsva(180, 100%, 100%, 1)
+ - #00FFFF
+ - #0FF
+ - cyan
+ - default: #00FFFF
+Dumping '#0FF' in different formats:
+ - rgb(0, 255, 255)
+ - rgba(0, 255, 255, 1)
+ - hsl(180, 100%, 50%)
+ - hsla(180, 100%, 50%, 1)
+ - hsv(180, 100%, 100%)
+ - hsva(180, 100%, 100%, 1)
+ - #00FFFF
+ - #0FF
+ - cyan
+ - default: #0FF
+
