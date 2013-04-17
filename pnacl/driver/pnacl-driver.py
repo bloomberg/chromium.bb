@@ -264,7 +264,7 @@ GCCPatterns = [
   ( '(-Bstatic)',         "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',        "env.append('INPUTS', $0)"),
 
-  ( '-O(s)',              "env.set('OPT_LEVEL', $0)\n"),
+  ( '-O([sz])',           "env.set('OPT_LEVEL', $0)\n"),
   ( '-O([0-3])',          "env.set('OPT_LEVEL', $0)\n"),
   ( '-O([0-9]+)',         "env.set('OPT_LEVEL', '3')\n"),
   ( '-O',                 "env.set('OPT_LEVEL', '1')\n"),
