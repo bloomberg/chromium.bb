@@ -41,15 +41,15 @@ namespace WebCore {
 
     class V8WorkerContextEventListener : public V8EventListener {
     public:
-        static PassRefPtr<V8WorkerContextEventListener> create(v8::Local<v8::Object> listener, bool isInline, const WorldContextHandle& worldContext)
+        static PassRefPtr<V8WorkerContextEventListener> create(v8::Local<v8::Object> listener, bool isInline)
         {
-            return adoptRef(new V8WorkerContextEventListener(listener, isInline, worldContext));
+            return adoptRef(new V8WorkerContextEventListener(listener, isInline));
         }
 
         virtual void handleEvent(ScriptExecutionContext*, Event*);
 
     protected:
-        V8WorkerContextEventListener(v8::Local<v8::Object> listener, bool isInline, const WorldContextHandle& worldContext);
+        V8WorkerContextEventListener(v8::Local<v8::Object> listener, bool isInline);
 
     private:
         virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);

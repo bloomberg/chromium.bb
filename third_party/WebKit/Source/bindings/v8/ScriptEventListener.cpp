@@ -66,7 +66,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
         sourceURL = node->document()->url().string();
     }
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, WorldContextHandle(UseMainWorld));
+    return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node);
 }
 
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const QualifiedName& name, const AtomicString& value)
@@ -84,7 +84,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const
     TextPosition position = scriptController->eventHandlerPosition();
     String sourceURL = frame->document()->url().string();
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0, WorldContextHandle(UseMainWorld));
+    return V8LazyEventListener::create(name.localName().string(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0);
 }
 
 String eventListenerHandlerBody(Document* document, EventListener* listener)

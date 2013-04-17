@@ -101,7 +101,7 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
     if (wrapper)
         return wrapper;
 
-    RefPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute, WorldContextHandle(UseCurrentWorld));
+    RefPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute);
     if (wrapperPtr)
         object->SetHiddenValue(wrapperProperty, v8::External::New(wrapperPtr.get()));
 

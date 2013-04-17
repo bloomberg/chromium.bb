@@ -39,8 +39,8 @@
 
 namespace WebCore {
 
-V8WorkerContextErrorHandler::V8WorkerContextErrorHandler(v8::Local<v8::Object> listener, bool isInline, const WorldContextHandle& worldContext)
-    : V8WorkerContextEventListener(listener, isInline, worldContext)
+V8WorkerContextErrorHandler::V8WorkerContextErrorHandler(v8::Local<v8::Object> listener, bool isInline)
+    : V8WorkerContextEventListener(listener, isInline)
 {
 }
 
