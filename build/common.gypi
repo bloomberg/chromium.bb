@@ -641,6 +641,13 @@
         }, {
           'test_isolation_mode%': 'noop',
         }],
+        # Whether Android ARM build uses OpenMAX DL FFT.  Default is
+        # yes.  This will also enable WebAudio on Android ARM.
+        ['OS=="android" and target_arch=="arm"', {
+          'use_openmax_dl_fft%': 1,
+        }, {
+          'use_openmax_dl_fft%': 0,
+        }],
       ],
 
       # Set this to 1 to use the Google-internal file containing
@@ -676,9 +683,6 @@
       'google_api_key%': '',
       'google_default_client_id%': '',
       'google_default_client_secret%': '',
-
-      # Whether Android uses OpenMAX DL FFT.  Default is no.
-      'use_openmax_dl_fft%': 0,
     },
 
     # Copy conditionally-set variables out one scope.

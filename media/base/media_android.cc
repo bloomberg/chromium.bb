@@ -6,7 +6,9 @@
 
 #include <cpu-features.h>
 
+#include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "media/base/android/media_jni_registrar.h"
 
 namespace media {
 
@@ -22,6 +24,9 @@ bool InitializeMediaLibrary(const base::FilePath& module_dir) {
 }
 
 void InitializeMediaLibraryForTesting() {
+  // Register JNI bindings for android.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  RegisterJni(env);
 }
 
 bool IsMediaLibraryInitialized() {
