@@ -246,6 +246,21 @@ RenderTheme* RenderObject::theme() const
     return document()->page()->theme();
 }
 
+#ifndef NDEBUG
+String RenderObject::debugName() const
+{
+    StringBuilder name;
+    name.append(renderName());
+
+    if (Node* node = this->node()) {
+        name.append(' ');
+        name.append(node->debugName());
+    }
+
+    return name.toString();
+}
+#endif
+
 bool RenderObject::isDescendantOf(const RenderObject* obj) const
 {
     for (const RenderObject* r = this; r; r = r->m_parent) {

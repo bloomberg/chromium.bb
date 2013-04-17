@@ -151,6 +151,10 @@ public:
 
     virtual const char* renderName() const = 0;
 
+#ifndef NDEBUG
+    String debugName() const;
+#endif
+
     RenderObject* parent() const { return m_parent; }
     bool isDescendantOf(const RenderObject*) const;
 

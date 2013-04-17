@@ -258,38 +258,15 @@ RenderLayer::~RenderLayer()
         m_resizer->destroy();
 }
 
-String RenderLayer::name() const
+#ifndef NDEBUG
+String RenderLayer::debugName() const
 {
-    StringBuilder name;
-    name.append(renderer()->renderName());
-    if (Node* node = renderer()->node()) {
-        if (node->isElementNode()) {
-            name.append(' ');
-            name.append(toElement(node)->tagName());
-        }
-        if (node->hasID()) {
-            name.appendLiteral(" id=\'");
-            name.append(toElement(node)->getIdAttribute());
-            name.append('\'');
-        }
-
-        if (node->hasClass()) {
-            name.appendLiteral(" class=\'");
-            StyledElement* styledElement = static_cast<StyledElement*>(node);
-            for (size_t i = 0; i < styledElement->classNames().size(); ++i) {
-                if (i > 0)
-                    name.append(' ');
-                name.append(styledElement->classNames()[i]);
-            }
-            name.append('\'');
-        }
-    }
-
-    if (isReflection())
-        name.appendLiteral(" (reflection)");
-
-    return name.toString();
+    String name = renderer()->debugName();
+    if (!isReflection())
+        return name;
+    return name + " (reflection)";
 }
+#endif
 
 RenderLayerCompositor* RenderLayer::compositor() const
 {

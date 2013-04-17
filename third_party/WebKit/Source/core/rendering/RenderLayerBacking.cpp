@@ -192,7 +192,7 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
 {
     String layerName;
 #ifndef NDEBUG
-    layerName = m_owningLayer->name();
+    layerName = m_owningLayer->debugName();
 #endif
     
     m_graphicsLayer = createGraphicsLayer(layerName);
@@ -991,7 +991,7 @@ bool RenderLayerBacking::updateForegroundLayer(bool needsForegroundLayer)
         if (!m_foregroundLayer) {
             String layerName;
 #ifndef NDEBUG
-            layerName = m_owningLayer->name() + " (foreground)";
+            layerName = m_owningLayer->debugName() + " (foreground)";
 #endif
             m_foregroundLayer = createGraphicsLayer(layerName);
             m_foregroundLayer->setDrawsContent(true);
@@ -1017,7 +1017,7 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
         if (!m_backgroundLayer) {
             String layerName;
 #ifndef NDEBUG
-            layerName = m_owningLayer->name() + " (background)";
+            layerName = m_owningLayer->debugName() + " (background)";
 #endif
             m_backgroundLayer = createGraphicsLayer(layerName);
             m_backgroundLayer->setDrawsContent(true);
@@ -1029,7 +1029,7 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
         if (!m_contentsContainmentLayer) {
             String layerName;
 #ifndef NDEBUG
-            layerName = m_owningLayer->name() + " (contents containment)";
+            layerName = m_owningLayer->debugName() + " (contents containment)";
 #endif
             m_contentsContainmentLayer = createGraphicsLayer(layerName);
             m_contentsContainmentLayer->setAppliesPageScale(true);

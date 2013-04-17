@@ -1853,6 +1853,31 @@ FloatPoint Node::convertFromPage(const FloatPoint& p) const
 
 #ifndef NDEBUG
 
+String Node::debugName() const
+{
+    StringBuilder name;
+    name.append(nodeName());
+
+    if (hasID()) {
+        name.appendLiteral(" id=\'");
+        name.append(toElement(this)->getIdAttribute());
+        name.append('\'');
+    }
+
+    if (hasClass()) {
+        name.appendLiteral(" class=\'");
+        const StyledElement* styledElement = static_cast<const StyledElement*>(this);
+        for (size_t i = 0; i < styledElement->classNames().size(); ++i) {
+            if (i > 0)
+                name.append(' ');
+            name.append(styledElement->classNames()[i]);
+        }
+        name.append('\'');
+    }
+
+    return name.toString();
+}
+
 static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, const QualifiedName& name, const char* attrDesc)
 {
     if (!node->isElementNode())

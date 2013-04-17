@@ -457,9 +457,14 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
         m_secondaryBackingStoreBytes += backing->backingStoreMemoryEstimate();
     }
 
+    String layerName;
+#ifndef NDEBUG
+    layerName = layer->debugName();
+#endif
+
     LOG(Compositing, "%*p %dx%d %.2fKB (%s) %s\n", 12 + depth * 2, layer, backing->compositedBounds().width(), backing->compositedBounds().height(),
         backing->backingStoreMemoryEstimate() / 1024,
-        logReasonsForCompositing(layer), layer->name().utf8().data());
+        logReasonsForCompositing(layer), layerName.utf8().data());
 }
 #endif
 

@@ -567,6 +567,8 @@ public:
     virtual void removedFrom(ContainerNode* insertionPoint);
 
 #ifndef NDEBUG
+    String debugName() const;
+
     virtual void formatForDebugger(char* buffer, unsigned length) const;
 
     void showNode(const char* prefix = "") const;

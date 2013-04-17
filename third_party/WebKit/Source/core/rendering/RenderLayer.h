@@ -319,7 +319,9 @@ public:
     RenderLayer(RenderLayerModelObject*);
     ~RenderLayer();
 
-    String name() const;
+#ifndef NDEBUG
+    String debugName() const;
+#endif
 
     RenderLayerModelObject* renderer() const { return m_renderer; }
     RenderBox* renderBox() const { return m_renderer && m_renderer->isBox() ? toRenderBox(m_renderer) : 0; }
