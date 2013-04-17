@@ -195,4 +195,44 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
   ASSERT_TRUE(RunExtensionTest("keybinding/synthesized")) << message_;
 }
 
+// This test validates that an extension cannot request a shortcut that is
+// already in use by Chrome.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/dont_overwrite_system")) << message_;
+
+  ui_test_utils::NavigateToURL(browser(),
+      test_server()->GetURL("files/extensions/test_file.txt"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Activate the shortcut (Alt+Shift+F) to make page blue.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F, false, true, true, false));
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'blue') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+
+  // Activate the shortcut (Ctrl+F) to make page red (should not work).
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F, true, false, false, false));
+
+  // The page should still be blue.
+  result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'blue') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+}
+
 }  // extensions

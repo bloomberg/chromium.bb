@@ -638,6 +638,10 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
       cmd_id, browser_->host_desktop_type(), accelerator);
 }
 
+bool BrowserView::IsAcceleratorRegistered(const ui::Accelerator& accelerator) {
+  return accelerator_table_.find(accelerator) != accelerator_table_.end();
+}
+
 WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
