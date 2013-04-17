@@ -40,6 +40,10 @@
 	handled in-order and events are delivered in-order, this can
 	used as a barrier to ensure all previous requests and the
 	resulting events have been handled.
+
+	The object returned by this request will be destroyed by the
+	compositor after the callback is fired and as such the client must not
+	attempt to use it after that point.
       </description>
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
@@ -972,6 +976,10 @@
 	damage, or any other state changes. wl_surface.commit triggers a
 	display update, so the callback event will arrive after the next
 	output refresh where the surface is visible.
+
+	The object returned by this request will be destroyed by the
+	compositor after the callback is fired and as such the client must not
+	attempt to use it after that point.
       </description>
 
       <arg name="callback" type="new_id" interface="wl_callback"/>
