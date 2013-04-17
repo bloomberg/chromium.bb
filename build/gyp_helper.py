@@ -24,9 +24,11 @@ def apply_gyp_environment_from_file(file_path):
     raise
   supported_vars = (
       'CC',
+      'CC_wrapper',
       'CHROMIUM_GYP_FILE',
       'CHROMIUM_GYP_SYNTAX_CHECK',
       'CXX',
+      'CXX_wrapper',
       'GYP_DEFINES',
       'GYP_GENERATOR_FLAGS',
       'GYP_GENERATOR_OUTPUT',
