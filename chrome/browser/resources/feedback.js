@@ -305,7 +305,14 @@ function load() {
     'filePath': '',
   };
 
-  var query = window.location.search.substr(1).split('&');
+  var loc = window.location;
+  // Split the query string into an array of parameters.
+  var query = loc.search.substr(1).split('&');
+  // If we have a query in the hash.
+  if (loc.hash.indexOf('?') >= 0) {
+    // Remove the hash and split this query into parameters too.
+    query = query.concat(loc.hash.substr(loc.hash.indexOf('?') + 1).split('&'));
+  }
   for (var i = 0; i < query.length; i++) {
     // Decode and store each parameter value.
     parameter = query[i].split('=');
