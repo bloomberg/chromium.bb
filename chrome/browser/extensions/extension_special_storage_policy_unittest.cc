@@ -129,6 +129,24 @@ class ExtensionSpecialStoragePolicyTest : public extensions::ExtensionTest {
     return handler_app;
   }
 
+  scoped_refptr<Extension> CreateRegularApp() {
+#if defined(OS_WIN)
+    base::FilePath path(FILE_PATH_LITERAL("c:\\app"));
+#elif defined(OS_POSIX)
+    base::FilePath path(FILE_PATH_LITERAL("/app"));
+#endif
+    DictionaryValue manifest;
+    manifest.SetString(keys::kName, "App");
+    manifest.SetString(keys::kVersion, "1");
+    manifest.SetString(keys::kPlatformAppBackgroundPage, "background.html");
+    std::string error;
+    scoped_refptr<Extension> app = Extension::Create(
+        path, Manifest::INVALID_LOCATION, manifest,
+        Extension::NO_FLAGS, &error);
+    EXPECT_TRUE(app.get()) << error;
+    return app;
+  }
+
   // Verifies that the set of extensions protecting |url| is *exactly* equal to
   // |expected_extensions|. Pass in an empty set to verify that an origin is not
   // protected.
@@ -150,17 +168,19 @@ class ExtensionSpecialStoragePolicyTest : public extensions::ExtensionTest {
 TEST_F(ExtensionSpecialStoragePolicyTest, EmptyPolicy) {
   const GURL kHttpUrl("http://foo");
   const GURL kExtensionUrl("chrome-extension://bar");
+  scoped_refptr<Extension> app(CreateRegularApp());
 
   EXPECT_FALSE(policy_->IsStorageUnlimited(kHttpUrl));
   EXPECT_FALSE(policy_->IsStorageUnlimited(kHttpUrl));  // test cached result
   EXPECT_FALSE(policy_->IsStorageUnlimited(kExtensionUrl));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(app->url()));
   ExtensionSet empty_set;
   ExpectProtectedBy(empty_set, kHttpUrl);
 
   // This one is just based on the scheme.
   EXPECT_TRUE(policy_->IsStorageProtected(kExtensionUrl));
+  EXPECT_TRUE(policy_->IsStorageProtected(app->url()));
 }
-
 
 TEST_F(ExtensionSpecialStoragePolicyTest, AppWithProtectedStorage) {
   scoped_refptr<Extension> extension(CreateProtectedApp());
@@ -211,6 +231,23 @@ TEST_F(ExtensionSpecialStoragePolicyTest, AppWithUnlimitedStorage) {
   EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
   EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://foo.wildcards/")));
   EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
+}
+
+TEST_F(ExtensionSpecialStoragePolicyTest, IsInstalled) {
+  const GURL kHttpUrl("http://foo");
+  const GURL kExtensionUrl("chrome-extension://bar");
+  scoped_refptr<Extension> regular_app(CreateRegularApp());
+  scoped_refptr<Extension> protected_app(CreateProtectedApp());
+  scoped_refptr<Extension> unlimited_app(CreateUnlimitedApp());
+  policy_->GrantRightsForExtension(regular_app);
+  policy_->GrantRightsForExtension(protected_app);
+  policy_->GrantRightsForExtension(unlimited_app);
+
+  EXPECT_FALSE(policy_->IsInstalledApp(kHttpUrl));
+  EXPECT_FALSE(policy_->IsInstalledApp(kExtensionUrl));
+  EXPECT_TRUE(policy_->IsInstalledApp(regular_app->url()));
+  EXPECT_TRUE(policy_->IsInstalledApp(protected_app->url()));
+  EXPECT_TRUE(policy_->IsInstalledApp(unlimited_app->url()));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {

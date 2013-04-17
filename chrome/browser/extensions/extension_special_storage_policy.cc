@@ -87,11 +87,10 @@ const ExtensionSet* ExtensionSpecialStoragePolicy::ExtensionsProtectingOrigin(
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  if (!NeedsProtection(extension) &&
-      !extension->HasAPIPermission(
-          APIPermission::kUnlimitedStorage) &&
-      !extension->HasAPIPermission(
-          APIPermission::kFileBrowserHandler)) {
+  if (!(NeedsProtection(extension) ||
+        extension->HasAPIPermission(APIPermission::kUnlimitedStorage) ||
+        extension->HasAPIPermission(APIPermission::kFileBrowserHandler) ||
+        extension->is_app())) {
     return;
   }
   {
@@ -103,8 +102,7 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
       installed_apps_.Add(extension);
     if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
       unlimited_extensions_.Add(extension);
-    if (extension->HasAPIPermission(
-            APIPermission::kFileBrowserHandler))
+    if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Add(extension);
   }
   NotifyChanged();
@@ -113,11 +111,10 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  if (!NeedsProtection(extension) &&
-      !extension->HasAPIPermission(
-          APIPermission::kUnlimitedStorage) &&
-      !extension->HasAPIPermission(
-          APIPermission::kFileBrowserHandler)) {
+  if (!(NeedsProtection(extension) ||
+        extension->HasAPIPermission(APIPermission::kUnlimitedStorage) ||
+        extension->HasAPIPermission(APIPermission::kFileBrowserHandler) ||
+        extension->is_app())) {
     return;
   }
   {
