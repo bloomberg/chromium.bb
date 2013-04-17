@@ -37,6 +37,7 @@ function getNewTabPageHandle() {
 function handleNativeSuggestions() {
   onNativeSuggestionsCalls++;
   // Showing the loader at 100% height.
+  apiHandle.hideBars();
   apiHandle.showOverlay();
 }
 

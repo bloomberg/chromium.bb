@@ -90,6 +90,9 @@ namespace chrome {
 bool UseImmersiveFullscreen();
 
 // Implemented in immersive_mode_controller_factory.cc.
+void EnableImmersiveFullscreenForTest();
+
+// Implemented in immersive_mode_controller_factory.cc.
 ImmersiveModeController* CreateImmersiveModeController();
 
 }  // namespace chrome

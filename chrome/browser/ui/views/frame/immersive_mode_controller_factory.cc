@@ -25,6 +25,14 @@ bool UseImmersiveFullscreen() {
   return false;
 }
 
+// Implemented here so all the code dealing with flags lives in one place.
+void EnableImmersiveFullscreenForTest() {
+#if defined(OS_CHROMEOS)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(ash::switches::kAshImmersiveFullscreen);
+#endif
+}
+
 ImmersiveModeController* CreateImmersiveModeController() {
 #if defined(OS_CHROMEOS)
   return new ImmersiveModeControllerAsh();

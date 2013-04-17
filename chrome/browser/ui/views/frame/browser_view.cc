@@ -2320,6 +2320,8 @@ void BrowserView::UpdateDevToolsSplitPosition() {
 
 void BrowserView::UpdateUIForContents(WebContents* contents) {
   bool needs_layout = MaybeShowBookmarkBar(contents);
+  // TODO(jamescook): This function always returns true. Remove it and figure
+  // out when layout is actually required.
   needs_layout |= MaybeShowInfoBar(contents);
   if (needs_layout)
     Layout();

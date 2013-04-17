@@ -435,6 +435,11 @@ class BrowserView : public BrowserWindow,
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
+  views::SingleSplitView* GetContentsSplitForTest() { return contents_split_; }
+  // TODO(jamescook): Rename |contents_| and |contents_container_|.
+  ContentsContainer* GetContentsContainerForTest() { return contents_; }
+  views::WebView* GetContentsWebViewForTest() { return contents_container_; }
+
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.
@@ -650,6 +655,8 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container_;
 
   // The view that contains the selected WebContents.
+  // TODO(jamescook): Rename this to |contents_web_view_| in order to
+  // reduce confusion with ContentsContainer |contents_| below.
   views::WebView* contents_container_;
 
   // The view that contains devtools window for the selected WebContents.

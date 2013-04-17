@@ -29,13 +29,13 @@
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/webview/webview.h"
 
+using views::View;
+
 namespace {
 
 // The visible height of the shadow above the tabs. Clicks in this area are
 // treated as clicks to the frame, rather than clicks to the tab.
 const int kTabShadowSize = 2;
-// The vertical overlap between the TabStrip and the Toolbar.
-const int kToolbarTabStripVerticalOverlap = 3;
 // The number of pixels the bookmark bar should overlap the spacer by if the
 // spacer is visible.
 const int kSpacerBookmarkBarOverlap = 1;
@@ -100,6 +100,8 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostViews);
 };
 
+// static
+const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
@@ -331,10 +333,21 @@ void BrowserViewLayout::Layout(views::View* host) {
       browser_view_->top_container_->GetPreferredSize());
 
   int bottom = LayoutDownloadShelf(browser_view_->height());
+  // Treat a detached bookmark bar as if the web contents container is shifted
+  // upwards and overlaps it.
+  top -= GetContentsOffsetForBookmarkBar();
+  LayoutContentsSplitView(top, bottom);
+
+  // Instant extended can put suggestions in a web view, which can require an
+  // offset to align with the omnibox. This offset must be recomputed after
+  // split view layout to account for infobar heights.
   int active_top_margin = GetTopMarginForActiveContent();
-  top -= active_top_margin;
-  contents_container_->SetActiveTopMargin(active_top_margin);
-  LayoutTabContents(top, bottom);
+  bool needs_layout =
+      contents_container_->SetActiveTopMargin(active_top_margin);
+  needs_layout |=
+      contents_container_->SetOverlayTopMargin(GetTopMarginForOverlayContent());
+  if (needs_layout)
+    contents_container_->Layout();
 
   // Now set the contents to display at their previous origin if we just hid the
   // bookmark and/or infobars.
@@ -475,6 +488,8 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
   int y = top;
   if (!browser_view_->IsBookmarkBarVisible()) {
     bookmark_bar->SetVisible(false);
+    // TODO(jamescook): Don't change the bookmark bar height when it is
+    // invisible, so we can use its height for layout even in that state.
     bookmark_bar->SetBounds(0, y, browser_view_->width(), 0);
     return y;
   }
@@ -510,46 +525,19 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   return overlapped_top + height;
 }
 
-void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
-  // The ultimate idea is to calculate bounds and reserved areas for all
-  // contents views first and then resize them all, so every view
-  // (and its contents) is resized and laid out only once.
-
-  // The views hierarcy (see browser_view.h for more details):
-  // contents_split_ -> [contents_container_ | devtools]
-
-  gfx::Rect contents_bounds;
-  gfx::Rect devtools_bounds;
-
-  gfx::Rect contents_split_bounds(vertical_layout_rect_.x(), top,
+void BrowserViewLayout::LayoutContentsSplitView(int top, int bottom) {
+  // |contents_split_| contains web page contents and devtools.
+  // See browser_view.h for details.
+  gfx::Rect contents_split_bounds(vertical_layout_rect_.x(),
+                                  top,
                                   vertical_layout_rect_.width(),
                                   std::max(0, bottom - top));
-  gfx::Point contents_split_offset(
-      contents_split_bounds.x() - contents_split_->bounds().x(),
-      contents_split_bounds.y() - contents_split_->bounds().y());
-
-  // Layout resize corner and calculate reserved contents rects here as all
-  // contents view bounds are already determined, but not yet set at this point,
-  // so contents will be laid out once at most.
-  gfx::Rect browser_reserved_rect;
-  if (!browser_view_->frame_->IsMaximized() &&
-      !browser_view_->frame_->IsFullscreen()) {
-    gfx::Size resize_corner_size = browser_view_->GetResizeCornerSize();
-    if (!resize_corner_size.IsEmpty()) {
-      gfx::Rect bounds = browser_view_->GetContentsBounds();
-      gfx::Point resize_corner_origin(
-          bounds.right() - resize_corner_size.width(),
-          bounds.bottom() - resize_corner_size.height());
-      browser_reserved_rect =
-          gfx::Rect(resize_corner_origin, resize_corner_size);
-    }
-  }
-
-  // Now it's safe to actually resize all contents views in the hierarchy.
   contents_split_->SetBoundsRect(contents_split_bounds);
 }
 
-int BrowserViewLayout::GetTopMarginForActiveContent() {
+int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
+  // If the bookmark bar is hidden or attached to the omnibox the web contents
+  // will appear directly underneath it and does not need an offset.
   BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
   if (!bookmark_bar ||
       !browser_view_->IsBookmarkBarVisible() ||
@@ -557,12 +545,68 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
     return 0;
   }
 
+  // Dev tools.
   if (contents_split_->child_at(1) && contents_split_->child_at(1)->visible())
     return 0;
 
-  // Adjust for separator.
+  // Offset for the detached bookmark bar.
   return bookmark_bar->height() -
       views::NonClientFrameView::kClientEdgeThickness;
+}
+
+int BrowserViewLayout::GetTopMarginForActiveContent() {
+  // During an immersive reveal, if instant extended is showing suggestions
+  // in the main active web view, ensure that active web view appears aligned
+  // with the bottom of the omnibox.
+  InstantUIState instant_ui_state = GetInstantUIState();
+  if (instant_ui_state == kInstantUIFullPageResults &&
+      browser_view_->immersive_mode_controller()->IsRevealed())
+    return GetTopMarginForImmersiveInstant();
+
+  // Usually we only use a margin if there's a detached bookmarks bar.
+  return GetContentsOffsetForBookmarkBar();
+}
+
+int BrowserViewLayout::GetTopMarginForOverlayContent() {
+  // During an immersive reveal, if instant extended is showing suggestions
+  // in an overlay web view, ensure that overlay web view appears aligned
+  // with the bottom of the omnibox.
+  InstantUIState instant_ui_state = GetInstantUIState();
+  if (instant_ui_state == kInstantUIOverlay &&
+      browser_view_->immersive_mode_controller()->IsRevealed())
+    return GetTopMarginForImmersiveInstant();
+
+  // Usually the overlay content is aligned with the active web content.
+  return 0;
+}
+
+int BrowserViewLayout::GetTopMarginForImmersiveInstant() {
+  // Compute the position of the bottom edge of the top container views,
+  // expressed as an offset in the coordinates of |contents_container_|,
+  // because the offset will be applied in |contents_container_| layout.
+  // NOTE: This requires contents_split_ layout to be complete, as the
+  // coordinate system conversion depends on the contents_split_ origin.
+  gfx::Point bottom_edge(0, browser_view_->top_container_->height());
+  views::View::ConvertPointToTarget(browser_view_->top_container_,
+                                    contents_container_,
+                                    &bottom_edge);
+  return bottom_edge.y();
+}
+
+BrowserViewLayout::InstantUIState BrowserViewLayout::GetInstantUIState() {
+  if (!browser()->search_model()->mode().is_search())
+    return kInstantUINone;
+
+  // If the search suggestions are already being displayed in the overlay
+  // contents then return kInstantUIOverlay.
+  if (contents_container_->overlay_height() > 0)
+    return kInstantUIOverlay;
+
+  // Top bars stay visible until the results page notifies Chrome it is ready.
+  if (browser()->search_model()->top_bars_visible())
+    return kInstantUINone;
+
+  return kInstantUIFullPageResults;
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {

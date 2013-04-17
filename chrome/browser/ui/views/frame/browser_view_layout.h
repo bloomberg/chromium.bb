@@ -33,6 +33,9 @@ class SingleSplitView;
 // The layout manager used in chrome browser.
 class BrowserViewLayout : public views::LayoutManager {
  public:
+  // The vertical overlap between the TabStrip and the Toolbar.
+  static const int kToolbarTabStripVerticalOverlap;
+
   BrowserViewLayout();
   virtual ~BrowserViewLayout();
 
@@ -61,8 +64,18 @@ class BrowserViewLayout : public views::LayoutManager {
   virtual void Layout(views::View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
- protected:
+ private:
   class WebContentsModalDialogHostViews;
+
+  enum InstantUIState {
+    // No instant suggestions are being shown.
+    kInstantUINone,
+    // Instant suggestions are displayed in a overlay overlapping the tab
+    // contents.
+    kInstantUIOverlay,
+    // Instant suggestions are displayed in the main tab contents.
+    kInstantUIFullPageResults,
+  };
 
   Browser* browser();
   const Browser* browser() const;
@@ -78,14 +91,32 @@ class BrowserViewLayout : public views::LayoutManager {
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
-  // Layout the WebContents container, between the coordinates |top| and
-  // |bottom|.
-  void LayoutTabContents(int top, int bottom);
+  // Layout the |contents_split_| view between the coordinates |top| and
+  // |bottom|. See browser_view.h for details of the relationship between
+  // |contents_split_| and other views.
+  void LayoutContentsSplitView(int top, int bottom);
+
+  // Returns the vertical offset for the web contents to account for a
+  // detached bookmarks bar.
+  int GetContentsOffsetForBookmarkBar();
 
   // Returns the top margin to adjust the contents_container_ by. This is used
   // to make the bookmark bar and contents_container_ overlap so that the
   // preview contents hides the bookmark bar.
   int GetTopMarginForActiveContent();
+
+  // Returns the top margin by which to adjust the instant overlay web
+  // contents. Used to make instant extended suggestions align with the
+  // omnibox in immersive fullscreen.
+  int GetTopMarginForOverlayContent();
+
+  // Returns the top margin for the active or overlay web view in
+  // |contents_container_| for an immersive fullscreen reveal while instant
+  // extended is providing suggestions.
+  int GetTopMarginForImmersiveInstant();
+
+  // Returns the state of instant extended suggestions.
+  InstantUIState GetInstantUIState();
 
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
@@ -93,14 +124,6 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Returns true if an infobar is showing.
   bool InfobarVisible() const;
-
-  // See description above vertical_layout_rect_ for details.
-  void set_vertical_layout_rect(const gfx::Rect& bounds) {
-    vertical_layout_rect_ = bounds;
-  }
-  const gfx::Rect& vertical_layout_rect() const {
-    return vertical_layout_rect_;
-  }
 
   // Child views that the layout manager manages.
   views::SingleSplitView* contents_split_;
@@ -112,6 +135,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // The bounds within which the vertically-stacked contents of the BrowserView
   // should be laid out within. This is just the local bounds of the
   // BrowserView.
+  // TODO(jamescook): Remove this and just use browser_view_->GetLocalBounds().
   gfx::Rect vertical_layout_rect_;
 
   // The distance the FindBar is from the top of the window, in pixels.

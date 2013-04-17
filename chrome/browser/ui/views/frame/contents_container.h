@@ -60,8 +60,14 @@ class ContentsContainer : public views::View,
 
   // Sets the active top margin; the active WebView's y origin would be
   // positioned at this |margin|, causing the active WebView to be pushed down
-  // vertically by |margin| pixels in the |ContentsContainer|.
-  void SetActiveTopMargin(int margin);
+  // vertically by |margin| pixels in the |ContentsContainer|. Returns true
+  // if the margin changed and this view needs Layout().
+  bool SetActiveTopMargin(int margin);
+
+  // Sets a vertical offset of |margin| pixels for the |overlay_| content,
+  // similar to SetActiveTopMargin(). Returns true if the margin changed and
+  // this view needs Layout().
+  bool SetOverlayTopMargin(int margin);
 
   // Returns the bounds the overlay would be shown at.
   gfx::Rect GetOverlayBounds() const;
@@ -75,11 +81,15 @@ class ContentsContainer : public views::View,
   // the content page.
   bool IsOverlayFullHeight() const;
 
- private:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
+  // Testing interface:
+  views::WebView* GetActiveWebViewForTest() { return active_; }
+  views::WebView* GetOverlayWebViewForTest() { return overlay_; }
+
+ private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -94,6 +104,11 @@ class ContentsContainer : public views::View,
   // The margin between the top and the active view. This is used to make the
   // overlay overlap the bookmark bar on the new tab page.
   int active_top_margin_;
+
+  // The margin between the top of this view and the overlay view. Used to
+  // push down the instant extended suggestions during an immersive fullscreen
+  // reveal.
+  int overlay_top_margin_;
 
   // The desired height of the overlay and units.
   int overlay_height_;
