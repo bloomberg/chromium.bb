@@ -310,6 +310,11 @@ class GomaError(Exception):
   """Indicates error with setting up Goma."""
 
 
+class ClangError(Exception):
+  """Indicates error with setting up Clang."""
+  pass
+
+
 @cros.CommandDecorator(COMMAND_NAME)
 class ChromeSDKCommand(cros.CrosCommand):
   """
@@ -324,6 +329,9 @@ class ChromeSDKCommand(cros.CrosCommand):
   # Note, this URL is not accessible outside of corp.
   _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
                'download/goma_ctl.sh')
+
+  _CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
+  _CLANG_UPDATE_SH = 'tools/clang/scripts/update.sh'
 
   EBUILD_ENV = (
       'CXX',
@@ -379,9 +387,13 @@ class ChromeSDKCommand(cros.CrosCommand):
              'is built against.  The version shown in the SDK shell prompt '
              'will then have an asterisk prepended to it.')
     parser.add_argument(
+        '--chrome-src', type=osutils.ExpandPath,
+        help='Specifies the location of a Chrome src/ directory.  Required if '
+             'running with --clang if not running from a Chrome checkout.')
+    parser.add_argument(
         '--clang', action='store_true', default=False,
         help='Sets up the environment for building with clang.  Due to a bug '
-             'with ninja, requires --make to be set.')
+             'with ninja, requires --make and possibly --chrome-src to be set.')
     parser.add_argument(
         '--internal', action='store_true', default=False,
         help='Sets up SDK for building official (internal) Chrome '
@@ -482,6 +494,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['CXX_host'] = 'g++'
     env['CC_host'] = 'gcc'
 
+    if options.clang:
+      clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
+      env['PATH'] = '%s:%s' % (clang_path, env['PATH'])
+
+    # The Goma path must appear before all the local compiler paths.
     if goma_dir:
       env['PATH'] = '%s:%s' % (goma_dir, env['PATH'])
 
@@ -561,15 +578,15 @@ class ChromeSDKCommand(cros.CrosCommand):
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
     goma_ctl = osutils.Which('goma_ctl.sh', user_env.get('PATH'))
     if goma_ctl is not None:
-      cros_build_lib.Warning(
+      logging.warning(
           '%s is adding Goma to the PATH.  Using that Goma instead of the '
-          'managed Goma install.' % user_rc)
+          'managed Goma install.', user_rc)
       manifest = os.path.join(os.path.dirname(goma_ctl), 'MANIFEST')
       platform_env = osutils.SourceEnvironment(manifest, ['PLATFORM'])
       platform = platform_env.get('PLATFORM')
       if platform is not None and platform != 'chromeos':
-        cros_build_lib.Warning('Found %s version of Goma in PATH.', platform)
-        cros_build_lib.Warning('Goma will not work')
+        logging.warning('Found %s version of Goma in PATH.', platform)
+        logging.warning('Goma will not work')
 
   @staticmethod
   def _VerifyChromiteBin(user_rc):
@@ -581,9 +598,26 @@ class ChromeSDKCommand(cros.CrosCommand):
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
     chromite_bin = osutils.Which('parallel_emerge', user_env.get('PATH'))
     if chromite_bin is not None:
-      cros_build_lib.Warning(
+      logging.warning(
           '%s is adding chromite/bin to the PATH.  Remove it from the PATH to '
           'use the the default Chromite.', user_rc)
+
+  @staticmethod
+  def _VerifyClang(user_rc):
+    """Verify that the user has not set a clang bin/ dir in user_rc.
+
+    Arguments:
+      user_rc: User-supplied rc file.
+    """
+    user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
+    clang_bin = osutils.Which('clang', user_env.get('PATH'))
+    if clang_bin is not None:
+      clang_dir = os.path.dirname(clang_bin)
+      if not osutils.Which('goma_ctl.sh', clang_dir):
+        logging.warning(
+            '%s is adding Clang to the PATH.  Because of this, Goma is being '
+            'bypassed.  Remove it from the PATH to use Goma with the default '
+            'Clang.', user_rc)
 
   @contextlib.contextmanager
   def _GetRCFile(self, env, user_rc):
@@ -603,6 +637,8 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     self._VerifyGoma(user_rc)
     self._VerifyChromiteBin(user_rc)
+    if self.options.clang:
+      self._VerifyClang(user_rc)
 
     # We need a temporary rc file to 'wrap' the user configuration file,
     # because running with '--rcfile' causes bash to ignore bash special
@@ -668,6 +704,25 @@ class ChromeSDKCommand(cros.CrosCommand):
         raise GomaError('No Goma port detected')
     return goma_dir, port
 
+  def _SetupClang(self):
+    """Install clang if needed."""
+    clang_path = os.path.join(self.options.chrome_src, self._CLANG_DIR)
+    if not os.path.exists(clang_path):
+      try:
+        update_sh = os.path.join(self.options.chrome_src, self._CLANG_UPDATE_SH)
+        if not os.path.isfile(update_sh):
+          raise ClangError('%s not found.' % update_sh)
+        results = cros_build_lib.DebugRunCommand(
+            [update_sh], cwd=self.options.chrome_src, error_code_ok=True)
+        if results.returncode:
+          raise ClangError('Clang update failed with error code %s' %
+                           (results.returncode,))
+        if not os.path.exists(clang_path):
+          raise ClangError('%s not found.' % clang_path)
+      except ClangError as e:
+        logging.error('Encountered errors while installing/updating clang: %s',
+                      e)
+
   def Run(self):
     """Perform the command."""
     if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
@@ -675,6 +730,19 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     if self.options.clang and not self.options.make:
       cros_build_lib.Die('--clang requires --make to be set.')
+
+    if not self.options.chrome_src:
+      checkout = commandline.DetermineCheckout(os.getcwd())
+      self.options.chrome_src = checkout.chrome_src_dir
+    else:
+      checkout = commandline.DetermineCheckout(self.options.chrome_src)
+      if not checkout.chrome_src_dir:
+        cros_build_lib.Die('Chrome checkout not found at %s',
+                           self.options.chrome_src)
+      self.options.chrome_src = checkout.chrome_src_dir
+
+    if self.options.clang and not self.options.chrome_src:
+      cros_build_lib.Die('--clang requires --chrome-src to be set.')
 
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
@@ -697,6 +765,9 @@ class ChromeSDKCommand(cros.CrosCommand):
         goma_dir, goma_port = self._FetchGoma()
       except GomaError as e:
         logging.error('Goma: %s.  Bypass by running with --nogoma.', e)
+
+    if self.options.clang:
+      self._SetupClang()
 
     with self.sdk.Prepare(components, version=prepare_version) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options,

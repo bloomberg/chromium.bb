@@ -163,8 +163,6 @@ class SDKFetcherMock(partial_mock.PartialMock):
     return self.backup['_GetMetadata'](inst, *args, **kwargs)
 
 
-
-
 class RunThroughTest(cros_test_lib.MockTempDirTestCase,
                      cros_test_lib.LoggingTestCase):
   """Run the script with most things mocked out."""
@@ -180,7 +178,8 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
   }
 
   def SetupCommandMock(self, extra_args=None):
-    cmd_args = ['--board', SDKFetcherMock.BOARD, 'true']
+    cmd_args = ['--board', SDKFetcherMock.BOARD, '--chrome-src',
+                self.chrome_src_dir, 'true']
     if extra_args:
       cmd_args.extend(extra_args)
 
@@ -188,6 +187,11 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
         cmd_args, base_args=['--cache-dir', self.tempdir])
     self.StartPatcher(self.cmd_mock)
     self.cmd_mock.UnMockAttr('Run')
+
+  def SourceEnvironmentMock(self, path, *_args, **_kwargs):
+    if path.endswith('environment'):
+      return copy.deepcopy(self.FAKE_ENV)
+    return {}
 
   def setUp(self):
     self.rc_mock = cros_build_lib_unittest.RunCommandMock()
@@ -197,13 +201,23 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.sdk_mock = self.StartPatcher(SDKFetcherMock(
         external_mocks=[self.rc_mock]))
 
+    # This needs to occur before initializing MockChromeSDKCommand.
+    self.bashrc = os.path.join(self.tempdir, 'bashrc')
+    self.PatchObject(constants, 'CHROME_SDK_BASHRC', new=self.bashrc)
+
     self.PatchObject(osutils, 'SourceEnvironment',
-                     autospec=True, return_value=self.FAKE_ENV)
+                     autospec=True, side_effect=self.SourceEnvironmentMock)
     self.rc_mock.AddCmdResult(cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD,
                               output='8088')
 
     # Initialized by SetupCommandMock.
     self.cmd_mock = None
+
+    # Set up a fake Chrome src/ directory
+    self.chrome_root = os.path.join(self.tempdir, 'chrome_root')
+    self.chrome_src_dir = os.path.join(self.chrome_root, 'src')
+    osutils.SafeMakedirs(self.chrome_src_dir)
+    osutils.Touch(os.path.join(self.chrome_root, '.gclient'))
 
   @property
   def cache(self):
@@ -239,24 +253,39 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       for c in [constants.IMAGE_SCRIPTS_TAR, constants.CHROME_ENV_TAR]:
         self.assertFalse(c in ctx.key_map)
 
+  @staticmethod
+  def FindInPath(paths, endswith):
+    for path in paths.split(':'):
+      if path.endswith(endswith):
+        return True
+    return False
+
   def testGomaInPath(self, inverted=False):
     """Verify that we do indeed add Goma to the PATH."""
     extra_args = ['--nogoma'] if inverted else None
     self.SetupCommandMock(extra_args)
     self.cmd_mock.inst.Run()
 
-    paths = self.cmd_mock.env['PATH']
-    found = False
-    for path in paths.split(':'):
-      if path.endswith('goma'):
-        found = True
-        break
     assert_fn = self.assertFalse if inverted else self.assertTrue
-    assert_fn(found)
+    assert_fn(self.FindInPath(self.cmd_mock.env['PATH'], 'goma'))
 
   def testNoGoma(self):
     """Verify that we do not add Goma to the PATH."""
     self.testGomaInPath(inverted=True)
+
+  def testClang(self):
+    """Verifies clang codepath."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      cmd_cls = cros_chrome_sdk.ChromeSDKCommand
+      update_sh = os.path.join(self.chrome_src_dir, cmd_cls._CLANG_UPDATE_SH)
+      osutils.Touch(update_sh, makedirs=True)
+      self.rc_mock.AddCmdResult(partial_mock.ListRegex('.*-gcc -dumpversion'),
+                                output='4.7.3')
+      self.SetupCommandMock(extra_args=['--clang', '--make'])
+      self.cmd_mock.inst.Run()
+      self.assertTrue(self.FindInPath(
+        self.cmd_mock.env['PATH'], cmd_cls._CLANG_DIR))
+      self.AssertLogsContain(logs, '%s not found.' % cmd_cls._CLANG_DIR)
 
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,
@@ -421,8 +450,6 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(cros_chrome_sdk.SDKError, self.sdk.GetFullVersion,
                       self.VERSION)
 
-
-
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.VERSION
@@ -436,6 +463,36 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
     self.assertEquals(self.sdk.GetDefaultVersion(), self.VERSION)
 
+
+class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
+                     cros_test_lib.LoggingTestCase):
+  """Tests user_rc PATH validation and warnings."""
+
+  def testPathVerifyWarnings(self):
+    """Test the user rc PATH verification codepath."""
+    def SourceEnvironmentMock(*_args, **_kwargs):
+      return {
+          'PATH': ':'.join([os.path.dirname(p) for p in abs_paths]),
+      }
+
+    self.PatchObject(osutils, 'SourceEnvironment',
+                     side_effect=SourceEnvironmentMock)
+    file_list = (
+      'goma/goma_ctl.sh',
+      'clang/clang',
+      'chromite/parallel_emerge',
+    )
+    abs_paths = [os.path.join(self.tempdir, relpath) for relpath in file_list]
+    for p in abs_paths:
+      osutils.Touch(p, makedirs=True, mode=0755)
+
+    with cros_test_lib.LoggingCapturer() as logs:
+      cros_chrome_sdk.ChromeSDKCommand._VerifyGoma(None)
+      cros_chrome_sdk.ChromeSDKCommand._VerifyClang(None)
+      cros_chrome_sdk.ChromeSDKCommand._VerifyChromiteBin(None)
+
+    for msg in ['managed Goma', 'default Clang', 'default Chromite']:
+      self.AssertLogsMatch(logs, msg)
 
 
 if __name__ == '__main__':

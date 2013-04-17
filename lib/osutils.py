@@ -55,18 +55,22 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False):
     raise
 
 
-def Touch(path, makedirs=False):
+def Touch(path, makedirs=False, mode=None):
   """Simulate unix touch. Create if doesn't exist and update its timestamp.
 
   Arguments:
     path: a string, file name of the file to touch (creating if not present).
     makedirs: If True, create missing leading directories in the path.
+    mode: The access permissions to set.  In the style of chmod.  Defaults to
+          using the umask.
   """
   if makedirs:
     SafeMakedirs(os.path.dirname(path))
 
   # Create the file if nonexistant.
   open(path, 'a').close()
+  if mode is not None:
+    os.chmod(path, mode)
   # Update timestamp to right now.
   os.utime(path, None)
 
