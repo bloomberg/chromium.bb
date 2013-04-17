@@ -349,10 +349,15 @@ void CachedResource::checkNotify()
         c->notifyFinished(this);
 }
 
-void CachedResource::data(PassRefPtr<ResourceBuffer> data)
+void CachedResource::appendData(const char* data, int length)
 {
-    m_data = data;
-    setEncodedSize(m_data ? m_data->size() : 0);
+    if (m_options.dataBufferingPolicy == DoNotBufferData)
+        return;
+    if (m_data)
+        m_data->append(data, length);
+    else
+        m_data = ResourceBuffer::create(data, length);
+    setEncodedSize(m_data->size());
 }
 
 void CachedResource::error(CachedResource::Status status)

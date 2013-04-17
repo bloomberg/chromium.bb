@@ -73,9 +73,6 @@ public:
 
     void releaseResources();
 
-    PassRefPtr<ResourceBuffer> resourceData();
-    void clearResourceData();
-
     void didChangePriority(ResourceLoadPriority);
 
     // ResourceHandleClient
@@ -99,8 +96,6 @@ public:
 
     const ResourceRequest& request() const { return m_request; }
 
-    void setDataBufferingPolicy(DataBufferingPolicy);
-
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
@@ -113,18 +108,13 @@ private:
 
     bool cancelled() const { return m_cancelled; }
 
-    void sendDataToResource(const char*, int);
-
     RefPtr<ResourceHandle> m_handle;
     RefPtr<Frame> m_frame;
     RefPtr<DocumentLoader> m_documentLoader;
     ResourceResponse m_response;
 
-    void addData(const char*, int);
-
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
-    RefPtr<ResourceBuffer> m_resourceData;
     
     unsigned long m_identifier;
 

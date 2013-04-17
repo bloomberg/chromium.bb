@@ -52,7 +52,7 @@ public:
 
 private:
     virtual void didAddClient(CachedResourceClient*);
-    virtual void data(PassRefPtr<ResourceBuffer> data) OVERRIDE;
+    virtual void appendData(const char*, int) OVERRIDE;
 
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
     virtual void allClientsRemoved();

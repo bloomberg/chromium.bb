@@ -42,36 +42,14 @@ CachedRawResource::CachedRawResource(ResourceRequest& resourceRequest, Type type
 {
 }
 
-void CachedRawResource::data(PassRefPtr<ResourceBuffer> data)
+void CachedRawResource::appendData(const char* data, int length)
 {
+    CachedResource::appendData(data, length);
+
     CachedResourceHandle<CachedRawResource> protect(this);
-    const char* incrementalData = 0;
-    size_t incrementalDataLength = 0;
-    if (data) {
-        // If we are buffering data, then we are saving the buffer in m_data and need to manually
-        // calculate the incremental data. If we are not buffering, then m_data will be null and
-        // the buffer contains only the incremental data.
-        size_t previousDataLength = (m_options.dataBufferingPolicy == BufferData) ? encodedSize() : 0;
-        ASSERT(data->size() >= previousDataLength);
-        incrementalData = data->data() + previousDataLength;
-        incrementalDataLength = data->size() - previousDataLength;
-    }
-
-    if (m_options.dataBufferingPolicy == BufferData)
-        CachedResource::data(data);
-
-    DataBufferingPolicy dataBufferingPolicy = m_options.dataBufferingPolicy;
-    if (incrementalDataLength) {
-        CachedResourceClientWalker<CachedRawResourceClient> w(m_clients);
-        while (CachedRawResourceClient* c = w.next())
-            c->dataReceived(this, incrementalData, incrementalDataLength);
-    }
-
-    if (dataBufferingPolicy == BufferData && m_options.dataBufferingPolicy == DoNotBufferData) {
-        if (m_loader)
-            m_loader->setDataBufferingPolicy(DoNotBufferData);
-        clear();
-    }
+    CachedResourceClientWalker<CachedRawResourceClient> w(m_clients);
+    while (CachedRawResourceClient* c = w.next())
+        c->dataReceived(this, data, length);
 }
 
 void CachedRawResource::didAddClient(CachedResourceClient* c)
@@ -165,6 +143,7 @@ void CachedRawResource::setDefersLoading(bool defers)
 void CachedRawResource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
 {
     m_options.dataBufferingPolicy = dataBufferingPolicy;
+    clear();
 }
 
 static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
@@ -232,8 +211,6 @@ void CachedRawResource::clear()
 {
     m_data.clear();
     setEncodedSize(0);
-    if (m_loader)
-        m_loader->clearResourceData();
 }
 
 void CachedRawResource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

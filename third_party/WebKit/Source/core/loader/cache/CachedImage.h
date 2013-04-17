@@ -76,7 +76,7 @@ public:
     virtual void allClientsRemoved();
     virtual void destroyDecodedData();
 
-    virtual void data(PassRefPtr<ResourceBuffer> data) OVERRIDE;
+    virtual void appendData(const char*, int) OVERRIDE;
     virtual void error(CachedResource::Status);
     virtual void responseReceived(const ResourceResponse&);
     virtual void finishOnePart() OVERRIDE;

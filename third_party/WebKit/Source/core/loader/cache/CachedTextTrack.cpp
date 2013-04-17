@@ -46,9 +46,9 @@ CachedTextTrack::~CachedTextTrack()
 {
 }
 
-void CachedTextTrack::data(PassRefPtr<ResourceBuffer> data)
+void CachedTextTrack::appendData(const char* data, int length)
 {
-    CachedResource::data(data);
+    CachedResource::appendData(data, length);
     CachedResourceClientWalker<CachedResourceClient> walker(m_clients);
     while (CachedResourceClient *client = walker.next())
         client->deprecatedDidReceiveCachedResource(this);

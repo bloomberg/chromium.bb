@@ -41,11 +41,9 @@
 #include "MemoryCache.h"
 #include "Page.h"
 #include "ProgressTracker.h"
-#include "ResourceBuffer.h"
 #include "ResourceError.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
-#include "SharedBuffer.h"
 
 namespace WebCore {
 
@@ -59,11 +57,6 @@ ResourceLoader::RequestCountTracker::RequestCountTracker(CachedResourceLoader* c
 ResourceLoader::RequestCountTracker::~RequestCountTracker()
 {
     m_cachedResourceLoader->decrementRequestCount(m_resource);
-}
-
-PassRefPtr<ResourceBuffer> ResourceLoader::resourceData()
-{
-    return m_resourceData;
 }
 
 PassRefPtr<ResourceLoader> ResourceLoader::create(Frame* frame, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
@@ -134,7 +127,6 @@ void ResourceLoader::releaseResources()
         m_handle = 0;
     }
 
-    m_resourceData = 0;
     m_deferredRequest = ResourceRequest();
 }
 
@@ -215,33 +207,6 @@ FrameLoader* ResourceLoader::frameLoader() const
     if (!m_frame)
         return 0;
     return m_frame->loader();
-}
-
-void ResourceLoader::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
-{ 
-    m_options.dataBufferingPolicy = dataBufferingPolicy; 
-
-    // Reset any already buffered data
-    if (dataBufferingPolicy == DoNotBufferData)
-        m_resourceData = 0;
-}
-    
-
-void ResourceLoader::addData(const char* data, int length)
-{
-    if (m_options.dataBufferingPolicy == DoNotBufferData)
-        return;
-        
-    if (m_resourceData)
-        m_resourceData->append(data, length);
-    else
-        m_resourceData = ResourceBuffer::create(data, length);
-}
-
-void ResourceLoader::clearResourceData()
-{
-    if (m_resourceData)
-        m_resourceData->clear();
 }
 
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
@@ -461,13 +426,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
             cancel();
             return;
         }
-    }
-
-    RefPtr<ResourceBuffer> buffer = resourceData();
-    if (m_loadingMultipartContent && buffer && buffer->size()) {
-        sendDataToResource(buffer->data(), buffer->size());
-        m_resource->finishOnePart();
-        clearResourceData();
+    } else if (m_loadingMultipartContent) {
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
         m_documentLoader->subresourceLoaderFinishedLoadingOnePart(this);
@@ -495,34 +454,15 @@ void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int lengt
     // anything including removing the last reference to this object.
     RefPtr<ResourceLoader> protect(this);
 
-    addData(data, length);
-
     // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
     if (m_options.sendLoadCallbacks == SendCallbacks && m_frame)
         frameLoader()->notifier()->didReceiveData(this, data, length, static_cast<int>(encodedDataLength));
 
-    if (!m_loadingMultipartContent)
-        sendDataToResource(data, length);
+    m_resource->appendData(data, length);
 
     InspectorInstrumentation::didReceiveResourceData(cookie);
-}
-
-void ResourceLoader::sendDataToResource(const char* data, int length)
-{
-    // There are two cases where we might need to create our own SharedBuffer instead of copying the one in ResourceLoader.
-    // (1) Multipart content: The loader delivers the data in a multipart section all at once, then sends eof.
-    //     The resource data will change as the next part is loaded, so we need to make a copy.
-    // (2) Our client requested that the data not be buffered at the ResourceLoader level via ResourceLoaderOptions. In this case,
-    //     ResourceLoader::resourceData() will be null. However, unlike the multipart case, we don't want to tell the CachedResource
-    //     that all data has been received yet.
-    RefPtr<ResourceBuffer> buffer;
-    if (m_loadingMultipartContent || !resourceData())
-        buffer = ResourceBuffer::create(data, length);
-    else
-        buffer = resourceData();
-     m_resource->data(buffer.release());
 }
 
 void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
@@ -598,7 +538,6 @@ void ResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_documentLoader, "documentLoader");
     info.addMember(m_request, "request");
     info.addMember(m_originalRequest, "originalRequest");
-    info.addMember(m_resourceData, "resourceData");
     info.addMember(m_deferredRequest, "deferredRequest");
     info.addMember(m_options, "options");
     info.addMember(m_resource, "resource");

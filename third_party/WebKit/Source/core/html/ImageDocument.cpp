@@ -127,16 +127,14 @@ static float pageZoomFactor(const Document* document)
     return frame ? frame->pageZoomFactor() : 1;
 }
 
-void ImageDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)
+void ImageDocumentParser::appendBytes(DocumentWriter*, const char* data, size_t length)
 {
     Frame* frame = document()->frame();
     Settings* settings = frame->settings();
     if (!frame->loader()->client()->allowImage(!settings || settings->areImagesEnabled(), document()->url()))
         return;
 
-    CachedImage* cachedImage = document()->cachedImage();
-    cachedImage->data(frame->loader()->documentLoader()->mainResourceData());
-
+    document()->cachedImage()->appendData(data, length);
     document()->imageUpdated();
 }
 
@@ -144,16 +142,7 @@ void ImageDocumentParser::finish()
 {
     if (!isStopped() && document()->imageElement()) {
         CachedImage* cachedImage = document()->cachedImage();
-
-        // If this is a multipart image, make a copy of the current part, since the resource data
-        // will be overwritten by the next part.
-        if (document()->frame()->loader()->documentLoader()->isLoadingMultipartContent()) {
-            RefPtr<ResourceBuffer> data = document()->frame()->loader()->documentLoader()->mainResourceData()->copy();
-            cachedImage->data(data);
-        }
-
         cachedImage->finish();
-
         cachedImage->setResponse(document()->frame()->loader()->documentLoader()->response());
 
         // Report the natural image size in the page title, regardless of zoom level.

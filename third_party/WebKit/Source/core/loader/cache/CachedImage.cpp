@@ -337,9 +337,9 @@ inline void CachedImage::clearImage()
     m_image.clear();
 }
 
-void CachedImage::data(PassRefPtr<ResourceBuffer> data)
+void CachedImage::appendData(const char* data, int length)
 {
-    CachedResource::data(data);
+    CachedResource::appendData(data, length);
     if (!m_loadingMultipartContent)
         updateImage(false);
 }
@@ -390,9 +390,11 @@ void CachedImage::error(CachedResource::Status status)
 
 void CachedImage::responseReceived(const ResourceResponse& response)
 {
-    if (!m_response.isNull())
+    if (m_loadingMultipartContent) {
+        if (m_data)
+            finishOnePart();
         clear();
-    if (response.isMultipart())
+    } else if (response.isMultipart())
         m_loadingMultipartContent = true;
     CachedResource::responseReceived(response);
 }
