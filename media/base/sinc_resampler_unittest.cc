@@ -98,6 +98,22 @@ TEST(SincResamplerTest, Flush) {
     ASSERT_FLOAT_EQ(resampled_destination[i], 0);
 }
 
+// Test flush resets the internal state properly.
+TEST(SincResamplerTest, DISABLED_SetRatioBench) {
+  MockSource mock_source;
+  SincResampler resampler(
+      kSampleRateRatio,
+      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+
+  base::TimeTicks start = base::TimeTicks::HighResNow();
+  for (int i = 1; i < 10000; ++i)
+    resampler.SetRatio(1.0 / i);
+  double total_time_c_ms =
+      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
+  printf("SetRatio() took %.2fms.\n", total_time_c_ms);
+}
+
+
 // Define platform independent function name for Convolve* tests.
 #if defined(ARCH_CPU_X86_FAMILY)
 #define CONVOLVE_FUNC Convolve_SSE
@@ -299,10 +315,23 @@ TEST_P(SincResamplerTest, Resample) {
   SinusoidalLinearChirpSource resampler_source(
       input_rate_, input_samples, input_nyquist_freq);
 
+  const double io_ratio = input_rate_ / static_cast<double>(output_rate_);
   SincResampler resampler(
-      input_rate_ / static_cast<double>(output_rate_),
+      io_ratio,
       base::Bind(&SinusoidalLinearChirpSource::ProvideInput,
                  base::Unretained(&resampler_source)));
+
+  // Force an update to the sample rate ratio to ensure dyanmic sample rate
+  // changes are working correctly.
+  scoped_ptr<float[]> kernel(new float[SincResampler::kKernelStorageSize]);
+  memcpy(kernel.get(), resampler.get_kernel_for_testing(),
+         SincResampler::kKernelStorageSize);
+  resampler.SetRatio(M_PI);
+  ASSERT_NE(0, memcmp(kernel.get(), resampler.get_kernel_for_testing(),
+                      SincResampler::kKernelStorageSize));
+  resampler.SetRatio(io_ratio);
+  ASSERT_EQ(0, memcmp(kernel.get(), resampler.get_kernel_for_testing(),
+                      SincResampler::kKernelStorageSize));
 
   // TODO(dalecurtis): If we switch to AVX/SSE optimization, we'll need to
   // allocate these on 32-byte boundaries and ensure they're sized % 32 bytes.

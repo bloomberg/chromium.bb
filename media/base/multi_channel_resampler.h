@@ -35,8 +35,14 @@ class MEDIA_EXPORT MultiChannelResampler {
   // Resamples |frames| of data from |read_cb_| into AudioBus.
   void Resample(AudioBus* audio_bus, int frames);
 
-  // Flush all buffered data and reset internal indices.
+  // Flush all buffered data and reset internal indices.  Not thread safe, do
+  // not call while Resample() is in progress.
   void Flush();
+
+  // Update ratio for all SincResamplers.  SetRatio() will cause reconstruction
+  // of the kernels used for resampling.  Not thread safe, do not call while
+  // Resample() is in progress.
+  void SetRatio(double io_sample_rate_ratio);
 
  private:
   // SincResampler::ReadCB implementation.  ProvideInput() will be called for

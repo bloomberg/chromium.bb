@@ -101,4 +101,9 @@ void MultiChannelResampler::Flush() {
     resamplers_[i]->Flush();
 }
 
+void MultiChannelResampler::SetRatio(double io_sample_rate_ratio) {
+  for (size_t i = 0; i < resamplers_.size(); ++i)
+    resamplers_[i]->SetRatio(io_sample_rate_ratio);
+}
+
 }  // namespace media

@@ -37,6 +37,7 @@
 #include "media/base/sinc_resampler.h"
 
 #include <cmath>
+#include <limits>
 
 #include "base/cpu.h"
 #include "base/logging.h"
@@ -47,6 +48,22 @@
 
 namespace media {
 
+static double SincScaleFactor(double io_ratio) {
+  // |sinc_scale_factor| is basically the normalized cutoff frequency of the
+  // low-pass filter.
+  double sinc_scale_factor = io_ratio > 1.0 ? 1.0 / io_ratio : 1.0;
+
+  // The sinc function is an idealized brick-wall filter, but since we're
+  // windowing it the transition from pass to stop does not happen right away.
+  // So we should adjust the low pass filter cutoff slightly downward to avoid
+  // some aliasing at the very high-end.
+  // TODO(crogers): this value is empirical and to be more exact should vary
+  // depending on kKernelSize.
+  sinc_scale_factor *= 0.9;
+
+  return sinc_scale_factor;
+}
+
 SincResampler::SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb)
     : io_sample_rate_ratio_(io_sample_rate_ratio),
       virtual_source_idx_(0),
@@ -54,6 +71,10 @@ SincResampler::SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb)
       read_cb_(read_cb),
       // Create input buffers with a 16-byte alignment for SSE optimizations.
       kernel_storage_(static_cast<float*>(
+          base::AlignedAlloc(sizeof(float) * kKernelStorageSize, 16))),
+      kernel_pre_sinc_storage_(static_cast<float*>(
+          base::AlignedAlloc(sizeof(float) * kKernelStorageSize, 16))),
+      kernel_window_storage_(static_cast<float*>(
           base::AlignedAlloc(sizeof(float) * kKernelStorageSize, 16))),
       input_buffer_(static_cast<float*>(
           base::AlignedAlloc(sizeof(float) * kBufferSize, 16))),
@@ -89,6 +110,10 @@ SincResampler::SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb)
 
   memset(kernel_storage_.get(), 0,
          sizeof(*kernel_storage_.get()) * kKernelStorageSize);
+  memset(kernel_pre_sinc_storage_.get(), 0,
+         sizeof(*kernel_pre_sinc_storage_.get()) * kKernelStorageSize);
+  memset(kernel_window_storage_.get(), 0,
+         sizeof(*kernel_window_storage_.get()) * kKernelStorageSize);
   memset(input_buffer_.get(), 0, sizeof(*input_buffer_.get()) * kBufferSize);
 
   InitializeKernel();
@@ -103,38 +128,59 @@ void SincResampler::InitializeKernel() {
   static const double kA1 = 0.5;
   static const double kA2 = 0.5 * kAlpha;
 
-  // |sinc_scale_factor| is basically the normalized cutoff frequency of the
-  // low-pass filter.
-  double sinc_scale_factor =
-      io_sample_rate_ratio_ > 1.0 ? 1.0 / io_sample_rate_ratio_ : 1.0;
-
-  // The sinc function is an idealized brick-wall filter, but since we're
-  // windowing it the transition from pass to stop does not happen right away.
-  // So we should adjust the low pass filter cutoff slightly downward to avoid
-  // some aliasing at the very high-end.
-  // TODO(crogers): this value is empirical and to be more exact should vary
-  // depending on kKernelSize.
-  sinc_scale_factor *= 0.9;
-
   // Generates a set of windowed sinc() kernels.
   // We generate a range of sub-sample offsets from 0.0 to 1.0.
+  const double sinc_scale_factor = SincScaleFactor(io_sample_rate_ratio_);
   for (int offset_idx = 0; offset_idx <= kKernelOffsetCount; ++offset_idx) {
-    double subsample_offset =
-        static_cast<double>(offset_idx) / kKernelOffsetCount;
+    const float subsample_offset =
+        static_cast<float>(offset_idx) / kKernelOffsetCount;
 
     for (int i = 0; i < kKernelSize; ++i) {
-      // Compute the sinc with offset.
-      double s =
-          sinc_scale_factor * M_PI * (i - kKernelSize / 2 - subsample_offset);
-      double sinc = (!s ? 1.0 : sin(s) / s) * sinc_scale_factor;
+      const int idx = i + offset_idx * kKernelSize;
+      const float pre_sinc = M_PI * (i - kKernelSize / 2 - subsample_offset);
+      kernel_pre_sinc_storage_[idx] = pre_sinc;
 
       // Compute Blackman window, matching the offset of the sinc().
-      double x = (i - subsample_offset) / kKernelSize;
-      double window = kA0 - kA1 * cos(2.0 * M_PI * x) + kA2
+      const float x = (i - subsample_offset) / kKernelSize;
+      const float window = kA0 - kA1 * cos(2.0 * M_PI * x) + kA2
           * cos(4.0 * M_PI * x);
+      kernel_window_storage_[idx] = window;
 
-      // Window the sinc() function and store at the correct offset.
-      kernel_storage_.get()[i + offset_idx * kKernelSize] = sinc * window;
+      // Compute the sinc with offset, then window the sinc() function and store
+      // at the correct offset.
+      if (pre_sinc == 0) {
+        kernel_storage_[idx] = sinc_scale_factor * window;
+      } else {
+        kernel_storage_[idx] =
+            window * sin(sinc_scale_factor * pre_sinc) / pre_sinc;
+      }
+    }
+  }
+}
+
+void SincResampler::SetRatio(double io_sample_rate_ratio) {
+  if (fabs(io_sample_rate_ratio_ - io_sample_rate_ratio) <
+      std::numeric_limits<double>::epsilon()) {
+    return;
+  }
+
+  io_sample_rate_ratio_ = io_sample_rate_ratio;
+
+  // Optimize reinitialization by reusing values which are independent of
+  // |sinc_scale_factor|.  Provides a 3x speedup.
+  const double sinc_scale_factor = SincScaleFactor(io_sample_rate_ratio_);
+  for (int offset_idx = 0; offset_idx <= kKernelOffsetCount; ++offset_idx) {
+    for (int i = 0; i < kKernelSize; ++i) {
+      const int idx = i + offset_idx * kKernelSize;
+      const float window = kernel_window_storage_[idx];
+      const float pre_sinc = kernel_pre_sinc_storage_[idx];
+
+      if (pre_sinc == 0) {
+        kernel_storage_[idx] = sinc_scale_factor * window;
+      } else {
+        kernel_storage_[idx] =
+            window * sin(sinc_scale_factor * pre_sinc) / pre_sinc;
+      }
     }
   }
 }

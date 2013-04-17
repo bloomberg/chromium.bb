@@ -60,8 +60,16 @@ class MEDIA_EXPORT SincResampler {
   // single call to |read_cb_| for more data.
   int ChunkSize() const;
 
-  // Flush all buffered data and reset internal indices.
+  // Flush all buffered data and reset internal indices.  Not thread safe, do
+  // not call while Resample() is in progress.
   void Flush();
+
+  // Update |io_sample_rate_ratio_|.  SetRatio() will cause a reconstruction of
+  // the kernels used for resampling.  Not thread safe, do not call while
+  // Resample() is in progress.
+  void SetRatio(double io_sample_rate_ratio);
+
+  float* get_kernel_for_testing() { return kernel_storage_.get(); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SincResamplerTest, Convolve);
@@ -86,7 +94,7 @@ class MEDIA_EXPORT SincResampler {
 #endif
 
   // The ratio of input / output sample rates.
-  const double io_sample_rate_ratio_;
+  double io_sample_rate_ratio_;
 
   // An index on the source input buffer with sub-sample precision.  It must be
   // double precision to avoid drift.
@@ -101,10 +109,12 @@ class MEDIA_EXPORT SincResampler {
   // Contains kKernelOffsetCount kernels back-to-back, each of size kKernelSize.
   // The kernel offsets are sub-sample shifts of a windowed sinc shifted from
   // 0.0 to 1.0 sample.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> kernel_storage_;
+  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_storage_;
+  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_pre_sinc_storage_;
+  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_window_storage_;
 
   // Data from the source is copied into this buffer for each processing pass.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_buffer_;
+  scoped_ptr<float[], base::ScopedPtrAlignedFree> input_buffer_;
 
   // Stores the runtime selection of which Convolve function to use.
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(__SSE__)
