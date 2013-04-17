@@ -120,18 +120,30 @@ void LabelButton::SetIsDefault(bool is_default) {
   is_default_ = is_default;
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
   is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
+
+  // STYLE_BUTTON uses bold text to indicate default buttons.
+  if (style_ == STYLE_BUTTON) {
+    int style = label_->font().GetStyle();
+    style = is_default ? style | gfx::Font::BOLD : style & !gfx::Font::BOLD;
+    label_->SetFont(label_->font().DeriveFont(0, style));
+  }
 }
 
 void LabelButton::SetStyle(ButtonStyle style) {
+  // Use the new button style instead of the native button style.
+  // TODO(msw): Officialy deprecate and remove STYLE_NATIVE_TEXTBUTTON.
+  if (style == STYLE_NATIVE_TEXTBUTTON)
+    style = STYLE_BUTTON;
+
   style_ = style;
   set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
   if (style == STYLE_TEXTBUTTON || style == STYLE_NATIVE_TEXTBUTTON)
     set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
-  if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON)
+  if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  if (style == STYLE_NATIVE_TEXTBUTTON)
     set_focusable(true);
+  }
   if (style == STYLE_BUTTON) {
     set_min_size(gfx::Size(70, 31));
     const SkColor color = GetNativeTheme()->GetSystemColor(
@@ -145,6 +157,11 @@ void LabelButton::SetStyle(ButtonStyle style) {
 }
 
 gfx::Size LabelButton::GetPreferredSize() {
+  // Accommodate bold text in case this STYLE_BUTTON button is made default.
+  const gfx::Font font = label_->font();
+  if (style_ == STYLE_BUTTON)
+    label_->SetFont(font.DeriveFont(0, font.GetStyle() | gfx::Font::BOLD));
+
   // Resize multi-line labels paired with images to use their available width.
   const gfx::Size image_size(image_->GetPreferredSize());
   if (GetTextMultiLine() && !image_size.IsEmpty() && !GetText().empty() &&
@@ -158,6 +175,10 @@ gfx::Size LabelButton::GetPreferredSize() {
     size.Enlarge(kSpacing, 0);
   size.set_height(std::max(size.height(), image_size.height()));
   size.Enlarge(image_size.width() + GetInsets().width(), GetInsets().height());
+
+  // Restore the label's original font without the temporary bold style.
+  if (style_ == STYLE_BUTTON)
+    label_->SetFont(font);
 
   // Increase the minimum size monotonically with the preferred size.
   size.SetSize(std::max(min_size_.width(), size.width()),
