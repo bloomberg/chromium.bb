@@ -979,12 +979,10 @@ void FrameLoaderClientImpl::dispatchWillSendSubmitEvent(PassRefPtr<FormState> pr
         m_webFrame->client()->willSendSubmitEvent(m_webFrame, WebFormElement(prpFormState->form()));
 }
 
-void FrameLoaderClientImpl::dispatchWillSubmitForm(FramePolicyFunction function,
-    PassRefPtr<FormState> formState)
+void FrameLoaderClientImpl::dispatchWillSubmitForm(PassRefPtr<FormState> formState)
 {
     if (m_webFrame->client())
         m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(formState->form()));
-    (m_webFrame->frame()->loader()->policyChecker()->*function)(PolicyUse);
 }
 
 void FrameLoaderClientImpl::setMainDocumentError(DocumentLoader*,

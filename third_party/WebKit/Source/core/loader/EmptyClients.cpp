@@ -119,7 +119,7 @@ void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(PassRefPtr<FormState>)
 {
 }
 
-void EmptyFrameLoaderClient::dispatchWillSubmitForm(FramePolicyFunction, PassRefPtr<FormState>)
+void EmptyFrameLoaderClient::dispatchWillSubmitForm(PassRefPtr<FormState>)
 {
 }
 

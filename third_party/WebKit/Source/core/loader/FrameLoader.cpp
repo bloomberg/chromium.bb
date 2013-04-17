@@ -2104,26 +2104,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     ASSERT_NOT_REACHED();
 }
 
-void FrameLoader::continueLoadAfterWillSubmitForm()
-{
-    if (!m_provisionalDocumentLoader)
-        return;
-
-    prepareForLoadStart();
-    
-    // The load might be cancelled inside of prepareForLoadStart(), nulling out the m_provisionalDocumentLoader, 
-    // so we need to null check it again.
-    if (!m_provisionalDocumentLoader)
-        return;
-
-    DocumentLoader* activeDocLoader = activeDocumentLoader();
-    if (activeDocLoader && activeDocLoader->isLoadingMainResource())
-        return;
-
-    m_loadingFromCachedPage = false;
-    m_provisionalDocumentLoader->startLoadingMainResource();
-}
-
 static KURL originatingURLFromBackForwardList(Page* page)
 {
     // FIXME: Can this logic be replaced with m_frame->document()->firstPartyForCookies()?
@@ -2721,9 +2701,21 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     }
 
     if (formState)
-        m_client->dispatchWillSubmitForm(&PolicyChecker::continueLoadAfterWillSubmitForm, formState);
-    else
-        continueLoadAfterWillSubmitForm();
+        m_client->dispatchWillSubmitForm(formState);
+
+    prepareForLoadStart();
+
+    // The load might be cancelled inside of prepareForLoadStart(), nulling out the m_provisionalDocumentLoader,
+    // so we need to null check it again.
+    if (!m_provisionalDocumentLoader)
+        return;
+
+    DocumentLoader* activeDocLoader = activeDocumentLoader();
+    if (activeDocLoader && activeDocLoader->isLoadingMainResource())
+        return;
+
+    m_loadingFromCachedPage = false;
+    m_provisionalDocumentLoader->startLoadingMainResource();
 }
 
 void FrameLoader::callContinueLoadAfterNewWindowPolicy(void* argument,

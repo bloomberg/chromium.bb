@@ -106,7 +106,7 @@ public:
     virtual void dispatchUnableToImplementPolicy(const WebCore::ResourceError&);
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
-    virtual void dispatchWillSubmitForm(WebCore::FramePolicyFunction, PassRefPtr<WebCore::FormState>);
+    virtual void dispatchWillSubmitForm(PassRefPtr<WebCore::FormState>);
     virtual void setMainDocumentError(WebCore::DocumentLoader*, const WebCore::ResourceError&);
     virtual void postProgressStartedNotification();
     virtual void postProgressEstimateChangedNotification();
