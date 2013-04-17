@@ -99,11 +99,9 @@ std::string OfflineLoadPage::GetHTMLContents() {
   // Activation
   strings.SetBoolean("show_activation", ShowActivationMessage());
 
-  bool rtl = base::i18n::IsRTL();
-  strings.SetString("textdirection", rtl ? "rtl" : "ltr");
-
+  webui::SetFontAndTextDirection(&strings);
   string16 failed_url(ASCIIToUTF16(url_.spec()));
-  if (rtl)
+  if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url);
   strings.SetString("url", failed_url);
 
