@@ -41,7 +41,7 @@ class BindingsTests:
     def generate_from_idl(self, idl_file, output_directory, supplemental_dependency_file):
         cmd = ['perl', '-w',
                '-Ibindings/scripts',
-               '-IWebCore/scripts',
+               '-Icore/scripts',
                'bindings/scripts/generate-bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
