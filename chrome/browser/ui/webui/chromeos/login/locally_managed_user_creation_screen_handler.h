@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace chromeos {
@@ -32,14 +34,15 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
     // Starts managed user creation flow, with manager identified by
     // |manager_id| and |manager_password|.
-    virtual void AuthenticateManager(std::string& manager_id,
-                                     std::string& manager_password) = 0;
+    virtual void AuthenticateManager(const std::string& manager_id,
+                                     const std::string& manager_password) = 0;
 
     // Starts managed user creation flow, with manager identified by
     // |manager_id| and |manager_password|, and locally managed user that would
     // have |display_name| and authenticated by the |managed_user_password|.
-    virtual void CreateManagedUser(string16& display_name,
-                                   std::string& managed_user_password) = 0;
+    virtual void CreateManagedUser(
+        const string16& display_name,
+        const std::string& managed_user_password) = 0;
 
     // Starts picture selection for created managed user.
     virtual void SelectPicture() = 0;
@@ -78,16 +81,18 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
  private:
   // WebUI message handlers.
-  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
+  void HandleCheckLocallyManagedUserName(const string16& name);
 
-  void HandleManagerSelected(const base::ListValue* args);
+  void HandleManagerSelected(const std::string& manager_id);
 
-  void HandleFinishLocalManagedUserCreation(const base::ListValue* args);
-  void HandleAbortLocalManagedUserCreation(const base::ListValue* args);
+  void HandleFinishLocalManagedUserCreation();
+  void HandleAbortLocalManagedUserCreation();
   void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
 
-  void HandleAuthenticateManager(const base::ListValue* args);
-  void HandleCreateManagedUser(const base::ListValue* args);
+  void HandleAuthenticateManager(const std::string& raw_manager_username,
+                                 const std::string& manager_password);
+  void HandleCreateManagedUser(const string16& new_raw_user_name,
+                               const std::string& new_user_password);
 
   void UpdateText(const std::string& element_id, const string16& text);
 

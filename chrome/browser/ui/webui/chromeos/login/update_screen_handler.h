@@ -40,7 +40,7 @@ class UpdateScreenHandler : public UpdateScreenActor,
  private:
 #if !defined(OFFICIAL_BUILD)
   // Called when user presses Escape to cancel update.
-  void HandleUpdateCancel(const base::ListValue* args);
+  void HandleUpdateCancel();
 #endif
 
   UpdateScreenActor::Delegate* screen_;

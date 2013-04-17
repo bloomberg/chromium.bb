@@ -10,11 +10,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
-
 namespace chromeos {
 
 // WebUI implementation of ResetScreenActor.
@@ -39,8 +34,8 @@ class ResetScreenHandler : public ResetScreenActor,
 
  private:
   // JS messages handlers.
-  void HandleOnCancel(const base::ListValue* args);
-  void HandleOnReset(const base::ListValue* args);
+  void HandleOnCancel();
+  void HandleOnReset();
 
   Delegate* delegate_;
 

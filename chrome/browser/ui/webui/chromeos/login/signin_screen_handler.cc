@@ -733,9 +733,9 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen);
   AddCallback("launchPublicAccount",
               &SigninScreenHandler::HandleLaunchPublicAccount);
-  AddCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
+  AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
-  AddCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
+  AddRawCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
   AddCallback("shutdownSystem", &SigninScreenHandler::HandleShutdownSystem);
   AddCallback("loadWallpaper", &SigninScreenHandler::HandleLoadWallpaper);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
@@ -775,7 +775,7 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleUpdateOfflineLogin);
 }
 
-void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
+void SigninScreenHandler::HandleGetUsers() {
   SendUserList(false);
 }
 
@@ -962,7 +962,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     // used.
     gaia_silent_load_ = false;
     if (focus_stolen_)
-      HandleLoginWebuiReady(NULL);
+      HandleLoginWebuiReady();
   }
 
   UpdateState(network_state_informer_->state(),
@@ -1042,75 +1042,48 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
   CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
 }
 
-void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
+void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
+                                              const std::string& password) {
   if (!delegate_)
     return;
-
-  std::string typed_email;
-  std::string password;
-  if (!args->GetString(0, &typed_email) ||
-      !args->GetString(1, &password)) {
-    NOTREACHED();
-    return;
-  }
-
-  typed_email = gaia::SanitizeEmail(typed_email);
-  delegate_->SetDisplayEmail(typed_email);
-  delegate_->CompleteLogin(UserContext(typed_email,
+  const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
+  delegate_->SetDisplayEmail(sanitized_email);
+  delegate_->CompleteLogin(UserContext(sanitized_email,
                                        password,
                                        std::string()));  // auth_code
 }
 
 void SigninScreenHandler::HandleCompleteAuthentication(
-    const base::ListValue* args) {
+    const std::string& email,
+    const std::string& password,
+    const std::string& auth_code) {
   if (!delegate_)
     return;
-
-  std::string email;
-  std::string password;
-  std::string auth_code;
-  if (!args->GetString(0, &email) ||
-      !args->GetString(1, &password) ||
-      !args->GetString(2, &auth_code)) {
-    NOTREACHED();
-    return;
-  }
-
-  email = gaia::SanitizeEmail(email);
-  delegate_->SetDisplayEmail(email);
-  delegate_->CompleteLogin(UserContext(email, password, auth_code));
+  const std::string sanitized_email = gaia::SanitizeEmail(email);
+  delegate_->SetDisplayEmail(sanitized_email);
+  delegate_->CompleteLogin(UserContext(sanitized_email, password, auth_code));
 }
 
-void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
+void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
+                                                 const std::string& password) {
   if (!delegate_)
     return;
-
-  std::string username;
-  std::string password;
-  if (!args->GetString(0, &username) ||
-      !args->GetString(1, &password)) {
-    NOTREACHED();
-    return;
-  }
-
-  username = gaia::SanitizeEmail(username);
-  delegate_->Login(UserContext(username,
+  delegate_->Login(UserContext(gaia::SanitizeEmail(username),
                                password,
                                std::string()));  // auth_code
 }
 
-void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {
+void SigninScreenHandler::HandleLaunchDemoUser() {
   if (delegate_)
     delegate_->LoginAsRetailModeUser();
 }
 
-void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
+void SigninScreenHandler::HandleLaunchIncognito() {
   if (delegate_)
     delegate_->LoginAsGuest();
 }
 
-void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(::switches::kEnableManagedUsers))
     return;
@@ -1120,16 +1093,9 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen(
 }
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
-    const base::ListValue* args) {
-  if (!delegate_)
-    return;
-
-  std::string username;
-  if (!args->GetString(0, &username)) {
-    NOTREACHED();
-    return;
-  }
-  delegate_->LoginAsPublicAccount(username);
+    const std::string& username) {
+  if (delegate_)
+    delegate_->LoginAsPublicAccount(username);
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
@@ -1145,37 +1111,22 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   UpdateUIState(UI_STATE_GAIA_SIGNIN, NULL);
 }
 
-void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
+void SigninScreenHandler::HandleShutdownSystem() {
   ash::Shell::GetInstance()->session_state_controller()->RequestShutdown();
 }
 
-void SigninScreenHandler::HandleLoadWallpaper(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-
-  std::string email;
-  if (!args->GetString(0, &email)) {
-    NOTREACHED();
-    return;
-  }
-
-  delegate_->LoadWallpaper(email);
+void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {
+  if (delegate_)
+    delegate_->LoadWallpaper(email);
 }
 
-void SigninScreenHandler::HandleRebootSystem(const base::ListValue* args) {
+void SigninScreenHandler::HandleRebootSystem() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
-void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
+void SigninScreenHandler::HandleRemoveUser(const std::string& email) {
   if (!delegate_)
     return;
-
-  std::string email;
-  if (!args->GetString(0, &email)) {
-    NOTREACHED();
-    return;
-  }
-
   delegate_->RemoveUser(email);
   UpdateAddButtonStatus();
 }
@@ -1201,29 +1152,21 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   }
 }
 
-void SigninScreenHandler::HandleToggleEnrollmentScreen(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleToggleEnrollmentScreen() {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
 }
 
-void SigninScreenHandler::HandleToggleResetScreen(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleToggleResetScreen() {
   if (delegate_ &&
       !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
     delegate_->ShowResetScreen();
   }
 }
 
-void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
+void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
   if (!delegate_)
     return;
-  double help_topic_id;  // Javascript number is passed back as double.
-  if (!args->GetDouble(0, &help_topic_id)) {
-    NOTREACHED();
-    return;
-  }
-
   if (!help_app_.get())
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
@@ -1319,8 +1262,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
          users_list, animated_value, guest_value);
 }
 
-void SigninScreenHandler::HandleAccountPickerReady(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleAccountPickerReady() {
   LOG(INFO) << "Login WebUI >> AccountPickerReady";
 
   if (delegate_ && !ScreenLocker::default_screen_locker() &&
@@ -1334,8 +1276,7 @@ void SigninScreenHandler::HandleAccountPickerReady(
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
     prefs->SetBoolean(prefs::kFactoryResetRequested, false);
     prefs->CommitPendingWrite();
-    base::ListValue args;
-    HandleToggleResetScreen(&args);
+    HandleToggleResetScreen();
     return;
   }
 
@@ -1353,8 +1294,7 @@ void SigninScreenHandler::HandleAccountPickerReady(
     delegate_->OnSigninScreenReady();
 }
 
-void SigninScreenHandler::HandleWallpaperReady(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleWallpaperReady() {
   if (ScreenLocker::default_screen_locker()) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
@@ -1363,7 +1303,7 @@ void SigninScreenHandler::HandleWallpaperReady(
   }
 }
 
-void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
+void SigninScreenHandler::HandleLoginWebuiReady() {
   if (focus_stolen_) {
     // Set focus to the Gaia page.
     // TODO(altimofeev): temporary solution, until focus parameters are
@@ -1395,48 +1335,42 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
   }
 }
 
-void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
+void SigninScreenHandler::HandleDemoWebuiReady() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DEMO_WEBUI_LOADED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }
 
-void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
+void SigninScreenHandler::HandleSignOutUser() {
   if (delegate_)
     delegate_->Signout();
 }
 
-void SigninScreenHandler::HandleUserImagesLoaded(const base::ListValue* args) {
+void SigninScreenHandler::HandleUserImagesLoaded() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }
 
-void SigninScreenHandler::HandleNetworkErrorShown(const base::ListValue* args) {
+void SigninScreenHandler::HandleNetworkErrorShown() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }
 
-void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
+void SigninScreenHandler::HandleCreateAccount() {
   if (delegate_)
     delegate_->CreateAccount();
 }
 
-void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
+void SigninScreenHandler::HandleOpenProxySettings() {
   BaseLoginDisplayHost::default_host()->OpenProxySettings();
 }
 
-void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
-  std::string source;
-  if (!args->GetString(0, &source)) {
-    NOTREACHED();
-    return;
-  }
-
+void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
   LOG(INFO) << "Login WebUI >> LoginVisible, source: " << source << ", "
             << "webui_visible_: " << webui_visible_;
   if (!webui_visible_) {
@@ -1450,37 +1384,26 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
   webui_visible_ = true;
 }
 
-void SigninScreenHandler::HandleCancelPasswordChangedFlow(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleCancelPasswordChangedFlow() {
   cookie_remover_callback_ = base::Bind(
       &SigninScreenHandler::CancelPasswordChangedFlowInternal,
       weak_factory_.GetWeakPtr());
   StartClearingCookies();
 }
 
-void SigninScreenHandler::HandleMigrateUserData(const base::ListValue* args) {
-  std::string old_password;
-  if (!args->GetString(0, &old_password)) {
-    NOTREACHED();
-    return;
-  }
+void SigninScreenHandler::HandleMigrateUserData(
+    const std::string& old_password) {
   if (delegate_)
     delegate_->MigrateUserData(old_password);
 }
 
-void SigninScreenHandler::HandleResyncUserData(const base::ListValue* args) {
+void SigninScreenHandler::HandleResyncUserData() {
   if (delegate_)
     delegate_->ResyncUserData();
 }
 
-void SigninScreenHandler::HandleLoginUIStateChanged(
-    const base::ListValue* args) {
-  std::string source;
-  bool new_value;
-  if (!args->GetString(0, &source) || !args->GetBoolean(1, &new_value)) {
-    NOTREACHED();
-    return;
-  }
+void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
+                                                    bool new_value) {
   if (source == kSourceGaiaSignin) {
     ui_state_ = UI_STATE_GAIA_SIGNIN;
   } else if (source == kSourceAccountPicker) {
@@ -1495,15 +1418,13 @@ void SigninScreenHandler::HandleLoginUIStateChanged(
   login_ui_active_ = new_value;
 }
 
-void SigninScreenHandler::HandleUnlockOnLoginSuccess(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
   DCHECK(UserManager::Get()->IsUserLoggedIn());
   if (ScreenLocker::default_screen_locker())
     ScreenLocker::default_screen_locker()->UnlockOnLoginSuccess();
 }
 
-void SigninScreenHandler::HandleLoginScreenUpdate(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleLoginScreenUpdate() {
   LOG(INFO) << "Auth extension frame is loaded";
   UpdateStateInternal(network_state_informer_->state(),
                       network_state_informer_->last_network_service_path(),
@@ -1512,13 +1433,7 @@ void SigninScreenHandler::HandleLoginScreenUpdate(
                       false);
 }
 
-void SigninScreenHandler::HandleShowGaiaFrameError(
-    const base::ListValue* args) {
-  int error;
-  if (args->GetSize() != 1 || !args->GetInteger(0, &error)) {
-    NOTREACHED();
-    return;
-  }
+void SigninScreenHandler::HandleShowGaiaFrameError(int error) {
   if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
     return;
   LOG(WARNING) << "Gaia frame error: "  << error;
@@ -1530,8 +1445,7 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
                       false);
 }
 
-void SigninScreenHandler::HandleShowLoadingTimeoutError(
-    const base::ListValue* args) {
+void SigninScreenHandler::HandleShowLoadingTimeoutError() {
   UpdateStateInternal(network_state_informer_->state(),
                       network_state_informer_->last_network_service_path(),
                       network_state_informer_->last_network_type(),
@@ -1539,15 +1453,7 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError(
                       false);
 }
 
-void SigninScreenHandler::HandleUpdateOfflineLogin(
-    const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 1);
-
-  bool offline_login_active = false;
-  if (!args->GetBoolean(0, &offline_login_active)) {
-    NOTREACHED();
-    return;
-  }
+void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
   offline_login_active_ = offline_login_active;
 }
 

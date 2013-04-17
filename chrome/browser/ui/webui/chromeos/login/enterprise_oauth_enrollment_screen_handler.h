@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
@@ -81,9 +80,9 @@ class EnterpriseOAuthEnrollmentScreenHandler
   class TokenRevoker;
 
   // Handlers for WebUI messages.
-  void HandleClose(const base::ListValue* args);
-  void HandleCompleteLogin(const base::ListValue* args);
-  void HandleRetry(const base::ListValue* args);
+  void HandleClose(const std::string& reason);
+  void HandleCompleteLogin(const std::string& user);
+  void HandleRetry();
 
   // Shows a given enrollment step.
   void ShowStep(const char* step);

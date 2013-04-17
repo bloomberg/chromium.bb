@@ -50,8 +50,8 @@ class ErrorScreenHandler : public BaseScreenHandler,
   bool GetScreenName(OobeUI::Screen screen, std::string* name) const;
 
   // WebUI message handlers.
-  void HandleShowCaptivePortal(const base::ListValue* args);
-  void HandleHideCaptivePortal(const base::ListValue* args);
+  void HandleShowCaptivePortal();
+  void HandleHideCaptivePortal();
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

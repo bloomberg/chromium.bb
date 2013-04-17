@@ -134,18 +134,13 @@ void NetworkScreenHandler::RegisterMessages() {
 
 // NetworkScreenHandler, private: ----------------------------------------------
 
-void NetworkScreenHandler::HandleOnExit(const ListValue* args) {
+void NetworkScreenHandler::HandleOnExit() {
   ClearErrors();
   if (screen_)
     screen_->OnContinuePressed();
 }
 
-void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
-  DCHECK(args->GetSize() == 1);
-  std::string locale;
-  if (!args->GetString(0, &locale))
-    NOTREACHED();
-
+void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (app_locale == locale)
     return;
@@ -161,11 +156,7 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   EnableContinue(is_continue_enabled_);
 }
 
-void NetworkScreenHandler::HandleOnInputMethodChanged(const ListValue* args) {
-  DCHECK(args->GetSize() == 1);
-  std::string id;
-  if (!args->GetString(0, &id))
-    NOTREACHED();
+void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {
   input_method::GetInputMethodManager()->ChangeInputMethod(id);
 }
 

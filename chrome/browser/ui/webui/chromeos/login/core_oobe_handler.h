@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CORE_OOBE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CORE_OOBE_HANDLER_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-
-namespace base {
-class ListValue;
-}
 
 namespace chromeos {
 
@@ -58,12 +56,12 @@ class CoreOobeHandler : public BaseScreenHandler,
 
  private:
   // Handlers for JS WebUI messages.
-  void HandleEnableHighContrast(const base::ListValue* args);
-  void HandleEnableScreenMagnifier(const base::ListValue* args);
-  void HandleEnableSpokenFeedback(const base::ListValue* args);
-  void HandleInitialized(const base::ListValue* args);
-  void HandleSkipUpdateEnrollAfterEula(const base::ListValue* args);
-  void HandleUpdateCurrentScreen(const base::ListValue* args);
+  void HandleEnableHighContrast(bool enabled);
+  void HandleEnableScreenMagnifier(bool enabled);
+  void HandleEnableSpokenFeedback();
+  void HandleInitialized();
+  void HandleSkipUpdateEnrollAfterEula();
+  void HandleUpdateCurrentScreen(const std::string& screen);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

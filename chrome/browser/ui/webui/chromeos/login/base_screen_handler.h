@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/native_widget_types.h"
@@ -105,12 +107,56 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
               const base::Value& arg3,
               const base::Value& arg4);
 
-  // Shortcut method for adding WebUI callbacks.
+  // Shortcut methods for adding WebUI callbacks.
   template<typename T>
+  void AddRawCallback(const std::string& name,
+                      void (T::*method)(const base::ListValue* args)) {
+    web_ui()->RegisterMessageCallback(
+        name,
+        base::Bind(method, base::Unretained(static_cast<T*>(this))));
+  }
+
+  template<typename T>
+  void AddCallback(const std::string& name, void (T::*method)()) {
+    base::Callback<void()> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name, base::Bind(&CallbackWrapper0, callback));
+  }
+
+  template<typename T, typename A1>
+  void AddCallback(const std::string& name, void (T::*method)(A1 arg1)) {
+    base::Callback<void(A1)> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name, base::Bind(&CallbackWrapper1<A1>, callback));
+  }
+
+  template<typename T, typename A1, typename A2>
   void AddCallback(const std::string& name,
-                   void (T::*callback)(const base::ListValue* args)) {
-    web_ui()->RegisterMessageCallback(name,
-      base::Bind(callback, base::Unretained(static_cast<T*>(this))));
+                   void (T::*method)(A1 arg1, A2 arg2)) {
+    base::Callback<void(A1, A2)> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name, base::Bind(&CallbackWrapper2<A1, A2>, callback));
+  }
+
+  template<typename T, typename A1, typename A2, typename A3>
+  void AddCallback(const std::string& name,
+                   void (T::*method)(A1 arg1, A2 arg2, A3 arg3)) {
+    base::Callback<void(A1, A2, A3)> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name, base::Bind(&CallbackWrapper3<A1, A2, A3>, callback));
+  }
+
+  template<typename T, typename A1, typename A2, typename A3, typename A4>
+  void AddCallback(const std::string& name,
+                   void (T::*method)(A1 arg1, A2 arg2, A3 arg3, A4 arg4)) {
+    base::Callback<void(A1, A2, A3, A4)> callback =
+        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+    web_ui()->RegisterMessageCallback(
+        name, base::Bind(&CallbackWrapper4<A1, A2, A3, A4>, callback));
   }
 
   // Called when the page is ready and handler can do initialization.

@@ -135,8 +135,8 @@ void LocallyManagedUserCreationScreen::FinishFlow() {
 }
 
 void LocallyManagedUserCreationScreen::AuthenticateManager(
-    std::string& manager_id,
-    std::string& manager_password) {
+    const std::string& manager_id,
+    const std::string& manager_password) {
   // Make sure no two controllers exist at the same time.
   controller_.reset();
   controller_.reset(new LocallyManagedUserController(this));
@@ -148,8 +148,8 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
 }
 
 void LocallyManagedUserCreationScreen::CreateManagedUser(
-    string16& display_name,
-    std::string& managed_user_password) {
+    const string16& display_name,
+    const std::string& managed_user_password) {
   DCHECK(controller_.get());
   controller_->SetUpCreation(display_name, managed_user_password);
   controller_->StartCreation();

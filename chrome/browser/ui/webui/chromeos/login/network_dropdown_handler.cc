@@ -47,16 +47,7 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleNetworkDropdownRefresh);
 }
 
-void NetworkDropdownHandler::HandleNetworkItemChosen(
-    const base::ListValue* args) {
-  DCHECK(args->GetSize() == 1);
-
-  double id;
-  if (!args->GetDouble(0, &id)) {
-    NOTREACHED();
-    return;
-  }
-
+void NetworkDropdownHandler::HandleNetworkItemChosen(double id) {
   if (dropdown_.get()) {
     dropdown_->OnItemChosen(static_cast<int>(id));
   } else {
@@ -67,43 +58,19 @@ void NetworkDropdownHandler::HandleNetworkItemChosen(
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownShow(
-    const base::ListValue* args) {
-  DCHECK(args->GetSize() == 3);
-  std::string element_id;
-  if (!args->GetString(0, &element_id)) {
-    NOTREACHED();
-    return;
-  }
-
-  bool oobe;
-  if (!args->GetBoolean(1, &oobe)) {
-    NOTREACHED();
-    return;
-  }
-
-  double last_network_type = -1;  // Javascript passes integer as double.
-  if (!args->GetDouble(2, &last_network_type)) {
-    NOTREACHED();
-    return;
-  }
-
+    const std::string& element_id, bool oobe, double last_network_type) {
   dropdown_.reset(new NetworkDropdown(web_ui(), oobe));
-
   if (last_network_type >= 0) {
     dropdown_->SetLastNetworkType(
         static_cast<ConnectionType>(last_network_type));
   }
 }
 
-void NetworkDropdownHandler::HandleNetworkDropdownHide(
-    const base::ListValue* args) {
-  DCHECK(args->GetSize() == 0);
+void NetworkDropdownHandler::HandleNetworkDropdownHide() {
   dropdown_.reset();
 }
 
-void NetworkDropdownHandler::HandleNetworkDropdownRefresh(
-    const base::ListValue* args) {
-  DCHECK(args->GetSize() == 0);
+void NetworkDropdownHandler::HandleNetworkDropdownRefresh() {
   // Since language change is async,
   // we may in theory be on another screen during this call.
   if (dropdown_.get())

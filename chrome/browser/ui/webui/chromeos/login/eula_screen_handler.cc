@@ -111,35 +111,20 @@ void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
   CallJS("cr.ui.Oobe.setTpmPassword", tpm_password_value);
 }
 
-void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {
-  DCHECK(args->GetSize() == 2);
-
-  bool accepted = false;
-  if (!args->GetBoolean(0, &accepted))
-    NOTREACHED();
-
-  bool usage_stats_enabled = false;
-  if (!args->GetBoolean(1, &usage_stats_enabled))
-    NOTREACHED();
-
-  if (!delegate_)
-    return;
-
-  delegate_->OnExit(accepted, usage_stats_enabled);
+void EulaScreenHandler::HandleOnExit(bool accepted, bool usage_stats_enabled) {
+  if (delegate_)
+    delegate_->OnExit(accepted, usage_stats_enabled);
 }
 
-void EulaScreenHandler::HandleOnLearnMore(const base::ListValue* args) {
-  if (!help_app_.get()) {
+void EulaScreenHandler::HandleOnLearnMore() {
+  if (!help_app_.get())
     help_app_ = new HelpAppLauncher(GetNativeWindow());
-  }
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
 }
 
-void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened(
-    const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->InitiatePasswordFetch();
+void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {
+  if (delegate_)
+    delegate_->InitiatePasswordFetch();
 }
 
 }  // namespace chromeos

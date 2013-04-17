@@ -276,42 +276,46 @@ class SigninScreenHandler
   void UpdateAddButtonStatus();
 
   // WebUI message handlers.
-  void HandleCompleteAuthentication(const base::ListValue* args);
-  void HandleCompleteLogin(const base::ListValue* args);
-  void HandleGetUsers(const base::ListValue* args);
-  void HandleAuthenticateUser(const base::ListValue* args);
-  void HandleLaunchDemoUser(const base::ListValue* args);
-  void HandleLaunchIncognito(const base::ListValue* args);
-  void HandleLaunchPublicAccount(const base::ListValue* args);
+  void HandleCompleteAuthentication(const std::string& email,
+                                    const std::string& password,
+                                    const std::string& auth_code);
+  void HandleCompleteLogin(const std::string& typed_email,
+                           const std::string& password);
+  void HandleGetUsers();
+  void HandleAuthenticateUser(const std::string& username,
+                              const std::string& password);
+  void HandleLaunchDemoUser();
+  void HandleLaunchIncognito();
+  void HandleLaunchPublicAccount(const std::string& username);
   void HandleOfflineLogin(const base::ListValue* args);
-  void HandleShutdownSystem(const base::ListValue* args);
-  void HandleLoadWallpaper(const base::ListValue* args);
-  void HandleRebootSystem(const base::ListValue* args);
-  void HandleRemoveUser(const base::ListValue* args);
+  void HandleShutdownSystem();
+  void HandleLoadWallpaper(const std::string& email);
+  void HandleRebootSystem();
+  void HandleRemoveUser(const std::string& email);
   void HandleShowAddUser(const base::ListValue* args);
-  void HandleToggleEnrollmentScreen(const base::ListValue* args);
-  void HandleToggleResetScreen(const base::ListValue* args);
-  void HandleLaunchHelpApp(const base::ListValue* args);
-  void HandleCreateAccount(const base::ListValue* args);
-  void HandleAccountPickerReady(const base::ListValue* args);
-  void HandleWallpaperReady(const base::ListValue* args);
-  void HandleLoginWebuiReady(const base::ListValue* args);
-  void HandleDemoWebuiReady(const base::ListValue* args);
-  void HandleSignOutUser(const base::ListValue* args);
-  void HandleUserImagesLoaded(const base::ListValue* args);
-  void HandleNetworkErrorShown(const base::ListValue* args);
-  void HandleOpenProxySettings(const base::ListValue* args);
-  void HandleLoginVisible(const base::ListValue* args);
-  void HandleCancelPasswordChangedFlow(const base::ListValue* args);
-  void HandleMigrateUserData(const base::ListValue* args);
-  void HandleResyncUserData(const base::ListValue* args);
-  void HandleLoginUIStateChanged(const base::ListValue* args);
-  void HandleUnlockOnLoginSuccess(const base::ListValue* args);
-  void HandleLoginScreenUpdate(const base::ListValue* args);
-  void HandleShowGaiaFrameError(const base::ListValue* args);
-  void HandleShowLoadingTimeoutError(const base::ListValue* args);
-  void HandleUpdateOfflineLogin(const base::ListValue* args);
-  void HandleShowLocallyManagedUserCreationScreen(const base::ListValue* args);
+  void HandleToggleEnrollmentScreen();
+  void HandleToggleResetScreen();
+  void HandleLaunchHelpApp(double help_topic_id);
+  void HandleCreateAccount();
+  void HandleAccountPickerReady();
+  void HandleWallpaperReady();
+  void HandleLoginWebuiReady();
+  void HandleDemoWebuiReady();
+  void HandleSignOutUser();
+  void HandleUserImagesLoaded();
+  void HandleNetworkErrorShown();
+  void HandleOpenProxySettings();
+  void HandleLoginVisible(const std::string& source);
+  void HandleCancelPasswordChangedFlow();
+  void HandleMigrateUserData(const std::string& password);
+  void HandleResyncUserData();
+  void HandleLoginUIStateChanged(const std::string& source, bool new_value);
+  void HandleUnlockOnLoginSuccess();
+  void HandleLoginScreenUpdate();
+  void HandleShowGaiaFrameError(int error);
+  void HandleShowLoadingTimeoutError();
+  void HandleUpdateOfflineLogin(bool offline_login_active);
+  void HandleShowLocallyManagedUserCreationScreen();
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,

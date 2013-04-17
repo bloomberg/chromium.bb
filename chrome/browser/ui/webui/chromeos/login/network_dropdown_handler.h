@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_HANDLER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -26,13 +28,15 @@ class NetworkDropdownHandler : public BaseScreenHandler {
 
  private:
   // Handles choosing of the network menu item.
-  void HandleNetworkItemChosen(const base::ListValue* args);
+  void HandleNetworkItemChosen(double id);
   // Handles network drop-down showing.
-  void HandleNetworkDropdownShow(const base::ListValue* args);
+  void HandleNetworkDropdownShow(const std::string& element_id,
+                                 bool oobe,
+                                 double last_network_type);
   // Handles network drop-down hiding.
-  void HandleNetworkDropdownHide(const base::ListValue* args);
+  void HandleNetworkDropdownHide();
   // Handles network drop-down refresh.
-  void HandleNetworkDropdownRefresh(const base::ListValue* args);
+  void HandleNetworkDropdownRefresh();
 
   scoped_ptr<NetworkDropdown> dropdown_;
 

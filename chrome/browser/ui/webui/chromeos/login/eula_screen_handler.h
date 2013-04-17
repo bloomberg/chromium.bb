@@ -14,7 +14,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace chromeos {
@@ -47,9 +46,9 @@ class EulaScreenHandler : public EulaScreenActor,
 
  private:
   // JS messages handlers.
-  void HandleOnExit(const base::ListValue* args);
-  void HandleOnLearnMore(const base::ListValue* args);
-  void HandleOnInstallationSettingsPopupOpened(const base::ListValue* args);
+  void HandleOnExit(bool accepted, bool usager_stats_enabled);
+  void HandleOnLearnMore();
+  void HandleOnInstallationSettingsPopupOpened();
 
   Delegate* delegate_;
 

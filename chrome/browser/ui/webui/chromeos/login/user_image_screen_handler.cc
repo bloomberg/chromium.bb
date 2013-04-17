@@ -144,9 +144,7 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
   }
 }
 
-void UserImageScreenHandler::HandleGetImages(const base::ListValue* args) {
-  DCHECK(args && !args->GetSize());
-
+void UserImageScreenHandler::HandleGetImages() {
   base::ListValue image_urls;
   for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
     scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
@@ -169,13 +167,8 @@ void UserImageScreenHandler::HandleGetImages(const base::ListValue* args) {
     OnProfileImageAbsent();
 }
 
-void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {
+void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string image_url;
-  if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
-    NOTREACHED();
-  DCHECK(!image_url.empty());
-
   std::string mime_type, charset, raw_data;
   if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
     NOTREACHED();
@@ -193,22 +186,12 @@ void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {
   image_decoder_->Start(task_runner);
 }
 
-void UserImageScreenHandler::HandleCheckCameraPresence(
-    const base::ListValue* args) {
-  DCHECK(args->empty());
+void UserImageScreenHandler::HandleCheckCameraPresence() {
   CheckCameraPresence();
 }
 
-void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
-  std::string image_url;
-  std::string image_type;
-  if (!args ||
-      args->GetSize() != 2 ||
-      !args->GetString(0, &image_url) ||
-      !args->GetString(1, &image_type)) {
-    NOTREACHED();
-    return;
-  }
+void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,
+                                               const std::string& image_type) {
   if (image_url.empty())
     return;
 
@@ -225,8 +208,7 @@ void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
   }
 }
 
-void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
-  DCHECK(args && args->empty());
+void UserImageScreenHandler::HandleImageAccepted() {
   if (!screen_)
     return;
   switch (selected_image_) {
@@ -248,8 +230,7 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
   }
 }
 
-void UserImageScreenHandler::HandleScreenShown(const base::ListValue* args) {
-  DCHECK(args && args->empty());
+void UserImageScreenHandler::HandleScreenShown() {
   DCHECK(!screen_show_time_.is_null());
 
   base::TimeDelta delta = base::Time::Now() - screen_show_time_;

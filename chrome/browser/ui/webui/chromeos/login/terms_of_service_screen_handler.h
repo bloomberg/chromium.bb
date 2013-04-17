@@ -12,10 +12,6 @@
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace chromeos {
 
 // The sole implementation of the TermsOfServiceScreenActor, using WebUI.
@@ -53,11 +49,11 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
 
   // Called when the user declines the Terms of Service by clicking the "back"
   // button.
-  void HandleBack(const base::ListValue* args);
+  void HandleBack();
 
   // Called when the user accepts the Terms of Service by clicking the "accept
   // and continue" button.
-  void HandleAccept(const base::ListValue* args);
+  void HandleAccept();
 
   TermsOfServiceScreenHandler::Delegate* screen_;
 

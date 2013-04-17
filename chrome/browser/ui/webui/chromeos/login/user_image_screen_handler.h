@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_HANDLER_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
@@ -14,10 +16,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace base {
-class ListValue;
-}  // namespace base
 
 namespace chromeos {
 
@@ -54,22 +52,23 @@ class UserImageScreenHandler : public UserImageScreenActor,
   void SendProfileImage(const std::string& data_url);
 
   // Sends image data to the page.
-  void HandleGetImages(const base::ListValue* args);
+  void HandleGetImages();
 
   // Handles photo taken with WebRTC UI.
-  void HandlePhotoTaken(const base::ListValue* args);
+  void HandlePhotoTaken(const std::string& image_url);
 
   // Handles camera presence check request.
-  void HandleCheckCameraPresence(const base::ListValue* args);
+  void HandleCheckCameraPresence();
 
   // Handles clicking on default user image.
-  void HandleSelectImage(const base::ListValue* args);
+  void HandleSelectImage(const std::string& image_url,
+                         const std::string& image_type);
 
   // Called when user accept the image closing the screen.
-  void HandleImageAccepted(const base::ListValue* args);
+  void HandleImageAccepted();
 
   // Called when the user image screen has been loaded and shown.
-  void HandleScreenShown(const base::ListValue* args);
+  void HandleScreenShown();
 
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();

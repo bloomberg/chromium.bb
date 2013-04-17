@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 
-#include <string>
-
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -167,39 +165,24 @@ void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void LocallyManagedUserCreationScreenHandler::
-    HandleFinishLocalManagedUserCreation(const base::ListValue* args) {
+    HandleFinishLocalManagedUserCreation() {
   delegate_->FinishFlow();
 }
 
 void LocallyManagedUserCreationScreenHandler::
-    HandleAbortLocalManagedUserCreation(const base::ListValue* args) {
+    HandleAbortLocalManagedUserCreation() {
   delegate_->AbortFlow();
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleManagerSelected(
-    const base::ListValue* args) {
+    const std::string& manager_id) {
   if (!delegate_)
     return;
-  DCHECK(args && args->GetSize() == 1);
-
-  std::string manager_id;
-  if (!args->GetString(0, &manager_id)) {
-    NOTREACHED();
-    return;
-  }
-
   WallpaperManager::Get()->SetUserWallpaper(manager_id);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
-    const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 1);
-
-  string16 name;
-  if (!args->GetString(0, &name)) {
-    NOTREACHED();
-    return;
-  }
+    const string16& name) {
   if (NULL != UserManager::Get()->
           FindLocallyManagedUser(CollapseWhitespace(name, true))) {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
@@ -214,20 +197,11 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
-    const base::ListValue* args) {
+    const string16& new_raw_user_name,
+    const std::string& new_user_password) {
   if (!delegate_)
     return;
-  DCHECK(args && args->GetSize() == 2);
-
-  string16 new_user_name;
-  std::string new_user_password;
-  if (!args->GetString(0, &new_user_name) ||
-      !args->GetString(1, &new_user_password)) {
-    NOTREACHED();
-    return;
-  }
-
-  new_user_name = CollapseWhitespace(new_user_name, true);
+  const string16 new_user_name = CollapseWhitespace(new_raw_user_name, true);
   if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
            base::StringValue(new_user_name),
@@ -249,20 +223,10 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(
-    const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  DCHECK(args && args->GetSize() == 2);
-
-  std::string manager_username;
-  std::string manager_password;
-  if (!args->GetString(0, &manager_username) ||
-      !args->GetString(1, &manager_password)) {
-    NOTREACHED();
-    return;
-  }
-
-  manager_username = gaia::SanitizeEmail(manager_username);
+    const std::string& raw_manager_username,
+    const std::string& manager_password) {
+  const std::string manager_username =
+      gaia::SanitizeEmail(raw_manager_username);
 
   UserFlow* flow = new LocallyManagedUserCreationFlow(manager_username);
   UserManager::Get()->SetUserFlow(manager_username, flow);

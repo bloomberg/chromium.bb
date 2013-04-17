@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -95,12 +94,12 @@ void ResetScreenHandler::RegisterMessages() {
   AddCallback("resetOnReset", &ResetScreenHandler::HandleOnReset);
 }
 
-void ResetScreenHandler::HandleOnCancel(const base::ListValue* args) {
+void ResetScreenHandler::HandleOnCancel() {
   if (delegate_)
     delegate_->OnExit();
 }
 
-void ResetScreenHandler::HandleOnReset(const base::ListValue* args) {
+void ResetScreenHandler::HandleOnReset() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         StartDeviceWipe();

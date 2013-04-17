@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -95,47 +94,33 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableSpokenFeedback);
 }
 
-void CoreOobeHandler::HandleInitialized(const base::ListValue* args) {
+void CoreOobeHandler::HandleInitialized() {
   oobe_ui_->InitializeHandlers();
 }
 
-void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula(
-    const base::ListValue* args) {
+void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
   WizardController* controller = WizardController::default_controller();
   DCHECK(controller);
   if (controller)
     controller->SkipUpdateEnrollAfterEula();
 }
 
-void CoreOobeHandler::HandleUpdateCurrentScreen(const base::ListValue* args) {
-  DCHECK(args && args->GetSize() == 1);
-
-  std::string screen;
-  if (args->GetString(0, &screen) && delegate_)
+void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
+  if (delegate_)
     delegate_->OnCurrentScreenChanged(screen);
 }
 
-void CoreOobeHandler::HandleEnableHighContrast(const base::ListValue* args) {
-  bool enabled;
-  if (!args->GetBoolean(0, &enabled)) {
-    NOTREACHED();
-    return;
-  }
+void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
   accessibility::EnableHighContrast(enabled);
 }
 
-void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
-  bool enabled;
-  if (!args->GetBoolean(0, &enabled)) {
-    NOTREACHED();
-    return;
-  }
+void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
   // TODO(nkostylev): Add support for partial screen magnifier.
   DCHECK(MagnificationManager::Get());
   MagnificationManager::Get()->SetMagnifierEnabled(enabled);
 }
 
-void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
+void CoreOobeHandler::HandleEnableSpokenFeedback() {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
   accessibility::ToggleSpokenFeedback(web_ui(), ash::A11Y_NOTIFICATION_NONE);

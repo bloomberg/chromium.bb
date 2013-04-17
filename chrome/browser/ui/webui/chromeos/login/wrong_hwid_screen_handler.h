@@ -12,7 +12,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace chromeos {
@@ -39,7 +38,7 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenActor,
 
  private:
   // JS messages handlers.
-  void HandleOnSkip(const base::ListValue* args);
+  void HandleOnSkip();
 
   Delegate* delegate_;
 

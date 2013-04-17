@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
@@ -377,11 +378,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
 // EnterpriseOAuthEnrollmentScreenHandler, private -----------------------------
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
-    const base::ListValue* value) {
-  std::string reason;
-  CHECK_EQ(1U, value->GetSize());
-  CHECK(value->GetString(0, &reason));
-
+    const std::string& reason) {
   if (!controller_) {
     NOTREACHED();
     return;
@@ -398,28 +395,19 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
-    const base::ListValue* value) {
+    const std::string& user) {
   if (!controller_) {
     NOTREACHED();
     return;
   }
-
-  std::string user;
-  if (!value->GetString(0, &user)) {
-    NOTREACHED() << "Invalid user parameter from UI.";
-    return;
-  }
-
   controller_->OnLoginDone(gaia::SanitizeEmail(user));
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
-    const base::ListValue* value) {
+void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry() {
   if (!controller_) {
     NOTREACHED();
     return;
   }
-
   controller_->OnRetry();
 }
 

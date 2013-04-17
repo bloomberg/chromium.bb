@@ -61,10 +61,12 @@ class LocallyManagedUserCreationScreen
   virtual void OnExit() OVERRIDE;
   virtual void OnActorDestroyed(LocallyManagedUserCreationScreenHandler* actor)
       OVERRIDE;
-  virtual void CreateManagedUser(string16& display_name,
-                                 std::string& managed_user_password) OVERRIDE;
-  virtual void AuthenticateManager(std::string& manager_id,
-                                   std::string& manager_password) OVERRIDE;
+  virtual void CreateManagedUser(
+      const string16& display_name,
+      const std::string& managed_user_password) OVERRIDE;
+  virtual void AuthenticateManager(
+      const std::string& manager_id,
+      const std::string& manager_password) OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
   virtual void SelectPicture() OVERRIDE;

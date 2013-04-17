@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 
-#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -65,7 +64,7 @@ void WrongHWIDScreenHandler::RegisterMessages() {
   AddCallback("wrongHWIDOnSkip", &WrongHWIDScreenHandler::HandleOnSkip);
 }
 
-void WrongHWIDScreenHandler::HandleOnSkip(const base::ListValue* args) {
+void WrongHWIDScreenHandler::HandleOnSkip() {
   if (delegate_)
     delegate_->OnExit();
 }

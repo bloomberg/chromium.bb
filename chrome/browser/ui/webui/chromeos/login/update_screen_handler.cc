@@ -141,8 +141,7 @@ void UpdateScreenHandler::RegisterMessages() {
 }
 
 #if !defined(OFFICIAL_BUILD)
-void UpdateScreenHandler::HandleUpdateCancel(const base::ListValue* args) {
-  DCHECK(args && args->empty());
+void UpdateScreenHandler::HandleUpdateCancel() {
   screen_->CancelUpdate();
 }
 #endif

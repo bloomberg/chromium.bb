@@ -118,12 +118,12 @@ void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
   }
 }
 
-void TermsOfServiceScreenHandler::HandleBack(const base::ListValue* args) {
+void TermsOfServiceScreenHandler::HandleBack() {
   if (screen_)
     screen_->OnDecline();
 }
 
-void TermsOfServiceScreenHandler::HandleAccept(const base::ListValue* args) {
+void TermsOfServiceScreenHandler::HandleAccept() {
   if (!screen_)
     return;
 

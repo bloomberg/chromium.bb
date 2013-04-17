@@ -128,11 +128,11 @@ bool ErrorScreenHandler::GetScreenName(OobeUI::Screen screen,
   return true;
 }
 
-void ErrorScreenHandler::HandleShowCaptivePortal(const base::ListValue* args) {
+void ErrorScreenHandler::HandleShowCaptivePortal() {
   ShowCaptivePortal();
 }
 
-void ErrorScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {
+void ErrorScreenHandler::HandleHideCaptivePortal() {
   HideCaptivePortal();
 }
 
