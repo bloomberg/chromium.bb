@@ -254,20 +254,6 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
       url, SnapshotFileHandler(callbacks));
 }
 
-// DEPRECATED
-void SimpleFileSystem::createSnapshotFileAndReadMetadata(
-    const WebURL& blobURL,
-    const WebURL& path,
-    WebFileSystemCallbacks* callbacks) {
-  FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
-    callbacks->didFail(WebKit::WebFileErrorSecurity);
-    return;
-  }
-  GetNewOperation(url)->CreateSnapshotFile(
-      url, SnapshotFileHandler_Deprecated(blobURL, callbacks));
-}
-
 // static
 void SimpleFileSystem::InitializeOnIOThread(
     webkit_blob::BlobStorageController* blob_storage_controller) {
@@ -334,14 +320,6 @@ SimpleFileSystem::SnapshotFileHandler(
     WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile,
                     AsWeakPtr(), base::Unretained(callbacks));
-}
-
-FileSystemOperation::SnapshotFileCallback
-SimpleFileSystem::SnapshotFileHandler_Deprecated(
-    const GURL& blob_url,
-    WebFileSystemCallbacks* callbacks) {
-  return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile_Deprecated,
-                    AsWeakPtr(), blob_url, base::Unretained(callbacks));
 }
 
 void SimpleFileSystem::DidFinish(WebFileSystemCallbacks* callbacks,
@@ -432,20 +410,4 @@ void SimpleFileSystem::DidCreateSnapshotFile(
   } else {
     callbacks->didFail(fileapi::PlatformFileErrorToWebFileError(result));
   }
-}
-
-void SimpleFileSystem::DidCreateSnapshotFile_Deprecated(
-    const GURL& blob_url,
-    WebFileSystemCallbacks* callbacks,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& info,
-    const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
-  DCHECK(g_io_thread);
-  if (result == base::PLATFORM_FILE_OK) {
-    g_io_thread->PostTask(
-        FROM_HERE,
-        base::Bind(&RegisterBlob, blob_url, platform_path));
-  }
-  DidGetMetadata(callbacks, result, info, platform_path);
 }

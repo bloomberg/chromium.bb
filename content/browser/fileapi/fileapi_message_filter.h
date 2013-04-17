@@ -119,10 +119,6 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                             const GURL& path);
   void OnDidReceiveSnapshotFile(int request_id);
 
-  void OnCreateSnapshotFile_Deprecated(int request_id,
-                                       const GURL& blob_url,
-                                       const GURL& path);
-
   void OnStartBuildingBlob(const GURL& url);
   void OnAppendBlobDataItem(const GURL& url,
                             const webkit_blob::BlobData::Item& item);
@@ -165,19 +161,6 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
       const base::PlatformFileInfo& info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
-
-  void DidCreateSnapshot_Deprecated(
-      int request_id,
-      const base::Callback<void(const base::FilePath&)>& register_file_callback,
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& info,
-      const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
-  // Registers the given file pointed by |virtual_path| and backed by
-  // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot_Deprecated.
-  void RegisterFileAsBlob(const GURL& blob_url,
-                          const fileapi::FileSystemURL& url,
-                          const base::FilePath& platform_path);
 
   // Checks renderer's access permissions for single file.
   bool HasPermissionsForFile(const fileapi::FileSystemURL& url,

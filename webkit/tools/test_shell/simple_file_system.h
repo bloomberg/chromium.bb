@@ -92,12 +92,6 @@ class SimpleFileSystem
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks* callbacks);
 
-  // DEPRECATED
-  virtual void createSnapshotFileAndReadMetadata(
-      const WebKit::WebURL& blobURL,
-      const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks* callbacks);
-
   static void InitializeOnIOThread(
       webkit_blob::BlobStorageController* blob_storage_controller);
   static void CleanupOnIOThread();

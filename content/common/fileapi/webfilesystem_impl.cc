@@ -128,16 +128,4 @@ void WebFileSystemImpl::createSnapshotFileAndReadMetadata(
       GURL(path), new WebFileSystemCallbackDispatcher(callbacks));
 }
 
-// DEPRECATED
-void WebFileSystemImpl::createSnapshotFileAndReadMetadata(
-    const WebKit::WebURL& blobURL,
-    const WebKit::WebURL& path,
-    WebKit::WebFileSystemCallbacks* callbacks) {
-  FileSystemDispatcher* dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  dispatcher->CreateSnapshotFile_Deprecated(
-      GURL(blobURL), GURL(path),
-      new WebFileSystemCallbackDispatcher(callbacks));
-}
-
 }  // namespace content

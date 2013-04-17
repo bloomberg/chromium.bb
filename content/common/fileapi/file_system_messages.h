@@ -150,12 +150,6 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
 IPC_MESSAGE_CONTROL1(FileSystemHostMsg_NotifyCloseFile,
                      GURL /* file path */)
 
-// DEPRECATED
-IPC_MESSAGE_CONTROL3(FileSystemHostMsg_CreateSnapshotFile_Deprecated,
-                     int /* request_id */,
-                     GURL /* blob_url */,
-                     GURL /* file_path */)
-
 // WebFileSystem::createSnapshotFileAndReadMetadata() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CreateSnapshotFile,
                      int /* request_id */,

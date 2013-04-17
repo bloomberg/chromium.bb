@@ -265,20 +265,6 @@ bool FileSystemDispatcher::CreateSnapshotFile(
   return true;
 }
 
-bool FileSystemDispatcher::CreateSnapshotFile_Deprecated(
-    const GURL& blob_url,
-    const GURL& file_path,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
-  int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(
-          new FileSystemHostMsg_CreateSnapshotFile_Deprecated(
-              request_id, blob_url, file_path))) {
-    dispatchers_.Remove(request_id); // destroys |dispatcher|
-    return false;
-  }
-  return true;
-}
-
 void FileSystemDispatcher::OnDidOpenFileSystem(int request_id,
                                                const std::string& name,
                                                const GURL& root) {

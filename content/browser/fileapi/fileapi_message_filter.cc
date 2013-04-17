@@ -158,8 +158,6 @@ bool FileAPIMessageFilter::OnMessageReceived(
                         OnCreateSnapshotFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidReceiveSnapshotFile,
                         OnDidReceiveSnapshotFile)
-    IPC_MESSAGE_HANDLER(FileSystemHostMsg_CreateSnapshotFile_Deprecated,
-                        OnCreateSnapshotFile_Deprecated)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_WillUpdate, OnWillUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidUpdate, OnDidUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_SyncGetPlatformPath,
@@ -539,32 +537,6 @@ void FileAPIMessageFilter::OnDidReceiveSnapshotFile(int request_id) {
   in_transit_snapshot_files_.erase(request_id);
 }
 
-void FileAPIMessageFilter::OnCreateSnapshotFile_Deprecated(
-    int request_id, const GURL& blob_url, const GURL& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  FileSystemURL url(context_->CrackURL(path));
-  base::Callback<void(const base::FilePath&)> register_file_callback =
-      base::Bind(&FileAPIMessageFilter::RegisterFileAsBlob,
-                 this, blob_url, url);
-
-  // Make sure if this file can be read by the renderer as this is
-  // called when the renderer is about to create a new File object
-  // (for reading the file).
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(url, fileapi::kReadFilePermissions, &error)) {
-    Send(new FileSystemMsg_DidFail(request_id, error));
-    return;
-  }
-
-  FileSystemOperation* operation = GetNewOperation(url, request_id);
-  if (!operation)
-    return;
-  operation->CreateSnapshotFile(
-      url,
-      base::Bind(&FileAPIMessageFilter::DidCreateSnapshot_Deprecated,
-                 this, request_id, register_file_callback));
-}
-
 void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->StartBuildingBlob(url);
@@ -804,80 +776,6 @@ void FileAPIMessageFilter::DidCreateSnapshot(
   // Return the file info and platform_path.
   Send(new FileSystemMsg_DidCreateSnapshotFile(
                request_id, info, platform_path));
-}
-
-void FileAPIMessageFilter::DidCreateSnapshot_Deprecated(
-    int request_id,
-    const base::Callback<void(const base::FilePath&)>& register_file_callback,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& info,
-    const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& unused) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (result != base::PLATFORM_FILE_OK) {
-    Send(new FileSystemMsg_DidFail(request_id, result));
-    return;
-  }
-
-  // Register the created file to the blob registry by calling
-  // RegisterFileAsBlob.
-  // Blob storage automatically finds and refs the file_ref, so we don't
-  // need to do anything for the returned file reference (|unused|) here.
-  register_file_callback.Run(platform_path);
-
-  // Return the file info and platform_path.
-  Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
-}
-
-void FileAPIMessageFilter::RegisterFileAsBlob(
-    const GURL& blob_url,
-    const FileSystemURL& url,
-    const base::FilePath& platform_path) {
-  // Use the virtual path's extension to determine MIME type.
-  base::FilePath::StringType extension = url.path().Extension();
-  if (!extension.empty())
-    extension = extension.substr(1);  // Strip leading ".".
-
-  scoped_refptr<webkit_blob::ShareableFileReference> shareable_file =
-      webkit_blob::ShareableFileReference::Get(platform_path);
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id_, platform_path)) {
-    // In order for the renderer to be able to read the file, it must be granted
-    // read permission for the file's platform path. By now, it has already been
-    // verified that the renderer has sufficient permissions to read the file.
-    // It is still possible that ChildProcessSecurityPolicyImpl doesn't reflect
-    // that the renderer can read the file's platform path. If this is the case
-    // the renderer should be granted read permission for the file's platform
-    // path. This can happen in the following situations:
-    // - the file comes from sandboxed filesystem. Reading sandboxed files is
-    //   always permitted, but only implicitly.
-    // - the underlying filesystem returned newly created snapshot file.
-    // - the file comes from an external drive filesystem. The renderer has
-    //   already been granted read permission for the file's nominal path, but
-    //   for drive files, platform paths differ from the nominal paths.
-    DCHECK(shareable_file ||
-           fileapi::SandboxMountPointProvider::CanHandleType(url.type()) ||
-           url.type() == fileapi::kFileSystemTypeDrive);
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        process_id_, platform_path);
-    if (shareable_file) {
-      // This will revoke all permissions for the file when the last ref
-      // of the file is dropped (assuming it's ok).
-      shareable_file->AddFinalReleaseCallback(
-          base::Bind(&RevokeFilePermission, process_id_));
-    }
-  }
-
-  // This may fail, but then we'll be just setting the empty mime type.
-  std::string mime_type;
-  net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
-  BlobData::Item item;
-  item.SetToFilePathRange(platform_path, 0, -1, base::Time());
-  BlobStorageController* controller = blob_storage_context_->controller();
-  controller->StartBuildingBlob(blob_url);
-  controller->AppendBlobDataItem(blob_url, item);
-  controller->FinishBuildingBlob(blob_url, mime_type);
-  blob_urls_.insert(blob_url.spec());
 }
 
 bool FileAPIMessageFilter::HasPermissionsForFile(

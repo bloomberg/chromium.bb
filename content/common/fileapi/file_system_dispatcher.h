@@ -95,11 +95,6 @@ class FileSystemDispatcher : public IPC::Listener {
   bool CreateSnapshotFile(const GURL& file_path,
                           fileapi::FileSystemCallbackDispatcher* dispatcher);
 
-  bool CreateSnapshotFile_Deprecated(
-      const GURL& blod_url,
-      const GURL& file_path,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
-
  private:
   // Message handlers.
   void OnDidOpenFileSystem(int request_id,
