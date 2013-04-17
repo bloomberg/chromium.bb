@@ -39,8 +39,8 @@
 #include "NodeRenderStyle.h"
 #include "Page.h"
 #include "PopupMenu.h"
-#include "RenderBR.h"
 #include "RenderScrollbar.h"
+#include "RenderText.h"
 #include "RenderTheme.h"
 #include "Settings.h"
 #include "StyleResolver.h"
@@ -243,7 +243,8 @@ void RenderMenuList::setText(const String& s)
         if (!m_buttonText || !m_buttonText->isBR()) {
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new (renderArena()) RenderBR(document());
+            // FIXME: We shouldn't create anonymous breaks.
+            m_buttonText = RenderText::createLineBreak(document());
             m_buttonText->setStyle(style());
             addChild(m_buttonText);
         }

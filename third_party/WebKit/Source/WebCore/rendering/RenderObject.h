@@ -313,8 +313,8 @@ public:
     RenderArena* renderArena() const { return document()->renderArena(); }
 
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
+    bool isBR() const;
 
-    virtual bool isBR() const { return false; }
     virtual bool isBlockFlow() const { return false; }
     virtual bool isBoxModelObject() const { return false; }
     virtual bool isCounter() const { return false; }
