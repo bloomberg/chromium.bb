@@ -42,13 +42,13 @@ enum CharacterWidth {
 
 class HTMLIdentifier {
 public:
-    HTMLIdentifier() : m_index(0) { }
+    HTMLIdentifier() { }
 
     template<size_t inlineCapacity>
     HTMLIdentifier(const Vector<UChar, inlineCapacity>& vector, CharacterWidth width)
-        : m_index(findIndex(vector.data(), vector.size()))
+        : m_string(findIfKnown(vector.data(), vector.size()))
     {
-        if (m_index != invalidIndex)
+        if (m_string.impl())
             return;
         if (width == Likely8Bit)
             m_string = StringImpl::create8BitIfPossible(vector);
@@ -68,17 +68,14 @@ public:
     bool isSafeToSendToAnotherThread() const { return m_string.isSafeToSendToAnotherThread(); }
 
 #ifndef NDEBUG
-    static bool hasIndex(const StringImpl*);
+    static bool isKnown(const StringImpl*);
 #endif
 
 private:
-    static const unsigned invalidIndex = -1;
     static unsigned maxNameLength;
-    static unsigned findIndex(const UChar* characters, unsigned length);
+    static StringImpl* findIfKnown(const UChar* characters, unsigned length);
     static void addNames(QualifiedName** names, unsigned namesCount, unsigned indexOffset);
 
-    // FIXME: This could be a union.
-    unsigned m_index;
     String m_string;
 };
 

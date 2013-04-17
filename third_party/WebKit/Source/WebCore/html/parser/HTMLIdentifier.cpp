@@ -38,8 +38,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-typedef std::pair<unsigned, StringImpl*> IdentifierEntry;
-typedef HashMap<unsigned, IdentifierEntry, AlreadyHashed> IdentifierTable;
+typedef HashMap<unsigned, StringImpl*, AlreadyHashed> IdentifierTable;
 
 unsigned HTMLIdentifier::maxNameLength = 0;
 
@@ -51,18 +50,18 @@ static IdentifierTable& identifierTable()
 }
 
 #ifndef NDEBUG
-bool HTMLIdentifier::hasIndex(const StringImpl* string)
+bool HTMLIdentifier::isKnown(const StringImpl* string)
 {
     const IdentifierTable& table = identifierTable();
     return table.contains(string->hash());
 }
 #endif
 
-unsigned HTMLIdentifier::findIndex(const UChar* characters, unsigned length)
+StringImpl* HTMLIdentifier::findIfKnown(const UChar* characters, unsigned length)
 {
     // We don't need to try hashing if we know the string is too long.
     if (length > maxNameLength)
-        return invalidIndex;
+        return 0;
     // computeHashAndMaskTop8Bits is the function StringImpl::hash() uses.
     unsigned hash = StringHasher::computeHashAndMaskTop8Bits(characters, length);
     const IdentifierTable& table = identifierTable();
@@ -70,52 +69,28 @@ unsigned HTMLIdentifier::findIndex(const UChar* characters, unsigned length)
 
     IdentifierTable::const_iterator it = table.find(hash);
     if (it == table.end())
-        return invalidIndex;
+        return 0;
     // It's possible to have hash collisions between arbitrary strings and
     // known identifiers (e.g. "bvvfg" collides with "script").
     // However ASSERTs in addNames() guard against there ever being collisions
     // between known identifiers.
-    if (!equal(it->value.second, characters, length))
-        return invalidIndex;
-    return it->value.first;
+    if (!equal(it->value, characters, length))
+        return 0;
+    return it->value;
 }
 
 const unsigned kHTMLNamesIndexOffset = 0;
 const unsigned kHTMLAttrsIndexOffset = 1000;
 COMPILE_ASSERT(kHTMLAttrsIndexOffset > HTMLTagsCount, kHTMLAttrsIndexOffset_should_be_larger_than_HTMLTagsCount);
 
-static const String& nameForIndex(unsigned index)
-{
-    unsigned adjustedIndex;
-    QualifiedName** names;
-    if (index < kHTMLAttrsIndexOffset) {
-        ASSERT(index < kHTMLNamesIndexOffset + HTMLTagsCount);
-        adjustedIndex = index - kHTMLNamesIndexOffset;
-        names = getHTMLTags();
-    } else {
-        ASSERT(index < kHTMLAttrsIndexOffset + HTMLAttrsCount);
-        adjustedIndex = index - kHTMLAttrsIndexOffset;
-        names = getHTMLAttrs();
-    }
-    // HTMLAttrs and HTMLNames may have collisions, but
-    // we shouldn't care which we ended up storing, since their
-    // components are all AtomicStrings and should use the same
-    // underlying StringImpl*.
-    return names[adjustedIndex]->localName().string();
-}
-
 const String& HTMLIdentifier::asString() const
 {
     ASSERT(isMainThread());
-    if (m_index != invalidIndex)
-        return nameForIndex(m_index);
     return m_string;
 }
 
 const StringImpl* HTMLIdentifier::asStringImpl() const
 {
-    if (m_index != invalidIndex)
-        return nameForIndex(m_index).impl();
     return m_string.impl();
 }
 
@@ -125,17 +100,15 @@ void HTMLIdentifier::addNames(QualifiedName** names, unsigned namesCount, unsign
     for (unsigned i = 0; i < namesCount; ++i) {
         StringImpl* name = names[i]->localName().impl();
         unsigned hash = name->hash();
-        unsigned index = i + indexOffset;
-        IdentifierEntry entry(index, name);
-        IdentifierTable::AddResult addResult = table.add(hash, entry);
+        IdentifierTable::AddResult addResult = table.add(hash, name);
         maxNameLength = std::max(maxNameLength, name->length());
         // Ensure we're using the same hashing algorithm to get and set.
-        ASSERT_UNUSED(addResult, !addResult.isNewEntry || HTMLIdentifier::findIndex(name->characters(), name->length()) == index);
+        ASSERT_UNUSED(addResult, !addResult.isNewEntry || HTMLIdentifier::findIfKnown(name->characters(), name->length()) == name);
         // We expect some hash collisions, but only for identical strings.
         // Since all of these names are AtomicStrings pointers should be equal.
         // Note: If you hit this ASSERT, then we had a hash collision among
         // HTMLNames strings, and we need to re-design how we use this hash!
-        ASSERT_UNUSED(addResult, !addResult.isNewEntry || name == addResult.iterator->value.second);
+        ASSERT_UNUSED(addResult, !addResult.isNewEntry || name == addResult.iterator->value);
     }
 }
 

@@ -100,7 +100,7 @@ inline bool threadSafeHTMLNamesMatch(const HTMLIdentifier& tagName, const Qualif
 {
     // When the QualifiedName is known to HTMLIdentifier,
     // all we have to do is a pointer compare.
-    ASSERT(HTMLIdentifier::hasIndex(qName.localName().impl()));
+    ASSERT(HTMLIdentifier::isKnown(qName.localName().impl()));
     return tagName.asStringImpl() == qName.localName().impl();
 }
 #endif
