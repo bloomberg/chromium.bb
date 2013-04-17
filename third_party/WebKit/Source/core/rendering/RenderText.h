@@ -38,13 +38,6 @@ public:
     virtual ~RenderText();
 #endif
 
-    // FIXME: This should take an Element or HTMLBRElement, but we create an
-    // anonymous one in RenderMenuList.
-    static RenderText* createLineBreak(Node* node)
-    {
-        return new (node->document()->renderArena()) RenderText(node, lineBreakString());
-    }
-
     virtual const char* renderName() const;
 
     virtual bool isTextFragment() const;
@@ -55,8 +48,6 @@ public:
     void extractTextBox(InlineTextBox*);
     void attachTextBox(InlineTextBox*);
     void removeTextBox(InlineTextBox*);
-
-    bool isLineBreak() const { return text() == lineBreakString(); }
 
     StringImpl* text() const { return m_text.impl(); }
     String textWithoutTranscoding() const;
@@ -161,12 +152,6 @@ protected:
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 
 private:
-    static PassRefPtr<StringImpl> lineBreakString()
-    {
-        DEFINE_STATIC_LOCAL(const String, string, (ASCIILiteral("\n")));
-        return string.impl();
-    }
-
     void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&);
 
     bool computeCanUseSimpleFontCodePath() const;

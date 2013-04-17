@@ -275,11 +275,6 @@ bool RenderObject::isHTMLMarquee() const
     return node() && node()->renderer() == this && node()->hasTagName(marqueeTag);
 }
 
-bool RenderObject::isBR() const
-{
-    return isText() && toRenderText(this)->isLineBreak();
-}
-
 void RenderObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
 {
     setFlowThreadState(state);

@@ -27,7 +27,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "RenderText.h"
+#include "RenderBR.h"
 
 namespace WebCore {
 
@@ -77,7 +77,7 @@ RenderObject* HTMLBRElement::createRenderer(RenderArena* arena, RenderStyle* sty
      if (style->hasContent())
         return RenderObject::createObject(this, style);
 
-     return RenderText::createLineBreak(this);
+     return new (arena) RenderBR(this);
 }
 
 }

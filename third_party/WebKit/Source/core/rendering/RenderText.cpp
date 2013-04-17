@@ -174,8 +174,6 @@ RenderText::~RenderText()
 
 const char* RenderText::renderName() const
 {
-    if (isLineBreak())
-        return "RenderBR";
     return "RenderText";
 }
 
@@ -226,7 +224,7 @@ void RenderText::removeAndDestroyTextBoxes()
 {
     if (!documentBeingDestroyed()) {
         if (firstTextBox()) {
-            if (isLineBreak()) {
+            if (isBR()) {
                 RootInlineBox* next = firstTextBox()->root()->nextRootBox();
                 if (next)
                     next->markDirty();
@@ -614,7 +612,7 @@ static VisiblePosition createVisiblePositionAfterAdjustingOffsetForBiDi(const In
 
 VisiblePosition RenderText::positionForPoint(const LayoutPoint& point)
 {
-    if (!firstTextBox() || textLength() == 0 || isLineBreak())
+    if (!firstTextBox() || textLength() == 0)
         return createVisiblePosition(0, DOWNSTREAM);
 
     LayoutUnit pointLineDirection = firstTextBox()->isHorizontal() ? point.x() : point.y();
@@ -940,7 +938,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     m_endMinWidth = 0;
     m_maxWidth = 0;
 
-    if (isLineBreak())
+    if (isBR())
         return;
 
     float currMinWidth = 0;
@@ -1421,7 +1419,7 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     }
 
     ASSERT(m_text);
-    ASSERT(!isLineBreak() || (textLength() == 1 && m_text[0] == '\n'));
+    ASSERT(!isBR() || (textLength() == 1 && m_text[0] == '\n'));
 
     m_isAllASCII = m_text.containsOnlyASCII();
     m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();
@@ -1532,7 +1530,7 @@ void RenderText::positionLineBox(InlineBox* box)
 
 float RenderText::width(unsigned from, unsigned len, float xPos, bool firstLine, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
-    if (from >= textLength() || isLineBreak())
+    if (from >= textLength())
         return 0;
 
     if (from + len > textLength())
@@ -1544,7 +1542,7 @@ float RenderText::width(unsigned from, unsigned len, float xPos, bool firstLine,
 float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     ASSERT(from + len <= textLength());
-    if (!textLength() || isLineBreak())
+    if (!textLength())
         return 0;
 
     float w;
@@ -1647,7 +1645,7 @@ LayoutRect RenderText::selectionRectForRepaint(const RenderLayerModelObject* rep
 {
     ASSERT(!needsLayout());
 
-    if (selectionState() == SelectionNone || isLineBreak())
+    if (selectionState() == SelectionNone)
         return LayoutRect();
     RenderBlock* cb = containingBlock();
     if (!cb)
@@ -1692,7 +1690,7 @@ LayoutRect RenderText::selectionRectForRepaint(const RenderLayerModelObject* rep
 int RenderText::caretMinOffset() const
 {
     InlineTextBox* box = firstTextBox();
-    if (!box || isLineBreak())
+    if (!box)
         return 0;
     int minOffset = box->start();
     for (box = box->nextTextBox(); box; box = box->nextTextBox())
@@ -1703,7 +1701,7 @@ int RenderText::caretMinOffset() const
 int RenderText::caretMaxOffset() const
 {
     InlineTextBox* box = lastTextBox();
-    if (!lastTextBox() || isLineBreak())
+    if (!lastTextBox())
         return textLength();
 
     int maxOffset = box->start() + box->len();

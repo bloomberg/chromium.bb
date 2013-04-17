@@ -1299,6 +1299,7 @@
             'rendering/RenderApplet.h',
             'rendering/RenderArena.cpp',
             'rendering/RenderArena.h',
+            'rendering/RenderBR.cpp',
             'rendering/RenderBlock.cpp',
             'rendering/RenderBlockLineLayout.cpp',
             'rendering/RenderBox.cpp',

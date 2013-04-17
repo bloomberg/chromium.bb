@@ -37,6 +37,7 @@
 #include "PaintInfo.h"
 #include "RenderedDocumentMarker.h"
 #include "RenderArena.h"
+#include "RenderBR.h"
 #include "RenderBlock.h"
 #include "RenderCombineText.h"
 #include "RenderRubyRun.h"
@@ -100,6 +101,8 @@ LayoutUnit InlineTextBox::lineHeight() const
 {
     if (!isText() || !renderer()->parent())
         return 0;
+    if (m_renderer->isBR())
+        return toRenderBR(m_renderer)->lineHeight(isFirstLineStyle());
     if (parent()->renderer() == renderer()->parent())
         return parent()->lineHeight();
     return toRenderBoxModelObject(renderer()->parent())->lineHeight(isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine, PositionOnContainingLine);
