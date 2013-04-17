@@ -614,7 +614,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       device->Disconnect(
           base::Bind(&base::DoNothing),
           base::Bind(&BluetoothDeviceDisconnectError));
-    } else if (device->IsPaired()) {
+    } else if (device->IsPaired() || !device->IsPairable()) {
       device->Connect(
           NULL,
           base::Bind(&base::DoNothing),

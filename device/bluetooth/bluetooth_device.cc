@@ -158,6 +158,21 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
   return DEVICE_UNKNOWN;
 }
 
+bool BluetoothDevice::IsPairable() const {
+  DeviceType type = GetDeviceType();
+
+  // Get the vendor part of the address: "00:11:22" for "00:11:22:33:44:55"
+  std::string vendor = GetAddress().substr(0, 8);
+
+  // Verbatim "Bluetooth Mouse", model 96674
+  if ((type == DEVICE_MOUSE && vendor == "00:12:A1") ||
+  // Microsoft "Microsoft Bluetooth Notebook Mouse 5000", model X807028-001
+      (type == DEVICE_MOUSE && vendor == "7C:ED:8D"))
+      return false;
+  // TODO: Move this database into a config file.
+
+  return true;
+}
 
 bool BluetoothDevice::ProvidesServiceWithUUID(
     const std::string& uuid) const {

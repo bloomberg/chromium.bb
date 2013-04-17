@@ -289,11 +289,17 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
                      << ": " << auth_token;
       }
     } else {
+      // Determine if the device supports pairing:
+      PairingDelegate* delegate = NULL;
+      if (device->IsPairable())
+        delegate = this;
+
       // Connection request.
       VLOG(1) << "Connect: " << address;
       device->Connect(
-          this,
-          base::Bind(&base::DoNothing),
+          delegate,
+          base::Bind(&BluetoothOptionsHandler::DismissDisplayOrConfirm,
+                     weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BluetoothOptionsHandler::ConnectError,
                      weak_ptr_factory_.GetWeakPtr(),
                      device->GetAddress()));

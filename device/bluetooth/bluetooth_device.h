@@ -165,6 +165,10 @@ class BluetoothDevice {
   // DEVICE_PERIPHERAL.
   DeviceType GetDeviceType() const;
 
+  // Indicates whether the device is known to support pairing based on its
+  // device class and address.
+  bool IsPairable() const;
+
   // Indicates whether the device is paired with the adapter.
   virtual bool IsPaired() const = 0;
 
