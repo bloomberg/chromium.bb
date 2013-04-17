@@ -18,9 +18,9 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/google_apis/drive_notification_manager.h"
+#include "chrome/browser/google_apis/drive_notification_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
@@ -31,7 +31,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
@@ -46,9 +45,6 @@ namespace {
 const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
-
-// The sync invalidation object ID for Google Drive.
-const char kDriveInvalidationObjectId[] = "CHANGELOG";
 
 // Incremental sync polling interval.
 // TODO(calvinlo): Improve polling algorithm dependent on whether push
@@ -154,31 +150,6 @@ class DriveFileSyncService::TaskToken {
 
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
-
-void DriveFileSyncService::OnInvalidatorStateChange(
-    syncer::InvalidatorState state) {
-  SetPushNotificationEnabled(state);
-}
-
-void DriveFileSyncService::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  DCHECK_EQ(1U, invalidation_map.size());
-  const invalidation::ObjectId object_id(
-      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-      kDriveInvalidationObjectId);
-  DCHECK_EQ(1U, invalidation_map.count(object_id));
-  // TODO(dcheng): Only acknowledge the invalidation once the fetch has
-  // completed. http://crbug.com/156843
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  CHECK(profile_sync_service);
-  profile_sync_service->AcknowledgeInvalidation(
-      invalidation_map.begin()->first,
-      invalidation_map.begin()->second.ack_handle);
-
-  may_have_unfetched_changes_ = true;
-  MaybeStartFetchChanges();
-}
 
 struct DriveFileSyncService::ProcessRemoteChangeParam {
   scoped_ptr<TaskToken> token;
@@ -304,8 +275,6 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
-      push_notification_registered_(false),
-      push_notification_enabled_(false),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
@@ -338,22 +307,10 @@ DriveFileSyncService::~DriveFileSyncService() {
     sync_client_->RemoveObserver(this);
   token_.reset();
 
-  // Unregister for Drive notifications.
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (!profile_sync_service || !push_notification_registered_) {
-    return;
-  }
-
-  // TODO(calvinlo): Revisit this later in Consolidate Drive XMPP Notification
-  // and Polling Backup into one Class patch. http://crbug/173339.
-  // Original comment from Kochi about the order this is done in:
-  // Once DriveSystemService gets started / stopped at runtime, this ID needs to
-  // be unregistered *before* the handler is unregistered
-  // as ID persists across browser restarts.
-  profile_sync_service->UpdateRegisteredInvalidationIds(
-      this, syncer::ObjectIdSet());
-  profile_sync_service->UnregisterInvalidationHandler(this);
+  google_apis::DriveNotificationManager* drive_notification_manager =
+      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  DCHECK(drive_notification_manager);
+  drive_notification_manager->RemoveObserver(this);
 }
 
 // static
@@ -719,8 +676,6 @@ DriveFileSyncService::DriveFileSyncService(
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
-      push_notification_registered_(false),
-      push_notification_enabled_(false),
       polling_delay_seconds_(-1),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
@@ -901,8 +856,12 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     sync_client_->EnsureSyncRootIsNotInMyDrive(sync_root_resource_id());
 
   NotifyTaskDone(status, token.Pass());
-  RegisterDriveNotifications();
   may_have_unfetched_changes_ = true;
+
+  google_apis::DriveNotificationManager* drive_notification_manager =
+      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  DCHECK(drive_notification_manager);
+  drive_notification_manager->AddObserver(this);
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {
@@ -1065,14 +1024,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     metadata_store_->MoveBatchSyncOriginToIncremental(origin);
   }
 
-  // If this was the last batch sync origin and push_notification is enabled
-  // (indicates that we may have longer polling cycle), trigger the first
-  // incremental sync on next task cycle.
-  if (pending_batch_sync_origins_.empty() &&
-      push_notification_enabled_) {
-    may_have_unfetched_changes_ = true;
-  }
-
+  CheckForUpdates();
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
 }
 
@@ -2154,6 +2106,8 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
 }
 
 void DriveFileSyncService::CheckForUpdates() {
+  // TODO(calvinlo): Try to eliminate may_have_unfetched_changes_ variable.
+  may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
 }
 
@@ -2315,11 +2269,6 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
     return;
   }
 
-  if (push_notification_enabled_) {
-    polling_delay_seconds_ = kPollingDelaySecondsWithNotification;
-    return;
-  }
-
   int64 old_delay = polling_delay_seconds_;
 
   // Push notifications off.
@@ -2327,52 +2276,6 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
 
   if (polling_delay_seconds_ < old_delay)
     polling_timer_.Stop();
-}
-
-bool DriveFileSyncService::IsDriveNotificationSupported() {
-  // TODO(calvinlo): A invalidation ID can only be registered to one handler.
-  // Therefore ChromeOS and SyncFS cannot both use XMPP notifications until
-  // (http://crbug.com/173339) is completed.
-  // For now, disable XMPP notifications for SyncFC on ChromeOS to guarantee
-  // that ChromeOS's file manager can register itself to the invalidationID.
-
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return true;
-#endif
-}
-
-// Register for Google Drive invalidation notifications through XMPP.
-void DriveFileSyncService::RegisterDriveNotifications() {
-  // Push notification registration might have already occurred if called from
-  // a different extension.
-  if (!IsDriveNotificationSupported() || push_notification_registered_)
-    return;
-
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (!profile_sync_service)
-    return;
-
-  profile_sync_service->RegisterInvalidationHandler(this);
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-      kDriveInvalidationObjectId));
-  profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
-  push_notification_registered_ = true;
-  SetPushNotificationEnabled(profile_sync_service->GetInvalidatorState());
-}
-
-void DriveFileSyncService::SetPushNotificationEnabled(
-    syncer::InvalidatorState state) {
-  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
-  if (!push_notification_enabled_)
-    return;
-
-  // Push notifications are enabled so reset polling timer.
-  UpdatePollingDelay(kPollingDelaySecondsWithNotification);
 }
 
 void DriveFileSyncService::NotifyObserversFileStatusChanged(

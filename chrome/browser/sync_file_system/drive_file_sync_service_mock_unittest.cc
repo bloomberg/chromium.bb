@@ -204,6 +204,14 @@ ACTION(InvokeDidApplyRemoteChange) {
       FROM_HERE, base::Bind(arg3, SYNC_STATUS_OK));
 }
 
+ACTION(InvokeGetChangeListWithEmptyChange) {
+  scoped_ptr<google_apis::ResourceList> resource_list(
+      new google_apis::ResourceList());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg1, google_apis::HTTP_SUCCESS,
+                            base::Passed(&resource_list)));
+}
+
 }  // namespace
 
 class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
@@ -626,6 +634,13 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
+  void SetUpDriveServiceExpectCallsForEmptyRemoteChange() {
+    EXPECT_CALL(*mock_drive_service(),
+                GetChangeList(_, _))
+        .WillOnce(InvokeGetChangeListWithEmptyChange())
+        .RetiresOnSaturation();
+  }
+
   // End of mock setup helpers -----------------------------------------------
 
  private:
@@ -745,6 +760,8 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
   SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
       "chromeos/sync_file_system/listing_files_in_empty_directory.json",
       kDirectoryResourceId);
+
+  SetUpDriveServiceExpectCallsForEmptyRemoteChange();
 
   SetUpDriveSyncService(true);
   bool done = false;

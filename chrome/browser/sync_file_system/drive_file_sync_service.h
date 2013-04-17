@@ -22,7 +22,6 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_action.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
@@ -48,7 +47,6 @@ class DriveFileSyncService
       public LocalChangeProcessor,
       public DriveFileSyncClientObserver,
       public base::NonThreadSafe,
-      public syncer::InvalidationHandler,
       public google_apis::DriveNotificationObserver {
  public:
   static const char kServiceName[];
@@ -115,12 +113,6 @@ class DriveFileSyncService
   // DriveFileSyncClientObserver overrides.
   virtual void OnAuthenticated() OVERRIDE;
   virtual void OnNetworkConnected() OVERRIDE;
-
-  // syncer::InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
-  virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // google_apis::DriveNotificationObserver implementation.
   virtual void CheckForUpdates() OVERRIDE;
@@ -439,9 +431,6 @@ class DriveFileSyncService
   void SchedulePolling();
   void OnPollingTimerFired();
   void UpdatePollingDelay(int64 new_delay_sec);
-  void RegisterDriveNotifications();
-  bool IsDriveNotificationSupported();
-  void SetPushNotificationEnabled(syncer::InvalidatorState state);
   void NotifyObserversFileStatusChanged(const fileapi::FileSystemURL& url,
                                         SyncFileStatus sync_status,
                                         SyncAction action_taken,
@@ -503,10 +492,6 @@ class DriveFileSyncService
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
 
-  // True when Drive File Sync Service is registered for Drive notifications.
-  bool push_notification_registered_;
-  // True once the first drive notification is received with OK state.
-  bool push_notification_enabled_;
   // Timer to trigger fetching changes for incremental sync.
   base::OneShotTimer<DriveFileSyncService> polling_timer_;
   // If polling_delay_seconds_ is negative (<0) the timer won't start.
