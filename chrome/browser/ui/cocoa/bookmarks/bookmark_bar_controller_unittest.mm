@@ -25,6 +25,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -339,6 +341,7 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
   virtual void SetUp() {
     BookmarkBarControllerTestBase::SetUp();
     ASSERT_TRUE(browser());
+    AddCommandLineSwitches();
 
     bar_.reset(
       [[BookmarkBarControllerNoOpen alloc]
@@ -349,6 +352,8 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
 
     InstallAndToggleBar(bar_.get());
   }
+
+  virtual void AddCommandLineSwitches() {}
 
   BookmarkBarControllerNoOpen* noOpenBar() {
     return (BookmarkBarControllerNoOpen*)bar_.get();
@@ -1540,6 +1545,66 @@ TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
               [bar_ offTheSideButtonIsHidden]);
     EXPECT_EQ(displayedButtonCountResults[i], [bar_ displayedButtonCount]);
   }
+}
+
+class BookmarkBarControllerWithInstantExtendedTest :
+    public BookmarkBarControllerTest {
+ public:
+  virtual void AddCommandLineSwitches() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableInstantExtendedAPI);
+  }
+};
+
+TEST_F(BookmarkBarControllerWithInstantExtendedTest,
+    BookmarksWithAppsPageShortcut) {
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+  [bar_ frameDidChange];
+
+  // Apps page shortcut button should be visible.
+  ASSERT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Bookmarks should be to the right of the Apps page shortcut button.
+  CGFloat apps_button_right = NSMaxX([[bar_ appsPageShortcutButton] frame]);
+  CGFloat right = apps_button_right;
+  NSArray* buttons = [bar_ buttons];
+  for (size_t i = 0; i < [buttons count]; ++i) {
+    EXPECT_LE(right, NSMinX([[buttons objectAtIndex:i] frame]));
+    right = NSMaxX([[buttons objectAtIndex:i] frame]);
+  }
+
+  // Removing the Apps button should move every bookmark to the left.
+  profile()->GetPrefs()->SetBoolean(prefs::kShowAppsShortcutInBookmarkBar,
+                                    false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+  EXPECT_GT(apps_button_right, NSMinX([[buttons objectAtIndex:0] frame]));
+  for (size_t i = 1; i < [buttons count]; ++i) {
+    EXPECT_LE(NSMaxX([[buttons objectAtIndex:i - 1] frame]),
+              NSMinX([[buttons objectAtIndex:i] frame]));
+  }
+}
+
+TEST_F(BookmarkBarControllerWithInstantExtendedTest,
+    BookmarksWithoutAppsPageShortcut) {
+  // The no item containers should be to the right of the Apps button.
+  ASSERT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+  CGFloat apps_button_right = NSMaxX([[bar_ appsPageShortcutButton] frame]);
+  EXPECT_LE(apps_button_right,
+            NSMinX([[[bar_ buttonView] noItemTextfield] frame]));
+  EXPECT_LE(NSMaxX([[[bar_ buttonView] noItemTextfield] frame]),
+            NSMinX([[[bar_ buttonView] importBookmarksButton] frame]));
+
+  // Removing the Apps button should move the no item containers to the left.
+  profile()->GetPrefs()->SetBoolean(prefs::kShowAppsShortcutInBookmarkBar,
+                                    false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+  EXPECT_GT(apps_button_right,
+            NSMinX([[[bar_ buttonView] noItemTextfield] frame]));
+  EXPECT_LE(NSMaxX([[[bar_ buttonView] noItemTextfield] frame]),
+            NSMinX([[[bar_ buttonView] importBookmarksButton] frame]));
 }
 
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {

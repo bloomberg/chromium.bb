@@ -382,7 +382,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
 - (NSButton*)offTheSideButton;
+- (NSButton*)appsPageShortcutButton;
 - (BOOL)offTheSideButtonIsHidden;
+- (BOOL)appsPageShortcutButtonIsHidden;
 - (BookmarkButton*)otherBookmarksButton;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;

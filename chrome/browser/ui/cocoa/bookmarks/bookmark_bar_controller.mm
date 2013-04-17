@@ -1387,17 +1387,24 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 
-// Adjust the horizontal width and the visibility of the "For quick access"
-// text field and "Import bookmarks..." button based on the current width
-// of the containing |buttonView_| (which is affected by window width).
-- (void)adjustNoItemContainerWidthsForMaxX:(CGFloat)maxViewX {
+// Adjust the horizontal width, x position and the visibility of the "For quick
+// access" text field and "Import bookmarks..." button based on the current
+// width of the containing |buttonView_| (which is affected by window width).
+- (void)adjustNoItemContainerForMaxX:(CGFloat)maxViewX {
   if (![[buttonView_ noItemContainer] isHidden]) {
     // Reset initial frames for the two items, then adjust as necessary.
     NSTextField* noItemTextfield = [buttonView_ noItemTextfield];
-    [noItemTextfield setFrame:originalNoItemsRect_];
+    NSRect noItemsRect = originalNoItemsRect_;
+    NSRect importBookmarksRect = originalImportBookmarksRect_;
+    if (![appsPageShortcutButton_ isHidden]) {
+      float width = NSWidth([appsPageShortcutButton_ frame]);
+      noItemsRect.origin.x += width;
+      importBookmarksRect.origin.x += width;
+    }
+    [noItemTextfield setFrame:noItemsRect];
     [noItemTextfield setHidden:NO];
     NSButton* importBookmarksButton = [buttonView_ importBookmarksButton];
-    [importBookmarksButton setFrame:originalImportBookmarksRect_];
+    [importBookmarksButton setFrame:importBookmarksRect];
     [importBookmarksButton setHidden:NO];
     // Check each to see if they need to be shrunk or hidden.
     if ([self shrinkOrHideView:importBookmarksButton forMaxX:maxViewX])
@@ -1518,7 +1525,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // While we're here, adjust the horizontal width and the visibility
   // of the "For quick access" and "Import bookmarks..." text fields.
   if (![buttons_ count])
-    [self adjustNoItemContainerWidthsForMaxX:maxViewX];
+    [self adjustNoItemContainerForMaxX:maxViewX];
 }
 
 #pragma mark Private Methods Exposed for Testing
@@ -1535,8 +1542,16 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return offTheSideButton_;
 }
 
+- (NSButton*)appsPageShortcutButton {
+  return appsPageShortcutButton_;
+}
+
 - (BOOL)offTheSideButtonIsHidden {
   return [offTheSideButton_ isHidden];
+}
+
+- (BOOL)appsPageShortcutButtonIsHidden {
+  return [appsPageShortcutButton_ isHidden];
 }
 
 - (BookmarkButton*)otherBookmarksButton {
