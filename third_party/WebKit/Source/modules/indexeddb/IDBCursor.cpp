@@ -179,7 +179,7 @@ void IDBCursor::advance(unsigned long count, ExceptionCode& ec)
 void IDBCursor::continueFunction(ScriptExecutionContext* context, const ScriptValue& keyValue, ExceptionCode& ec)
 {
     DOMRequestState requestState(context);
-    RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
+    RefPtr<IDBKey> key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
     continueFunction(key.release(), ec);
 }
 
@@ -298,7 +298,7 @@ PassRefPtr<IDBObjectStore> IDBCursor::effectiveObjectStore()
 
 IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionCode& ec)
 {
-    if (directionString == IDBCursor::directionNext())
+    if (directionString.isNull() || directionString == IDBCursor::directionNext())
         return IndexedDB::CursorNext;
     if (directionString == IDBCursor::directionNextUnique())
         return IndexedDB::CursorNextNoDuplicate;

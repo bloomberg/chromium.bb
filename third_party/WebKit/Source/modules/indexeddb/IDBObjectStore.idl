@@ -32,20 +32,20 @@
     readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;
 
-    [CallWith=ScriptState, RaisesException] IDBRequest put(any value, optional any key);
-    [CallWith=ScriptState, RaisesException] IDBRequest add(any value, optional any key);
+    [CallWith=ScriptState, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
+    [CallWith=ScriptState, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
     [CallWith=ScriptExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(IDBKeyRange? keyRange);
     [CallWith=ScriptExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest clear();
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest get(IDBKeyRange? key);
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest get(any key);
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor(optional IDBKeyRange? range, optional DOMString direction);
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor(any key, optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional IDBKeyRange? range, [Default=NullString] optional DOMString direction);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest openCursor(any key, [Default=NullString] optional DOMString direction);
 
     [CallWith=ScriptExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
     [CallWith=ScriptExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
     [RaisesException] IDBIndex index(DOMString name);
     [RaisesException] void deleteIndex(DOMString name);
-    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest count(optional IDBKeyRange? range);
+    [CallWith=ScriptExecutionContext, RaisesException] IDBRequest count([Default=Undefined] optional IDBKeyRange? range);
     [CallWith=ScriptExecutionContext, RaisesException] IDBRequest count(any key);
 };

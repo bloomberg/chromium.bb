@@ -526,9 +526,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), ec);
+            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), ec);
         } else
-            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), ec);
+            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), ec);
         idbRequest->addEventListener(eventNames().successEvent, openCursorCallback, false);
     }
 
