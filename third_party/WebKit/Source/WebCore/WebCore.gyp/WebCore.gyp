@@ -1334,6 +1334,7 @@
         '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -1354,6 +1355,7 @@
         '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -1405,14 +1407,6 @@
                'USING_V8_SHARED',
             ],
           },
-        }],
-        ['use_accelerated_compositing==1', {
-          'dependencies': [
-            '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
-          ],
-          'export_dependent_settings': [
-            '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
-          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [

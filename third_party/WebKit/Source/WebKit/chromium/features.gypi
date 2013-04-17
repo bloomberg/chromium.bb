@@ -85,12 +85,10 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
-      'use_accelerated_compositing%': 1,
       'enable_svg%': 1,
       'enable_touch_events%': 1,
       'enable_touch_icon_loading%' : 0,
     },
-    'use_accelerated_compositing%': '<(use_accelerated_compositing)',
     'enable_svg%': '<(enable_svg)',
     'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
@@ -141,11 +139,6 @@
       }, { # OS!="linux"
         'feature_defines': [
           'ENABLE_BINDING_INTEGRITY=0',
-        ],
-      }],
-      ['use_accelerated_compositing==1', {
-        'feature_defines': [
-          'WTF_USE_ACCELERATED_COMPOSITING=1',
         ],
       }],
       # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.
