@@ -300,8 +300,7 @@ class EBuild(object):
 
   def GetGitProjectName(self, path):
     """Read the project variable from a git repository at given path."""
-    cmd = ['repo', 'forall', '.', '-c',
-           'git config --get remote.${REPO_REMOTE}.projectname']
+    cmd = ['repo', 'forall', '.', '-c', 'echo ${REPO_PROJECT}']
     return self._RunCommand(cmd, cwd=path).rstrip()
 
   def GetSourcePath(self, srcroot):
