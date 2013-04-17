@@ -537,7 +537,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (state.visibility_state == SHELF_AUTO_HIDE) {
     // When state is SHELF_AUTO_HIDE we need to track when the mouse is over the
     // launcher to unhide the shelf. AutoHideEventFilter does that for us.
-    if (!event_filter_.get())
+    if (!event_filter_)
       event_filter_.reset(new AutoHideEventFilter(this));
   } else {
     event_filter_.reset(NULL);

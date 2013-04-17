@@ -61,7 +61,7 @@ ImageCursors::~ImageCursors() {
 }
 
 gfx::Display ImageCursors::GetDisplay() const {
-  if (!cursor_loader_.get()) {
+  if (!cursor_loader_) {
     NOTREACHED();
     // Returning default on release build as it's not serious enough to crash
     // even if this ever happens.
@@ -72,7 +72,7 @@ gfx::Display ImageCursors::GetDisplay() const {
 
 bool ImageCursors::SetDisplay(const gfx::Display& display) {
   float device_scale_factor = display.device_scale_factor();
-  if (!cursor_loader_.get()) {
+  if (!cursor_loader_) {
     cursor_loader_.reset(ui::CursorLoader::Create());
   } else if (cursor_loader_->display().rotation() == display.rotation() &&
              cursor_loader_->display().device_scale_factor() ==

@@ -49,7 +49,7 @@ class FocusCyclerTest : public AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (tray_.get()) {
+    if (tray_) {
       GetStatusAreaWidgetDelegate(tray_->GetWidget())->
           SetFocusCyclerForTesting(NULL);
       tray_.reset();
@@ -65,7 +65,7 @@ class FocusCyclerTest : public AshTestBase {
  protected:
   // Creates the system tray, returning true on success.
   bool CreateTray() {
-    if (tray_.get())
+    if (tray_)
       return false;
     aura::Window* parent = Shell::GetPrimaryRootWindowController()->
         GetContainer(ash::internal::kShellWindowId_StatusContainer);

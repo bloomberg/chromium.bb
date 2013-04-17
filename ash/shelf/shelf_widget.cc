@@ -343,7 +343,7 @@ bool ShelfWidget::DelegateView::GetDimmed() const {
 }
 
 void ShelfWidget::DelegateView::SetWidgetBounds(const gfx::Rect bounds) {
-  if (dimmer_.get())
+  if (dimmer_)
     dimmer_->SetBounds(bounds);
 }
 
@@ -486,7 +486,7 @@ bool ShelfWidget::GetDimsShelf() const {
 }
 
 void ShelfWidget::CreateLauncher() {
-  if (!launcher_.get()) {
+  if (!launcher_) {
     Shell* shell = Shell::GetInstance();
     // This needs to be called before launcher_model().
     shell->GetLauncherDelegate();
@@ -512,7 +512,7 @@ bool ShelfWidget::IsLauncherVisible() const {
 }
 
 void ShelfWidget::SetLauncherVisibility(bool visible) {
-  if (launcher_.get())
+  if (launcher_)
     launcher_->SetVisible(visible);
 }
 

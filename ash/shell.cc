@@ -246,7 +246,7 @@ Shell::~Shell() {
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
   RemovePreTargetHandler(window_modality_controller_.get());
-  if (mouse_cursor_filter_.get())
+  if (mouse_cursor_filter_)
     RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
 #if !defined(OS_MACOSX)
@@ -306,11 +306,11 @@ Shell::~Shell() {
   activation_controller_.reset();
 
 #if defined(OS_CHROMEOS)
-  if (display_change_observer_.get())
+  if (display_change_observer_)
     output_configurator_->RemoveObserver(display_change_observer_.get());
-  if (output_configurator_animation_.get())
+  if (output_configurator_animation_)
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
-  if (display_error_observer_.get())
+  if (display_error_observer_)
     output_configurator_->RemoveObserver(display_error_observer_.get());
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
@@ -554,7 +554,7 @@ void Shell::Init() {
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController());
   user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
-  if (!user_wallpaper_delegate_.get())
+  if (!user_wallpaper_delegate_)
     user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
   // StatusAreaWidget uses Shell's CapsLockDelegate.
@@ -573,7 +573,7 @@ void Shell::Init() {
 
   // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
-  if (!system_tray_delegate_.get())
+  if (!system_tray_delegate_)
     system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
 
   // Creates StatusAreaWidget.
@@ -629,7 +629,7 @@ void Shell::ToggleAppList(aura::Window* window) {
   // If the context window is not given, show it on the active root window.
   if (!window)
     window = GetActiveRootWindow();
-  if (!app_list_controller_.get())
+  if (!app_list_controller_)
     app_list_controller_.reset(new internal::AppListController);
   app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);
 }
@@ -780,7 +780,7 @@ void Shell::SetDimming(bool should_dim) {
 }
 
 void Shell::CreateModalBackground(aura::Window* window) {
-  if (!modality_filter_.get()) {
+  if (!modality_filter_) {
     modality_filter_.reset(new internal::SystemModalContainerEventFilter(this));
     AddPreTargetHandler(modality_filter_.get());
   }
@@ -822,7 +822,7 @@ SystemTray* Shell::GetPrimarySystemTray() {
 }
 
 LauncherDelegate* Shell::GetLauncherDelegate() {
-  if (!launcher_delegate_.get()) {
+  if (!launcher_delegate_) {
     launcher_model_.reset(new LauncherModel);
     launcher_delegate_.reset(
         delegate_->CreateLauncherDelegate(launcher_model_.get()));
@@ -881,11 +881,11 @@ void Shell::InitRootWindowController(
   aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
   aura::client::SetEventClient(root_window, event_client_.get());
 
-  if (nested_dispatcher_controller_.get()) {
+  if (nested_dispatcher_controller_) {
     aura::client::SetDispatcherClient(root_window,
                                       nested_dispatcher_controller_.get());
   }
-  if (user_action_client_.get())
+  if (user_action_client_)
     aura::client::SetUserActionClient(root_window, user_action_client_.get());
 
   root_window->SetCursor(ui::kCursorPointer);

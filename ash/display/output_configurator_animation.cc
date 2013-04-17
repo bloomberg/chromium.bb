@@ -216,7 +216,7 @@ void OutputConfiguratorAnimation::OnDisplayModeChangeFailed(
 }
 
 void OutputConfiguratorAnimation::ClearHidingLayers() {
-  if (timer_.get()) {
+  if (timer_) {
     timer_->Stop();
     timer_.reset();
   }

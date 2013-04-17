@@ -99,7 +99,7 @@ class CustomFrameViewAshTest : public ash::test::AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (views_delegate_.get()) {
+    if (views_delegate_) {
       views::ViewsDelegate::views_delegate = NULL;
       views_delegate_.reset();
     }

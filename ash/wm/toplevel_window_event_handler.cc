@@ -90,13 +90,13 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     : handler_(handler),
       resizer_(resizer),
       target_container_(NULL) {
-  if (resizer_.get())
+  if (resizer_)
     resizer_->GetTarget()->AddObserver(this);
 }
 
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   RemoveHandlers();
-  if (resizer_.get())
+  if (resizer_)
     resizer_->GetTarget()->RemoveObserver(this);
 }
 
@@ -350,7 +350,7 @@ void ToplevelWindowEventHandler::EndMoveLoop() {
     return;
 
   in_move_loop_ = false;
-  if (window_resizer_.get()) {
+  if (window_resizer_) {
     window_resizer_->resizer()->RevertDrag();
     window_resizer_.reset();
   }
@@ -361,7 +361,7 @@ void ToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
   if (in_move_loop_) {
     move_cancelled_ = true;
     EndMoveLoop();
-  } else if (window_resizer_.get()) {
+  } else if (window_resizer_) {
     window_resizer_->resizer()->RevertDrag();
     window_resizer_.reset();
   }
@@ -381,7 +381,7 @@ void ToplevelWindowEventHandler::CreateScopedWindowResizer(
 void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status,
                                               int event_flags) {
   scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
-  if (resizer.get()) {
+  if (resizer) {
     if (status == DRAG_COMPLETE)
       resizer->resizer()->CompleteDrag(event_flags);
     else
@@ -451,7 +451,7 @@ void ToplevelWindowEventHandler::HandleDrag(
   if (event->phase() != ui::EP_PRETARGET)
     return;
 
-  if (!window_resizer_.get())
+  if (!window_resizer_)
     return;
   window_resizer_->resizer()->Drag(
       ConvertPointToParent(target, event->location()), event->flags());

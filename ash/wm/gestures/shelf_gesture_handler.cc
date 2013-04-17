@@ -55,7 +55,7 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
     return false;
 
   if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    if (tray_handler_.get()) {
+    if (tray_handler_) {
       if (!tray_handler_->UpdateGestureDrag(event))
         tray_handler_.reset();
     } else if (shelf->UpdateGestureDrag(event) ==
@@ -70,7 +70,7 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   if (event.type() == ui::ET_GESTURE_SCROLL_END ||
       event.type() == ui::ET_SCROLL_FLING_START) {
-    if (tray_handler_.get()) {
+    if (tray_handler_) {
       tray_handler_->CompleteGestureDrag(event);
       tray_handler_.reset();
     }

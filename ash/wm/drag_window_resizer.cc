@@ -164,7 +164,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
       static_cast<float>(bounds.width() * bounds.height());
 
   if (fraction_in_another_window > 0) {
-    if (!drag_window_controller_.get()) {
+    if (!drag_window_controller_) {
       drag_window_controller_.reset(
           new DragWindowController(GetTarget()));
       // Always show the drag phantom on the |another_root| window.

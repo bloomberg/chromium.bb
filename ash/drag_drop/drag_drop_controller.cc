@@ -155,9 +155,9 @@ DragDropController::DragDropController()
 DragDropController::~DragDropController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
-  if (cancel_animation_.get())
+  if (cancel_animation_)
     cancel_animation_->End();
-  if (drag_image_.get())
+  if (drag_image_)
     drag_image_.reset();
 }
 
@@ -224,7 +224,7 @@ int DragDropController::StartDragAndDrop(
   drag_window_ = NULL;
 
   // Ends cancel animation if it's in progress.
-  if (cancel_animation_.get())
+  if (cancel_animation_)
     cancel_animation_->End();
 
 #if !defined(OS_MACOSX)
@@ -487,7 +487,7 @@ void DragDropController::AnimationEnded(const ui::Animation* animation) {
   // started. We do not want to destroy the drag image in that case.
   if (!IsDragDropInProgress())
     drag_image_.reset();
-  if (pending_long_tap_.get()) {
+  if (pending_long_tap_) {
     // If not in a nested message loop, we can forward the long tap right now.
     if (!should_block_during_drag_drop_)
       ForwardPendingLongTap();

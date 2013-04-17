@@ -587,7 +587,7 @@ void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
 }
 
 void SessionStateControllerImpl2::StoreUnlockedProperties() {
-  if (!unlocked_properties_.get()) {
+  if (!unlocked_properties_) {
     unlocked_properties_.reset(new UnlockedStateProperties());
     unlocked_properties_->background_is_hidden = IsBackgroundHidden();
   }
@@ -602,7 +602,7 @@ void SessionStateControllerImpl2::StoreUnlockedProperties() {
 }
 
 void SessionStateControllerImpl2::RestoreUnlockedProperties() {
-  if (!unlocked_properties_.get())
+  if (!unlocked_properties_)
     return;
   if (unlocked_properties_->background_is_hidden) {
     HideBackground();

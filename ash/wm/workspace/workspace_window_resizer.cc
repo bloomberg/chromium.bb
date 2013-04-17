@@ -774,7 +774,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     if (snap_type_ == SNAP_NONE)
       return;
   }
-  if (!snap_sizer_.get()) {
+  if (!snap_sizer_) {
     SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
         SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
     snap_sizer_.reset(new SnapSizer(window(),
@@ -784,7 +784,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   } else {
     snap_sizer_->Update(location);
   }
-  if (!snap_phantom_window_controller_.get()) {
+  if (!snap_phantom_window_controller_) {
     snap_phantom_window_controller_.reset(
         new PhantomWindowController(window()));
   }

@@ -129,7 +129,7 @@ DesktopBackgroundController::~DesktopBackgroundController() {
 }
 
 gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
-  if (current_wallpaper_.get())
+  if (current_wallpaper_)
     return current_wallpaper_->wallpaper_image();
   return gfx::ImageSkia();
 }
@@ -145,7 +145,7 @@ void DesktopBackgroundController::RemoveObserver(
 }
 
 WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
-  if (current_wallpaper_.get())
+  if (current_wallpaper_)
     return current_wallpaper_->wallpaper_info().layout;
   return WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
@@ -157,9 +157,9 @@ gfx::ImageSkia DesktopBackgroundController::GetCurrentWallpaperImage() {
 }
 
 int DesktopBackgroundController::GetWallpaperIDR() const {
-  if (wallpaper_loader_.get())
+  if (wallpaper_loader_)
     return wallpaper_loader_->idr();
-  else if (current_wallpaper_.get())
+  else if (current_wallpaper_)
     return current_wallpaper_->wallpaper_info().idr;
   else
     return -1;
@@ -224,7 +224,7 @@ void DesktopBackgroundController::SetCustomWallpaper(
 
 void DesktopBackgroundController::CancelPendingWallpaperOperation() {
   // Set canceled flag of previous request to skip unneeded loading.
-  if (wallpaper_loader_.get())
+  if (wallpaper_loader_)
     wallpaper_loader_->Cancel();
 
   // Cancel reply callback for previous request.

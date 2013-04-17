@@ -614,7 +614,7 @@ void SessionStateAnimator::RunAnimationForWindow(
 }
 
 void SessionStateAnimator::CreateForeground() {
-  if (foreground_.get())
+  if (foreground_)
     return;
   aura::Window* window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),

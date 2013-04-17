@@ -50,7 +50,7 @@ LauncherModel* ShellTestApi::launcher_model() {
 
 void ShellTestApi::DisableOutputConfiguratorAnimation() {
 #if defined(OS_CHROMEOS)
-  if (shell_->output_configurator_animation_.get()) {
+  if (shell_->output_configurator_animation_) {
     shell_->output_configurator_->RemoveObserver(
         shell_->output_configurator_animation_.get());
     shell_->output_configurator_animation_.reset();

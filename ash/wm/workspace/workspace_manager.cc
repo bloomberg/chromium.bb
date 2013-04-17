@@ -341,7 +341,7 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
 
   // It is possible for a user to use accelerator keys to restore windows etc
   // while the user is cycling through workspaces.
-  if (workspace_cycler_.get())
+  if (workspace_cycler_)
     workspace_cycler_->AbortCycling();
 
   pending_workspaces_.erase(workspace);
@@ -422,7 +422,7 @@ void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
 
   // The user may have closed or minimized a window via accelerator keys while
   // cycling through workspaces.
-  if (workspace_cycler_.get())
+  if (workspace_cycler_)
     workspace_cycler_->AbortCycling();
 
   if (workspace == active_workspace_)

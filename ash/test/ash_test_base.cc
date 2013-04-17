@@ -187,7 +187,7 @@ void AshTestBase::TearDown() {
 }
 
 aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
-  if (!event_generator_.get()) {
+  if (!event_generator_) {
     event_generator_.reset(
         new aura::test::EventGenerator(new AshEventGeneratorDelegate()));
   }

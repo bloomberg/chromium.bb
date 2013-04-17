@@ -104,7 +104,7 @@ FrameMaximizeButton::~FrameMaximizeButton() {
 void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
   // Make sure to only show hover operations when no button is pressed and
   // a similar snap operation in progress does not get re-applied.
-  if (is_snap_enabled_ || (type == snap_type_ && snap_sizer_.get()))
+  if (is_snap_enabled_ || (type == snap_type_ && snap_sizer_))
     return;
   // Prime the mouse location with the center of the (local) button.
   press_location_ = gfx::Point(width() / 2, height() / 2);
@@ -187,7 +187,7 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
 void FrameMaximizeButton::OnWidgetActivationChanged(views::Widget* widget,
                                                     bool active) {
   // Upon losing focus, the control bubble should hide.
-  if (!active && maximizer_.get())
+  if (!active && maximizer_)
     maximizer_.reset();
 }
 
@@ -207,7 +207,7 @@ bool FrameMaximizeButton::OnMousePressed(const ui::MouseEvent& event) {
 
 void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
-  if (!maximizer_.get()) {
+  if (!maximizer_) {
     DCHECK(GetWidget());
     if (!widget_) {
       widget_ = frame_->GetWidget();
@@ -225,7 +225,7 @@ void FrameMaximizeButton::OnMouseExited(const ui::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   // Remove the bubble menu when the button is not pressed and the mouse is not
   // within the bubble.
-  if (!is_snap_enabled_ && maximizer_.get()) {
+  if (!is_snap_enabled_ && maximizer_) {
     if (maximizer_->GetBubbleWindow()) {
       gfx::Point screen_location = Shell::GetScreen()->GetCursorScreenPoint();
       if (!maximizer_->GetBubbleWindow()->GetBoundsInScreen().Contains(
@@ -309,7 +309,7 @@ void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
 void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {
   DCHECK(is_snap_enabled_);
   // Prepare the help menu.
-  if (!maximizer_.get()) {
+  if (!maximizer_) {
     maximizer_.reset(new MaximizeBubbleController(
         this,
         GetMaximizeBubbleFrameState(),
@@ -379,7 +379,7 @@ void FrameMaximizeButton::Cancel(bool keep_menu_open) {
 }
 
 void FrameMaximizeButton::InstallEventFilter() {
-  if (escape_event_filter_.get())
+  if (escape_event_filter_)
     return;
 
   escape_event_filter_.reset(new EscapeEventFilter(this));
@@ -402,7 +402,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
                                      bool is_touch) {
   SnapType type = SnapTypeForLocation(location);
   if (type == snap_type_) {
-    if (snap_sizer_.get()) {
+    if (snap_sizer_) {
       snap_sizer_->Update(LocationForSnapSizer(location));
       phantom_window_->Show(ScreenAsh::ConvertRectToScreen(
           frame_->GetWidget()->GetNativeView()->parent(),
@@ -433,11 +433,11 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
     if (select_default)
       snap_sizer_->SelectDefaultSizeAndDisableResize();
   }
-  if (!phantom_window_.get()) {
+  if (!phantom_window_) {
     phantom_window_.reset(new internal::PhantomWindowController(
                               frame_->GetWidget()->GetNativeWindow()));
   }
-  if (maximizer_.get()) {
+  if (maximizer_) {
     phantom_window_->set_phantom_below_window(maximizer_->GetBubbleWindow());
     maximizer_->SetSnapType(snap_type_);
   }

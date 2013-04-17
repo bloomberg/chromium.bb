@@ -51,7 +51,7 @@ void TrayItemView::SetVisible(bool set_visible) {
     return;
   }
 
-  if (!animation_.get()) {
+  if (!animation_) {
     animation_.reset(new ui::SlideAnimation(this));
     animation_->SetSlideDuration(GetAnimationDurationMS());
     animation_->SetTweenType(ui::Tween::LINEAR);

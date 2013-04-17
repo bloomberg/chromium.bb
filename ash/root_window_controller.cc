@@ -207,7 +207,7 @@ void RootWindowController::Shutdown() {
   SetTouchObserverHUD(NULL);
 
   CloseChildWindows();
-  if (Shell::GetActiveRootWindow() == root_window_.get()) {
+  if (Shell::GetActiveRootWindow() == root_window_) {
     Shell::GetInstance()->set_active_root_window(
         Shell::GetPrimaryRootWindow() == root_window_.get() ?
         NULL : Shell::GetPrimaryRootWindow());
@@ -348,7 +348,7 @@ void RootWindowController::ShowLauncher() {
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
   // TODO(oshima): remove if when launcher per display is enabled by
   // default.
-  if (shelf_.get())
+  if (shelf_)
     shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
@@ -382,7 +382,7 @@ void RootWindowController::CloseChildWindows() {
   }
 
   // TODO(harrym): Remove when Status Area Widget is a child view.
-  if (shelf_.get())
+  if (shelf_)
     shelf_->ShutdownStatusAreaWidget();
 
   if (shelf_.get() && shelf_->shelf_layout_manager())
@@ -441,7 +441,7 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
 }
 
 void RootWindowController::SetTouchObserverHUD(TouchObserverHUD* hud) {
-  if (touch_observer_hud_.get())
+  if (touch_observer_hud_)
     root_window_->RemovePreTargetHandler(touch_observer_hud_.get());
   if (hud)
     root_window_->AddPreTargetHandler(hud);
@@ -466,7 +466,7 @@ void RootWindowController::ShowContextMenu(
   DCHECK(Shell::GetInstance()->delegate());
   scoped_ptr<ui::MenuModel> menu_model(
       Shell::GetInstance()->delegate()->CreateContextMenu(target));
-  if (!menu_model.get())
+  if (!menu_model)
     return;
 
   internal::DesktopBackgroundWidgetController* background =

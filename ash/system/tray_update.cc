@@ -181,7 +181,7 @@ views::View* TrayUpdate::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayUpdate::DestroyDetailedView() {
-  if (nagger_.get()) {
+  if (nagger_) {
     // The nagger was being displayed. Now that the detailed view is being
     // closed, that means either the user clicks on it to restart, or the user
     // didn't click on it to restart. In either case, start the timer to show

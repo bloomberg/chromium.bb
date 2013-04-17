@@ -621,7 +621,7 @@ DisplayLayout DisplayController::GetRegisteredDisplayLayout(
 }
 
 void DisplayController::CycleDisplayMode() {
-  if (limiter_.get()) {
+  if (limiter_) {
     if  (limiter_->IsThrottled())
       return;
     limiter_->SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
@@ -645,7 +645,7 @@ void DisplayController::CycleDisplayMode() {
 }
 
 void DisplayController::SwapPrimaryDisplay() {
-  if (limiter_.get()) {
+  if (limiter_) {
     if  (limiter_->IsThrottled())
       return;
     limiter_->SetThrottleTimeout(kSwapDisplayThrottleTimeoutMs);
@@ -820,7 +820,7 @@ void DisplayController::UpdateMouseCursor(const gfx::Point& point_in_native) {
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
-  if (limiter_.get())
+  if (limiter_)
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
   const internal::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
@@ -833,7 +833,7 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  if (limiter_.get())
+  if (limiter_)
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
 
   if (primary_root_window_for_replace_) {
@@ -859,7 +859,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
-  if (limiter_.get())
+  if (limiter_)
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
 
   aura::RootWindow* root_to_delete = root_windows_[display.id()];

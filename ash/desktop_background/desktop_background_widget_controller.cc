@@ -39,7 +39,7 @@ DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
     widget_->RemoveObserver(this);
     widget_->CloseNow();
     widget_ = NULL;
-  } else if (layer_.get())
+  } else if (layer_)
     layer_.reset(NULL);
 }
 
@@ -52,7 +52,7 @@ void DesktopBackgroundWidgetController::OnWidgetDestroying(
 void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
   if (widget_)
     widget_->SetBounds(bounds);
-  else if (layer_.get())
+  else if (layer_)
     layer_->SetBounds(bounds);
 }
 
@@ -64,7 +64,7 @@ bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
         root_window->GetChildById(dest_container));
     return true;
   }
-  if (layer_.get()) {
+  if (layer_) {
     ui::Layer* layer = layer_.get();
     root_window->GetChildById(src_container)->layer()->Remove(layer);
     root_window->GetChildById(dest_container)->layer()->Add(layer);

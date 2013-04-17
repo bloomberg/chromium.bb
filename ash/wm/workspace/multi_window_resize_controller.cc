@@ -162,7 +162,7 @@ void MultiWindowResizeController::Show(Window* window,
   // only care about mouse movements from MouseWatcher. This is necessary as
   // WorkspaceEventHandler only sees mouse movements over the windows, not all
   // windows or over the desktop.
-  if (resize_widget_.get())
+  if (resize_widget_)
     return;
 
   ResizeWindows windows(DetermineWindows(window, component, point_in_window));
@@ -190,7 +190,7 @@ void MultiWindowResizeController::Show(Window* window,
 
 void MultiWindowResizeController::Hide() {
   hide_timer_.Stop();
-  if (window_resizer_.get())
+  if (window_resizer_)
     return;  // Ignore hides while actively resizing.
 
   if (windows_.window1) {
@@ -204,7 +204,7 @@ void MultiWindowResizeController::Hide() {
 
   show_timer_.Stop();
 
-  if (!resize_widget_.get())
+  if (!resize_widget_)
     return;
 
   for (size_t i = 0; i < windows_.other_windows.size(); ++i)
@@ -473,7 +473,7 @@ void MultiWindowResizeController::CompleteResize(int event_flags) {
 }
 
 void MultiWindowResizeController::CancelResize() {
-  if (!window_resizer_.get())
+  if (!window_resizer_)
     return;  // Happens if window was destroyed and we nuked the WindowResizer.
   window_resizer_->RevertDrag();
   window_resizer_.reset();
@@ -504,7 +504,7 @@ gfx::Rect MultiWindowResizeController::CalculateResizeWidgetBounds(
 
 bool MultiWindowResizeController::IsOverWindows(
     const gfx::Point& location_in_screen) const {
-  if (window_resizer_.get())
+  if (window_resizer_)
     return true;  // Ignore hides while actively resizing.
 
   if (resize_widget_->GetWindowBoundsInScreen().Contains(location_in_screen))

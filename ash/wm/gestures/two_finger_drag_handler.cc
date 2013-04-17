@@ -107,7 +107,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     return false;
   }
 
-  if (!window_resizer_.get()) {
+  if (!window_resizer_) {
     // Consume all two-finger gestures on a normal window.
     return event.details().touch_points() == 2 &&
            target->type() == aura::client::WINDOW_TYPE_NORMAL &&

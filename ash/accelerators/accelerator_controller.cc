@@ -400,7 +400,7 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
 }
 
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
-  if (ime_control_delegate_.get()) {
+  if (ime_control_delegate_) {
     return accelerator_manager_->Process(
         ime_control_delegate_->RemapAccelerator(accelerator));
   }
@@ -567,7 +567,7 @@ bool AcceleratorController::PerformAction(int action,
       // Return true to prevent propagation of the key event.
       return true;
     case TAKE_PARTIAL_SCREENSHOT:
-      if (screenshot_delegate_.get()) {
+      if (screenshot_delegate_) {
         ash::PartialScreenshotView::StartPartialScreenshot(
             screenshot_delegate_.get());
       }
@@ -619,20 +619,20 @@ bool AcceleratorController::PerformAction(int action,
       shell->caps_lock_delegate()->ToggleCapsLock();
       return true;
     case BRIGHTNESS_DOWN:
-      if (brightness_control_delegate_.get())
+      if (brightness_control_delegate_)
         return brightness_control_delegate_->HandleBrightnessDown(accelerator);
       break;
     case BRIGHTNESS_UP:
-      if (brightness_control_delegate_.get())
+      if (brightness_control_delegate_)
         return brightness_control_delegate_->HandleBrightnessUp(accelerator);
       break;
     case KEYBOARD_BRIGHTNESS_DOWN:
-      if (keyboard_brightness_control_delegate_.get())
+      if (keyboard_brightness_control_delegate_)
         return keyboard_brightness_control_delegate_->
             HandleKeyboardBrightnessDown(accelerator);
       break;
     case KEYBOARD_BRIGHTNESS_UP:
-      if (keyboard_brightness_control_delegate_.get())
+      if (keyboard_brightness_control_delegate_)
         return keyboard_brightness_control_delegate_->
             HandleKeyboardBrightnessUp(accelerator);
       break;
@@ -711,17 +711,17 @@ bool AcceleratorController::PerformAction(int action,
         // TODO(mazda): Fix crbug.com/158217
         return false;
       }
-      if (ime_control_delegate_.get())
+      if (ime_control_delegate_)
         return ime_control_delegate_->HandleNextIme();
       break;
     case PREVIOUS_IME:
-      if (ime_control_delegate_.get())
+      if (ime_control_delegate_)
         return ime_control_delegate_->HandlePreviousIme();
       break;
     case PRINT_UI_HIERARCHIES:
       return HandlePrintUIHierarchies();
     case SWITCH_IME:
-      if (ime_control_delegate_.get())
+      if (ime_control_delegate_)
         return ime_control_delegate_->HandleSwitchIme(accelerator);
       break;
     case SELECT_WIN_0:

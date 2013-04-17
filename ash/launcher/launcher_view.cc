@@ -440,7 +440,7 @@ void LauncherView::OnShelfAlignmentChanged() {
       view_model_->view_at(i)->Layout();
   }
   tooltip_->UpdateArrow();
-  if (overflow_bubble_.get())
+  if (overflow_bubble_)
     overflow_bubble_->Hide();
 }
 
@@ -675,7 +675,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
       UpdateOverflowRange(overflow_bubble_->launcher_view());
   } else {
-    if (overflow_bubble_.get())
+    if (overflow_bubble_)
       overflow_bubble_->Hide();
   }
 }
@@ -935,7 +935,7 @@ void LauncherView::ToggleOverflowBubble() {
     return;
   }
 
-  if (!overflow_bubble_.get())
+  if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble());
 
   LauncherView* overflow_view = new LauncherView(
@@ -1406,7 +1406,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   scoped_ptr<ui::MenuModel> menu_model(delegate_->CreateContextMenu(
       model_->items()[view_index],
       source->GetWidget()->GetNativeView()->GetRootWindow()));
-  if (!menu_model.get())
+  if (!menu_model)
     return;
   base::AutoReset<LauncherID> reseter(
       &context_menu_id_,
@@ -1485,7 +1485,7 @@ void LauncherView::ShowMenu(
 
   // Unpinning an item will reset the |launcher_menu_runner_| before coming
   // here.
-  if (launcher_menu_runner_.get())
+  if (launcher_menu_runner_)
     closing_event_time_ = launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
 }

@@ -250,7 +250,7 @@ void WindowCycleController::Step(Direction direction) {
 void WindowCycleController::StopCycling() {
   windows_.reset();
   // Remove our key event filter.
-  if (event_handler_.get()) {
+  if (event_handler_) {
     Shell::GetInstance()->RemovePreTargetHandler(event_handler_.get());
     event_handler_.reset();
   }

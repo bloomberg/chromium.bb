@@ -225,7 +225,7 @@ void SystemTrayBubble::UpdateView(
     bubble_view_->SetMaxHeight(0);  // Clear max height limit.
   }
 
-  if (scoped_layer.get()) {
+  if (scoped_layer) {
     // When transitioning from default view to detailed view, animate the new
     // view (slide in from the right).
     if (bubble_type == BUBBLE_TYPE_DETAILED) {

@@ -213,7 +213,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
   ShowItems(items, true, activate, creation_type, GetTrayXOffset(item));
-  if (system_bubble_.get())
+  if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
@@ -244,7 +244,7 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
     return;
   notification_items_.erase(found_iter);
   // Only update the notification bubble if visible (i.e. don't create one).
-  if (notification_bubble_.get())
+  if (notification_bubble_)
     UpdateNotificationBubble();
 }
 
@@ -271,7 +271,7 @@ void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void SystemTray::SetHideNotifications(bool hide_notifications) {
-  if (notification_bubble_.get())
+  if (notification_bubble_)
     notification_bubble_->bubble()->SetVisible(!hide_notifications);
   hide_notifications_ = hide_notifications;
 }
@@ -289,7 +289,7 @@ bool SystemTray::HasNotificationBubble() const {
 }
 
 internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
-  if (!system_bubble_.get())
+  if (!system_bubble_)
     return NULL;
   return system_bubble_->bubble();
 }
@@ -302,21 +302,21 @@ bool SystemTray::IsAnyBubbleVisible() const {
 }
 
 bool SystemTray::IsMouseInNotificationBubble() const {
-  if (!notification_bubble_.get())
+  if (!notification_bubble_)
     return false;
   return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
       Shell::GetScreen()->GetCursorScreenPoint());
 }
 
 bool SystemTray::CloseSystemBubbleForTest() const {
-  if (!system_bubble_.get())
+  if (!system_bubble_)
     return false;
   system_bubble_->bubble()->Close();
   return true;
 }
 
 bool SystemTray::CloseNotificationBubbleForTest() const {
-  if (!notification_bubble_.get())
+  if (!notification_bubble_)
     return false;
   notification_bubble_->bubble()->Close();
   return true;
@@ -474,20 +474,20 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   // Destroy any existing bubble so that it is rebuilt correctly.
   system_bubble_.reset();
   // Rebuild any notification bubble.
-  if (notification_bubble_.get()) {
+  if (notification_bubble_) {
     notification_bubble_.reset();
     UpdateNotificationBubble();
   }
 }
 
 void SystemTray::AnchorUpdated() {
-  if (notification_bubble_.get()) {
+  if (notification_bubble_) {
     notification_bubble_->bubble_view()->UpdateBubble();
     // Ensure that the notification buble is above the launcher/status area.
     notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
     UpdateBubbleViewArrow(notification_bubble_->bubble_view());
   }
-  if (system_bubble_.get()) {
+  if (system_bubble_) {
     system_bubble_->bubble_view()->UpdateBubble();
     UpdateBubbleViewArrow(system_bubble_->bubble_view());
   }
@@ -509,26 +509,26 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 }
 
 bool SystemTray::ClickedOutsideBubble() {
-  if (!system_bubble_.get())
+  if (!system_bubble_)
     return false;
   HideBubbleWithView(system_bubble_->bubble_view());
   return true;
 }
 
 void SystemTray::BubbleViewDestroyed() {
-  if (system_bubble_.get()) {
+  if (system_bubble_) {
     system_bubble_->bubble()->DestroyItemViews();
     system_bubble_->bubble()->BubbleViewDestroyed();
   }
 }
 
 void SystemTray::OnMouseEnteredView() {
-  if (system_bubble_.get())
+  if (system_bubble_)
     system_bubble_->bubble()->StopAutoCloseTimer();
 }
 
 void SystemTray::OnMouseExitedView() {
-  if (system_bubble_.get())
+  if (system_bubble_)
     system_bubble_->bubble()->RestartAutoCloseTimer();
 }
 

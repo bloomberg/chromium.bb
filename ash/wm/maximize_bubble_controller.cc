@@ -798,7 +798,7 @@ views::CustomButton* MaximizeBubbleController::GetButtonForUnitTest(
 
 void MaximizeBubbleController::RequestDestructionThroughOwner() {
   // Tell the parent to destroy us (if this didn't happen yet).
-  if (timer_.get()) {
+  if (timer_) {
     timer_.reset(NULL);
     // Informs the owner that the menu is gone and requests |this| destruction.
     frame_maximize_button_->DestroyMaximizeMenu();

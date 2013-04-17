@@ -39,7 +39,7 @@ void ScreenDimmer::SetDimming(bool should_dim) {
   if (should_dim == currently_dimming_)
     return;
 
-  if (!dimming_layer_.get()) {
+  if (!dimming_layer_) {
     dimming_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     dimming_layer_->SetColor(SK_ColorBLACK);
     dimming_layer_->SetOpacity(0.0f);
@@ -60,7 +60,7 @@ void ScreenDimmer::SetDimming(bool should_dim) {
 
 void ScreenDimmer::OnRootWindowResized(const aura::RootWindow* root,
                                        const gfx::Size& old_size) {
-  if (dimming_layer_.get())
+  if (dimming_layer_)
     dimming_layer_->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
