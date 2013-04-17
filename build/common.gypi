@@ -643,7 +643,7 @@
         }],
         # Whether Android ARM build uses OpenMAX DL FFT.  Default is
         # yes.  This will also enable WebAudio on Android ARM.
-        ['OS=="android" and target_arch=="arm"', {
+        ['OS=="android" and target_arch=="arm" and android_webview_build==0', {
           'use_openmax_dl_fft%': 1,
         }, {
           'use_openmax_dl_fft%': 0,
@@ -944,7 +944,7 @@
 
     # Enable use of OpenMAX DL FFT routines.
     'use_openmax_dl_fft%': '<(use_openmax_dl_fft)',
-    
+
     # Enable new NPDevice API.
     'enable_new_npdevice_api%': 0,
 
