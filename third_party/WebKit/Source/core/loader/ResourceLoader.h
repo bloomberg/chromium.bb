@@ -111,7 +111,6 @@ private:
     RefPtr<ResourceHandle> m_handle;
     RefPtr<Frame> m_frame;
     RefPtr<DocumentLoader> m_documentLoader;
-    ResourceResponse m_response;
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
