@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 
 namespace crypto {

@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/time.h"
 #include "dbus/dbus_export.h"
 #include "dbus/object_path.h"

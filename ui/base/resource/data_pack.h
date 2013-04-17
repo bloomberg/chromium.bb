@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_export.h"

@@ -15,7 +15,7 @@
 #ifndef CHROME_FRAME_TEST_TEST_SCRUBBER_H_
 #define CHROME_FRAME_TEST_TEST_SCRUBBER_H_
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 
 namespace testing {
 class UnitTest;

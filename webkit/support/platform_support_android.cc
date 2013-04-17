@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string16.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/test/test_support_android.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"

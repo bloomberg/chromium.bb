@@ -13,7 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"

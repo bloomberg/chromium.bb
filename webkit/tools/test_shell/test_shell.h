@@ -17,7 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/tools/test_shell/webview_host.h"

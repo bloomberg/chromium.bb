@@ -209,7 +209,7 @@ class _SchemasHGenerator(object):
     c.Append('#include <map>')
     c.Append('#include <string>')
     c.Append();
-    c.Append('#include "base/string_piece.h"')
+    c.Append('#include "base/strings/string_piece.h"')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()

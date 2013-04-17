@@ -17,7 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"

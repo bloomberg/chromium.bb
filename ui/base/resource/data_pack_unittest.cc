@@ -6,7 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/data_pack.h"
 

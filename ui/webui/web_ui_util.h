@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "ui/base/layout.h"
-#include "ui/base/window_open_disposition.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/window_open_disposition.h"
 
 class GURL;
 class SkBitmap;

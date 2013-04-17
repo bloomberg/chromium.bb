@@ -6,7 +6,7 @@
 #define UI_BASE_RESOURCE_RESOURCE_HANDLE_H_
 
 #include "base/basictypes.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
 

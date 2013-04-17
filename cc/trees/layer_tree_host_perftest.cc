@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"

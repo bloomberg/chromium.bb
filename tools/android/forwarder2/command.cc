@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "tools/android/forwarder2/socket.h"
 
 using base::StringPiece;

@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"

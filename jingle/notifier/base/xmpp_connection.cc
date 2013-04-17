@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "jingle/glue/chrome_async_socket.h"
 #include "jingle/glue/task_pump.h"
 #include "jingle/glue/xmpp_client_socket_factory.h"
