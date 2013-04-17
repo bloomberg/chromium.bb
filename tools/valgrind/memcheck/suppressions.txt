@@ -7038,3 +7038,10 @@
    fun:_ZN3net17QuicStreamFactory3Job6DoLoopEi
    fun:_ZN3net17QuicStreamFactory3Job12OnIOCompleteEi
 }
+{
+   bug_232924
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos22UserManagerImplWrapper3getEv
+   fun:_ZN8chromeos11UserManager3GetEv
+}

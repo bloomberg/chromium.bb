@@ -1885,3 +1885,11 @@
    fun:net::QuicStreamFactory::CreateSession
    fun:net::QuicStreamFactory::Job::DoConnect
 }
+{
+   bug_232924
+   Heapcheck:Leak
+   ...
+   fun:UserManagerImpl
+   fun:chromeos::UserManagerImplWrapper::get
+   fun:chromeos::UserManager::Get
+}
