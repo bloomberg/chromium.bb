@@ -13,9 +13,9 @@
 #include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -497,12 +497,12 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   lock_widget->Show();
 
   // Lock the screen.
-  Shell::GetInstance()->delegate()->LockScreen();
+  Shell::GetInstance()->session_state_delegate()->LockScreen();
   shelf->UpdateVisibilityState();
   // Showing a widget in the lock screen should force the shelf to be visibile.
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
-  Shell::GetInstance()->delegate()->UnlockScreen();
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }

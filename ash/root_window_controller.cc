@@ -12,6 +12,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -290,7 +291,7 @@ void RootWindowController::InitForPrimaryDisplay() {
         new ToplevelWindowEventHandler(panel_container));
     panel_container->SetLayoutManager(panel_layout_manager_);
   }
-  if (Shell::GetInstance()->delegate()->IsUserLoggedIn())
+  if (Shell::GetInstance()->session_state_delegate()->HasActiveUser())
     shelf_->CreateLauncher();
 
   InitKeyboard();

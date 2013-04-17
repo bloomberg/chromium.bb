@@ -4,10 +4,10 @@
 
 #include <string>
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_delegate.h"
 #include "base/basictypes.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
@@ -109,7 +109,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
         break;
       }
       case LOCK_SCREEN: {
-        Shell::GetInstance()->delegate()->LockScreen();
+        Shell::GetInstance()->session_state_delegate()->LockScreen();
         break;
       }
       case WIDGETS_WINDOW: {

@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
@@ -275,15 +276,18 @@ void AshTestBase::RunAllPendingInMessageLoop() {
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {
-  test_shell_delegate_->SetSessionStarted(session_started);
+  test_shell_delegate_->test_session_state_delegate()->
+      SetActiveUserSessionStarted(session_started);
 }
 
 void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
-  test_shell_delegate_->SetUserLoggedIn(user_logged_in);
+  test_shell_delegate_->test_session_state_delegate()->
+      SetHasActiveUser(user_logged_in);
 }
 
 void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
-  test_shell_delegate_->SetCanLockScreen(can_lock_screen);
+  test_shell_delegate_->test_session_state_delegate()->
+      SetCanLockScreen(can_lock_screen);
 }
 
 }  // namespace test

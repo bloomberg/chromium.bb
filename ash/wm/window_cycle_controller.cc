@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/shell_delegate.h"
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_cycle_list.h"
@@ -121,7 +122,7 @@ WindowCycleController::~WindowCycleController() {
 bool WindowCycleController::CanCycle() {
   // Don't allow window cycling if the screen is locked or a modal dialog is
   // open.
-  return !Shell::GetInstance()->IsScreenLocked() &&
+  return !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
          !Shell::GetInstance()->IsSystemModalWindowOpen();
 }
 
