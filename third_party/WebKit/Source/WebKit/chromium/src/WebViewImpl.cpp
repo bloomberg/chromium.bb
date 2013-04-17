@@ -3970,6 +3970,9 @@ void WebViewImpl::paintRootLayer(GraphicsContext& context, const IntRect& conten
     double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart);
     WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
     WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
+    // The background color should have been set already in order to show up with the correct color in the compositor
+    // frame being painted currently. This verifies the view's background color was not changed without calling
+    // setBackgroundColor() before this paint phase happened.
     ASSERT(m_nonCompositedContentHost->backgroundColor() == view->documentBackgroundColor());
 }
 
