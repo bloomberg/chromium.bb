@@ -352,6 +352,8 @@
         'widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h',
         'widget/desktop_aura/desktop_dispatcher_client.cc',
         'widget/desktop_aura/desktop_dispatcher_client.h',
+        'widget/desktop_aura/desktop_drag_drop_client_aurax11.cc',
+        'widget/desktop_aura/desktop_drag_drop_client_aurax11.h',
         'widget/desktop_aura/desktop_drag_drop_client_win.cc',
         'widget/desktop_aura/desktop_drag_drop_client_win.h',
         'widget/desktop_aura/desktop_drop_target_win.cc',

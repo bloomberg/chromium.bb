@@ -165,6 +165,9 @@ UI_EXPORT bool PropertyExists(XID window, const std::string& property_name);
 
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
+//
+// TODO(erg): Once we remove the gtk port and are 100% aura, all of these
+// should accept an Atom instead of a string.
 UI_EXPORT bool GetIntProperty(XID window, const std::string& property_name,
                               int* value);
 UI_EXPORT bool GetIntArrayProperty(XID window, const std::string& property_name,

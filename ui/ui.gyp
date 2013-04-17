@@ -128,6 +128,7 @@
         'base/cursor/cursors_aura.h',
         'base/dragdrop/cocoa_dnd_util.h',
         'base/dragdrop/cocoa_dnd_util.mm',
+        'base/dragdrop/desktop_selection_provider_aurax11.h',
         'base/dragdrop/drag_drop_types.h',
         'base/dragdrop/drag_drop_types_win.cc',
         'base/dragdrop/drag_source_win.cc',
@@ -142,8 +143,10 @@
         'base/dragdrop/gtk_dnd_util.h',
         'base/dragdrop/os_exchange_data.cc',
         'base/dragdrop/os_exchange_data.h',
-        'base/dragdrop/os_exchange_data_provider_aura.cc',
-        'base/dragdrop/os_exchange_data_provider_aura.h',
+        'base/dragdrop/os_exchange_data_provider_aurax11.cc',
+        'base/dragdrop/os_exchange_data_provider_aurax11.h',
+        'base/dragdrop/os_exchange_data_provider_chromeos.cc',
+        'base/dragdrop/os_exchange_data_provider_chromeos.h',
         'base/dragdrop/os_exchange_data_provider_win.cc',
         'base/dragdrop/os_exchange_data_provider_win.h',
         'base/events/event.cc',
@@ -631,7 +634,6 @@
         }],
         ['use_aura==1 and OS=="win"', {
           'sources/': [
-            ['exclude', 'base/dragdrop/os_exchange_data_provider_aura.cc'],
             ['exclude', 'base/dragdrop/drag_utils_aura.cc'],
           ],
         }],
@@ -687,6 +689,7 @@
           ],
           'sources!': [
             'base/clipboard/clipboard_aurax11.cc',
+            'base/dragdrop/os_exchange_data_provider_aurax11.cc',
             'base/touch/touch_device.cc',
           ],
         }],

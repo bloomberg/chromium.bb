@@ -6,6 +6,7 @@
 
 #include "base/message_pump_aurax11.h"
 #include "base/run_loop.h"
+#include "ui/base/x/selection_utils.h"
 
 namespace ui {
 
@@ -114,6 +115,28 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
     *out_type = prop_type;
 
   return true;
+}
+
+scoped_ptr<SelectionData> SelectionRequestor::RequestAndWaitForTypes(
+    const std::vector< ::Atom>& types) {
+  for (std::vector< ::Atom>::const_iterator it = types.begin();
+       it != types.end(); ++it) {
+    unsigned char* data = NULL;
+    size_t data_bytes = 0;
+    ::Atom type = None;
+    if (PerformBlockingConvertSelection(*it,
+                                        &data,
+                                        &data_bytes,
+                                        NULL,
+                                        &type) &&
+        type == *it) {
+      scoped_ptr<SelectionData> data_out(new SelectionData(x_display_));
+      data_out->Set(type, (char*)data, data_bytes, true);
+      return data_out.Pass();
+    }
+  }
+
+  return scoped_ptr<SelectionData>();
 }
 
 void SelectionRequestor::OnSelectionNotify(const XSelectionEvent& event) {

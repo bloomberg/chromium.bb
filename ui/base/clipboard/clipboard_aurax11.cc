@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -36,14 +35,10 @@ namespace {
 const char kClipboard[] = "CLIPBOARD";
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeFilename[] = "chromium/filename";
-const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 const char kSourceTagType[] = "org.chromium.source-tag";
-const char kString[] = "STRING";
 const char kTargets[] = "TARGETS";
-const char kText[] = "TEXT";
-const char kUtf8String[] = "UTF8_STRING";
 
 const char* kAtomsToCache[] = {
   kClipboard,
@@ -150,6 +145,8 @@ class TargetList {
 
   TargetList(const AtomVector& target_list, X11AtomCache* atom_cache);
 
+  const AtomVector& target_list() { return target_list_; }
+
   bool ContainsText() const;
   bool ContainsFormat(const Clipboard::FormatType& format_type) const;
   bool ContainsAtom(::Atom atom) const;
@@ -185,81 +182,6 @@ bool TargetList::ContainsFormat(
 bool TargetList::ContainsAtom(::Atom atom) const {
   return find(target_list_.begin(), target_list_.end(), atom)
       != target_list_.end();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// A holder for data with optional X11 deletion semantics.
-class SelectionData {
- public:
-  // |atom_cache| is still owned by caller.
-  explicit SelectionData(X11AtomCache* atom_cache);
-  ~SelectionData();
-
-  ::Atom type() const { return type_; }
-  char* data() const { return data_; }
-  size_t size() const { return size_; }
-
-  void Set(::Atom type, char* data, size_t size, bool owned);
-
-  // If |type_| is a string type, convert the data to UTF8 and return it.
-  std::string GetText() const;
-
-  // Assigns the raw data to the string.
-  void AssignTo(std::string* result) const;
-
- private:
-  ::Atom type_;
-  char* data_;
-  size_t size_;
-  bool owned_;
-
-  X11AtomCache* atom_cache_;
-};
-
-SelectionData::SelectionData(X11AtomCache* atom_cache)
-    : type_(None),
-      data_(NULL),
-      size_(0),
-      owned_(false),
-      atom_cache_(atom_cache) {
-}
-
-SelectionData::~SelectionData() {
-  if (owned_)
-    XFree(data_);
-}
-
-void SelectionData::Set(::Atom type, char* data, size_t size, bool owned) {
-  if (owned_)
-    XFree(data_);
-
-  type_ = type;
-  data_ = data;
-  size_ = size;
-  owned_ = owned;
-}
-
-std::string SelectionData::GetText() const {
-  if (type_ == atom_cache_->GetAtom(kUtf8String) ||
-      type_ == atom_cache_->GetAtom(kText)) {
-    return std::string(data_, size_);
-  } else if (type_ == atom_cache_->GetAtom(kString)) {
-    std::string result;
-    base::ConvertToUtf8AndNormalize(std::string(data_, size_),
-                                    base::kCodepageLatin1,
-                                    &result);
-    return result;
-  } else {
-    // BTW, I looked at COMPOUND_TEXT, and there's no way we're going to
-    // support that. Yuck.
-    NOTREACHED();
-    return std::string();
-  }
-}
-
-void SelectionData::AssignTo(std::string* result) const {
-  result->assign(data_, size_);
 }
 
 }  // namespace
@@ -475,7 +397,7 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
          it != types.end(); ++it) {
       SelectionFormatMap::const_iterator format_map_it = format_map->find(*it);
       if (format_map_it != format_map->end()) {
-        scoped_ptr<SelectionData> data_out(new SelectionData(&atom_cache_));
+        scoped_ptr<SelectionData> data_out(new SelectionData(x_display_));
         data_out->Set(format_map_it->first, format_map_it->second.first,
                       format_map_it->second.second, false);
         return data_out.Pass();
@@ -485,23 +407,9 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
     TargetList targets = WaitAndGetTargetsList(buffer);
     SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
 
-    for (std::vector< ::Atom>::const_iterator it = types.begin();
-         it != types.end(); ++it) {
-      unsigned char* data = NULL;
-      size_t data_bytes = 0;
-      ::Atom type = None;
-      if (targets.ContainsAtom(*it) &&
-          receiver->PerformBlockingConvertSelection(*it,
-                                                    &data,
-                                                    &data_bytes,
-                                                    NULL,
-                                                    &type) &&
-          type == *it) {
-        scoped_ptr<SelectionData> data_out(new SelectionData(&atom_cache_));
-        data_out->Set(type, (char*)data, data_bytes, true);
-        return data_out.Pass();
-      }
-    }
+    std::vector< ::Atom> intersection;
+    ui::GetAtomIntersection(targets.target_list(), types, &intersection);
+    return receiver->RequestAndWaitForTypes(intersection);
   }
 
   return scoped_ptr<SelectionData>();
@@ -741,20 +649,7 @@ void Clipboard::ReadHTML(Buffer buffer,
   if (!data.get())
     return;
 
-  // If the data starts with 0xFEFF, i.e., Byte Order Mark, assume it is
-  // UTF-16, otherwise assume UTF-8.
-  if (data->size() >= 2 &&
-      reinterpret_cast<const uint16_t*>(data->data())[0] == 0xFEFF) {
-    markup->assign(reinterpret_cast<const uint16_t*>(data->data()) + 1,
-                   (data->size() / 2) - 1);
-  } else {
-    UTF8ToUTF16(reinterpret_cast<const char*>(data->data()), data->size(),
-                markup);
-  }
-
-  // If there is a terminating NULL, drop it.
-  if (!markup->empty() && markup->at(markup->length() - 1) == '\0')
-    markup->resize(markup->length() - 1);
+  *markup = data->GetHtml();
 
   *fragment_start = 0;
   DCHECK(markup->length() <= kuint32max);

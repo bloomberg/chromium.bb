@@ -37,7 +37,6 @@ class DropHelper;
 class NativeWidgetAuraWindowObserver;
 class TooltipManagerAura;
 
-// TODO(erg): May also need to be a DragDropDelegate
 class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,

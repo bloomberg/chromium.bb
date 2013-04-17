@@ -10,12 +10,15 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "ui/base/ui_export.h"
 #include "ui/base/x/x11_atom_cache.h"
 
 namespace ui {
+class SelectionData;
 
 // Requests and later receives data from the X11 server through the selection
 // system.
@@ -41,6 +44,11 @@ class UI_EXPORT SelectionRequestor {
                                        size_t* out_data_bytes,
                                        size_t* out_data_items,
                                        ::Atom* out_type);
+
+  // Returns the first of |types| offered by the current selection holder, or
+  // returns NULL if none of those types are available.
+  scoped_ptr<SelectionData> RequestAndWaitForTypes(
+      const std::vector< ::Atom>& types);
 
   // It is our owner's responsibility to plumb X11 SelectionNotify events on
   // |xwindow_| to us.

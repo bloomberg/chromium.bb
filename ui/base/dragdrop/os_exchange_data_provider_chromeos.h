@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_
-#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_
+#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
+#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
 
 #include <map>
 
@@ -19,10 +19,11 @@ namespace ui {
 class Clipboard;
 
 // OSExchangeData::Provider implementation for aura on linux.
-class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
+class UI_EXPORT OSExchangeDataProviderChromeos
+    : public OSExchangeData::Provider {
  public:
-  OSExchangeDataProviderAura();
-  virtual ~OSExchangeDataProviderAura();
+  OSExchangeDataProviderChromeos();
+  virtual ~OSExchangeDataProviderChromeos();
 
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
@@ -44,15 +45,6 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   virtual bool HasFile() const OVERRIDE;
   virtual bool HasCustomFormat(
       OSExchangeData::CustomFormat format) const OVERRIDE;
-#if defined(OS_WIN)
-  virtual void SetFileContents(const base::FilePath& filename,
-                               const std::string& file_contents) OVERRIDE;
-  virtual bool GetFileContents(base::FilePath* filename,
-                               std::string* file_contents) const OVERRIDE;
-  virtual bool HasFileContents() const OVERRIDE;
-  virtual void SetDownloadFileInfo(
-      const OSExchangeData::DownloadFileInfo& download) OVERRIDE;
-#endif
 
   virtual void SetHtml(const string16& html, const GURL& base_url) OVERRIDE;
   virtual bool GetHtml(string16* html, GURL* base_url) const OVERRIDE;
@@ -94,9 +86,9 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   string16 html_;
   GURL base_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderAura);
+  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderChromeos);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_AURA_H_
+#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_CHROMEOS_H_
