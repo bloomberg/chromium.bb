@@ -65,7 +65,7 @@ class WebMediaPlayerImplAndroid : public WebMediaPlayerAndroid {
   virtual void PlayInternal() OVERRIDE;
   virtual void PauseInternal() OVERRIDE;
   virtual void SeekInternal(base::TimeDelta time) OVERRIDE;
-  virtual float GetCurrentTimeInternal() const OVERRIDE;
+  virtual double GetCurrentTimeInternal() const OVERRIDE;
   virtual void ReleaseResourcesInternal() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void RequestExternalSurface() OVERRIDE;
@@ -80,7 +80,7 @@ class WebMediaPlayerImplAndroid : public WebMediaPlayerAndroid {
   // The current playing time. Because the mediaplayer is in the browser
   // process, it will regularly update the |current_time_| by calling
   // OnTimeUpdate().
-  float current_time_;
+  double current_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplAndroid);
 };

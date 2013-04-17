@@ -114,7 +114,7 @@ void WebMediaPlayerAndroid::seekFloat(float seconds) {
   seek(seconds);
 }
 
-void WebMediaPlayerAndroid::seek(float seconds) {
+void WebMediaPlayerAndroid::seek(double seconds) {
   pending_seek_ = seconds;
   seeking_ = true;
 
@@ -133,7 +133,7 @@ void WebMediaPlayerAndroid::setEndTimeFloat(float seconds) {
   setEndTime(seconds);
 }
 
-void WebMediaPlayerAndroid::setEndTime(float seconds) {
+void WebMediaPlayerAndroid::setEndTime(double seconds) {
   // Deprecated.
   // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
 }
@@ -142,7 +142,7 @@ void WebMediaPlayerAndroid::setRateFloat(float rate) {
   setRate(rate);
 }
 
-void WebMediaPlayerAndroid::setRate(float rate) {
+void WebMediaPlayerAndroid::setRate(double rate) {
   NOTIMPLEMENTED();
 }
 
@@ -150,7 +150,7 @@ void WebMediaPlayerAndroid::setVolumeFloat(float volume) {
   setVolume(volume);
 }
 
-void WebMediaPlayerAndroid::setVolume(float volume) {
+void WebMediaPlayerAndroid::setVolume(double volume) {
   NOTIMPLEMENTED();
 }
 
@@ -202,15 +202,15 @@ float WebMediaPlayerAndroid::durationFloat() const {
   return duration();
 }
 
-float WebMediaPlayerAndroid::duration() const {
-  return static_cast<float>(duration_.InSecondsF());
+double WebMediaPlayerAndroid::duration() const {
+  return duration_.InSecondsF();
 }
 
 float WebMediaPlayerAndroid::currentTimeFloat() const {
   return currentTime();
 }
 
-float WebMediaPlayerAndroid::currentTime() const {
+double WebMediaPlayerAndroid::currentTime() const {
   // If the player is pending for a seek, return the seek time.
   if (seeking())
     return pending_seek_;
@@ -244,7 +244,7 @@ float WebMediaPlayerAndroid::maxTimeSeekableFloat() const {
   return maxTimeSeekable();
 }
 
-float WebMediaPlayerAndroid::maxTimeSeekable() const {
+double WebMediaPlayerAndroid::maxTimeSeekable() const {
   // TODO(hclam): If this stream is not seekable this should return 0.
   return duration();
 }
@@ -288,7 +288,7 @@ float WebMediaPlayerAndroid::mediaTimeForTimeValueFloat(float timeValue) const {
   return mediaTimeForTimeValue(timeValue);
 }
 
-float WebMediaPlayerAndroid::mediaTimeForTimeValue(float timeValue) const {
+double WebMediaPlayerAndroid::mediaTimeForTimeValue(double timeValue) const {
   return ConvertSecondsToTimestamp(timeValue).InSecondsF();
 }
 

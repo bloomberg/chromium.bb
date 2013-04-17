@@ -81,7 +81,7 @@ void WebMediaPlayerImplAndroid::SeekInternal(base::TimeDelta time) {
     proxy_->Seek(player_id(), time);
 }
 
-float WebMediaPlayerImplAndroid::GetCurrentTimeInternal() const {
+double WebMediaPlayerImplAndroid::GetCurrentTimeInternal() const {
   return current_time_;
 }
 
@@ -91,7 +91,7 @@ void WebMediaPlayerImplAndroid::ReleaseResourcesInternal() {
 }
 
 void WebMediaPlayerImplAndroid::OnTimeUpdate(base::TimeDelta current_time) {
-  current_time_ = static_cast<float>(current_time.InSecondsF());
+  current_time_ = current_time.InSecondsF();
 }
 
 void WebMediaPlayerImplAndroid::OnDidEnterFullscreen() {

@@ -81,8 +81,8 @@ const int kPlayerExtraMemory = 1024 * 1024;
 // Also our timers are not very accurate (especially for ogg), which becomes
 // evident at low speeds and on Vista. Since other speeds are risky and outside
 // the norms, we think 1/16x to 16x is a safe and useful range for now.
-const float kMinRate = 0.0625f;
-const float kMaxRate = 16.0f;
+const double kMinRate = 0.0625;
+const double kMaxRate = 16.0;
 
 // Prefix for histograms related to Encrypted Media Extensions.
 const char* kMediaEme = "Media.EME.";
@@ -375,7 +375,7 @@ void WebMediaPlayerImpl::seekFloat(float seconds) {
   seek(seconds);
 }
 
-void WebMediaPlayerImpl::seek(float seconds) {
+void WebMediaPlayerImpl::seek(double seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (starting_ || seeking_) {
@@ -409,7 +409,7 @@ void WebMediaPlayerImpl::setEndTimeFloat(float seconds) {
   setEndTime(seconds);
 }
 
-void WebMediaPlayerImpl::setEndTime(float seconds) {
+void WebMediaPlayerImpl::setEndTime(double seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // TODO(hclam): add method call when it has been implemented.
@@ -420,16 +420,16 @@ void WebMediaPlayerImpl::setRateFloat(float rate) {
   setRate(rate);
 }
 
-void WebMediaPlayerImpl::setRate(float rate) {
+void WebMediaPlayerImpl::setRate(double rate) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // TODO(kylep): Remove when support for negatives is added. Also, modify the
   // following checks so rewind uses reasonable values also.
-  if (rate < 0.0f)
+  if (rate < 0.0)
     return;
 
   // Limit rates to reasonable values by clamping.
-  if (rate != 0.0f) {
+  if (rate != 0.0) {
     if (rate < kMinRate)
       rate = kMinRate;
     else if (rate > kMaxRate)
@@ -446,7 +446,7 @@ void WebMediaPlayerImpl::setVolumeFloat(float volume) {
   setVolume(volume);
 }
 
-void WebMediaPlayerImpl::setVolume(float volume) {
+void WebMediaPlayerImpl::setVolume(double volume) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   pipeline_->SetVolume(volume);
@@ -517,21 +517,10 @@ bool WebMediaPlayerImpl::seeking() const {
 }
 
 float WebMediaPlayerImpl::durationFloat() const {
-  return duration();
-}
-
-float WebMediaPlayerImpl::duration() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<float>::quiet_NaN();
 
-  double duration;
-  if (chunk_demuxer_) {
-    duration = chunk_demuxer_->GetDuration();
-  } else {
-    duration = GetPipelineDuration();
-  }
+  double result = duration();
 
   // Make sure super small durations don't get truncated to 0 and
   // large durations don't get converted to infinity by the double -> float
@@ -539,25 +528,36 @@ float WebMediaPlayerImpl::duration() const {
   //
   // TODO(acolwell): Remove when WebKit is changed to report duration as a
   // double.
-  if (duration > 0.0 && duration < std::numeric_limits<double>::infinity()) {
-    duration = std::max(duration,
-                        static_cast<double>(std::numeric_limits<float>::min()));
-    duration = std::min(duration,
-                        static_cast<double>(std::numeric_limits<float>::max()));
+  if (result > 0.0 && result < std::numeric_limits<double>::infinity()) {
+    result = std::max(result,
+                      static_cast<double>(std::numeric_limits<float>::min()));
+    result = std::min(result,
+                      static_cast<double>(std::numeric_limits<float>::max()));
   }
 
-  return static_cast<float>(duration);
+  return static_cast<float>(result);
+
+}
+
+double WebMediaPlayerImpl::duration() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return std::numeric_limits<double>::quiet_NaN();
+
+  if (chunk_demuxer_)
+    return chunk_demuxer_->GetDuration();
+
+  return GetPipelineDuration();
 }
 
 float WebMediaPlayerImpl::currentTimeFloat() const {
-  return currentTime();
+  return static_cast<float>(currentTime());
 }
 
-float WebMediaPlayerImpl::currentTime() const {
+double WebMediaPlayerImpl::currentTime() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  if (paused_)
-    return static_cast<float>(paused_time_.InSecondsF());
-  return static_cast<float>(pipeline_->GetMediaTime().InSecondsF());
+  return (paused_ ? paused_time_ : pipeline_->GetMediaTime()).InSecondsF();
 }
 
 int WebMediaPlayerImpl::dataRate() const {
@@ -586,10 +586,6 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
 }
 
 float WebMediaPlayerImpl::maxTimeSeekableFloat() const {
-  return maxTimeSeekable();
-}
-
-float WebMediaPlayerImpl::maxTimeSeekable() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // If we haven't even gotten to ReadyStateHaveMetadata yet then just
@@ -600,6 +596,20 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
   // We don't support seeking in streaming media.
   if (data_source_ && data_source_->IsStreaming())
     return 0.0f;
+  return durationFloat();
+}
+
+double WebMediaPlayerImpl::maxTimeSeekable() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
+  // return 0 so that the seekable range is empty.
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
+    return 0.0;
+
+  // We don't support seeking in streaming media.
+  if (data_source_ && data_source_->IsStreaming())
+    return 0.0;
   return duration();
 }
 
@@ -671,7 +681,7 @@ float WebMediaPlayerImpl::mediaTimeForTimeValueFloat(float timeValue) const {
   return mediaTimeForTimeValue(timeValue);
 }
 
-float WebMediaPlayerImpl::mediaTimeForTimeValue(float timeValue) const {
+double WebMediaPlayerImpl::mediaTimeForTimeValue(double timeValue) const {
   return ConvertSecondsToTimestamp(timeValue).InSecondsF();
 }
 

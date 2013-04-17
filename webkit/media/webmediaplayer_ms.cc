@@ -188,7 +188,7 @@ void WebMediaPlayerMS::seekFloat(float seconds) {
   seek(seconds);
 }
 
-void WebMediaPlayerMS::seek(float seconds) {
+void WebMediaPlayerMS::seek(double seconds) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -196,7 +196,7 @@ void WebMediaPlayerMS::setEndTimeFloat(float seconds) {
   setEndTime(seconds);
 }
 
-void WebMediaPlayerMS::setEndTime(float seconds) {
+void WebMediaPlayerMS::setEndTime(double seconds) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -204,7 +204,7 @@ void WebMediaPlayerMS::setRateFloat(float rate) {
   setRate(rate);
 }
 
-void WebMediaPlayerMS::setRate(float rate) {
+void WebMediaPlayerMS::setRate(double rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -212,7 +212,7 @@ void WebMediaPlayerMS::setVolumeFloat(float volume) {
   setVolume(volume);
 }
 
-void WebMediaPlayerMS::setVolume(float volume) {
+void WebMediaPlayerMS::setVolume(double volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!audio_renderer_)
     return;
@@ -267,23 +267,23 @@ float WebMediaPlayerMS::durationFloat() const {
   return duration();
 }
 
-float WebMediaPlayerMS::duration() const {
+double WebMediaPlayerMS::duration() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return std::numeric_limits<float>::infinity();
+  return std::numeric_limits<double>::infinity();
 }
 
 float WebMediaPlayerMS::currentTimeFloat() const {
   return currentTime();
 }
 
-float WebMediaPlayerMS::currentTime() const {
+double WebMediaPlayerMS::currentTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (current_frame_.get()) {
     return current_frame_->GetTimestamp().InSecondsF();
   } else if (audio_renderer_) {
     return audio_renderer_->GetCurrentRenderTime().InSecondsF();
   }
-  return 0.0f;
+  return 0.0;
 }
 
 int WebMediaPlayerMS::dataRate() const {
@@ -312,9 +312,9 @@ float WebMediaPlayerMS::maxTimeSeekableFloat() const {
   return maxTimeSeekable();
 }
 
-float WebMediaPlayerMS::maxTimeSeekable() const {
+double WebMediaPlayerMS::maxTimeSeekable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return 0.0f;
+  return 0.0;
 }
 
 bool WebMediaPlayerMS::didLoadingProgress() const {
@@ -367,7 +367,7 @@ float WebMediaPlayerMS::mediaTimeForTimeValueFloat(float timeValue) const {
   return mediaTimeForTimeValue(timeValue);
 }
 
-float WebMediaPlayerMS::mediaTimeForTimeValue(float timeValue) const {
+double WebMediaPlayerMS::mediaTimeForTimeValue(double timeValue) const {
   return ConvertSecondsToTimestamp(timeValue).InSecondsF();
 }
 

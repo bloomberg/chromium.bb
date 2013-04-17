@@ -44,20 +44,20 @@ class WebMediaPlayerAndroid
   virtual void play();
   virtual void pause();
   virtual void seekFloat(float seconds);
-  virtual void seek(float seconds);
+  virtual void seek(double seconds);
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
   virtual void setEndTimeFloat(float seconds);
-  virtual void setEndTime(float seconds);
+  virtual void setEndTime(double seconds);
   virtual void setRateFloat(float rate);
-  virtual void setRate(float rate);
+  virtual void setRate(double rate);
   virtual void setVolumeFloat(float volume);
-  virtual void setVolume(float volume);
+  virtual void setVolume(double volume);
   virtual void setVisible(bool visible);
   virtual bool totalBytesKnown();
   virtual const WebKit::WebTimeRanges& buffered();
   virtual float maxTimeSeekableFloat() const;
-  virtual float maxTimeSeekable() const;
+  virtual double maxTimeSeekable() const;
 
   // Methods for painting.
   virtual void setSize(const WebKit::WebSize& size);
@@ -76,9 +76,9 @@ class WebMediaPlayerAndroid
   virtual bool paused() const;
   virtual bool seeking() const;
   virtual float durationFloat() const;
-  virtual float duration() const;
+  virtual double duration() const;
   virtual float currentTimeFloat() const;
-  virtual float currentTime() const;
+  virtual double currentTime() const;
 
   // Get rate of loading the resource.
   virtual int32 dataRate() const;
@@ -95,7 +95,7 @@ class WebMediaPlayerAndroid
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
   virtual float mediaTimeForTimeValueFloat(float timeValue) const;
-  virtual float mediaTimeForTimeValue(float timeValue) const;
+  virtual double mediaTimeForTimeValue(double timeValue) const;
 
   // Provide statistics.
   virtual unsigned decodedFrameCount() const;
@@ -176,7 +176,7 @@ class WebMediaPlayerAndroid
   virtual void SeekInternal(base::TimeDelta time) = 0;
 
   // Get the current time from the media player.
-  virtual float GetCurrentTimeInternal() const = 0;
+  virtual double GetCurrentTimeInternal() const = 0;
 
   // Release the Android Media player.
   virtual void ReleaseResourcesInternal() = 0;
@@ -217,7 +217,7 @@ class WebMediaPlayerAndroid
   base::TimeDelta duration_;
 
   // The time android media player is trying to seek.
-  float pending_seek_;
+  double pending_seek_;
 
   // Internal seek state.
   bool seeking_;

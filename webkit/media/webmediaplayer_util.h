@@ -13,7 +13,7 @@ namespace webkit_media {
 // seconds to an int64 timestamp.
 //
 // Refer to https://bugs.webkit.org/show_bug.cgi?id=52697 for details.
-base::TimeDelta ConvertSecondsToTimestamp(float seconds);
+base::TimeDelta ConvertSecondsToTimestamp(double seconds);
 
 }  // namespace webkit_media
 
