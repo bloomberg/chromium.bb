@@ -340,7 +340,8 @@ ScopedTestCrosSettings::ScopedTestCrosSettings()
 
 ScopedTestCrosSettings::~ScopedTestCrosSettings() {
   // UserManager holds a CrosSettings*, so ensure that it is destroyed.
-  UserManager::Set(NULL);
+  UserManager* old_manager = UserManager::Set(NULL);
+  delete old_manager;
   CrosSettings::Shutdown();
   if (initialized_device_settings_service_)
     DeviceSettingsService::Shutdown();
