@@ -4505,53 +4505,45 @@ TestCase remove_render_passes_cases[] = {
     "Single root pass",
     "R0ssss\n",
     "R0ssss\n"
-  },
-  {
+  }, {
     "Single pass - no quads",
     "R0\n",
     "R0\n"
-  },
-  {
+  }, {
     "Two passes, no removal",
     "R0ssssA0sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  },
-  {
+  }, {
     "Two passes, remove last",
     "R0ssssA0[ct]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
-  },
-  {
+  }, {
     "Have texture but contents changed - leave pass",
     "R0ssssA0[t]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  },
-  {
+  }, {
     "Contents didn't change but no texture - leave pass",
     "R0ssssA0[c]sss\n"
     "A0ssss\n",
     "R0ssssA0sss\n"
     "A0ssss\n"
-  },
-  {
+  }, {
     "Replica: two quads reference the same pass; remove",
     "R0ssssA0[ct]A0[ct]sss\n"
     "A0ssss\n",
     "R0ssssA0A0sss\n"
-  },
-  {
+  }, {
     "Replica: two quads reference the same pass; leave",
     "R0ssssA0[c]A0[c]sss\n"
     "A0ssss\n",
     "R0ssssA0A0sss\n"
     "A0ssss\n",
-  },
-  {
+  }, {
     "Many passes, remove all",
     "R0ssssA0[ct]sss\n"
     "A0sssB0[ct]C0[ct]s\n"
@@ -4563,8 +4555,7 @@ TestCase remove_render_passes_cases[] = {
     "G0sss\n",
 
     "R0ssssA0sss\n"
-  },
-  {
+  }, {
     "Deep recursion, remove all",
 
     "R0sssssA0[ct]ssss\n"
@@ -4580,8 +4571,7 @@ TestCase remove_render_passes_cases[] = {
     "J0ssss\n",
 
     "R0sssssA0ssss\n"
-  },
-  {
+  }, {
     "Wide recursion, remove all",
     "R0A0[ct]B0[ct]C0[ct]D0[ct]E0[ct]F0[ct]G0[ct]H0[ct]I0[ct]J0[ct]\n"
     "A0s\n"
@@ -4596,8 +4586,7 @@ TestCase remove_render_passes_cases[] = {
     "J0ssss\n",
 
     "R0A0B0C0D0E0F0G0H0I0J0\n"
-  },
-  {
+  }, {
     "Remove passes regardless of cache state",
     "R0ssssA0[ct]sss\n"
     "A0sssB0C0s\n"
@@ -4609,8 +4598,7 @@ TestCase remove_render_passes_cases[] = {
     "G0sss\n",
 
     "R0ssssA0sss\n"
-  },
-  {
+  }, {
     "Leave some passes, remove others",
 
     "R0ssssA0[c]sss\n"
@@ -4624,8 +4612,7 @@ TestCase remove_render_passes_cases[] = {
     "A0sssB0C0s\n"
     "B0sssD0ss\n"
     "D0sssssss\n"
-  },
-  {
+  }, {
     0, 0, 0
   }
 };
@@ -4939,7 +4926,6 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
   mask_layer->SetAnchorPoint(gfx::PointF());
   mask_layer->SetDrawsContent(true);
 
-
   // Check that the mask fills the surface.
   float device_scale_factor = 1.f;
   host_impl_->SetViewportSize(root_size);
@@ -4962,7 +4948,6 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
-
 
   // Applying a DSF should change the render surface size, but won't affect
   // which part of the mask is used.
@@ -4990,7 +4975,6 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
     host_impl_->DidDrawAllLayers(frame);
   }
-
 
   // Applying an equivalent content scale on the content layer and the mask
   // should still result in the same part of the mask being used.
@@ -5022,10 +5006,11 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     host_impl_->DidDrawAllLayers(frame);
   }
 
-  // Applying a different contents scale to the mask layer will still result
-  // in the mask covering the owning layer.
+  // Applying a different contents scale to the mask layer means it will have
+  // a larger texture, but it should use the same tex coords to cover the
+  // layer it masks.
   mask_layer->SetContentBounds(mask_size);
-  mask_layer->SetContentsScale(device_scale_factor, device_scale_factor);
+  mask_layer->SetContentsScale(1.f, 1.f);
   host_impl_->active_tree()->set_needs_update_draw_properties();
   {
     LayerTreeHostImpl::FrameData frame;
@@ -5040,6 +5025,381 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
+TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
+  // The replica's mask layer has bounds 100x100 but the replica is of a
+  // layer with bounds 50x50.
+
+  scoped_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  LayerImpl* root = scoped_root.get();
+  host_impl_->active_tree()->SetRootLayer(scoped_root.Pass());
+
+  scoped_ptr<LayerImpl> scoped_content_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 3);
+  LayerImpl* content_layer = scoped_content_layer.get();
+  root->AddChild(scoped_content_layer.Pass());
+
+  scoped_ptr<LayerImpl> scoped_replica_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  LayerImpl* replica_layer = scoped_replica_layer.get();
+  content_layer->SetReplicaLayer(scoped_replica_layer.Pass());
+
+  scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
+      FakeMaskLayerImpl::Create(host_impl_->active_tree(), 4);
+  FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
+  replica_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
+
+  gfx::Size root_size(100, 100);
+  root->SetBounds(root_size);
+  root->SetContentBounds(root_size);
+  root->SetPosition(gfx::PointF());
+  root->SetAnchorPoint(gfx::PointF());
+
+  gfx::Size layer_size(50, 50);
+  content_layer->SetBounds(layer_size);
+  content_layer->SetContentBounds(layer_size);
+  content_layer->SetPosition(gfx::PointF());
+  content_layer->SetAnchorPoint(gfx::PointF());
+  content_layer->SetDrawsContent(true);
+
+  gfx::Size mask_size(100, 100);
+  mask_layer->SetBounds(mask_size);
+  mask_layer->SetContentBounds(mask_size);
+  mask_layer->SetPosition(gfx::PointF());
+  mask_layer->SetAnchorPoint(gfx::PointF());
+  mask_layer->SetDrawsContent(true);
+
+  // Check that the mask fills the surface.
+  float device_scale_factor = 1.f;
+  host_impl_->SetViewportSize(root_size);
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Applying a DSF should change the render surface size, but won't affect
+  // which part of the mask is used.
+  device_scale_factor = 2.f;
+  gfx::Size device_viewport =
+      gfx::ToFlooredSize(gfx::ScaleSize(root_size, device_scale_factor));
+  host_impl_->SetViewportSize(device_viewport);
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Applying an equivalent content scale on the content layer and the mask
+  // should still result in the same part of the mask being used.
+  gfx::Size layer_size_large =
+      gfx::ToRoundedSize(gfx::ScaleSize(layer_size, device_scale_factor));
+  content_layer->SetContentBounds(layer_size_large);
+  content_layer->SetContentsScale(device_scale_factor, device_scale_factor);
+  gfx::Size mask_size_large =
+      gfx::ToRoundedSize(gfx::ScaleSize(mask_size, device_scale_factor));
+  mask_layer->SetContentBounds(mask_size_large);
+  mask_layer->SetContentsScale(device_scale_factor, device_scale_factor);
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Applying a different contents scale to the mask layer means it will have
+  // a larger texture, but it should use the same tex coords to cover the
+  // layer it masks.
+  mask_layer->SetContentBounds(mask_size);
+  mask_layer->SetContentsScale(1.f, 1.f);
+  host_impl_->active_tree()->set_needs_update_draw_properties();
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
+TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
+  // The replica is of a layer with bounds 50x50, but it has a child that causes
+  // the surface bounds to be larger.
+
+  scoped_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  LayerImpl* root = scoped_root.get();
+  host_impl_->active_tree()->SetRootLayer(scoped_root.Pass());
+
+  scoped_ptr<LayerImpl> scoped_content_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  LayerImpl* content_layer = scoped_content_layer.get();
+  root->AddChild(scoped_content_layer.Pass());
+
+  scoped_ptr<LayerImpl> scoped_content_child_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 3);
+  LayerImpl* content_child_layer = scoped_content_child_layer.get();
+  content_layer->AddChild(scoped_content_child_layer.Pass());
+
+  scoped_ptr<LayerImpl> scoped_replica_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 4);
+  LayerImpl* replica_layer = scoped_replica_layer.get();
+  content_layer->SetReplicaLayer(scoped_replica_layer.Pass());
+
+  scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
+      FakeMaskLayerImpl::Create(host_impl_->active_tree(), 5);
+  FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
+  replica_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
+
+  gfx::Size root_size(100, 100);
+  root->SetBounds(root_size);
+  root->SetContentBounds(root_size);
+  root->SetPosition(gfx::PointF());
+  root->SetAnchorPoint(gfx::PointF());
+
+  gfx::Size layer_size(50, 50);
+  content_layer->SetBounds(layer_size);
+  content_layer->SetContentBounds(layer_size);
+  content_layer->SetPosition(gfx::PointF());
+  content_layer->SetAnchorPoint(gfx::PointF());
+  content_layer->SetDrawsContent(true);
+
+  gfx::Size child_size(50, 50);
+  content_child_layer->SetBounds(child_size);
+  content_child_layer->SetContentBounds(child_size);
+  content_child_layer->SetPosition(gfx::Point(50, 0));
+  content_child_layer->SetAnchorPoint(gfx::PointF());
+  content_child_layer->SetDrawsContent(true);
+
+  gfx::Size mask_size(50, 50);
+  mask_layer->SetBounds(mask_size);
+  mask_layer->SetContentBounds(mask_size);
+  mask_layer->SetPosition(gfx::PointF());
+  mask_layer->SetAnchorPoint(gfx::PointF());
+  mask_layer->SetDrawsContent(true);
+
+  float device_scale_factor = 1.f;
+  host_impl_->SetViewportSize(root_size);
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+
+    // The surface is 100x50.
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[0]->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+    EXPECT_FALSE(render_pass_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
+              render_pass_quad->rect.ToString());
+
+    // The mask covers the owning layer only.
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+
+  // Move the child to (-50, 0) instead. Now the mask should be moved to still
+  // cover the layer being replicated.
+  content_child_layer->SetPosition(gfx::Point(-50, 0));
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(2u, frame.render_passes[0]->quad_list.size());
+
+    // The surface is 100x50 with its origin at (-50, 0).
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[0]->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+    EXPECT_FALSE(render_pass_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
+              render_pass_quad->rect.ToString());
+
+    // The mask covers the owning layer only.
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[1]->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
+    EXPECT_TRUE(replica_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
+              replica_quad->rect.ToString());
+    EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
+              replica_quad->mask_uv_rect.ToString());
+
+    host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+    host_impl_->DidDrawAllLayers(frame);
+  }
+}
+
+TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
+  // The masked layer has bounds 50x50, but it has a child that causes
+  // the surface bounds to be larger. It also has a parent that clips the
+  // masked layer and its surface.
+
+  scoped_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  LayerImpl* root = scoped_root.get();
+  host_impl_->active_tree()->SetRootLayer(scoped_root.Pass());
+
+  scoped_ptr<LayerImpl> scoped_clipping_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  LayerImpl* clipping_layer = scoped_clipping_layer.get();
+  root->AddChild(scoped_clipping_layer.Pass());
+
+  scoped_ptr<LayerImpl> scoped_content_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 3);
+  LayerImpl* content_layer = scoped_content_layer.get();
+  clipping_layer->AddChild(scoped_content_layer.Pass());
+
+  scoped_ptr<LayerImpl> scoped_content_child_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 4);
+  LayerImpl* content_child_layer = scoped_content_child_layer.get();
+  content_layer->AddChild(scoped_content_child_layer.Pass());
+
+  scoped_ptr<FakeMaskLayerImpl> scoped_mask_layer =
+      FakeMaskLayerImpl::Create(host_impl_->active_tree(), 6);
+  FakeMaskLayerImpl* mask_layer = scoped_mask_layer.get();
+  content_layer->SetMaskLayer(scoped_mask_layer.PassAs<LayerImpl>());
+
+  gfx::Size root_size(100, 100);
+  root->SetBounds(root_size);
+  root->SetContentBounds(root_size);
+  root->SetPosition(gfx::PointF());
+  root->SetAnchorPoint(gfx::PointF());
+
+  gfx::Rect clipping_rect(20, 10, 10, 20);
+  clipping_layer->SetBounds(clipping_rect.size());
+  clipping_layer->SetContentBounds(clipping_rect.size());
+  clipping_layer->SetPosition(clipping_rect.origin());
+  clipping_layer->SetAnchorPoint(gfx::PointF());
+  clipping_layer->SetMasksToBounds(true);
+
+  gfx::Size layer_size(50, 50);
+  content_layer->SetBounds(layer_size);
+  content_layer->SetContentBounds(layer_size);
+  content_layer->SetPosition(gfx::Point() - clipping_rect.OffsetFromOrigin());
+  content_layer->SetAnchorPoint(gfx::PointF());
+  content_layer->SetDrawsContent(true);
+
+  gfx::Size child_size(50, 50);
+  content_child_layer->SetBounds(child_size);
+  content_child_layer->SetContentBounds(child_size);
+  content_child_layer->SetPosition(gfx::Point(50, 0));
+  content_child_layer->SetAnchorPoint(gfx::PointF());
+  content_child_layer->SetDrawsContent(true);
+
+  gfx::Size mask_size(100, 100);
+  mask_layer->SetBounds(mask_size);
+  mask_layer->SetContentBounds(mask_size);
+  mask_layer->SetPosition(gfx::PointF());
+  mask_layer->SetAnchorPoint(gfx::PointF());
+  mask_layer->SetDrawsContent(true);
+
+  float device_scale_factor = 1.f;
+  host_impl_->SetViewportSize(root_size);
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  {
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+    ASSERT_EQ(1u, frame.render_passes.size());
+    ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
+
+    // The surface is clipped to 10x20.
+    ASSERT_EQ(DrawQuad::RENDER_PASS,
+              frame.render_passes[0]->quad_list[0]->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
+    EXPECT_FALSE(render_pass_quad->is_replica);
+    EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
+              render_pass_quad->rect.ToString());
+
+    // The masked layer is 50x50, but the surface size is 10x20. So the texture
+    // coords in the mask are scaled by 10/50 and 20/50.
+    // The surface is clipped to (20,10) so the mask texture coords are offset
+    // by 20/50 and 10/50
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f),
+                             1.f / 50.f).ToString(),
               render_pass_quad->mask_uv_rect.ToString());
 
     host_impl_->DrawLayers(&frame, base::TimeTicks::Now());

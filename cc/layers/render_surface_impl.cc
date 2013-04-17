@@ -250,16 +250,15 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
     gfx::Vector2dF owning_layer_draw_scale =
         MathUtil::ComputeTransform2dScaleComponents(
             owning_layer_->draw_transform(), 1.f);
-    gfx::SizeF unclipped_surface_size = gfx::ScaleSize(
+    gfx::SizeF unclipped_mask_target_size = gfx::ScaleSize(
         owning_layer_->content_bounds(),
         owning_layer_draw_scale.x(),
         owning_layer_draw_scale.y());
-    // This assumes that the owning layer clips its subtree when a mask is
-    // present.
-    DCHECK(gfx::RectF(unclipped_surface_size).Contains(content_rect_));
 
-    float uv_scale_x = content_rect_.width() / unclipped_surface_size.width();
-    float uv_scale_y = content_rect_.height() / unclipped_surface_size.height();
+    float uv_scale_x =
+        content_rect_.width() / unclipped_mask_target_size.width();
+    float uv_scale_y =
+        content_rect_.height() / unclipped_mask_target_size.height();
 
     mask_uv_rect = gfx::RectF(
         uv_scale_x * content_rect_.x() / content_rect_.width(),
