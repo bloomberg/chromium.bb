@@ -2,30 +2,43 @@ Test that storage panel is present and that it contains correct data whenever lo
 
 
 Running: initialize
-Initialized localStorage by clearing entries
 
 Running: updateLocalStorageView
-Resource Panel with localStorage view updated
+Resource Panel with localStorage view updated.
 
 Running: addItemTest
-addItem('a1','=value1')
-KeyValue pairs: [a1=value1]
-addItem('a2','=value2')
-KeyValue pairs: [a1=value1,a2=value2]
-addItem('a3','=value3')
-KeyValue pairs: [a1=value1,a2=value2,a3=value3]
-addItem('a4','=value4')
-KeyValue pairs: [a1=value1,a2=value2,a3=value3,a4=value4]
-addItem('a5','=value5')
-KeyValue pairs: [a1=value1,a2=value2,a3=value3,a4=value4,a5=value5]
+
+addItem('key1', 'value1');
+Table rows: [key1 = value1]
+
+addItem('key2', 'value2');
+Table rows: [key1 = value1, key2 = value2]
+
+addItem('key3', 'value3');
+Table rows: [key1 = value1, key2 = value2, key3 = value3]
+
+addItem('key4', 'value4');
+Table rows: [key1 = value1, key2 = value2, key3 = value3, key4 = value4]
+
+addItem('key5', 'value5');
+Table rows: [key1 = value1, key2 = value2, key3 = value3, key4 = value4, key5 = value5]
+
+addItem('key6', 'value6');
+Table rows: [key1 = value1, key2 = value2, key3 = value3, key4 = value4, key5 = value5, key6 = value6]
 
 Running: removeItemTest
-removeItem('a5')
-KeyValue pairs: [a1=value1,a2=value2,a3=value3,a4=value4]
-removeItem('a4')
-KeyValue pairs: [a1=value1,a2=value2,a3=value3]
+
+removeItem('key1');
+Table rows: [key2 = value2, key3 = value3, key4 = value4, key5 = value5, key6 = value6]
+
+removeItem('key3');
+Table rows: [key2 = value2, key4 = value4, key5 = value5, key6 = value6]
+
+removeItem('key5');
+Table rows: [key2 = value2, key4 = value4, key6 = value6]
 
 Running: clearTest
+
 clear()
-KeyValue pairs: []
+Table rows: []
 
