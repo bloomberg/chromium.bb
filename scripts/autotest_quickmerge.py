@@ -10,6 +10,7 @@ Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
+import logging
 import os
 import re
 import sys
@@ -84,22 +85,18 @@ def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
                               new_directories=absolute_new_dir)
 
 
-def UpdatePackageContents(change_report, package_cp,
-                          portage_root=None):
+def GetPackageAPI(portage_root, package_cp):
   """
-  Add newly created files/directors to package contents.
-
-  Given an ItemizedChangeReport, add the newly created files and directories
-  to the CONTENTS of an installed portage package, such that these files are
-  considered owned by that package.
+  Gets portage API handles for the given package.
 
   Arguments:
-    changereport: ItemizedChangeReport object for the changes to be
-                  made to the package.
-    package_cp: A string similar to 'chromeos-base/autotest-tests' giving
-                the package category and name of the package to be altered.
-    portage_root: Portage root path, corresponding to the board that
-                  we are working on. Defaults to '/'
+    portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
+    package_cp:   A string similar to 'chromeos-base/autotest-tests'.
+
+  Returns:
+    Returns (package, vartree) tuple, where
+      package is of type portage.dbapi.vartree.dblink
+      vartree is of type portage.dbapi.vartree.vartree
   """
   if portage_root is None:
     portage_root = portage.root # pylint: disable-msg=E1101
@@ -127,6 +124,52 @@ def UpdatePackageContents(change_report, package_cp,
   package = portage.dblink(package_split.category, # pylint: disable-msg=E1101
                            package_split.pv, settings=vartree.settings,
                            vartree=vartree)
+
+  return package, vartree
+
+
+def DowngradePackageVersion(portage_root, package_cp,
+                            downgrade_to_version='0'):
+  """
+  Downgrade the specified portage package version.
+
+  Arguments:
+    portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
+    package_cp:   A string similar to 'chromeos-base/autotest-tests'.
+    downgrade_to_version: String version to downgrade to. Default: '0'
+
+  Returns:
+    Returns the return value of the `mv` command used to perform operation.
+  """
+  package, _ = GetPackageAPI(portage_root, package_cp)
+
+  source_directory = package.dbdir
+  destination_path = os.path.join(
+      package.dbroot, package_cp + '-' + downgrade_to_version)
+  if os.path.abspath(source_directory) == os.path.abspath(destination_path):
+    return 0
+  command = ['mv', source_directory, destination_path]
+  return cros_build_lib.SudoRunCommand(command).returncode
+
+
+def UpdatePackageContents(change_report, package_cp,
+                          portage_root=None):
+  """
+  Add newly created files/directors to package contents.
+
+  Given an ItemizedChangeReport, add the newly created files and directories
+  to the CONTENTS of an installed portage package, such that these files are
+  considered owned by that package.
+
+  Arguments:
+    changereport: ItemizedChangeReport object for the changes to be
+                  made to the package.
+    package_cp: A string similar to 'chromeos-base/autotest-tests' giving
+                the package category and name of the package to be altered.
+    portage_root: Portage root path, corresponding to the board that
+                  we are working on. Defaults to '/'
+  """
+  package, vartree = GetPackageAPI(portage_root, package_cp)
 
   # Append new contents to package contents dictionary
   contents = package.getcontents().copy()
@@ -196,8 +239,8 @@ def ParseArguments(argv):
                       help='Dry run only, do not modify sysroot autotest.')
   parser.add_argument('--overwrite', action='store_true',
                       help='Overwrite existing files even if newer.')
-  parser.add_argument('--quiet', action='store_true',
-                      help='Suppress output of list of modified files.')
+  parser.add_argument('--verbose', action='store_true',
+                      help='Print detailed change report.')
 
   return parser.parse_args(argv)
 
@@ -215,7 +258,7 @@ def main(argv):
     return 0
 
   if not args.board:
-    print 'No board specified, and no default board. Aborting.'
+    print 'No board specified. Aborting.'
     return 1
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
@@ -233,17 +276,27 @@ def main(argv):
   rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
       include_pattern_file, args.pretend, args.overwrite)
 
+  if args.verbose:
+    logging.info(rsync_output.output)
+
   change_report = ItemizeChangesFromRsyncOutput(rsync_output.output,
                                                 sysroot_autotest_path)
 
   if not args.pretend:
     UpdatePackageContents(change_report, AUTOTEST_TESTS_EBUILD,
                           sysroot_path)
+    if DowngradePackageVersion(sysroot_path, AUTOTEST_TESTS_EBUILD) != 0:
+      logging.warning('Unable to downgrade package %s version number.',
+          AUTOTEST_TESTS_EBUILD)
 
   if args.pretend:
-    print 'The following message is pretend only. No filesystem changes made.'
-  print 'Quickmerge complete. Created or modified %s files.' % (
-        len(change_report.new_files) + len(change_report.modified_files))
+    logging.info('The following message is pretend only. No filesystem '
+        'changes made.')
+  logging.info('Quickmerge complete. Created or modified %s files.',
+      len(change_report.new_files) + len(change_report.modified_files))
+
+  return 0
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
