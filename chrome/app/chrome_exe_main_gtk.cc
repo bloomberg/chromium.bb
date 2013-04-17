@@ -11,10 +11,15 @@
 // that extra layer with on linux.
 
 #if defined(ADDRESS_SANITIZER) && defined(GOOGLE_CHROME_BUILD)
-// Default AddressSanitizer options: limit the quarantine to 1Gb, disable the
-// strict memcmp() checking (http://crbug.com/178677 and
-// http://crbug.com/178404).
-const char *kAsanDefaultOptions = "quarantine_size=1048576 strict_memcmp=0";
+// Default AddressSanitizer options for the official build. These do not affect
+// tests or non-official Chromium builds.
+//  - disable the strict memcmp() checking (http://crbug.com/178677 and
+//    http://crbug.com/178404).
+//  - set the malloc_context_size (i.e. the size of stack traces collected by
+//    ASan for each malloc/free) to 5. These stack traces tend to accumulate
+//    very fast in applications using JIT (v8 in Chrome's case), see
+//    https://code.google.com/p/address-sanitizer/issues/detail?id=177
+const char *kAsanDefaultOptions = "malloc_context_size=5 strict_memcmp=0";
 
 // Override the default ASan options for the Google Chrome executable.
 // __asan_default_options should not be instrumented, because it is called
