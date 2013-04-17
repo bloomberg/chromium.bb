@@ -432,6 +432,9 @@ void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& s
         *identifier = String::number(++m_lastScriptIdentifier);
     } while (scripts->find(*identifier) != scripts->end());
     scripts->setString(*identifier, source);
+
+    // Force cookie serialization.
+    m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, scripts);
 }
 
 void InspectorPageAgent::removeScriptToEvaluateOnLoad(ErrorString* error, const String& identifier)
