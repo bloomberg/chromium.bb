@@ -146,7 +146,8 @@ WebPreferences::WebPreferences()
       force_enable_zoom(false),
       double_tap_to_zoom_enabled(true),
       user_gesture_required_for_media_playback(true),
-      support_deprecated_target_density_dpi(false)
+      support_deprecated_target_density_dpi(false),
+      use_wide_viewport(true)
 #endif
 {
   standard_font_family_map[kCommonScript] =
@@ -473,6 +474,7 @@ void WebPreferences::Apply(WebView* web_view) const {
         ASCIIToUTF16(default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(
       support_deprecated_target_density_dpi);
+  settings->setUseWideViewport(use_wide_viewport);
 #endif
 
   WebNetworkStateNotifier::setOnLine(is_online);

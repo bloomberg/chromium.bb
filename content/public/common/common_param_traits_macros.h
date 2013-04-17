@@ -203,6 +203,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(user_gesture_required_for_media_playback)
   IPC_STRUCT_TRAITS_MEMBER(default_video_poster_url)
   IPC_STRUCT_TRAITS_MEMBER(support_deprecated_target_density_dpi)
+  IPC_STRUCT_TRAITS_MEMBER(use_wide_viewport)
 #endif
 IPC_STRUCT_TRAITS_END()
 

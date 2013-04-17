@@ -31,9 +31,6 @@ public class AwTargetDensityDpiTest extends AwTestBase {
         final String pageDpi100 = String.format(pageTemplate, "100");
 
         settings.setJavaScriptEnabled(true);
-        // TODO(mnaganov): Should not be needed. See b/8487489.
-        settings.setUseWideViewPort(true);
-        awContents.getSettings().setEnableFixedLayoutMode(true);
 
         DeviceDisplayInfo deviceInfo =
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());

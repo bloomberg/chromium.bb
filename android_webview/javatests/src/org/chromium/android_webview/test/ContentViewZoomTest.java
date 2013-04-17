@@ -194,7 +194,6 @@ public class ContentViewZoomTest extends AwTestBase {
 
     private void runMagnificationTest(boolean supportZoom) throws Throwable {
         getContentSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
-        mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
         // It takes some time for scaling to settle down.
@@ -241,7 +240,6 @@ public class ContentViewZoomTest extends AwTestBase {
     public void testZoomUsingMultiTouch() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
-        mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
@@ -265,7 +263,6 @@ public class ContentViewZoomTest extends AwTestBase {
     public void testZoomControls() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
-        mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
@@ -291,7 +288,6 @@ public class ContentViewZoomTest extends AwTestBase {
     public void testZoomControlsOnNonZoomableContent() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
-        mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getNonZoomableHtml(), "text/html", false);
 
@@ -316,7 +312,6 @@ public class ContentViewZoomTest extends AwTestBase {
     public void testZoomControlsOnOrientationChange() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
-        mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 

@@ -164,6 +164,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool user_gesture_required_for_media_playback;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
+  bool use_wide_viewport;
 #endif
 
   // We try to keep the default values the same as the default values in

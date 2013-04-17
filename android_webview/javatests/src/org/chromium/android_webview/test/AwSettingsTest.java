@@ -938,7 +938,6 @@ public class AwSettingsTest extends AwTestBase {
             super(awContents, contentViewClient);
             // Font autosizing doesn't step in for narrow layout widths.
             mContentSettings.setUseWideViewPort(true);
-            mAwSettings.setEnableFixedLayoutMode(true);
         }
 
         @Override
@@ -1225,7 +1224,6 @@ public class AwSettingsTest extends AwTestBase {
         @Override
         protected void setCurrentValue(Boolean value) {
             mContentSettings.setUseWideViewPort(value);
-            mAwSettings.setEnableFixedLayoutMode(value);
         }
 
         @Override
@@ -1257,7 +1255,6 @@ public class AwSettingsTest extends AwTestBase {
             super(awContents, contentViewClient, true);
             mWithViewPortTag = withViewPortTag;
             mContentSettings.setUseWideViewPort(true);
-            mAwContents.getSettings().setEnableFixedLayoutMode(true);
         }
 
         @Override
@@ -2344,8 +2341,8 @@ public class AwSettingsTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
         assertFalse(settings.getUseWideViewPort());
-        // When UseWideViewPort is off, "meta viewport" tags are ignored,
-        // and the layout width is set to device width in CSS pixels.
+        // When UseWideViewPort is off, "width" setting of "meta viewport"
+        // tags is ignored, and the layout width is set to device width in CSS pixels.
         // Thus, all 3 pages will have the same body width.
         loadDataSync(awContents, onPageFinishedHelper, pageNoViewport, "text/html", false);
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
@@ -2363,7 +2360,6 @@ public class AwSettingsTest extends AwTestBase {
                 Math.abs(displayWidth - actualWidth) <= 1);
 
         settings.setUseWideViewPort(true);
-        awContents.getSettings().setEnableFixedLayoutMode(true);
         // When UseWideViewPort is on, "meta viewport" tag is used.
         // If there is no viewport tag, or width isn't specified,
         // then layout width is set to max(980, <device-width-in-DIP-pixels>)
@@ -2398,7 +2394,6 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(initialScale, getScaleOnUiThread(awContents));
 
         settings.setUseWideViewPort(true);
-        awContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         simulateDoubleTapCenterOfWebViewOnUiThread(testContainerView);
@@ -2428,39 +2423,6 @@ public class AwSettingsTest extends AwTestBase {
                         views.getContents0(), views.getClient0(), true),
                 new AwSettingsLoadWithOverviewModeTestHelper(
                         views.getContents1(), views.getClient1(), true));
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
-    // Verify that LoadViewOverviewMode doesn't affect pages with initial scale
-    // set in the viewport tag.
-    public void testLoadWithOverviewModeViewportScale() throws Throwable {
-        final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        ContentSettings settings = getContentSettingsOnUiThread(awContents);
-        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
-
-        final int pageScale = 2;
-        final String page = "<html><head>" +
-                "<meta name='viewport' content='width=3000, initial-scale=" + pageScale +
-                "' /></head>" +
-                "<body></body></html>";
-
-        assertFalse(settings.getUseWideViewPort());
-        assertFalse(settings.getLoadWithOverviewMode());
-        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        assertEquals(1.0f, getScaleOnUiThread(awContents));
-
-        settings.setUseWideViewPort(true);
-        awContents.getSettings().setEnableFixedLayoutMode(true);
-        settings.setLoadWithOverviewMode(true);
-        awContents.getSettings().resetScrollAndScaleState();
-        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
-        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
-        assertEquals((float)pageScale, getScaleOnUiThread(awContents));
     }
 
     @SmallTest
