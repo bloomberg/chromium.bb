@@ -136,6 +136,12 @@ struct CallbackParamTraits<scoped_ptr<T, D> > {
   typedef scoped_ptr<T, D> StorageType;
 };
 
+template <typename T>
+struct CallbackParamTraits<scoped_array<T> > {
+  typedef scoped_array<T> ForwardType;
+  typedef scoped_array<T> StorageType;
+};
+
 template <typename T, typename R>
 struct CallbackParamTraits<scoped_ptr_malloc<T, R> > {
   typedef scoped_ptr_malloc<T, R> ForwardType;
@@ -169,6 +175,9 @@ T& CallbackForward(T& t) { return t; }
 
 template <typename T, typename D>
 scoped_ptr<T, D> CallbackForward(scoped_ptr<T, D>& p) { return p.Pass(); }
+
+template <typename T>
+scoped_array<T> CallbackForward(scoped_array<T>& p) { return p.Pass(); }
 
 template <typename T, typename R>
 scoped_ptr_malloc<T, R> CallbackForward(scoped_ptr_malloc<T, R>& p) {
