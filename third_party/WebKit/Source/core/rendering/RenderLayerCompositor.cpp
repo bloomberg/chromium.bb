@@ -651,9 +651,10 @@ void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer*
         // FIXME: If this layer's overlap bounds include its children, we don't need to add its
         // children's bounds to the overlap map.
         layerBounds = enclosingIntRect(overlapMap.geometryMap().absoluteRect(layer->overlapBounds()));
-        boundsComputed = true;
+        // Empty rects never intersect, but we need them to for the purposes of overlap testing.
         if (layerBounds.isEmpty())
-            return;
+            layerBounds.setSize(IntSize(1, 1));
+        boundsComputed = true;
     }
 
     IntRect clipRect = pixelSnappedIntRect(layer->backgroundClipRect(RenderLayer::ClipRectsContext(rootRenderLayer(), 0, AbsoluteClipRects)).rect()); // FIXME: Incorrect for CSS regions.
@@ -737,6 +738,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         // If we're testing for overlap, we only need to composite if we overlap something that is already composited.
         absBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(layer->overlapBounds()));
 
+        // Empty rects never intersect, but we need them to for the purposes of overlap testing.
+        if (absBounds.isEmpty())
+            absBounds.setSize(IntSize(1, 1));
         haveComputedBounds = true;
         compositingReason = overlapMap->overlapsLayers(absBounds) ? RenderLayer::IndirectCompositingForOverlap : RenderLayer::NoIndirectCompositingReason;
     }
