@@ -86,7 +86,7 @@ AppLauncherPageUI::HTMLSource::HTMLSource(Profile* profile)
     : profile_(profile) {
 }
 
-std::string AppLauncherPageUI::HTMLSource::GetSource() {
+std::string AppLauncherPageUI::HTMLSource::GetSource() const {
   return chrome::kChromeUIAppLauncherPageHost;
 }
 

@@ -130,7 +130,7 @@ void FileIconSource::FetchFileIcon(
   }
 }
 
-std::string FileIconSource::GetSource() {
+std::string FileIconSource::GetSource() const {
   return kFileIconPath;
 }
 

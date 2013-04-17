@@ -31,7 +31,7 @@ LocalNtpSource::LocalNtpSource() {
 LocalNtpSource::~LocalNtpSource() {
 }
 
-std::string LocalNtpSource::GetSource() {
+std::string LocalNtpSource::GetSource() const {
   return chrome::kChromeSearchLocalNtpHost;
 }
 

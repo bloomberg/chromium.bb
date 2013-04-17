@@ -105,7 +105,7 @@ SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   return ToBitmap(data, contents.length());
 }
 
-std::string ExtensionIconSource::GetSource() {
+std::string ExtensionIconSource::GetSource() const {
   return chrome::kChromeUIExtensionIconHost;
 }
 

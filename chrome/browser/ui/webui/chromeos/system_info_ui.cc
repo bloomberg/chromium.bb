@@ -48,7 +48,7 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   SystemInfoUIHTMLSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
@@ -101,7 +101,7 @@ SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-std::string SystemInfoUIHTMLSource::GetSource() {
+std::string SystemInfoUIHTMLSource::GetSource() const {
   return chrome::kChromeUISystemInfoHost;
 }
 

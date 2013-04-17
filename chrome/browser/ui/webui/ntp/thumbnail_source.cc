@@ -30,7 +30,7 @@ ThumbnailSource::ThumbnailSource(Profile* profile)
 ThumbnailSource::~ThumbnailSource() {
 }
 
-std::string ThumbnailSource::GetSource() {
+std::string ThumbnailSource::GetSource() const {
   return chrome::kChromeUIThumbnailHost;
 }
 

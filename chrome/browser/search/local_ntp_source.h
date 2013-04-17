@@ -19,7 +19,7 @@ class LocalNtpSource : public content::URLDataSource {
   virtual ~LocalNtpSource();
 
   // Overridden from content::URLDataSource:
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,

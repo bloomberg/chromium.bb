@@ -33,7 +33,7 @@ class ProxySettingsHTMLSource : public content::URLDataSource {
   explicit ProxySettingsHTMLSource(DictionaryValue* localized_strings);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
@@ -59,7 +59,7 @@ ProxySettingsHTMLSource::ProxySettingsHTMLSource(
     : localized_strings_(localized_strings) {
 }
 
-std::string ProxySettingsHTMLSource::GetSource() {
+std::string ProxySettingsHTMLSource::GetSource() const {
   return chrome::kChromeUIProxySettingsHost;
 }
 

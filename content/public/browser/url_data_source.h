@@ -37,7 +37,7 @@ class CONTENT_EXPORT URLDataSource {
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.
-  virtual std::string GetSource() = 0;
+  virtual std::string GetSource() const = 0;
 
   // Used by StartDataRequest so that the child class can return the data when
   // it's available.

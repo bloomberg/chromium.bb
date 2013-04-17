@@ -331,7 +331,7 @@ class MockWebUIDataSource : public content::URLDataSource {
  private:
   virtual ~MockWebUIDataSource() {}
 
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() const OVERRIDE {
     return "dummyurl";
   }
 

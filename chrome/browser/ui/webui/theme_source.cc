@@ -50,7 +50,7 @@ ThemeSource::ThemeSource(Profile* profile)
 ThemeSource::~ThemeSource() {
 }
 
-std::string ThemeSource::GetSource() {
+std::string ThemeSource::GetSource() const {
   return chrome::kChromeUIThemePath;
 }
 

@@ -14,7 +14,7 @@ class CloudPrintSetupSource : public content::URLDataSource {
   CloudPrintSetupSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,

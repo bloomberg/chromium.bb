@@ -81,7 +81,7 @@ UserImageSource::UserImageSource() {
 
 UserImageSource::~UserImageSource() {}
 
-std::string UserImageSource::GetSource() {
+std::string UserImageSource::GetSource() const {
   return chrome::kChromeUIUserImageHost;
 }
 

@@ -43,7 +43,7 @@ void AddString(DictionaryValue* dictionary,
 CloudPrintSetupSource::CloudPrintSetupSource() {
 }
 
-std::string CloudPrintSetupSource::GetSource() {
+std::string CloudPrintSetupSource::GetSource() const {
   return chrome::kChromeUICloudPrintSetupHost;
 }
 

@@ -309,7 +309,7 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : profile_(profile) {
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetSource() {
+std::string NewTabUI::NewTabHTMLSource::GetSource() const {
   return chrome::kChromeUINewTabHost;
 }
 

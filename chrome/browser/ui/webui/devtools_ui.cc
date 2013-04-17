@@ -97,7 +97,7 @@ class BundledDataSource : public content::URLDataSource {
   }
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() const OVERRIDE {
     return chrome::kChromeUIDevToolsBundledHost;
   }
 
@@ -139,7 +139,7 @@ class RemoteDataSource : public content::URLDataSource {
   }
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() const OVERRIDE {
     return chrome::kChromeUIDevToolsRemoteHost;
   }
 

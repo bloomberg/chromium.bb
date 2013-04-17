@@ -34,7 +34,7 @@ SharedResourcesDataSource::SharedResourcesDataSource() {
 SharedResourcesDataSource::~SharedResourcesDataSource() {
 }
 
-std::string SharedResourcesDataSource::GetSource() {
+std::string SharedResourcesDataSource::GetSource() const {
   return content::kChromeUIResourcesHost;
 }
 

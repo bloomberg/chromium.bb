@@ -32,7 +32,7 @@ LocalOmniboxPopupSource::LocalOmniboxPopupSource() {
 LocalOmniboxPopupSource::~LocalOmniboxPopupSource() {
 }
 
-std::string LocalOmniboxPopupSource::GetSource() {
+std::string LocalOmniboxPopupSource::GetSource() const {
   return chrome::kChromeSearchLocalOmniboxPopupHost;
 }
 

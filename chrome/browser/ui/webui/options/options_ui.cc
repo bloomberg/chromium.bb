@@ -111,7 +111,7 @@ class OptionsUIHTMLSource : public content::URLDataSource {
   explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
@@ -133,7 +133,7 @@ OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings) {
   localized_strings_.reset(localized_strings);
 }
 
-std::string OptionsUIHTMLSource::GetSource() {
+std::string OptionsUIHTMLSource::GetSource() const {
   return chrome::kChromeUISettingsFrameHost;
 }
 

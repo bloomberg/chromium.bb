@@ -966,7 +966,7 @@ AboutUIHTMLSource::AboutUIHTMLSource(const std::string& source_name,
 
 AboutUIHTMLSource::~AboutUIHTMLSource() {}
 
-std::string AboutUIHTMLSource::GetSource() {
+std::string AboutUIHTMLSource::GetSource() const {
   return source_name_;
 }
 

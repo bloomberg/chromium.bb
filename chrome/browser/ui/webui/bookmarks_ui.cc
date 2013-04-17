@@ -22,7 +22,7 @@
 BookmarksUIHTMLSource::BookmarksUIHTMLSource() {
 }
 
-std::string BookmarksUIHTMLSource::GetSource() {
+std::string BookmarksUIHTMLSource::GetSource() const {
   return chrome::kChromeUIBookmarksHost;
 }
 

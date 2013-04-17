@@ -76,7 +76,7 @@ FaviconSource::FaviconSource(Profile* profile, IconType type)
 FaviconSource::~FaviconSource() {
 }
 
-std::string FaviconSource::GetSource() {
+std::string FaviconSource::GetSource() const {
   return icon_types_ == history::FAVICON ?
       chrome::kChromeUIFaviconHost : chrome::kChromeUITouchIconHost;
 }

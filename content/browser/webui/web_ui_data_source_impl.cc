@@ -35,7 +35,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
 
   // URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() const OVERRIDE {
     return parent_->GetSource();
   }
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
@@ -152,7 +152,7 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
-std::string WebUIDataSourceImpl::GetSource() {
+std::string WebUIDataSourceImpl::GetSource() const {
   return source_name_;
 }
 

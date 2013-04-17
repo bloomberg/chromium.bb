@@ -18,7 +18,7 @@ SessionFaviconSource::SessionFaviconSource(Profile* profile)
 SessionFaviconSource::~SessionFaviconSource() {
 }
 
-std::string SessionFaviconSource::GetSource() {
+std::string SessionFaviconSource::GetSource() const {
   return chrome::kChromeUISessionFaviconHost;
 }
 

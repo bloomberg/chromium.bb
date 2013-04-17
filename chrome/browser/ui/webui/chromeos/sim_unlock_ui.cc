@@ -76,7 +76,7 @@ class SimUnlockUIHTMLSource : public content::URLDataSource {
   SimUnlockUIHTMLSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
+  virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
@@ -253,7 +253,7 @@ class SimUnlockHandler : public WebUIMessageHandler,
 SimUnlockUIHTMLSource::SimUnlockUIHTMLSource() {
 }
 
-std::string SimUnlockUIHTMLSource::GetSource() {
+std::string SimUnlockUIHTMLSource::GetSource() const {
   return chrome::kChromeUISimUnlockHost;
 }
 

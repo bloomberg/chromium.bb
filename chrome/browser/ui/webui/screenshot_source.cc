@@ -139,7 +139,7 @@ bool ScreenshotSource::GetScreenshotDirectory(base::FilePath* directory) {
 
 #endif
 
-std::string ScreenshotSource::GetSource() {
+std::string ScreenshotSource::GetSource() const {
   return chrome::kChromeUIScreenshotPath;
 }
 
