@@ -1689,20 +1689,6 @@
             'webkit_system_interface',
             '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
-          'actions': [
-            {
-              # Allow framework-style #include of
-              # <WebCore/WebCoreSystemInterface.h>.
-              'action_name': 'WebCoreSystemInterface.h',
-              'inputs': [
-                '../platform/mac/WebCoreSystemInterface.h',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/WebCore/WebCoreSystemInterface.h',
-              ],
-              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
-            },
-          ],
           'sources': [
             '../editing/SmartReplaceCF.cpp',
           ],
