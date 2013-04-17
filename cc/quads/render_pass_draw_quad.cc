@@ -83,7 +83,8 @@ void RenderPassDrawQuad::SetAll(
 
 void RenderPassDrawQuad::IterateResources(
     const ResourceIteratorCallback& callback) {
-  mask_resource_id = callback.Run(mask_resource_id);
+  if (mask_resource_id)
+    mask_resource_id = callback.Run(mask_resource_id);
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(

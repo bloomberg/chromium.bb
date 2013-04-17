@@ -770,6 +770,9 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id);
   EXPECT_EQ(1, IterateAndCount(quad_new.get()));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id);
+  quad_new->mask_resource_id = 0;
+  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0u, quad_new->mask_resource_id);
 }
 
 TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
