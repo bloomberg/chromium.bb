@@ -11,20 +11,6 @@
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace {
-
-// TODO(jennyz): Remove this section and use the dbus properties constants
-// defined in service_constants.h, once the change is done in cros side for
-// service_constants.h and rolled down to chrome.
-const char kIsInputProperty[] = "IsInput";
-const char kIdProperty[] = "Id";
-const char kDeviceNameProperty[] = "DeviceName";
-const char kTypeProperty[] = "Type";
-const char kNameProperty[] = "Name";
-const char kActiveProperty[] = "Active";
-
-}  // namespace
-
 namespace chromeos {
 
 // The CrasAudioClient implementation used in production.
@@ -348,22 +334,22 @@ class CrasAudioClientImpl : public CrasAudioClient {
          return false;
       }
 
-      if (key == kIsInputProperty) {
+      if (key == cras::kIsInputProperty) {
         if (!value_reader.PopBool(&node->is_input))
           return false;
-      } else if (key == kIdProperty) {
+      } else if (key == cras::kIdProperty) {
         if (!value_reader.PopUint64(&node->id))
           return false;
-      } else if (key == kDeviceNameProperty) {
+      } else if (key == cras::kDeviceNameProperty) {
         if (!value_reader.PopString(&node->device_name))
           return false;
-      } else if (key == kTypeProperty) {
+      } else if (key == cras::kTypeProperty) {
         if (!value_reader.PopString(&node->type))
           return false;
-      } else if (key == kNameProperty) {
+      } else if (key == cras::kNameProperty) {
         if (!value_reader.PopString(&node->name))
           return false;
-      } else if (key == kActiveProperty) {
+      } else if (key == cras::kActiveProperty) {
         if (!value_reader.PopBool(&node->active))
           return false;
       }
