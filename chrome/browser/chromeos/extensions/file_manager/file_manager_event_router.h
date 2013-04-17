@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -37,6 +38,7 @@ class FileManagerEventRouter
     : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
       public chromeos::SystemKeyEventListener::ModifiersObserver,
+      public drive::DriveSystemServiceObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
@@ -109,9 +111,11 @@ class FileManagerEventRouter
       const google_apis::OperationProgressStatusList& list) OVERRIDE;
   virtual void OnRefreshTokenInvalid() OVERRIDE;
 
-  // drive::DriveFileSystemInterface::Observer overrides.
+  // drive::DriveFileSystemObserver overrides.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
+
+  // drive::DriveSystemServiceObserver overrides.
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 

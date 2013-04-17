@@ -155,12 +155,6 @@ class DriveFileSystemInterface {
   virtual void AddObserver(DriveFileSystemObserver* observer) = 0;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) = 0;
 
-  // Notifies the file system was just mounted.
-  virtual void NotifyFileSystemMounted() = 0;
-
-  // Notifies the file system is going to be unmounted.
-  virtual void NotifyFileSystemToBeUnmounted() = 0;
-
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 

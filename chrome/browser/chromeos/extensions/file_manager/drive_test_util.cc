@@ -20,31 +20,31 @@ const char kDriveMountPointName[] = "drive";
 
 // Helper class used to wait for |OnFileSystemMounted| event from a drive file
 // system.
-class DriveMountPointWaiter : public drive::DriveFileSystemObserver {
+class DriveMountPointWaiter : public drive::DriveSystemServiceObserver {
  public:
-  explicit DriveMountPointWaiter(drive::DriveFileSystemInterface* file_system)
-      : file_system_(file_system) {
-    file_system_->AddObserver(this);
+  explicit DriveMountPointWaiter(drive::DriveSystemService* system_service)
+      : system_service_(system_service) {
+    system_service_->AddObserver(this);
   }
 
   virtual ~DriveMountPointWaiter() {
-    file_system_->RemoveObserver(this);
+    system_service_->RemoveObserver(this);
   }
 
-  // DriveFileSystemObserver override.
+  // DriveSystemServiceObserver override.
   virtual void OnFileSystemMounted() OVERRIDE {
     // Note that it is OK for |run_loop_.Quit| to be called before
     // |run_loop_.Run|. In this case |Run| will return immediately.
     run_loop_.Quit();
   }
 
-  // Runs loop until the file_system_ gets mounted.
+  // Runs loop until the file system is mounted.
   void Wait() {
     run_loop_.Run();
   }
 
  private:
-  drive::DriveFileSystemInterface* file_system_;
+  drive::DriveSystemService* system_service_;
   base::RunLoop run_loop_;
 };
 
@@ -63,9 +63,9 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::FindForProfileRegardlessOfStates(
           profile);
-  DCHECK(system_service && system_service->file_system());
+  DCHECK(system_service);
 
-  DriveMountPointWaiter mount_point_waiter(system_service->file_system());
+  DriveMountPointWaiter mount_point_waiter(system_service);
 
   base::FilePath ignored;
   // GetRegisteredPath succeeds iff the mount point exists.

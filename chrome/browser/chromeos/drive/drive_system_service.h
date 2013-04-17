@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -40,6 +41,22 @@ class EventLogger;
 class FileWriteHelper;
 class StaleCacheFilesRemover;
 
+// Interface for classes that need to observe events from DriveSystemService.
+// All events are notified on UI thread.
+class DriveSystemServiceObserver {
+ public:
+  // Triggered when the file system is mounted.
+  virtual void OnFileSystemMounted() {
+  }
+
+  // Triggered when the file system is being unmounted.
+  virtual void OnFileSystemBeingUnmounted() {
+  }
+
+ protected:
+  virtual ~DriveSystemServiceObserver() {}
+};
+
 // DriveSystemService runs the Drive system, including the Drive file system
 // implementation for the file manager, and some other sub systems.
 //
@@ -64,6 +81,10 @@ class DriveSystemService : public ProfileKeyedService,
 
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
+
+  // Adds and removes the observer.
+  void AddObserver(DriveSystemServiceObserver* observer);
+  void RemoveObserver(DriveSystemServiceObserver* observer);
 
   google_apis::DriveServiceInterface* drive_service() {
     return drive_service_.get();
@@ -151,6 +172,8 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
   scoped_refptr<DriveFileSystemProxy> file_system_proxy_;
+
+  ObserverList<DriveSystemServiceObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -25,8 +25,6 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD1(AddObserver, void(DriveFileSystemObserver* observer));
   MOCK_METHOD1(RemoveObserver,
                void(DriveFileSystemObserver* observer));
-  MOCK_METHOD0(NotifyFileSystemMounted, void());
-  MOCK_METHOD0(NotifyFileSystemToBeUnmounted, void());
   MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD2(GetEntryInfoByResourceId,
                void(const std::string& resource_id,

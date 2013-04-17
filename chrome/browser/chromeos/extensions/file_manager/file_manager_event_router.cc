@@ -293,6 +293,7 @@ void FileManagerEventRouter::Shutdown() {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::FindForProfileRegardlessOfStates(profile_);
   if (system_service) {
+    system_service->RemoveObserver(this);
     system_service->file_system()->RemoveObserver(this);
     system_service->drive_service()->RemoveObserver(this);
   }
@@ -322,6 +323,7 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfileRegardlessOfStates(profile_);
   if (system_service) {
+    system_service->AddObserver(this);
     system_service->drive_service()->AddObserver(this);
     system_service->file_system()->AddObserver(this);
   }

@@ -42,14 +42,6 @@ void FakeDriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::NotifyFileSystemMounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void FakeDriveFileSystem::NotifyFileSystemToBeUnmounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeDriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

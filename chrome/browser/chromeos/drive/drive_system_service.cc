@@ -191,6 +191,16 @@ void DriveSystemService::Shutdown() {
   RemoveDriveMountPoint();
 }
 
+void DriveSystemService::AddObserver(DriveSystemServiceObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observers_.AddObserver(observer);
+}
+
+void DriveSystemService::RemoveObserver(DriveSystemServiceObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observers_.RemoveObserver(observer);
+}
+
 bool DriveSystemService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -309,14 +319,16 @@ void DriveSystemService::AddDriveMountPoint() {
 
   if (success) {
     event_logger_->Log("AddDriveMountPoint");
-    file_system_->NotifyFileSystemMounted();
+    FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
+                      OnFileSystemMounted());
   }
 }
 
 void DriveSystemService::RemoveDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_system_->NotifyFileSystemToBeUnmounted();
+  FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
+                    OnFileSystemBeingUnmounted());
 
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);

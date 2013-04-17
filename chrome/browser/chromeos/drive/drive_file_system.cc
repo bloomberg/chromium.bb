@@ -1298,24 +1298,6 @@ void DriveFileSystem::OnInitialFeedLoaded() {
                     OnInitialLoadFinished());
 }
 
-void DriveFileSystem::NotifyFileSystemMounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "File System is mounted";
-  // Notify the observers that the file system is mounted.
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnFileSystemMounted());
-}
-
-void DriveFileSystem::NotifyFileSystemToBeUnmounted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "File System is to be unmounted";
-  // Notify the observers that the file system is being unmounted.
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnFileSystemBeingUnmounted());
-}
-
 void DriveFileSystem::AddUploadedFile(
     scoped_ptr<google_apis::ResourceEntry> entry,
     const base::FilePath& file_content_path,

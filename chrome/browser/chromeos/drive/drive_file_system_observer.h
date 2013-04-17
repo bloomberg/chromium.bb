@@ -32,14 +32,6 @@ class DriveFileSystemObserver {
   virtual void OnFeedFromServerLoaded() {
   }
 
-  // Triggered when the file system is mounted.
-  virtual void OnFileSystemMounted() {
-  }
-
-  // Triggered when the file system is being unmounted.
-  virtual void OnFileSystemBeingUnmounted() {
-  }
-
  protected:
   virtual ~DriveFileSystemObserver() {}
 };
