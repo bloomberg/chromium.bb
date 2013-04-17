@@ -103,8 +103,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
    * the end of the name.
    */
   /* TODO(ncbray) plumb the real filename in from Chrome. */
-  ConstructMetadataForFD(file_desc, kFakeIrtName, sizeof(kFakeIrtName),
-                         &metadata);
+  MetadataFromFDCtor(&metadata, file_desc, kFakeIrtName, sizeof(kFakeIrtName));
 
   /*
    * The GioPio type is safe to use when this file descriptor is shared
@@ -121,6 +120,8 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
             "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",
             NaClErrorString(errcode));
   }
+
+  MetadataDtor(&metadata);
 
   (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);

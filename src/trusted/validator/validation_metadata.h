@@ -34,7 +34,7 @@ typedef enum NaClCodeIdentityType {
 struct NaClValidationMetadata {
   NaClCodeIdentityType identity_type;
   int64_t code_offset;
-  const char* file_name;
+  char* file_name;
   size_t file_name_length;
   uint64_t device_id;
   uint64_t file_id;
@@ -43,16 +43,13 @@ struct NaClValidationMetadata {
   time_t ctime;
 };
 
-/*
- * Note: ownership of file_name is not transfered, the caller is still
- * responsible for managing the string's lifetime.  The validator does not make
- * a copy of the metadata structure nor does it retain a reference, so managing
- * the lifetime of the string should be straightforward.
- */
-extern void ConstructMetadataForFD(int file_desc,
-                                   const char* file_name,
-                                   size_t file_name_length,
-                                   struct NaClValidationMetadata *metadata);
+/* Note: copies file_name.  This copy is deallocated by DestroyMetadata. */
+extern void MetadataFromFDCtor(struct NaClValidationMetadata *metadata,
+                               int file_desc,
+                               const char* file_name,
+                               size_t file_name_length);
+
+extern void MetadataDtor(struct NaClValidationMetadata *metadata);
 
 EXTERN_C_END
 

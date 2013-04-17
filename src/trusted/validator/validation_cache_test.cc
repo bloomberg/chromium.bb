@@ -234,7 +234,7 @@ TEST_F(ValidationCachingInterfaceTests, Metadata) {
   NaClValidationMetadata metadata;
   memset(&metadata, 0, sizeof(metadata));
   metadata.identity_type = NaClCodeIdentityFile;
-  metadata.file_name = "foobar";
+  metadata.file_name = (char *) "foobar";
   metadata.file_name_length = strlen(metadata.file_name);
   metadata.file_size = CODE_SIZE;
   metadata.mtime = 100;

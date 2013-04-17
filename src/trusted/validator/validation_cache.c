@@ -30,10 +30,10 @@ int CachingIsInexpensive(struct NaClValidationCache *cache,
   }
 }
 
-void ConstructMetadataForFD(int file_desc,
-                            const char* file_name,
-                            size_t file_name_length,
-                            struct NaClValidationMetadata *metadata) {
+void MetadataFromFDCtor(struct NaClValidationMetadata *metadata,
+                        int file_desc,
+                        const char* file_name,
+                        size_t file_name_length) {
   struct NaClHostDesc wrapper;
   nacl_host_stat_t stat;
 #if NACL_WINDOWS
@@ -42,9 +42,6 @@ void ConstructMetadataForFD(int file_desc,
 
   memset(metadata, 0, sizeof(*metadata));
   /* If we early out, identity_type will be 0 / NaClCodeIdentityData. */
-
-  metadata->file_name = file_name;
-  metadata->file_name_length = file_name_length;
 
   wrapper.d = file_desc;
   if(NaClHostDescFstat(&wrapper, &stat))
@@ -75,8 +72,20 @@ void ConstructMetadataForFD(int file_desc,
   metadata->mtime = stat.st_mtime;
   metadata->ctime = stat.st_ctime;
 
+  CHECK(0 < file_name_length);
+  metadata->file_name = malloc(file_name_length);
+  CHECK(NULL != metadata->file_name);
+  memcpy(metadata->file_name, file_name, file_name_length);
+  metadata->file_name_length = file_name_length;
+
   /* We have all the identity information we need. */
   metadata->identity_type = NaClCodeIdentityFile;
+}
+
+void MetadataDtor(struct NaClValidationMetadata *metadata) {
+  free(metadata->file_name);
+  /* Prevent use after free. */
+  memset(metadata, 0, sizeof(*metadata));
 }
 
 void AddCodeIdentity(uint8_t *data,
