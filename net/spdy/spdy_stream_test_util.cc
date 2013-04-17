@@ -37,7 +37,7 @@ int ClosingDelegate::OnResponseReceived(const SpdyHeaderBlock& response,
 
 void ClosingDelegate::OnHeadersSent() {}
 
-int ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+int ClosingDelegate::OnDataReceived(const char* data, int length) {
   return OK;
 }
 
@@ -77,11 +77,8 @@ void StreamDelegateBase::OnHeadersSent() {
   headers_sent_++;
 }
 
-int StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
-  if (buffer) {
-    received_data_ += std::string(buffer->GetRemainingData(),
-                                  buffer->GetRemainingSize());
-  }
+int StreamDelegateBase::OnDataReceived(const char* buffer, int bytes) {
+  received_data_ += std::string(buffer, bytes);
   return OK;
 }
 

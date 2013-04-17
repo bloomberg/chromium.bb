@@ -116,19 +116,13 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
   }
-  virtual void OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {
-    std::string buffer_data;
-    size_t buffer_len = 0;
-    if (buffer) {
-      buffer_len = buffer->GetRemainingSize();
-      buffer_data.append(buffer->GetRemainingData(), buffer_len);
-    }
+  virtual void OnReceivedSpdyData(const char* data, int length) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_RECEIVED_DATA,
             SpdyHeaderBlock(),
-            buffer_len,
-            buffer_data));
+            length,
+            std::string(data, length)));
     if (!on_received_data_.is_null())
       on_received_data_.Run(&events_.back());
   }

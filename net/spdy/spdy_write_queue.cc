@@ -7,8 +7,7 @@
 #include <cstddef>
 
 #include "base/logging.h"
-#include "net/spdy/spdy_buffer.h"
-#include "net/spdy/spdy_buffer_producer.h"
+#include "net/spdy/spdy_frame_producer.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -17,7 +16,7 @@ SpdyWriteQueue::PendingWrite::PendingWrite() : frame_producer(NULL) {}
 
 SpdyWriteQueue::PendingWrite::PendingWrite(
     SpdyFrameType frame_type,
-    SpdyBufferProducer* frame_producer,
+    SpdyFrameProducer* frame_producer,
     const scoped_refptr<SpdyStream>& stream)
     : frame_type(frame_type),
       frame_producer(frame_producer),
@@ -33,7 +32,7 @@ SpdyWriteQueue::~SpdyWriteQueue() {
 
 void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
-                             scoped_ptr<SpdyBufferProducer> frame_producer,
+                             scoped_ptr<SpdyFrameProducer> frame_producer,
                              const scoped_refptr<SpdyStream>& stream) {
   if (stream.get()) {
     DCHECK_EQ(stream->priority(), priority);
@@ -43,7 +42,7 @@ void SpdyWriteQueue::Enqueue(RequestPriority priority,
 }
 
 bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
-                             scoped_ptr<SpdyBufferProducer>* frame_producer,
+                             scoped_ptr<SpdyFrameProducer>* frame_producer,
                              scoped_refptr<SpdyStream>* stream) {
   for (int i = NUM_PRIORITIES - 1; i >= 0; --i) {
     if (!queue_[i].empty()) {

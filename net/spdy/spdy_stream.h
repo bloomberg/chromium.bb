@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/bandwidth_metrics.h"
@@ -84,10 +83,9 @@ class NET_EXPORT_PRIVATE SpdyStream
     // Called when a HEADERS frame is sent.
     virtual void OnHeadersSent() = 0;
 
-    // Called when data is received. |buffer| may be NULL, which
-    // signals EOF.  Must return OK if the data was received
-    // successfully, or a network error code otherwise.
-    virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) = 0;
+    // Called when data is received.
+    // Returns network error code. OK when it successfully receives data.
+    virtual int OnDataReceived(const char* data, int length) = 0;
 
     // Called when data is sent.
     virtual void OnDataSent(size_t bytes_sent) = 0;
@@ -220,7 +218,7 @@ class NET_EXPORT_PRIVATE SpdyStream
   //
   // |length| is the number of bytes received (at most 2^24 - 1) or 0 if
   //          the stream is being closed.
-  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer);
+  void OnDataReceived(const char* buffer, size_t length);
 
   // Called by the SpdySession when a frame has been successfully and
   // completely written. |frame_size| is the total size of the frame
@@ -291,8 +289,8 @@ class NET_EXPORT_PRIVATE SpdyStream
   int GetProtocolVersion() const;
 
  private:
-  class SynStreamBufferProducer;
-  class HeaderBufferProducer;
+  class SynStreamFrameProducer;
+  class HeaderFrameProducer;
 
   enum State {
     STATE_NONE,
@@ -413,7 +411,7 @@ class NET_EXPORT_PRIVATE SpdyStream
   int recv_bytes_;
 
   // Data received before delegate is attached.
-  ScopedVector<SpdyBuffer> pending_buffers_;
+  std::vector<scoped_refptr<IOBufferWithSize> > pending_buffers_;
 
   SSLClientCertType domain_bound_cert_type_;
   std::string domain_bound_private_key_;

@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/io_buffer.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
@@ -116,9 +116,9 @@ void SpdyWebSocketStream::OnHeadersSent() {
   NOTREACHED();
 }
 
-int SpdyWebSocketStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+int SpdyWebSocketStream::OnDataReceived(const char* data, int length) {
   DCHECK(delegate_);
-  delegate_->OnReceivedSpdyData(buffer.Pass());
+  delegate_->OnReceivedSpdyData(data, length);
   return OK;
 }
 

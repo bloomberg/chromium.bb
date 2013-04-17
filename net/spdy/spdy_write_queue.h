@@ -16,11 +16,10 @@
 
 namespace net {
 
-class SpdyBuffer;
-class SpdyBufferProducer;
+class SpdyFrameProducer;
 class SpdyStream;
 
-// A queue of SpdyBufferProducers to produce frames to write. Ordered
+// A queue of SpdyFrameProducers to produce frames to write. Ordered
 // by priority, and then FIFO.
 class NET_EXPORT_PRIVATE SpdyWriteQueue {
  public:
@@ -33,7 +32,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // is non-NULL, its priority must be equal to |priority|.
   void Enqueue(RequestPriority priority,
                SpdyFrameType frame_type,
-               scoped_ptr<SpdyBufferProducer> frame_producer,
+               scoped_ptr<SpdyFrameProducer> frame_producer,
                const scoped_refptr<SpdyStream>& stream);
 
   // Dequeues the frame producer with the highest priority that was
@@ -41,7 +40,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // fills in |frame_type|, |frame_producer|, and |stream| if
   // successful -- otherwise, just returns false.
   bool Dequeue(SpdyFrameType* frame_type,
-               scoped_ptr<SpdyBufferProducer>* frame_producer,
+               scoped_ptr<SpdyFrameProducer>* frame_producer,
                scoped_refptr<SpdyStream>* stream);
 
   // Removes all pending writes for the given stream, which must be
@@ -57,12 +56,12 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     SpdyFrameType frame_type;
     // This has to be a raw pointer since we store this in an STL
     // container.
-    SpdyBufferProducer* frame_producer;
+    SpdyFrameProducer* frame_producer;
     scoped_refptr<SpdyStream> stream;
 
     PendingWrite();
     PendingWrite(SpdyFrameType frame_type,
-                 SpdyBufferProducer* frame_producer,
+                 SpdyFrameProducer* frame_producer,
                  const scoped_refptr<SpdyStream>& stream);
     ~PendingWrite();
   };

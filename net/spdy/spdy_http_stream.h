@@ -13,7 +13,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_log.h"
 #include "net/http/http_stream.h"
-#include "net/spdy/spdy_read_queue.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -90,7 +89,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
+  virtual int OnDataReceived(const char* buffer, int bytes) OVERRIDE;
   virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
@@ -140,7 +139,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool response_headers_received_;  // Indicates waiting for more HEADERS.
 
   // We buffer the response body as it arrives asynchronously from the stream.
-  SpdyReadQueue response_body_queue_;
+  // TODO(mbelshe):  is this infinite buffering?
+  std::list<scoped_refptr<IOBufferWithSize> > response_body_;
 
   CompletionCallback callback_;
 

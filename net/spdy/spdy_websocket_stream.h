@@ -49,7 +49,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
     virtual void OnSentSpdyData(size_t bytes_sent) = 0;
 
     // Called when data is received.
-    virtual void OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) = 0;
+    virtual void OnReceivedSpdyData(const char* data, int length) = 0;
 
     // Called when SpdyStream is closed.
     virtual void OnCloseSpdyStream() = 0;
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
+  virtual int OnDataReceived(const char* data, int length) OVERRIDE;
   virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 

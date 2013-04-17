@@ -13,6 +13,7 @@
 #include "net/base/test_data_stream.h"
 #include "net/dns/host_cache.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_stream.h"

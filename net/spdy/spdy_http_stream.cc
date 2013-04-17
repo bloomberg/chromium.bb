@@ -135,11 +135,28 @@ int SpdyHttpStream::ReadResponseBody(
   CHECK(!callback.is_null());
 
   // If we have data buffered, complete the IO immediately.
-  if (!response_body_queue_.IsEmpty()) {
-    size_t bytes_consumed = response_body_queue_.Dequeue(buf->data(), buf_len);
+  if (!response_body_.empty()) {
+    int bytes_read = 0;
+    while (!response_body_.empty() && buf_len > 0) {
+      scoped_refptr<IOBufferWithSize> data = response_body_.front();
+      const int bytes_to_copy = std::min(buf_len, data->size());
+      memcpy(&(buf->data()[bytes_read]), data->data(), bytes_to_copy);
+      buf_len -= bytes_to_copy;
+      if (bytes_to_copy == data->size()) {
+        response_body_.pop_front();
+      } else {
+        const int bytes_remaining = data->size() - bytes_to_copy;
+        IOBufferWithSize* new_buffer = new IOBufferWithSize(bytes_remaining);
+        memcpy(new_buffer->data(), &(data->data()[bytes_to_copy]),
+               bytes_remaining);
+        response_body_.pop_front();
+        response_body_.push_front(make_scoped_refptr(new_buffer));
+      }
+      bytes_read += bytes_to_copy;
+    }
     if (stream_)
-      stream_->IncreaseRecvWindowSize(bytes_consumed);
-    return bytes_consumed;
+      stream_->IncreaseRecvWindowSize(bytes_read);
+    return bytes_read;
   } else if (stream_closed_) {
     return closed_stream_status_;
   }
@@ -417,7 +434,7 @@ void SpdyHttpStream::OnHeadersSent() {
   NOTREACHED();
 }
 
-int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+int SpdyHttpStream::OnDataReceived(const char* data, int length) {
   // SpdyStream won't call us with data if the header block didn't contain a
   // valid set of headers.  So we don't expect to not have headers received
   // here.
@@ -429,8 +446,11 @@ int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // happen for server initiated streams.
   DCHECK(stream_.get());
   DCHECK(!stream_->closed() || stream_->pushed());
-  if (buffer) {
-    response_body_queue_.Enqueue(buffer.Pass());
+  if (length > 0) {
+    // Save the received data.
+    IOBufferWithSize* io_buffer = new IOBufferWithSize(length);
+    memcpy(io_buffer->data(), data, length);
+    response_body_.push_back(make_scoped_refptr(io_buffer));
 
     if (user_buffer_) {
       // Handing small chunks of data to the caller creates measurable overhead.
@@ -489,9 +509,14 @@ bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
   if (stream_closed_)
     return false;
 
-  DCHECK_GT(user_buffer_len_, 0);
-  return response_body_queue_.GetTotalSize() <
-      static_cast<size_t>(user_buffer_len_);
+  int bytes_buffered = 0;
+  std::list<scoped_refptr<IOBufferWithSize> >::const_iterator it;
+  for (it = response_body_.begin();
+       it != response_body_.end() && bytes_buffered < user_buffer_len_;
+       ++it)
+    bytes_buffered += (*it)->size();
+
+  return bytes_buffered < user_buffer_len_;
 }
 
 bool SpdyHttpStream::DoBufferedReadCallback() {
