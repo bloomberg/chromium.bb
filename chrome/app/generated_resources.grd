@@ -8480,7 +8480,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Exceptions below only apply to the current incognito session.
       </message>
       <message name="IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS" desc="Placeholder text before the user adds a new exception" >
-        Add a new hostname pattern
+        [*.]example.com
       </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
