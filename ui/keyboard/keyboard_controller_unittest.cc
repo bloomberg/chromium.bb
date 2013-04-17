@@ -49,33 +49,6 @@ class TestFocusController : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestFocusController);
 };
 
-class KeyboardControllerTest : public testing::Test {
- public:
-  KeyboardControllerTest() {}
-  virtual ~KeyboardControllerTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
-    ui::SetUpInputMethodFactoryForTesting();
-    focus_controller_.reset(new TestFocusController(root_window()));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    aura_test_helper_->TearDown();
-  }
-
-  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
-
- protected:
-  base::MessageLoopForUI message_loop_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<TestFocusController> focus_controller_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
-};
-
 class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
   TestKeyboardControllerProxy()
@@ -176,6 +149,38 @@ class TestTextInputClient : public ui::TextInputClient {
 
 }  // namespace
 
+class KeyboardControllerTest : public testing::Test {
+ public:
+  KeyboardControllerTest() {}
+  virtual ~KeyboardControllerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_->SetUp();
+    ui::SetUpInputMethodFactoryForTesting();
+    focus_controller_.reset(new TestFocusController(root_window()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    aura_test_helper_->TearDown();
+  }
+
+  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
+
+  void ShowKeyboard(KeyboardController* controller) {
+    TestTextInputClient test_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
+    controller->OnTextInputStateChanged(&test_text_input_client);
+  }
+
+ protected:
+  base::MessageLoopForUI message_loop_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  scoped_ptr<TestFocusController> focus_controller_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
+};
+
 TEST_F(KeyboardControllerTest, KeyboardSize) {
   KeyboardControllerProxy* proxy = new TestKeyboardControllerProxy();
   KeyboardController controller(proxy);
@@ -214,7 +219,8 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   root_window()->AddChild(keyboard_container.get());
   keyboard_container->Show();
 
-  root_window()->StackChildAtTop(keyboard_container.get());
+  ShowKeyboard(&controller);
+
   EXPECT_TRUE(window->IsVisible());
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_TRUE(window->HasFocus());

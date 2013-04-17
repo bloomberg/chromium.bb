@@ -78,6 +78,8 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) OVERRIDE;
   virtual void OnTextInputStateChanged(
       const ui::TextInputClient* client) OVERRIDE;
+  virtual void OnInputMethodDestroyed(
+      const ui::InputMethod* input_method) OVERRIDE;
 
   // Represents waiting type of text input event.
   WaitImeEventType waiting_type_;

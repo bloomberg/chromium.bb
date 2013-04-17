@@ -9,6 +9,7 @@
 
 namespace ui {
 
+class InputMethod;
 class TextInputClient;
 
 class UI_EXPORT InputMethodObserver {
@@ -19,6 +20,9 @@ class UI_EXPORT InputMethodObserver {
   //  - the TextInputClient is changed (e.g. by a change of focus)
   //  - the TextInputType of the TextInputClient changes
   virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
+
+  // Called when the observed InputMethod is being destroyed.
+  virtual void OnInputMethodDestroyed(const InputMethod* input_method) = 0;
 };
 
 }  // namespace ui

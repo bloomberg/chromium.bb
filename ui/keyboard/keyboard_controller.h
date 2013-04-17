@@ -16,15 +16,17 @@ class Window;
 }
 
 namespace ui {
+class InputMethod;
 class TextInputClient;
 }
 
 namespace keyboard {
 
 class KeyboardControllerProxy;
+class KeyboardLayoutManager;
 
-// Provides control of the virtual keyboard, including providing a container,
-// managing object lifetimes and controlling visibility.
+// Provides control of the virtual keyboard, including providing a container
+// and controlling visibility.
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
                                            public aura::WindowObserver {
  public:
@@ -36,18 +38,24 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // It is the responsibility of the caller to Show() the returned window.
   aura::Window* GetContainerWindow();
 
-  // InputMethodObserver overrides
-  virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) OVERRIDE;
-
  private:
+  // For access to Observer methods for simulation.
+  friend class KeyboardControllerTest;
+
   // aura::WindowObserver overrides
   virtual void OnWindowParentChanged(aura::Window* window,
                                      aura::Window* parent) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
+  // InputMethodObserver overrides
+  virtual void OnTextInputStateChanged(
+      const ui::TextInputClient* client) OVERRIDE;
+  virtual void OnInputMethodDestroyed(
+      const ui::InputMethod* input_method) OVERRIDE;
+
   scoped_ptr<KeyboardControllerProxy> proxy_;
   aura::Window* container_;
+  ui::InputMethod* input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardController);
 };

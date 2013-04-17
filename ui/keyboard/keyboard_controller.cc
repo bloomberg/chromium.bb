@@ -9,7 +9,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/path.h"
@@ -27,38 +26,6 @@ gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
       window_bounds.width(),
       window_bounds.height() * kKeyboardHeightRatio);
 }
-
-// LayoutManager for the virtual keyboard container.  Manages a single window
-// (the virtual keyboard) and keeps it positioned at the bottom of the
-// container window.
-class KeyboardLayoutManager : public aura::LayoutManager {
- public:
-  KeyboardLayoutManager(aura::Window* owner, aura::Window* keyboard)
-    : owner_(owner), keyboard_(keyboard) {}
-
-  // Overridden from aura::LayoutManager
-  virtual void OnWindowResized() OVERRIDE {
-    SetChildBoundsDirect(keyboard_,
-                         KeyboardBoundsFromWindowBounds(owner_->bounds()));
-  }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    CHECK(child == keyboard_);
-  }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {}
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-    // Drop these: the size should only be set in OnWindowResized.
-  }
-
- private:
-  aura::Window* owner_;
-  aura::Window* keyboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutManager);
-};
 
 // The KeyboardWindowDelegate makes sure the keyboard-window does not get focus.
 // This is necessary to make sure that the synthetic key-events reach the target
@@ -110,16 +77,57 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 
 namespace keyboard {
 
+// LayoutManager for the virtual keyboard container.  Manages a single window
+// (the virtual keyboard) and keeps it positioned at the bottom of the
+// owner window.
+class KeyboardLayoutManager : public aura::LayoutManager {
+ public:
+  KeyboardLayoutManager(aura::Window* container)
+      : container_(container), keyboard_(NULL) {
+    CHECK(container_);
+  }
+
+  // Overridden from aura::LayoutManager
+  virtual void OnWindowResized() OVERRIDE {
+    if (!keyboard_)
+      return;
+    SetChildBoundsDirect(keyboard_,
+                         KeyboardBoundsFromWindowBounds(container_->bounds()));
+  }
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    DCHECK(!keyboard_);
+    keyboard_ = child;
+  }
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+                                              bool visible) OVERRIDE {}
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE {
+    // Drop these: the size should only be set in OnWindowResized.
+  }
+
+ private:
+  aura::Window* container_;
+  aura::Window* keyboard_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutManager);
+};
+
 KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
-    : proxy_(proxy), container_(NULL) {
+    : proxy_(proxy),
+      container_(NULL),
+      input_method_(NULL) {
   CHECK(proxy);
-  proxy_->GetInputMethod()->AddObserver(this);
+  input_method_ = proxy_->GetInputMethod();
+  input_method_->AddObserver(this);
 }
 
 KeyboardController::~KeyboardController() {
   if (container_)
     container_->RemoveObserver(this);
-  proxy_->GetInputMethod()->RemoveObserver(this);
+  if (input_method_)
+    input_method_->RemoveObserver(this);
 }
 
 aura::Window* KeyboardController::GetContainerWindow() {
@@ -128,32 +136,9 @@ aura::Window* KeyboardController::GetContainerWindow() {
     container_->SetName("KeyboardContainer");
     container_->Init(ui::LAYER_NOT_DRAWN);
     container_->AddObserver(this);
-
-    aura::Window* keyboard = proxy_->GetKeyboardWindow();
-    keyboard->Show();
-
-    container_->SetLayoutManager(
-        new KeyboardLayoutManager(container_, keyboard));
-    container_->AddChild(keyboard);
+    container_->SetLayoutManager(new KeyboardLayoutManager(container_));
   }
   return container_;
-}
-
-void KeyboardController::OnTextInputStateChanged(
-    const ui::TextInputClient* client) {
-  if (!container_)
-    return;
-
-  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
-    container_->Hide();
-  } else {
-    container_->parent()->StackChildAtTop(container_);
-    container_->Show();
-  }
-
-  // TODO(bryeung): whenever the TextInputClient changes we need to notify the
-  // keyboard (with the TextInputType) so that it can reset it's state (e.g.
-  // abandon compositions in progress)
 }
 
 void KeyboardController::OnWindowParentChanged(aura::Window* window,
@@ -164,6 +149,34 @@ void KeyboardController::OnWindowParentChanged(aura::Window* window,
 void KeyboardController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(container_, window);
   container_ = NULL;
+}
+
+void KeyboardController::OnTextInputStateChanged(
+    const ui::TextInputClient* client) {
+  if (!container_)
+    return;
+
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    container_->Hide();
+  } else {
+    if (container_->children().empty()) {
+      aura::Window* keyboard = proxy_->GetKeyboardWindow();
+      keyboard->Show();
+      container_->AddChild(keyboard);
+      container_->layout_manager()->OnWindowResized();
+    }
+    container_->parent()->StackChildAtTop(container_);
+    container_->Show();
+  }
+  // TODO(bryeung): whenever the TextInputClient changes we need to notify the
+  // keyboard (with the TextInputType) so that it can reset it's state (e.g.
+  // abandon compositions in progress)
+}
+
+void KeyboardController::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+  DCHECK_EQ(input_method_, input_method);
+  input_method_ = NULL;
 }
 
 }  // namespace keyboard

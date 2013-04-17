@@ -78,6 +78,10 @@ void TextInputTestHelper::OnTextInputTypeChanged(
     MessageLoop::current()->Quit();
 }
 
+void TextInputTestHelper::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+}
+
 void TextInputTestHelper::OnFocus() {
   focus_state_ = true;
   if (waiting_type_ == WAIT_ON_FOCUS)

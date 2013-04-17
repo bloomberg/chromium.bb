@@ -34,6 +34,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
 
     // InputMethodObserver overrides
     virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
+    virtual void OnInputMethodDestroyed(const InputMethod* input_method) = 0;
   };
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
