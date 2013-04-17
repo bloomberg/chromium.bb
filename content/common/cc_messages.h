@@ -108,6 +108,7 @@ struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
 
 IPC_ENUM_TRAITS(cc::DrawQuad::Material)
 IPC_ENUM_TRAITS(cc::IOSurfaceDrawQuad::Orientation)
+IPC_ENUM_TRAITS(cc::LatencyComponentType)
 IPC_ENUM_TRAITS(WebKit::WebFilterOperation::FilterType)
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
@@ -211,11 +212,14 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(cc::LatencyInfo::LatencyComponent)
+  IPC_STRUCT_TRAITS_MEMBER(sequence_number)
+  IPC_STRUCT_TRAITS_MEMBER(event_time)
+  IPC_STRUCT_TRAITS_MEMBER(event_count)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(cc::LatencyInfo)
-  IPC_STRUCT_TRAITS_MEMBER(renderer_main_frame_number)
-  IPC_STRUCT_TRAITS_MEMBER(renderer_impl_frame_number)
-  IPC_STRUCT_TRAITS_MEMBER(browser_main_frame_number)
-  IPC_STRUCT_TRAITS_MEMBER(browser_impl_frame_number)
+  IPC_STRUCT_TRAITS_MEMBER(latency_components)
   IPC_STRUCT_TRAITS_MEMBER(swap_timestamp)
 IPC_STRUCT_TRAITS_END()
 

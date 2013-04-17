@@ -5,23 +5,59 @@
 #ifndef CC_DEBUG_LATENCY_INFO_H_
 #define CC_DEBUG_LATENCY_INFO_H_
 
+#include <map>
+#include <utility>
+
+#include "base/basictypes.h"
 #include "base/time.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 
-struct LatencyInfo {
-  int64 renderer_main_frame_number;
-  int64 renderer_impl_frame_number;
-  int64 browser_main_frame_number;
-  int64 browser_impl_frame_number;
+enum LatencyComponentType {
+  kRendererMainThread,
+  kRendererImplThread,
+  kBrowserMainThread,
+  kBrowserImplThread,
+  kInputEvent,
+};
 
+struct CC_EXPORT LatencyInfo {
+  struct LatencyComponent {
+    // Nondecreasing number that can be used to determine what events happened
+    // in the component at the time this struct was sent on to the next
+    // component.
+    int64 sequence_number;
+    // Average time of events that happened in this component.
+    base::TimeTicks event_time;
+    // Count of events that happened in this component
+    uint32 event_count;
+  };
+
+  // Map a Latency Component (with a component-specific int64 id) to a
+  // component info.
+  typedef std::map<std::pair<LatencyComponentType, int64>, LatencyComponent>
+      LatencyMap;
+
+  LatencyMap latency_components;
+
+  // This represents the final time that a frame is displayed it.
   base::TimeTicks swap_timestamp;
 
-  LatencyInfo() :
-      renderer_main_frame_number(0),
-      renderer_impl_frame_number(0),
-      browser_main_frame_number(0),
-      browser_impl_frame_number(0) {}
+  LatencyInfo();
+
+  ~LatencyInfo();
+
+  void MergeWith(const LatencyInfo& other);
+
+  void AddLatencyNumber(LatencyComponentType component, int64 id,
+                        int64 component_sequence_number);
+  void AddLatencyNumberWithTimestamp(LatencyComponentType component,
+                                     int64 id, int64 component_sequence_number,
+                                     base::TimeTicks time,
+                                     uint32 event_count);
+
+  void Clear();
 };
 
 }  // namespace cc

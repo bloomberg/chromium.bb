@@ -98,6 +98,7 @@
       'layers/io_surface_layer_impl.h',
       'animation/keyframed_animation_curve.cc',
       'animation/keyframed_animation_curve.h',
+      'debug/latency_info.cc',
       'debug/latency_info.h',
       'layers/layer.cc',
       'layers/layer.h',
