@@ -3385,6 +3385,7 @@ webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-resize-reset-pixelRatio.html [
 webkit.org/b/90022 fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/101986 [ Linux Win ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+webkit.org/b/101986 [ Linux Win Debug ] virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
@@ -3725,6 +3726,8 @@ crbug.com/230771 fast/forms/file/input-file-write-files.html [ Failure ]
 crbug.com/230771 fast/forms/file/selected-files-from-history-state.html [ Failure ]
 crbug.com/230771 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
 crbug.com/230771 fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
+
+crbug.com/232253 fast/forms/form-request-autocomplete.html [ Pass Timeout ]
 
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
