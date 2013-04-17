@@ -4,10 +4,11 @@
 
 #include "chrome/browser/policy/preg_parser_win.h"
 
+#include <windows.h>
+
 #include <algorithm>
 #include <iterator>
-
-#include <windows.h>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -23,8 +24,8 @@
 namespace policy {
 namespace preg_parser {
 
-// The magic header in PReg files: ASCII "PReg" + version (0x0001).
-const char kPolicyRegistryFileHeader[] = "PReg\x01\x00\x00\x00";
+const char kPRegFileHeader[8] =
+    { 'P', 'R', 'e', 'g', '\x01', '\x00', '\x00', '\x00' };
 
 // Maximum PReg file size we're willing to accept.
 const int64 kMaxPRegFileSize = 1024 * 1024 * 16;
@@ -228,9 +229,9 @@ bool ReadFile(const base::FilePath& file_path,
   }
 
   // Check the header.
-  const int kHeaderSize = arraysize(kPolicyRegistryFileHeader) - 1;
+  const int kHeaderSize = arraysize(kPRegFileHeader);
   if (mapped_file.length() < kHeaderSize ||
-      memcmp(kPolicyRegistryFileHeader, mapped_file.data(), kHeaderSize) != 0) {
+      memcmp(kPRegFileHeader, mapped_file.data(), kHeaderSize) != 0) {
     LOG(ERROR) << "Bad policy file " << file_path.value();
     return false;
   }

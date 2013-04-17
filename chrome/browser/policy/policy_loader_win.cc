@@ -4,13 +4,13 @@
 
 #include "chrome/browser/policy/policy_loader_win.h"
 
-#include <string>
-#include <vector>
-
 #include <rpc.h>      // For struct GUID
 #include <shlwapi.h>  // For PathIsUNC()
 #include <userenv.h>  // For GPO functions
 #include <windows.h>
+
+#include <string>
+#include <vector>
 
 // shlwapi.dll is required for PathIsUNC().
 #pragma comment(lib, "shlwapi.lib")
@@ -19,7 +19,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -54,10 +53,6 @@ const char kKeyThirdParty[] = "3rdparty";
 
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
-
-// The PReg file name.
-const base::FilePath::CharType kPRegFileName[] =
-    FILE_PATH_LITERAL("Registry.pol");
 
 // A helper class encapsulating run-time-linked function calls to Wow64 APIs.
 class Wow64Functions {
@@ -448,6 +443,9 @@ void ParsePolicy(const base::DictionaryValue* gpo_dict,
 }
 
 }  // namespace
+
+const base::FilePath::CharType PolicyLoaderWin::kPRegFileName[] =
+    FILE_PATH_LITERAL("Registry.pol");
 
 PolicyLoaderWin::PolicyLoaderWin(const PolicyDefinitionList* policy_list,
                                  const string16& chrome_policy_key,

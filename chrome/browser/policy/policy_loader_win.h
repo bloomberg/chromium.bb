@@ -9,16 +9,13 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "base/win/object_watcher.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_types.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace policy {
 
@@ -43,6 +40,9 @@ class AppliedGPOListProvider {
 class PolicyLoaderWin : public AsyncPolicyLoader,
                         public base::win::ObjectWatcher::Delegate {
  public:
+  // The PReg file name used by GPO.
+  static const base::FilePath::CharType kPRegFileName[];
+
   explicit PolicyLoaderWin(const PolicyDefinitionList* policy_list,
                            const string16& chrome_policy_key,
                            AppliedGPOListProvider* gpo_provider);

@@ -23,6 +23,9 @@ class FilePath;
 namespace policy {
 namespace preg_parser {
 
+// The magic header in PReg files: ASCII "PReg" + version (0x0001).
+extern const char kPRegFileHeader[8];
+
 // Reads the PReg file at |file_path| and writes the registry data to |dict|.
 // |root| specifies the registry subtree the caller is interested in,
 // everything else gets ignored.
