@@ -418,10 +418,10 @@ int MountNodeHttp::DownloadToCache() {
 
   // We don't know how big the file is. Read in chunks.
   cached_data_.resize(MAX_READ_BUFFER_SIZE);
-  char* buf = cached_data_.data();
   size_t total_bytes_read = 0;
   size_t bytes_to_read = MAX_READ_BUFFER_SIZE;
   while (true) {
+    char* buf = cached_data_.data() + total_bytes_read;
     int bytes_read = DownloadToBuffer(loader, buf, bytes_to_read);
     if (bytes_read < 0)
       return -1;
@@ -434,7 +434,6 @@ int MountNodeHttp::DownloadToCache() {
       return total_bytes_read;
     }
 
-    buf += bytes_read;
     cached_data_.resize(total_bytes_read + bytes_to_read);
   }
 }
