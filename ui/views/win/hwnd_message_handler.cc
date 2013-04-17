@@ -720,7 +720,8 @@ void HWNDMessageHandler::SetCapture() {
 }
 
 void HWNDMessageHandler::ReleaseCapture() {
-  ::ReleaseCapture();
+  if (HasCapture())
+    ::ReleaseCapture();
 }
 
 bool HWNDMessageHandler::HasCapture() const {
