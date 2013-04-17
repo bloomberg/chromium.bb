@@ -100,6 +100,8 @@ struct WEBKIT_STORAGE_EXPORT Namespace {
   Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
   Namespace(NamespaceType type, const GURL& url, const GURL& target,
             bool is_pattern);
+  Namespace(NamespaceType type, const GURL& url, const GURL& target,
+            bool is_pattern, bool is_executable);
   ~Namespace();
 
   bool IsMatch(const GURL& url) const;
@@ -108,6 +110,7 @@ struct WEBKIT_STORAGE_EXPORT Namespace {
   GURL namespace_url;
   GURL target_url;
   bool is_pattern;
+  bool is_executable;
 };
 
 typedef std::vector<Namespace> NamespaceVector;
@@ -170,6 +173,9 @@ extern const char kHttpScheme[];
 extern const char kHttpsScheme[];
 extern const char kHttpGETMethod[];
 extern const char kHttpHEADMethod[];
+
+// CommandLine flag to turn this experimental feature on.
+extern const char kEnableExecutableHandlers[];
 
 WEBKIT_STORAGE_EXPORT void AddSupportedScheme(const char* scheme);
 

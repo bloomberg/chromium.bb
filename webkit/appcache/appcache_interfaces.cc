@@ -30,6 +30,8 @@ const char kHttpsScheme[] = "https";
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
+const char kEnableExecutableHandlers[] = "enable-appcache-executable-handlers";
+
 const base::FilePath::CharType kAppCacheDatabaseName[] =
     FILE_PATH_LITERAL("Index");
 
@@ -61,7 +63,8 @@ AppCacheResourceInfo::~AppCacheResourceInfo() {
 
 Namespace::Namespace()
     : type(FALLBACK_NAMESPACE),
-      is_pattern(false) {
+      is_pattern(false),
+      is_executable(false) {
 }
 
 Namespace::Namespace(
@@ -69,7 +72,18 @@ Namespace::Namespace(
     : type(type),
       namespace_url(url),
       target_url(target),
-      is_pattern(is_pattern) {
+      is_pattern(is_pattern),
+      is_executable(false) {
+}
+
+Namespace::Namespace(
+    NamespaceType type, const GURL& url, const GURL& target,
+    bool is_pattern, bool is_executable)
+    : type(type),
+      namespace_url(url),
+      target_url(target),
+      is_pattern(is_pattern),
+      is_executable(is_executable) {
 }
 
 Namespace::~Namespace() {

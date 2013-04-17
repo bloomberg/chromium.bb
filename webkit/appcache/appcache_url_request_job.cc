@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -104,6 +105,12 @@ void AppCacheURLRequestJob::BeginDelivery() {
       break;
 
     case APPCACHED_DELIVERY:
+      if (entry_.IsExecutable()) {
+        DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+            kEnableExecutableHandlers));
+        // TODO(michaeln): do something different here with
+        // an AppCacheExecutableHandler.
+      }
       AppCacheHistograms::AddAppCacheJobStartDelaySample(
           base::TimeTicks::Now() - start_time_tick_);
       request()->net_log().AddEvent(

@@ -5,6 +5,7 @@
 #include "webkit/appcache/appcache_database.h"
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -14,6 +15,8 @@
 #include "sql/transaction.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_histograms.h"
+
+namespace appcache {
 
 // Schema -------------------------------------------------------------------
 namespace {
@@ -167,13 +170,14 @@ bool CreateIndex(sql::Connection* db, const IndexInfo& info) {
 }
 
 std::string GetActiveExperimentFlags() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableExecutableHandlers))
+    return std::string("executableHandlersEnabled");
   return std::string();
 }
 
 }  // anon namespace
 
 // AppCacheDatabase ----------------------------------------------------------
-namespace appcache {
 
 AppCacheDatabase::GroupRecord::GroupRecord()
     : group_id(0) {
@@ -700,10 +704,19 @@ bool AppCacheDatabase::InsertNamespace(
       "  (cache_id, origin, type, namespace_url, target_url, is_pattern)"
       "  VALUES (?, ?, ?, ?, ?, ?)";
 
+  // Note: quick and dirty storage for the 'executable' bit w/o changing
+  // schemas, we use the high bit of 'type' field.
+  int type_with_executable_bit = record->namespace_.type;
+  if (record->namespace_.is_executable) {
+    type_with_executable_bit |= 0x8000000;
+    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        kEnableExecutableHandlers));
+  }
+
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->origin.spec());
-  statement.BindInt(2, record->namespace_.type);
+  statement.BindInt(2, type_with_executable_bit);
   statement.BindString(3, record->namespace_.namespace_url.spec());
   statement.BindString(4, record->namespace_.target_url.spec());
   statement.BindBool(5, record->namespace_.is_pattern);
@@ -947,10 +960,19 @@ void AppCacheDatabase::ReadNamespaceRecord(
     const sql::Statement* statement, NamespaceRecord* record) {
   record->cache_id = statement->ColumnInt64(0);
   record->origin = GURL(statement->ColumnString(1));
-  record->namespace_.type = static_cast<NamespaceType>(statement->ColumnInt(2));
+  int type_with_executable_bit = statement->ColumnInt(2);
   record->namespace_.namespace_url = GURL(statement->ColumnString(3));
   record->namespace_.target_url = GURL(statement->ColumnString(4));
   record->namespace_.is_pattern = statement->ColumnBool(5);
+
+  // Note: quick and dirty storage for the 'executable' bit w/o changing
+  // schemas, we use the high bit of 'type' field.
+  record->namespace_.type = static_cast<NamespaceType>
+      (type_with_executable_bit & 0x7ffffff);
+  record->namespace_.is_executable =
+      (type_with_executable_bit & 0x80000000) != 0;
+  DCHECK(!record->namespace_.is_executable ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kEnableExecutableHandlers));
 }
 
 void AppCacheDatabase::ReadOnlineWhiteListRecord(

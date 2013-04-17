@@ -892,7 +892,10 @@ void AppCacheUpdateJob::BuildUrlFileList(const Manifest& manifest) {
       manifest.intercept_namespaces;
   for (std::vector<Namespace>::const_iterator it = intercepts.begin();
        it != intercepts.end(); ++it) {
-     AddUrlToFileList(it->target_url, AppCacheEntry::INTERCEPT);
+    int flags = AppCacheEntry::INTERCEPT;
+    if (it->is_executable)
+      flags |= AppCacheEntry::EXECUTABLE;
+    AddUrlToFileList(it->target_url, flags);
   }
 
   const std::vector<Namespace>& fallbacks =

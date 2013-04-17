@@ -31,6 +31,7 @@
 
 #include "webkit/appcache/manifest_parser.h"
 
+#include "base/command_line.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -60,7 +61,13 @@ enum Mode {
   INTERCEPT,
   FALLBACK,
   ONLINE_WHITELIST,
-  UNKNOWN,
+  UNKNOWN_MODE,
+};
+
+enum InterceptVerb {
+  RETURN,
+  EXECUTE,
+  UNKNOWN_VERB,
 };
 
 Manifest::Manifest() : online_whitelist_all(false) {}
@@ -165,8 +172,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
     } else if (line == L"CHROMIUM-INTERCEPT:") {
       mode = INTERCEPT;
     } else if (*(line.end() - 1) == ':') {
-      mode = UNKNOWN;
-    } else if (mode == UNKNOWN) {
+      mode = UNKNOWN_MODE;
+    } else if (mode == UNKNOWN_MODE) {
       continue;
     } else if (line == L"*" && mode == ONLINE_WHITELIST) {
       manifest.online_whitelist_all = true;
@@ -250,8 +257,16 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         ++line_p;
 
       // Look for a type value we understand, otherwise skip the line.
+      InterceptVerb verb = UNKNOWN_VERB;
       std::wstring type(type_start, line_p - type_start);
-      if (type != L"return")
+      if (type == L"return") {
+        verb = RETURN;
+      } else if (type == L"execute" &&
+                 CommandLine::ForCurrentProcess()->HasSwitch(
+                    kEnableExecutableHandlers)) {
+        verb = EXECUTE;
+      }
+      if (verb == UNKNOWN_VERB)
         continue;
 
       // Skip whitespace separating type from the target_url.
@@ -280,7 +295,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       bool is_pattern = HasPatternMatchingAnnotation(line_p, line_end);
       manifest.intercept_namespaces.push_back(
           Namespace(INTERCEPT_NAMESPACE, namespace_url,
-                    target_url, is_pattern));
+                    target_url, is_pattern, verb == EXECUTE));
     } else if (mode == FALLBACK) {
       const wchar_t* line_p = line.c_str();
       const wchar_t* line_end = line_p + line.length();
