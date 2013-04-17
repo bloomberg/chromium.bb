@@ -176,7 +176,7 @@ class LocalhostDataSource : public content::URLDataSource {
   }
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE {
+  virtual std::string GetSource() const OVERRIDE {
     return "localhost";
   }
 
