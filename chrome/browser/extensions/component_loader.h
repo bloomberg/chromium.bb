@@ -127,6 +127,7 @@ class ComponentLoader {
   void AddOrReloadEnterpriseWebStore();
 
   void AddChromeApp();
+  void AddKeyboardApp();
 
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
