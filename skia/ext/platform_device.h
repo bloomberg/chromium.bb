@@ -22,7 +22,7 @@ class SkPath;
 class SkRegion;
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SUN)
+    || defined(OS_SOLARIS)
 typedef struct _cairo cairo_t;
 typedef struct _cairo_rectangle cairo_rectangle_t;
 #elif defined(OS_MACOSX)
@@ -41,7 +41,7 @@ typedef RECT PlatformRect;
 typedef void* PlatformSurface;
 typedef SkIRect* PlatformRect;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SUN)
+    || defined(OS_SOLARIS)
 typedef cairo_t* PlatformSurface;
 typedef cairo_rectangle_t PlatformRect;
 #elif defined(OS_MACOSX)

@@ -179,7 +179,6 @@ _VALID_OS_MACROS = (
     'OS_OPENBSD',
     'OS_POSIX',
     'OS_SOLARIS',
-    'OS_SUN',       # Not in build/build_config.h but in skia.
     'OS_WIN',
 )
 
