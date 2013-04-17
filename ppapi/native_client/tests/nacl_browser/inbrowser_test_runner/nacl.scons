@@ -8,9 +8,6 @@ import posixpath
 
 Import('env')
 
-# Enable untrusted exception handling (for exception_test).
-env['ENV']['NACL_UNTRUSTED_EXCEPTION_HANDLING'] = '1'
-
 env.ComponentLibrary('testrunner_browser', ['test_runner_ppapi.c'])
 
 dest_copy = env.Replicate('$STAGING_DIR', 'test_runner.html')

@@ -453,15 +453,6 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableNaCl)
   },
-  // TODO(halyavin): When exception handling is on by default, replace this
-  // flag with disable-nacl-exception-handling.
-  {
-    "enable-nacl-exception-handling",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_NAME,
-    IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableNaClExceptionHandling)
-  },
   {
     "enable-nacl-debug",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_DEBUG_NAME,

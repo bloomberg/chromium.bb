@@ -590,9 +590,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
-// Enables hardware exception handling via debugger process.
-const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
-
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 

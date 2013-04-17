@@ -6184,12 +6184,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_NAME" desc="Name of the 'Enable Native Client hardware exception handling' lab.">
-        Native Client hardware exception handling
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_DESCRIPTION" desc="Description of the 'Enable Native Client hardware exception handling' lab.">
-        Enable support for Native Client hardware exception handling.
-      </message>
       <message name="IDS_FLAGS_ENABLE_NACL_DEBUG_NAME" desc="Name of the 'NaCl GDB debug stub' lab.">
         Native Client GDB-based debugging
       </message>

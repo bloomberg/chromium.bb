@@ -169,7 +169,6 @@ extern const char kEnableMemoryInternalsUI[];
 extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
-extern const char kEnableNaClExceptionHandling[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNpn[];
 extern const char kEnableNpnHttpOnly[];

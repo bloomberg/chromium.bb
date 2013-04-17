@@ -196,7 +196,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
 #endif
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      enable_exception_handling_(false),
+      enable_exception_handling_(true),
       enable_debug_stub_(false),
       uses_irt_(uses_irt),
       off_the_record_(off_the_record),
@@ -211,13 +211,6 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
   // for this use case.
   process_->SetName(net::FormatUrl(manifest_url_, std::string()));
 
-  // We allow untrusted hardware exception handling to be enabled via
-  // an env var for consistency with the standalone build of NaCl.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaClExceptionHandling) ||
-      getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
-    enable_exception_handling_ = true;
-  }
   enable_debug_stub_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);
 }
