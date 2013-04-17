@@ -44,6 +44,10 @@ class DriveResourceMetadataStorageTest : public testing::Test {
     storage_->PutHeader(*header);
   }
 
+  bool CheckValidity() {
+    return storage_->CheckValidity();
+  }
+
   base::ScopedTempDir temp_dir_;
   scoped_ptr<DriveResourceMetadataStorageDB> storage_;
 };
@@ -199,23 +203,32 @@ TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
 
   DriveEntryProto entry1;
   entry1.set_resource_id(parent_id1);
+  DriveEntryProto entry2;
+  entry2.set_resource_id(child_id1);
+  entry2.set_parent_resource_id(parent_id1);
+  entry2.set_base_name(child_name1);
 
   // Put some data.
   storage_->PutEntry(entry1);
+  storage_->PutEntry(entry2);
   storage_->PutChild(parent_id1, child_name1, child_id1);
-  scoped_ptr<DriveEntryProto> result = storage_->GetEntry(parent_id1);
-  ASSERT_TRUE(result);
-  EXPECT_EQ(parent_id1, result->resource_id());
-  EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 
   // Close DB and reopen.
   storage_.reset(new DriveResourceMetadataStorageDB(temp_dir_.path()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
+  scoped_ptr<DriveEntryProto> result;
   result = storage_->GetEntry(parent_id1);
   ASSERT_TRUE(result);
   EXPECT_EQ(parent_id1, result->resource_id());
+
+  result = storage_->GetEntry(child_id1);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(child_id1, result->resource_id());
+  EXPECT_EQ(parent_id1, result->parent_resource_id());
+  EXPECT_EQ(child_name1, result->base_name());
+
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 }
 
@@ -249,6 +262,48 @@ TEST_F(DriveResourceMetadataStorageTest, WrongPath) {
   storage_.reset(new DriveResourceMetadataStorageDB(path));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
+}
+
+TEST_F(DriveResourceMetadataStorageTest, CheckValidity) {
+  const std::string key1 = "foo";
+  const std::string name1 = "hoge";
+  const std::string key2 = "bar";
+  const std::string name2 = "fuga";
+  const std::string key3 = "boo";
+  const std::string name3 = "piyo";
+
+  // Put entry with key1.
+  DriveEntryProto entry;
+  entry.set_resource_id(key1);
+  entry.set_base_name(name1);
+  storage_->PutEntry(entry);
+  EXPECT_TRUE(CheckValidity());
+
+  // Put entry with key2 under key1.
+  entry.set_resource_id(key2);
+  entry.set_parent_resource_id(key1);
+  entry.set_base_name(name2);
+  storage_->PutEntry(entry);
+  EXPECT_FALSE(CheckValidity());  // Missing parent-child relationship.
+
+  // Add missing parent-child relationship between key1 and key2.
+  storage_->PutChild(key1, name2, key2);
+  EXPECT_TRUE(CheckValidity());
+
+  // Add parent-child relationship between key1 and key3.
+  storage_->PutChild(key1, name3, key3);
+  EXPECT_FALSE(CheckValidity());  // key3 is not stored in the storage.
+
+  // Put entry with key3 under key1.
+  entry.set_resource_id(key3);
+  entry.set_parent_resource_id(key1);
+  entry.set_base_name(name3);
+  storage_->PutEntry(entry);
+  EXPECT_TRUE(CheckValidity());
+
+  // Parent-child relationship with wrong name.
+  storage_->PutChild(key1, name2, key3);
+  EXPECT_FALSE(CheckValidity());
 }
 
 }  // namespace drive

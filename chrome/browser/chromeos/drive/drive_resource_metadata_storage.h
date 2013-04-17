@@ -162,6 +162,9 @@ class DriveResourceMetadataStorageDB
   // Gets header.
   scoped_ptr<DriveResourceMetadataHeader> GetHeader();
 
+  // Checks validity of the data.
+  bool CheckValidity();
+
   // Path to the directory where the data is stored.
   base::FilePath directory_path_;
 

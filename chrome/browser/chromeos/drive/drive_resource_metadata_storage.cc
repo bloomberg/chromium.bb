@@ -201,12 +201,10 @@ bool DriveResourceMetadataStorageDB::Initialize() {
   if (status.ok())
     child_map_.reset(db);
 
-  // Check the version of existing DB.
+  // Check the validity of existing DB.
   if (resource_map_ && child_map_) {
-    scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
-    if (!header ||
-        header->version() != kDBVersion) {
-      LOG(ERROR) << "Reject incompatible DB.";
+    if (!CheckValidity()) {
+      LOG(ERROR) << "Reject invalid DB.";
       resource_map_.reset();
       child_map_.reset();
     }
@@ -427,6 +425,74 @@ DriveResourceMetadataStorageDB::GetHeader() {
   if (!header->ParseFromString(serialized_header))
     return scoped_ptr<DriveResourceMetadataHeader>();
   return header.Pass();
+}
+
+bool DriveResourceMetadataStorageDB::CheckValidity() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // Perform read with checksums verification enalbed.
+  leveldb::ReadOptions options;
+  options.verify_checksums = true;
+
+  scoped_ptr<leveldb::Iterator> it(resource_map_->NewIterator(options));
+  it->SeekToFirst();
+
+  // Check the header.
+  DriveResourceMetadataHeader header;
+  if (!it->Valid() ||
+      it->key() != GetHeaderDBKey() ||  // Header entry must come first.
+      !header.ParseFromArray(it->value().data(), it->value().size()) ||
+      header.version() != kDBVersion) {
+    DLOG(ERROR) << "Invalid header detected. version = " << header.version();
+    return false;
+  }
+
+  // Check all entires.
+  size_t num_checked_child_map_entries = 0;
+  DriveEntryProto entry;
+  std::string child_resource_id;
+  for (it->Next(); it->Valid(); it->Next()) {
+    // Check if stored data is broken.
+    if (!entry.ParseFromArray(it->value().data(), it->value().size()) ||
+        entry.resource_id() != it->key()) {
+      DLOG(ERROR) << "Broken entry detected";
+      return false;
+    }
+
+    // Check if parent-child relationship is stored correctly.
+    if (!entry.parent_resource_id().empty()) {
+      leveldb::Status status = child_map_->Get(
+          options,
+          leveldb::Slice(GetChildMapKey(entry.parent_resource_id(),
+                                        entry.base_name())),
+          &child_resource_id);
+      if (!status.ok() || child_resource_id != entry.resource_id()) {
+        DLOG(ERROR) << "Child map is broken. status = " << status.ToString();
+        return false;
+      }
+      ++num_checked_child_map_entries;
+    }
+  }
+  if (!it->status().ok()) {
+    DLOG(ERROR) << "Error during checking resource map. status = "
+                << it->status().ToString();
+    return false;
+  }
+
+  // Check all child map entries are referenced from |resource_map_|.
+  size_t num_child_map_entries = 0;
+  it.reset(child_map_->NewIterator(options));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    ++num_child_map_entries;
+  }
+  if (!it->status().ok() ||
+      num_child_map_entries != num_checked_child_map_entries) {
+    DLOG(ERROR) << "Error during checking child map. status = "
+                << it->status().ToString();
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace drive
