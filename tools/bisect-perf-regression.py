@@ -101,7 +101,6 @@ DEPOT_DEPS_NAME = {
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
-FILE_DEPS_GIT = '.DEPS.git'
 
 
 def CalculateTruncatedMean(data_set, truncate_percent):
@@ -491,9 +490,9 @@ class GitSourceControl(SourceControl):
       True if successful.
     """
     # Reset doesn't seem to return 0 on success.
-    RunGit(['reset', 'HEAD', FILE_DEPS_GIT])
+    RunGit(['reset', 'HEAD', bisect_utils.FILE_DEPS_GIT])
 
-    return not RunGit(['checkout', FILE_DEPS_GIT])[1]
+    return not RunGit(['checkout', bisect_utils.FILE_DEPS_GIT])[1]
 
 class BisectPerformanceMetrics(object):
   """BisectPerformanceMetrics performs a bisection against a list of range
@@ -548,7 +547,7 @@ class BisectPerformanceMetrics(object):
 
     locals = {'Var': lambda _: locals["vars"][_],
               'From': lambda *args: None}
-    execfile(FILE_DEPS_GIT, {}, locals)
+    execfile(bisect_utils.FILE_DEPS_GIT, {}, locals)
 
     os.chdir(cwd)
 
@@ -795,32 +794,23 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if not self.source_control.CheckoutFileAtRevision(
-        FILE_DEPS_GIT, revision):
+        bisect_utils.FILE_DEPS_GIT, revision):
       return False
 
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    locals = {'Var': lambda _: locals["vars"][_],
-              'From': lambda *args: None}
-    execfile(FILE_DEPS_GIT, {}, locals)
+    is_blink = bisect_utils.IsDepsFileBlink()
 
     os.chdir(cwd)
 
-    is_blink = 'blink.git' in locals['vars']['webkit_url']
-
-    if not self.source_control.RevertFileToHead(FILE_DEPS_GIT):
+    if not self.source_control.RevertFileToHead(
+        bisect_utils.FILE_DEPS_GIT):
       return False
 
     if self.was_blink != is_blink:
       self.was_blink = is_blink
-      try:
-        path_to_dir = os.path.join(os.getcwd(), 'third_party', 'WebKit')
-        if os.path.exists(path_to_dir):
-          shutil.rmtree(path_to_dir)
-      except OSError, e:
-        if e.errno != errno.ENOENT:
-          return False
+      return bisect_utils.RemoveThirdPartyWebkitDirectory()
     return True
 
   def PerformPreSyncCleanup(self, revision, depot):

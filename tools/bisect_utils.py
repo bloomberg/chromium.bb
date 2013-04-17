@@ -8,6 +8,7 @@ used by the bisection scripts."""
 
 import errno
 import os
+import shutil
 import subprocess
 
 
@@ -29,6 +30,7 @@ solutions = [
 ]
 """
 GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
+FILE_DEPS_GIT = '.DEPS.git'
 
 
 def OutputAnnotationStepStart(name):
@@ -103,6 +105,34 @@ def RunGClientAndCreateConfig():
   return return_code
 
 
+def IsDepsFileBlink():
+  """Reads .DEPS.git and returns whether or not we're using blink.
+
+  Returns:
+    True if blink, false if webkit.
+  """
+  locals = {'Var': lambda _: locals["vars"][_],
+            'From': lambda *args: None}
+  execfile(FILE_DEPS_GIT, {}, locals)
+  return 'blink.git' in locals['vars']['webkit_url']
+
+
+def RemoveThirdPartyWebkitDirectory():
+  """Removes third_party/WebKit.
+
+  Returns:
+    True on success.
+  """
+  try:
+    path_to_dir = os.path.join(os.getcwd(), 'third_party', 'WebKit')
+    if os.path.exists(path_to_dir):
+      shutil.rmtree(path_to_dir)
+  except OSError, e:
+    if e.errno != errno.ENOENT:
+      return False
+  return True
+
+
 def RunGClientAndSync(reset):
   """Runs gclient and does a normal sync.
 
@@ -137,7 +167,17 @@ def SetupGitDepot(output_buildbot_annotations, reset):
   passed = False
 
   if not RunGClientAndCreateConfig():
-    if not RunGClientAndSync(reset):
+    passed_deps_check = True
+    if os.path.isfile(os.path.join('src', FILE_DEPS_GIT)):
+      cwd = os.getcwd()
+      os.chdir('src')
+      if not IsDepsFileBlink():
+        passed_deps_check = RemoveThirdPartyWebkitDirectory()
+      else:
+        passed_deps_check = True
+      os.chdir(cwd)
+
+    if passed_deps_check and not RunGClientAndSync(reset):
       passed = True
 
   if output_buildbot_annotations:
