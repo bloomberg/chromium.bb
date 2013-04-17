@@ -706,7 +706,7 @@ END
         end
 
         def self.get_svn_uri(repository_path)
-            "http://svn.webkit.org/repository/webkit/!svn/bc/" + $svn_revision.to_s + "/trunk/" + (repository_path)
+            "http://src.chromium.org/blink/trunk/" + (repository_path) + "?p=" + $svn_revision.to_s
         end
 
         def self.get_new_temp_filepath_and_name
