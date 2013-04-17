@@ -135,7 +135,7 @@ namespace WebCore {
         virtual void dispatchWillRequestResource(CachedResourceRequest*) { }
 
         virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) = 0;
-        virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) = 0;
+        virtual void dispatchWillSubmitForm(FramePolicyFunction, PassRefPtr<FormState>) = 0;
 
         virtual void setMainDocumentError(DocumentLoader*, const ResourceError&) = 0;
 

@@ -243,7 +243,7 @@ public:
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }
 
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
-    virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE { }
+    virtual void dispatchWillSubmitForm(FramePolicyFunction, PassRefPtr<FormState>) OVERRIDE;
 
     virtual void setMainDocumentError(DocumentLoader*, const ResourceError&) { }
 

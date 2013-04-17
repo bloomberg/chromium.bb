@@ -251,6 +251,11 @@ public:
     void clientRedirected(const KURL&, double delay, double fireDate, bool lockBackForwardList);
     void clientRedirectCancelledOrFinished(bool cancelWithLoadInProgress);
 
+    // FIXME: This is public because this asynchronous callback from the FrameLoaderClient
+    // uses the policy machinery (and therefore is called via the PolicyChecker).  Once we
+    // introduce a proper callback type for this function, we should make it private again.
+    void continueLoadAfterWillSubmitForm();
+
     void setOriginalURLForDownloadRequest(ResourceRequest&);
 
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
