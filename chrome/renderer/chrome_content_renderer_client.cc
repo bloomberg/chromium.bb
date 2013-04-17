@@ -828,16 +828,14 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     string16* error_description) {
   const GURL failed_url = error.unreachableURL;
   const Extension* extension = NULL;
-  const bool is_repost =
-      error.reason == net::ERR_CACHE_MISS &&
-      error.domain == WebString::fromUTF8(net::kErrorDomain) &&
-      EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (failed_url.is_valid() &&
       !failed_url.SchemeIs(extensions::kExtensionScheme)) {
     extension = extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
         ExtensionURLInfo(failed_url));
   }
+
+  bool is_post = EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (error_html) {
     // Use a local error page.
@@ -851,12 +849,11 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
       // error messages?
       resource_id = IDR_ERROR_APP_HTML;
     } else {
-      if (is_repost) {
-        LocalizedError::GetFormRepostStrings(failed_url, &error_strings);
-      } else {
-        LocalizedError::GetStrings(error, &error_strings,
-                                   RenderThread::Get()->GetLocale());
-      }
+      LocalizedError::GetStrings(
+          error,
+          is_post,
+          RenderThread::Get()->GetLocale(),
+          &error_strings);
       resource_id = IDR_NET_ERROR_HTML;
     }
 
@@ -872,8 +869,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   }
 
   if (error_description) {
-    if (!extension && !is_repost)
-      *error_description = LocalizedError::GetErrorDetails(error);
+    if (!extension)
+      *error_description = LocalizedError::GetErrorDetails(error, is_post);
   }
 }
 
