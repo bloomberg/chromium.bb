@@ -1062,7 +1062,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity> template<typename U>
     void Vector<T, inlineCapacity>::insert(size_t position, const U* data, size_t dataSize)
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
+        RELEASE_ASSERT(position <= size());
         size_t newSize = m_size + dataSize;
         if (newSize > capacity()) {
             data = expandCapacity(newSize, data);
@@ -1080,7 +1080,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity> template<typename U>
     inline void Vector<T, inlineCapacity>::insert(size_t position, const U& val)
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
+        RELEASE_ASSERT(position <= size());
         const U* data = &val;
         if (size() == capacity()) {
             data = expandCapacity(size() + 1, data);
@@ -1120,7 +1120,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity>
     inline void Vector<T, inlineCapacity>::remove(size_t position)
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(position < size());
+        RELEASE_ASSERT(position < size());
         T* spot = begin() + position;
         spot->~T();
         TypeOperations::moveOverlapping(spot + 1, end(), spot);
@@ -1131,7 +1131,7 @@ namespace WTF {
     inline void Vector<T, inlineCapacity>::remove(size_t position, size_t length)
     {
         ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
-        ASSERT_WITH_SECURITY_IMPLICATION(position + length <= size());
+        RELEASE_ASSERT(position + length <= size());
         T* beginSpot = begin() + position;
         T* endSpot = beginSpot + length;
         TypeOperations::destruct(beginSpot, endSpot); 
