@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -61,33 +60,7 @@ class HungPluginTabHelper
   explicit HungPluginTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<HungPluginTabHelper>;
 
-  // Per-plugin state (since there could be more than one plugin hung). The
-  // integer key is the child process ID of the plugin process. This maintains
-  // the state for all plugins on this page that are currently hung, whether or
-  // not we're currently showing the infobar.
-  struct PluginState {
-    // Initializes the plugin state to be a hung plugin.
-    PluginState(const base::FilePath& p, const string16& n);
-    ~PluginState();
-
-    base::FilePath path;
-    string16 name;
-
-    // Possibly-null if we're not showing an infobar right now.
-    InfoBarDelegate* info_bar;
-
-    // Time to delay before re-showing the infobar for a hung plugin. This is
-    // increased each time the user cancels it.
-    base::TimeDelta next_reshow_delay;
-
-    // Handles calling the helper when the infobar should be re-shown.
-    base::Timer timer;
-
-   private:
-    // Since the scope of the timer manages our callback, this struct should
-    // not be copied.
-    DISALLOW_COPY_AND_ASSIGN(PluginState);
-  };
+  struct PluginState;
   typedef std::map<int, linked_ptr<PluginState> > PluginStateMap;
 
   // Called on a timer for a hung plugin to re-show the bar.
