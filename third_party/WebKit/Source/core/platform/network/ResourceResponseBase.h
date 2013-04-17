@@ -21,13 +21,12 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef ResourceResponse_h
-#define ResourceResponse_h
+#ifndef ResourceResponseBase_h
+#define ResourceResponseBase_h
 
-#include "File.h"
 #include "HTTPHeaderMap.h"
 #include "KURL.h"
 #include "ResourceLoadInfo.h"
@@ -35,7 +34,6 @@
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/text/CString.h>
 
 #if OS(SOLARIS)
 #include <sys/time.h> // For time_t structure.
@@ -43,25 +41,17 @@
 
 namespace WebCore {
 
+class ResourceResponse;
 struct CrossThreadResourceResponseData;
 
-class ResourceResponse {
+// Do not use this class directly, use the class ResponseResponse instead
+class ResourceResponseBase {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1 };
-
-    class ExtraData : public RefCounted<ExtraData> {
-    public:
-        virtual ~ExtraData() { }
-    };
-
     static PassOwnPtr<ResourceResponse> adopt(PassOwnPtr<CrossThreadResourceResponseData>);
 
     // Gets a copy of the data suitable for passing to another thread.
     PassOwnPtr<CrossThreadResourceResponseData> copyData() const;
-
-    ResourceResponse();
-    ResourceResponse(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename);
 
     bool isNull() const { return m_isNull; }
     bool isHTTP() const;
@@ -85,10 +75,10 @@ public:
 
     int httpStatusCode() const;
     void setHTTPStatusCode(int);
-
+    
     const String& httpStatusText() const;
     void setHTTPStatusText(const String&);
-
+    
     String httpHeaderField(const AtomicString& name) const;
     String httpHeaderField(const char* name) const;
     void setHTTPHeaderField(const AtomicString& name, const String& value);
@@ -98,11 +88,11 @@ public:
     bool isMultipart() const { return mimeType() == "multipart/x-mixed-replace"; }
 
     bool isAttachment() const;
-
+    
     // FIXME: These are used by PluginStream on some platforms. Calculations may differ from just returning plain Last-Modified header.
     // Leaving it for now but this should go away in favor of generic solution.
     void setLastModifiedDate(time_t);
-    time_t lastModifiedDate() const;
+    time_t lastModifiedDate() const; 
 
     // These functions return parsed values of the corresponding response headers.
     // NaN means that the header was not present or had invalid value.
@@ -131,55 +121,6 @@ public:
     PassRefPtr<ResourceLoadInfo> resourceLoadInfo() const;
     void setResourceLoadInfo(PassRefPtr<ResourceLoadInfo>);
 
-    HTTPVersion httpVersion() const { return m_httpVersion; }
-    void setHTTPVersion(HTTPVersion version) { m_httpVersion = version; }
-
-    const CString& getSecurityInfo() const { return m_securityInfo; }
-    void setSecurityInfo(const CString& securityInfo) { m_securityInfo = securityInfo; }
-
-    long long appCacheID() const { return m_appCacheID; }
-    void setAppCacheID(long long id) { m_appCacheID = id; }
-
-    const KURL& appCacheManifestURL() const { return m_appCacheManifestURL; }
-    void setAppCacheManifestURL(const KURL& url) { m_appCacheManifestURL = url; }
-
-    bool wasFetchedViaSPDY() const { return m_wasFetchedViaSPDY; }
-    void setWasFetchedViaSPDY(bool value) { m_wasFetchedViaSPDY = value; }
-
-    bool wasNpnNegotiated() const { return m_wasNpnNegotiated; }
-    void setWasNpnNegotiated(bool value) { m_wasNpnNegotiated = value; }
-
-    bool wasAlternateProtocolAvailable() const
-    {
-      return m_wasAlternateProtocolAvailable;
-    }
-    void setWasAlternateProtocolAvailable(bool value)
-    {
-      m_wasAlternateProtocolAvailable = value;
-    }
-
-    bool wasFetchedViaProxy() const { return m_wasFetchedViaProxy; }
-    void setWasFetchedViaProxy(bool value) { m_wasFetchedViaProxy = value; }
-
-    bool isMultipartPayload() const { return m_isMultipartPayload; }
-    void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }
-
-    double responseTime() const { return m_responseTime; }
-    void setResponseTime(double responseTime) { m_responseTime = responseTime; }
-
-    const String& remoteIPAddress() const { return m_remoteIPAddress; }
-    void setRemoteIPAddress(const String& value) { m_remoteIPAddress = value; }
-
-    unsigned short remotePort() const { return m_remotePort; }
-    void setRemotePort(unsigned short value) { m_remotePort = value; }
-
-    const File* downloadedFile() const { return m_downloadedFile.get(); }
-    void setDownloadedFile(PassRefPtr<File> downloadedFile) { m_downloadedFile = downloadedFile; }
-
-    // Extra data associated with this response.
-    ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
-
     // The ResourceResponse subclass may "shadow" this method to provide platform-specific memory usage information
     unsigned memoryUsage() const
     {
@@ -191,9 +132,24 @@ public:
 
     static bool compare(const ResourceResponse&, const ResourceResponse&);
 
-private:
-    void parseCacheControlDirectives() const;
-    void updateHeaderParsedState(const AtomicString& name);
+protected:
+    enum InitLevel {
+        Uninitialized,
+        CommonFieldsOnly,
+        CommonAndUncommonFields,
+        AllFields
+    };
+
+    ResourceResponseBase();
+    ResourceResponseBase(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename);
+
+    void lazyInit(InitLevel) const;
+
+    // The ResourceResponse subclass may "shadow" this method to lazily initialize platform specific fields
+    void platformLazyInit(InitLevel) { }
+
+    // The ResourceResponse subclass may "shadow" this method to compare platform specific fields
+    static bool platformCompare(const ResourceResponse&, const ResourceResponse&) { return true; }
 
     KURL m_url;
     String m_mimeType;
@@ -211,6 +167,11 @@ private:
     RefPtr<ResourceLoadInfo> m_resourceLoadInfo;
 
     bool m_isNull : 1;
+    
+private:
+    const ResourceResponse& asResourceResponse() const;
+    void parseCacheControlDirectives() const;
+    void updateHeaderParsedState(const AtomicString& name);
 
     mutable bool m_haveParsedCacheControlHeader : 1;
     mutable bool m_haveParsedAgeHeader : 1;
@@ -227,63 +188,15 @@ private:
     mutable double m_date;
     mutable double m_expires;
     mutable double m_lastModified;
-
-    // An opaque value that contains some information regarding the security of
-    // the connection for this request, such as SSL connection info (empty
-    // string if not over HTTPS).
-    CString m_securityInfo;
-
-    // HTTP version used in the response, if known.
-    HTTPVersion m_httpVersion;
-
-    // The id of the appcache this response was retrieved from, or zero if
-    // the response was not retrieved from an appcache.
-    long long m_appCacheID;
-
-    // The manifest url of the appcache this response was retrieved from, if any.
-    // Note: only valid for main resource responses.
-    KURL m_appCacheManifestURL;
-
-    // Set to true if this is part of a multipart response.
-    bool m_isMultipartPayload;
-
-    // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
-    bool m_wasFetchedViaSPDY;
-
-    // Was the resource fetched over a channel which used TLS/Next-Protocol-Negotiation (also SPDY related).
-    bool m_wasNpnNegotiated;
-
-    // Was the resource fetched over a channel which specified "Alternate-Protocol"
-    // (e.g.: Alternate-Protocol: 443:npn-spdy/1).
-    bool m_wasAlternateProtocolAvailable;
-
-    // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
-    bool m_wasFetchedViaProxy;
-
-    // The time at which the response headers were received.  For cached
-    // responses, this time could be "far" in the past.
-    double m_responseTime;
-
-    // Remote IP address of the socket which fetched this resource.
-    String m_remoteIPAddress;
-
-    // Remote port number of the socket which fetched this resource.
-    unsigned short m_remotePort;
-
-    // The downloaded file if the load streamed to a file.
-    RefPtr<File> m_downloadedFile;
-
-    // ExtraData associated with the response.
-    RefPtr<ExtraData> m_extraData;
 };
 
-inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) { return ResourceResponse::compare(a, b); }
+inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) { return ResourceResponseBase::compare(a, b); }
 inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) { return !(a == b); }
 
-struct CrossThreadResourceResponseData {
-    WTF_MAKE_NONCOPYABLE(CrossThreadResourceResponseData); WTF_MAKE_FAST_ALLOCATED;
+struct CrossThreadResourceResponseDataBase {
+    WTF_MAKE_NONCOPYABLE(CrossThreadResourceResponseDataBase); WTF_MAKE_FAST_ALLOCATED;
 public:
-    CrossThreadResourceResponseData() { }
+    CrossThreadResourceResponseDataBase() { }
     KURL m_url;
     String m_mimeType;
     long long m_expectedContentLength;
@@ -294,21 +207,8 @@ public:
     OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     time_t m_lastModifiedDate;
     RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
-    CString m_securityInfo;
-    ResourceResponse::HTTPVersion m_httpVersion;
-    long long m_appCacheID;
-    KURL m_appCacheManifestURL;
-    bool m_isMultipartPayload;
-    bool m_wasFetchedViaSPDY;
-    bool m_wasNpnNegotiated;
-    bool m_wasAlternateProtocolAvailable;
-    bool m_wasFetchedViaProxy;
-    double m_responseTime;
-    String m_remoteIPAddress;
-    unsigned short m_remotePort;
-    String m_downloadFilePath;
 };
 
 } // namespace WebCore
 
-#endif // ResourceResponse_h
+#endif // ResourceResponseBase_h
