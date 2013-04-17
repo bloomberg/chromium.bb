@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
@@ -259,6 +260,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     if (!library.is_valid()) {
       LOG(ERROR) << "Failed to load Pepper module from "
         << path.value() << " (error: " << error << ")";
+      ReportLoadResult(path, LOAD_FAILED);
       return;
     }
 
@@ -268,6 +270,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
             library.GetFunctionPointer("PPP_GetInterface"));
     if (!plugin_entry_points_.get_interface) {
       LOG(WARNING) << "No PPP_GetInterface in plugin library";
+      ReportLoadResult(path, ENTRY_POINT_MISSING);
       return;
     }
 
@@ -286,6 +289,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
               library.GetFunctionPointer("PPP_InitializeModule"));
       if (!plugin_entry_points_.initialize_module) {
         LOG(WARNING) << "No PPP_InitializeModule in plugin library";
+        ReportLoadResult(path, ENTRY_POINT_MISSING);
         return;
       }
     }
@@ -323,16 +327,19 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
             library.GetFunctionPointer("PPP_InitializeBroker"));
     if (!init_broker) {
       LOG(WARNING) << "No PPP_InitializeBroker in plugin library";
+      ReportLoadResult(path, ENTRY_POINT_MISSING);
       return;
     }
 
     int32_t init_error = init_broker(&connect_instance_func_);
     if (init_error != PP_OK) {
       LOG(WARNING) << "InitBroker failed with error " << init_error;
+      ReportLoadResult(path, INIT_FAILED);
       return;
     }
     if (!connect_instance_func_) {
       LOG(WARNING) << "InitBroker did not provide PP_ConnectInstance_Func";
+      ReportLoadResult(path, INIT_FAILED);
       return;
     }
   } else {
@@ -348,12 +355,15 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
         &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
     if (init_error != PP_OK) {
       LOG(WARNING) << "InitModule failed with error " << init_error;
+      ReportLoadResult(path, INIT_FAILED);
       return;
     }
   }
 
   // Initialization succeeded, so keep the plugin DLL loaded.
   library_.Reset(library.Release());
+
+  ReportLoadResult(path, LOAD_SUCCESS);
 }
 
 void PpapiThread::OnCreateChannel(base::ProcessId renderer_pid,
@@ -459,12 +469,32 @@ void PpapiThread::SavePluginName(const base::FilePath& path) {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_name(
       path.BaseName().AsUTF8Unsafe());
 
-  // plugin() is NULL when in-process.  Which is fine, because this is
+  // plugin() is NULL when in-process, which is fine, because this is
   // just a hook for setting the process name.
   if (GetContentClient()->plugin()) {
     GetContentClient()->plugin()->PluginProcessStarted(
         path.BaseName().RemoveExtension().LossyDisplayName());
   }
+}
+
+void PpapiThread::ReportLoadResult(const base::FilePath& path,
+                                   LoadResult result) {
+  DCHECK_LT(result, LOAD_RESULT_MAX);
+
+  std::ostringstream histogram_name;
+  histogram_name << "Plugin.Ppapi" << (is_broker_ ? "Broker" : "Plugin")
+                 << "LoadResult_" << path.BaseName().MaybeAsASCII();
+
+  // Note: This leaks memory, which is expected behavior.
+  base::HistogramBase* histogram =
+      base::LinearHistogram::FactoryGet(
+          histogram_name.str(),
+          1,
+          LOAD_RESULT_MAX,
+          LOAD_RESULT_MAX + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  histogram->Add(result);
 }
 
 }  // namespace content

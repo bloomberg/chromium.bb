@@ -49,6 +49,17 @@ class PpapiThread : public ChildThread,
   virtual ~PpapiThread();
 
  private:
+  // Make sure the enum list in tools/histogram/histograms.xml is updated with
+  // any change in this list.
+  enum LoadResult {
+    LOAD_SUCCESS,
+    LOAD_FAILED,
+    ENTRY_POINT_MISSING,
+    INIT_FAILED,
+    // NOTE: Add new values only immediately above this line.
+    LOAD_RESULT_MAX  // Boundary value for UMA_HISTOGRAM_ENUMERATION.
+  };
+
   // This class finds the target PluginDispatcher for each message it receives
   // and forwards the message.
   class DispatcherMessageListener : public IPC::Listener {
@@ -112,6 +123,8 @@ class PpapiThread : public ChildThread,
 
   // Sets up the name of the plugin for logging using the given path.
   void SavePluginName(const base::FilePath& path);
+
+  void ReportLoadResult(const base::FilePath& path, LoadResult result);
 
   // True if running in a broker process rather than a normal plugin process.
   bool is_broker_;

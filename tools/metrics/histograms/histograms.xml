@@ -2600,6 +2600,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Plugin.PpapiBrokerLoadResult" enum="PluginLoadResult">
+  <summary>The result from an attempt to load a PPAPI broker.</summary>
+</histogram>
+
+<histogram name="Plugin.PpapiPluginLoadResult" enum="PluginLoadResult">
+  <summary>The result from an attempt to load a PPAPI plugin.</summary>
+</histogram>
+
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
@@ -4886,6 +4894,13 @@ other types of suffix sets.
   <int value="15" label="INVALID_URL"/>
 </enum>
 
+<enum name="PluginLoadResult" type="int">
+  <int value="0" label="LOAD_SUCCESS"/>
+  <int value="1" label="LOAD_FAILED"/>
+  <int value="2" label="ENTRY_POINT_MISSING"/>
+  <int value="3" label="INIT_FAILED"/>
+</enum>
+
 <enum name="PreconnectMotivation" type="int">
   <int value="0" label="MOUSE_OVER_MOTIVATED"/>
   <int value="1" label="PAGE_SCAN_MOTIVATED"/>
@@ -5395,6 +5410,17 @@ other types of suffix sets.
   </affected-histogram>
   <affected-histogram name="Renderer4.BeginToFinish"/>
   <affected-histogram name="Renderer4.BeginToFinishDoc"/>
+</fieldtrial>
+
+<fieldtrial name="PpapiPluginName">
+  <group name="libpepflashplayer.so" label="Flash player on Linux or Cros"/>
+  <group name="libwidevinecdmadapter.so" label="Widevine CDM on Linux or Cros"/>
+  <group name="pepflashplayer.dll" label="Flash player on Windows"/>
+  <group name="PepperFlashPlayer.plugin" label="Flash player on Mac"/>
+  <group name="widevinecdmadapter.dll" label="Widevine CDM on Windows"/>
+  <group name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
+  <affected-histogram name="Plugin.PpapiBrokerLoadResult"/>
+  <affected-histogram name="Plugin.PpapiPluginLoadResult"/>
 </fieldtrial>
 
 <fieldtrial name="Prefetch">
