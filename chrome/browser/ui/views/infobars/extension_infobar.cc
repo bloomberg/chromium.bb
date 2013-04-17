@@ -170,7 +170,7 @@ void ExtensionInfoBar::OnDelegateDeleted() {
 
 void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
-  if (!owned())
+  if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   const extensions::Extension* extension = GetDelegate()->extension_host()->
       extension();

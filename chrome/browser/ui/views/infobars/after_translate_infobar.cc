@@ -133,7 +133,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
 
 void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (!owned())
+  if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == revert_button_)
     GetDelegate()->RevertTranslation();
@@ -155,7 +155,7 @@ int AfterTranslateInfoBar::ContentMinimumWidth() const {
 
 void AfterTranslateInfoBar::OnMenuButtonClicked(views::View* source,
                                                 const gfx::Point& point) {
-  if (!owned())
+  if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   if (source == original_language_menu_button_) {
     RunMenuAt(original_language_menu_model_.get(),

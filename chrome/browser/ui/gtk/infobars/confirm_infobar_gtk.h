@@ -24,6 +24,11 @@ class ConfirmInfoBarGtk : public InfoBarGtk {
  private:
   virtual ~ConfirmInfoBarGtk();
 
+  // InfoBarGtk:
+  virtual void InitWidgets() OVERRIDE;
+
+  ConfirmInfoBarDelegate* GetDelegate();
+
   // Adds a button to the info bar by type. It will do nothing if the delegate
   // doesn't specify a button of the given type.
   void AddButton(ConfirmInfoBarDelegate::InfoBarButton type);

@@ -35,20 +35,12 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
       view_(NULL),
       button_(NULL),
       icon_(NULL),
+      alignment_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   delegate->set_observer(this);
 
-  // Always render the close button as if we were doing chrome style widget
-  // rendering. For extension infobars, we force chrome style rendering because
-  // extension authors are going to expect to match the declared gradient in
-  // extensions_infobar.css, and the close button provided by some GTK+ themes
-  // won't look good on this background.
-  close_button_->ForceChromeTheme();
-
   int height = delegate->height();
   SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
-
-  BuildWidgets();
 }
 
 ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
@@ -57,8 +49,7 @@ ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
 }
 
 void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
-  // This view is not owned by us; we can't unparent it because we aren't the
-  // owning container.
+  DCHECK(alignment_);
   gtk_util::RemoveAllChildren(alignment_);
 }
 
@@ -77,6 +68,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
   if (!delegate_)
     return;  // The delegate can go away while we asynchronously load images.
 
+  DCHECK(icon_);
   // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
   // icon of the correct size with real subpixel shading and such.
   const gfx::ImageSkia* icon = NULL;
@@ -110,7 +102,16 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
   g_object_unref(pixbuf);
 }
 
-void ExtensionInfoBarGtk::BuildWidgets() {
+void ExtensionInfoBarGtk::InitWidgets() {
+  InfoBarGtk::InitWidgets();
+
+  // Always render the close button as if we were doing chrome style widget
+  // rendering. For extension infobars, we force chrome style rendering because
+  // extension authors are going to expect to match the declared gradient in
+  // extensions_infobar.css, and the close button provided by some GTK+ themes
+  // won't look good on this background.
+  close_button_->ForceChromeTheme();
+
   icon_ = gtk_image_new();
   gtk_misc_set_alignment(GTK_MISC(icon_), 0.5, 0.5);
 
@@ -178,6 +179,7 @@ void ExtensionInfoBarGtk::OnDelegateDeleted() {
 }
 
 Browser* ExtensionInfoBarGtk::GetBrowser() {
+  DCHECK(icon_);
   // Get the Browser object this infobar is attached to.
   GtkWindow* parent = platform_util::GetTopLevel(icon_);
   if (!parent)

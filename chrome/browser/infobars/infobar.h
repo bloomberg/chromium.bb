@@ -89,7 +89,7 @@ class InfoBar : public ui::AnimationDelegate {
   // out) as we animate open and closed.
   int OffsetY(const gfx::Size& prefsize) const;
 
-  bool owned() const { return !!owner_; }
+  InfoBarService* owner() const { return owner_; }
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
   ui::SlideAnimation* animation() { return &animation_; }
