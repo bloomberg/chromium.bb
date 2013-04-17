@@ -765,6 +765,9 @@ const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 const char kWifiProtectedManagementFrameRequiredProperty[] =
     "WiFi.ProtectedManagementFrameRequired";
 
+// Profile property names.
+const char kUserHashProperty[] = "UserHash";
+
 // WiFi Service Vendor Information dictionary properties.
 const char kVendorWPSManufacturerProperty[] = "Manufacturer";
 const char kVendorWPSModelNameProperty[] = "ModelName";
