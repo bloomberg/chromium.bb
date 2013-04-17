@@ -22,10 +22,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(USE_AURA)
-#include "ui/keyboard/keyboard_constants.h"
-#endif
-
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
 
@@ -279,9 +275,6 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
     is_override = (is_override &&
                    !(extension->location() == Manifest::COMPONENT &&
                      page == chrome::kChromeUIFileManagerHost));
-#endif
-#if defined(USE_AURA)
-    is_override = (is_override && page != keyboard::kKeyboardWebUIHost);
 #endif
 
     if (is_override || !iter.value().GetAsString(&val)) {
