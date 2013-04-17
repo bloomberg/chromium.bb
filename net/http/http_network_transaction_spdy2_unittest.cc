@@ -11297,4 +11297,81 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionIfCertDoesNotMatch) {
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 }
 
+// Test to verify that a failed socket read (due to an ERR_CONNECTION_CLOSED
+// error) in SPDY session, removes the socket from pool and closes the SPDY
+// session. Verify that new url's from the same HttpNetworkSession (and a new
+// SpdySession) do work. http://crbug.com/224701
+TEST_F(HttpNetworkTransactionSpdy2Test, ErrorSocketNotConnected) {
+  const std::string https_url = "https://www.google.com/";
+
+  MockRead reads1[] = {
+    MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 0)
+  };
+
+  scoped_ptr<DeterministicSocketData> data1(
+      new DeterministicSocketData(reads1, arraysize(reads1), NULL, 0));
+  data1->SetStop(1);
+
+  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(https_url.c_str(),
+                                              false, 1, MEDIUM));
+  MockWrite writes2[] = {
+    CreateMockWrite(*req2, 0),
+  };
+
+  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(1, true));
+  MockRead reads2[] = {
+    CreateMockRead(*resp2, 1),
+    CreateMockRead(*body2, 2),
+    MockRead(ASYNC, OK, 3)  // EOF
+  };
+
+  scoped_ptr<DeterministicSocketData> data2(
+      new DeterministicSocketData(reads2, arraysize(reads2),
+                                  writes2, arraysize(writes2)));
+
+  SpdySessionDependencies session_deps;
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  ssl1.SetNextProto(kProtoSPDY2);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(data1.get());
+
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.SetNextProto(kProtoSPDY2);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(data2.get());
+
+  scoped_refptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
+
+  // Start the first transaction to set up the SpdySession and verify that
+  // connection was closed.
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL(https_url);
+  request1.load_flags = 0;
+  HttpNetworkTransaction trans1(MEDIUM, session);
+  TestCompletionCallback callback1;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans1.Start(&request1, callback1.callback(), BoundNetLog()));
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback1.WaitForResult());
+
+  // Now, start the second request and make sure it succeeds.
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(https_url);
+  request2.load_flags = 0;
+  HttpNetworkTransaction trans2(MEDIUM, session);
+  TestCompletionCallback callback2;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans2.Start(&request2, callback2.callback(), BoundNetLog()));
+  MessageLoop::current()->RunUntilIdle();
+  data2->RunFor(3);
+
+  ASSERT_TRUE(callback2.have_result());
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
+}
+
 }  // namespace net

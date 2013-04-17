@@ -724,6 +724,8 @@ bool MockClientSocket::IsConnectedAndIdle() const {
 }
 
 int MockClientSocket::GetPeerAddress(IPEndPoint* address) const {
+  if (!IsConnected())
+    return ERR_SOCKET_NOT_CONNECTED;
   *address = peer_addr_;
   return OK;
 }
@@ -820,6 +822,11 @@ int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
 
   if (need_read_data_) {
     read_data_ = data_->GetNextRead();
+    if (read_data_.result == ERR_CONNECTION_CLOSED) {
+      // This MockRead is just a marker to instruct us to set
+      // peer_closed_connection_.
+      peer_closed_connection_ = true;
+    }
     if (read_data_.result == ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ) {
       // This MockRead is just a marker to instruct us to set
       // peer_closed_connection_.  Skip it and get the next one.
@@ -978,7 +985,8 @@ DeterministicMockTCPClientSocket::DeterministicMockTCPClientSocket(
       read_buf_len_(0),
       read_pending_(false),
       data_(data),
-      was_used_to_convey_data_(false) {
+      was_used_to_convey_data_(false),
+      peer_closed_connection_(false) {
   peer_addr_ = data->connect_data().peer_addr;
 }
 
@@ -1052,6 +1060,18 @@ int DeterministicMockTCPClientSocket::Read(
   // use small buffers, split the data into multiple MockReads.
   DCHECK_LE(read_data_.data_len, buf_len);
 
+  if (read_data_.result == ERR_CONNECTION_CLOSED) {
+    // This MockRead is just a marker to instruct us to set
+    // peer_closed_connection_.
+    peer_closed_connection_ = true;
+  }
+  if (read_data_.result == ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ) {
+    // This MockRead is just a marker to instruct us to set
+    // peer_closed_connection_.  Skip it and get the next one.
+    read_data_ = data_->GetNextRead();
+    peer_closed_connection_ = true;
+  }
+
   read_buf_ = buf;
   read_buf_len_ = buf_len;
   read_callback_ = callback;
@@ -1084,7 +1104,7 @@ void DeterministicMockTCPClientSocket::Disconnect() {
 }
 
 bool DeterministicMockTCPClientSocket::IsConnected() const {
-  return connected_;
+  return connected_ && !peer_closed_connection_;
 }
 
 bool DeterministicMockTCPClientSocket::IsConnectedAndIdle() const {

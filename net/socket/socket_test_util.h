@@ -741,6 +741,7 @@ class DeterministicMockTCPClientSocket
   CompletionCallback read_callback_;
   DeterministicSocketData* data_;
   bool was_used_to_convey_data_;
+  bool peer_closed_connection_;
 };
 
 class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
