@@ -646,6 +646,15 @@ void ChangeListLoader::CheckLocalChangestamp(
   resource_metadata_->GetLargestChangestamp(callback);
 }
 
+
+void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (loaded() && !refreshing())
+    LoadFromServerIfNeeded(DirectoryFetchInfo(), callback);
+}
+
 void ChangeListLoader::UpdateFromFeed(
     scoped_ptr<google_apis::AboutResource> about_resource,
     ScopedVector<ChangeList> change_lists,

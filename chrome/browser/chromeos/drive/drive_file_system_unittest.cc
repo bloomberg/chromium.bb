@@ -187,7 +187,7 @@ class DriveFileSystemTest : public testing::Test {
   // Loads test json file as root ("/drive") element.
   bool LoadRootFeedDocument() {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-    file_system_->change_list_loader()->LoadFromServerIfNeeded(
+    file_system_->change_list_loader()->LoadIfNeeded(
         DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();

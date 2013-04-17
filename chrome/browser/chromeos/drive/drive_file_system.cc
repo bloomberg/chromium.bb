@@ -257,7 +257,7 @@ void DriveFileSystem::Initialize() {
 void DriveFileSystem::ReloadAfterReset() {
   SetupChangeListLoader();
 
-  change_list_loader_->LoadFromServerIfNeeded(
+  change_list_loader_->LoadIfNeeded(
       DirectoryFetchInfo(),
       base::Bind(&DriveFileSystem::OnUpdateChecked,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -272,14 +272,10 @@ void DriveFileSystem::SetupChangeListLoader() {
 
 void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (change_list_loader_ &&
-      change_list_loader_->loaded() &&
-      !change_list_loader_->refreshing()) {
-    change_list_loader_->LoadFromServerIfNeeded(
-        DirectoryFetchInfo(),
+  if (change_list_loader_) {
+    change_list_loader_->CheckForUpdates(
         base::Bind(&DriveFileSystem::OnUpdateChecked,
                    weak_ptr_factory_.GetWeakPtr()));
   }

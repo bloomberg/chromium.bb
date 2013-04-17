@@ -88,13 +88,9 @@ class ChangeListLoader {
                         const GURL& next_feed,
                         const LoadFeedListCallback& callback);
 
-  // Initiates the change list loading from the server if the local
-  // changestamp is older than the server changestamp.
-  // See the comment at Load() for |directory_fetch_info| parameter.
-  // |callback| must not be null.
-  // TODO(satorux): make this private. crbug.com/193417
-  void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                              const FileOperationCallback& callback);
+  // Checks for updates on the server. Does nothing if the change list is now
+  // being loaded or refreshed. |callback| must not be null.
+  void CheckForUpdates(const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -111,6 +107,13 @@ class ChangeListLoader {
   bool refreshing() const { return refreshing_; }
 
  private:
+  // Initiates the change list loading from the server if the local
+  // changestamp is older than the server changestamp.
+  // See the comment at Load() for |directory_fetch_info| parameter.
+  // |callback| must not be null.
+  void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
+                              const FileOperationCallback& callback);
+
   // Checks the local changestamp. |callback| must not be null.
   void CheckLocalChangestamp(const GetChangestampCallback& callback);
 
