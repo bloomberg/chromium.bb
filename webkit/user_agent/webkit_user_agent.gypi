@@ -4,13 +4,7 @@
 
 {
   'variables': {
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-    ],
+    'webkit_src_dir': '../../third_party/WebKit/Source',
   },
   'targets': [
     {
@@ -59,21 +53,18 @@
               'action_name': 'webkit_version',
               'inputs': [
                 '<(script)',
-                '<(webkit_src_dir)<(version_file)',
                 '../../build/util/lastchange.py',  # Used by the script.
+                # This depends on the svn revision of webkit_src_dir but does
+                # not list it as a dependency.  Incremental builds will have
+                # the wrong WEBKIT_SVN_REVISION.
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit_version.h',
               ],
               'action': ['python', '<(script)', '<(webkit_src_dir)',
-                         '<(version_file)', '<(SHARED_INTERMEDIATE_DIR)'],
+                         '<(SHARED_INTERMEDIATE_DIR)'],
               'variables': {
                 'script': '../build/webkit_version.py',
-                # version_file is a relative path from |webkit_src_dir| to
-                # the version file.  But gyp will eat the variable unless
-                # it looks like an absolute path, so write it like one and
-                # then use it carefully above.
-                'version_file': '/Source/WebCore/Configurations/Version.xcconfig',
               },
             },
           ],
