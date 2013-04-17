@@ -342,6 +342,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     gfx::Size device_viewport,
     const gfx::RectF& viewport_in_layer_space,
+    const gfx::RectF& visible_layer_rect,
     gfx::Size last_layer_bounds,
     gfx::Size current_layer_bounds,
     float last_layer_contents_scale,
@@ -378,14 +379,20 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect viewport_in_content_space =
       gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
                                           contents_scale_));
+  gfx::Rect visible_content_rect =
+      gfx::ToEnclosingRect(gfx::ScaleRect(visible_layer_rect,
+                                          contents_scale_));
 
   gfx::Size tile_size = tiling_data_.max_texture_size();
   int64 prioritized_rect_area =
       max_tiles_for_interest_area *
       tile_size.width() * tile_size.height();
 
+  gfx::Rect starting_rect = visible_content_rect.IsEmpty()
+                            ? viewport_in_content_space
+                            : visible_content_rect;
   gfx::Rect prioritized_rect = ExpandRectEquallyToAreaBoundedBy(
-      viewport_in_content_space,
+      starting_rect,
       prioritized_rect_area,
       ContentRect());
   DCHECK(ContentRect().Contains(prioritized_rect));
@@ -565,23 +572,25 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   DCHECK(!bounding_rect.IsEmpty());
   DCHECK_GT(target_area, 0);
 
-  // Expand the starting rect to cover target_area.
+  // Expand the starting rect to cover target_area, if it is smaller than it.
   int delta = ComputeExpansionDelta(
       2, 2, starting_rect.width(), starting_rect.height(), target_area);
   gfx::Rect expanded_starting_rect = starting_rect;
-  expanded_starting_rect.Inset(-delta, -delta);
+  if (delta > 0)
+    expanded_starting_rect.Inset(-delta, -delta);
 
   gfx::Rect rect = IntersectRects(expanded_starting_rect, bounding_rect);
   if (rect.IsEmpty()) {
     // The starting_rect and bounding_rect are far away.
     return rect;
   }
-  if (rect == expanded_starting_rect) {
-    // The expanded starting rect already covers target_area on bounding_rect.
+  if (delta >= 0 && rect == expanded_starting_rect) {
+    // The starting rect already covers the entire bounding_rect and isn't too
+    // large for the target_area.
     return rect;
   }
 
-  // Continue to expand rect to let it cover target_area.
+  // Continue to expand/shrink rect to let it cover target_area.
 
   // These values will be updated by the loop and uses as the output.
   int origin_x = rect.x();
@@ -610,13 +619,6 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
 
   for (int event_index = 0; event_index < 4; event_index++) {
     const EdgeEvent& event = events[event_index];
-
-    // Early out if our distance to event is 0.
-    // This optimization is not required for correctness.
-    if (event.distance == 0) {
-      --*event.num_edges;
-      continue;
-    }
 
     int delta = ComputeExpansionDelta(
         num_x_edges, num_y_edges, width, height, target_area);

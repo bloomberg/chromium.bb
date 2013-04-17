@@ -288,6 +288,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
       tree,
       layer_tree_impl()->device_viewport_size(),
       viewport_in_content_space,
+      visible_content_rect(),
       last_bounds_,
       bounds(),
       last_content_scale_,

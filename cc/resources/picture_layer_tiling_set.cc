@@ -279,6 +279,7 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     WhichTree tree,
     gfx::Size device_viewport,
     gfx::Rect viewport_in_content_space,
+    gfx::Rect visible_content_rect,
     gfx::Size last_layer_bounds,
     gfx::Size current_layer_bounds,
     float last_layer_contents_scale,
@@ -290,15 +291,18 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     bool store_screen_space_quads_on_tiles,
     size_t max_tiles_for_interest_area) {
   gfx::RectF viewport_in_layer_space = gfx::ScaleRect(
-    viewport_in_content_space,
-    1.f / current_layer_contents_scale,
-    1.f / current_layer_contents_scale);
+      viewport_in_content_space,
+      1.f / current_layer_contents_scale);
+  gfx::RectF visible_layer_rect = gfx::ScaleRect(
+      visible_content_rect,
+      1.f / current_layer_contents_scale);
 
   for (size_t i = 0; i < tilings_.size(); ++i) {
     tilings_[i]->UpdateTilePriorities(
         tree,
         device_viewport,
         viewport_in_layer_space,
+        visible_layer_rect,
         last_layer_bounds,
         current_layer_bounds,
         last_layer_contents_scale,

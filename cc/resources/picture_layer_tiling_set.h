@@ -55,6 +55,7 @@ class CC_EXPORT PictureLayerTilingSet {
       WhichTree tree,
       gfx::Size device_viewport,
       gfx::Rect viewport_in_content_space,
+      gfx::Rect visible_content_rect,
       gfx::Size last_layer_bounds,
       gfx::Size current_layer_bounds,
       float last_layer_contents_scale,

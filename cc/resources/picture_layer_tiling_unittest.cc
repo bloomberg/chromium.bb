@@ -421,6 +421,7 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       ACTIVE_TREE,
       layer_bounds,  // device viewport
       gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
       layer_bounds,  // last layer bounds
       layer_bounds,  // current layer bounds
       1.f,  // last contents scale
@@ -438,6 +439,7 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       ACTIVE_TREE,
       layer_bounds,  // device viewport
       gfx::Rect(),  // viewport in layer space
+      gfx::Rect(),  // visible content rect
       layer_bounds,  // last layer bounds
       layer_bounds,  // current layer bounds
       1.f,  // last contents scale
@@ -449,6 +451,155 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
+  gfx::Size layer_bounds(1099, 801);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+  gfx::Rect giant_rect(-10000000, -10000000, 1000000000, 1000000000);
+
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds,  // device viewport
+      giant_rect,  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1,  // current frame number
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+
+  // If the visible content rect is empty, it should still have live tiles.
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds,  // device viewport
+      giant_rect,  // viewport in layer space
+      gfx::Rect(),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      2,  // current frame number
+      2.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
+  gfx::Size layer_bounds(1099, 801);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+  // This rect does not intersect with the layer, as the layer is outside the
+  // viewport.
+  gfx::Rect viewport_rect(1100, 0, 1000, 1000);
+  EXPECT_FALSE(viewport_rect.Intersects(gfx::Rect(layer_bounds)));
+
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds,  // device viewport
+      viewport_rect,  // viewport in layer space
+      gfx::Rect(),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      2,  // current frame number
+      2.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+}
+
+static void TilesIntersectingRectExist(gfx::Rect rect, Tile* tile) {
+  ASSERT_TRUE(tile != NULL);
+  bool expected_live = rect.Intersects(tile->content_rect());
+  EXPECT_EQ(expected_live, tile->priority(ACTIVE_TREE).is_live) <<
+      "Rects intersecting " << rect.ToString() << " should exist. " <<
+      "Current tile rect is " << tile->content_rect().ToString();
+}
+
+TEST_F(PictureLayerTilingIteratorTest,
+       TilesExistLargeViewportAndLayerWithSmallVisibleArea) {
+  gfx::Size layer_bounds(10000, 10000);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+  gfx::Rect visible_rect(8000, 8000, 50, 50);
+
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      visible_rect,  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      2,  // current frame number
+      2.0,  // current frame time
+      false,  // store screen space quads on tiles
+      1);  // max tiles in tile manager
+  VerifyTiles(1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TilesIntersectingRectExist, visible_rect));
+}
+
+static void CountExistingTiles(int *count, Tile* tile) {
+  ASSERT_TRUE(tile != NULL);
+  if (tile->priority(ACTIVE_TREE).is_live)
+    ++(*count);
+}
+
+TEST_F(PictureLayerTilingIteratorTest,
+       TilesExistLargeViewportAndLayerWithLargeVisibleArea) {
+  gfx::Size layer_bounds(10000, 10000);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      2,  // current frame number
+      2.0,  // current frame time
+      false,  // store screen space quads on tiles
+      1);  // max tiles in tile manager
+
+  int num_tiles = 0;
+  VerifyTiles(1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&CountExistingTiles, &num_tiles));
+  // If we're making a rect the size of one tile, it can only overlap up to 4
+  // tiles depending on its position.
+  EXPECT_LE(num_tiles, 4);
 }
 
 }  // namespace
