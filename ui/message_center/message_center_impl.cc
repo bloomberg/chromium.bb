@@ -34,7 +34,13 @@ void MessageCenterImpl::SetDelegate(Delegate* delegate) {
 }
 
 void MessageCenterImpl::SetMessageCenterVisible(bool visible) {
-  notification_list_->SetMessageCenterVisible(visible);
+  std::set<std::string> updated_ids;
+  notification_list_->SetMessageCenterVisible(visible, &updated_ids);
+  for (std::set<std::string>::const_iterator iter = updated_ids.begin();
+       iter != updated_ids.end(); ++iter) {
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationUpdated(*iter));
+  }
 }
 
 size_t MessageCenterImpl::NotificationCount() const {

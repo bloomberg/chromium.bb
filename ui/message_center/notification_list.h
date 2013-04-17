@@ -49,8 +49,11 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   explicit NotificationList();
   virtual ~NotificationList();
 
-  // Affects whether or not a message has been "read".
-  void SetMessageCenterVisible(bool visible);
+  // Affects whether or not a message has been "read". Collects the set of
+  // ids whose state have changed and set to |udpated_ids|. NULL if updated
+  // ids don't matter.
+  void SetMessageCenterVisible(bool visible,
+                               std::set<std::string>* updated_ids);
 
   void AddNotification(NotificationType type,
                        const std::string& id,

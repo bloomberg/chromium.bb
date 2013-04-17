@@ -48,9 +48,12 @@ NotificationList::~NotificationList() {
   STLDeleteContainerPointers(notifications_.begin(), notifications_.end());
 }
 
-void NotificationList::SetMessageCenterVisible(bool visible) {
+void NotificationList::SetMessageCenterVisible(
+    bool visible,
+    std::set<std::string>* updated_ids) {
   if (message_center_visible_ == visible)
     return;
+
   message_center_visible_ = visible;
   // When the center appears, mark all notifications as shown, and
   // when the center is hidden, clear the unread count, and mark all
@@ -60,10 +63,15 @@ void NotificationList::SetMessageCenterVisible(bool visible) {
 
   for (Notifications::iterator iter = notifications_.begin();
        iter != notifications_.end(); ++iter) {
-    if (visible)
+    if (visible) {
+      if (updated_ids && !(*iter)->shown_as_popup())
+        updated_ids->insert((*iter)->id());
       (*iter)->set_shown_as_popup(true);
-    else
+    } else {
+      if (updated_ids && !(*iter)->is_read())
+        updated_ids->insert((*iter)->id());
       (*iter)->set_is_read(true);
+    }
   }
 }
 

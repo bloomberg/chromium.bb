@@ -136,9 +136,9 @@ TEST_F(NotificationListTest, MessageCenterVisible) {
 
   // Toggle the message center visibility. It resets the unread count when
   // hidden.
-  notification_list()->SetMessageCenterVisible(true);
+  notification_list()->SetMessageCenterVisible(true, NULL);
   ASSERT_EQ(1u, notification_list()->unread_count());
-  notification_list()->SetMessageCenterVisible(false);
+  notification_list()->SetMessageCenterVisible(false, NULL);
   ASSERT_EQ(0u, notification_list()->unread_count());
 }
 
@@ -226,8 +226,8 @@ TEST_F(NotificationListTest, Priority) {
   EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, GetPopupCounts());
 
   // Low priority: not visible to popups.
-  notification_list()->SetMessageCenterVisible(true);
-  notification_list()->SetMessageCenterVisible(false);
+  notification_list()->SetMessageCenterVisible(true, NULL);
+  notification_list()->SetMessageCenterVisible(false, NULL);
   EXPECT_EQ(0u, notification_list()->unread_count());
   AddPriorityNotification(-1);
   EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 2,
