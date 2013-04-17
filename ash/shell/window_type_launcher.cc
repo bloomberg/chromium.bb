@@ -6,12 +6,12 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/screensaver/screensaver_view.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -336,7 +336,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == bubble_button_) {
     CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
-    Shell::GetInstance()->delegate()->LockScreen();
+    Shell::GetInstance()->session_state_delegate()->LockScreen();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
   } else if (sender == system_modal_button_) {

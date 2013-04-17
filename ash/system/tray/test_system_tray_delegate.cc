@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
@@ -90,9 +90,12 @@ const gfx::ImageSkia& TestSystemTrayDelegate::GetUserImage() const {
 user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
-  if (!Shell::GetInstance()->delegate()->IsSessionStarted())
+  SessionStateDelegate* delegate =
+      Shell::GetInstance()->session_state_delegate();
+
+  if (!delegate->IsActiveUserSessionStarted())
     return ash::user::LOGGED_IN_NONE;
-  if (Shell::GetInstance()->IsScreenLocked())
+  if (delegate->IsScreenLocked())
     return user::LOGGED_IN_LOCKED;
   // TODO(nkostylev): Support LOGGED_IN_OWNER, LOGGED_IN_GUEST, LOGGED_IN_KIOSK,
   //                  LOGGED_IN_PUBLIC.

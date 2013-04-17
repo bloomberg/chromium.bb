@@ -27,16 +27,9 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   void SetWatcher(WindowWatcher* watcher);
 
-  virtual bool IsUserLoggedIn() const OVERRIDE;
-  virtual bool IsSessionStarted() const OVERRIDE;
-  virtual bool IsGuestSession() const OVERRIDE;
   virtual bool IsFirstRunAfterBoot() const OVERRIDE;
   virtual bool IsMultiProfilesEnabled() const OVERRIDE;
   virtual bool IsRunningInForcedAppMode() const OVERRIDE;
-  virtual bool CanLockScreen() const OVERRIDE;
-  virtual void LockScreen() OVERRIDE;
-  virtual void UnlockScreen() OVERRIDE;
-  virtual bool IsScreenLocked() const OVERRIDE;
   virtual void PreInit() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
@@ -69,6 +62,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
+  virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
@@ -91,7 +85,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   LauncherDelegateImpl* launcher_delegate_;
 
-  bool locked_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
   bool screen_magnifier_enabled_;

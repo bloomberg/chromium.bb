@@ -5,6 +5,7 @@
 #include "ash/wm/session_state_controller_impl2.h"
 
 #include "ash/ash_switches.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -137,6 +138,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
             animator_.get()));
     shell_delegate_ = reinterpret_cast<TestShellDelegate*>(
         ash::Shell::GetInstance()->delegate());
+    state_delegate_ = Shell::GetInstance()->session_state_delegate();
   }
 
   virtual void TearDown() {
@@ -310,7 +312,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void ExpectUnlockedState() {
     //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_FALSE(shell_delegate_->IsScreenLocked());
+    EXPECT_FALSE(state_delegate_->IsScreenLocked());
 
     aura::Window::Windows containers;
 
@@ -331,7 +333,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void ExpectLockedState() {
     //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(shell_delegate_->IsScreenLocked());
+    EXPECT_TRUE(state_delegate_->IsScreenLocked());
 
     aura::Window::Windows containers;
 
@@ -370,7 +372,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void SystemLocks() {
     state_controller_->OnLockStateChanged(true);
-    shell_delegate_->LockScreen();
+    state_delegate_->LockScreen();
     //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
@@ -382,7 +384,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void SystemUnlocks() {
     state_controller_->OnLockStateChanged(false);
-    shell_delegate_->UnlockScreen();
+    state_delegate_->UnlockScreen();
     //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
@@ -399,6 +401,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
   SessionStateControllerImpl2* state_controller_;  // not owned
   TestSessionStateControllerDelegate* delegate_;  // not owned
   TestShellDelegate* shell_delegate_;  // not owned
+  SessionStateDelegate* state_delegate_;  // not owned
 
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration_mode_;
   scoped_ptr<SessionStateControllerImpl2::TestApi> test_api_;

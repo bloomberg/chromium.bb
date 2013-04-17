@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -60,8 +60,9 @@ void FindOrOpenCloudPrintPage(const std::string& /* vendor */,
                               const std::string& /* product */) {
   UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent", PRINTER_ADDED,
                             PRINTER_SERVICE_EVENT_MAX);
-  if (!ash::Shell::GetInstance()->delegate()->IsSessionStarted() ||
-      ash::Shell::GetInstance()->delegate()->IsScreenLocked()) {
+  if (!ash::Shell::GetInstance()->session_state_delegate()->
+          IsActiveUserSessionStarted() ||
+      ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
     return;
   }
 

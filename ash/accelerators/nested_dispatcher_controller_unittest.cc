@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -109,7 +109,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   MockDispatcher inner_dispatcher;
   scoped_ptr<aura::Window> associated_window(CreateTestWindowInShellWithId(0));
 
-  Shell::GetInstance()->delegate()->LockScreen();
+  Shell::GetInstance()->session_state_delegate()->LockScreen();
   DispatchKeyReleaseA();
   aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
@@ -117,7 +117,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
       associated_window.get(),
       true /* nestable_tasks_allowed */);
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
-  Shell::GetInstance()->delegate()->UnlockScreen();
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
 }
 
 // Aura window above lock screen in z order.

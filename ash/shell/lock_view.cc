@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
 #include "base/utf_string_conversions.h"
@@ -64,7 +64,7 @@ class LockView : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegateView:
   virtual void WindowClosing() OVERRIDE {
-    Shell::GetInstance()->delegate()->UnlockScreen();
+    Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   }
 
   // Overridden from views::ButtonListener:

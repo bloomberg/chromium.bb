@@ -5,9 +5,9 @@
 #include "ash/root_window_controller.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
@@ -301,7 +301,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
           controller->GetSystemModalLayoutManager(
               session_modal_widget->GetNativeView()));
 
-  shell->delegate()->LockScreen();
+  shell->session_state_delegate()->LockScreen();
   EXPECT_EQ(user::LOGGED_IN_LOCKED,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
@@ -322,7 +322,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 session_modal_widget->GetNativeView()));
 
-  shell->delegate()->UnlockScreen();
+  shell->session_state_delegate()->UnlockScreen();
 }
 
 TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
@@ -333,8 +333,8 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(false);
   EXPECT_EQ(user::LOGGED_IN_NONE,
             shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_FALSE(shell->delegate()->IsUserLoggedIn());
-  EXPECT_FALSE(shell->delegate()->IsSessionStarted());
+  EXPECT_FALSE(shell->session_state_delegate()->HasActiveUser());
+  EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
 
   internal::RootWindowController* controller =
       shell->GetPrimaryRootWindowController();
@@ -358,8 +358,8 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetSessionStarted(true);
   EXPECT_EQ(user::LOGGED_IN_USER,
             shell->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_TRUE(shell->delegate()->IsUserLoggedIn());
-  EXPECT_TRUE(shell->delegate()->IsSessionStarted());
+  EXPECT_TRUE(shell->session_state_delegate()->HasActiveUser());
+  EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
       internal::kShellWindowId_SystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(NULL));
