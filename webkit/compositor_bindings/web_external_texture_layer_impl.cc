@@ -136,4 +136,4 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
   client_->mailboxReleased(available_mailbox);
 }
 
-} // namespace webkit
+}  // namespace webkit

@@ -14,26 +14,17 @@ CC_SOURCE_FILES=(r'^cc/.*\.(cc|h)$',)
 CC_PERF_TEST =(r'^.*_perftest.*\.(cc|h)$',)
 
 def CheckChangeLintsClean(input_api, output_api):
-  import cpplint
-  cpplint._cpplint_state.ResetErrorCounts()  # reset global state
+  input_api.cpplint._cpplint_state.ResetErrorCounts()  # reset global state
   source_filter = lambda x: input_api.FilterSourceFile(
     x, white_list=CC_SOURCE_FILES, black_list=None)
   files = [f.AbsoluteLocalPath() for f in
            input_api.AffectedSourceFiles(source_filter)]
   level = 1  # strict, but just warn
 
-  # Replace <hash_map> and <hash_set> as headers that need to be included
-  # with "base/hash_tables.h" instead.
-  cpplint._re_pattern_templates = [
-    (a,b,'base/hash_tables.h') if (header == '<hash_map>' or
-                                   header == '<hash_set>')
-    else (a,b,header)
-    for (a,b,header) in cpplint._re_pattern_templates]
-
   for file_name in files:
-    cpplint.ProcessFile(file_name, level)
+    input_api.cpplint.ProcessFile(file_name, level)
 
-  if not cpplint._cpplint_state.error_count:
+  if not input_api.cpplint._cpplint_state.error_count:
     return []
 
   return [output_api.PresubmitPromptWarning(
