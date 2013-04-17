@@ -48,7 +48,13 @@ public:
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
     enum Mode { ResolvingStyle = 0, CollectingRules, QueryingRules, SharingRules };
     explicit SelectorChecker(Document*, Mode);
-    enum BehaviorAtBoundary { DoesNotCrossBoundary, CrossesBoundary, StaysWithinTreeScope };
+    enum BehaviorAtBoundary {
+        DoesNotCrossBoundary = 0,
+        CrossesBoundary = 1,
+        StaysWithinTreeScope = 2,
+        BoundaryBehaviorMask = 3, // 2bit for boundary behavior
+        ScopeContainsLastMatchedElement = 4,
+    };
 
     struct SelectorCheckingContext {
         // Initial selector constructor

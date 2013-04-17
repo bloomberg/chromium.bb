@@ -161,7 +161,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     if (!MatchingUARulesScope::isMatchingUARules()
         && !treeScope->applyAuthorStyles()
         && (!matchRequest.scope || matchRequest.scope->treeScope() != treeScope)
-        && m_behaviorAtBoundary == SelectorChecker::DoesNotCrossBoundary)
+        && (m_behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) == SelectorChecker::DoesNotCrossBoundary)
         return;
 
     // We need to collect the rules for id, class, tag, and everything else into a buffer and
@@ -230,6 +230,7 @@ void ElementRuleCollector::matchScopedAuthorRules(bool includeEmptyRules)
     if (m_scopeResolver->hasScopedStyles() && m_scopeResolver->ensureStackConsistency(m_state.element())) {
         bool applyAuthorStyles = m_state.element()->treeScope()->applyAuthorStyles();
         bool documentScope = true;
+
         unsigned scopeSize = m_scopeResolver->stackSize();
         for (unsigned i = 0; i < scopeSize; ++i) {
             clearMatchedRules();
@@ -281,7 +282,7 @@ inline void ElementRuleCollector::matchShadowDistributedRules(bool includeEmptyR
         return;
 
     TemporaryChange<bool> canUseFastReject(m_canUseFastReject, false);
-    TemporaryChange<SelectorChecker::BehaviorAtBoundary> behaviorAtBoundary(m_behaviorAtBoundary, SelectorChecker::CrossesBoundary);
+    TemporaryChange<SelectorChecker::BehaviorAtBoundary> behaviorAtBoundary(m_behaviorAtBoundary, static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
 
     Vector<MatchRequest> matchRequests;
     m_ruleSets.shadowDistributedRules().collectMatchRequests(includeEmptyRules, matchRequests);

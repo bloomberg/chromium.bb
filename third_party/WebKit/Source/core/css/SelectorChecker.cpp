@@ -111,7 +111,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     // Prepare next selector
     const CSSSelector* historySelector = context.selector->tagHistory();
     if (!historySelector) {
-        if (context.behaviorAtBoundary == CrossesBoundary) {
+        if (context.behaviorAtBoundary & ScopeContainsLastMatchedElement) {
             ASSERT(context.scope);
             return context.scope->contains(context.element) ? SelectorMatches : SelectorFailsLocally;
         }
@@ -124,7 +124,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     PseudoId ignoreDynamicPseudo = NOPSEUDO;
     if (relation != CSSSelector::SubSelector) {
         // Abort if the next selector would exceed the scope.
-        if (context.element == context.scope && context.behaviorAtBoundary != StaysWithinTreeScope)
+        if (context.element == context.scope && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
             return SelectorFailsCompletely;
 
         // Bail-out if this selector is irrelevant for the pseudoId
@@ -147,7 +147,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
             Match match = this->match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
             if (match == SelectorMatches || match == SelectorFailsCompletely)
                 return match;
-            if (nextContext.element == nextContext.scope && nextContext.behaviorAtBoundary != StaysWithinTreeScope)
+            if (nextContext.element == nextContext.scope && (nextContext.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
                 return SelectorFailsCompletely;
         }
         return SelectorFailsCompletely;
@@ -203,7 +203,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     case CSSSelector::ShadowDescendant:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
-            if (context.scope && context.scope->treeScope() == context.element->treeScope() && context.behaviorAtBoundary != StaysWithinTreeScope)
+            if (context.scope && context.scope->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
                 return SelectorFailsCompletely;
             Element* shadowHostNode = context.element->shadowHost();
             if (!shadowHostNode)
@@ -709,7 +709,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
         case CSSSelector::PseudoScope:
             {
-                const Node* contextualReferenceNode = !context.scope || context.behaviorAtBoundary == CrossesBoundary ? element->document()->documentElement() : context.scope;
+                const Node* contextualReferenceNode = !context.scope || (context.behaviorAtBoundary & BoundaryBehaviorMask) == CrossesBoundary ? element->document()->documentElement() : context.scope;
                 if (element == contextualReferenceNode)
                     return true;
                 break;
