@@ -28,7 +28,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -560,8 +559,6 @@ void Shell::Init() {
   // StatusAreaWidget uses Shell's CapsLockDelegate.
   caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
 
-  session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
-
   if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(
@@ -605,11 +602,11 @@ void Shell::Init() {
 }
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
-  // No context menus if there is no session with an active user.
-  if (!session_state_delegate_->HasActiveUser())
+  // No context menus if user have not logged in.
+  if (!delegate_->IsUserLoggedIn())
     return;
   // No context menus when screen is locked.
-  if (session_state_delegate_->IsScreenLocked())
+  if (IsScreenLocked())
     return;
 
   aura::RootWindow* root =
@@ -641,6 +638,14 @@ bool Shell::GetAppListTargetVisibility() const {
 
 aura::Window* Shell::GetAppListWindow() {
   return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
+}
+
+bool Shell::CanLockScreen() {
+  return delegate_->CanLockScreen();
+}
+
+bool Shell::IsScreenLocked() const {
+  return delegate_->IsScreenLocked();
 }
 
 bool Shell::IsSystemModalWindowOpen() const {

@@ -45,7 +45,6 @@ class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
 class RootWindowHostFactory;
-class SessionStateDelegate;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
@@ -99,6 +98,15 @@ class ASH_EXPORT ShellDelegate {
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
+  // Returns true if user has logged in.
+  virtual bool IsUserLoggedIn() const = 0;
+
+  // Returns true if we're logged in and browser has been started
+  virtual bool IsSessionStarted() const = 0;
+
+  // Returns true if we're logged in as guest.
+  virtual bool IsGuestSession() const = 0;
+
   // Returns true if this is the first time that the shell has been run after
   // the system has booted.  false is returned after the shell has been
   // restarted, typically due to logging in as a guest or logging out.
@@ -109,6 +117,19 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns true if we're running in forced app mode.
   virtual bool IsRunningInForcedAppMode() const = 0;
+
+  // Returns true if a user is logged in whose session can be locked (i.e. the
+  // user has a password with which to unlock the session).
+  virtual bool CanLockScreen() const = 0;
+
+  // Invoked when a user locks the screen.
+  virtual void LockScreen() = 0;
+
+  // Unlock the screen. Currently used only for tests.
+  virtual void UnlockScreen() = 0;
+
+  // Returns true if the screen is currently locked.
+  virtual bool IsScreenLocked() const = 0;
 
   // Called before processing |Shell::Init()| so that the delegate
   // can perform tasks necessary before the shell is initialized.
@@ -204,9 +225,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a caps lock delegate. Shell takes ownership of the delegate.
   virtual CapsLockDelegate* CreateCapsLockDelegate() = 0;
-
-  // Creates a session state delegate. Shell takes ownership of the delegate.
-  virtual SessionStateDelegate* CreateSessionStateDelegate() = 0;
 
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;

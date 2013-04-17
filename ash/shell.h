@@ -82,7 +82,6 @@ class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateController;
-class SessionStateDelegate;
 class ShellDelegate;
 class ShellObserver;
 class SystemTray;
@@ -218,6 +217,13 @@ class ASH_EXPORT Shell
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetAppListWindow();
 
+  // Returns true if a user is logged in whose session can be locked (i.e. the
+  // user has a password with which to unlock the session).
+  bool CanLockScreen();
+
+  // Returns true if the screen is locked.
+  bool IsScreenLocked() const;
+
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen() const;
 
@@ -326,10 +332,6 @@ class ASH_EXPORT Shell
 
   CapsLockDelegate* caps_lock_delegate() {
     return caps_lock_delegate_.get();
-  }
-
-  SessionStateDelegate* session_state_delegate() {
-    return session_state_delegate_.get();
   }
 
   HighContrastController* high_contrast_controller() {
@@ -501,7 +503,6 @@ class ASH_EXPORT Shell
   scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
-  scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
 
   scoped_ptr<LauncherModel> launcher_model_;

@@ -8,6 +8,7 @@
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -41,15 +43,58 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+bool ChromeShellDelegate::IsUserLoggedIn() const {
+  // When running a Chrome OS build outside of a device (i.e. on a developer's
+  // workstation) and not running as login-manager, pretend like we're always
+  // logged in.
+  if (!base::chromeos::IsRunningOnChromeOS() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kLoginManager)) {
+    return true;
+  }
+
+  return chromeos::UserManager::Get()->IsUserLoggedIn();
+}
+
+bool ChromeShellDelegate::IsSessionStarted() const {
+  // Returns true if we're logged in and browser has been started
+  return chromeos::UserManager::Get()->IsSessionStarted();
+}
+
+bool ChromeShellDelegate::IsGuestSession() const {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kGuestSession);
+}
+
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kFirstBoot);
+}
+
+bool ChromeShellDelegate::CanLockScreen() const {
+  return chromeos::UserManager::Get()->CanCurrentUserLock();
+}
+
+void ChromeShellDelegate::LockScreen() {
+  if (CanLockScreen()) {
+    // TODO(antrim) : additional logging for crbug/173178
+    LOG(WARNING) << "Requesting screen lock from ChromeShellDelegate";
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        RequestLockScreen();
+  }
+}
+
+bool ChromeShellDelegate::IsScreenLocked() const {
+  if (!chromeos::ScreenLocker::default_screen_locker())
+    return false;
+  return chromeos::ScreenLocker::default_screen_locker()->locked();
 }
 
 void ChromeShellDelegate::PreInit() {
@@ -202,6 +247,9 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
 }
 
 bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
+  if (!IsUserLoggedIn())
+    return true;
+
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (!profile)
     return false;

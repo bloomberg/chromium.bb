@@ -8,7 +8,6 @@
 #include "ash/host/root_window_host_factory.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/magnifier/magnifier_constants.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_properties.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/session_state_delegate.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
@@ -79,6 +77,11 @@ bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
 
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
+}
+
+void ChromeShellDelegate::UnlockScreen() {
+  // This is used only for testing thus far.
+  NOTIMPLEMENTED();
 }
 
 void ChromeShellDelegate::Exit() {
@@ -193,10 +196,6 @@ ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
     launcher_delegate_->Init();
   }
   return launcher_delegate_;
-}
-
-ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
-  return new SessionStateDelegate;
 }
 
 aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {

@@ -8,13 +8,10 @@
 
 #include "ash/caps_lock_delegate_stub.h"
 #include "ash/host/root_window_host_factory.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/window_util.h"
-#include "base/logging.h"
 #include "content/public/test/test_browser_context.h"
 #include "ui/aura/window.h"
 
@@ -22,15 +19,30 @@ namespace ash {
 namespace test {
 
 TestShellDelegate::TestShellDelegate()
-    : spoken_feedback_enabled_(false),
+    : locked_(false),
+      session_started_(true),
+      spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
-      num_exit_requests_(0),
-      test_session_state_delegate_(NULL) {
+      user_logged_in_(true),
+      can_lock_screen_(true),
+      num_exit_requests_(0) {
 }
 
 TestShellDelegate::~TestShellDelegate() {
+}
+
+bool TestShellDelegate::IsUserLoggedIn() const {
+  return user_logged_in_;
+}
+
+bool TestShellDelegate::IsSessionStarted() const {
+  return session_started_;
+}
+
+bool TestShellDelegate::IsGuestSession() const {
+  return false;
 }
 
 bool TestShellDelegate::IsFirstRunAfterBoot() const {
@@ -43,6 +55,22 @@ bool TestShellDelegate::IsMultiProfilesEnabled() const {
 
 bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
+}
+
+bool TestShellDelegate::CanLockScreen() const {
+  return user_logged_in_ && can_lock_screen_;
+}
+
+void TestShellDelegate::LockScreen() {
+  locked_ = true;
+}
+
+void TestShellDelegate::UnlockScreen() {
+  locked_ = false;
+}
+
+bool TestShellDelegate::IsScreenLocked() const {
+  return locked_;
 }
 
 void TestShellDelegate::PreInit() {
@@ -157,12 +185,6 @@ CapsLockDelegate* TestShellDelegate::CreateCapsLockDelegate() {
   return new CapsLockDelegateStub;
 }
 
-SessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
-  DCHECK(!test_session_state_delegate_);
-  test_session_state_delegate_ = new TestSessionStateDelegate();
-  return test_session_state_delegate_;
-}
-
 aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
   return NULL;
 }
@@ -207,13 +229,26 @@ RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {
   return RootWindowHostFactory::Create();
 }
 
+void TestShellDelegate::SetSessionStarted(bool session_started) {
+  session_started_ = session_started;
+  if (session_started)
+    user_logged_in_ = true;
+}
+
+void TestShellDelegate::SetUserLoggedIn(bool user_logged_in) {
+  user_logged_in_ = user_logged_in;
+  if (!user_logged_in)
+    session_started_ = false;
+}
+
+void TestShellDelegate::SetCanLockScreen(bool can_lock_screen) {
+  can_lock_screen_ = can_lock_screen;
+}
+
 base::string16 TestShellDelegate::GetProductName() const {
   return base::string16();
 }
 
-TestSessionStateDelegate* TestShellDelegate::test_session_state_delegate() {
-  return test_session_state_delegate_;
-}
 
 }  // namespace test
 }  // namespace ash

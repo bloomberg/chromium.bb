@@ -5,8 +5,8 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -313,7 +313,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
 
   // Create a window in the lock screen container and ensure that it receives
   // the mouse event instead of the modal window (crbug.com/110920).
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  Shell::GetInstance()->delegate()->LockScreen();
   EventTestWindow* lock_delegate = new EventTestWindow(false);
   scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
       Shell::GetPrimaryRootWindowController()->GetContainer(
@@ -337,7 +337,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   EXPECT_EQ(1, lock_delegate->mouse_presses());
   EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
 
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  Shell::GetInstance()->delegate()->UnlockScreen();
 }
 
 // Makes sure we don't crash if a modal window is shown while the parent window
@@ -409,7 +409,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
 
   // Normal system modal window while locked.  Shows locked system modal
   // background.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  Shell::GetInstance()->delegate()->LockScreen();
   scoped_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
       Shell::GetPrimaryRootWindowController()->GetContainer(
           ash::internal::kShellWindowId_LockScreenContainer),

@@ -4,7 +4,6 @@
 
 #include "ash/system/date/tray_date.h"
 
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/date/date_view.h"
@@ -90,7 +89,7 @@ class DateDefaultView : public views::View,
       view->AddButton(shutdown_);
     }
 
-    if (ash::Shell::GetInstance()->session_state_delegate()->CanLockScreen()) {
+    if (ash::Shell::GetInstance()->CanLockScreen()) {
       lock_ = new ash::internal::TrayPopupHeaderButton(this,
           IDR_AURA_UBER_TRAY_LOCKSCREEN,
           IDR_AURA_UBER_TRAY_LOCKSCREEN,

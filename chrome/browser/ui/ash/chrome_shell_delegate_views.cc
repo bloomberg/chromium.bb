@@ -8,7 +8,31 @@
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 
+bool ChromeShellDelegate::IsUserLoggedIn() const {
+  return true;
+}
+
+// Returns true if we're logged in and browser has been started
+bool ChromeShellDelegate::IsSessionStarted() const {
+  return true;
+}
+
+bool ChromeShellDelegate::IsGuestSession() const {
+  return false;
+}
+
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
+  return false;
+}
+
+bool ChromeShellDelegate::CanLockScreen() const {
+  return false;
+}
+
+void ChromeShellDelegate::LockScreen() {
+}
+
+bool ChromeShellDelegate::IsScreenLocked() const {
   return false;
 }
 

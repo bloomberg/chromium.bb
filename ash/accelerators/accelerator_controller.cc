@@ -26,7 +26,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -102,7 +101,7 @@ void HandleCycleWindowLinear(CycleDirection direction) {
 
 #if defined(OS_CHROMEOS)
 bool HandleLock() {
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  Shell::GetInstance()->delegate()->LockScreen();
   return true;
 }
 
@@ -428,12 +427,16 @@ bool AcceleratorController::IsReservedAccelerator(
 bool AcceleratorController::PerformAction(int action,
                                           const ui::Accelerator& accelerator) {
   ash::Shell* shell = ash::Shell::GetInstance();
-  if (!shell->session_state_delegate()->IsActiveUserSessionStarted() &&
+  bool at_login_screen = false;
+#if defined(OS_CHROMEOS)
+  at_login_screen = !shell->delegate()->IsSessionStarted();
+#endif
+  if (at_login_screen &&
       actions_allowed_at_login_screen_.find(action) ==
       actions_allowed_at_login_screen_.end()) {
     return false;
   }
-  if (shell->session_state_delegate()->IsScreenLocked() &&
+  if (shell->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
       actions_allowed_at_lock_screen_.end()) {
     return false;

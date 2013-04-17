@@ -8,8 +8,6 @@
 
 #include "ash/caps_lock_delegate_stub.h"
 #include "ash/host/root_window_host_factory.h"
-#include "ash/session_state_delegate.h"
-#include "ash/session_state_delegate_stub.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/launcher_delegate_impl.h"
@@ -25,6 +23,7 @@ namespace shell {
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
       launcher_delegate_(NULL),
+      locked_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
@@ -40,6 +39,18 @@ void ShellDelegateImpl::SetWatcher(WindowWatcher* watcher) {
     launcher_delegate_->set_watcher(watcher);
 }
 
+bool ShellDelegateImpl::IsUserLoggedIn() const {
+  return true;
+}
+
+bool ShellDelegateImpl::IsSessionStarted() const {
+  return true;
+}
+
+bool ShellDelegateImpl::IsGuestSession() const {
+  return false;
+}
+
 bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }
@@ -50,6 +61,25 @@ bool ShellDelegateImpl::IsMultiProfilesEnabled() const {
 
 bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
+}
+
+bool ShellDelegateImpl::CanLockScreen() const {
+  return true;
+}
+
+void ShellDelegateImpl::LockScreen() {
+  ash::shell::CreateLockScreen();
+  locked_ = true;
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
+}
+
+void ShellDelegateImpl::UnlockScreen() {
+  locked_ = false;
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
+}
+
+bool ShellDelegateImpl::IsScreenLocked() const {
+  return locked_;
 }
 
 void ShellDelegateImpl::PreInit() {
@@ -166,10 +196,6 @@ ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {
 
 ash::CapsLockDelegate* ShellDelegateImpl::CreateCapsLockDelegate() {
   return new CapsLockDelegateStub;
-}
-
-ash::SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
-  return new SessionStateDelegateStub;
 }
 
 aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {

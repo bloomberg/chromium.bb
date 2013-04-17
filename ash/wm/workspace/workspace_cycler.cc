@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/workspace/workspace_cycler_configuration.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -23,7 +22,7 @@ namespace {
 // Returns true if cycling is allowed.
 bool IsCyclingAllowed() {
   // Cycling is disabled if the screen is locked or a modal dialog is open.
-  return !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
+  return !Shell::GetInstance()->IsScreenLocked() &&
          !Shell::GetInstance()->IsSystemModalWindowOpen();
 }
 

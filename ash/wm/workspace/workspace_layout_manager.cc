@@ -6,7 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -289,7 +288,7 @@ void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
   // This would happen if the launcher was auto hidden before the login screen
   // was shown and then gets shown when the login screen gets presented.
   if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED &&
-      Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
+      Shell::GetInstance()->IsScreenLocked())
     return;
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       workspace_->window()->parent());

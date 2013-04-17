@@ -12,9 +12,9 @@
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/property_util.h"
@@ -272,7 +272,8 @@ ShelfLayoutManager::CalculateShelfVisibilityWhileDragging() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (delegate && delegate->IsScreenLocked()) {
     SetState(SHELF_VISIBLE);
   } else if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS) {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
@@ -513,11 +514,11 @@ ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 ShelfLayoutManager::TargetBounds::~TargetBounds() {}
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
-  state.is_screen_locked =
-      Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
+  state.is_screen_locked = delegate && delegate->IsScreenLocked();
 
   // It's possible for SetState() when a window becomes maximized but the state
   // won't have changed value. Do the dimming check before the early exit.

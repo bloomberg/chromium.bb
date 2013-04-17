@@ -4,7 +4,6 @@
 
 #include "ash/wm/event_client_impl.h"
 
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
@@ -22,8 +21,7 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
     const aura::Window* window) const {
   const aura::RootWindow* root_window =
       window ? window->GetRootWindow() : NULL;
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
-      root_window) {
+  if (Shell::GetInstance()->IsScreenLocked() && root_window) {
     const aura::Window* lock_screen_containers = Shell::GetContainer(
         root_window,
         kShellWindowId_LockScreenContainersContainer);

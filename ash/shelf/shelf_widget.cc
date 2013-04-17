@@ -10,10 +10,10 @@
 #include "ash/launcher/launcher_navigator.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/status_area_layout_manager.h"
@@ -440,10 +440,8 @@ ShelfWidget::ShelfWidget(
 
   status_area_widget_ = new internal::StatusAreaWidget(status_container);
   status_area_widget_->CreateTrayViews();
-  if (Shell::GetInstance()->session_state_delegate()->
-          IsActiveUserSessionStarted()) {
+  if (Shell::GetInstance()->delegate()->IsSessionStarted())
     status_area_widget_->Show();
-  }
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
 
   shelf_layout_manager_ = new internal::ShelfLayoutManager(this);
@@ -500,8 +498,9 @@ void ShelfWidget::CreateLauncher() {
     internal::RootWindowController::ForWindow(window_container_)->
         OnLauncherCreated();
 
-    launcher_->SetVisible(
-        shell->session_state_delegate()->IsActiveUserSessionStarted());
+    ShellDelegate* delegate = shell->delegate();
+    if (delegate)
+      launcher_->SetVisible(delegate->IsSessionStarted());
 
     Show();
   }

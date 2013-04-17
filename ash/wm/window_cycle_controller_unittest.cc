@@ -8,7 +8,6 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
-#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -146,14 +145,14 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   // When the screen is locked, cycling window does not take effect.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  Shell::GetInstance()->delegate()->LockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  Shell::GetInstance()->delegate()->UnlockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
