@@ -361,7 +361,7 @@ void RenderViewHostImpl::SetNavigationsSuspended(
   DCHECK(navigations_suspended_ != suspend);
 
   navigations_suspended_ = suspend;
-  if (!suspend && suspended_nav_params_.get()) {
+  if (!suspend && suspended_nav_params_) {
     // There's navigation message params waiting to be sent.  Now that we're not
     // suspended anymore, resume navigation by sending them.  If we were swapped
     // out, we should also stop filtering out the IPC messages now.
@@ -376,7 +376,7 @@ void RenderViewHostImpl::SetNavigationsSuspended(
 
 void RenderViewHostImpl::CancelSuspendedNavigations() {
   // Clear any state if a pending navigation is canceled or pre-empted.
-  if (suspended_nav_params_.get())
+  if (suspended_nav_params_)
     suspended_nav_params_.reset();
   navigations_suspended_ = false;
 }

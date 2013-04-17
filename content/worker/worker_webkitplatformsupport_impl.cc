@@ -89,13 +89,13 @@ WebMimeRegistry* WorkerWebKitPlatformSupportImpl::mimeRegistry() {
 }
 
 WebFileSystem* WorkerWebKitPlatformSupportImpl::fileSystem() {
-  if (!web_file_system_.get())
+  if (!web_file_system_)
     web_file_system_.reset(new WebFileSystemImpl());
   return web_file_system_.get();
 }
 
 WebFileUtilities* WorkerWebKitPlatformSupportImpl::fileUtilities() {
-  if (!file_utilities_.get()) {
+  if (!file_utilities_) {
     file_utilities_.reset(new FileUtilities(thread_safe_sender_));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
@@ -195,7 +195,7 @@ long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
 }
 
 WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
-  if (!web_idb_factory_.get())
+  if (!web_idb_factory_)
     web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   return web_idb_factory_.get();
 }
@@ -282,7 +282,7 @@ WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
-  if (!blob_registry_.get() && thread_safe_sender_.get())
+  if (!blob_registry_.get() && thread_safe_sender_)
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
   return blob_registry_.get();
 }

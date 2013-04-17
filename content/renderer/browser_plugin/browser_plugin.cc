@@ -418,7 +418,7 @@ bool BrowserPlugin::UsesDamageBuffer(
 
 bool BrowserPlugin::UsesPendingDamageBuffer(
     const BrowserPluginMsg_UpdateRect_Params& params) {
-  if (!pending_damage_buffer_.get())
+  if (!pending_damage_buffer_)
     return false;
   return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
@@ -1183,7 +1183,7 @@ void BrowserPlugin::destroy() {
 }
 
 NPObject* BrowserPlugin::scriptableObject() {
-  if (!bindings_.get())
+  if (!bindings_)
     return NULL;
 
   NPObject* browser_plugin_np_object(bindings_->np_object());
@@ -1344,7 +1344,7 @@ void BrowserPlugin::PopulateResizeGuestParameters(
   params->damage_buffer_size = size;
   pending_damage_buffer_.reset(
       CreateDamageBuffer(size, &params->damage_buffer_handle));
-  if (!pending_damage_buffer_.get())
+  if (!pending_damage_buffer_)
     NOTREACHED();
   params->damage_buffer_sequence_id = ++damage_buffer_sequence_id_;
 }
@@ -1370,7 +1370,7 @@ base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
       content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
           size).release());
 
-  if (shared_buf.get()) {
+  if (shared_buf) {
     if (shared_buf->Map(size)) {
       // Insert the magic word.
       *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;

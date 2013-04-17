@@ -141,7 +141,7 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
 }
 
 bool NPChannelBase::Send(IPC::Message* message) {
-  if (!channel_.get()) {
+  if (!channel_) {
     VLOG(1) << "Channel is NULL; dropping message";
     delete message;
     return false;

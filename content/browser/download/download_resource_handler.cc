@@ -380,7 +380,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
 
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.
-  if (stream_writer_.get())
+  if (stream_writer_)
     stream_writer_->Close(reason);
 
   // If the error mapped to something unknown, record it so that
@@ -480,7 +480,7 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   CallStartedCB(NULL, net::ERR_ACCESS_DENIED);
 
   // Remove output stream callback if a stream exists.
-  if (stream_writer_.get())
+  if (stream_writer_)
     stream_writer_->RegisterCallback(base::Closure());
 
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",

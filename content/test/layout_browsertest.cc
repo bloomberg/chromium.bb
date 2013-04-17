@@ -73,7 +73,7 @@ InProcessBrowserLayoutTest::InProcessBrowserLayoutTest(
 }
 
 InProcessBrowserLayoutTest::~InProcessBrowserLayoutTest() {
-  if (test_http_server_.get())
+  if (test_http_server_)
     CHECK(test_http_server_->Stop());
 }
 

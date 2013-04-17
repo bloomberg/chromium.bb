@@ -251,7 +251,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO(
 
 GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
-  if (gpu_channel_.get()) {
+  if (gpu_channel_) {
     // Recreate the channel if it has been lost.
     if (gpu_channel_->state() == GpuChannelHost::kLost)
       gpu_channel_ = NULL;

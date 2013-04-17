@@ -208,7 +208,7 @@ void Shell::CloseDevTools() {
 }
 
 gfx::NativeView Shell::GetContentView() {
-  if (!web_contents_.get())
+  if (!web_contents_)
     return NULL;
   return web_contents_->GetView()->GetNativeView();
 }
@@ -281,7 +281,7 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager() {
-  if (!dialog_manager_.get())
+  if (!dialog_manager_)
     dialog_manager_.reset(new ShellJavaScriptDialogManager());
   return dialog_manager_.get();
 }

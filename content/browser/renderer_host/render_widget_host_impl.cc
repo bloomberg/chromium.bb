@@ -309,7 +309,7 @@ int RenderWidgetHostImpl::SyntheticScrollMessageInterval() const {
 void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled)
     overscroll_controller_.reset();
-  else if (!overscroll_controller_.get())
+  else if (!overscroll_controller_)
     overscroll_controller_.reset(new OverscrollController(this));
 }
 
@@ -1037,7 +1037,7 @@ void RenderWidgetHostImpl::ForwardMouseEventImmediately(
   // more WM_MOUSEMOVE events than we wish to send to the renderer.
   if (mouse_event.type == WebInputEvent::MouseMove) {
     if (mouse_move_pending_) {
-      if (!next_mouse_move_.get()) {
+      if (!next_mouse_move_) {
         next_mouse_move_.reset(new WebMouseEvent(mouse_event));
       } else {
         // Accumulate movement deltas.
@@ -1331,7 +1331,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // Must reset these to ensure that gesture events work with a new renderer.
   gesture_event_filter_->Reset();
 
-  if (overscroll_controller_.get())
+  if (overscroll_controller_)
     overscroll_controller_->Reset();
 
   // Must reset these to ensure that keyboard events work with a new renderer.
@@ -1840,7 +1840,7 @@ void RenderWidgetHostImpl::OnInputEventAck(
     mouse_move_pending_ = false;
 
     // now, we can send the next mouse move event
-    if (next_mouse_move_.get()) {
+    if (next_mouse_move_) {
       DCHECK(next_mouse_move_->type == WebInputEvent::MouseMove);
       ForwardMouseEvent(*next_mouse_move_);
     }
@@ -1958,7 +1958,7 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
 
 void RenderWidgetHostImpl::OnSelectRangeAck() {
   select_range_pending_ = false;
-  if (next_selection_range_.get()) {
+  if (next_selection_range_) {
     scoped_ptr<SelectionRange> next(next_selection_range_.Pass());
     SelectRange(next->start, next->end);
   }
@@ -1966,7 +1966,7 @@ void RenderWidgetHostImpl::OnSelectRangeAck() {
 
 void RenderWidgetHostImpl::OnMsgMoveCaretAck() {
   move_caret_pending_ = false;
-  if (next_move_caret_.get()) {
+  if (next_move_caret_) {
     scoped_ptr<gfx::Point> next(next_move_caret_.Pass());
     MoveCaret(*next);
   }
@@ -1975,7 +1975,7 @@ void RenderWidgetHostImpl::OnMsgMoveCaretAck() {
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
-  if (overscroll_controller_.get())
+  if (overscroll_controller_)
     overscroll_controller_->ReceivedEventACK(current_wheel_event_, processed);
 
   // Now send the next (coalesced) mouse wheel event.
@@ -1991,7 +1991,7 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
 }
 
 void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
-  if (overscroll_controller_.get()) {
+  if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
         gesture_event_filter_->GetGestureEventAwaitingAck(), processed);
   }
@@ -2339,7 +2339,7 @@ void RenderWidgetHostImpl::ScrollFocusedEditableNodeIntoRect(
 void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
                                        const gfx::Point& end) {
   if (select_range_pending_) {
-    if (!next_selection_range_.get()) {
+    if (!next_selection_range_) {
       next_selection_range_.reset(new SelectionRange());
     }
     next_selection_range_->start = start;

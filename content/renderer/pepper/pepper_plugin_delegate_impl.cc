@@ -929,9 +929,9 @@ PepperPluginDelegateImpl::ConnectToBroker(
 
   scoped_refptr<PepperBrokerImpl> broker =
       static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
-  if (!broker.get()) {
+  if (!broker) {
     broker = CreateBroker(plugin_module);
-    if (!broker.get())
+    if (!broker)
       return NULL;
   }
 
@@ -1379,7 +1379,7 @@ bool PepperPluginDelegateImpl::IsInFullscreenMode() {
 }
 
 void PepperPluginDelegateImpl::SampleGamepads(WebKit::WebGamepads* data) {
-  if (!gamepad_shared_memory_reader_.get())
+  if (!gamepad_shared_memory_reader_)
     gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);
 }

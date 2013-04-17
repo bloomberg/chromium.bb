@@ -1110,13 +1110,13 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   view_.reset(GetContentClient()->browser()->
       OverrideCreateWebContentsView(this, &render_view_host_delegate_view_));
-  if (view_.get()) {
+  if (view_) {
     CHECK(render_view_host_delegate_view_);
   } else {
     WebContentsViewDelegate* delegate =
         GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-    if (browser_plugin_guest_.get()) {
+    if (browser_plugin_guest_) {
       WebContentsViewPort* platform_view = CreateWebContentsView(
           this, delegate, &render_view_host_delegate_view_);
 
@@ -2577,7 +2577,7 @@ gfx::Rect WebContentsImpl::GetRootWindowResizerRect() const {
 }
 
 void WebContentsImpl::RemoveBrowserPluginEmbedder() {
-  if (browser_plugin_embedder_.get())
+  if (browser_plugin_embedder_)
     browser_plugin_embedder_.reset();
 }
 

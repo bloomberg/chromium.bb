@@ -79,12 +79,12 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
     stub_->RemoveDestructionObserver(this);
   }
 
-  if (video_decode_accelerator_.get())
+  if (video_decode_accelerator_)
     video_decode_accelerator_.release()->Destroy();
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
-  if (!stub_ || !video_decode_accelerator_.get())
+  if (!stub_ || !video_decode_accelerator_)
     return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
@@ -349,7 +349,7 @@ void GpuVideoDecodeAccelerator::NotifyResetDone() {
 
 void GpuVideoDecodeAccelerator::OnWillDestroyStub(GpuCommandBufferStub* stub) {
   DCHECK_EQ(stub, stub_.get());
-  if (video_decode_accelerator_.get())
+  if (video_decode_accelerator_)
     video_decode_accelerator_.release()->Destroy();
   if (stub_) {
     stub_->RemoveDestructionObserver(this);

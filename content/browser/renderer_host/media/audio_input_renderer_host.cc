@@ -404,7 +404,7 @@ AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupByController(
   // TODO(hclam): Implement a faster look up method.
   for (AudioEntryMap::iterator i = audio_entries_.begin();
        i != audio_entries_.end(); ++i) {
-    if (controller == i->second->controller.get())
+    if (controller == i->second->controller)
       return i->second;
   }
   return NULL;

@@ -21,7 +21,7 @@ namespace {
 scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
-  if (!surface.get()) {
+  if (!surface) {
     LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLSurface failed";
     return NULL;
   }
@@ -35,7 +35,7 @@ scoped_refptr<gfx::GLContext> InitializeGLContext(gfx::GLSurface* surface) {
       gfx::GLContext::CreateGLContext(NULL,
                                       surface,
                                       gfx::PreferIntegratedGpu));
-  if (!context.get()) {
+  if (!context) {
     LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
     return NULL;
   }
@@ -85,11 +85,11 @@ bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
   }
 
   scoped_refptr<gfx::GLSurface> surface(InitializeGLSurface());
-  if (!surface.get())
+  if (!surface)
     return false;
 
   scoped_refptr<gfx::GLContext> context(InitializeGLContext(surface.get()));
-  if (!context.get())
+  if (!context)
     return false;
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);

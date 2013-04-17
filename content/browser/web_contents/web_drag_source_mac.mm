@@ -150,7 +150,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
       "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
 
   // Be extra paranoid; avoid crashing.
-  if (!dropData_.get()) {
+  if (!dropData_) {
     NOTREACHED();
     return;
   }
@@ -187,7 +187,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
               forType:kNSURLTitlePboardType];
 
   // File contents.
-  } else if ([type isEqualToString:base::mac::CFToNSCast(fileUTI_.get())]) {
+  } else if ([type isEqualToString:base::mac::CFToNSCast(fileUTI_)]) {
     [pboard setData:[NSData dataWithBytes:dropData_->file_contents.data()
                                    length:dropData_->file_contents.length()]
             forType:base::mac::CFToNSCast(fileUTI_.get())];
@@ -315,7 +315,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
 - (NSString*)dragPromisedFileTo:(NSString*)path {
   // Be extra paranoid; avoid crashing.
-  if (!dropData_.get()) {
+  if (!dropData_) {
     NOTREACHED() << "No drag-and-drop data available for promised file.";
     return nil;
   }
@@ -331,7 +331,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   base::ThreadRestrictions::ScopedAllowIO allowIO;
   scoped_ptr<FileStream> fileStream(content::CreateFileStreamForDrop(
       &filePath, content::GetContentClient()->browser()->GetNetLog()));
-  if (!fileStream.get())
+  if (!fileStream)
     return nil;
 
   if (downloadURL_.is_valid()) {

@@ -85,7 +85,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(
     return false;
   }
 
-  if (!gl_decoder_.get()) {
+  if (!gl_decoder_) {
     LOG(ERROR) << "Failed to get gles2 decoder instance.";
     return false;
   }

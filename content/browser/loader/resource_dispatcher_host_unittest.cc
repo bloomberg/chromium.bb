@@ -497,7 +497,7 @@ class TestResourceDispatcherHostDelegate
       int route_id,
       bool is_continuation_of_transferred_request,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
-    if (user_data_.get()) {
+    if (user_data_) {
       const void* key = user_data_.get();
       request->SetUserData(key, user_data_.release());
     }

@@ -44,7 +44,7 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
   }
 
   font_shmem_.reset(new base::SharedMemory);
-  if (!font_shmem_.get()) {
+  if (!font_shmem_) {
     LOG(ERROR) << "Failed to create shared memory object.";
     return false;
   }

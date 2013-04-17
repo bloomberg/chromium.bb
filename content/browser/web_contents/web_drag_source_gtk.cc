@@ -58,7 +58,7 @@ WebDragSourceGtk::WebDragSourceGtk(WebContents* web_contents)
 
 WebDragSourceGtk::~WebDragSourceGtk() {
   // Break the current drag, if any.
-  if (drop_data_.get()) {
+  if (drop_data_) {
     gtk_grab_add(drag_widget_);
     gtk_grab_remove(drag_widget_);
     MessageLoopForUI::current()->RemoveObserver(this);
@@ -245,7 +245,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
               CreateFileStreamForDrop(
                   &file_path,
                   GetContentClient()->browser()->GetNetLog()));
-          if (file_stream.get()) {
+          if (file_stream) {
             // Start downloading the file to the stream.
             scoped_refptr<DragDownloadFile> drag_file_downloader =
                 new DragDownloadFile(

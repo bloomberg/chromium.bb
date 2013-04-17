@@ -715,7 +715,7 @@ WebGLId GLHelper::CompileShaderFromSource(
 
 void GLHelper::InitCopyTextToImpl() {
   // Lazily initialize |copy_texture_to_impl_|
-  if (!copy_texture_to_impl_.get())
+  if (!copy_texture_to_impl_)
     copy_texture_to_impl_.reset(new CopyTextureToImpl(context_, this));
 }
 

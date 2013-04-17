@@ -103,7 +103,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
 
 WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  if (!idb_factory_.get()) {
+  if (!idb_factory_) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
@@ -367,7 +367,7 @@ void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
 }
 
 std::set<GURL>* IndexedDBContextImpl::GetOriginSet() {
-  if (!origin_set_.get()) {
+  if (!origin_set_) {
     origin_set_.reset(new std::set<GURL>);
     std::vector<GURL> origins;
     GetAllOriginsAndPaths(data_path_, &origins, NULL);

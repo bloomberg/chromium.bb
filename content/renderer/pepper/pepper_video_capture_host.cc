@@ -251,7 +251,7 @@ int32_t PepperVideoCaptureHost::OnOpen(
     const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count) {
-  if (platform_video_capture_.get())
+  if (platform_video_capture_)
     return PP_ERROR_FAILED;
 
   webkit::ppapi::PluginDelegate* plugin_delegate = GetPluginDelegate();
@@ -323,7 +323,7 @@ int32_t PepperVideoCaptureHost::StopCapture() {
 }
 
 int32_t PepperVideoCaptureHost::Close() {
-  if (!platform_video_capture_.get())
+  if (!platform_video_capture_)
     return PP_OK;
 
   StopCapture();
@@ -361,7 +361,7 @@ void PepperVideoCaptureHost::SetRequestedInfo(
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {
-  if (platform_video_capture_.get()) {
+  if (platform_video_capture_) {
     platform_video_capture_->DetachEventHandler();
     platform_video_capture_ = NULL;
   }

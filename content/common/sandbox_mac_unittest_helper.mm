@@ -139,7 +139,7 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
   // Find Test Function to run;
   scoped_ptr<MacSandboxTestCase>
       test_case(SandboxTestForName(sandbox_test_name));
-  if (!test_case.get()) {
+  if (!test_case) {
     LOG(ERROR) << "Invalid sandbox test name (" << sandbox_test_name << ")";
     return -1;
   }

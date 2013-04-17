@@ -128,14 +128,14 @@ void GamepadProvider::DoInitializePollingThread(
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
   DCHECK(!data_fetcher_.get());  // Should only initialize once.
 
-  if (!fetcher.get())
+  if (!fetcher)
     fetcher.reset(new GamepadPlatformDataFetcher);
   data_fetcher_ = fetcher.Pass();
 }
 
 void GamepadProvider::SendPauseHint(bool paused) {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
-  if (data_fetcher_.get())
+  if (data_fetcher_)
     data_fetcher_->PauseHint(paused);
 }
 

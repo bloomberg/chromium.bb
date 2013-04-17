@@ -111,7 +111,7 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   // TODO: Can we just always use sync_filter_ since we setup the channel
   //       without a main listener?
   if (factory_->IsMainThread()) {
-    if (channel_.get()) {
+    if (channel_) {
       // http://crbug.com/125264
       base::ThreadRestrictions::ScopedAllowWait allow_wait;
       return channel_->Send(message);
@@ -140,7 +140,7 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
 
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
-  if (!channel_.get())
+  if (!channel_)
     return NULL;
 
   GPUCreateCommandBufferConfig init_params;
@@ -172,7 +172,7 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
 
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
-  if (!channel_.get())
+  if (!channel_)
     return NULL;
 
   GPUCreateCommandBufferConfig init_params;
@@ -254,7 +254,7 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
     base::SharedMemory* shared_memory) {
   AutoLock lock(context_lock_);
 
-  if (!channel_.get())
+  if (!channel_)
     return base::SharedMemory::NULLHandle();
 
   base::SharedMemoryHandle handle;

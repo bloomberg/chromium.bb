@@ -133,7 +133,7 @@ int32_t PepperDeviceEnumerationHostHelper::InternalHandleResourceMessage(
 
 int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
     HostMessageContext* context) {
-  if (enumerate_devices_context_.get())
+  if (enumerate_devices_context_)
     return PP_ERROR_INPROGRESS;
 
   enumerate_.reset(new ScopedRequest(

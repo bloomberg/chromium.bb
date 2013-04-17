@@ -54,7 +54,7 @@ bool TextureImageTransportSurface::Initialize() {
 
   GpuChannelManager* manager = helper_->manager();
   surface_ = manager->GetDefaultOffscreenSurface();
-  if (!surface_.get())
+  if (!surface_)
     return false;
 
   if (!helper_->Initialize())
@@ -71,7 +71,7 @@ bool TextureImageTransportSurface::Initialize() {
 }
 
 void TextureImageTransportSurface::Destroy() {
-  if (surface_.get())
+  if (surface_)
     surface_ = NULL;
 
   helper_->Destroy();
@@ -329,7 +329,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
     // of the service ids.
     DCHECK(context_.get() && surface_.get());
     uint32 service_id = backbuffer_->ReleaseServiceId();
-    if (context_->MakeCurrent(surface_.get()))
+    if (context_->MakeCurrent(surface_))
       glDeleteTextures(1, &service_id);
 
     return;

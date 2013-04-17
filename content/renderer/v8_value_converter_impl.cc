@@ -263,12 +263,12 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
   scoped_ptr<WebKit::WebArrayBuffer> array_buffer(
       WebKit::WebArrayBuffer::createFromV8Value(val));
   scoped_ptr<WebKit::WebArrayBufferView> view;
-  if (array_buffer.get()) {
+  if (array_buffer) {
     data = reinterpret_cast<char*>(array_buffer->data());
     length = array_buffer->byteLength();
   } else {
     view.reset(WebKit::WebArrayBufferView::createFromV8Value(val));
-    if (view.get()) {
+    if (view) {
       data = reinterpret_cast<char*>(view->baseAddress()) + view->byteOffset();
       length = view->byteLength();
     }
@@ -322,7 +322,7 @@ Value* V8ValueConverterImpl::FromV8Object(
     }
 
     scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, unique_map));
-    if (!child.get())
+    if (!child)
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.
       continue;

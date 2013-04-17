@@ -242,7 +242,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
   // We're on the FILE thread so it should be OK to block briefly here.
   scoped_ptr<dbus::Response> response(object_proxy->CallMethodAndBlock(
       method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (response.get()) {
+  if (response) {
     // The method returns an inhibit_cookie, used to uniquely identify
     // this request. It should be used as an argument to Uninhibit()
     // in order to remove the request.
@@ -285,7 +285,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
   message_writer.AppendUint32(inhibit_cookie_);
   scoped_ptr<dbus::Response> response(object_proxy->CallMethodAndBlock(
       method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get())
+  if (!response)
     LOG(ERROR) << "No response to Uninhibit() request!";
   // We don't care about checking the result. We assume it works; we can't
   // really do anything about it anyway if it fails.

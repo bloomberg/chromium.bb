@@ -381,7 +381,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
 // accessibility children of this object.
 - (NSArray*)children {
-  if (!children_.get()) {
+  if (!children_) {
     children_.reset([[NSMutableArray alloc]
         initWithCapacity:browserAccessibility_->child_count()] );
     for (uint32 index = 0;

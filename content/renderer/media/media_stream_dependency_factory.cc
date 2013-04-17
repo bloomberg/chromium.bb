@@ -420,14 +420,14 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   DVLOG(1) << "MediaStreamDependencyFactory::CreatePeerConnectionFactory()";
-  if (!pc_factory_.get()) {
+  if (!pc_factory_) {
     DCHECK(!audio_device_);
     audio_device_ = new WebRtcAudioDeviceImpl();
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_));
-    if (factory.get())
+    if (factory)
       pc_factory_ = factory;
     else
       audio_device_ = NULL;
@@ -653,7 +653,7 @@ bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
     event.Wait();
   }
 
-  if (!socket_factory_.get()) {
+  if (!socket_factory_) {
     socket_factory_.reset(
         new IpcPacketSocketFactory(p2p_socket_dispatcher_));
   }

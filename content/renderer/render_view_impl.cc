@@ -2019,7 +2019,7 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
   // By returning NULL in that case, we instruct WebKit to cancel that new
   // popup.  So from the user perspective, only the first one will show, and
   // will have to close the first one before another one can be shown.
-  if (external_popup_menu_.get())
+  if (external_popup_menu_)
     return NULL;
   external_popup_menu_.reset(
       new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
@@ -3122,7 +3122,7 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   // from the form contents already stored by |willSendSubmitEvent| into the
   // dataSource's NavigationState (as opposed to the provisionalDataSource's,
   // which is what we're storing into now.)
-  if (password_form_data.get()) {
+  if (password_form_data) {
     DocumentState* old_document_state =
         DocumentState::FromDataSource(frame->dataSource());
     if (old_document_state) {
@@ -3624,7 +3624,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
                     DidClearWindowObject(frame));
 
   if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) {
-    if (!dom_automation_controller_.get())
+    if (!dom_automation_controller_)
       dom_automation_controller_.reset(new DomAutomationController());
     dom_automation_controller_->set_message_sender(
         static_cast<RenderView*>(this));
@@ -6434,7 +6434,7 @@ void RenderViewImpl::OnSelectPopupMenuItems(
   // a select faster than it takes for the show-select-popup IPC message to make
   // it to the browser UI thread.  Ignore the extra-messages.
   // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
-  if (!external_popup_menu_.get())
+  if (!external_popup_menu_)
     return;
 
   external_popup_menu_->DidSelectItems(canceled, selected_indices);
@@ -6532,7 +6532,7 @@ bool RenderViewImpl::didTapMultipleTargets(
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&transport_dib,
                                                    gfx::Rect(canvas_size)));
-    if (!canvas.get())
+    if (!canvas)
       return false;
 
     // TODO(trchen): Cleanup the device scale factor mess.

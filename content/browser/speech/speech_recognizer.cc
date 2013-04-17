@@ -155,7 +155,7 @@ SpeechRecognizer::recognition_engine() const {
 
 SpeechRecognizer::~SpeechRecognizer() {
   endpointer_.EndSession();
-  if (audio_controller_.get()) {
+  if (audio_controller_) {
     audio_controller_->Close(base::Bind(&KeepAudioControllerRefcountedForDtor,
                                         audio_controller_));
   }

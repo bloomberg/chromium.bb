@@ -1397,7 +1397,7 @@ void ResourceDispatcherHostImpl::RemovePendingLoader(
   pending_loaders_.erase(iter);
 
   // If we have no more pending requests, then stop the load state monitor
-  if (pending_loaders_.empty() && update_load_states_timer_.get())
+  if (pending_loaders_.empty() && update_load_states_timer_)
     update_load_states_timer_->Stop();
 }
 

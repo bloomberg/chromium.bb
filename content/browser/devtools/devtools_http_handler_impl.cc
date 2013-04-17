@@ -192,7 +192,7 @@ DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
 }
 
 void DevToolsHttpHandlerImpl::Start() {
-  if (thread_.get())
+  if (thread_)
     return;
   thread_.reset(new base::Thread(kDevToolsHandlerThreadName));
   BrowserThread::PostTask(
@@ -226,7 +226,7 @@ void DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease() {
 }
 
 void DevToolsHttpHandlerImpl::Stop() {
-  if (!thread_.get())
+  if (!thread_)
     return;
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
@@ -606,7 +606,7 @@ void DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI(int connection_id) {
 void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  if (!thread_.get())
+  if (!thread_)
     return;
   std::string browser_prefix = "/devtools/browser";
   size_t browser_pos = request.path.find(browser_prefix);
@@ -739,7 +739,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
                                        net::HttpStatusCode status_code,
                                        base::Value* value,
                                        const std::string& message) {
-  if (!thread_.get())
+  if (!thread_)
     return;
 
   // Serialize value and message.
@@ -771,7 +771,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
 void DevToolsHttpHandlerImpl::Send200(int connection_id,
                                       const std::string& data,
                                       const std::string& mime_type) {
-  if (!thread_.get())
+  if (!thread_)
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
@@ -783,7 +783,7 @@ void DevToolsHttpHandlerImpl::Send200(int connection_id,
 }
 
 void DevToolsHttpHandlerImpl::Send404(int connection_id) {
-  if (!thread_.get())
+  if (!thread_)
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
@@ -792,7 +792,7 @@ void DevToolsHttpHandlerImpl::Send404(int connection_id) {
 
 void DevToolsHttpHandlerImpl::Send500(int connection_id,
                                       const std::string& message) {
-  if (!thread_.get())
+  if (!thread_)
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
@@ -803,7 +803,7 @@ void DevToolsHttpHandlerImpl::Send500(int connection_id,
 void DevToolsHttpHandlerImpl::AcceptWebSocket(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  if (!thread_.get())
+  if (!thread_)
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,

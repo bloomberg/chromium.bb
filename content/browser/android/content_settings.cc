@@ -150,7 +150,7 @@ bool ContentSettings::RegisterContentSettings(JNIEnv* env) {
 void ContentSettings::SyncFromNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  if (!field_ids_.get())
+  if (!field_ids_)
     field_ids_.reset(new FieldIds(env));
 
   ScopedJavaLocalRef<jobject> scoped_obj = content_settings_.get(env);
@@ -309,7 +309,7 @@ void ContentSettings::SyncFromNativeImpl() {
 void ContentSettings::SyncToNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  if (!field_ids_.get())
+  if (!field_ids_)
     field_ids_.reset(new FieldIds(env));
 
   ScopedJavaLocalRef<jobject> scoped_obj = content_settings_.get(env);

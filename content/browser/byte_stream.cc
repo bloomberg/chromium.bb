@@ -363,7 +363,7 @@ void ByteStreamReaderImpl::TransferDataInternal(
 
   bool was_empty = available_contents_.empty();
 
-  if (transfer_buffer.get()) {
+  if (transfer_buffer) {
     available_contents_.insert(available_contents_.end(),
                                         transfer_buffer->begin(),
                                         transfer_buffer->end());

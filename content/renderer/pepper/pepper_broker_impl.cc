@@ -226,7 +226,7 @@ void PepperBrokerImpl::OnBrokerPermissionResult(
     return;
   }
 
-  if (dispatcher_.get()) {
+  if (dispatcher_) {
     ConnectPluginToBroker(client);
     pending_connects_.erase(entry);
     return;

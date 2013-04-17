@@ -22,7 +22,7 @@ PepperPlatformImage2DImpl::PepperPlatformImage2DImpl(int width,
 // On Mac, we have to tell the browser to free the transport DIB.
 PepperPlatformImage2DImpl::~PepperPlatformImage2DImpl() {
 #if defined(OS_MACOSX)
-  if (dib_.get()) {
+  if (dib_) {
     RenderThreadImpl::current()->Send(
         new ViewHostMsg_FreeTransportDIB(dib_->id()));
   }

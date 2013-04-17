@@ -35,7 +35,7 @@ void GamepadService::AddConsumer() {
 
   num_readers_++;
   DCHECK(num_readers_ > 0);
-  if (!provider_.get())
+  if (!provider_)
     provider_.reset(new GamepadProvider);
   provider_->Resume();
 }

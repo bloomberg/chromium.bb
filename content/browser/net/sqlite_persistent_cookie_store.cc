@@ -624,7 +624,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
 
   bool load_success = true;
 
-  if (!db_.get()) {
+  if (!db_) {
     // Close() has been called on this store.
     load_success = false;
   } else if (keys_to_load_.size() > 0) {
@@ -994,10 +994,10 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!db_.get())
+  if (!db_)
     return;
 
-  if (!special_storage_policy_.get())
+  if (!special_storage_policy_)
     return;
 
   sql::Statement del_smt(db_->GetCachedStatement(
@@ -1048,7 +1048,7 @@ void SQLitePersistentCookieStore::Backend::ScheduleKillDatabase() {
 void SQLitePersistentCookieStore::Backend::KillDatabase() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
-  if (db_.get()) {
+  if (db_) {
     // This Backend will now be in-memory only. In a future run we will recreate
     // the database. Hopefully things go better then!
     bool success = db_->RazeAndClose();

@@ -266,7 +266,7 @@ int32_t PepperTrueTypeFontMac::Describe(
 int32_t PepperTrueTypeFontMac::GetTableTags(std::vector<uint32_t>* tags) {
   base::mac::ScopedCFTypeRef<CFArrayRef> tag_array(
       CTFontCopyAvailableTables(font_ref_, kCTFontTableOptionNoOptions));
-  if (!tag_array.get())
+  if (!tag_array)
     return PP_ERROR_FAILED;
   CFIndex length = CFArrayGetCount(tag_array);
   tags->resize(length);
@@ -285,7 +285,7 @@ int32_t PepperTrueTypeFontMac::GetTable(uint32_t table_tag,
   base::mac::ScopedCFTypeRef<CFDataRef> table_ref(
       CTFontCopyTable(font_ref_, static_cast<CTFontTableTag>(table_tag),
                       kCTFontTableOptionNoOptions));
-  if (!table_ref.get())
+  if (!table_ref)
     return PP_ERROR_FAILED;
 
   CFIndex table_size = CFDataGetLength(table_ref);

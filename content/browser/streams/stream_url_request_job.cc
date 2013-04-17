@@ -117,7 +117,7 @@ bool StreamURLRequestJob::ReadRawData(net::IOBuffer* buf,
 }
 
 bool StreamURLRequestJob::GetMimeType(std::string* mime_type) const {
-  if (!response_info_.get())
+  if (!response_info_)
     return false;
 
   // TODO(zork): Support registered MIME types if needed.
@@ -125,12 +125,12 @@ bool StreamURLRequestJob::GetMimeType(std::string* mime_type) const {
 }
 
 void StreamURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (response_info_.get())
+  if (response_info_)
     *info = *response_info_;
 }
 
 int StreamURLRequestJob::GetResponseCode() const {
-  if (!response_info_.get())
+  if (!response_info_)
     return -1;
 
   return response_info_->headers->response_code();

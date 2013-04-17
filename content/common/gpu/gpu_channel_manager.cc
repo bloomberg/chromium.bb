@@ -50,7 +50,7 @@ GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
 
 GpuChannelManager::~GpuChannelManager() {
   gpu_channels_.clear();
-  if (default_offscreen_surface_.get()) {
+  if (default_offscreen_surface_) {
     default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = NULL;
   }
@@ -290,7 +290,7 @@ void GpuChannelManager::OnLoseAllContexts() {
 }
 
 gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
-  if (!default_offscreen_surface_.get()) {
+  if (!default_offscreen_surface_) {
     default_offscreen_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
         false, gfx::Size(1, 1));
   }

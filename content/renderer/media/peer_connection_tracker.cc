@@ -181,14 +181,14 @@ static DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
   scoped_ptr<DictionaryValue> stats, result;
 
   stats.reset(GetDictValueStats(report));
-  if (!stats.get())
+  if (!stats)
     return NULL;
 
   result.reset(new DictionaryValue());
-  if (!result.get())
+  if (!result)
     return NULL;
 
-  if (stats.get())
+  if (stats)
     result->Set("stats", stats.release());
   result->SetString("id", report.id);
   result->SetString("type", report.type);

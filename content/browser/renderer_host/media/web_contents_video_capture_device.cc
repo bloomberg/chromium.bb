@@ -1119,17 +1119,17 @@ void WebContentsVideoCaptureDevice::Impl::AssignCaptureMachine(
     scoped_ptr<CaptureMachine> capture_machine) {
   DCHECK(!impl || impl->thread_checker_.CalledOnValidThread());
 
-  if (!impl.get()) {
+  if (!impl) {
     // If WCVD::Impl was destroyed before we got back on it's thread and
     // capture_machine is not NULL, then we need to return to the UI thread to
     // safely cleanup the CaptureMachine.
-    if (capture_machine.get()) {
+    if (capture_machine) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE, base::Bind(
               &DeleteCaptureMachineOnUIThread, base::Passed(&capture_machine)));
       return;
     }
-  } else if (!capture_machine.get()) {
+  } else if (!capture_machine) {
     impl->Error();
   } else {
     impl->capture_machine_ = capture_machine.Pass();
@@ -1167,7 +1167,7 @@ WebContentsVideoCaptureDevice::Impl::~Impl() {
   // There is still a capture pipeline running that is checking in with the
   // oracle, and processing captures that are already started in flight. That
   // pipeline must be shut down asynchronously, on the UI thread.
-  if (capture_machine_.get()) {
+  if (capture_machine_) {
     // The task that is posted to the UI thread might not run if we are shutting
     // down, so we transfer ownership of CaptureMachine to the closure so that
     // it is still cleaned up when the closure is deleted.

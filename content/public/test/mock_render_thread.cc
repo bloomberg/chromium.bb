@@ -39,7 +39,7 @@ bool MockRenderThread::Send(IPC::Message* msg) {
   // through this function messages, messages with reply and reply messages.
   // We can only handle one synchronous message at a time.
   if (msg->is_reply()) {
-    if (reply_deserializer_.get()) {
+    if (reply_deserializer_) {
       reply_deserializer_->SerializeOutputParameters(*msg);
       reply_deserializer_.reset();
     }

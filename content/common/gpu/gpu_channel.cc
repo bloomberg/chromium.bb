@@ -126,7 +126,7 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // All other messages get processed by the GpuChannel.
     if (!handled) {
       messages_forwarded_to_channel_++;
-      if (preempting_flag_.get())
+      if (preempting_flag_)
         pending_messages_.push(PendingMessage(messages_forwarded_to_channel_));
       UpdatePreemptionState();
     }
@@ -497,7 +497,7 @@ std::string GpuChannel::GetChannelName() {
 
 #if defined(OS_POSIX)
 int GpuChannel::TakeRendererFileDescriptor() {
-  if (!channel_.get()) {
+  if (!channel_) {
     NOTREACHED();
     return -1;
   }
@@ -561,7 +561,7 @@ bool GpuChannel::Send(IPC::Message* message) {
              << " with type " << message->type();
   }
 
-  if (!channel_.get()) {
+  if (!channel_) {
     delete message;
     return false;
   }
@@ -603,7 +603,7 @@ void GpuChannel::StubSchedulingChanged(bool scheduled) {
   bool a_stub_is_descheduled = num_stubs_descheduled_ > 0;
 
   if (a_stub_is_descheduled != a_stub_was_descheduled) {
-    if (preempting_flag_.get()) {
+    if (preempting_flag_) {
       io_message_loop_->PostTask(
           FROM_HERE,
           base::Bind(&GpuChannelMessageFilter::UpdateStubSchedulingState,
@@ -654,7 +654,7 @@ void GpuChannel::CreateViewCommandBuffer(
       watchdog_,
       software_,
       init_params.active_url));
-  if (preempted_flag_.get())
+  if (preempted_flag_)
     stub->SetPreemptByFlag(preempted_flag_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -721,7 +721,7 @@ void GpuChannel::RemoveRoute(int32 route_id) {
 }
 
 gpu::PreemptionFlag* GpuChannel::GetPreemptionFlag() {
-  if (!preempting_flag_.get()) {
+  if (!preempting_flag_) {
     preempting_flag_ = new gpu::PreemptionFlag;
     io_message_loop_->PostTask(
         FROM_HERE, base::Bind(
@@ -742,7 +742,7 @@ void GpuChannel::SetPreemptByFlag(
 }
 
 GpuChannel::~GpuChannel() {
-  if (preempting_flag_.get())
+  if (preempting_flag_)
     preempting_flag_->Reset();
 }
 
@@ -872,7 +872,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       watchdog_,
       software_,
       init_params.active_url));
-  if (preempted_flag_.get())
+  if (preempted_flag_)
     stub->SetPreemptByFlag(preempted_flag_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -942,7 +942,7 @@ void GpuChannel::OnCollectRenderingStatsForSurface(
 
 void GpuChannel::MessageProcessed() {
   messages_processed_++;
-  if (preempting_flag_.get()) {
+  if (preempting_flag_) {
     io_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&GpuChannelMessageFilter::MessageProcessed,

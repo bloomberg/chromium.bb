@@ -171,13 +171,13 @@ void ImageTransportHelper::Suspend() {
 }
 
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
-  if (!stub_.get())
+  if (!stub_)
     return NULL;
   return stub_->scheduler();
 }
 
 gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
-  if (!stub_.get())
+  if (!stub_)
     return NULL;
   return stub_->decoder();
 }

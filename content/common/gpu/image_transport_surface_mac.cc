@@ -217,7 +217,7 @@ void IOSurfaceImageTransportSurface::AdjustBufferAllocation() {
       io_surface_.get()) {
     UnrefIOSurface();
     helper_->Suspend();
-  } else if (backbuffer_suggested_allocation_ && !io_surface_.get()) {
+  } else if (backbuffer_suggested_allocation_ && !io_surface_) {
     CreateIOSurface();
   }
 }

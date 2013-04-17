@@ -132,7 +132,7 @@ void CommandBufferProxyImpl::SetChannelErrorCallback(
 bool CommandBufferProxyImpl::Initialize() {
   shared_state_shm_.reset(channel_->factory()->AllocateSharedMemory(
       sizeof(*shared_state())).release());
-  if (!shared_state_shm_.get())
+  if (!shared_state_shm_)
     return false;
 
   if (!shared_state_shm_->Map(sizeof(*shared_state())))
@@ -255,7 +255,7 @@ gpu::Buffer CommandBufferProxyImpl::CreateTransferBuffer(size_t size,
 
   scoped_ptr<base::SharedMemory> shared_memory(
       channel_->factory()->AllocateSharedMemory(size));
-  if (!shared_memory.get())
+  if (!shared_memory)
     return gpu::Buffer();
 
   DCHECK(!shared_memory->memory());

@@ -133,7 +133,7 @@ void RenderViewTest::SetUp() {
 
   // Subclasses can set render_thread_ with their own implementation before
   // calling RenderViewTest::SetUp().
-  if (!render_thread_.get())
+  if (!render_thread_)
     render_thread_.reset(new MockRenderThread());
   render_thread_->set_routing_id(kRouteId);
   render_thread_->set_surface_id(kSurfaceId);

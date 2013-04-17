@@ -160,7 +160,7 @@ void CmdBufferImageTransportFactory::ReleaseTexture(
 }
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
-  if (!gl_helper_.get())
+  if (!gl_helper_)
     gl_helper_.reset(new GLHelper(context_.get()));
 
   return gl_helper_.get();

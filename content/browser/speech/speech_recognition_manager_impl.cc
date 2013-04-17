@@ -86,7 +86,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
 
   std::string hardware_info;
   bool can_report_metrics = false;
-  if (delegate_.get())
+  if (delegate_)
     delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
 
   SpeechRecognitionEngineConfig remote_engine_config;
@@ -138,7 +138,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
 
   primary_session_id_ = session_id;
 
-  if (delegate_.get()) {
+  if (delegate_) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,

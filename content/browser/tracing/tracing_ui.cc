@@ -305,7 +305,7 @@ void TracingMessageHandler::FileSelectionCanceled(void* params) {
 
 void TracingMessageHandler::OnLoadTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
-  if (select_trace_file_dialog_.get())
+  if (select_trace_file_dialog_)
     return;
   select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
   select_trace_file_dialog_ = ui::SelectFileDialog::Create(
@@ -350,7 +350,7 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
 
 void TracingMessageHandler::OnSaveTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
-  if (select_trace_file_dialog_.get())
+  if (select_trace_file_dialog_)
     return;
 
   DCHECK(list->GetSize() == 1);

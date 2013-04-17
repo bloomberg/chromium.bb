@@ -1051,7 +1051,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   if (window_number() <= 0) {
     // There is no window to present so capturing during present won't work.
     // We check if frame subscriber wants this frame and capture manually.
-    if (compositing_iosurface_.get() && frame_subscriber_.get()) {
+    if (compositing_iosurface_.get() && frame_subscriber_) {
       scoped_refptr<media::VideoFrame> frame;
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
       if (frame_subscriber_->ShouldCaptureFrame(&frame, &callback)) {
@@ -1084,7 +1084,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
     return true;
   }
 
-  if (!compositing_iosurface_.get()) {
+  if (!compositing_iosurface_) {
     CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
         CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
         CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
@@ -1092,7 +1092,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
         CompositingIOSurfaceMac::Create(window_number(), order));
   }
 
-  if (!compositing_iosurface_.get())
+  if (!compositing_iosurface_)
     return true;
 
   compositing_iosurface_->SetIOSurface(surface_handle, size);
@@ -1123,7 +1123,7 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
     if (pending_swap_buffers_acks_.front().first != 0) {
       AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
       ack_params.sync_point = 0;
-      if (compositing_iosurface_.get())
+      if (compositing_iosurface_)
         ack_params.renderer_id = compositing_iosurface_->GetRendererID();
       RenderWidgetHostImpl::AcknowledgeBufferPresent(
           pending_swap_buffers_acks_.front().first,
@@ -1133,7 +1133,7 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
         render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 
         // Send VSync parameters to compositor thread.
-        if (compositing_iosurface_.get()) {
+        if (compositing_iosurface_) {
           base::TimeTicks timebase;
           uint32 numerator = 0, denominator = 0;
           compositing_iosurface_->GetVSyncParameters(&timebase,
@@ -1306,7 +1306,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
-  if (compositing_iosurface_.get())
+  if (compositing_iosurface_)
     compositing_iosurface_->UnrefIOSurface();
 }
 
@@ -2183,7 +2183,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     return;
 
   handlingGlobalFrameDidChange_ = YES;
-  if (renderWidgetHostView_->compositing_iosurface_.get())
+  if (renderWidgetHostView_->compositing_iosurface_)
     renderWidgetHostView_->compositing_iosurface_->GlobalFrameDidChange();
   handlingGlobalFrameDidChange_ = NO;
 }

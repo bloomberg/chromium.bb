@@ -125,7 +125,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
 #endif
 
   // See comment above browser_context_ decl for why we check for NULL here.
-  if (!browser_context_.get())
+  if (!browser_context_)
     browser_context_.reset(new TestBrowserContext());
 
   // This will be deleted when the WebContentsImpl goes away.
@@ -175,7 +175,7 @@ void RenderViewHostTestHarness::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   // Delete any RenderProcessHosts before the BrowserContext goes away.
-  if (rvh_test_enabler_.rph_factory_.get())
+  if (rvh_test_enabler_.rph_factory_)
     rvh_test_enabler_.rph_factory_.reset();
 
   // Release the browser context on the UI thread.

@@ -54,7 +54,7 @@ base::win::ScopedComPtr<IAccessible> GetAccessibleFromResultVariant(
       base::win::ScopedComPtr<IDispatch> dispatch;
       HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
       EXPECT_TRUE(SUCCEEDED(hr));
-      if (dispatch.get())
+      if (dispatch)
         dispatch.QueryInterface(ptr.Receive());
       break;
     }
@@ -112,7 +112,7 @@ void RecursiveFindNodeInAccessibilityTree(IAccessible* node,
   for (int index = 0; index < obtained_count; index++) {
     base::win::ScopedComPtr<IAccessible> child_accessible(
         GetAccessibleFromResultVariant(node, &child_array.get()[index]));
-    if (child_accessible.get()) {
+    if (child_accessible) {
       RecursiveFindNodeInAccessibilityTree(
           child_accessible.get(), expected_role, expected_name, depth + 1,
           found);

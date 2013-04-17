@@ -148,7 +148,7 @@ bool NetworkManagerWlanApi::GetAccessPointData(
         device_proxy->CallMethodAndBlock(
             &method_call,
             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (!response.get()) {
+    if (!response) {
       LOG(WARNING) << "Failed to get the device type for "
                    << device_path.value();
       continue;  // Check the next device.
@@ -180,7 +180,7 @@ bool NetworkManagerWlanApi::GetAdapterDeviceList(
       network_manager_proxy_->CallMethodAndBlock(
           &method_call,
           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(WARNING) << "Failed to get the device list";
     return false;
   }
@@ -208,7 +208,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       device_proxy->CallMethodAndBlock(
           &method_call,
           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(WARNING) << "Failed to get access points data for "
                  << adapter_path.value();
     return false;
@@ -236,7 +236,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     {
       scoped_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Ssid"));
-      if (!response.get())
+      if (!response)
         continue;
       // The response should contain a variant that contains an array of bytes.
       dbus::MessageReader reader(response.get());
@@ -260,7 +260,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     { // Read the mac address
       scoped_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "HwAddress"));
-      if (!response.get())
+      if (!response)
         continue;
       dbus::MessageReader reader(response.get());
       std::string mac;
@@ -284,7 +284,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     {  // Read signal strength.
       scoped_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Strength"));
-      if (!response.get())
+      if (!response)
         continue;
       dbus::MessageReader reader(response.get());
       uint8 strength = 0;
@@ -300,7 +300,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     { // Read the channel
       scoped_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Frequency"));
-      if (!response.get())
+      if (!response)
         continue;
       dbus::MessageReader reader(response.get());
       uint32 frequency = 0;
@@ -335,7 +335,7 @@ scoped_ptr<dbus::Response> NetworkManagerWlanApi::GetAccessPointProperty(
   scoped_ptr<dbus::Response> response = access_point_proxy->CallMethodAndBlock(
       &method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
-  if (!response.get()) {
+  if (!response) {
     LOG(WARNING) << "Failed to get property for " << property_name;
   }
   return response.Pass();

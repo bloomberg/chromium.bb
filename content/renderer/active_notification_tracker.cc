@@ -55,7 +55,7 @@ void ActiveNotificationTracker::UnregisterNotification(int id) {
   scoped_ptr<WebNotification> notification(notification_table_.Lookup(id));
   notification_table_.Remove(id);
   DCHECK(notification.get());
-  if (notification.get())
+  if (notification)
     reverse_notification_table_.erase(*notification);
 }
 

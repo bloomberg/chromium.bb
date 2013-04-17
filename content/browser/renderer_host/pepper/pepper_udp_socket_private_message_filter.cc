@@ -165,7 +165,7 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgRecvFrom(
   if (closed_)
     return PP_ERROR_FAILED;
 
-  if (recvfrom_buffer_.get())
+  if (recvfrom_buffer_)
     return PP_ERROR_INPROGRESS;
   if (num_bytes > ppapi::proxy::UDPSocketPrivateResource::kMaxReadSize) {
     // |num_bytes| value is checked on the plugin side.
@@ -263,7 +263,7 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
     return;
   }
 
-  if (sendto_buffer_.get()) {
+  if (sendto_buffer_) {
     SendSendToError(context, PP_ERROR_INPROGRESS);
     return;
   }

@@ -166,7 +166,7 @@ void ChildThread::OnChannelError() {
 
 bool ChildThread::Send(IPC::Message* msg) {
   DCHECK(MessageLoop::current() == message_loop());
-  if (!channel_.get()) {
+  if (!channel_) {
     delete msg;
     return false;
   }

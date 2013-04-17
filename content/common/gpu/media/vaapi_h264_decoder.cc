@@ -479,7 +479,7 @@ bool VaapiH264Decoder::InitializeFBConfig() {
   scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> glx_fb_configs(
       glXChooseFBConfig(x_display_, DefaultScreen(x_display_), fbconfig_attr,
                         &num_fbconfigs));
-  if (!glx_fb_configs.get())
+  if (!glx_fb_configs)
     return false;
   if (!num_fbconfigs)
     return false;
@@ -2018,7 +2018,7 @@ bool VaapiH264Decoder::FinishPicture() {
     if (!(*output_candidate)->ref) {
       // Current picture hasn't been inserted into DPB yet, so don't remove it
       // if we managed to output it immediately.
-      if (*output_candidate != pic.get())
+      if (*output_candidate != pic)
         dpb_.RemoveByPOC((*output_candidate)->pic_order_cnt);
       // Mark as unused.
       UnassignSurfaceFromPoC((*output_candidate)->pic_order_cnt);

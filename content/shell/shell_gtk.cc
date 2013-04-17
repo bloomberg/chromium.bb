@@ -209,7 +209,7 @@ void Shell::PlatformSetContents() {
 void Shell::SizeTo(int width, int height) {
   content_width_ = width;
   content_height_ = height;
-  if (web_contents_.get()) {
+  if (web_contents_) {
     gtk_widget_set_size_request(web_contents_->GetView()->GetNativeView(),
                                 width, height);
   }

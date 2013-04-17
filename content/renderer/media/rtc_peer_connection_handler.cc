@@ -490,7 +490,7 @@ bool RTCPeerConnectionHandler::addICECandidate(
           UTF16ToUTF8(candidate.sdpMid()),
           candidate.sdpMLineIndex(),
           UTF16ToUTF8(candidate.candidate())));
-  if (!native_candidate.get()) {
+  if (!native_candidate) {
     LOG(ERROR) << "Could not create native ICE candidate.";
     return false;
   }

@@ -46,7 +46,7 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
   *did_suppress_message = false;
 
-  if (dialog_.get()) {
+  if (dialog_) {
     // One dialog at a time, please.
     *did_suppress_message = true;
     return;
@@ -89,7 +89,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
   }
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
-  if (dialog_.get()) {
+  if (dialog_) {
     // Seriously!?
     callback.Run(true, string16());
     return;
@@ -118,7 +118,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 void ShellJavaScriptDialogManager::ResetJavaScriptState(
     WebContents* web_contents) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(TOOLKIT_GTK)
-  if (dialog_.get()) {
+  if (dialog_) {
     dialog_->Cancel();
     dialog_.reset();
   }

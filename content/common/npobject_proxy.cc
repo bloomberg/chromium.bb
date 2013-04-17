@@ -70,7 +70,7 @@ NPObjectProxy::NPObjectProxy(
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  if (channel_.get()) {
+  if (channel_) {
     // This NPObjectProxy instance is now invalid and should not be reused for
     // requests initiated by plugins. We may receive requests for the
     // same NPObject in the context of the outgoing NPObjectMsg_Release call.
@@ -94,7 +94,7 @@ NPObject* NPObjectProxy::Create(NPChannelBase* channel,
 }
 
 bool NPObjectProxy::Send(IPC::Message* msg) {
-  if (channel_.get())
+  if (channel_)
     return channel_->Send(msg);
 
   delete msg;

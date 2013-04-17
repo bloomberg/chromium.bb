@@ -1708,7 +1708,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
     bool result) {
   callback.Run(result, bitmap);
 
-  if (!render_widget_host_view.get())
+  if (!render_widget_host_view)
     return;
   --render_widget_host_view->pending_thumbnail_tasks_;
 }

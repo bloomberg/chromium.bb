@@ -91,7 +91,7 @@ void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory,
     // start polling.
     scoped_ptr<DataFetcher> fetcher(factory());
 
-    if (fetcher.get()) {
+    if (fetcher) {
       scoped_refptr<const DeviceData> device_data(fetcher->GetDeviceData(type));
       if (device_data != NULL) {
         // Pass ownership of fetcher to provider_.

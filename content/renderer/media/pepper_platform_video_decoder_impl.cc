@@ -26,7 +26,7 @@ PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
 bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
   // TODO(vrk): Support multiple decoders.
-  if (decoder_.get())
+  if (decoder_)
     return true;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -76,7 +76,7 @@ void PlatformVideoDecoderImpl::Reset() {
 }
 
 void PlatformVideoDecoderImpl::Destroy() {
-  if (decoder_.get())
+  if (decoder_)
     decoder_.release()->Destroy();
   client_ = NULL;
   delete this;

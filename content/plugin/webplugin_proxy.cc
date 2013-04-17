@@ -102,7 +102,7 @@ WebPluginProxy::~WebPluginProxy() {
 
 #if defined(OS_MACOSX)
   // Destroy the surface early, since it may send messages during cleanup.
-  if (accelerated_surface_.get())
+  if (accelerated_surface_)
     accelerated_surface_.reset();
 #endif
 
@@ -275,7 +275,7 @@ WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
 }
 
 int WebPluginProxy::GetRendererId() {
-  if (channel_.get())
+  if (channel_)
     return channel_->renderer_id();
   return -1;
 }
@@ -629,7 +629,7 @@ void WebPluginProxy::StartIme() {
 
 WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
-  if (!accelerated_surface_.get())
+  if (!accelerated_surface_)
     accelerated_surface_.reset(
         WebPluginAcceleratedSurfaceProxy::Create(this, gpu_preference));
   return accelerated_surface_.get();

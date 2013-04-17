@@ -67,7 +67,7 @@ DownloadInterruptReason BaseFile::Initialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
-  if (file_stream_.get()) {
+  if (file_stream_) {
     file_stream_->SetBoundNetLogSource(bound_net_log_);
     file_stream_->EnableErrorStatistics();
   }
@@ -103,7 +103,7 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   if (detached_)
     RecordDownloadCount(APPEND_TO_DETACHED_FILE_COUNT);
 
-  if (!file_stream_.get())
+  if (!file_stream_)
     return LogInterruptReason("No file stream on append", 0,
                               DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
@@ -274,7 +274,7 @@ DownloadInterruptReason BaseFile::Open() {
       base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
 
   // Create a new file stream if it is not provided.
-  if (!file_stream_.get()) {
+  if (!file_stream_) {
     CreateFileStream();
     file_stream_->EnableErrorStatistics();
     int open_result = file_stream_->OpenSync(
@@ -322,7 +322,7 @@ void BaseFile::Close() {
 
   bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_CLOSED);
 
-  if (file_stream_.get()) {
+  if (file_stream_) {
 #if defined(OS_CHROMEOS)
     // Currently we don't really care about the return value, since if it fails
     // theres not much we can do.  But we might in the future.

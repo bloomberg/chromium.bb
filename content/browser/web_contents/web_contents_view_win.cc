@@ -155,7 +155,7 @@ void WebContentsViewWin::CreateView(
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
   drag_dest_ = new WebDragDest(hwnd(), web_contents_);
-  if (delegate_.get()) {
+  if (delegate_) {
     WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
     if (delegate)
       drag_dest_->set_delegate(delegate);
@@ -184,12 +184,12 @@ void WebContentsViewWin::SetInitialFocus() {
 }
 
 void WebContentsViewWin::StoreFocus() {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->StoreFocus();
 }
 
 void WebContentsViewWin::RestoreFocus() {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->RestoreFocus();
 }
 
@@ -246,7 +246,7 @@ void WebContentsViewWin::SetOverscrollControllerEnabled(bool enabled) {
 void WebContentsViewWin::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->ShowContextMenu(params, type);
 }
 
@@ -310,11 +310,11 @@ LRESULT WebContentsViewWin::OnCreate(
 
 LRESULT WebContentsViewWin::OnDestroy(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  if (drag_dest_.get()) {
+  if (drag_dest_) {
     RevokeDragDrop(GetNativeView());
     drag_dest_ = NULL;
   }
-  if (drag_handler_.get()) {
+  if (drag_handler_) {
     drag_handler_->CancelDrag();
     drag_handler_ = NULL;
   }
@@ -357,7 +357,7 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
   if (rwhv)
     rwhv->SetSize(size);
 
-  if (delegate_.get())
+  if (delegate_)
     delegate_->SizeChanged(size);
 
   return 0;

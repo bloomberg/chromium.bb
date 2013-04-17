@@ -59,11 +59,11 @@ const Orientation* DataFetcherImplAndroid::GetOrientation() {
   // Do we have a new orientation value? (It's safe to do this outside the lock
   // because we only skip the lock if the value is null. We always enter the
   // lock if we're going to make use of the new value.)
-  if (next_orientation_.get()) {
+  if (next_orientation_) {
     base::AutoLock autolock(next_orientation_lock_);
     next_orientation_.swap(current_orientation_);
   }
-  if (!current_orientation_.get())
+  if (!current_orientation_)
     return new Orientation();
   return current_orientation_.get();
 }

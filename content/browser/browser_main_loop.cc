@@ -309,7 +309,7 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif
 
-  if (parts_.get())
+  if (parts_)
     parts_->PreEarlyInitialization();
 
 #if defined(OS_WIN)
@@ -339,12 +339,12 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif  // !defined(OS_IOS)
 
-  if (parts_.get())
+  if (parts_)
     parts_->PostEarlyInitialization();
 }
 
 void BrowserMainLoop::MainMessageLoopStart() {
-  if (parts_.get())
+  if (parts_)
     parts_->PreMainMessageLoopStart();
 
 #if defined(OS_WIN)
@@ -395,7 +395,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   system_message_window_.reset(new SystemMessageWindowWin);
 #endif
 
-  if (parts_.get())
+  if (parts_)
     parts_->PostMainMessageLoopStart();
 
 #if defined(OS_ANDROID)
@@ -410,7 +410,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 }
 
 void BrowserMainLoop::CreateThreads() {
-  if (parts_.get())
+  if (parts_)
     result_code_ = parts_->PreCreateThreads();
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
@@ -497,7 +497,7 @@ void BrowserMainLoop::CreateThreads() {
 
   BrowserThreadsStarted();
 
-  if (parts_.get())
+  if (parts_)
     parts_->PreMainMessageLoopRun();
 
   // If the UI thread blocks, the whole UI is unresponsive.
@@ -510,7 +510,7 @@ void BrowserMainLoop::RunMainMessageLoopParts() {
   TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
 
   bool ran_main_loop = false;
-  if (parts_.get())
+  if (parts_)
     ran_main_loop = parts_->MainMessageLoopRun(&result_code_);
 
   if (!ran_main_loop)
@@ -528,7 +528,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
-  if (parts_.get())
+  if (parts_)
     parts_->PostMainMessageLoopRun();
 
 #if !defined(OS_IOS)
@@ -539,7 +539,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   GpuProcessHostUIShim::DestroyAll();
 
   // Cancel pending requests and prevent new requests.
-  if (resource_dispatcher_host_.get())
+  if (resource_dispatcher_host_)
     resource_dispatcher_host_.get()->Shutdown();
 
 #if defined(USE_AURA)
@@ -607,7 +607,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if !defined(OS_IOS)
         // Clean up state that lives on or uses the file_thread_ before
         // it goes away.
-        if (resource_dispatcher_host_.get())
+        if (resource_dispatcher_host_)
           resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
 #endif  // !defined(OS_IOS)
         break;
@@ -660,14 +660,14 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   URLDataManager::DeleteDataSources();
 #endif  // !defined(OS_IOS)
 
-  if (parts_.get())
+  if (parts_)
     parts_->PostDestroyThreads();
 }
 
 void BrowserMainLoop::InitializeMainThread() {
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
-  if (main_message_loop_.get())
+  if (main_message_loop_)
     main_message_loop_->set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
@@ -798,7 +798,7 @@ void BrowserMainLoop::InitializeToolkit() {
     LOG_GETLASTERROR(FATAL);
 #endif
 
-  if (parts_.get())
+  if (parts_)
     parts_->ToolkitInitialized();
 }
 

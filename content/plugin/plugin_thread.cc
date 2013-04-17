@@ -117,7 +117,7 @@ PluginThread::PluginThread()
 
   scoped_refptr<webkit::npapi::PluginLib> plugin(
       webkit::npapi::PluginLib::CreatePluginLib(plugin_path));
-  if (plugin.get()) {
+  if (plugin) {
     plugin->NP_Initialize();
     // For OOP plugins the plugin dll will be unloaded during process shutdown
     // time.
@@ -170,7 +170,7 @@ void PluginThread::OnCreateChannel(int renderer_id,
   scoped_refptr<PluginChannel> channel(PluginChannel::GetPluginChannel(
       renderer_id, ChildProcess::current()->io_message_loop_proxy()));
   IPC::ChannelHandle channel_handle;
-  if (channel.get()) {
+  if (channel) {
     channel_handle.name = channel->channel_handle().name;
 #if defined(OS_POSIX)
     // On POSIX, pass the renderer-side FD.

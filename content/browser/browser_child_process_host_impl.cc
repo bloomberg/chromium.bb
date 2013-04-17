@@ -221,7 +221,7 @@ void BrowserChildProcessHostImpl::NotifyProcessInstanceCreated(
 base::TerminationStatus BrowserChildProcessHostImpl::GetTerminationStatus(
     int* exit_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!child_process_.get())  // If the delegate doesn't use Launch() helper.
+  if (!child_process_)  // If the delegate doesn't use Launch() helper.
     return base::GetTerminationStatus(data_.handle, exit_code);
   return child_process_->GetChildTerminationStatus(false /* known_dead */,
                                                    exit_code);

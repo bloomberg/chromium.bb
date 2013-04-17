@@ -70,7 +70,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  if (!request_context_.get()) {
+  if (!request_context_) {
     request_context_ = new TestContextURLRequestContextGetter(
         GetResourceContext()->GetRequestContext());
   }
@@ -100,7 +100,7 @@ TestBrowserContext::GetMediaRequestContextForStoragePartition(
 }
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
-  if (!resource_context_.get())
+  if (!resource_context_)
     resource_context_.reset(new MockResourceContext());
   return resource_context_.get();
 }

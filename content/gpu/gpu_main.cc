@@ -241,10 +241,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
     if (do_init_sandbox) {
-      if (watchdog_thread.get())
+      if (watchdog_thread)
         watchdog_thread->Stop();
       gpu_info.sandboxed = LinuxSandbox::InitializeSandbox();
-      if (watchdog_thread.get())
+      if (watchdog_thread)
         watchdog_thread->Start();
     }
   }
@@ -290,7 +290,7 @@ namespace {
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
-  if (!surface.get()) {
+  if (!surface) {
     VLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
     return;
   }
@@ -301,7 +301,7 @@ void CreateDummyGlContext() {
       gfx::GLContext::CreateGLContext(NULL,
                                       surface,
                                       gfx::PreferDiscreteGpu));
-  if (!context.get()) {
+  if (!context) {
     VLOG(1) << "gfx::GLContext::CreateGLContext failed";
     return;
   }

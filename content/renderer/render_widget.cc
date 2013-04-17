@@ -616,7 +616,7 @@ void RenderWidget::OnViewContextSwapBuffersPosted() {
     // pending_update_params_ can be NULL if the swap doesn't correspond to an
     // DoDeferredUpdate compositing pass, hence doesn't require an UpdateRect
     // message.
-    if (pending_update_params_.get()) {
+    if (pending_update_params_) {
       msg = new ViewHostMsg_UpdateRect(routing_id_, *pending_update_params_);
       pending_update_params_.reset();
     }
@@ -767,7 +767,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
   if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
-    if (pending_input_event_ack_.get()) {
+    if (pending_input_event_ack_) {
       // As two different kinds of events could cause us to postpone an ack
       // we send it now, if we have one pending. The Browser should never
       // send us the same kind of event we are delaying the ack for.
@@ -1036,7 +1036,7 @@ void RenderWidget::InvalidationCallback() {
 void RenderWidget::DoDeferredUpdateAndSendInputAck() {
   DoDeferredUpdate();
 
-  if (pending_input_event_ack_.get())
+  if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
 }
 
@@ -1195,7 +1195,7 @@ void RenderWidget::DoDeferredUpdate() {
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));
-    if (!canvas.get()) {
+    if (!canvas) {
       NOTREACHED();
       return;
     }
@@ -1251,14 +1251,14 @@ void RenderWidget::DoDeferredUpdate() {
   // UpdateReply message so we can receive another input event before the
   // UpdateRect_ACK on platforms where the UpdateRect_ACK is sent from within
   // the UpdateRect IPC message handler.
-  if (pending_input_event_ack_.get())
+  if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
 
   // If Composite() called SwapBuffers, pending_update_params_ will be reset (in
   // OnSwapBuffersPosted), meaning a message has been added to the
   // updates_pending_swap_ queue, that will be sent later. Otherwise, we send
   // the message now.
-  if (pending_update_params_.get()) {
+  if (pending_update_params_) {
     // sending an ack to browser process that the paint is complete...
     update_reply_pending_ = pending_update_params_->needs_ack;
     Send(new ViewHostMsg_UpdateRect(routing_id_, *pending_update_params_));
@@ -1463,7 +1463,7 @@ void RenderWidget::willBeginCompositorFrame() {
 
 void RenderWidget::didBecomeReadyForAdditionalInput() {
   TRACE_EVENT0("renderer", "RenderWidget::didBecomeReadyForAdditionalInput");
-  if (pending_input_event_ack_.get())
+  if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
 }
 
@@ -1795,7 +1795,7 @@ void RenderWidget::OnPaintAtSize(const TransportDIB::Handle& dib_handle,
   scoped_ptr<skia::PlatformCanvas> canvas(
       paint_at_size_buffer->GetPlatformCanvas(canvas_size.width(),
                                               canvas_size.height()));
-  if (!canvas.get()) {
+  if (!canvas) {
     NOTREACHED();
     return;
   }
@@ -1853,7 +1853,7 @@ bool RenderWidget::OnSnapshotHelper(const gfx::Rect& src_subrect,
                                  true,
                                  NULL,
                                  skia::RETURN_NULL_ON_FAILURE));
-  if (!canvas.get())
+  if (!canvas)
     return false;
 
   canvas->save();

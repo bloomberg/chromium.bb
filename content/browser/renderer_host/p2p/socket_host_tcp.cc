@@ -186,7 +186,7 @@ void P2PSocketHostTcp::DidCompleteRead(int result) {
 
 void P2PSocketHostTcp::Send(const net::IPEndPoint& to,
                             const std::vector<char>& data) {
-  if (!socket_.get()) {
+  if (!socket_) {
     // The Send message may be sent after the an OnError message was
     // sent by hasn't been processed the renderer.
     return;

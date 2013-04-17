@@ -363,7 +363,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
 
   GetContentClient()->SetGpuInfo(my_gpu_info);
 
-  if (gpu_blacklist_.get()) {
+  if (gpu_blacklist_) {
     std::set<int> features = gpu_blacklist_->MakeDecision(
         GpuControlList::kOsAny, std::string(), my_gpu_info);
     if (update_histograms_)
@@ -371,7 +371,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
 
     UpdateBlacklistedFeatures(features);
   }
-  if (gpu_switching_list_.get()) {
+  if (gpu_switching_list_) {
     std::set<int> option = gpu_switching_list_->MakeDecision(
         GpuControlList::kOsAny, std::string(), my_gpu_info);
     if (option.size() == 1) {
@@ -381,7 +381,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
         gpu_switching_ = static_cast<GpuSwitchingOption>(*(option.begin()));
     }
   }
-  if (gpu_driver_bug_list_.get())
+  if (gpu_driver_bug_list_)
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         GpuControlList::kOsAny, std::string(), my_gpu_info);
 
@@ -588,14 +588,14 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
 }
 
 std::string GpuDataManagerImpl::GetBlacklistVersion() const {
-  if (gpu_blacklist_.get())
+  if (gpu_blacklist_)
     return gpu_blacklist_->version();
   return "0";
 }
 
 base::ListValue* GpuDataManagerImpl::GetBlacklistReasons() const {
   ListValue* reasons = new ListValue();
-  if (gpu_blacklist_.get())
+  if (gpu_blacklist_)
     gpu_blacklist_->GetReasons(reasons);
   return reasons;
 }

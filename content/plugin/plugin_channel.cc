@@ -302,7 +302,7 @@ void PluginChannel::OnClearSiteData(const std::string& site,
   base::FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
   scoped_refptr<webkit::npapi::PluginLib> plugin_lib(
       webkit::npapi::PluginLib::CreatePluginLib(path));
-  if (plugin_lib.get()) {
+  if (plugin_lib) {
     NPError err = plugin_lib->NP_Initialize();
     if (err == NPERR_NO_ERROR) {
       const char* site_str = site.empty() ? NULL : site.c_str();

@@ -483,7 +483,7 @@ void WebContentsViewMac::CloseTab() {
 // Returns what kind of drag operations are available. This is a required
 // method for NSDraggingSource.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  if (dragSource_.get())
+  if (dragSource_)
     return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
   // No web drag source - this is the case for dragging a file from the
   // downloads manager. Default to copy operation. Note: It is desirable to

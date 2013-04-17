@@ -498,7 +498,7 @@ class ShadowWindow : public aura::Window,
   }
 
   void UpdateShadowBounds() {
-    if (!shadow_.get())
+    if (!shadow_)
       return;
     gfx::Rect bound;
     switch (edge_) {
@@ -896,7 +896,7 @@ WebContentsViewAura::~WebContentsViewAura() {
 }
 
 void WebContentsViewAura::SetupOverlayWindowForTesting() {
-  if (navigation_overlay_.get())
+  if (navigation_overlay_)
     navigation_overlay_->SetupForTesting();
 }
 
@@ -927,7 +927,7 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   // completed immidiately, which triggers |OnImplicitAnimationsCompleted()|
   // callback, and that tries to reset |overscroll_window_| again, causing a
   // double-free. So use a temporary variable here.
-  if (overscroll_window_.get()) {
+  if (overscroll_window_) {
     base::AutoReset<OverscrollMode> reset_state(&current_overscroll_gesture_,
                                                 current_overscroll_gesture_);
     scoped_ptr<aura::Window> reset_window(overscroll_window_.release());
@@ -955,7 +955,7 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
     bounds.Offset(base::i18n::IsRTL() ? -bounds.width() : bounds.width(), 0);
   }
 
-  if (GetWindowToAnimateForOverscroll() == overscroll_window_.get()) {
+  if (GetWindowToAnimateForOverscroll() == overscroll_window_) {
     overscroll_delegate->set_show_shadow(true);
     window_->StackChildAbove(overscroll_window_.get(), content_container_);
   } else {
@@ -1176,12 +1176,12 @@ void WebContentsViewAura::SetInitialFocus() {
 }
 
 void WebContentsViewAura::StoreFocus() {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->StoreFocus();
 }
 
 void WebContentsViewAura::RestoreFocus() {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->RestoreFocus();
 }
 
@@ -1233,7 +1233,7 @@ void WebContentsViewAura::CreateView(
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
   // platforms as well.
-  if (delegate_.get())
+  if (delegate_)
     drag_dest_delegate_ = delegate_->GetDragDestDelegate();
 }
 
@@ -1270,7 +1270,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   if (host_impl->overscroll_controller() && web_contents_->GetDelegate() &&
       web_contents_->GetDelegate()->CanOverscrollContent()) {
     host_impl->overscroll_controller()->set_delegate(this);
-    if (!navigation_overlay_.get())
+    if (!navigation_overlay_)
       navigation_overlay_.reset(new OverscrollNavigationOverlay());
   }
 
@@ -1312,7 +1312,7 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
 void WebContentsViewAura::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->ShowContextMenu(params, type);
 }
 
@@ -1493,7 +1493,7 @@ gfx::Size WebContentsViewAura::GetMaximumSize() const {
 void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   SizeChangedCommon(new_bounds.size());
-  if (delegate_.get())
+  if (delegate_)
     delegate_->SizeChanged(new_bounds.size());
 
   // Constrained web dialogs, need to be kept centered over our content area.

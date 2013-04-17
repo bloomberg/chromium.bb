@@ -66,7 +66,7 @@ PepperTCPSocket::PepperTCPSocket(
 
 PepperTCPSocket::~PepperTCPSocket() {
   // Make sure no further callbacks from socket_.
-  if (socket_.get())
+  if (socket_)
     socket_->Disconnect();
 }
 
@@ -140,7 +140,7 @@ void PepperTCPSocket::SSLHandshake(
   ssl_context.cert_verifier = manager_->GetCertVerifier();
   socket_.reset(factory->CreateSSLClientSocket(
       handle, host_port_pair, manager_->ssl_config(), ssl_context));
-  if (!socket_.get()) {
+  if (!socket_) {
     LOG(WARNING) << "Failed to create an SSL client socket.";
     OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);
     return;
@@ -291,7 +291,7 @@ bool PepperTCPSocket::GetCertificateFields(
     ppapi::PPB_X509Certificate_Fields* fields) {
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromBytes(der, length);
-  if (!cert.get())
+  if (!cert)
     return false;
   return GetCertificateFields(*cert, fields);
 }
@@ -314,7 +314,7 @@ void PepperTCPSocket::SendSSLHandshakeACK(bool succeeded) {
         static_cast<net::SSLClientSocket*>(socket_.get());
     net::SSLInfo ssl_info;
     ssl_socket->GetSSLInfo(&ssl_info);
-    if (ssl_info.cert.get())
+    if (ssl_info.cert)
       GetCertificateFields(*ssl_info.cert, &certificate_fields);
   }
   manager_->Send(new PpapiMsg_PPBTCPSocket_SSLHandshakeACK(

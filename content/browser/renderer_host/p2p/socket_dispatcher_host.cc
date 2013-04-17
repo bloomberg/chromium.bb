@@ -197,7 +197,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
   scoped_ptr<P2PSocketHost> socket(
       P2PSocketHost::Create(this, socket_id, type));
 
-  if (!socket.get()) {
+  if (!socket) {
     Send(new P2PMsg_OnError(socket_id));
     return;
   }

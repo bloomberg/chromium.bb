@@ -135,7 +135,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBCursor* idb_cursor) {
-  if (!cursor_dispatcher_host_.get()) {
+  if (!cursor_dispatcher_host_) {
     delete idb_cursor;
     return 0;
   }
@@ -145,7 +145,7 @@ int32 IndexedDBDispatcherHost::Add(WebIDBCursor* idb_cursor) {
 int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
                                    int32 ipc_thread_id,
                                    const GURL& origin_url) {
-  if (!database_dispatcher_host_.get()) {
+  if (!database_dispatcher_host_) {
     delete idb_database;
     return 0;
   }

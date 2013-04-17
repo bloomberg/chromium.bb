@@ -228,7 +228,7 @@ WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
 
 WebKit::WebFileUtilities*
 RendererWebKitPlatformSupportImpl::fileUtilities() {
-  if (!file_utilities_.get()) {
+  if (!file_utilities_) {
     file_utilities_.reset(new FileUtilities(thread_safe_sender_));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
@@ -357,7 +357,7 @@ RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
 //------------------------------------------------------------------------------
 
 WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
-  if (!web_idb_factory_.get()) {
+  if (!web_idb_factory_) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
       web_idb_factory_.reset(WebIDBFactory::create());
     else
@@ -369,7 +369,7 @@ WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
 //------------------------------------------------------------------------------
 
 WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
-  if (!web_file_system_.get())
+  if (!web_file_system_)
     web_file_system_.reset(new WebFileSystemImpl());
   return web_file_system_.get();
 }
@@ -470,9 +470,9 @@ bool RendererWebKitPlatformSupportImpl::Hyphenator::canHyphenate(
 
   // Create a hyphenator object and attach it to the render thread so it can
   // receive a dictionary file opened by a browser.
-  if (!hyphenator_.get()) {
+  if (!hyphenator_) {
     hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
-    if (!hyphenator_.get())
+    if (!hyphenator_)
       return false;
     return hyphenator_->Attach(RenderThreadImpl::current(), locale);
   }
@@ -759,7 +759,7 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   // thread_safe_sender_ can be NULL when running some tests.
-  if (!blob_registry_.get() && thread_safe_sender_.get())
+  if (!blob_registry_.get() && thread_safe_sender_)
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
   return blob_registry_.get();
 }
@@ -768,7 +768,7 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   if (g_test_gamepads == 0) {
-    if (!gamepad_shared_memory_reader_.get())
+    if (!gamepad_shared_memory_reader_)
       gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
     gamepad_shared_memory_reader_->SampleGamepads(gamepads);
   } else {

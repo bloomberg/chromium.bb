@@ -521,7 +521,7 @@ void WebKitTestRunner::captureHistoryForWindow(
 WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
     WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
 {
-  if (!test_media_stream_client_.get()) {
+  if (!test_media_stream_client_) {
     test_media_stream_client_.reset(
         new webkit_glue::TestMediaStreamClient());
   }

@@ -29,7 +29,7 @@ ObserverDelegate::~ObserverDelegate() {
 void ObserverDelegate::OnDeviceDataUpdate(
     const DeviceData* device_data, DeviceData::Type device_data_type) {
   scoped_refptr<const DeviceData> new_device_data(device_data);
-  if (!new_device_data.get())
+  if (!new_device_data)
     new_device_data = EmptyDeviceData(device_data_type);
 
   sender_->Send(new_device_data->CreateIPCMessage(render_view_id_));

@@ -54,7 +54,7 @@ std::string DevToolsProtocol::Command::Serialize() {
   DictionaryValue command;
   command.SetInteger(kIdParam, id_);
   command.SetString(kMethodParam, method_);
-  if (params_.get())
+  if (params_)
     command.Set(kParamsParam, params_->DeepCopy());
 
   std::string json_command;
@@ -107,7 +107,7 @@ std::string DevToolsProtocol::Response::Serialize() {
     error_object->SetInteger(kErrorCodeParam, error_code_);
     if (!error_message_.empty())
       error_object->SetString(kErrorMessageParam, error_message_);
-  } else if (result_.get()) {
+  } else if (result_) {
     response.Set(kResultParam, result_->DeepCopy());
   }
 
@@ -145,7 +145,7 @@ DevToolsProtocol::Notification::~Notification() {
 std::string DevToolsProtocol::Notification::Serialize() {
   DictionaryValue notification;
   notification.SetString(kMethodParam, method_);
-  if (params_.get())
+  if (params_)
     notification.Set(kParamsParam, params_->DeepCopy());
 
   std::string json_notification;

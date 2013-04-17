@@ -1000,7 +1000,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveAttrib(
   if (max_name_length < 0)
     return false;
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name.get()) {
+  if (!name) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
   }
@@ -1026,7 +1026,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveUniform(
   if (max_name_length < 0)
     return false;
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name.get()) {
+  if (!name) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
   }
@@ -1094,7 +1094,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getProgramInfoLog(
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetProgramInfoLog(
@@ -1117,7 +1117,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderInfoLog(
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderInfoLog(
@@ -1138,7 +1138,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderSource(
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderSource(
@@ -1159,7 +1159,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
   if (!logLength)
     return WebKit::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
-  if (!log.get())
+  if (!log)
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetTranslatedShaderSourceANGLE(

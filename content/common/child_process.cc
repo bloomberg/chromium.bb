@@ -98,7 +98,7 @@ void ChildProcess::ReleaseProcess() {
   if (--ref_count_)
     return;
 
-  if (main_thread_.get())  // null in unittests.
+  if (main_thread_)  // null in unittests.
     main_thread_->OnProcessFinalRelease();
 }
 

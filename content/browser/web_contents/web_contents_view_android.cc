@@ -177,7 +177,7 @@ void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
 void WebContentsViewAndroid::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->ShowContextMenu(params, type);
 }
 

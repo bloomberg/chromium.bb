@@ -129,7 +129,7 @@ CompositorImpl::~CompositorImpl() {
 }
 
 void CompositorImpl::Composite() {
-  if (host_.get())
+  if (host_)
     host_->Composite(base::TimeTicks::Now());
 }
 
@@ -183,7 +183,7 @@ void CompositorImpl::SetSurface(jobject surface) {
 void CompositorImpl::SetVisible(bool visible) {
   if (!visible) {
     host_.reset();
-  } else if (!host_.get()) {
+  } else if (!host_) {
     cc::LayerTreeSettings settings;
     settings.refresh_rate = 60.0;
     settings.impl_side_painting = false;
@@ -229,12 +229,12 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
 void CompositorImpl::SetHasTransparentBackground(bool flag) {
   has_transparent_background_ = flag;
-  if (host_.get())
+  if (host_)
     host_->set_has_transparent_background(flag);
 }
 
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
-  if (host_.get())
+  if (host_)
     return host_->CompositeAndReadback(pixels, rect);
   else
     return false;

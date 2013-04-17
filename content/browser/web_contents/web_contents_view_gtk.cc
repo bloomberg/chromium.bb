@@ -100,7 +100,7 @@ WebContentsViewGtk::WebContentsViewGtk(
   gtk_widget_show(expanded_.get());
   drag_source_.reset(new WebDragSourceGtk(web_contents));
 
-  if (delegate_.get())
+  if (delegate_)
     delegate_->Initialize(expanded_.get(), &focus_store_);
 }
 
@@ -109,7 +109,7 @@ WebContentsViewGtk::~WebContentsViewGtk() {
 }
 
 gfx::NativeView WebContentsViewGtk::GetNativeView() const {
-  if (delegate_.get())
+  if (delegate_)
     return delegate_->GetNativeView();
 
   return expanded_.get();
@@ -151,7 +151,7 @@ void WebContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
 void WebContentsViewGtk::Focus() {
   if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
-  } else if (delegate_.get()) {
+  } else if (delegate_) {
     delegate_->Focus();
   }
 }
@@ -314,7 +314,7 @@ void WebContentsViewGtk::UpdateDragDest(RenderViewHost* host) {
   // Create the new drag_dest_.
   drag_dest_.reset(new WebDragDestGtk(web_contents_, content_view));
 
-  if (delegate_.get())
+  if (delegate_)
     drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
 }
 
@@ -326,7 +326,7 @@ void WebContentsViewGtk::UpdateDragDest(RenderViewHost* host) {
 gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
                                      GtkDirectionType focus) {
   // Give our view wrapper first chance at this event.
-  if (delegate_.get()) {
+  if (delegate_) {
     gboolean return_value = FALSE;
     if (delegate_->OnNativeViewFocusEvent(widget, focus, &return_value))
       return return_value;
@@ -347,7 +347,7 @@ gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
 void WebContentsViewGtk::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
-  if (delegate_.get())
+  if (delegate_)
     delegate_->ShowContextMenu(params, type);
   else
     DLOG(ERROR) << "Cannot show context menus without a delegate.";

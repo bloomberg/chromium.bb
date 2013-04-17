@@ -286,7 +286,7 @@ int32_t PepperFileIOHost::OnHostMsgWrite(
   if (rv != PP_OK)
     return rv;
 
-  if (quota_file_io_.get()) {
+  if (quota_file_io_) {
     if (!quota_file_io_->Write(
             offset, buffer.c_str(), buffer.size(),
             base::Bind(&PepperFileIOHost::ExecutePlatformWriteCallback,
@@ -387,7 +387,7 @@ int32_t PepperFileIOHost::OnHostMsgWillWrite(
   if (rv != PP_OK)
     return rv;
 
-  if (!quota_file_io_.get())
+  if (!quota_file_io_)
     return PP_OK;
 
   if (!quota_file_io_->WillWrite(
@@ -409,7 +409,7 @@ int32_t PepperFileIOHost::OnHostMsgWillSetLength(
   if (rv != PP_OK)
     return rv;
 
-  if (!quota_file_io_.get())
+  if (!quota_file_io_)
     return PP_OK;
 
   if (!quota_file_io_->WillSetLength(

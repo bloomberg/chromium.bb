@@ -38,7 +38,7 @@ static void DestroyWebPluginAndDelegate(
     WebPlugin* webplugin) {
   // The plugin may not expect us to try to release the scriptable object
   // after calling NPP_Destroy on the instance, so delete the stub now.
-  if (scriptable_object.get())
+  if (scriptable_object)
     scriptable_object->DeleteSoon();
   // WebPlugin must outlive WebPluginDelegate.
   if (delegate)

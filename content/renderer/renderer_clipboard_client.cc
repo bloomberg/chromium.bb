@@ -47,14 +47,14 @@ void RendererClipboardWriteContext::WriteBitmapFromPixels(
     const void* pixels,
     const gfx::Size& size) {
   // Do not try to write a bitmap more than once
-  if (shared_buf_.get())
+  if (shared_buf_)
     return;
 
   uint32 buf_size = 4 * size.width() * size.height();
 
   // Allocate a shared memory buffer to hold the bitmap bits.
   shared_buf_.reset(ChildThread::current()->AllocateSharedMemory(buf_size));
-  if (!shared_buf_.get())
+  if (!shared_buf_)
     return;
 
   // Copy the bits into shared memory
@@ -80,7 +80,7 @@ void RendererClipboardWriteContext::WriteBitmapFromPixels(
 // Flushes the objects to the clipboard with an IPC.
 void RendererClipboardWriteContext::Flush(
     const ui::Clipboard::ObjectMap& objects) {
-  if (shared_buf_.get()) {
+  if (shared_buf_) {
     RenderThreadImpl::current()->Send(
         new ClipboardHostMsg_WriteObjectsSync(objects, shared_buf_->handle()));
   } else {

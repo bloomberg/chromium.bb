@@ -199,7 +199,7 @@ void P2PPortAllocatorSession::AllocateLegacyRelaySession() {
 
   relay_session_request_.reset(
       allocator_->web_frame_->createAssociatedURLLoader(options));
-  if (!relay_session_request_.get()) {
+  if (!relay_session_request_) {
     LOG(ERROR) << "Failed to create URL loader.";
     return;
   }

@@ -615,7 +615,7 @@ void MediaStreamManager::HandleRequest(const std::string& label) {
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (device_thread_.get())
+  if (device_thread_)
     return;
 
   device_thread_.reset(new base::Thread("MediaStreamDeviceThread"));
@@ -1001,7 +1001,7 @@ void MediaStreamManager::UseFakeDevice() {
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DCHECK_EQ(MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
-  if (device_thread_.get()) {
+  if (device_thread_) {
     StopMonitoring();
 
     video_capture_manager_->Unregister();

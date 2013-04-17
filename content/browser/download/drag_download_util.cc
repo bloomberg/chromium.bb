@@ -114,7 +114,7 @@ void PromiseFileFinalizer::OnDownloadAborted() {
 PromiseFileFinalizer::~PromiseFileFinalizer() {}
 
 void PromiseFileFinalizer::Cleanup() {
-  if (drag_file_downloader_.get())
+  if (drag_file_downloader_)
     drag_file_downloader_ = NULL;
 }
 

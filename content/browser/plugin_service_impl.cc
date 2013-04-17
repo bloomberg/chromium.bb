@@ -152,9 +152,9 @@ PluginServiceImpl::~PluginServiceImpl() {
   // Release the events since they're owned by RegKey, not WaitableEvent.
   hkcu_watcher_.StopWatching();
   hklm_watcher_.StopWatching();
-  if (hkcu_event_.get())
+  if (hkcu_event_)
     hkcu_event_->Release();
-  if (hklm_event_.get())
+  if (hklm_event_)
     hklm_event_->Release();
 #endif
   // Make sure no plugin channel requests have been leaked.
@@ -606,7 +606,7 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   } else {
     // If we switch back to loading plugins in process, then we need to make
     // sure g_thread_init() gets called since plugins may call glib at load.
-    if (!plugin_loader_.get())
+    if (!plugin_loader_)
       plugin_loader_ = new PluginLoaderPosix;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&PluginLoaderPosix::LoadPlugins, plugin_loader_,
@@ -633,7 +633,7 @@ void PluginServiceImpl::GetPluginsInternal(
 void PluginServiceImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
-  if (waitable_event == hkcu_event_.get()) {
+  if (waitable_event == hkcu_event_) {
     hkcu_key_.StartWatching();
   } else {
     hklm_key_.StartWatching();

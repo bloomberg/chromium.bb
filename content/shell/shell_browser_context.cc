@@ -62,7 +62,7 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record)
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
-  if (resource_context_.get()) {
+  if (resource_context_) {
     BrowserThread::DeleteSoon(
       BrowserThread::IO, FROM_HERE, resource_context_.release());
   }
@@ -113,7 +113,7 @@ bool ShellBrowserContext::IsOffTheRecord() const {
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   DownloadManager* manager = BrowserContext::GetDownloadManager(this);
 
-  if (!download_manager_delegate_.get()) {
+  if (!download_manager_delegate_) {
     download_manager_delegate_ = new ShellDownloadManagerDelegate();
     download_manager_delegate_->SetDownloadManager(manager);
     CommandLine* cmd_line = CommandLine::ForCurrentProcess();

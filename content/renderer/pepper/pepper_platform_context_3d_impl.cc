@@ -53,7 +53,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
 
   channel_ = render_thread->EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
-  if (!channel_.get())
+  if (!channel_)
     return false;
   DCHECK(channel_->state() == GpuChannelHost::kConnected);
 

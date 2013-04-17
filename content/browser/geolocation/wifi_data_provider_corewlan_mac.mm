@@ -89,7 +89,7 @@ bool CoreWlanApi::Init() {
   }
   // "Leak" dl_handle rather than dlclose it, to ensure |merge_key_|
   // remains valid.
-  if (!merge_key_.get()) {
+  if (!merge_key_) {
     // Fall back to a known-working value should the lookup fail (if
     // this value is itself wrong it's not the end of the world, we might just
     // get very slightly lower quality location fixes due to SSID merges).

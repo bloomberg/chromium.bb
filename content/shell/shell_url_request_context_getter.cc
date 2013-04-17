@@ -84,7 +84,7 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!url_request_context_.get()) {
+  if (!url_request_context_) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
     url_request_context_.reset(new net::URLRequestContext());

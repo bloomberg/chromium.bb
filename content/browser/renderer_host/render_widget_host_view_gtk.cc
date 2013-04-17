@@ -1547,7 +1547,7 @@ void RenderWidgetHostViewGtk::FatalAccessibilityTreeError() {
 
 void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  if (!browser_accessibility_manager_.get()) {
+  if (!browser_accessibility_manager_) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     browser_accessibility_manager_.reset(
         new BrowserAccessibilityManagerGtk(
@@ -1559,7 +1559,7 @@ void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
 }
 
 AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
-  if (!browser_accessibility_manager_.get()) {
+  if (!browser_accessibility_manager_) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     browser_accessibility_manager_.reset(
         new BrowserAccessibilityManagerGtk(

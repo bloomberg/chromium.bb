@@ -63,7 +63,7 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
     media::SetUnknownDataSize(shared_memory_, packet_size_);
   }
 
-  if (socket_.get()) {
+  if (socket_) {
     socket_->Send(&bytes, sizeof(bytes));
   }
 }
@@ -75,7 +75,7 @@ int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
 
   // Copy optional synchronized live audio input for consumption by renderer
   // process.
-  if (source && input_bus_.get()) {
+  if (source && input_bus_) {
     DCHECK_EQ(source->channels(), input_bus_->channels());
     DCHECK_LE(source->frames(), input_bus_->frames());
     source->CopyTo(input_bus_.get());
@@ -119,7 +119,7 @@ int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
 }
 
 void AudioSyncReader::Close() {
-  if (socket_.get()) {
+  if (socket_) {
     socket_->Close();
   }
 }

@@ -647,7 +647,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  if (surface_texture_transport_.get()) {
+  if (surface_texture_transport_) {
     return surface_texture_transport_->GetCompositingSurface(
         host_->surface_id());
   } else {

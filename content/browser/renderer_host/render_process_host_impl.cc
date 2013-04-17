@@ -439,7 +439,7 @@ void RenderProcessHostImpl::EnableSendQueue() {
 bool RenderProcessHostImpl::Init() {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
-  if (channel_.get())
+  if (channel_)
     return true;
 
   CommandLine::StringType renderer_prefix;
@@ -1083,7 +1083,7 @@ void RenderProcessHostImpl::ClearTransportDIBCache() {
 }
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
-  if (!channel_.get()) {
+  if (!channel_) {
     if (!is_initialized_) {
       queued_messages_.push(msg);
       return true;
@@ -1676,7 +1676,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   if (deleting_soon_)
     return;
 
-  if (child_process_launcher_.get()) {
+  if (child_process_launcher_) {
     if (!child_process_launcher_->GetHandle()) {
       OnChannelError();
       return;

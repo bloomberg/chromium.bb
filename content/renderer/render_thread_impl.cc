@@ -410,11 +410,11 @@ RenderThreadImpl::~RenderThreadImpl() {
       RenderProcessObserver, observers_, OnRenderProcessShutdown());
 
   // Wait for all databases to be closed.
-  if (web_database_observer_impl_.get())
+  if (web_database_observer_impl_)
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
-  if (devtools_agent_message_filter_.get()) {
+  if (devtools_agent_message_filter_) {
     RemoveFilter(devtools_agent_message_filter_.get());
     devtools_agent_message_filter_ = NULL;
   }
@@ -431,21 +431,21 @@ RenderThreadImpl::~RenderThreadImpl() {
   db_message_filter_ = NULL;
 
   // Shutdown the file thread if it's running.
-  if (file_thread_.get())
+  if (file_thread_)
     file_thread_->Stop();
 
-  if (compositor_output_surface_filter_.get()) {
+  if (compositor_output_surface_filter_) {
     RemoveFilter(compositor_output_surface_filter_.get());
     compositor_output_surface_filter_ = NULL;
   }
 
   compositor_thread_.reset();
-  if (input_handler_manager_.get()) {
+  if (input_handler_manager_) {
     RemoveFilter(input_handler_manager_->GetMessageFilter());
     input_handler_manager_.reset();
   }
 
-  if (webkit_platform_support_.get())
+  if (webkit_platform_support_)
     WebKit::shutdown();
 
   lazy_tls.Pointer()->Set(NULL);
@@ -621,7 +621,7 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {
-  if (webkit_platform_support_.get())
+  if (webkit_platform_support_)
     return;
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
@@ -924,7 +924,7 @@ void RenderThreadImpl::PostponeIdleNotification() {
 void RenderThreadImpl::OnGpuVDAContextLoss() {
   RenderThreadImpl* self = RenderThreadImpl::current();
   DCHECK(self);
-  if (!self->gpu_vda_context3d_.get())
+  if (!self->gpu_vda_context3d_)
     return;
   if (self->compositor_message_loop_proxy()) {
     self->compositor_message_loop_proxy()->DeleteSoon(
@@ -936,12 +936,12 @@ void RenderThreadImpl::OnGpuVDAContextLoss() {
 
 WebGraphicsContext3DCommandBufferImpl*
 RenderThreadImpl::GetGpuVDAContext3D() {
-  if (!gpu_vda_context3d_.get()) {
+  if (!gpu_vda_context3d_) {
     gpu_vda_context3d_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             this, WebKit::WebGraphicsContext3D::Attributes(),
             GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D")));
-    if (gpu_vda_context3d_.get())
+    if (gpu_vda_context3d_)
       gpu_vda_context3d_->setContextLostCallback(context_lost_cb_.get());
   }
   return gpu_vda_context3d_.get();
@@ -991,7 +991,7 @@ RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
 }
 
 AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
-  if (!audio_renderer_mixer_manager_.get()) {
+  if (!audio_renderer_mixer_manager_) {
     audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager(
         GetAudioHardwareConfig()));
   }
@@ -1170,7 +1170,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
-  if (gpu_channel_.get()) {
+  if (gpu_channel_) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
     if (gpu_channel_->state() == GpuChannelHost::kUnconnected ||
@@ -1232,7 +1232,7 @@ WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
 MediaStreamDependencyFactory*
 RenderThreadImpl::GetMediaStreamDependencyFactory() {
 #if defined(ENABLE_WEBRTC)
-  if (!media_stream_factory_.get()) {
+  if (!media_stream_factory_) {
     media_stream_factory_.reset(new MediaStreamDependencyFactory(
         vc_manager_, p2p_socket_dispatcher_));
   }
@@ -1241,7 +1241,7 @@ RenderThreadImpl::GetMediaStreamDependencyFactory() {
 }
 
 GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
-  if (!gpu_channel_.get())
+  if (!gpu_channel_)
     return NULL;
 
   if (gpu_channel_->state() != GpuChannelHost::kConnected)
@@ -1280,7 +1280,7 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
 scoped_refptr<base::MessageLoopProxy>
 RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   DCHECK(message_loop() == MessageLoop::current());
-  if (!file_thread_.get()) {
+  if (!file_thread_) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));
     file_thread_->Start();
   }

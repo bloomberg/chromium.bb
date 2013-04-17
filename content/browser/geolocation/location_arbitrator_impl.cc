@@ -125,7 +125,7 @@ AccessTokenStore* GeolocationArbitratorImpl::NewAccessTokenStore() {
 }
 
 AccessTokenStore* GeolocationArbitratorImpl::GetAccessTokenStore() {
-  if (!access_token_store_.get())
+  if (!access_token_store_)
     access_token_store_ = NewAccessTokenStore();
   return access_token_store_.get();
 }

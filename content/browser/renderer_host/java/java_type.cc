@@ -68,7 +68,7 @@ JavaType::~JavaType() {
 
 JavaType& JavaType::operator=(const JavaType& other) {
   type = other.type;
-  if (other.inner_type.get()) {
+  if (other.inner_type) {
     DCHECK_EQ(JavaType::TypeArray, type);
     inner_type.reset(new JavaType(*other.inner_type));
   } else {

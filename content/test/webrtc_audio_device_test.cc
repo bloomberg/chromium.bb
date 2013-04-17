@@ -285,13 +285,13 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
       return true;
   }
 
-  if (audio_render_host_.get()) {
+  if (audio_render_host_) {
     bool message_was_ok = false;
     if (audio_render_host_->OnMessageReceived(message, &message_was_ok))
       return true;
   }
 
-  if (audio_input_renderer_host_.get()) {
+  if (audio_input_renderer_host_) {
     bool message_was_ok = false;
     if (audio_input_renderer_host_->OnMessageReceived(message, &message_was_ok))
       return true;
@@ -317,7 +317,7 @@ void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
 }
 
 void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
-  if (audio_manager_.get())
+  if (audio_manager_)
     WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop());
 }
 

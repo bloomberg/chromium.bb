@@ -573,7 +573,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
       static_cast<uint32>(io_surface_handle)));
   // Can fail if IOSurface with that ID was already released by the gpu
   // process.
-  if (!io_surface_.get()) {
+  if (!io_surface_) {
     io_surface_handle_ = 0;
     return false;
   }

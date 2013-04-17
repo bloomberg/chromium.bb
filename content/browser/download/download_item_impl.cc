@@ -347,7 +347,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   // |SavePackage| integration.
   // |download_file_| can be NULL if Interrupt() is called after the
   // download file has been released.
-  if (!is_save_package_download_ && download_file_.get())
+  if (!is_save_package_download_ && download_file_)
     ReleaseDownloadFile(true);
 
   if (state_ != INTERRUPTED_INTERNAL) {
@@ -688,7 +688,7 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   // paths that might be used by DownloadItems created from history import.
   // Currently such items have null request_handle_s, where other items
   // (regular and SavePackage downloads) have actual objects off the pointer.
-  if (request_handle_.get())
+  if (request_handle_)
     return request_handle_->GetWebContents();
   return NULL;
 }
@@ -1452,7 +1452,7 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
   // |SavePackage| integration.
   // |download_file_| can be NULL if Interrupt() is called after the
   // download file has been released.
-  if (!is_save_package_download_ && download_file_.get()) {
+  if (!is_save_package_download_ && download_file_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         // Will be deleted at end of task execution.

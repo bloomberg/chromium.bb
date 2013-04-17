@@ -462,7 +462,7 @@ class GpuProcessTransportFactory
   }
 
   virtual GLHelper* GetGLHelper() OVERRIDE {
-    if (!gl_helper_.get()) {
+    if (!gl_helper_) {
       CreateSharedContextLazy();
       WebGraphicsContext3DCommandBufferImpl* context_for_main_thread =
           shared_contexts_main_thread_->Context3d();

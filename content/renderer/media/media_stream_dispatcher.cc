@@ -130,7 +130,7 @@ void MediaStreamDispatcher::EnumerateDevices(
        &audio_enumeration_state_ : &video_enumeration_state_);
   state->requests.push_back(EnumerationRequest(event_handler, request_id));
 
-  if (state->cached_devices.get()) {
+  if (state->cached_devices) {
     event_handler->OnDevicesEnumerated(
         request_id, state->cached_devices->devices);
   } else if (state->ipc_id < 0) {
@@ -165,7 +165,7 @@ void MediaStreamDispatcher::RemoveEnumerationRequest(
        it != requests->end(); ++it) {
     if (it->request_id == request_id && it->handler == event_handler) {
       requests->erase(it);
-      if (requests->empty() && state->cached_devices.get()) {
+      if (requests->empty() && state->cached_devices) {
         // No more request and has a label, try to stop the label
         // and invalidate the state.
         Send(new MediaStreamHostMsg_StopGeneratedStream(

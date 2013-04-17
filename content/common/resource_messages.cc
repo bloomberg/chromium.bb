@@ -138,7 +138,7 @@ void ParamTraits<webkit_base::DataElement>::Log(
 void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.get() != NULL);
-  if (p.get()) {
+  if (p) {
     WriteParam(m, p->http_status_code);
     WriteParam(m, p->http_status_text);
     WriteParam(m, p->request_headers);

@@ -486,7 +486,7 @@ void RenderWidgetHostViewWin::WasHidden() {
   if (render_widget_host_)
     render_widget_host_->WasHidden();
 
-  if (accelerated_surface_.get())
+  if (accelerated_surface_)
     accelerated_surface_->WasHidden();
 
   if (GetBrowserAccessibilityManager())
@@ -861,7 +861,7 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  if (!accelerated_surface_.get())
+  if (!accelerated_surface_)
     return;
 
   if (dst_size.IsEmpty() || src_subrect.IsEmpty())
@@ -876,7 +876,7 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurfaceToVideoFrame(
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-  if (!accelerated_surface_.get())
+  if (!accelerated_surface_)
     return;
 
   if (!target || target->format() != media::VideoFrame::YV12)
@@ -2424,7 +2424,7 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 void RenderWidgetHostViewWin::AcceleratedPaint(HDC dc) {
   if (render_widget_host_)
     render_widget_host_->ScheduleComposite();
-  if (accelerated_surface_.get())
+  if (accelerated_surface_)
     accelerated_surface_->Present(dc);
 }
 
@@ -2461,7 +2461,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   // On Vista and later we present directly to the view window rather than a
   // child window.
   if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface()) {
-    if (!accelerated_surface_.get())
+    if (!accelerated_surface_)
       accelerated_surface_.reset(new AcceleratedSurface(m_hWnd));
     return gfx::GLSurfaceHandle(m_hWnd, gfx::NATIVE_TRANSPORT);
   }
@@ -2551,7 +2551,7 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
     // Drop the backing store for the accelerated surface when the accelerated
     // compositor is disabled. Otherwise, a flash of the last presented frame
     // could appear when it is next enabled.
-    if (accelerated_surface_.get())
+    if (accelerated_surface_)
       accelerated_surface_->Suspend();
     hide_compositor_window_at_next_paint_ = true;
   }
@@ -2570,7 +2570,7 @@ void RenderWidgetHostViewWin::AcceleratedSurfacePostSubBuffer(
 }
 
 void RenderWidgetHostViewWin::AcceleratedSurfaceSuspend() {
-    if (!accelerated_surface_.get())
+    if (!accelerated_surface_)
       return;
 
     accelerated_surface_->Suspend();
@@ -2708,7 +2708,7 @@ LRESULT RenderWidgetHostViewWin::OnSessionChange(UINT message,
   handled = FALSE;
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnSessionChange");
 
-  if (!accelerated_surface_.get())
+  if (!accelerated_surface_)
     return 0;
 
   switch (wparam) {
