@@ -80,9 +80,11 @@
 - (void)runAsModalSheet {
   // Ping me when things change out from under us.
   observer_.reset(new BookmarkModelObserverForCocoa(
-                    node_, BookmarkModelFactory::GetForProfile(profile_),
-                    self,
-                    @selector(cancel:)));
+                    BookmarkModelFactory::GetForProfile(profile_),
+                    ^(BOOL nodeWasDeleted) {
+                        [self cancel:nil];
+                    }));
+  observer_->StartObservingNode(node_);
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self

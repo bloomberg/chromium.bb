@@ -21,28 +21,32 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <set>
+
 #include "base/basictypes.h"
+#include "base/mac/scoped_block.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
  public:
-  // When |node| in |model| changes, send |selector| to |object|.
-  // Assumes |selector| is a selector that takes one arg, like an
-  // IBOutlet.  The arg passed is nil.
-  // Many notifications happen independently of node
-  // (e.g. BeingDeleted), so |node| can be nil.
-  //
-  // |object| is NOT retained, since the expected use case is for
-  // ||object| to own the BookmarkModelObserverForCocoa and we don't
-  // want a retain cycle.
-  BookmarkModelObserverForCocoa(const BookmarkNode* node,
-                                BookmarkModel* model,
-                                NSObject* object,
-                                SEL selector);
+  // Callback called on a significant model change. |nodeWasDeleted| will
+  // be YES if an observed node was deleted in the change.
+  typedef void(^ChangeCallback)(BOOL nodeWasDeleted);
+
+  // When a |model| changes, or an observed node within it does, call a
+  // |callback|.
+  BookmarkModelObserverForCocoa(BookmarkModel* model,
+                                ChangeCallback callback);
   virtual ~BookmarkModelObserverForCocoa();
 
+  // Starts and stops observing a specified |node|; the node must be contained
+  // within the model.
+  void StartObservingNode(const BookmarkNode* node);
+  void StopObservingNode(const BookmarkNode* node);
+
+  // BookmarkModelObserver:
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
@@ -56,34 +60,33 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
 
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
-  }
+
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE { }
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE {
-  }
+                                 int index) OVERRIDE { }
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE {
-  }
+                                          const BookmarkNode* node) OVERRIDE { }
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE {
-  }
+      const BookmarkNode* node) OVERRIDE { }
 
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {
-  }
+  virtual void ExtensiveBookmarkChangesBeginning(
+      BookmarkModel* model) OVERRIDE { }
+
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE { }
 
  private:
-  const BookmarkNode* node_;  // Weak; owned by a BookmarkModel.
   BookmarkModel* model_;  // Weak; it is owned by a Profile.
-  NSObject* object_; // Weak, like a delegate.
-  SEL selector_;
+  std::set<const BookmarkNode*> nodes_;  // Weak items owned by a BookmarkModel.
+  base::mac::ScopedBlock<ChangeCallback> callback_;
 
-  void Notify();
+  // Send a notification to the client; |deleted| is YES if an observed node was
+  // deleted in the change.
+  void Notify(BOOL deleted);
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelObserverForCocoa);
 };

@@ -11,19 +11,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 
-// Keep track of bookmark pings.
-@interface ObserverPingTracker : NSObject {
- @public
-  int pings;
-}
-@end
-
-@implementation ObserverPingTracker
-- (void)pingMe:(id)sender {
-  pings++;
-}
-@end
-
 namespace {
 
 class BookmarkModelObserverForCocoaTest : public CocoaProfileTest {
@@ -36,26 +23,39 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
                                            0, ASCIIToUTF16("super"),
                                            GURL("http://www.google.com"));
 
-  scoped_nsobject<ObserverPingTracker>
-      pingCount([[ObserverPingTracker alloc] init]);
+  __block size_t pings = 0U;
+  __block size_t deletions = 0U;
+
+  BookmarkModelObserverForCocoa::ChangeCallback callback =
+      ^(BOOL nodeWasDeleted) {
+          ++pings;
+          if (nodeWasDeleted)
+            ++deletions;
+      };
 
   scoped_ptr<BookmarkModelObserverForCocoa>
-      observer(new BookmarkModelObserverForCocoa(node, model,
-                                                 pingCount,
-                                                 @selector(pingMe:)));
+      observer(new BookmarkModelObserverForCocoa(model,
+                                                 callback));
+  observer->StartObservingNode(node);
 
-  EXPECT_EQ(0, pingCount.get()->pings);
+  EXPECT_EQ(0U, pings);
+  EXPECT_EQ(0U, deletions);
 
   model->SetTitle(node, ASCIIToUTF16("duper"));
-  EXPECT_EQ(1, pingCount.get()->pings);
+  EXPECT_EQ(1U, pings);
+  EXPECT_EQ(0U, deletions);
+
   model->SetURL(node, GURL("http://www.google.com/reader"));
-  EXPECT_EQ(2, pingCount.get()->pings);
+  EXPECT_EQ(2U, pings);
+  EXPECT_EQ(0U, deletions);
 
   model->Move(node, model->other_node(), 0);
-  EXPECT_EQ(3, pingCount.get()->pings);
+  EXPECT_EQ(3U, pings);
+  EXPECT_EQ(0U, deletions);
 
   model->Remove(node->parent(), 0);
-  EXPECT_EQ(4, pingCount.get()->pings);
+  EXPECT_EQ(4U, pings);
+  EXPECT_EQ(1U, deletions);
 }
 
 }  // namespace

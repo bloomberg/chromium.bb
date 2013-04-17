@@ -51,7 +51,9 @@ using content::UserMetricsAction;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
-     alreadyBookmarked:(BOOL)alreadyBookmarked {
+         alreadyBookmarked:(BOOL)alreadyBookmarked {
+  DCHECK(model);
+  DCHECK(node);
   if ((self = [super initWithWindowNibPath:@"BookmarkBubble"
                               parentWindow:parentWindow
                                 anchoredAt:NSZeroPoint])) {
@@ -76,6 +78,7 @@ using content::UserMetricsAction;
     if ((node->parent() == model_->bookmark_bar_node()) ||
         (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
+      bookmarkObserver_->StartObservingNode(pulsingBookmarkNode_);
       NSValue *value = [NSValue valueWithPointer:node];
       NSDictionary *dict = [NSDictionary
                              dictionaryWithObjectsAndKeys:value,
@@ -97,6 +100,8 @@ using content::UserMetricsAction;
   if (!pulsingBookmarkNode_)
     return;
   NSValue *value = [NSValue valueWithPointer:pulsingBookmarkNode_];
+  if (bookmarkObserver_)
+      bookmarkObserver_->StopObservingNode(pulsingBookmarkNode_);
   pulsingBookmarkNode_ = NULL;
   NSDictionary *dict = [NSDictionary
                          dictionaryWithObjectsAndKeys:value,
@@ -121,7 +126,7 @@ using content::UserMetricsAction;
 
 - (void)windowWillClose:(NSNotification*)notification {
   // We caught a close so we don't need to watch for the parent closing.
-  bookmark_observer_.reset(NULL);
+  bookmarkObserver_.reset();
   [self stopPulsingBookmarkButton];
   [super windowWillClose:notification];
 }
@@ -163,10 +168,16 @@ using content::UserMetricsAction;
   // dialog, the bookmark bubble's cancel: means "don't add this as a
   // bookmark", not "cancel editing".  We must take extra care to not
   // touch the bookmark in this selector.
-  bookmark_observer_.reset(new BookmarkModelObserverForCocoa(
-                               node_, model_,
-                               self,
-                               @selector(dismissWithoutEditing:)));
+  bookmarkObserver_.reset(new BookmarkModelObserverForCocoa(
+      model_,
+      ^(BOOL nodeWasDeleted) {
+          // If a watched node was deleted, the pointer to the pulsing button
+          // is likely stale.
+          if (nodeWasDeleted)
+            pulsingBookmarkNode_ = NULL;
+          [self dismissWithoutEditing:nil];
+      }));
+  bookmarkObserver_->StartObservingNode(node_);
 
   // Pulse something interesting on the bookmark bar.
   [self startPulsingBookmarkButton:node_];

@@ -18,7 +18,7 @@ class BookmarkNode;
 // the bookmark in various ways (name, folder, etc.)
 @interface BookmarkBubbleController : BaseBubbleController {
  @private
-  // Both weak; owned by the current browser's profile
+  // Both weak; owned by the current browser's profile.
   BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
 
@@ -28,7 +28,7 @@ class BookmarkNode;
   BOOL alreadyBookmarked_;
 
   // Ping me when the bookmark model changes out from under us.
-  scoped_ptr<BookmarkModelObserverForCocoa> bookmark_observer_;
+  scoped_ptr<BookmarkModelObserverForCocoa> bookmarkObserver_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
