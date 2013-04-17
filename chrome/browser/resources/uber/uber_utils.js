@@ -36,8 +36,12 @@ cr.define('uber', function() {
    */
   function handleScroll() {
     var offset = document.body.scrollLeft * -1;
-    for (var i = 0; i < headerElements.length; i++)
-      headerElements[i].style.webkitTransform = 'translateX(' + offset + 'px)';
+    for (var i = 0; i < headerElements.length; i++) {
+      // As a workaround for http://crbug.com/231830, set the transform to
+      // 'none' rather than 0px.
+      headerElements[i].style.webkitTransform = offset ?
+          'translateX(' + offset + 'px)' : 'none';
+    }
 
     invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
