@@ -99,6 +99,12 @@ class FrameNavigationState {
   // True if the frame is currently not navigating.
   bool GetNavigationCompleted(FrameID frame_id) const;
 
+  // Marks a frame as having finished parsing.
+  void SetParsingFinished(FrameID frame_id);
+
+  // True if the frame has finished parsing.
+  bool GetParsingFinished(FrameID frame_id) const;
+
   // Marks a frame as having committed its navigation, i.e. the onCommitted
   // event was fired for this frame.
   void SetNavigationCommitted(FrameID frame_id);
@@ -128,6 +134,7 @@ class FrameNavigationState {
     bool is_navigating;  // True if there is a navigation going on.
     bool is_committed;  // True if the navigation is already committed.
     bool is_server_redirected;  // True if a server redirect happened.
+    bool is_parsing;  // True if the frame is still parsing.
     int64 parent_frame_num;
     GURL url;  // URL of this frame.
   };

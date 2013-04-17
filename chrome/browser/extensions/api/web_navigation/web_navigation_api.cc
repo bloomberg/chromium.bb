@@ -528,10 +528,22 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
+  navigation_state_.SetParsingFinished(frame_id);
   helpers::DispatchOnDOMContentLoaded(web_contents(),
                                       navigation_state_.GetUrl(frame_id),
                                       navigation_state_.IsMainFrame(frame_id),
                                       frame_num);
+
+  if (!navigation_state_.GetNavigationCompleted(frame_id))
+    return;
+
+  // The load might already have finished by the time we finished parsing. For
+  // compatibility reasons, we artifically delay the load completed signal until
+  // after parsing was completed.
+  helpers::DispatchOnCompleted(web_contents(),
+                               navigation_state_.GetUrl(frame_id),
+                               navigation_state_.IsMainFrame(frame_id),
+                               frame_num);
 }
 
 void WebNavigationTabObserver::DidFinishLoad(
@@ -559,6 +571,12 @@ void WebNavigationTabObserver::DidFinishLoad(
       << "validated URL is " << validated_url << " but we expected "
       << navigation_state_.GetUrl(frame_id);
   DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);
+
+  // The load might already have finished by the time we finished parsing. For
+  // compatibility reasons, we artifically delay the load completed signal until
+  // after parsing was completed.
+  if (!navigation_state_.GetParsingFinished(frame_id))
+    return;
   helpers::DispatchOnCompleted(web_contents(),
                                navigation_state_.GetUrl(frame_id),
                                is_main_frame,
