@@ -1336,8 +1336,6 @@
         'browser/predictors/autocomplete_action_predictor_factory.h',
         'browser/predictors/autocomplete_action_predictor_table.cc',
         'browser/predictors/autocomplete_action_predictor_table.h',
-        'browser/predictors/logged_in_predictor_table.cc',
-        'browser/predictors/logged_in_predictor_table.h',
         'browser/predictors/predictor_database.cc',
         'browser/predictors/predictor_database.h',
         'browser/predictors/predictor_database_factory.cc',

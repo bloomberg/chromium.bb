@@ -244,13 +244,6 @@ class BrowsingDataRemover : public content::NotificationObserver
   // Invoked on the IO thread to clear the hostname resolution cache.
   void ClearHostnameResolutionCacheOnIOThread(IOThread* io_thread);
 
-  // Callback when the LoggedIn Predictor has been cleared.
-  // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
-  void OnClearedLoggedInPredictor();
-
-  // Clears the LoggedIn Predictor.
-  void ClearLoggedInPredictor();
-
   // Callback when speculative data in the network Predictor has been cleared.
   // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
   void OnClearedNetworkPredictor();
@@ -409,7 +402,6 @@ class BrowsingDataRemover : public content::NotificationObserver
   bool waiting_for_clear_history_;
   bool waiting_for_clear_hostname_resolution_cache_;
   bool waiting_for_clear_local_storage_;
-  bool waiting_for_clear_logged_in_predictor_;
   bool waiting_for_clear_nacl_cache_;
   bool waiting_for_clear_network_predictor_;
   bool waiting_for_clear_networking_history_;

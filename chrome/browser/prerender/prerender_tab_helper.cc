@@ -7,18 +7,13 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
-#include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
@@ -133,8 +128,7 @@ class PrerenderTabHelper::PixelStats {
 };
 
 PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      weak_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
 }
 
 PrerenderTabHelper::~PrerenderTabHelper() {
@@ -144,8 +138,6 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
     content::RenderViewHost* render_view_host) {
   url_ = url;
-  RecordEvent(EVENT_MAINFRAME_CHANGE);
-  RecordEventIfLoggedInURL(EVENT_MAINFRAME_CHANGE_DOMAIN_LOGGED_IN, url);
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
@@ -162,9 +154,6 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderViewHost* render_view_host) {
   if (!is_main_frame)
     return;
-  RecordEvent(EVENT_MAINFRAME_COMMIT);
-  RecordEventIfLoggedInURL(EVENT_MAINFRAME_COMMIT_DOMAIN_LOGGED_IN,
-                           validated_url);
   url_ = validated_url;
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
@@ -221,38 +210,9 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
   }
 }
 
-void PrerenderTabHelper::DidNavigateAnyFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) {
-  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_table =
-      MaybeGetLoggedInTable();
-  if (params.password_form.origin.is_valid() && logged_in_table.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::DB, FROM_HERE,
-        base::Bind(&predictors::LoggedInPredictorTable::Add,
-                   logged_in_table,
-                   params.url));
-    RecordEvent(EVENT_LOGIN_ACTION_ADDED);
-  }
-}
-
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
   return PrerenderManagerFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-}
-
-scoped_refptr<predictors::LoggedInPredictorTable>
-PrerenderTabHelper::MaybeGetLoggedInTable() const {
-  RecordEvent(EVENT_LOGGED_IN_TABLE_REQUESTED);
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager) {
-    predictors::LoggedInPredictorTable* result =
-        prerender_manager->logged_in_predictor_table();
-    if (result)
-      RecordEvent(EVENT_LOGGED_IN_TABLE_PRESENT);
-    return result;
-  }
-  return NULL;
 }
 
 bool PrerenderTabHelper::IsPrerendering() {
@@ -287,43 +247,6 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     if (pixel_stats_.get())
       pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
   }
-}
-
-void PrerenderTabHelper::RecordEvent(PrerenderTabHelper::Event event) const {
-  UMA_HISTOGRAM_ENUMERATION("Prerender.TabHelperEvent",
-                            event, PrerenderTabHelper::EVENT_MAX_VALUE);
-}
-
-void PrerenderTabHelper::RecordEventIfLoggedInURL(
-    PrerenderTabHelper::Event event, const GURL& url) {
-  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_table =
-      MaybeGetLoggedInTable();
-  if (!logged_in_table.get())
-    return;
-  scoped_ptr<bool> is_present(new bool);
-  scoped_ptr<bool> lookup_succeeded(new bool);
-  bool* is_present_ptr = is_present.get();
-  bool* lookup_succeeded_ptr = lookup_succeeded.get();
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&predictors::LoggedInPredictorTable::HasUserLoggedIn,
-                 logged_in_table,
-                 url,
-                 is_present_ptr,
-                 lookup_succeeded_ptr),
-      base::Bind(&PrerenderTabHelper::RecordEventIfLoggedInURLResult,
-                 weak_factory_.GetWeakPtr(),
-                 event,
-                 base::Passed(&is_present),
-                 base::Passed(&lookup_succeeded)));
-}
-
-void PrerenderTabHelper::RecordEventIfLoggedInURLResult(
-    PrerenderTabHelper::Event event,
-    scoped_ptr<bool> is_present,
-    scoped_ptr<bool> lookup_succeeded) {
-  if (*lookup_succeeded && *is_present)
-    RecordEvent(event);
 }
 
 }  // namespace prerender

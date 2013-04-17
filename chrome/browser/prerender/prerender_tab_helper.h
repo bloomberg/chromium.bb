@@ -6,15 +6,10 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "googleurl/src/gurl.h"
-
-namespace predictors {
-class LoggedInPredictorTable;
-}
 
 namespace prerender {
 
@@ -26,17 +21,6 @@ class PrerenderTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PrerenderTabHelper> {
  public:
-  enum Event {
-    EVENT_LOGGED_IN_TABLE_REQUESTED = 0,
-    EVENT_LOGGED_IN_TABLE_PRESENT = 1,
-    EVENT_MAINFRAME_CHANGE = 2,
-    EVENT_MAINFRAME_CHANGE_DOMAIN_LOGGED_IN = 3,
-    EVENT_MAINFRAME_COMMIT = 4,
-    EVENT_MAINFRAME_COMMIT_DOMAIN_LOGGED_IN = 5,
-    EVENT_LOGIN_ACTION_ADDED = 6,
-    EVENT_MAX_VALUE
-  };
-
   virtual ~PrerenderTabHelper();
 
   // content::WebContentsObserver implementation.
@@ -59,10 +43,6 @@ class PrerenderTabHelper
       const GURL& validated_url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidNavigateAnyFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
@@ -70,10 +50,6 @@ class PrerenderTabHelper
   explicit PrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
 
-  void RecordEvent(Event event) const;
-  void RecordEventIfLoggedInURL(Event event, const GURL& url);
-  void RecordEventIfLoggedInURLResult(Event event, scoped_ptr<bool> is_present,
-                                      scoped_ptr<bool> lookup_succeeded);
   // Helper class to compute pixel-based stats on the paint progress
   // between when a prerendered page is swapped in and when the onload event
   // fires.
@@ -82,10 +58,6 @@ class PrerenderTabHelper
 
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
-
-  // Retrieves the LoggedInPredictorTable, or NULL, if none was found.
-  scoped_refptr<predictors::LoggedInPredictorTable>
-  MaybeGetLoggedInTable() const;
 
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
@@ -104,8 +76,6 @@ class PrerenderTabHelper
 
   // Current URL being loaded.
   GURL url_;
-
-  base::WeakPtrFactory<PrerenderTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTabHelper);
 };

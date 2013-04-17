@@ -30,9 +30,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/predictors/logged_in_predictor_table.h"
-#include "chrome/browser/predictors/predictor_database.h"
-#include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -143,7 +140,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_history_(false),
       waiting_for_clear_hostname_resolution_cache_(false),
       waiting_for_clear_local_storage_(false),
-      waiting_for_clear_logged_in_predictor_(false),
       waiting_for_clear_nacl_cache_(false),
       waiting_for_clear_network_predictor_(false),
       waiting_for_clear_networking_history_(false),
@@ -343,9 +339,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
           base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
                      base::Unretained(this), base::Unretained(rq_context)));
     }
-    // Also delete the LoggedIn Predictor, which tries to keep track of which
-    // sites a user is logged into.
-    ClearLoggedInPredictor();
 
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
     // Clear the safebrowsing cookies only if time period is for "all time".  It
@@ -581,7 +574,6 @@ bool BrowsingDataRemover::AllDone() {
       !waiting_for_clear_cookies_count_&&
       !waiting_for_clear_history_ &&
       !waiting_for_clear_local_storage_ &&
-      !waiting_for_clear_logged_in_predictor_ &&
       !waiting_for_clear_session_storage_ &&
       !waiting_for_clear_networking_history_ &&
       !waiting_for_clear_server_bound_certs_ &&
@@ -648,40 +640,6 @@ void BrowsingDataRemover::ClearHostnameResolutionCacheOnIOThread(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&BrowsingDataRemover::OnClearedHostnameResolutionCache,
-                 base::Unretained(this)));
-}
-
-void BrowsingDataRemover::OnClearedLoggedInPredictor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(waiting_for_clear_logged_in_predictor_);
-  waiting_for_clear_logged_in_predictor_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void BrowsingDataRemover::ClearLoggedInPredictor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!waiting_for_clear_logged_in_predictor_);
-
- predictors::PredictorDatabase* predictor_db =
-        predictors::PredictorDatabaseFactory::GetForProfile(profile_);
- if (!predictor_db)
-   return;
-
- predictors::LoggedInPredictorTable* logged_in_table =
-     predictor_db->logged_in_table();
- if (!logged_in_table)
-   return;
-
-  waiting_for_clear_logged_in_predictor_ = true;
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&predictors::LoggedInPredictorTable::DeleteAllCreatedBetween,
-                 logged_in_table,
-                 delete_begin_,
-                 delete_end_),
-      base::Bind(&BrowsingDataRemover::OnClearedLoggedInPredictor,
                  base::Unretained(this)));
 }
 

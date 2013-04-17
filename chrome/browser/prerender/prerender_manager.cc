@@ -22,9 +22,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/predictors/logged_in_predictor_table.h"
-#include "chrome/browser/predictors/predictor_database.h"
-#include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -208,13 +205,6 @@ PrerenderManager::PrerenderManager(Profile* profile,
   if (IsLocalPredictorEnabled())
     local_predictor_.reset(new PrerenderLocalPredictor(this));
 
-  if (IsLoggedInPredictorEnabled() && !profile_->IsOffTheRecord()) {
-    predictors::PredictorDatabase* predictor_db =
-        predictors::PredictorDatabaseFactory::GetForProfile(profile);
-    if (predictor_db)
-      logged_in_predictor_table_ = predictor_db->logged_in_table();
-  }
-
   // Certain experiments override our default config_ values.
   switch (PrerenderManager::GetMode()) {
     case PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
@@ -234,11 +224,6 @@ PrerenderManager::~PrerenderManager() {
   // these vectors already.
   DCHECK(active_prerenders_.empty());
   DCHECK(to_delete_prerenders_.empty());
-}
-
-scoped_refptr<predictors::LoggedInPredictorTable>
-PrerenderManager::logged_in_predictor_table() {
-  return logged_in_predictor_table_;
 }
 
 void PrerenderManager::Shutdown() {
