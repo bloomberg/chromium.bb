@@ -72,6 +72,7 @@ class WebUILoginDisplay : public LoginDisplay,
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password);
+  virtual void SetGaiaOriginForTesting(const std::string& arg);
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowUsers() const OVERRIDE;

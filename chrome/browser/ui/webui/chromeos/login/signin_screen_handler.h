@@ -62,6 +62,7 @@ class LoginDisplayWebUIHandler {
   // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
+  virtual void SetGaiaOriginForTesting(const std::string& arg) = 0;
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -248,6 +249,7 @@ class SigninScreenHandler
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
+  virtual void SetGaiaOriginForTesting(const std::string& arg) OVERRIDE;
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
@@ -437,6 +439,9 @@ class SigninScreenHandler
   // NOTIFICATION_AUTH_NEEDED and reset on either NOTIFICATION_AUTH_SUPPLIED or
   // NOTIFICATION_AUTH_CANCELLED.
   bool has_pending_auth_ui_;
+
+  // Testing helper, specifies new value for gaia url.
+  std::string gaia_origin_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

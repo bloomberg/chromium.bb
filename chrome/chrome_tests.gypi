@@ -377,11 +377,13 @@
             'browser/chromeos/login/login_browsertest.cc',
             'browser/chromeos/login/mock_authenticator.cc',
             'browser/chromeos/login/mock_authenticator.h',
+            'browser/chromeos/login/oobe_browsertest.cc',
             'browser/chromeos/login/screen_locker_browsertest.cc',
             'browser/chromeos/login/screen_locker_tester.cc',
             'browser/chromeos/login/screen_locker_tester.h',
             'browser/chromeos/login/wallpaper_manager_browsertest.cc',
             'browser/chromeos/system/ash_focus_cycle_browsertest.cc',
+            'test/data/chromeos/service_login.html',
           ],
           'sources!': [
             # chromeos does not use cross-platform panels

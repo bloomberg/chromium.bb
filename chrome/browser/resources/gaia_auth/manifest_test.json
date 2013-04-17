@@ -4,7 +4,7 @@
   "name": "GaiaTestAuthExtension",
   "version": "0.0.1",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' https://insecure.com https://www.google.com/accounts/ https://accounts.google.com https://accounts.youtube.com https://gaiastaging.corp.google.com",
+  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' https://insecure.com https://www.google.com/accounts/ https://accounts.google.com https://accounts.youtube.com https://gaiastaging.corp.google.com http://localhost:8040 http://localhost:8041 http://localhost:8042 http://localhost:8043 http://localhost:8044",
   "description": "GAIA Test Component Extension",
   "content_scripts": [
     {
@@ -12,7 +12,8 @@
           "https://www.google.com/accounts/*",
           "https://accounts.google.com/*",
           "https://gaiastaging.corp.google.com/*",
-          "https://insecure.com/*"
+          "https://insecure.com/*",
+          "http://localhost:8040/*"
       ],
       "js": ["test/content.js"],
       "all_frames": true
@@ -35,6 +36,7 @@
       "https://www.google.com/accounts/*",
       "https://accounts.google.com/*",
       "https://gaiastaging.corp.google.com/*",
-      "chrome://oobe/"
+      "chrome://oobe/",
+      "http://localhost:8040/*"
   ]
 }

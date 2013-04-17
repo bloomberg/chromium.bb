@@ -9,7 +9,7 @@
 cr.define('login', function() {
   // Gaia loading time after which error message must be displayed and
   // lazy portal check should be fired.
-  /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 7;
+  /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 15;
 
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
@@ -231,7 +231,7 @@ cr.define('login', function() {
         url += '?' + params.join('&');
 
       if (data.forceReload || this.extensionUrl_ != url) {
-        console.log('Opening extension: ' + data.url +
+        console.log('Opening extension: ' + url +
                     ', opt_email=' + data.email);
 
         this.error_ = 0;

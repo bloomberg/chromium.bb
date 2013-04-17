@@ -311,6 +311,11 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
     webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
+void WebUILoginDisplay::SetGaiaOriginForTesting(const std::string& arg) {
+  if (webui_handler_)
+    webui_handler_->SetGaiaOriginForTesting(arg);
+}
+
 const UserList& WebUILoginDisplay::GetUsers() const {
   return users_;
 }

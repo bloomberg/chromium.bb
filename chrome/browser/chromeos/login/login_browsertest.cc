@@ -33,9 +33,9 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Return;
 
-namespace chromeos {
+namespace {
 
-class LoginTestBase : public CrosInProcessBrowserTest {
+class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
  public:
   LoginTestBase()
     : mock_cryptohome_library_(NULL),
@@ -59,8 +59,8 @@ class LoginTestBase : public CrosInProcessBrowserTest {
         .WillRepeatedly(Return(true));
   }
 
-  MockCryptohomeLibrary* mock_cryptohome_library_;
-  MockNetworkLibrary* mock_network_library_;
+  chromeos::MockCryptohomeLibrary* mock_cryptohome_library_;
+  chromeos::MockNetworkLibrary* mock_network_library_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
@@ -73,8 +73,9 @@ class LoginUserTest : public LoginTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitchASCII(switches::kLoginUser, "TestUser@gmail.com");
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser, "TestUser@gmail.com");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(::switches::kNoFirstRun);
   }
 };
@@ -82,9 +83,9 @@ class LoginUserTest : public LoginTestBase {
 class LoginGuestTest : public LoginTestBase {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kGuestSession);
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(::switches::kNoFirstRun);
   }
 };
@@ -92,7 +93,7 @@ class LoginGuestTest : public LoginTestBase {
 class LoginCursorTest : public LoginTestBase {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
   }
 };
 
@@ -148,11 +149,11 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 };
 
 
-class LoginSigninTest : public CrosInProcessBrowserTest {
+class LoginSigninTest : public chromeos::CrosInProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -200,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
 // Verifies the cursor is hidden at startup on login screen.
 IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   // Login screen needs to be shown explicitly when running test.
-  ShowLoginWizard(WizardController::kLoginScreenName, gfx::Size());
+  chromeos::ShowLoginWizard(chromeos::WizardController::kLoginScreenName,
+                            gfx::Size());
 
   // Cursor should be hidden at startup
   EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
@@ -209,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  MessageLoop::current()->DeleteSoon(FROM_HERE,
-                                     BaseLoginDisplayHost::default_host());
+  MessageLoop::current()->DeleteSoon(
+      FROM_HERE, chromeos::BaseLoginDisplayHost::default_host());
 }
 
 // Verifies that the webui for login comes up successfully.
@@ -222,4 +224,4 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
   runner->Run();
 }
 
-} // namespace chromeos
+}

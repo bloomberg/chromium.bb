@@ -875,6 +875,10 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   HandleShowAddUser(NULL);
 }
 
+void SigninScreenHandler::SetGaiaOriginForTesting(const std::string& arg) {
+  gaia_origin_for_test_ = arg;
+}
+
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cookie_remover_ = NULL;
@@ -1010,7 +1014,10 @@ void SigninScreenHandler::LoadAuthExtension(
     params.Set("localizedStrings", localized_strings);
   }
 
-  params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
+  std::string gaia_origin = GaiaUrls::GetInstance()->gaia_origin_url();
+  if (!gaia_origin_for_test_.empty())
+    gaia_origin = gaia_origin_for_test_;
+  params.SetString("gaiaOrigin", gaia_origin);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(::switches::kGaiaUrlPath)) {
     params.SetString("gaiaUrlPath",

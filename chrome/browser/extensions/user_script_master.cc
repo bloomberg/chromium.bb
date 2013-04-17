@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension_resource.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 
@@ -188,14 +190,23 @@ static bool LoadScriptContent(UserScript::File* script_file,
       script_file->extension_root(), script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
-    LOG(WARNING) << "Failed to get file path to "
-                 << script_file->relative_path().value() << " from "
-                 << script_file->extension_root().value();
-    return false;
-  }
-  if (!file_util::ReadFileToString(path, &content)) {
-    LOG(WARNING) << "Failed to load user script file: " << path.value();
-    return false;
+    int resource_id;
+    if (extensions::ImageLoader::IsComponentExtensionResource(
+            script_file->extension_root(), script_file->relative_path(),
+            &resource_id)) {
+      const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      content = rb.GetRawDataResource(resource_id).as_string();
+    } else {
+      LOG(WARNING) << "Failed to get file path to "
+                   << script_file->relative_path().value() << " from "
+                   << script_file->extension_root().value();
+      return false;
+    }
+  } else {
+    if (!file_util::ReadFileToString(path, &content)) {
+      LOG(WARNING) << "Failed to load user script file: " << path.value();
+      return false;
+    }
   }
 
   // Localize the content.
