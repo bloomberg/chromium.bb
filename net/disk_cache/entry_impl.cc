@@ -502,9 +502,12 @@ void EntryImpl::DeleteEntryData(bool everything) {
   backend_->ModifyStorageSize(entry_.Data()->key_len, 0);
 
   backend_->DeleteBlock(entry_.address(), true);
+  entry_.Discard();
 
-  if (!LeaveRankingsBehind())
+  if (!LeaveRankingsBehind()) {
     backend_->DeleteBlock(node_.address(), true);
+    node_.Discard();
+  }
 }
 
 CacheAddr EntryImpl::GetNextAddress() {
