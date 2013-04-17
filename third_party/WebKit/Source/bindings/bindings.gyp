@@ -32,7 +32,7 @@
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
     '../WebKit/chromium/features.gypi',
-    '../WebCore/WebCore.gypi',
+    '../core/core.gypi',
     '../modules/modules.gypi',
     'bindings.gypi',
   ],
@@ -49,23 +49,23 @@
 
     'bindings_idl_files!': [
       # Custom bindings in bindings/v8/custom exist for these.
-      '../WebCore/dom/EventListener.idl',
+      '../core/dom/EventListener.idl',
 
-      '../WebCore/page/AbstractView.idl',
+      '../core/page/AbstractView.idl',
 
       # These bindings are excluded, as they're only used through inheritance and don't define constants that would need a constructor.
-      '../WebCore/svg/ElementTimeControl.idl',
-      '../WebCore/svg/SVGExternalResourcesRequired.idl',
-      '../WebCore/svg/SVGFilterPrimitiveStandardAttributes.idl',
-      '../WebCore/svg/SVGFitToViewBox.idl',
-      '../WebCore/svg/SVGLangSpace.idl',
-      '../WebCore/svg/SVGLocatable.idl',
-      '../WebCore/svg/SVGTests.idl',
-      '../WebCore/svg/SVGTransformable.idl',
+      '../core/svg/ElementTimeControl.idl',
+      '../core/svg/SVGExternalResourcesRequired.idl',
+      '../core/svg/SVGFilterPrimitiveStandardAttributes.idl',
+      '../core/svg/SVGFitToViewBox.idl',
+      '../core/svg/SVGLangSpace.idl',
+      '../core/svg/SVGLocatable.idl',
+      '../core/svg/SVGTests.idl',
+      '../core/svg/SVGTransformable.idl',
 
       # FIXME: I don't know why these are excluded, either.
       # Someone (me?) should figure it out and add appropriate comments.
-      '../WebCore/css/CSSUnknownRule.idl',
+      '../core/css/CSSUnknownRule.idl',
     ],
 
     'conditions': [
@@ -164,7 +164,7 @@
          '<(perl_exe)',
          '-w',
          '-Iscripts',
-         '-I../WebCore/scripts',
+         '-I../core/scripts',
          'scripts/preprocess-idls.pl',
          '--defines',
          '<(feature_defines)',
@@ -190,7 +190,7 @@
       'actions': [{
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
-          '../WebCore/WebCore.gyp/scripts/action_derivedsourcesallinone.py',
+          '../core/core.gyp/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
         ],
         'outputs': [
@@ -198,7 +198,7 @@
         ],
         'action': [
           'python',
-          '../WebCore/WebCore.gyp/scripts/action_derivedsourcesallinone.py',
+          '../core/core.gyp/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
           '--',
           '<@(derived_sources_aggregate_files)',
@@ -214,7 +214,7 @@
           'scripts/CodeGeneratorV8.pm',
           'scripts/IDLParser.pm',
           'scripts/IDLAttributes.txt',
-          '../WebCore/scripts/preprocessor.pm',
+          '../core/scripts/preprocessor.pm',
           '<!@pymod_do_main(supplemental_idl_files <@(bindings_idl_files))',
         ],
         'outputs': [
@@ -233,17 +233,17 @@
             '--include', '../modules/notifications',
             '--include', '../modules/webaudio',
             '--include', '../modules/webdatabase',
-            '--include', '../WebCore/css',
-            '--include', '../WebCore/dom',
-            '--include', '../WebCore/fileapi',
-            '--include', '../WebCore/html',
-            '--include', '../WebCore/page',
-            '--include', '../WebCore/plugins',
-            '--include', '../WebCore/storage',
-            '--include', '../WebCore/svg',
-            '--include', '../WebCore/testing',
-            '--include', '../WebCore/workers',
-            '--include', '../WebCore/xml',
+            '--include', '../core/css',
+            '--include', '../core/dom',
+            '--include', '../core/fileapi',
+            '--include', '../core/html',
+            '--include', '../core/page',
+            '--include', '../core/plugins',
+            '--include', '../core/storage',
+            '--include', '../core/svg',
+            '--include', '../core/testing',
+            '--include', '../core/workers',
+            '--include', '../core/xml',
             '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
         },
@@ -257,7 +257,7 @@
           '<(perl_exe)',
           '-w',
           '-Iscripts',
-          '-I../WebCore/scripts',
+          '-I../core/scripts',
           '<(bindings_dir)/scripts/generate-bindings.pl',
           '--outputHeadersDir',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
@@ -284,7 +284,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'bindings_sources',
-        '../WebCore/WebCore.gyp/WebCore.gyp:webcore_prerequisites',
+        '../core/core.gyp/core.gyp:webcore_prerequisites',
         '../yarr/yarr.gyp:yarr',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -314,7 +314,7 @@
         # Some Mac-specific parts of WebKit won't compile without having this
         # prefix header injected.
         # FIXME: make this a first-class setting.
-        'GCC_PREFIX_HEADER': '../WebCore/WebCorePrefix.h',
+        'GCC_PREFIX_HEADER': '../core/WebCorePrefix.h',
       },
       'direct_dependent_settings': {
         'include_dirs': [
@@ -338,9 +338,9 @@
           ],
           # This is needed because Event.h in this directory is blocked
           # by a system header on windows.
-          'include_dirs++': ['../WebCore/dom'],
+          'include_dirs++': ['../core/dom'],
           'direct_dependent_settings': {
-            'include_dirs+++': ['../WebCore/dom'],
+            'include_dirs+++': ['../core/dom'],
           },
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.

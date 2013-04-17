@@ -71,7 +71,7 @@
                     ],
                 }, {
                     'dependencies': [
-                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                        '../../core/core.gyp/core.gyp:webcore',
                     ],
                     'defines': [
                         'WEBKIT_IMPLEMENTATION=1',

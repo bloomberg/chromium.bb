@@ -31,7 +31,7 @@
 {
     'includes': [
         'WinPrecompile.gypi',
-        '../../WebCore/WebCore.gypi',
+        '../../core/core.gypi',
         'WebKit.gypi',
         'features.gypi',
     ],
@@ -42,7 +42,7 @@
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
-                '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                '../../core/core.gyp/core.gyp:webcore',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -579,8 +579,8 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'dependencies': [
-                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_bindings',
-                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
+                        '../../core/core.gyp/core.gyp:webcore_bindings',
+                        '../../core/core.gyp/core.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -608,7 +608,7 @@
                     'include_dirs': [
                         # WARNING: Do not view this particular case as a precedent for
                         # including WebCore headers in DumpRenderTree project.
-                        '../../WebCore/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
+                        '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
                         '<@(webkit_unittest_files)',
@@ -779,11 +779,11 @@
                     'type': 'static_library',
                     'dependencies': [
                         '../../wtf/wtf.gyp:wtf',
-                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
+                        '../../core/core.gyp/core.gyp:webcore_test_support',
                     ],
                     'include_dirs': [
                         'public',
-                        '../../WebCore/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
+                        '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                         '../../Platform/chromium/',
                     ],
                     'sources': [

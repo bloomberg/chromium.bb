@@ -42,7 +42,7 @@
             'target_name': 'TestWebKitAPI',
             'type': 'executable',
             'dependencies': [
-                '<(source_dir)/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                '<(source_dir)/core/core.gyp/core.gyp:webcore',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/wtf/wtf.gyp:wtf',
                 '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
