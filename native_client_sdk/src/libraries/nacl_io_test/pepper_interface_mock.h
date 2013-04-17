@@ -9,6 +9,7 @@
 #include "nacl_io/pepper_interface.h"
 
 // Mock interface class definitions.
+#include "nacl_io/pepper/undef_macros.h"
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
     class BaseClass##Mock : public BaseClass { \
      public: \
@@ -28,7 +29,6 @@
                 Type4) \
     MOCK_METHOD5(MethodName, ReturnType(Type0, Type1, Type2, Type3, Type4));
 #include "nacl_io/pepper/all_interfaces.h"
-#include "nacl_io/pepper/undef_macros.h"
 
 
 class PepperInterfaceMock : public PepperInterface {
@@ -42,23 +42,23 @@ class PepperInterfaceMock : public PepperInterface {
   MOCK_METHOD0(IsMainThread, bool());
 
 // Interface getters.
+#include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
     virtual BaseClass##Mock* Get##BaseClass();
 #include "nacl_io/pepper/all_interfaces.h"
-#include "nacl_io/pepper/undef_macros.h"
 
  private:
   PP_Instance instance_;
 
 // Interface pointers.
+#include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
     BaseClass##Mock* BaseClass##interface_;
 #include "nacl_io/pepper/all_interfaces.h"
-#include "nacl_io/pepper/undef_macros.h"
 
   int dummy_;
 };
