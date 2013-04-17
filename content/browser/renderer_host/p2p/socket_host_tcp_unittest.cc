@@ -181,4 +181,34 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   EXPECT_EQ(expected_data, sent_data_);
 }
 
+// Verify that asynchronous writes are handled correctly.
+TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
+  MessageLoop message_loop;
+
+  socket_->set_async_write(true);
+
+  EXPECT_CALL(sender_, Send(
+      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+      .Times(2)
+      .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
+
+  std::vector<char> packet1;
+  CreateStunRequest(&packet1);
+  socket_host_->Send(dest_, packet1);
+
+  std::vector<char> packet2;
+  CreateStunResponse(&packet2);
+  socket_host_->Send(dest_, packet2);
+
+  message_loop.RunUntilIdle();
+
+  std::string expected_data;
+  expected_data.append(IntToSize(packet1.size()));
+  expected_data.append(packet1.begin(), packet1.end());
+  expected_data.append(IntToSize(packet2.size()));
+  expected_data.append(packet2.begin(), packet2.end());
+
+  EXPECT_EQ(expected_data, sent_data_);
+}
+
 }  // namespace content

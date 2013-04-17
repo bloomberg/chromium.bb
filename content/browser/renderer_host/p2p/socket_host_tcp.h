@@ -65,6 +65,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHost {
 
   std::queue<scoped_refptr<net::DrainableIOBuffer> > write_queue_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+  bool write_pending_;
 
   bool connected_;
 

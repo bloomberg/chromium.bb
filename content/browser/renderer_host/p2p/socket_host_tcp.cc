@@ -21,6 +21,7 @@ namespace content {
 
 P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender, int id)
     : P2PSocketHost(message_sender, id),
+      write_pending_(false),
       connected_(false) {
 }
 
@@ -226,7 +227,7 @@ void P2PSocketHostTcp::Send(const net::IPEndPoint& to,
 }
 
 void P2PSocketHostTcp::DoWrite() {
-  while (write_buffer_ && state_ == STATE_OPEN) {
+  while (write_buffer_ && state_ == STATE_OPEN && !write_pending_) {
     int result = socket_->Write(write_buffer_, write_buffer_->BytesRemaining(),
                                 base::Bind(&P2PSocketHostTcp::OnWritten,
                                            base::Unretained(this)));
@@ -235,7 +236,10 @@ void P2PSocketHostTcp::DoWrite() {
 }
 
 void P2PSocketHostTcp::OnWritten(int result) {
+  DCHECK(write_pending_);
   DCHECK_NE(result, net::ERR_IO_PENDING);
+
+  write_pending_ = false;
   HandleWriteResult(result);
   DoWrite();
 }
@@ -253,7 +257,9 @@ void P2PSocketHostTcp::HandleWriteResult(int result) {
         write_queue_.pop();
       }
     }
-  } else if (result != net::ERR_IO_PENDING) {
+  } else if (result == net::ERR_IO_PENDING) {
+    write_pending_ = true;
+  } else {
     LOG(ERROR) << "Error when sending data in TCP socket: " << result;
     OnError();
   }

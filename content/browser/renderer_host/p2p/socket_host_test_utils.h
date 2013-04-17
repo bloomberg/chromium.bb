@@ -7,10 +7,13 @@
 
 #include <vector>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/p2p_messages.h"
-#include "ipc/ipc_sender.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_sender.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -49,6 +52,7 @@ class FakeSocket : public net::StreamSocket {
   FakeSocket(std::string* written_data);
   virtual ~FakeSocket();
 
+  void set_async_write(bool async_write) { async_write_ = async_write; }
   void AppendInputData(const char* data, int data_size);
   int input_pos() const { return input_pos_; }
   bool read_pending() const { return read_pending_; }
@@ -78,14 +82,20 @@ class FakeSocket : public net::StreamSocket {
   virtual bool GetSSLInfo(net::SSLInfo* ssl_info) OVERRIDE;
 
  private:
+  void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
+                    const net::CompletionCallback& callback);
+
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   net::CompletionCallback read_callback_;
 
-  std::string* written_data_;
   std::string input_data_;
   int input_pos_;
+
+  std::string* written_data_;
+  bool async_write_;
+  bool write_pending_;
 
   net::IPEndPoint peer_address_;
   net::IPEndPoint local_address_;
@@ -95,8 +105,10 @@ class FakeSocket : public net::StreamSocket {
 
 FakeSocket::FakeSocket(std::string* written_data)
     : read_pending_(false),
+      input_pos_(0),
       written_data_(written_data),
-      input_pos_(0) {
+      async_write_(false),
+      write_pending_(false) {
 }
 
 FakeSocket::~FakeSocket() { }
@@ -147,6 +159,17 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
                       const net::CompletionCallback& callback) {
   DCHECK(buf);
+  DCHECK(!write_pending_);
+
+  if (async_write_) {
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(
+        &FakeSocket::DoAsyncWrite, base::Unretained(this),
+        scoped_refptr<net::IOBuffer>(buf), buf_len, callback));
+    write_pending_ = true;
+    return net::ERR_IO_PENDING;
+  }
+
   if (written_data_) {
     written_data_->insert(written_data_->end(),
                           buf->data(), buf->data() + buf_len);
@@ -154,6 +177,16 @@ int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
   return buf_len;
 }
 
+void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
+                              const net::CompletionCallback& callback) {
+  write_pending_ = false;
+
+  if (written_data_) {
+    written_data_->insert(written_data_->end(),
+                          buf->data(), buf->data() + buf_len);
+  }
+  callback.Run(buf_len);
+}
 
 bool FakeSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
