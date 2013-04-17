@@ -29,10 +29,10 @@
 #ifndef WTF_Collator_h
 #define WTF_Collator_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/unicode/Unicode.h"
 
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
 struct UCollator;

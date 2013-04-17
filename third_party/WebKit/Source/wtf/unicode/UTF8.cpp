@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "UTF8.h"
+#include "wtf/unicode/UTF8.h"
 
 #include "ASCIICType.h"
-#include <wtf/StringHasher.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/StringHasher.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WTF {
 namespace Unicode {

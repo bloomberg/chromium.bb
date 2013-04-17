@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "Collator.h"
+#include "wtf/unicode/Collator.h"
 
 #if !USE(ICU_UNICODE) || UCONFIG_NO_COLLATION
 
