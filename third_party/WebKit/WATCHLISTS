@@ -11,11 +11,11 @@
 {
   'WATCHLIST_DEFINITIONS': {
     'accessibility': {
-      'filepath': 'Source/WebCore/accessibility' \
+      'filepath': 'Source/core/accessibility' \
                   '|LayoutTests/accessibility',
     },
     'animations': {
-      'filepath': 'Source/WebCore/page/animation' \
+      'filepath': 'Source/core/page/animation' \
                   '|LayoutTests/fast/animation' \
                   '|LayoutTests/animation',
     },
@@ -26,13 +26,13 @@
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
     'css': {
-      'filepath': 'Source/WebCore/css',
+      'filepath': 'Source/core/css',
     },
     'devtools': {
       'filepath': 'inspector|DevTools|devtools',
     },
     'loader': {
-      'filepath': 'Source/WebCore/loader',
+      'filepath': 'Source/core/loader',
     },
     'public_api': {
       'filepath': 'Source/Platform/chromium/public' \
@@ -43,29 +43,29 @@
       'filepath': 'Source/WTF',
     },
     'platform_graphics': {
-      'filepath': 'Source/WebCore/platform/graphics',
+      'filepath': 'Source/core/platform/graphics',
     },
     'platform': {
-      'filepath': 'Source/WebCore/platform' \
+      'filepath': 'Source/core/platform' \
                   '|Source/Platform'
     },
     'svg': {
-      'filepath': 'Source/WebCore/svg|Source/WebCore/rendering/svg',
+      'filepath': 'Source/core/svg|Source/core/rendering/svg',
     },
     'indexed_db': {
       'filepath': 'Source/modules/indexeddb/' \
                   '|Source/bindings/.*IDB' \
                   '|Source/bindings/.*SerializedScriptValue' \
                   '|Source/WebKit/chromium/.*IDB' \
-                  '|Source/WebCore/platform/leveldb' \
+                  '|Source/core/platform/leveldb' \
                   '|LayoutTests/storage/indexeddb'
     },
     'rendering': {
-      'filepath': 'Source/WebCore/rendering'
+      'filepath': 'Source/core/rendering'
     },
     "content_security_policy": {
-      'filepath': 'Source/WebCore/page/.*SecurityPolicy' \
-                  '|Source/WebCore/dom/SecurityPolicyViolationEvent' \
+      'filepath': 'Source/core/page/.*SecurityPolicy' \
+                  '|Source/core/dom/SecurityPolicyViolationEvent' \
                   '|LayoutTests/http/tests/security/contentSecurityPolicy'
     },
     "prerender": {
@@ -74,27 +74,27 @@
                   '|html/HTMLLinkElement'
     },
     'track': {
-      'filepath': 'Source/WebCore/html/track/' \
-                  '|Source/WebCore/loader/TextTrack' \
-                  '|Source/WebCore/html/HTMLMediaElement' \
-                  '|Source/WebCore/html/shadow/MediaControl' \
-                  '|Source/WebCore/css/mediaControl' \
+      'filepath': 'Source/core/html/track/' \
+                  '|Source/core/loader/TextTrack' \
+                  '|Source/core/html/HTMLMediaElement' \
+                  '|Source/core/html/shadow/MediaControl' \
+                  '|Source/core/css/mediaControl' \
                   '|LayoutTests/media/track/'
     },
     'media': {
-      'filepath': 'Source/WebCore/css/mediaControls.*' \
-                  '|Source/WebCore/platform/graphics/.*Media.*' \
-                  '|Source/WebCore/html/.*(Audio|Media|Video).*' \
-                  '|Source/WebCore/html/shadow/MediaControl.*' \
-                  '|Source/WebCore/rendering/RenderMedia.*' \
+      'filepath': 'Source/core/css/mediaControls.*' \
+                  '|Source/core/platform/graphics/.*Media.*' \
+                  '|Source/core/html/.*(Audio|Media|Video).*' \
+                  '|Source/core/html/shadow/MediaControl.*' \
+                  '|Source/core/rendering/RenderMedia.*' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/WebKit/chromium/.*Media.*' \
     },
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
-                  '|Source/WebCore/fileapi/' \
+                  '|Source/core/fileapi/' \
                   '|Source/WebKit/chromium/.*File.*' \
-                  '|Source/WebCore/platform/.*File.*' \
+                  '|Source/core/platform/.*File.*' \
                   '|LayoutTests/fast/file'
     },
     'quota': {
