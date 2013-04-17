@@ -487,6 +487,10 @@ void Layer::SwitchCCLayerForTest() {
 }
 
 void Layer::SetExternalTexture(Texture* texture) {
+  // Hold a ref to the old |Texture| until we have updated all
+  // compositor references to the texture id that it holds.
+  scoped_refptr<ui::Texture> old_texture = texture_;
+
   DCHECK_EQ(type_, LAYER_TEXTURED);
   DCHECK(!solid_color_layer_);
   bool has_texture = !!texture;
