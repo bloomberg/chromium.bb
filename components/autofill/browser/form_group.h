@@ -75,11 +75,6 @@ class FormGroup {
                          const std::string& app_locale,
                          FormFieldData* field_data) const;
 
-  // Returns true if |value| is a valid US state name or abbreviation.  It is
-  // case insensitive.  Valid for US states only.
-  // TODO(estade): this is a crappy place for this function.
-  static bool IsValidState(const base::string16& value);
-
  protected:
   // AutofillProfile needs to call into GetSupportedTypes() for objects of
   // non-AutofillProfile type, for which mere inheritance is insufficient.

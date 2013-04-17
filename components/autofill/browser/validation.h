@@ -34,6 +34,10 @@ bool IsValidCreditCardSecurityCode(const base::string16& code,
 // Returns true if |text| looks like a valid e-mail address.
 bool IsValidEmailAddress(const base::string16& text);
 
+// Returns true if |text| is a valid US state name or abbreviation.  It is
+// case insensitive.  Valid for US states only.
+bool IsValidState(const base::string16& text);
+
 // Returns true if |text| looks like a valid zip code.
 // Valid for US zip codes only.
 bool IsValidZip(const base::string16& text);

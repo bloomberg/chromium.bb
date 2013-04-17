@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regexes.h"
 #include "components/autofill/browser/credit_card.h"
+#include "components/autofill/browser/state_names.h"
 
 namespace autofill {
 
@@ -110,9 +111,14 @@ bool IsValidEmailAddress(const base::string16& text) {
   return MatchesPattern(text, kEmailPattern);
 }
 
-bool IsValidZip(const base::string16& value) {
+bool IsValidState(const base::string16& text) {
+  return !state_names::GetAbbreviationForName(text).empty() ||
+         !state_names::GetNameForAbbreviation(text).empty();
+}
+
+bool IsValidZip(const base::string16& text) {
   const base::string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
-  return MatchesPattern(value, kZipPattern);
+  return MatchesPattern(text, kZipPattern);
 }
 
 }  // namespace autofill

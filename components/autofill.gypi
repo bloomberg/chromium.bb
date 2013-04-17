@@ -206,6 +206,8 @@
             'autofill/browser/phone_number_i18n.h',
             'autofill/browser/risk/fingerprint.cc',
             'autofill/browser/risk/fingerprint.h',
+            'autofill/browser/state_names.cc',
+            'autofill/browser/state_names.h',
             'autofill/browser/validation.cc',
             'autofill/browser/validation.h',
             'autofill/browser/wallet/cart.cc',

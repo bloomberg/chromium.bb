@@ -12,97 +12,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/state_names.h"
+#include "components/autofill/browser/validation.h"
 #include "components/autofill/common/form_field_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 namespace {
-
-// TODO(jhawkins): Add more states/provinces.  See http://crbug.com/45039.
-
-class State {
- public:
-  const char* name;
-  const char* abbreviation;
-
-  static const State all_states[];
-
-  static base::string16 Abbreviation(const base::string16& name);
-  static base::string16 FullName(const base::string16& abbreviation);
-};
-
-const State State::all_states[] = {
-  { "alabama", "al" },
-  { "alaska", "ak" },
-  { "arizona", "az" },
-  { "arkansas", "ar" },
-  { "california", "ca" },
-  { "colorado", "co" },
-  { "connecticut", "ct" },
-  { "delaware", "de" },
-  { "district of columbia", "dc" },
-  { "florida", "fl" },
-  { "georgia", "ga" },
-  { "hawaii", "hi" },
-  { "idaho", "id" },
-  { "illinois", "il" },
-  { "indiana", "in" },
-  { "iowa", "ia" },
-  { "kansas", "ks" },
-  { "kentucky", "ky" },
-  { "louisiana", "la" },
-  { "maine", "me" },
-  { "maryland", "md" },
-  { "massachusetts", "ma" },
-  { "michigan", "mi" },
-  { "minnesota", "mv" },
-  { "mississippi", "ms" },
-  { "missouri", "mo" },
-  { "montana", "mt" },
-  { "nebraska", "ne" },
-  { "nevada", "nv" },
-  { "new hampshire", "nh" },
-  { "new jersey", "nj" },
-  { "new mexico", "nm" },
-  { "new york", "ny" },
-  { "north carolina", "nc" },
-  { "north dakota", "nd" },
-  { "ohio", "oh" },
-  { "oklahoma", "ok" },
-  { "oregon", "or" },
-  { "pennsylvania", "pa" },
-  { "puerto rico", "pr" },
-  { "rhode island", "ri" },
-  { "south carolina", "sc" },
-  { "south dakota", "sd" },
-  { "tennessee", "tn" },
-  { "texas", "tx" },
-  { "utah", "ut" },
-  { "vermont", "vt" },
-  { "virginia", "va" },
-  { "washington", "wa" },
-  { "west virginia", "wv" },
-  { "wisconsin", "wi" },
-  { "wyoming", "wy" },
-  { NULL, NULL }
-};
-
-base::string16 State::Abbreviation(const base::string16& name) {
-  for (const State* state = all_states; state->name; ++state) {
-    if (LowerCaseEqualsASCII(name, state->name))
-      return ASCIIToUTF16(state->abbreviation);
-  }
-  return base::string16();
-}
-
-base::string16 State::FullName(const base::string16& abbreviation) {
-  for (const State* state = all_states; state->name; ++state) {
-    if (LowerCaseEqualsASCII(abbreviation, state->abbreviation))
-      return ASCIIToUTF16(state->name);
-  }
-  return base::string16();
-}
 
 const char* const kMonthsAbbreviated[] = {
   NULL,  // Padding so index 1 = month 1 = January.
@@ -141,23 +58,18 @@ bool SetSelectControlValue(const base::string16& value,
 
 bool FillStateSelectControl(const base::string16& value,
                             FormFieldData* field) {
-  base::string16 abbrev, full;
-  if (value.size() < 4U) {
-    abbrev = value;
-    full = State::FullName(value);
-  } else {
-    abbrev = State::Abbreviation(value);
+  base::string16 abbreviation = value;
+  base::string16 full = state_names::GetNameForAbbreviation(value);
+  if (full.empty()) {
+    abbreviation = state_names::GetAbbreviationForName(value);
     full = value;
   }
 
-  // Try the abbreviation name first.
-  if (!abbrev.empty() && SetSelectControlValue(abbrev, field))
+  // Try the abbreviation first.
+  if (!abbreviation.empty() && SetSelectControlValue(abbreviation, field))
     return true;
 
-  if (full.empty())
-    return false;
-
-  return SetSelectControlValue(full, field);
+  return !full.empty() && SetSelectControlValue(full, field);
 }
 
 bool FillExpirationMonthSelectControl(const base::string16& value,
@@ -317,11 +229,6 @@ void FormGroup::FillSelectControl(AutofillFieldType type,
 bool FormGroup::FillCountrySelectControl(const std::string& app_locale,
                                          FormFieldData* field_data) const {
   return false;
-}
-
-// static
-bool FormGroup::IsValidState(const base::string16& value) {
-  return !State::Abbreviation(value).empty() || !State::FullName(value).empty();
 }
 
 }  // namespace autofill

@@ -17,7 +17,6 @@
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/browser/phone_number.h"
@@ -689,7 +688,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
   // Reject profiles with invalid US state information.
   base::string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
   if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
-      !state.empty() && !FormGroup::IsValidState(state)) {
+      !state.empty() && !IsValidState(state)) {
     return false;
   }
 
