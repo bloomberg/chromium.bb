@@ -7028,3 +7028,13 @@
    fun:_ZN2cc17LayerTreeHostImpl18InitializeRendererE10scoped_ptrINS_13OutputSurfaceEN4base14DefaultDeleterIS2_EEE
    fun:_ZN2cc11ThreadProxy30InitializeRendererOnImplThreadEPNS_15CompletionEventEPbPNS_20RendererCapabilitiesE
 }
+{
+   bug_232777
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net17QuicStreamFactory23GetOrCreateCryptoConfigERKSt4pairINS_12HostPortPairENS_11ProxyServerEE
+   fun:_ZN3net17QuicStreamFactory13CreateSessionERKSt4pairINS_12HostPortPairENS_11ProxyServerEERKNS_11AddressListERKNS_11BoundNetLogE
+   fun:_ZN3net17QuicStreamFactory3Job9DoConnectEv
+   fun:_ZN3net17QuicStreamFactory3Job6DoLoopEi
+   fun:_ZN3net17QuicStreamFactory3Job12OnIOCompleteEi
+}
