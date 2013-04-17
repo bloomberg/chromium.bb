@@ -26,10 +26,6 @@ template <typename T> struct DefaultSingletonTraits;
 class AcceleratorsCocoa {
  public:
   typedef std::map<int, ui::Accelerator> AcceleratorMap;
-  typedef AcceleratorMap::const_iterator const_iterator;
-
-  const_iterator const begin() { return accelerators_.begin(); }
-  const_iterator const end() { return accelerators_.end(); }
 
   // Returns NULL if there is no accelerator for the command.
   const ui::Accelerator* GetAcceleratorForCommand(int command_id);
