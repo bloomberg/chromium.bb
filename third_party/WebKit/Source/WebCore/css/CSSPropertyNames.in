@@ -37,6 +37,9 @@ line-height
 // The remaining properties are listed in alphabetical order
 background
 background-attachment
+#if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
+background-blend-mode
+#endif
 background-clip
 background-color
 background-image
@@ -273,7 +276,6 @@ z-index
 -webkit-box-decoration-break
 #if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
 -webkit-blend-mode
--webkit-background-blend-mode
 #endif
 #if defined(ENABLE_CSS_FILTERS) && ENABLE_CSS_FILTERS
 -webkit-filter

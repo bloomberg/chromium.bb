@@ -88,6 +88,9 @@ namespace WebCore {
 // List of all properties we know how to compute, omitting shorthands.
 static const CSSPropertyID computedProperties[] = {
     CSSPropertyBackgroundAttachment,
+#if ENABLE(CSS_COMPOSITING)
+    CSSPropertyBackgroundBlendMode,
+#endif
     CSSPropertyBackgroundClip,
     CSSPropertyBackgroundColor,
     CSSPropertyBackgroundImage,
@@ -226,7 +229,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitBackgroundSize,
 #if ENABLE(CSS_COMPOSITING)
     CSSPropertyWebkitBlendMode,
-    CSSPropertyWebkitBackgroundBlendMode,
 #endif
     CSSPropertyWebkitBorderFit,
     CSSPropertyWebkitBorderHorizontalSpacing,
@@ -2610,7 +2612,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitBlendMode:
             return cssValuePool().createValue(style->blendMode());
             
-        case CSSPropertyWebkitBackgroundBlendMode: {
+        case CSSPropertyBackgroundBlendMode: {
             const FillLayer* layers = style->backgroundLayers();
             if (!layers->next())
                 return cssValuePool().createValue(layers->blendMode());
