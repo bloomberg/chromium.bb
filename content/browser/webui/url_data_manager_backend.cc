@@ -62,11 +62,12 @@ bool SchemeIsInSchemes(const std::string& scheme,
 // is the hostname and |path| is the remaining portion of the URL.
 void URLToRequest(const GURL& url, std::string* source_name,
                   std::string* path) {
+  std::vector<std::string> additional_schemes;
   DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
-         SchemeIsInSchemes(
-             url.scheme(),
-             GetContentClient()->browser()->GetAdditionalWebUISchemes()));
+         (GetContentClient()->browser()->GetAdditionalWebUISchemes(
+             &additional_schemes),
+          SchemeIsInSchemes(url.scheme(), additional_schemes)));
 
   if (!url.is_valid()) {
     NOTREACHED();

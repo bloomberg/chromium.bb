@@ -36,10 +36,6 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
   return false;
 }
 
-std::vector<std::string> ContentBrowserClient::GetAdditionalWebUISchemes() {
-  return std::vector<std::string>();
-}
-
 net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
     BrowserContext* browser_context,
     ProtocolHandlerMap* protocol_handlers) {

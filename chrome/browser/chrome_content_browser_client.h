@@ -66,7 +66,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& effective_url) OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
-  virtual std::vector<std::string> GetAdditionalWebUISchemes() OVERRIDE;
+  virtual void GetAdditionalWebUISchemes(
+      std::vector<std::string>* additional_schemes) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;

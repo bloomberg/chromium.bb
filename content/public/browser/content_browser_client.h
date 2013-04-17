@@ -151,7 +151,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource
   // and its override of URLDataSource::ShouldServiceRequest.
-  virtual std::vector<std::string> GetAdditionalWebUISchemes();
+  virtual void GetAdditionalWebUISchemes(
+      std::vector<std::string>* additional_schemes) {}
 
   // Creates the main net::URLRequestContextGetter. Should only be called once
   // per ContentBrowserClient object.

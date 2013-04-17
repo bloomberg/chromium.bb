@@ -426,8 +426,9 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
               browser_context_->IsOffTheRecord(),
               partition->GetAppCacheService(),
               blob_storage_context));
-  std::vector<std::string> additional_webui_schemes =
-      GetContentClient()->browser()->GetAdditionalWebUISchemes();
+  std::vector<std::string> additional_webui_schemes;
+  GetContentClient()->browser()->GetAdditionalWebUISchemes(
+      &additional_webui_schemes);
   for (std::vector<std::string>::const_iterator it =
            additional_webui_schemes.begin();
        it != additional_webui_schemes.end();

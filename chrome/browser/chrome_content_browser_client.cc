@@ -820,11 +820,9 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 }
 
 // These are treated as WebUI schemes but do not get WebUI bindings.
-std::vector<std::string>
-ChromeContentBrowserClient::GetAdditionalWebUISchemes() {
-  std::vector<std::string> additional_schemes;
-  additional_schemes.push_back(chrome::kChromeSearchScheme);
-  return additional_schemes;
+void ChromeContentBrowserClient::GetAdditionalWebUISchemes(
+    std::vector<std::string>* additional_schemes) {
+  additional_schemes->push_back(chrome::kChromeSearchScheme);
 }
 
 net::URLRequestContextGetter*
