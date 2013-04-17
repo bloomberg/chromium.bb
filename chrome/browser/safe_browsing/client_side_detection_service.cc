@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -270,6 +271,9 @@ void ClientSideDetectionService::SendModelToRenderers() {
 }
 
 void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSbDisableAutoUpdate))
+    return;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartFetchModel,
