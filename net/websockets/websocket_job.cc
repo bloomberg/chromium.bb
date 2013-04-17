@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/cookies/cookie_store.h"
-#include "net/base/io_buffer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -330,14 +330,19 @@ void WebSocketJob::OnSentSpdyData(size_t bytes_sent) {
   OnSentData(socket_, static_cast<int>(bytes_sent));
 }
 
-void WebSocketJob::OnReceivedSpdyData(const char* data, int length) {
+void WebSocketJob::OnReceivedSpdyData(scoped_ptr<SpdyBuffer> buffer) {
   DCHECK_NE(INITIALIZED, state_);
   DCHECK_NE(CONNECTING, state_);
   if (state_ == CLOSED)
     return;
   if (!spdy_websocket_stream_.get())
     return;
-  OnReceivedData(socket_, data, length);
+  if (buffer) {
+    OnReceivedData(socket_, buffer->GetRemainingData(),
+                   buffer->GetRemainingSize());
+  } else {
+    OnReceivedData(socket_, NULL, 0);
+  }
 }
 
 void WebSocketJob::OnCloseSpdyStream() {

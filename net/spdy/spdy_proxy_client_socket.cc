@@ -39,7 +39,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
                                  GURL("https://" + proxy_server.ToString()),
                                  auth_cache,
                                  auth_handler_factory)),
-      user_buffer_(NULL),
+      user_buffer_len_(0),
       write_buffer_len_(0),
       write_bytes_outstanding_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -127,8 +127,9 @@ int SpdyProxyClientSocket::Connect(const CompletionCallback& callback) {
 }
 
 void SpdyProxyClientSocket::Disconnect() {
-  read_buffer_.clear();
+  read_buffer_queue_.Clear();
   user_buffer_ = NULL;
+  user_buffer_len_ = 0;
   read_callback_.Reset();
 
   write_buffer_len_ = 0;
@@ -150,7 +151,8 @@ bool SpdyProxyClientSocket::IsConnected() const {
 }
 
 bool SpdyProxyClientSocket::IsConnectedAndIdle() const {
-  return IsConnected() && read_buffer_.empty() && spdy_stream_->is_idle();
+  return IsConnected() && read_buffer_queue_.IsEmpty() &&
+      spdy_stream_->is_idle();
 }
 
 const BoundNetLog& SpdyProxyClientSocket::NetLog() const {
@@ -196,15 +198,16 @@ int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
   if (next_state_ == STATE_DISCONNECTED)
     return ERR_SOCKET_NOT_CONNECTED;
 
-  if (next_state_ == STATE_CLOSED && read_buffer_.empty()) {
+  if (next_state_ == STATE_CLOSED && read_buffer_queue_.IsEmpty()) {
     return 0;
   }
 
   DCHECK(next_state_ == STATE_OPEN || next_state_ == STATE_CLOSED);
   DCHECK(buf);
-  user_buffer_ = new DrainableIOBuffer(buf, buf_len);
-  int result = PopulateUserReadBuffer();
+  size_t result = PopulateUserReadBuffer(buf->data(), buf_len);
   if (result == 0) {
+    user_buffer_ = buf;
+    user_buffer_len_ = static_cast<size_t>(buf_len);
     DCHECK(!callback.is_null());
     read_callback_ = callback;
     return ERR_IO_PENDING;
@@ -213,30 +216,13 @@ int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
   return result;
 }
 
-int SpdyProxyClientSocket::PopulateUserReadBuffer() {
-  if (!user_buffer_)
-    return ERR_IO_PENDING;
+size_t SpdyProxyClientSocket::PopulateUserReadBuffer(char* data, size_t len) {
+  size_t bytes_consumed = read_buffer_queue_.Dequeue(data, len);
 
-  int bytes_read = 0;
-  while (!read_buffer_.empty() && user_buffer_->BytesRemaining() > 0) {
-    scoped_refptr<DrainableIOBuffer> data = read_buffer_.front();
-    const int bytes_to_copy = std::min(user_buffer_->BytesRemaining(),
-                                       data->BytesRemaining());
-    memcpy(user_buffer_->data(), data->data(), bytes_to_copy);
-    user_buffer_->DidConsume(bytes_to_copy);
-    bytes_read += bytes_to_copy;
-    if (data->BytesRemaining() == bytes_to_copy) {
-      // Consumed all data from this buffer
-      read_buffer_.pop_front();
-    } else {
-      data->DidConsume(bytes_to_copy);
-    }
-  }
+  if (bytes_consumed > 0 && spdy_stream_)
+    spdy_stream_->IncreaseRecvWindowSize(bytes_consumed);
 
-  if (bytes_read > 0 && spdy_stream_)
-    spdy_stream_->IncreaseRecvWindowSize(bytes_read);
-
-  return user_buffer_->BytesConsumed();
+  return bytes_consumed;
 }
 
 int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
@@ -526,23 +512,23 @@ void SpdyProxyClientSocket::OnHeadersSent() {
   NOTREACHED();
 }
 
-// Called when data is received.
-int SpdyProxyClientSocket::OnDataReceived(const char* data, int length) {
-  net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,
-                                length, data);
-  if (length > 0) {
-    // Save the received data.
-    scoped_refptr<IOBuffer> io_buffer(new IOBuffer(length));
-    memcpy(io_buffer->data(), data, length);
-    read_buffer_.push_back(
-        make_scoped_refptr(new DrainableIOBuffer(io_buffer, length)));
+// Called when data is received or on EOF (if |buffer| is NULL).
+int SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+  if (buffer) {
+    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,
+                                  buffer->GetRemainingSize(),
+                                  buffer->GetRemainingData());
+    read_buffer_queue_.Enqueue(buffer.Pass());
+  } else {
+    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, 0, NULL);
   }
 
   if (!read_callback_.is_null()) {
-    int rv = PopulateUserReadBuffer();
+    int rv = PopulateUserReadBuffer(user_buffer_->data(), user_buffer_len_);
     CompletionCallback c = read_callback_;
     read_callback_.Reset();
     user_buffer_ = NULL;
+    user_buffer_len_ = 0;
     c.Run(rv);
   }
   return OK;
@@ -591,7 +577,7 @@ void SpdyProxyClientSocket::OnClose(int status)  {
     read_callback.Run(status);
   } else if (!read_callback_.is_null()) {
     // If we have a read_callback_, the we need to make sure we call it back.
-    OnDataReceived(NULL, 0);
+    OnDataReceived(scoped_ptr<SpdyBuffer>());
   }
   // This may have been deleted by read_callback_, so check first.
   if (weak_ptr && !write_callback.is_null())

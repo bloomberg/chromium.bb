@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_log.h"
 #include "net/base/request_priority.h"
-#include "net/spdy/spdy_frame_producer.h"
+#include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,31 +26,33 @@ class SpdyWriteQueueTest : public ::testing::Test {};
 
 // Makes a SpdyFrameProducer producing a frame with the data in the
 // given string.
-scoped_ptr<SpdyFrameProducer> StringToProducer(const std::string& s) {
+scoped_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
   scoped_ptr<char[]> data(new char[s.size()]);
   std::memcpy(data.get(), s.data(), s.size());
-  return scoped_ptr<SpdyFrameProducer>(
-      new SimpleFrameProducer(
-          scoped_ptr<SpdyFrame>(
-              new SpdyFrame(data.release(), s.size(), true))));
+  return scoped_ptr<SpdyBufferProducer>(
+      new SimpleBufferProducer(
+          scoped_ptr<SpdyBuffer>(
+              new SpdyBuffer(
+                  scoped_ptr<SpdyFrame>(
+                      new SpdyFrame(data.release(), s.size(), true))))));
 }
 
-// Makes a SpdyFrameProducer producing a frame with the data in the
+// Makes a SpdyBufferProducer producing a frame with the data in the
 // given int (converted to a string).
-scoped_ptr<SpdyFrameProducer> IntToProducer(int i) {
+scoped_ptr<SpdyBufferProducer> IntToProducer(int i) {
   return StringToProducer(base::IntToString(i));
 }
 
 // Produces a frame with the given producer and returns a copy of its
 // data as a string.
-std::string ProducerToString(scoped_ptr<SpdyFrameProducer> producer) {
-  scoped_ptr<SpdyFrame> frame = producer->ProduceFrame();
-  return std::string(frame->data(), frame->size());
+std::string ProducerToString(scoped_ptr<SpdyBufferProducer> producer) {
+  scoped_ptr<SpdyBuffer> buffer = producer->ProduceBuffer();
+  return std::string(buffer->GetRemainingData(), buffer->GetRemainingSize());
 }
 
 // Produces a frame with the given producer and returns a copy of its
 // data as an int (converted from a string).
-int ProducerToInt(scoped_ptr<SpdyFrameProducer> producer) {
+int ProducerToInt(scoped_ptr<SpdyBufferProducer> producer) {
   int i = 0;
   EXPECT_TRUE(base::StringToInt(ProducerToString(producer.Pass()), &i));
   return i;
@@ -69,9 +71,9 @@ SpdyStream* MakeTestStream(RequestPriority priority) {
 TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyFrameProducer> producer_low = StringToProducer("LOW");
-  scoped_ptr<SpdyFrameProducer> producer_medium = StringToProducer("MEDIUM");
-  scoped_ptr<SpdyFrameProducer> producer_highest = StringToProducer("HIGHEST");
+  scoped_ptr<SpdyBufferProducer> producer_low = StringToProducer("LOW");
+  scoped_ptr<SpdyBufferProducer> producer_medium = StringToProducer("MEDIUM");
+  scoped_ptr<SpdyBufferProducer> producer_highest = StringToProducer("HIGHEST");
 
   // A NULL stream should still work.
   scoped_refptr<SpdyStream> stream_low(NULL);
@@ -86,7 +88,7 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
       HIGHEST, RST_STREAM, producer_highest.Pass(), stream_highest);
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyFrameProducer> frame_producer;
+  scoped_ptr<SpdyBufferProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(RST_STREAM, frame_type);
@@ -111,9 +113,9 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
 TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   SpdyWriteQueue write_queue;
 
-  scoped_ptr<SpdyFrameProducer> producer1 = IntToProducer(1);
-  scoped_ptr<SpdyFrameProducer> producer2 = IntToProducer(2);
-  scoped_ptr<SpdyFrameProducer> producer3 = IntToProducer(3);
+  scoped_ptr<SpdyBufferProducer> producer1 = IntToProducer(1);
+  scoped_ptr<SpdyBufferProducer> producer2 = IntToProducer(2);
+  scoped_ptr<SpdyBufferProducer> producer3 = IntToProducer(3);
 
   scoped_refptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
   scoped_refptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
@@ -124,7 +126,7 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   write_queue.Enqueue(DEFAULT_PRIORITY, RST_STREAM, producer3.Pass(), stream3);
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyFrameProducer> frame_producer;
+  scoped_ptr<SpdyBufferProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
@@ -162,7 +164,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
 
   for (int i = 0; i < 100; i += 3) {
     SpdyFrameType frame_type = DATA;
-    scoped_ptr<SpdyFrameProducer> frame_producer;
+    scoped_ptr<SpdyBufferProducer> frame_producer;
     scoped_refptr<SpdyStream> stream;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
     EXPECT_EQ(SYN_STREAM, frame_type);
@@ -171,7 +173,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
   }
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyFrameProducer> frame_producer;
+  scoped_ptr<SpdyBufferProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -189,11 +191,11 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   write_queue.Clear();
 
   SpdyFrameType frame_type = DATA;
-  scoped_ptr<SpdyFrameProducer> frame_producer;
+  scoped_ptr<SpdyBufferProducer> frame_producer;
   scoped_refptr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
-}
+}  // namespace
 
 }  // namespace net

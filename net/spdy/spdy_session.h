@@ -26,9 +26,9 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_credential_state.h"
 #include "net/spdy/spdy_header_block.h"
-#include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_write_queue.h"
@@ -246,7 +246,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // producer is used to produce its frame.
   void EnqueueStreamWrite(SpdyStream* stream,
                           SpdyFrameType frame_type,
-                          scoped_ptr<SpdyFrameProducer> producer);
+                          scoped_ptr<SpdyBufferProducer> producer);
 
   // Creates and returns a SYN frame for |stream_id|.
   scoped_ptr<SpdyFrame> CreateSynStream(
@@ -271,12 +271,12 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                            const SpdyHeaderBlock& headers,
                                            SpdyControlFlags flags);
 
-  // Creates and returns a data frame. May return NULL if stalled by
-  // flow control.
-  scoped_ptr<SpdyFrame> CreateDataFrame(SpdyStreamId stream_id,
-                                        net::IOBuffer* data,
-                                        int len,
-                                        SpdyDataFlags flags);
+  // Creates and returns a SpdyBuffer holding a data frame with the
+  // given data. May return NULL if stalled by flow control.
+  scoped_ptr<SpdyBuffer> CreateDataBuffer(SpdyStreamId stream_id,
+                                          net::IOBuffer* data,
+                                          int len,
+                                          SpdyDataFlags flags);
 
   // Close a stream.
   void CloseStream(SpdyStreamId stream_id, int status);
@@ -584,7 +584,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // with the given priority.
   void EnqueueWrite(RequestPriority priority,
                     SpdyFrameType frame_type,
-                    scoped_ptr<SpdyFrameProducer> producer,
+                    scoped_ptr<SpdyBufferProducer> producer,
                     const scoped_refptr<SpdyStream>& stream);
 
   // Track active streams in the active stream list.
@@ -771,10 +771,18 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // The write queue.
   SpdyWriteQueue write_queue_;
 
-  // The packet we are currently sending.
-  bool write_pending_;            // Will be true when a write is in progress.
-  SpdyIOBuffer in_flight_write_;  // This is the write buffer in progress.
+  // Data for the frame we are currently sending.
+  // Whether we have a socket write pending completion.
+  bool write_pending_;
+  // The buffer we're currently writing.
+  scoped_ptr<SpdyBuffer> in_flight_write_;
+  // The type of the frame in |in_flight_write_|.
   SpdyFrameType in_flight_write_frame_type_;
+  // The size of the frame in |in_flight_write_|.
+  size_t in_flight_write_frame_size_;
+  // The stream to notify when |in_flight_write_| has been written to
+  // the socket completely.
+  scoped_refptr<SpdyStream> in_flight_write_stream_;
 
   // Flag if we have a pending message scheduled for WriteSocket.
   bool delayed_write_pending_;
