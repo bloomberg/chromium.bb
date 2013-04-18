@@ -112,8 +112,8 @@ deactivate_text_input(struct text_input *text_input,
 	if (input_method->model == text_input) {
 		if (input_method->context && input_method->input_method_binding) {
 			input_method_context_end_keyboard_grab(input_method->context);
-			input_method_send_deactivate(input_method->input_method_binding,
-						     &input_method->context->resource);
+			wl_input_method_send_deactivate(input_method->input_method_binding,
+							&input_method->context->resource);
 		}
 
 		wl_list_remove(&input_method->link);
@@ -150,16 +150,16 @@ text_input_set_surrounding_text(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_surrounding_text(&input_method->context->resource,
-							   text,
-							   cursor,
-							   anchor);
+		wl_input_method_context_send_surrounding_text(&input_method->context->resource,
+							      text,
+							      cursor,
+							      anchor);
 	}
 }
 
 static void
 text_input_activate(struct wl_client *client,
-	            struct wl_resource *resource,
+		    struct wl_resource *resource,
 		    struct wl_resource *seat,
 		    struct wl_resource *surface)
 {
@@ -215,7 +215,7 @@ text_input_reset(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_reset(&input_method->context->resource);
+		wl_input_method_context_send_reset(&input_method->context->resource);
 	}
 }
 
@@ -250,7 +250,7 @@ text_input_set_content_type(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_content_type(&input_method->context->resource, hint, purpose);
+		wl_input_method_context_send_content_type(&input_method->context->resource, hint, purpose);
 	}
 }
 
@@ -266,7 +266,7 @@ text_input_invoke_action(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_invoke_action(&input_method->context->resource, button, index);
+		wl_input_method_context_send_invoke_action(&input_method->context->resource, button, index);
 	}
 }
 
@@ -281,7 +281,7 @@ text_input_commit_state(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_commit_state(&input_method->context->resource, serial);
+		wl_input_method_context_send_commit_state(&input_method->context->resource, serial);
 	}
 }
 
@@ -324,8 +324,8 @@ text_input_set_preferred_language(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_preferred_language(&input_method->context->resource,
-							     language);
+		wl_input_method_context_send_preferred_language(&input_method->context->resource,
+								language);
 	}
 }
 
@@ -512,7 +512,7 @@ input_method_context_keysym(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 
 	wl_text_input_send_keysym(&context->model->resource, serial, time,
-			       sym, state, modifiers);
+				  sym, state, modifiers);
 }
 
 static void
@@ -650,7 +650,7 @@ input_method_context_text_direction(struct wl_client *client,
 }
 
 
-static const struct input_method_context_interface input_method_context_implementation = {
+static const struct wl_input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
@@ -694,7 +694,7 @@ input_method_context_create(struct text_input *model,
 
 	context->resource.destroy = destroy_input_method_context;
 	context->resource.object.id = 0;
-	context->resource.object.interface = &input_method_context_interface;
+	context->resource.object.interface = &wl_input_method_context_interface;
 	context->resource.object.implementation =
 		(void (**)(void)) &input_method_context_implementation;
 	context->resource.data = context;
@@ -706,7 +706,7 @@ input_method_context_create(struct text_input *model,
 
 	wl_client_add_resource(input_method->input_method_binding->client, &context->resource);
 
-	input_method_send_activate(input_method->input_method_binding, &context->resource);
+	wl_input_method_send_activate(input_method->input_method_binding, &context->resource);
 }
 
 static void
@@ -748,7 +748,7 @@ bind_input_method(struct wl_client *client,
 	struct text_backend *text_backend = input_method->text_backend;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &input_method_interface,
+	resource = wl_client_add_object(client, &wl_input_method_interface,
 					NULL,
 					id, input_method);
 
@@ -841,9 +841,9 @@ launch_input_method(struct text_backend *text_backend)
 		return;
 
 	text_backend->input_method.client = weston_client_launch(text_backend->compositor,
-								&text_backend->input_method.process,
-								text_backend->input_method.path,
-								handle_input_method_sigchld);
+								 &text_backend->input_method.process,
+								 text_backend->input_method.path,
+								 handle_input_method_sigchld);
 
 	if (!text_backend->input_method.client)
 		weston_log("not able to start %s\n", text_backend->input_method.path);
@@ -870,7 +870,7 @@ handle_seat_created(struct wl_listener *listener,
 
 	input_method->input_method_global =
 		wl_display_add_global(ec->wl_display,
-				      &input_method_interface,
+				      &wl_input_method_interface,
 				      input_method, bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;

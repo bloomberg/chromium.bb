@@ -3650,7 +3650,7 @@ input_panel_surface_set_overlay_panel(struct wl_client *client,
 	input_panel_surface->panel = 1;
 }
 
-static const struct input_panel_surface_interface input_panel_surface_implementation = {
+static const struct wl_input_panel_surface_interface input_panel_surface_implementation = {
 	input_panel_surface_set_toplevel,
 	input_panel_surface_set_overlay_panel
 };
@@ -3676,7 +3676,7 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 	if (get_input_panel_surface(surface)) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "input_panel::get_input_panel_surface already requested");
+				       "wl_input_panel::get_input_panel_surface already requested");
 		return;
 	}
 
@@ -3690,7 +3690,7 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 
 	ipsurf->resource.destroy = destroy_input_panel_surface_resource;
 	ipsurf->resource.object.id = id;
-	ipsurf->resource.object.interface = &input_panel_surface_interface;
+	ipsurf->resource.object.interface = &wl_input_panel_surface_interface;
 	ipsurf->resource.object.implementation =
 		(void (**)(void)) &input_panel_surface_implementation;
 	ipsurf->resource.data = ipsurf;
@@ -3698,7 +3698,7 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 	wl_client_add_resource(client, &ipsurf->resource);
 }
 
-static const struct input_panel_interface input_panel_implementation = {
+static const struct wl_input_panel_interface input_panel_implementation = {
 	input_panel_get_input_panel_surface
 };
 
@@ -3718,7 +3718,7 @@ bind_input_panel(struct wl_client *client,
 	struct desktop_shell *shell = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &input_panel_interface,
+	resource = wl_client_add_object(client, &wl_input_panel_interface,
 					&input_panel_implementation,
 					id, shell);
 
@@ -4313,7 +4313,7 @@ module_init(struct weston_compositor *ec,
 				  shell, bind_screensaver) == NULL)
 		return -1;
 
-	if (wl_display_add_global(ec->wl_display, &input_panel_interface,
+	if (wl_display_add_global(ec->wl_display, &wl_input_panel_interface,
 				  shell, bind_input_panel) == NULL)
 		return -1;
 

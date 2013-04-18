@@ -26,7 +26,7 @@
   </copyright>
 
 
-  <interface name="input_method_context" version="1">
+  <interface name="wl_input_method_context" version="1">
     <description summary="input method context">
       Corresponds to a text model on input method side. An input method context
       is created on text mode activation on the input method side. It allows to
@@ -215,7 +215,7 @@
     </event>
   </interface>
 
-  <interface name="input_method" version="1">
+  <interface name="wl_input_method" version="1">
     <description summary="input method">
       An input method object is responsible to compose text in response to
       input from hardware or virtual keyboards. There is one input method
@@ -227,7 +227,7 @@
         A text model was activated. Creates an input method context object
         which allows communication with the text model.
       </description>
-      <arg name="id" type="new_id" interface="input_method_context"/>
+      <arg name="id" type="new_id" interface="wl_input_method_context"/>
     </event>
     <event name="deactivate">
       <description summary="activate event">
@@ -235,22 +235,22 @@
         The input method context should be destroyed after deactivation is
         handled.
       </description>
-      <arg name="context" type="object" interface="input_method_context"/>
+      <arg name="context" type="object" interface="wl_input_method_context"/>
     </event>
   </interface>
 
-  <interface name="input_panel" version="1">
+  <interface name="wl_input_panel" version="1">
     <description summary="interface for implementing keyboards">
       Only one client can bind this interface at a time.
     </description>
 
     <request name="get_input_panel_surface">
-      <arg name="id" type="new_id" interface="input_panel_surface"/>
+      <arg name="id" type="new_id" interface="wl_input_panel_surface"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
   </interface>
 
-  <interface name="input_panel_surface" version="1">
+  <interface name="wl_input_panel_surface" version="1">
     <enum name="position">
       <entry name="center_bottom" value="0"/>
     </enum>
