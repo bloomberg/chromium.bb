@@ -134,10 +134,12 @@ void DateTimeNumericFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEve
     m_typeAheadBuffer.append(number);
 
     int newValue = typeAheadValue();
-    if (m_range.isInRange(newValue))
+    if (newValue >= m_hardLimits.minimum)
         setValueAsInteger(newValue, DispatchEvent);
-    else
+    else {
+        m_hasValue = false;
         updateVisibleValue(DispatchEvent);
+    }
 
     if (m_typeAheadBuffer.length() >= DateTimeNumericFieldElement::formatValue(m_range.maximum).length() || newValue * 10 > m_range.maximum)
         focusOnNextField();

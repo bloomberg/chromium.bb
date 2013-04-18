@@ -89,6 +89,34 @@ keyDown('6'); // -> 01/15/[0006]
 shouldBeEqualToString('input.value', '0006-01-15');
 */
 
+beginTest('Digit keys with maximum value', null, null, '2013-01-01');
+keyDown('5'); // -> 05/[dd]/yyyy
+keyDown('6'); // -> 05/06/[yyyy]
+keyDown('2'); // -> 05/06/[0002]
+keyDown('0'); // -> 05/06/[0020]
+keyDown('1'); // -> 05/06/[0201]
+keyDown('4'); // -> 05/06/2014
+shouldBeEqualToString('input.value', '2014-05-06');
+
+beginTest('Digit keys with minimum value', null, '2013-01-01');
+keyDown('5'); // -> 05/[dd]/yyyy
+keyDown('6'); // -> 05/06/[yyyy]
+keyDown('1'); // -> 05/06/[0001]
+keyDown('9'); // -> 05/06/[0019]
+keyDown('9'); // -> 05/06/[0199]
+keyDown('9'); // -> 05/06/1999
+shouldBeEqualToString('input.value', '1999-05-06');
+
+beginTest('Entering "00" to month', '2013-04-16');
+keyDown('0'); // -> [00]/16/2013
+keyDown('0'); // -> 01/[16]/2013
+shouldBeEqualToString('input.value', '2013-01-16');
+
+beginTest('Entering "13" to month', '2013-04-16');
+keyDown('1'); // -> [01]/16/2013
+keyDown('3'); // -> 12/[16]/2013
+shouldBeEqualToString('input.value', '2013-12-16');
+
 beginTest('Left/Right keys', '2012-09-29');
 keyDown('rightArrow'); // -> 09/[29]/2012
 keyDown('5'); // -> 09/05/[2012]
