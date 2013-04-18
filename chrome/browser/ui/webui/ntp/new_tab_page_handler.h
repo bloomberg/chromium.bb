@@ -57,12 +57,6 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   // Callback for "logTimeToClick".
   void HandleLogTimeToClick(const base::ListValue* args);
 
-  // Callback for the "getShouldShowApps" message.
-  void HandleGetShouldShowApps(const base::ListValue* args);
-
-  // Callback from extensions::UpdateIsAppLauncherEnabled().
-  void GotIsAppLauncherEnabled(bool is_enabled);
-
   // Tracks the number of times the user has switches pages (for UMA).
   size_t page_switch_count_;
 

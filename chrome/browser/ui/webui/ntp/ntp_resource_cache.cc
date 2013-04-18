@@ -214,7 +214,7 @@ bool NTPResourceCache::NewTabCacheNeedsRefresh() {
     return true;
   }
 #endif
-  bool should_show_apps_page = !apps::WasAppLauncherEnabled();
+  bool should_show_apps_page = NewTabUI::ShouldShowApps();
   if (should_show_apps_page != should_show_apps_page_) {
     should_show_apps_page_ = should_show_apps_page;
     return true;

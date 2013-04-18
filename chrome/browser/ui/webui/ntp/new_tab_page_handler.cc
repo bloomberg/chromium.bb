@@ -75,9 +75,6 @@ void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("logTimeToClick",
       base::Bind(&NewTabPageHandler::HandleLogTimeToClick,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getShouldShowApps",
-      base::Bind(&NewTabPageHandler::HandleGetShouldShowApps,
-                 base::Unretained(this)));
 }
 
 void NewTabPageHandler::HandleNotificationPromoClosed(const ListValue* args) {
@@ -170,17 +167,6 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
   } else {
     NOTREACHED();
   }
-}
-
-void NewTabPageHandler::HandleGetShouldShowApps(const ListValue* args) {
-  apps::GetIsAppLauncherEnabled(
-      base::Bind(&NewTabPageHandler::GotIsAppLauncherEnabled,
-                 AsWeakPtr()));
-}
-
-void NewTabPageHandler::GotIsAppLauncherEnabled(bool is_enabled) {
-  base::FundamentalValue should_show_apps(!is_enabled);
-  web_ui()->CallJavascriptFunction("ntp.gotShouldShowApps", should_show_apps);
 }
 
 // static

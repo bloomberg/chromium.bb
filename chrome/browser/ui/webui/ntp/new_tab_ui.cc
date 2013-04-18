@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "apps/app_launcher.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -50,6 +49,10 @@
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_handler.h"
+#endif
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/host_desktop.h"
 #endif
 
 using content::BrowserThread;
@@ -237,14 +240,14 @@ void NewTabUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 
 // static
 bool NewTabUI::ShouldShowApps() {
+// Ash shows apps in app list thus should not show apps page in NTP4.
+// Android does not have apps.
 #if defined(OS_ANDROID)
-  // Ash shows apps in app list thus should not show apps page in NTP4.
-  // Android does not have apps.
   return false;
+#elif defined(USE_ASH)
+  return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
 #else
-  // This needs to be synchronous, so we use the value the last time it
-  // was checked.
-  return !apps::WasAppLauncherEnabled();
+  return true;
 #endif
 }
 

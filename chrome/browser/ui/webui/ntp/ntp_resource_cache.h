@@ -31,6 +31,9 @@ class NTPResourceCache : public content::NotificationObserver,
   base::RefCountedMemory* GetNewTabHTML(bool is_incognito);
   base::RefCountedMemory* GetNewTabCSS(bool is_incognito);
 
+  void set_should_show_apps_page(bool should_show_apps_page) {
+    should_show_apps_page_ = should_show_apps_page;
+  }
   void set_should_show_most_visited_page(bool should_show_most_visited_page) {
     should_show_most_visited_page_ = should_show_most_visited_page;
   }
@@ -81,7 +84,7 @@ class NTPResourceCache : public content::NotificationObserver,
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
-  // Set based on extensions::IsAppLauncherEnabled.
+  // Set based on NewTabUI::ShouldShowApps.
   bool should_show_apps_page_;
   // The next three all default to true and can be manually set, e.g., by the
   // chrome://apps page.
