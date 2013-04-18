@@ -112,6 +112,7 @@ void ManagedUserSettingsHandler::InitializePage() {
     return;
   }
 
+#if !defined(OS_CHROMEOS)
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   bool passphrase_empty =
       pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
@@ -119,6 +120,7 @@ void ManagedUserSettingsHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "ManagedUserSettings.passphraseChanged",
       is_passphrase_set);
+#endif
 
   // Populate the list.
   UpdateViewFromModel();
@@ -136,7 +138,9 @@ void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
   // Check if we need to give initial elevation for startup of a new profile.
   if (service->startup_elevation()) {
     service->set_startup_elevation(false);
+#if !defined(OS_CHROMEOS)
     observer->set_elevated(true);
+#endif
   } else {
     has_seen_settings_dialog_ = true;
   }

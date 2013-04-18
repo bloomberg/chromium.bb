@@ -598,6 +598,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                 "www.new-example.com"));
 }
 
+#if !defined(OS_CHROMEOS)
 // Now check that the passphrase dialog is shown when a passphrase is specified
 // and the user clicks on the preview button.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
@@ -622,5 +623,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
       WebContentsModalDialogManager::FromWebContents(tab);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 }
+
+#endif  // OS_CHROMEOS
 
 }  // namespace

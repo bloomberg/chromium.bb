@@ -184,6 +184,7 @@ TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
             url_filter->GetFilteringBehaviorForURL(url));
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   ManagedUserService managed_user_service(profile_.get());
@@ -297,3 +298,5 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
             url_filter->GetFilteringBehaviorForURL(moose_url));
 #endif
 }
+
+#endif  // OS_CHROMEOS

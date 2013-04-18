@@ -427,7 +427,7 @@ void CrxInstaller::OnRequirementsChecked(
     has_requirement_errors_ = true;
   }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_MANAGED_USERS) && !defined(OS_CHROMEOS)
   // Check whether the profile is managed.
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);

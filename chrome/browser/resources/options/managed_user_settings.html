@@ -73,21 +73,25 @@
               i18n-content="disableHistoryDeletion"></span>
         </label>
       </div>
-      <div class="checkbox">
-        <label>
-          <input id="use-passphrase-checkbox" type="checkbox">
-          <span for="use-passphrase-checkbox"
-              i18n-content="usePassphrase"></span>
-        </label>
-        <button id="set-passphrase" class="link-button"
-            i18n-content="setPassphrase">
-        </button>
-      </div>
+      <if expr="not pp_ifdef('chromeos')">
+        <div class="checkbox">
+          <label>
+            <input id="use-passphrase-checkbox" type="checkbox">
+            <span for="use-passphrase-checkbox"
+                i18n-content="usePassphrase"></span>
+          </label>
+          <button id="set-passphrase" class="link-button"
+              i18n-content="setPassphrase">
+          </button>
+        </div>
+      </if>
     </section>
   </div>
   <div class="action-area">
-    <button id="lock-settings" i18n-content="lockSettings"></button>
-    <button id="unlock-settings" i18n-content="unlockSettings"></button>
+    <if expr="not pp_ifdef('chromeos')">
+      <button id="lock-settings" i18n-content="lockSettings"></button>
+      <button id="unlock-settings" i18n-content="unlockSettings"></button>
+    </if>
     <div id="spacer"></div>
     <div class="button-strip">
       <button id="managed-user-settings-cancel" type="submit"

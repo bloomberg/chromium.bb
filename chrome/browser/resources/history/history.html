@@ -85,7 +85,9 @@
           <option i18n-content="rangeMonth" value="2"></option>
         </select>
       </label>
-      <button id="lock-unlock-button" i18n-content="unlockButton"></button>
+      <if expr="not pp_ifdef('chromeos')">
+        <button id="lock-unlock-button" i18n-content="unlockButton"></button>
+      </if>
     </div>
   </div>
 <if expr="not pp_ifdef('android')">

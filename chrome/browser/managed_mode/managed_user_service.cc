@@ -129,6 +129,9 @@ bool ManagedUserService::IsPassphraseEmpty() const {
 
 bool ManagedUserService::CanSkipPassphraseDialog(
     const content::WebContents* web_contents) const {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
   return IsElevatedForWebContents(web_contents) ||
          IsPassphraseEmpty();
 }
@@ -136,6 +139,10 @@ bool ManagedUserService::CanSkipPassphraseDialog(
 void ManagedUserService::RequestAuthorization(
     content::WebContents* web_contents,
     const PassphraseCheckedCallback& callback) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
+
   if (CanSkipPassphraseDialog(web_contents)) {
     callback.Run(true);
     return;
@@ -413,12 +420,20 @@ void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
 
 void ManagedUserService::AddElevationForExtension(
     const std::string& extension_id) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
   elevated_for_extensions_.insert(extension_id);
+#endif
 }
 
 void ManagedUserService::RemoveElevationForExtension(
     const std::string& extension_id) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
   elevated_for_extensions_.erase(extension_id);
+#endif
 }
 
 void ManagedUserService::Init() {
@@ -436,10 +451,13 @@ void ManagedUserService::Init() {
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
+#if !defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
+#endif
+
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kDefaultManagedModeFilteringBehavior,

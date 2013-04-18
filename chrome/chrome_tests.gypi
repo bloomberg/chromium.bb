@@ -1996,6 +1996,16 @@
             '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
           ],
         }],
+        ['chromeos==1', {
+          'sources!': [
+            'browser/ui/webui/options/managed_user_set_passphrase_browsertest.js',
+            'browser/ui/webui/options/managed_user_set_passphrase_test.cc',
+            'browser/ui/webui/options/managed_user_set_passphrase_test.h',
+            'browser/ui/webui/options/managed_user_settings_browsertest.js',
+            'browser/ui/webui/options/managed_user_settings_test.cc',
+            'browser/ui/webui/options/managed_user_settings_test.h',
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {

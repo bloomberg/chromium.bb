@@ -40,10 +40,6 @@ void ManagedUserPassphraseHandler::RegisterMessages() {
       base::Bind(&ManagedUserPassphraseHandler::SetElevated,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "isPassphraseSet",
-      base::Bind(&ManagedUserPassphraseHandler::IsPassphraseSet,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
       "resetPassphrase",
       base::Bind(&ManagedUserPassphraseHandler::ResetPassphrase,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -93,18 +89,6 @@ void ManagedUserPassphraseHandler::SetElevated(
       web_ui()->GetWebContents(),
       base::Bind(&ManagedUserPassphraseHandler::PassphraseDialogCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ManagedUserPassphraseHandler::IsPassphraseSet(
-    const base::ListValue* args) {
-  // Get the name of the callback function.
-  std::string callback_function_name;
-  args->GetString(0, &callback_function_name);
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  base::FundamentalValue is_passphrase_set(!pref_service->GetString(
-      prefs::kManagedModeLocalPassphrase).empty());
-  web_ui()->CallJavascriptFunction(callback_function_name,
-                                   is_passphrase_set);
 }
 
 void ManagedUserPassphraseHandler::ResetPassphrase(

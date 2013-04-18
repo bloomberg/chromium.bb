@@ -78,7 +78,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_MANAGED_USERS) && !defined(OS_CHROMEOS)
   // If the profile belongs to a managed user, and the profile is not in
   // elevated state, a passphrase dialog is shown, and if the custodian
   // authorizes by entering his passphrase, the uninstall is continued by

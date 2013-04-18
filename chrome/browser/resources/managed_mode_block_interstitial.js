@@ -8,8 +8,10 @@ function sendCommand(cmd) {
 }
 
 function initialize() {
-  $('bypass-block-button').onclick = function(event) {
-    sendCommand('preview');
+  if (!cr.isChromeOS) {
+    $('bypass-block-button').onclick = function(event) {
+      sendCommand('preview');
+    }
   }
   $('back-button').onclick = function(event) {
     sendCommand('back');

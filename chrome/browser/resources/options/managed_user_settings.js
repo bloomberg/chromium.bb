@@ -73,41 +73,44 @@ cr.define('options', function() {
         window.open(loadTimeData.getString('getContentPacksURL'));
       };
 
-      $('set-passphrase').onclick = function() {
-        OptionsPage.navigateToPage('setPassphrase');
-      };
+      if (!cr.isChromeOS) {
+        $('set-passphrase').onclick = function() {
+          OptionsPage.navigateToPage('setPassphrase');
+        };
 
-      $('use-passphrase-checkbox').onclick = function() {
-        $('set-passphrase').disabled = !$('use-passphrase-checkbox').checked;
-      };
+        $('use-passphrase-checkbox').onclick = function() {
+          $('set-passphrase').disabled = !$('use-passphrase-checkbox').checked;
+        };
 
-      var self = this;
+        var self = this;
+        $('lock-settings').onclick = function() {
+          chrome.send('setElevated', [false]);
+          // The managed user is currently authenticated, so don't wait for a
+          // callback to set the new authentication state since a reset to not
+          // elevated is done without showing the passphrase dialog.
+          self.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
+          self.enableControls(false);
+        };
 
-      $('lock-settings').onclick = function() {
-        chrome.send('setElevated', [false]);
-        // The managed user is currently authenticated, so don't wait for a
-        // callback to set the new authentication state since a reset to not
-        // elevated is done without showing the passphrase dialog.
-        self.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
-        self.enableControls(false);
-      };
-
-      $('unlock-settings').onclick = function() {
-        if (self.authenticationState == ManagedUserAuthentication.CHECKING)
-          return;
-        self.authenticationState = ManagedUserAuthentication.CHECKING;
-        chrome.send('setElevated', [true]);
-      };
+        $('unlock-settings').onclick = function() {
+          if (self.authenticationState == ManagedUserAuthentication.CHECKING)
+            return;
+          self.authenticationState = ManagedUserAuthentication.CHECKING;
+          chrome.send('setElevated', [true]);
+        };
+      }
     },
 
     /** @override */
     handleConfirm: function() {
-      if ($('use-passphrase-checkbox').checked && !this.isPassphraseSet) {
-        OptionsPage.navigateToPage('setPassphrase');
-        return;
+      if (!cr.isChromeOS) {
+        if ($('use-passphrase-checkbox').checked && !this.isPassphraseSet) {
+          OptionsPage.navigateToPage('setPassphrase');
+          return;
+        }
+        if (!$('use-passphrase-checkbox').checked)
+          chrome.send('resetPassphrase');
       }
-      if (!$('use-passphrase-checkbox').checked)
-        chrome.send('resetPassphrase');
       SettingsDialog.prototype.handleConfirm.call(this);
     },
 
@@ -122,8 +125,11 @@ cr.define('options', function() {
     // Enables or disables all controls based on the authentication state of
     // the managed user. If |enable| is true, the controls will be enabled.
     enableControls: function(enable) {
-      $('set-passphrase').disabled =
-          !enable || !$('use-passphrase-checkbox').checked;
+      if (!cr.isChromeOS) {
+        $('set-passphrase').disabled =
+            !enable || !$('use-passphrase-checkbox').checked;
+        $('use-passphrase-checkbox').disabled = !enable;
+      }
       // TODO(sergiu): make $('get-content-packs-button') behave the same as
       // the other controls once the button actually does something.
       $('manage-exceptions-button').disabled = !enable;
@@ -136,7 +142,6 @@ cr.define('options', function() {
                                              !enable);
       // TODO(akuegel): Add disable-history-deletion-checkbox once this feature
       // is implemented.
-      $('use-passphrase-checkbox').disabled = !enable;
       if (enable)
         $('managed-user-settings-page').classList.remove('locked');
       else

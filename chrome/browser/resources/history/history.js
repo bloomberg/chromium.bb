@@ -1470,14 +1470,14 @@ function load() {
   if (loadTimeData.getBoolean('isManagedProfile')) {
     $('allow-selected').hidden = false;
     $('block-selected').hidden = false;
-    $('lock-unlock-button').classList.add('profile-is-managed');
-
-    $('lock-unlock-button').addEventListener('click', function(e) {
-      var isLocked = document.body.classList.contains('managed-user-locked');
-      chrome.send('setManagedUserElevated', [isLocked]);
-    });
-
-    chrome.send('getManagedUserElevated');
+    if (!cr.isChromeOS) {
+      $('lock-unlock-button').classList.add('profile-is-managed');
+      $('lock-unlock-button').addEventListener('click', function(e) {
+        var isLocked = document.body.classList.contains('managed-user-locked');
+        chrome.send('setManagedUserElevated', [isLocked]);
+      });
+      chrome.send('getManagedUserElevated');
+    }
   }
 
   var title = loadTimeData.getString('title');
@@ -1834,7 +1834,8 @@ function updateEntries(entries) {
 function managedUserElevated(isElevated) {
   if (isElevated) {
     document.body.classList.remove('managed-user-locked');
-    $('lock-unlock-button').textContent = loadTimeData.getString('lockButton');
+    $('lock-unlock-button').textContent =
+        loadTimeData.getString('lockButton');
   } else {
     document.body.classList.add('managed-user-locked');
     $('lock-unlock-button').textContent =

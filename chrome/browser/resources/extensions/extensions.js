@@ -87,13 +87,15 @@ cr.define('extensions', function() {
       $('dev-controls').addEventListener('webkitTransitionEnd',
           this.handleDevControlsTransitionEnd_.bind(this));
 
-      $('unlock-button').addEventListener('click', function() {
-        chrome.send('setElevated', [true]);
-      });
+      if (!cr.isChromeOS) {
+        $('unlock-button').addEventListener('click', function() {
+          chrome.send('setElevated', [true]);
+        });
 
-      $('lock-button').addEventListener('click', function() {
-        chrome.send('setElevated', [false]);
-      });
+        $('lock-button').addEventListener('click', function() {
+          chrome.send('setElevated', [false]);
+        });
+      }
 
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',

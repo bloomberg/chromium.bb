@@ -45,10 +45,12 @@
           <span i18n-content="extensionSettingsDeveloperMode">
         </label>
       </div>
-      <div id="managed-user-control-div">
-        <button id="unlock-button" i18n-content="unlockButton"></button>
-        <button id="lock-button" i18n-content="lockButton"></button>
-      </div>
+      <if expr="not pp_ifdef('chromeos')">
+        <div id="managed-user-control-div">
+          <button id="unlock-button" i18n-content="unlockButton"></button>
+          <button id="lock-button" i18n-content="lockButton"></button>
+        </div>
+      </if>
     </div>
     <div class="page-banner profile-is-managed-banner">
       <div class="page-banner-gradient">

@@ -333,11 +333,19 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
 }
 
 bool ManagedModeNavigationObserver::is_elevated() const {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   return is_elevated_;
+#endif
 }
 
 void ManagedModeNavigationObserver::set_elevated(bool is_elevated) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
   is_elevated_ = is_elevated;
+#endif
 }
 
 void ManagedModeNavigationObserver::AddURLToPatternList(const GURL& url) {

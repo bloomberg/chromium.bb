@@ -149,9 +149,11 @@ function load() {
   if (loadTimeData.getBoolean('managedUsersEnabled')) {
     OptionsPage.registerOverlay(ManagedUserSettingsExceptionsArea.getInstance(),
                                 ManagedUserSettings.getInstance());
-    OptionsPage.registerOverlay(ManagedUserSetPassphraseOverlay.getInstance(),
-                                ManagedUserSettings.getInstance(),
-                                [$('set-passphrase')]);
+    if (!cr.isChromeOS) {
+      OptionsPage.registerOverlay(ManagedUserSetPassphraseOverlay.getInstance(),
+                                  ManagedUserSettings.getInstance(),
+                                  [$('set-passphrase')]);
+    }
     OptionsPage.registerOverlay(ManagedUserSettings.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('managed-user-settings-button')]);
