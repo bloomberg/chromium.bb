@@ -146,9 +146,6 @@ webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 webkit.org/b/108550 css3/compositing/effect-background-blend-mode-stacking.html [ Skip ]
 webkit.org/b/108550 css3/compositing/effect-background-blend-mode.html [ Skip ]
 
-# Implement java testing harness.
-crbug.com/36681 java [ Skip ]
-
 # Quota API is not supported in DRT yet.
 crbug.com/84572 storage/storageinfo-missing-arguments.html
 crbug.com/84572 storage/storageinfo-no-callbacks.html
