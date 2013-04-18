@@ -3626,8 +3626,8 @@
           },
           'example_value': True,
           'id': 139,
-          'caption': '''Disables Drive''',
-          'desc': '''Disables Google Drive syncing when set to True. In that case, no data is uploaded to Google Drive.
+          'caption': '''Disables Drive in the Chrome OS Files app''',
+          'desc': '''Disables Google Drive syncing in the Chrome OS Files app when set to True. In that case, no data is uploaded to Google Drive.
 
           If not set or set to False, then users will be able to transfer files to Google Drive.''',
         },
@@ -3642,8 +3642,8 @@
           },
           'example_value': True,
           'id': 140,
-          'caption': '''Disables Google Drive over Cellular connections''',
-          'desc': '''Disables Google Drive syncing when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
+          'caption': '''Disables Google Drive over Cellular connections in the Chrome OS Files app''',
+          'desc': '''Disables Google Drive syncing in the Chrome OS Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
         },
