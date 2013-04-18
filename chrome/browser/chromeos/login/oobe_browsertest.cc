@@ -187,7 +187,8 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
                              // needs UI thread.
 };
 
-IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
+// Temporally disabled because of a race: crbug.com/178009
+IN_PROC_BROWSER_TEST_F(OobeTest, DISABLED_NewUser) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
