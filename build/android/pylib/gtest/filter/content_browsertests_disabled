@@ -104,6 +104,4 @@ IndexedDBLayoutTest.IndexTests
 # http://crbug.com/233118
 FileSystemLayoutTest.*
 IndexedDBBrowserTest.*
-IndexedDBLayoutTest.IndexTests
-IndexedDBLayoutTest.RegressionTests
-IndexedDBLayoutTest.TransactionTests
+IndexedDBLayoutTest.*
