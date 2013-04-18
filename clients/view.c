@@ -293,7 +293,9 @@ main(int argc, char *argv[])
 	int i;
 	int view_counter = 0;
 
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
+#endif
 
 	parse_options(view_options, ARRAY_LENGTH(view_options), &argc, argv);
 
