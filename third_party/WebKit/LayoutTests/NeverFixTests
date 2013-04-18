@@ -1,0 +1,68 @@
+# This file should only include tests that we never intend to fix.
+# There should only be 4 categories of tests here:
+#   1. Test harness tests.
+#   2. Tests enabled by chromium embedders (e.g. Opera).
+#   3. Tests that apply to some platforms but not others.
+#   4. Tests that are too slow in Debug and so we only want to skip them in Debug.
+
+# FIXME: Remove the WontFix keyword and have that be implied. That way, people won't abuse
+# WontFix outside of this file.
+
+# Perf tests are really slow in debug builds and there are few benefits in running them.
+[ Debug ] perf [ WontFix ]
+
+# This test verifies that a mismatch reftest will fail if both results are the
+# same.  Because the whole point is that this test should fail when run, it's
+# not SKIP, just WONTFIX.
+fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
+
+# We're not planning to support rocker-based cursor navigation, but Opera uses it.
+fast/spatial-navigation [ WontFix ]
+
+# Chrome Win/Linux doesn't support emacs key-bindings.
+[ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
+[ Win Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
+
+# Chrome uses different keyboard accelerators from those used by Safari, so
+# this test will always fail.
+[ Linux Win ] fast/events/option-tab.html [ WontFix ]
+
+# These tests expect a tiff decoder, which we don't have.
+[ Linux Win ] fast/images/embed-image.html [ WontFix ]
+[ Linux Win ] fast/images/object-image.html [ WontFix ]
+
+# <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
+[ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
+
+# These test rubber band overhang drawing, which is a Mac OS X Lion feature
+# that is not supported on other platforms.
+[ Win Linux ] rubberbanding [ WontFix ]
+[ Win Linux ] compositing/rubberbanding [ WontFix ]
+
+# This requires usp10.dll version 1.600 or greater on Windows and
+# it isn't installed on XP by default.
+[ XP ] css3/font-feature-settings-rendering.html [ WontFix ]
+
+# These test the CoreAnimation plugin model which we never intend to support on
+# Windows and Linux.
+[ Win Linux ] compositing/plugins/1x1-composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/softwarecompositing/plugins/1x1-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/softwarecompositing/plugins/composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/softwarecompositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/softwarecompositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
+
+# Mac's popup behavior is different.
+[ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
+
+# Mac and Win does not have global selection.
+[ Mac Win ] editing/pasteboard/paste-global-selection.html [ WontFix ]
+
+# Chromium does not support PDF content in <img> tags.
+[ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
+[ Win Linux ] virtual/softwarecompositing/images/direct-pdf-image.html [ WontFix ]

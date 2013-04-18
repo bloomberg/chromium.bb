@@ -218,67 +218,54 @@ webkit.org/b/88172 http/tests/media/video-buffered.html
 # Missing support in DRT for Geolocation's Coordinate attributes.
 webkit.org/b/98212 fast/dom/Geolocation/coordinates-interface-attributes.html [ Failure ]
 
-# -----------------------------------------------------------------
-# WONTFIX TESTS
-# -----------------------------------------------------------------
-
-# Perf tests are really slow in debug builds and there are few benefits in
-# running them.
-[ Debug ] perf [ WontFix ]
-
-# This test verifies that a mismatch reftest will fail if both results are the
-# same.  Because the whole point is that this test should fail when run, it's
-# not SKIP, just WONTFIX.
-fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
-
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
-# We do not want to support Legacy mac encodings on Windows/Linux.
-[ Win Linux ] fast/encoding/char-decoding-mac.html [ WontFix ]
-[ Win Linux ] fast/encoding/char-encoding-mac.html [ WontFix ]
+# We do not want to support Legacy mac encodings.
+fast/encoding/char-decoding-mac.html [ WontFix ]
+fast/encoding/char-encoding-mac.html [ WontFix ]
 
 # These tests are based on the JSC JavaScript profiler. The V8 JavaScript
 # profiler is in development and will use a different approach than JSC and
 # most likely these tests will always be JSC specific.
-crbug.com/226949 fast/profiler [ WontFix ]
+crbug.com/226949 fast/profiler [ Skip ]
 
 # test_shell does not support shared workers
-fast/filesystem/workers/file-writer-events-shared-worker.html [ WontFix ]
-fast/workers/shared-worker-context-gc.html [ WontFix ]
-fast/workers/shared-worker-event-listener.html [ WontFix ]
-fast/workers/shared-worker-exception.html [ WontFix ]
-fast/workers/shared-worker-frame-lifecycle.html [ WontFix ]
-fast/workers/shared-worker-gc.html [ WontFix ]
-fast/workers/shared-worker-in-iframe.html [ WontFix ]
-fast/workers/shared-worker-lifecycle.html [ WontFix ]
-fast/workers/shared-worker-load-error.html [ WontFix ]
-fast/workers/shared-worker-location.html [ WontFix ]
-fast/workers/shared-worker-navigator.html [ WontFix ]
-fast/workers/shared-worker-replace-global-constructor.html [ WontFix ]
-fast/workers/shared-worker-replace-self.html [ WontFix ]
-fast/workers/shared-worker-shared.html [ WontFix ]
-fast/workers/shared-worker-constructor.html [ WontFix ]
-fast/workers/shared-worker-name.html [ WontFix ]
-fast/workers/shared-worker-script-error.html [ WontFix ]
-fast/workers/shared-worker-simple.html [ WontFix ]
-fast/workers/worker-crash-with-invalid-location.html [ WontFix ]
-http/tests/workers/shared-worker-invalid-url.html [ WontFix ]
-http/tests/workers/shared-worker-redirect.html [ WontFix ]
-http/tests/workers/shared-worker-importScripts.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-access-control-basic-get-fail-non-simple.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-close.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-methods.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-referer.html [ WontFix ]
-http/tests/xmlhttprequest/workers/shared-worker-xhr-file-not-found.html [ WontFix ]
-http/tests/websocket/tests/hybi/workers/close-in-shared-worker.html [ WontFix ]
-http/tests/websocket/tests/hybi/workers/shared-worker-simple.html [ WontFix ]
-http/tests/inspector/network/network-shared-worker.html [ WontFix ]
-http/tests/security/contentSecurityPolicy/shared-worker-connect-src-allowed.html [ WontFix ]
-http/tests/security/contentSecurityPolicy/shared-worker-connect-src-blocked.html [ WontFix ]
-http/tests/security/cross-origin-shared-worker-allowed.html [ WontFix ]
-storage/indexeddb/basics-shared-workers.html [ WontFix ]
+crbug.com/233066 fast/filesystem/workers/file-writer-events-shared-worker.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-context-gc.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-event-listener.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-exception.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-gc.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-in-iframe.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-lifecycle.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-load-error.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-location.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-navigator.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-replace-global-constructor.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-replace-self.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-shared.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-constructor.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-name.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-script-error.html [ Skip ]
+crbug.com/233066 fast/workers/shared-worker-simple.html [ Skip ]
+crbug.com/233066 fast/workers/worker-crash-with-invalid-location.html [ Skip ]
+crbug.com/233066 http/tests/workers/shared-worker-invalid-url.html [ Skip ]
+crbug.com/233066 http/tests/workers/shared-worker-redirect.html [ Skip ]
+crbug.com/233066 http/tests/workers/shared-worker-importScripts.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-access-control-basic-get-fail-non-simple.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-close.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-referer.html [ Skip ]
+crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-xhr-file-not-found.html [ Skip ]
+crbug.com/233066 http/tests/websocket/tests/hybi/workers/close-in-shared-worker.html [ Skip ]
+crbug.com/233066 http/tests/websocket/tests/hybi/workers/shared-worker-simple.html [ Skip ]
+crbug.com/233066 http/tests/inspector/network/network-shared-worker.html [ Skip ]
+crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-allowed.html [ Skip ]
+crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-blocked.html [ Skip ]
+crbug.com/233066 http/tests/security/cross-origin-shared-worker-allowed.html [ Skip ]
+crbug.com/233066 storage/indexeddb/basics-shared-workers.html [ Skip ]
 
 # test_shell does not support message ports
 webkit.org/b/74459 fast/workers/termination-with-port-messages.html
@@ -291,35 +278,24 @@ webkit.org/b/74459 fast/workers/worker-multi-port.html
 # Tests that rely on cross-process MessagePorts.  No point in running them in
 # test_shell, since we'd have to use a completely different implementation from
 # what is used in the browser.
-fast/events/message-channel-gc-2.html [ WontFix ]
-fast/events/message-channel-gc-3.html [ WontFix ]
-fast/events/message-channel-gc-4.html [ WontFix ]
-fast/events/message-channel-gc.html [ WontFix ]
-fast/events/message-channel-listener-circular-ownership.html [ WontFix ]
-fast/events/message-port-clone.html [ WontFix ]
-fast/events/message-port-deleted-document.html [ WontFix ]
-fast/events/message-port-deleted-frame.html [ WontFix ]
-fast/events/message-port-inactive-document.html [ WontFix ]
-fast/events/message-port-no-wrapper.html [ WontFix ]
-fast/events/message-port.html [ WontFix ]
-http/tests/security/MessagePort/event-listener-context.html [ WontFix ]
-
-# Chrome Win/Linux doesn't support emacs key-bindings.
-[ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
-[ Win Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
-[ Win Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
+crbug.com/233066 fast/events/message-channel-gc-2.html [ Skip ]
+crbug.com/233066 fast/events/message-channel-gc-3.html [ Skip ]
+crbug.com/233066 fast/events/message-channel-gc-4.html [ Skip ]
+crbug.com/233066 fast/events/message-channel-gc.html [ Skip ]
+crbug.com/233066 fast/events/message-channel-listener-circular-ownership.html [ Skip ]
+crbug.com/233066 fast/events/message-port-clone.html [ Skip ]
+crbug.com/233066 fast/events/message-port-deleted-document.html [ Skip ]
+crbug.com/233066 fast/events/message-port-deleted-frame.html [ Skip ]
+crbug.com/233066 fast/events/message-port-inactive-document.html [ Skip ]
+crbug.com/233066 fast/events/message-port-no-wrapper.html [ Skip ]
+crbug.com/233066 fast/events/message-port.html [ Skip ]
+crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ Skip ]
 
 # This test is out of date with respect to the latest version of the HTML5 spec
 # Test had to be decommissioned to fix https://bugs.webkit.org/show_bug.cgi?id=65709
 # We can re-enable the test when it gets changed upstream to become spec-compliant
-canvas/philip/tests/2d.drawImage.outsidesource.html [ WontFix ]
-virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ WontFix ]
-
-# Chrome uses different keyboard accelerators from those used by Safari, so
-# this test will always fail.
-[ Linux Win ] fast/events/option-tab.html [ WontFix ]
+crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
+crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
 
 # These tests try to print a PDF file as the expected result.  I don't think
 # we plan on supporting this anytime soon.
@@ -331,49 +307,16 @@ printing/page-rule-in-media-query.html [ WontFix ]
 webkit.org/b/98579 compositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 webkit.org/b/98579 virtual/softwarecompositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 
-# These tests expect a tiff decoder, which we don't have.
-[ Linux Win ] fast/images/embed-image.html [ WontFix ]
-[ Linux Win ] fast/images/object-image.html [ WontFix ]
-
 # Tests for frameset flattening which is not used by Chromium.
 fast/frames/flattening [ WontFix ]
 fast/text-autosizing/narrow-iframe-flattened.html [ WontFix ]
 http/tests/misc/iframe-flattening-3level-nesting-with-blocking-resource.html [ WontFix ]
 plugins/frameset-with-plugin-frame.html [ WontFix ]
 
-# We're not planning to support rocker-based cursor navigation.
-fast/spatial-navigation [ WontFix ]
-
-# <progress> on Mac is always animated.
-[ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
-
 # Chromium's video codecs don't support alpha information encoded in the video
 # data, so this test is not applicable.
 compositing/video/video-background-color.html [ WontFix ]
 virtual/softwarecompositing/video/video-background-color.html [ WontFix ]
-
-# These test rubber band overhang drawing, which is a Mac OS X Lion feature
-# that is not supported on other platforms.
-[ Win Linux ] rubberbanding [ WontFix ]
-[ Win Linux ] compositing/rubberbanding [ WontFix ]
-
-# This requires usp10.dll version 1.600 or greater on Windows and
-# it isn't installed on XP by default.
-[ XP ] css3/font-feature-settings-rendering.html [ WontFix ]
-
-# These test the CoreAnimation plugin model which we never intend to support on
-# Windows and Linux.
-[ Win Linux ] compositing/plugins/1x1-composited-plugin.html [ WontFix ]
-[ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
-[ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
-[ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/1x1-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
-
-# Mac's popup behavior is different.
-[ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
 
 # Chrome uses its quota manager and doesn't respect the 5mb limit.
 storage/indexeddb/database-quota.html [ WontFix ]
@@ -381,13 +324,10 @@ storage/indexeddb/database-quota.html [ WontFix ]
 # Chromium doesn't use fullscreen-specific media controls
 media/video-controls-fullscreen-volume.html [ WontFix ]
 
-# Mac and Win does not have global selection.
-[ Mac Win ] editing/pasteboard/paste-global-selection.html [ WontFix ]
-
-webkit.org/b/96109 [ Linux ] editing/pasteboard/paste-global-selection.html [ Skip ]
+webkit.org/b/96109 editing/pasteboard/paste-global-selection.html [ WontFix ]
 
 # Chromium does not enable HIDDEN_PAGE_DOM_TIMER_THROTTLING
-fast/dom/timer-throttling-hidden-page.html [ WontFix ]
+crbug.com/233066 fast/dom/timer-throttling-hidden-page.html [ Skip ]
 
 # Chromium disabled MATHML
 crbug.com/22554 mathml [ Skip ]
@@ -499,10 +439,12 @@ webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-work
 # -----------------------------------------------------------------
 
 # There is no enough plugins support in DRT
+# FIXME: Should these tests be deleted or just marked Skip?
 http/tests/inspector/network/network-embed.html [ WontFix ]
 http/tests/inspector/network/network-content-replacement-embed.html [ WontFix ]
 
 # Works slowly, we have an equivalent test that doesn't open Inspector and runs fast.
+# FIXME: Should this test be deleted if we have an equivalent test?
 [ Linux Debug ] inspector/profiler/cpu-profiler-profiling.html [ WontFix ]
 
 webkit.org/b/91435 http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
@@ -512,6 +454,7 @@ webkit.org/b/91435 [ Win Release ] inspector/timeline/timeline-network-received-
 crbug.com/67662 http/tests/inspector/console-websocket-error.html [ Failure Timeout ]
 
 # Transferred time/size are not supported in DRT.
+# FIXME: Should these tests be deleted or just marked Skip?
 http/tests/inspector/network/network-timing.html [ WontFix ]
 http/tests/inspector/network/network-size.html [ WontFix ]
 http/tests/inspector/network/network-size-chunked.html [ WontFix ]
@@ -859,7 +802,7 @@ webkit.org/b/111004 [ Win7 Debug ] accessibility/svg-remote-element.html [ Failu
 # -----------------------------------------------------------------
 
 # This test is slow due to Mesa slowness.
-virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ WontFix ]
+crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
 # This test is overly-finicky about pixel values.
 webkit.org/b/64876 [ Linux Win ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
@@ -1007,11 +950,6 @@ crbug.com/94274 [ Mac ] fast/events/option-tab.html [ Failure ]
 # (there are a few others marked w/ multiple status like this in other parts of
 # the file, but they were left there as the comments in those areas are valid.)
 crbug.com/10384 [ Mac ] fast/dom/Window/new-window-opener.html [ Failure Pass Slow ]
-
-# We can support legacy Mac encodings by building platform/text/mac, but we may
-# not want to.
-crbug.com/10399 [ Mac ] fast/encoding/char-decoding-mac.html [ Failure ]
-crbug.com/10399 [ Mac ] fast/encoding/char-encoding-mac.html [ Failure ]
 
 # These should not be pixel tests, they're not testing anything
 # layout/rendering-specific. They also dump layout tree, so depending on which baselines
@@ -1553,10 +1491,6 @@ crbug.com/71783 [ Mac ] scrollbars/custom-scrollbar-with-incomplete-style.html [
 #///////////////////////////////////////////////////////////////////////////
 # GPU
 #///////////////////////////////////////////////////////////////////////////
-
-# Chromium does not support PDF content in <img> tags.
-[ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/images/direct-pdf-image.html [ WontFix ]
 
 # Chromium does not support the CoreAnimation plugin model right now.
 webkit.org/b/47925 [ Mac ] compositing/plugins/small-to-large-composited-plugin.html [ Failure ]
