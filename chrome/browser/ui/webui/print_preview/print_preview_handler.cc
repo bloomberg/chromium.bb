@@ -35,6 +35,8 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
+#include "chrome/browser/signin/oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -75,6 +77,9 @@ using content::WebContents;
 using printing::Metafile;
 
 namespace {
+
+// The cloud print OAuth2 scope.
+const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
 
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
@@ -236,6 +241,77 @@ static base::LazyInstance<printing::StickySettings> sticky_settings =
 
 }  // namespace
 
+class PrintPreviewHandler::AccessTokenService
+    : public OAuth2TokenService::Consumer {
+ public:
+  typedef const base::Callback<void(const std::string&,
+                                    const std::string&)> CompleteonCallback;
+
+  explicit AccessTokenService(const CompleteonCallback& callback)
+      : callback_(callback) {
+  }
+
+  void AddOAuth2TokenService(const std::string& type,
+                             OAuth2TokenService* service) {
+    services_.push_back(make_linked_ptr(new Service()));
+    services_.back()->type = type;
+    services_.back()->service = service;
+  }
+
+  void RequestToken(const std::string& type) {
+    for (Services::iterator i = services_.begin();
+         i != services_.end(); ++i) {
+      Service& service = **i;
+      if (service.type == type) {
+        if (service.request)  // Already in progress.
+          return;
+        OAuth2TokenService::ScopeSet oauth_scopes;
+        oauth_scopes.insert(kCloudPrintAuth);
+        service.request = service.service->StartRequest(oauth_scopes, this);
+        return;
+      }
+    }
+    callback_.Run(type, std::string());  // Unknown type.
+  }
+
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) OVERRIDE {
+    OnServiceResponce(request, access_token);
+  }
+
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) OVERRIDE {
+    OnServiceResponce(request, std::string());
+  }
+
+ private:
+  void OnServiceResponce(const OAuth2TokenService::Request* request,
+                         const std::string& access_token) {
+    for (Services::iterator i = services_.begin();
+         i != services_.end(); ++i) {
+      Service& service = **i;
+      if (service.request == request) {
+        service.request.reset();
+        callback_.Run(service.type, access_token);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+
+  struct Service {
+    std::string type;
+    OAuth2TokenService* service;
+    scoped_ptr<OAuth2TokenService::Request> request;
+  };
+  typedef std::vector<linked_ptr<Service> > Services;
+  Services services_;
+  CompleteonCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
+};
+
 // static
 printing::StickySettings* PrintPreviewHandler::GetStickySettings() {
   return sticky_settings.Pointer();
@@ -274,6 +350,9 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("signIn",
       base::Bind(&PrintPreviewHandler::HandleSignin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getAccessToken",
+      base::Bind(&PrintPreviewHandler::HandleGetAccessToken,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("manageCloudPrinters",
       base::Bind(&PrintPreviewHandler::HandleManageCloudPrint,
@@ -585,6 +664,29 @@ void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
       base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
+void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
+  std::string type;
+  if (!args->GetString(0, &type))
+    return;
+  if (!token_service_)
+    InitTokenService();
+  token_service_->RequestToken(type);
+}
+
+void PrintPreviewHandler::InitTokenService() {
+  token_service_.reset(
+      new AccessTokenService(base::Bind(&PrintPreviewHandler::SendAccessToken,
+                                        base::Unretained(this))));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  OAuth2TokenService* profile_service =
+      OAuth2TokenServiceFactory::GetForProfile(profile);
+  if (profile_service) {
+    token_service_->AddOAuth2TokenService("profile", profile_service);
+    // TODO(vitalybuka): Replace with source of device tokens.
+    token_service_->AddOAuth2TokenService("device", profile_service);
+  }
+}
+
 void PrintPreviewHandler::PrintWithCloudPrintDialog(
     const base::RefCountedBytes* data,
     const string16& title) {
@@ -781,6 +883,13 @@ void PrintPreviewHandler::ClosePreviewDialog() {
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(web_ui()->GetController());
   print_preview_ui->OnClosePrintPreviewDialog();
+}
+
+void PrintPreviewHandler::SendAccessToken(const std::string& type,
+                                          const std::string& access_token) {
+  VLOG(1) << "Get getAccessToken finished";
+  web_ui()->CallJavascriptFunction("onDidGetAccessToken", StringValue(type),
+                                   StringValue(access_token));
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
