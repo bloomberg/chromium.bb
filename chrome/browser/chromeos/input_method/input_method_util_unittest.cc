@@ -30,10 +30,9 @@ class TestableInputMethodUtil : public InputMethodUtil {
       : InputMethodUtil(delegate, methods.Pass()) {
   }
   // Change access rights.
-  using InputMethodUtil::StringIsSupported;
   using InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal;
+  using InputMethodUtil::GetKeyboardLayoutName;
   using InputMethodUtil::ReloadInternalMaps;
-  using InputMethodUtil::SortLanguageCodesByNames;
   using InputMethodUtil::supported_input_methods_;
 };
 
@@ -288,15 +287,6 @@ TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
 #endif
 }
 
-TEST_F(InputMethodUtilTest, TestStringIsSupported) {
-  EXPECT_TRUE(util_.StringIsSupported("Hiragana"));
-  EXPECT_TRUE(util_.StringIsSupported("Latin"));
-  EXPECT_TRUE(util_.StringIsSupported("Direct input"));
-  EXPECT_FALSE(util_.StringIsSupported("####THIS_STRING_IS_NOT_SUPPORTED####"));
-  EXPECT_TRUE(util_.StringIsSupported("Chinese"));
-  EXPECT_TRUE(util_.StringIsSupported("_Chinese"));
-}
-
 TEST_F(InputMethodUtilTest, TestIsValidInputMethodId) {
   EXPECT_TRUE(util_.IsValidInputMethodId("xkb:us:colemak:eng"));
   EXPECT_TRUE(util_.IsValidInputMethodId("mozc"));
@@ -352,45 +342,9 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
   EXPECT_EQ("zh-CN", descriptor->language_code());
 }
 
-TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromXkbId) {
-  EXPECT_EQ(NULL, util_.GetInputMethodDescriptorFromXkbId("non_existent"));
-
-  const InputMethodDescriptor* descriptor =
-      util_.GetInputMethodDescriptorFromXkbId("us(dvorak)");
-  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
-  EXPECT_EQ("xkb:us:dvorak:eng", descriptor->id());
-  EXPECT_EQ("us(dvorak)", descriptor->keyboard_layout());
-  EXPECT_EQ("en-US", descriptor->language_code());
-}
-
 TEST_F(InputMethodUtilTest, TestGetLanguageNativeDisplayNameFromCode) {
   EXPECT_EQ(UTF8ToUTF16("suomi"),
             InputMethodUtil::GetLanguageNativeDisplayNameFromCode("fi"));
-}
-
-TEST_F(InputMethodUtilTest, TestSortLanguageCodesByNames) {
-  std::vector<std::string> language_codes;
-  // Check if this function can handle an empty list.
-  util_.SortLanguageCodesByNames(&language_codes);
-
-  language_codes.push_back("ja");
-  language_codes.push_back("fr");
-  // For "t", see the comment in NormalizeLanguageCode test.
-  language_codes.push_back("t");
-  util_.SortLanguageCodesByNames(&language_codes);
-  ASSERT_EQ(3U, language_codes.size());
-  ASSERT_EQ("fr", language_codes[0]);  // French
-  ASSERT_EQ("ja", language_codes[1]);  // Japanese
-  ASSERT_EQ("t",  language_codes[2]);  // Others
-
-  // Add a duplicate entry and see if it works.
-  language_codes.push_back("ja");
-  util_.SortLanguageCodesByNames(&language_codes);
-  ASSERT_EQ(4U, language_codes.size());
-  ASSERT_EQ("fr", language_codes[0]);  // French
-  ASSERT_EQ("ja", language_codes[1]);  // Japanese
-  ASSERT_EQ("ja", language_codes[2]);  // Japanese
-  ASSERT_EQ("t",  language_codes[3]);  // Others
 }
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {

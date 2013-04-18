@@ -355,12 +355,6 @@ string16 InputMethodUtil::TranslateString(
   return UTF8ToUTF16(english_string);
 }
 
-bool InputMethodUtil::StringIsSupported(
-    const std::string& english_string) const {
-  string16 localized_string;
-  return TranslateStringInternal(english_string, &localized_string);
-}
-
 bool InputMethodUtil::IsValidInputMethodId(
     const std::string& input_method_id) const {
   // We can't check the component extension is whilelisted or not here because
@@ -502,13 +496,6 @@ const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(
   return (iter == id_to_descriptor_.end()) ? NULL : &(iter->second);
 }
 
-const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromXkbId(
-    const std::string& xkb_id) const {
-  InputMethodIdToDescriptorMap::const_iterator iter
-      = xkb_id_to_descriptor_.find(xkb_id);
-  return (iter == xkb_id_to_descriptor_.end()) ? NULL : &(iter->second);
-}
-
 // static
 string16 InputMethodUtil::GetLanguageDisplayNameFromCode(
     const std::string& language_code) {
@@ -537,21 +524,6 @@ std::vector<std::string> InputMethodUtil::GetExtraLanguageCodeList() const {
   for (size_t i = 0; i < kExtraLanguagesLength; ++i)
     result.push_back(kExtraLanguages[i].language_code);
   return result;
-}
-
-void InputMethodUtil::SortLanguageCodesByNames(
-    std::vector<std::string>* language_codes) {
-  // We should build collator outside of the comparator. We cannot have
-  // scoped_ptr<> in the comparator for a subtle STL reason.
-  UErrorCode error = U_ZERO_ERROR;
-  icu::Locale locale(delegate_->GetActiveLocale().c_str());
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(locale, error));
-  if (U_FAILURE(error)) {
-    collator.reset();
-  }
-  std::sort(language_codes->begin(), language_codes->end(),
-            CompareLanguageCodesByLanguageName(this, collator.get()));
 }
 
 bool InputMethodUtil::GetInputMethodIdsFromLanguageCode(
@@ -728,10 +700,6 @@ void InputMethodUtil::ReloadInternalMaps() {
           std::make_pair(language_code, input_method.id()));
     }
   }
-}
-
-void InputMethodUtil::OnLocaleChanged() {
-  ReloadInternalMaps();
 }
 
 }  // namespace input_method
