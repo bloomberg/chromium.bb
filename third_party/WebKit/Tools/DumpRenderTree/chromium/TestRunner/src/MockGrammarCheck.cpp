@@ -70,7 +70,7 @@ bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTex
         {"zz apple orange.", 0, 16},
     };
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(grammarErrors); ++i) {
-        int offset = 0;
+        size_t offset = 0;
         string16 error(grammarErrors[i].text, grammarErrors[i].text + strlen(grammarErrors[i].text));
         while ((offset = stringText.find(error, offset)) != string16::npos) {
             results->push_back(WebTextCheckingResult(WebTextCheckingTypeGrammar, offset + grammarErrors[i].location, grammarErrors[i].length));
