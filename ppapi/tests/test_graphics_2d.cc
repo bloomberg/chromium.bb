@@ -321,6 +321,7 @@ std::string TestGraphics2D::TestInitToZero() {
   pp::ImageData image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                       pp::Size(w, h), true);
   ASSERT_FALSE(image.is_null());
+  ASSERT_FALSE(image.size().IsEmpty());
   memset(image.data(), 0xFF, image.stride() * image.size().height() * 4);
 
   // Read out the initial data from the device & check.
