@@ -129,6 +129,7 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
@@ -239,6 +240,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(registry);
   chromeos::DataPromoNotification::RegisterPrefs(registry);
+  chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
   chromeos::device_settings_cache::RegisterPrefs(registry);
   chromeos::language_prefs::RegisterPrefs(registry);
   chromeos::KioskAppManager::RegisterPrefs(registry);

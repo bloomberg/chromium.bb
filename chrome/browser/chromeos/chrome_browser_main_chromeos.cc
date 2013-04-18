@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/power/user_activity_notifier.h"
 #include "chrome/browser/chromeos/power/video_activity_notifier.h"
 #include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
@@ -472,6 +473,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
     SystemKeyEventListener::Initialize();
   }
 
+  chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -722,6 +725,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // going to stop soon after this function. The pending background jobs could
   // cause it to crash during shutdown.
   LoginUtils::Get()->StopBackgroundFetchers();
+
+  // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
+  chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
 
   // Shutdown the upgrade detector for Chrome OS. The upgrade detector
   // stops monitoring changes from the update engine.

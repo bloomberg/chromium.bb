@@ -9,23 +9,27 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/signin/signin_global_error.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "net/url_request/url_request_context_getter.h"
+
+namespace base {
+class Time;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 class GoogleServiceAuthError;
-class OAuth2AccessTokenConsumer;
-class Profile;
 
-// OAuth2TokenService is a ProfileKeyedService that retrieves OAuth2 access
-// tokens for a given set of scopes using the OAuth2 refresh token maintained by
-// TokenService. All calls are expected from the UI thread.
+// Abstract base class for a service that fetches and caches OAuth2 access
+// tokens. Concrete subclasses should implement GetRefreshToken to return
+// the appropriate refresh token.
+//
+// All calls are expected from the UI thread.
 //
 // To use this service, call StartRequest() with a given set of scopes and a
 // consumer of the request results. The consumer is required to outlive the
@@ -43,12 +47,7 @@ class Profile;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-//
-// Note the request should be started from the UI thread. To start a request
-// from other thread, please use OAuth2TokenServiceRequest.
-class OAuth2TokenService : public content::NotificationObserver,
-                           public SigninGlobalError::AuthStatusProvider,
-                           public ProfileKeyedService {
+class OAuth2TokenService {
  public:
   // Class representing a request that fetches an OAuth2 access token.
   class Request {
@@ -76,58 +75,90 @@ class OAuth2TokenService : public content::NotificationObserver,
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
 
-  OAuth2TokenService();
+  explicit OAuth2TokenService(net::URLRequestContextGetter* getter);
   virtual ~OAuth2TokenService();
 
-  // Initializes this token service with the profile.
-  void Initialize(Profile* profile);
+  // Checks in the cache for a valid access token, and if not found starts
+  // a request for an OAuth2 access token using the OAuth2 refresh token
+  // maintained by this instance. The caller owns the returned Request.
+  // |scopes| is the set of scopes to get an access token for, |consumer| is
+  // the object that will be called back with results if the returned request
+  // is not deleted.
+  virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
+                                           Consumer* consumer);
 
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
-  // Starts a request for an OAuth2 access token using the OAuth2 refresh token
-  // maintained by TokenService. The caller owns the returned Request. |scopes|
-  // is the set of scopes to get an access token for, |consumer| is the object
-  // that will be called back with results if the returned request is not
-  // deleted.
-  // Note the refresh token has been collected from TokenService when this
-  // method returns, and the request can continue even if TokenService clears
-  // its tokens after this method returns. This means that outstanding
-  // StartRequest actions will still complete even if the user signs out in the
-  // meantime.
-  virtual scoped_ptr<Request> StartRequest(
-      const ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer);
+  // Returns true if a refresh token exists. If false, calls to
+  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
+  bool RefreshTokenIsAvailable();
 
   // Mark an OAuth2 access token as invalid. This should be done if the token
   // was received from this class, but was not accepted by the server (e.g.,
   // the server returned 401 Unauthorized). The token will be removed from the
   // cache for the given scopes.
-  void InvalidateToken(const ScopeSet& scopes,
-                       const std::string& invalid_token);
+  virtual void InvalidateToken(const ScopeSet& scopes,
+                               const std::string& invalid_token);
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Return the current number of entries in the cache.
+  int cache_size_for_testing() const;
 
-  // SigninGlobalError::AuthStatusProvider implementation.
-  virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
+ protected:
+  // Subclasses should return the refresh token maintained.
+  // If no token is available, return an empty string.
+  virtual std::string GetRefreshToken() = 0;
+
+  // Subclasses can override if they want to report errors to the user.
+  virtual void UpdateAuthError(const GoogleServiceAuthError& error);
+
+  // Add a new entry to the cache.
+  // Subclasses can override if there are implementation-specific reasons
+  // that an access token should ever not be cached.
+  virtual void RegisterCacheEntry(const std::string& refresh_token,
+                                  const ScopeSet& scopes,
+                                  const std::string& access_token,
+                                  const base::Time& expiration_date);
+
+  // Returns true if GetCacheEntry would return a valid cache entry for the
+  // given scopes.
+  bool HasCacheEntry(const ScopeSet& scopes);
+
+  // Posts a task to fire the Consumer callback with the cached token.  Must
+  // only be called if HasCacheEntry() returns true.
+  scoped_ptr<Request> StartCacheLookupRequest(const ScopeSet& scopes,
+                                              Consumer* consumer);
+
+  // Clears the internal token cache.
+  void ClearCache();
+
+  // Implements a cancelable |OAuth2TokenService::Request|, which should be
+  // operated on the UI thread.
+  class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
+                      public Request {
+   public:
+    // |consumer| is required to outlive this.
+    explicit RequestImpl(Consumer* consumer);
+    virtual ~RequestImpl();
+
+    // Informs |consumer_| that this request is completed.
+    void InformConsumer(const GoogleServiceAuthError& error,
+                        const std::string& access_token,
+                        const base::Time& expiration_date);
+
+   private:
+    // |consumer_| to call back when this request completes.
+    Consumer* const consumer_;
+  };
+
+  // Informs the consumer of |request| fetch results.
+  static void InformConsumer(base::WeakPtr<RequestImpl> request,
+                             const GoogleServiceAuthError& error,
+                             const std::string& access_token,
+                             const base::Time& expiration_date);
 
  private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
   // OAuth2 refresh token.
   class Fetcher;
   friend class Fetcher;
-  // Implementation of Request.
-  class RequestImpl;
-
-  // Informs the consumer of |request| fetch results.
-  static void InformConsumer(
-      base::WeakPtr<OAuth2TokenService::RequestImpl> request,
-      const GoogleServiceAuthError& error,
-      const std::string& access_token,
-      const base::Time& expiration_date);
 
   // Struct that contains the information of an OAuth2 access token.
   struct CacheEntry {
@@ -141,12 +172,6 @@ class OAuth2TokenService : public content::NotificationObserver,
   // returned entry is done.
   const CacheEntry* GetCacheEntry(const ScopeSet& scopes);
 
-  // Registers a new access token in the cache if |refresh_token| is the one
-  // currently held by TokenService.
-  void RegisterCacheEntry(const std::string& refresh_token,
-                          const ScopeSet& scopes,
-                          const std::string& access_token,
-                          const base::Time& expiration_date);
 
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
@@ -157,18 +182,8 @@ class OAuth2TokenService : public content::NotificationObserver,
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
 
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  void UpdateAuthError(const GoogleServiceAuthError& error);
-
-  // The profile with which this instance was initialized, or NULL.
-  Profile* profile_;
-
-  // The auth status from the most-recently-completed request.
-  GoogleServiceAuthError last_auth_error_;
-
   // Getter to use for fetchers.
-  scoped_refptr<net::URLRequestContextGetter> getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The cache of currently valid tokens.
   typedef std::map<ScopeSet, CacheEntry> TokenCache;
@@ -180,9 +195,6 @@ class OAuth2TokenService : public content::NotificationObserver,
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
   std::map<FetchParameters, Fetcher*> pending_fetchers_;
-
-  // Registrar for notifications from the TokenService.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/oauth2_token_service_request.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_request.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -10,20 +10,20 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
-#include "chrome/browser/signin/oauth2_token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 
-class OAuth2TokenServiceRequest::Core
-    : public base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core>,
+class ProfileOAuth2TokenServiceRequest::Core
+    : public base::RefCountedThreadSafe<ProfileOAuth2TokenServiceRequest::Core>,
       public OAuth2TokenService::Consumer {
  public:
   // Note the thread where an instance of Core is constructed is referred to as
   // the "owner thread" here. This will be the thread of |owner_task_runner_|.
   Core(Profile* profile,
-       OAuth2TokenServiceRequest* owner);
+       ProfileOAuth2TokenServiceRequest* owner);
   // Starts fetching an OAuth2 access token for |scopes|. It should be called
   // on the owner thread.
   void Start(const OAuth2TokenService::ScopeSet& scopes);
@@ -39,7 +39,8 @@ class OAuth2TokenServiceRequest::Core
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core>;
+  friend class
+      base::RefCountedThreadSafe<ProfileOAuth2TokenServiceRequest::Core>;
 
   // Note this can be destructed on the owner thread or on the UI thread,
   // depending on the reference count.
@@ -62,7 +63,7 @@ class OAuth2TokenServiceRequest::Core
 
   // The object to call back when fetching completes. |owner_| should be
   // called back only on the owner thread.
-  OAuth2TokenServiceRequest* owner_;
+  ProfileOAuth2TokenServiceRequest* owner_;
   // Task runner on which |owner_| should be called back.
   scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner_;
 
@@ -73,9 +74,9 @@ class OAuth2TokenServiceRequest::Core
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-OAuth2TokenServiceRequest::Core::Core(
+ProfileOAuth2TokenServiceRequest::Core::Core(
     Profile* profile,
-    OAuth2TokenServiceRequest* owner)
+    ProfileOAuth2TokenServiceRequest* owner)
     : profile_(profile),
       owner_(owner),
       owner_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
@@ -83,10 +84,10 @@ OAuth2TokenServiceRequest::Core::Core(
   DCHECK(owner);
 }
 
-OAuth2TokenServiceRequest::Core::~Core() {
+ProfileOAuth2TokenServiceRequest::Core::~Core() {
 }
 
-void OAuth2TokenServiceRequest::Core::Start(
+void ProfileOAuth2TokenServiceRequest::Core::Start(
     const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(owner_task_runner_->BelongsToCurrentThread());
 
@@ -96,12 +97,12 @@ void OAuth2TokenServiceRequest::Core::Start(
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&OAuth2TokenServiceRequest::Core::StartOnUIThread,
+        base::Bind(&ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread,
                    this, scopes));
   }
 }
 
-void OAuth2TokenServiceRequest::Core::Stop() {
+void ProfileOAuth2TokenServiceRequest::Core::Stop() {
   DCHECK(owner_task_runner_->BelongsToCurrentThread());
 
   // Detaches |owner_| from this instance so |owner_| will be called back only
@@ -113,49 +114,53 @@ void OAuth2TokenServiceRequest::Core::Stop() {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&OAuth2TokenServiceRequest::Core::StopOnUIThread, this));
+        base::Bind(&ProfileOAuth2TokenServiceRequest::Core::StopOnUIThread,
+                   this));
   }
 }
 
-void OAuth2TokenServiceRequest::Core::StopOnUIThread() {
+void ProfileOAuth2TokenServiceRequest::Core::StopOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   request_.reset();
 }
 
-void OAuth2TokenServiceRequest::Core::StartOnUIThread(
+void ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread(
     const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  OAuth2TokenService* service = OAuth2TokenServiceFactory::GetForProfile(
-      profile_);
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   DCHECK(service);
   request_.reset(service->StartRequest(scopes, this).release());
 }
 
-void OAuth2TokenServiceRequest::Core::OnGetTokenSuccess(
+void ProfileOAuth2TokenServiceRequest::Core::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(request_.get(), request);
   owner_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenSuccess, this,
-      access_token, expiration_time));
+      &ProfileOAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenSuccess,
+      this,
+      access_token,
+      expiration_time));
   request_.reset();
 }
 
-void OAuth2TokenServiceRequest::Core::OnGetTokenFailure(
+void ProfileOAuth2TokenServiceRequest::Core::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(request_.get(), request);
   owner_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure, this,
+      &ProfileOAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure,
+      this,
       error));
   request_.reset();
 }
 
-void OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenSuccess(
+void ProfileOAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenSuccess(
     std::string access_token,
     base::Time expiration_time) {
   DCHECK(owner_task_runner_->BelongsToCurrentThread());
@@ -164,7 +169,7 @@ void OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenSuccess(
     owner_->consumer_->OnGetTokenSuccess(owner_, access_token, expiration_time);
 }
 
-void OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure(
+void ProfileOAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure(
     GoogleServiceAuthError error) {
   DCHECK(owner_task_runner_->BelongsToCurrentThread());
 
@@ -173,14 +178,15 @@ void OAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure(
 }
 
 // static
-OAuth2TokenServiceRequest* OAuth2TokenServiceRequest::CreateAndStart(
-    Profile* profile,
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenService::Consumer* consumer) {
-  return new OAuth2TokenServiceRequest(profile, scopes, consumer);
+ProfileOAuth2TokenServiceRequest*
+    ProfileOAuth2TokenServiceRequest::CreateAndStart(
+        Profile* profile,
+        const OAuth2TokenService::ScopeSet& scopes,
+        OAuth2TokenService::Consumer* consumer) {
+  return new ProfileOAuth2TokenServiceRequest(profile, scopes, consumer);
 }
 
-OAuth2TokenServiceRequest::OAuth2TokenServiceRequest(
+ProfileOAuth2TokenServiceRequest::ProfileOAuth2TokenServiceRequest(
     Profile* profile,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer)
@@ -189,7 +195,7 @@ OAuth2TokenServiceRequest::OAuth2TokenServiceRequest(
   core_->Start(scopes);
 }
 
-OAuth2TokenServiceRequest::~OAuth2TokenServiceRequest() {
+ProfileOAuth2TokenServiceRequest::~ProfileOAuth2TokenServiceRequest() {
   DCHECK(CalledOnValidThread());
   core_->Stop();
 }

@@ -11,7 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
-#include "chrome/browser/signin/oauth2_token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
@@ -73,8 +74,8 @@ class RequestImpl : public WebHistoryService::Request,
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(kHistoryOAuthScope);
 
-    OAuth2TokenService* token_service =
-        OAuth2TokenServiceFactory::GetForProfile(profile_);
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     token_request_ = token_service->StartRequest(oauth_scopes, this);
   }
 
@@ -88,8 +89,8 @@ class RequestImpl : public WebHistoryService::Request,
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(kHistoryOAuthScope);
-      OAuth2TokenServiceFactory::GetForProfile(profile_)->InvalidateToken(
-          oauth_scopes, access_token_);
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+          ->InvalidateToken(oauth_scopes, access_token_);
 
       access_token_ = std::string();
       Start();

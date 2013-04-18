@@ -231,7 +231,8 @@ TEST_F(TokenServiceTest, OnTokenSuccessUpdate) {
 }
 
 TEST_F(TokenServiceTest, OnOAuth2LoginTokenSuccessUpdate) {
-  std::string service = GaiaConstants::kGaiaOAuth2LoginRefreshToken;
+  EXPECT_FALSE(service_->HasOAuthLoginToken());
+
   service_->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600));
   EXPECT_TRUE(service_->HasOAuthLoginToken());

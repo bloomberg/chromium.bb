@@ -750,6 +750,7 @@ extern const char kOwnerPrimaryMouseButtonRight[];
 extern const char kOwnerTapToClickEnabled[];
 extern const char kUptimeLimit[];
 extern const char kRebootAfterUpdate[];
+extern const char kDeviceRobotAnyApiRefreshToken[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

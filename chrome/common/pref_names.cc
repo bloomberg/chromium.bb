@@ -2046,6 +2046,13 @@ const char kUptimeLimit[] = "automatic_reboot.uptime_limit";
 // Whether an automatic reboot should be scheduled when an update has been
 // applied and a reboot is required to complete the update process.
 const char kRebootAfterUpdate[] = "automatic_reboot.reboot_after_update";
+
+// An any-api scoped refresh token for enterprise-enrolled devices.  Allows
+// for connection to Google APIs when the user isn't logged in.  Currently used
+// for for getting a cloudprint scoped token to allow printing in Guest mode,
+// Public Accounts and kiosks.
+const char kDeviceRobotAnyApiRefreshToken[] =
+    "device_robot_refresh_token.any-api";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
