@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.content.Context;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -16,8 +18,8 @@ class SnapScrollController {
     private static final int SNAP_HORIZ = 1;
     private static final int SNAP_VERT = 2;
     private static final int SNAP_BOUND = 16;
-    private static float CHANNEL_DISTANCE = 16f;
 
+    private float mChannelDistance = 16f;
     private int mSnapScrollMode = SNAP_NONE;
     private int mFirstTouchX = -1;
     private int mFirstTouchY = -1;
@@ -25,7 +27,8 @@ class SnapScrollController {
     private float mDistanceY = 0;
     private ZoomManager mZoomManager;
 
-    SnapScrollController(ZoomManager zoomManager) {
+    SnapScrollController(Context context, ZoomManager zoomManager) {
+        calculateChannelDistance(context);
         mZoomManager = zoomManager;
     }
 
@@ -40,16 +43,16 @@ class SnapScrollController {
             mDistanceX += Math.abs(distanceX);
             mDistanceY += Math.abs(distanceY);
             if (mSnapScrollMode == SNAP_HORIZ) {
-                if (mDistanceY > CHANNEL_DISTANCE) {
+                if (mDistanceY > mChannelDistance) {
                     mSnapScrollMode = SNAP_NONE;
-                } else if (mDistanceX > CHANNEL_DISTANCE) {
+                } else if (mDistanceX > mChannelDistance) {
                     mDistanceX = 0;
                     mDistanceY = 0;
                 }
             } else {
-                if (mDistanceX > CHANNEL_DISTANCE) {
+                if (mDistanceX > mChannelDistance) {
                     mSnapScrollMode = SNAP_NONE;
-                } else if (mDistanceY > CHANNEL_DISTANCE) {
+                } else if (mDistanceY > mChannelDistance) {
                     mDistanceX = 0;
                     mDistanceY = 0;
                 }
@@ -96,6 +99,24 @@ class SnapScrollController {
                 Log.i(TAG, "setSnapScrollingMode case-default no-op");
                 break;
         }
+    }
+
+    private void calculateChannelDistance(Context context) {
+        // The channel distance is adjusted for density and screen size.
+        final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        final double screenSize = Math.hypot((double) metrics.widthPixels / metrics.densityDpi,
+                (double) metrics.heightPixels / metrics.densityDpi);
+        if (screenSize < 3.0) {
+            mChannelDistance = 16f;
+        } else if (screenSize < 5.0) {
+            mChannelDistance = 22f;
+        } else if (screenSize < 7.0) {
+            mChannelDistance = 28f;
+        } else {
+            mChannelDistance = 34f;
+        }
+        mChannelDistance = mChannelDistance * metrics.density;
+        if (mChannelDistance < 16f) mChannelDistance = 16f;
     }
 
     /**

@@ -200,7 +200,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mLongPressDetector = new LongPressDetector(context, this);
         mMotionEventDelegate = delegate;
         mZoomManager = zoomManager;
-        mSnapScrollController = new SnapScrollController(mZoomManager);
+        mSnapScrollController = new SnapScrollController(context, mZoomManager);
         initGestureDetectors(context);
     }
 
