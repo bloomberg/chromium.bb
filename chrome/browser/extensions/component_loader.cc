@@ -28,6 +28,10 @@
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(USE_AURA)
+#include "grit/keyboard_resources.h"
+#endif
+
 #if defined(OFFICIAL_BUILD)
 #include "chrome/browser/defaults.h"
 #endif
@@ -333,6 +337,12 @@ void ComponentLoader::AddChromeApp() {
 #endif
 }
 
+void ComponentLoader::AddKeyboardApp() {
+#if defined(USE_AURA)
+  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
+#endif
+}
+
 // static
 void ComponentLoader::EnableBackgroundExtensionsForTesting() {
   enable_background_extensions_during_testing = true;
@@ -386,6 +396,8 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
     AddChromeApp();
   }
+
+  AddKeyboardApp();
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 }

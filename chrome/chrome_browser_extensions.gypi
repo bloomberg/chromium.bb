@@ -827,6 +827,11 @@
             '../third_party/libusb/libusb.gyp:libusb'
           ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../ui/keyboard/keyboard.gyp:keyboard_resources',
+          ],
+        }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
