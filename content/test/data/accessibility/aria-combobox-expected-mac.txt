@@ -1,7 +1,7 @@
 AXWebArea
     AXGroup
-        AXStaticText AXValue='State'
+        AXStaticText value='State'
         AXComboBox
     AXList
-        AXStaticText AXTitle='Alabama'
-        AXStaticText AXTitle='Alaska'
+        AXStaticText title='Alabama'
+        AXStaticText title='Alaska'

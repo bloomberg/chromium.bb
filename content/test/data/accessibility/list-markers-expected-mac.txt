@@ -1,17 +1,17 @@
 AXWebArea
-    AXList AXSubrole=AXContentList
+    AXList subrole=AXContentList
         AXGroup
-            AXListMarker AXValue='•'
-            AXStaticText AXValue='First item properly groups itself despite '
-            AXStaticText AXValue='bolded'
-            AXStaticText AXValue=' text.'
+            AXListMarker value='•'
+            AXStaticText value='First item properly groups itself despite '
+            AXStaticText value='bolded'
+            AXStaticText value=' text.'
         AXGroup
-            AXListMarker AXValue='•'
-            AXStaticText AXValue='This should also be '
-            AXStaticText AXValue='seen'
-            AXStaticText AXValue=' as a group.'
+            AXListMarker value='•'
+            AXStaticText value='This should also be '
+            AXStaticText value='seen'
+            AXStaticText value=' as a group.'
         AXGroup
-            AXListMarker AXValue='•'
-            AXStaticText AXValue='Some '
-            AXStaticText AXValue='more'
-            AXStaticText AXValue=' text.'
+            AXListMarker value='•'
+            AXStaticText value='Some '
+            AXStaticText value='more'
+            AXStaticText value=' text.'

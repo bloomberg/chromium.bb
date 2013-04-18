@@ -1,4 +1,4 @@
 AXWebArea
     AXGroup
         AXGroup
-            AXStaticText AXValue='Label'
+            AXStaticText value='Label'

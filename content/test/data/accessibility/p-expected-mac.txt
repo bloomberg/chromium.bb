@@ -1,7 +1,7 @@
 AXWebArea
     AXGroup
-        AXStaticText AXValue='Before'
+        AXStaticText value='Before'
     AXGroup
-        AXStaticText AXValue='Paragraph'
+        AXStaticText value='Paragraph'
     AXGroup
-        AXStaticText AXValue='After'
+        AXStaticText value='After'
