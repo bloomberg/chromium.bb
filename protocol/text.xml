@@ -88,7 +88,7 @@
       </description>
       <entry name="none" value="0x0" summary="no special behaviour"/>
       <entry name="default" value="0x7" summary="auto completion, correction and capitalization"/>
-      <entry name="password" value="0xc" summary="hidden and sensitive text"/>
+      <entry name="password" value="0xc0" summary="hidden and sensitive text"/>
       <entry name="auto_completion" value="0x1" summary="suggest word completions"/>
       <entry name="auto_correction" value="0x2" summary="suggest word corrections"/>
       <entry name="auto_capitalization" value="0x4" summary="switch to uppercase letters at the start of a sentence"/>
