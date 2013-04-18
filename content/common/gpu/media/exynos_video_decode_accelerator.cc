@@ -220,6 +220,7 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       mfc_output_streamon_(false),
       mfc_output_buffer_queued_count_(0),
       mfc_output_buffer_pixelformat_(0),
+      mfc_output_dpb_size_(0),
       gsc_fd_(-1),
       gsc_input_streamon_(false),
       gsc_input_buffer_queued_count_(0),
@@ -1286,9 +1287,12 @@ void ExynosVideoDecodeAccelerator::EnqueueGsc() {
 
   // Enqueue a GSC output, only if we need one
   // TODO(ihf): Revert to size > 0 once issue 225563 is fixed.
+  COMPILE_ASSERT(
+      kDpbOutputBufferExtraCount >= kGscOutputBufferExtraForSyncCount,
+      gsc_output_buffer_extra_for_sync_count_too_large);
   if (gsc_input_buffer_queued_count_ != 0 &&
       gsc_output_buffer_queued_count_ == 0 &&
-      gsc_free_output_buffers_.size() > 2) {
+      gsc_free_output_buffers_.size() > kGscOutputBufferExtraForSyncCount) {
     const int old_gsc_outputs_queued = gsc_output_buffer_queued_count_;
     if (!EnqueueGscOutputRecord())
       return;
@@ -1968,13 +1972,14 @@ bool ExynosVideoDecodeAccelerator::CreateMfcOutputBuffers() {
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MIN_BUFFERS_FOR_CAPTURE;
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_G_CTRL, &ctrl);
+  mfc_output_dpb_size_ = ctrl.value;
 
   // Output format setup in Initialize().
 
   // Allocate the output buffers.
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count  = ctrl.value + kMfcOutputBufferExtraCount;
+  reqbufs.count  = mfc_output_dpb_size_ + kDpbOutputBufferExtraCount;
   reqbufs.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_REQBUFS, &reqbufs);
@@ -2093,7 +2098,7 @@ bool ExynosVideoDecodeAccelerator::CreateGscOutputBuffers() {
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = kGscOutputBufferCount;
+  reqbufs.count = mfc_output_dpb_size_ + kDpbOutputBufferExtraCount;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_DMABUF;
   IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_REQBUFS, &reqbufs);
