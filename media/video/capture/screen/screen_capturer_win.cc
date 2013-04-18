@@ -75,7 +75,7 @@ class ScreenCaptureFrameWin : public ScreenCaptureFrame {
 // ScreenCapturerWin is double-buffered as required by ScreenCapturer.
 class ScreenCapturerWin : public ScreenCapturer {
  public:
-  ScreenCapturerWin();
+  ScreenCapturerWin(bool disable_aero);
   virtual ~ScreenCapturerWin();
 
   // Overridden from ScreenCapturer:
@@ -203,11 +203,24 @@ void ScreenCaptureFrameWin::AllocateBitmap(HDC desktop_dc,
       bmi.bmiHeader.biSizeImage / std::abs(bmi.bmiHeader.biHeight));
 }
 
-ScreenCapturerWin::ScreenCapturerWin()
+ScreenCapturerWin::ScreenCapturerWin(bool disable_aero)
     : delegate_(NULL),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
       composition_func_(NULL),
       set_thread_execution_state_failed_(false) {
+  if (disable_aero) {
+    // Load dwmapi.dll dynamically since it is not available on XP.
+    if (!dwmapi_library_.is_valid()) {
+      base::FilePath path(base::GetNativeLibraryName(
+          UTF8ToUTF16(kDwmapiLibraryName)));
+      dwmapi_library_.Reset(base::LoadNativeLibrary(path, NULL));
+    }
+
+    if (dwmapi_library_.is_valid() && composition_func_ == NULL) {
+      composition_func_ = static_cast<DwmEnableCompositionFunc>(
+          dwmapi_library_.GetFunctionPointer("DwmEnableComposition"));
+    }
+  }
 }
 
 ScreenCapturerWin::~ScreenCapturerWin() {
@@ -274,18 +287,6 @@ void ScreenCapturerWin::Start(Delegate* delegate) {
   DCHECK(delegate_ == NULL);
 
   delegate_ = delegate;
-
-  // Load dwmapi.dll dynamically since it is not available on XP.
-  if (!dwmapi_library_.is_valid()) {
-    base::FilePath path(base::GetNativeLibraryName(
-        UTF8ToUTF16(kDwmapiLibraryName)));
-    dwmapi_library_.Reset(base::LoadNativeLibrary(path, NULL));
-  }
-
-  if (dwmapi_library_.is_valid() && composition_func_ == NULL) {
-    composition_func_ = static_cast<DwmEnableCompositionFunc>(
-        dwmapi_library_.GetFunctionPointer("DwmEnableComposition"));
-  }
 
   // Vote to disable Aero composited desktop effects while capturing. Windows
   // will restore Aero automatically if the process exits. This has no effect
@@ -602,7 +603,13 @@ void ScreenCapturer::Delegate::ReleaseSharedBuffer(
 
 // static
 scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {
-  return scoped_ptr<ScreenCapturer>(new ScreenCapturerWin());
+  return CreateWithDisableAero(true);
+}
+
+// static
+scoped_ptr<ScreenCapturer> ScreenCapturer::CreateWithDisableAero(
+    bool disable_aero) {
+  return scoped_ptr<ScreenCapturer>(new ScreenCapturerWin(disable_aero));
 }
 
 }  // namespace media

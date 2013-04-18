@@ -86,7 +86,11 @@ class MEDIA_EXPORT ScreenCapturer {
   // Creates platform-specific capturer and instructs it whether it should use
   // X DAMAGE support.
   static scoped_ptr<ScreenCapturer> CreateWithXDamage(bool use_x_damage);
-#endif  // defined(OS_LINUX)
+#elif defined(OS_WIN)
+  // Creates Windows-specific capturer and instructs it whether or not to
+  // disable desktop compositing.
+  static scoped_ptr<ScreenCapturer> CreateWithDisableAero(bool disable_aero);
+#endif
 
   // Called at the beginning of a capturing session. |delegate| must remain
   // valid until Stop() is called.

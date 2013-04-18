@@ -278,6 +278,11 @@ void ScreenCaptureDevice::Core::DoAllocate(int frame_rate) {
   // ARM. See http://crbug.com/230105.
   if (!screen_capturer_)
     screen_capturer_ = ScreenCapturer::CreateWithXDamage(true);
+#elif defined(OS_WIN)
+  // ScreenCapturerWin disables Aero by default. We don't want it disabled for
+  // WebRTC screen capture, though.
+  if (!screen_capturer_)
+    screen_capturer_ = ScreenCapturer::CreateWithDisableAero(false);
 #else
   if (!screen_capturer_)
     screen_capturer_ = ScreenCapturer::Create();
