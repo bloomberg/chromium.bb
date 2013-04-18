@@ -372,6 +372,9 @@ class TrackerComm(object):
     except gdata.client.RequestError as ex:
       if ex.body and ex.body.lower() == 'user not found':
         raise TrackerInvalidUserError('Tracker user %s not found' % issue.owner)
+      if ex.body and ex.body.lower() == 'issue owner must be a member':
+        raise TrackerInvalidUserError('Tracker user %s not a member' %
+                                      issue.owner)
       raise
 
   def AppendTrackerIssueById(self, issue_id, comment, owner=None):
