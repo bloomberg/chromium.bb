@@ -15,7 +15,7 @@ namespace net {
 // |kDnsTimeoutSeconds|.
 DnsConfig::DnsConfig()
     : append_to_multi_label_name(true),
-      randomize_ports(true),
+      randomize_ports(false),
       ndots(1),
       timeout(base::TimeDelta::FromSeconds(kDnsTimeoutSeconds)),
       attempts(2),
