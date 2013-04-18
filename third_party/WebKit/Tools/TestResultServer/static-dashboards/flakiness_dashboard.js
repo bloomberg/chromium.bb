@@ -70,7 +70,7 @@ var PLATFORMS = {
                         }
                     },
                     'SNOWLEOPARD': {
-                        expectationsDirectory: 'mac-snowleopard',
+                        expectationsDirectory: null,
                         subPlatforms: {
                             'WK1': { fallbackPlatforms: ['APPLE_MAC_SNOWLEOPARD', 'APPLE_MAC'] },
                             'WK2': { fallbackPlatforms: ['APPLE_MAC_SNOWLEOPARD', 'APPLE_MAC', 'WK2'] }

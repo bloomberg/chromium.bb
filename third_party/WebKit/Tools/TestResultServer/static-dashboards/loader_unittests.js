@@ -84,7 +84,7 @@ test('expectations files loading', 1, function() {
     g_history.parseCrossDashboardParameters();
     // FIXME: re-enable once added back in flakiness_dashboard.js
     var expectedLoadedPlatforms = [/* "chromium", "chromium-android", */"efl", "efl-wk1", "efl-wk2", "gtk",
-                                   "gtk-wk2", "mac", "mac-lion", "mac-snowleopard", "qt", "win", "wk2"];
+                                   "gtk-wk2", "mac", "mac-lion", /*"mac-snowleopard", */"qt", "win", "wk2"];
     var loadedPlatforms = [];
     var resourceLoader = new loader.Loader();
     resourceLoader._loadNext = function() {
