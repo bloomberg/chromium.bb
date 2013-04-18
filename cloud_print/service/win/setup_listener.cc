@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "cloud_print/service/win/service_utils.h"
 #include "ipc/ipc_channel.h"
 
 const char SetupListener::kXpsAvailableJsonValueName[] = "xps_available";
@@ -97,7 +98,7 @@ void SetupListener::Connect(const string16& user) {
   ATL::CDacl dacl;
 
   ATL::CSid user_sid;
-  if (!user_sid.LoadAccount(user.c_str())) {
+  if (!user_sid.LoadAccount(ReplaceLocalHostInName(user).c_str())) {
     LOG(ERROR) << "Unable to load Sid for" << user;
   } else {
     dacl.AddAllowedAce(user_sid, GENERIC_READ | GENERIC_WRITE);

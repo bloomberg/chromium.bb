@@ -7,6 +7,30 @@
 #include <windows.h>
 #include <security.h>  // NOLINT
 
+#include "base/string_util.h"
+
+string16 GetLocalComputerName() {
+  DWORD size = 0;
+  string16 result;
+  ::GetComputerName(NULL, &size);
+  result.resize(size);
+  if (result.empty())
+    return result;
+  if (!::GetComputerName(&result[0], &size))
+    return string16();
+  result.resize(size);
+  return result;
+}
+
+string16 ReplaceLocalHostInName(const string16& user_name) {
+  static const wchar_t kLocalDomain[] = L".\\";
+  if (StartsWith(user_name, kLocalDomain, true)) {
+    return GetLocalComputerName() +
+           user_name.substr(arraysize(kLocalDomain) - 2);
+  }
+  return user_name;
+}
+
 string16 GetCurrentUserName() {
   ULONG size = 0;
   string16 result;
@@ -15,7 +39,7 @@ string16 GetCurrentUserName() {
   if (result.empty())
     return result;
   if (!::GetUserNameEx(::NameSamCompatible, &result[0], &size))
-    result.clear();
+    return string16();
   result.resize(size);
   return result;
 }
