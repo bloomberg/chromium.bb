@@ -272,6 +272,10 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
+  // Builds a FilterCollection based on the current configuration of
+  // WebMediaPlayerImpl.
+  scoped_ptr<media::FilterCollection> BuildFilterCollection();
+
   WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
@@ -285,7 +289,6 @@ class WebMediaPlayerImpl
   // for DCHECKs so methods calls won't execute in the wrong thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
-  scoped_ptr<media::FilterCollection> filter_collection_;
   scoped_refptr<media::Pipeline> pipeline_;
   base::Thread media_thread_;
 
@@ -329,6 +332,9 @@ class WebMediaPlayerImpl
 
   bool incremented_externally_allocated_memory_;
 
+  // Factories for supporting GpuVideoDecoder. May be null.
+  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
+
   // Routes audio playback to either AudioRendererSink or WebAudio.
   scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;
 
@@ -367,8 +373,6 @@ class WebMediaPlayerImpl
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
-
-  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

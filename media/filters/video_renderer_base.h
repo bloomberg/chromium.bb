@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -43,6 +44,8 @@ class MEDIA_EXPORT VideoRendererBase
   // Maximum duration of the last frame.
   static base::TimeDelta kMaxLastFrameDuration();
 
+  // |decoders| contains the VideoDecoders to use when initializing.
+  //
   // |paint_cb| is executed on the video frame timing thread whenever a new
   // frame is available for painting.
   //
@@ -55,6 +58,7 @@ class MEDIA_EXPORT VideoRendererBase
   //
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
   VideoRendererBase(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+                    ScopedVector<VideoDecoder> decoders,
                     const SetDecryptorReadyCB& set_decryptor_ready_cb,
                     const PaintCB& paint_cb,
                     const SetOpaqueCB& set_opaque_cb,
@@ -63,7 +67,6 @@ class MEDIA_EXPORT VideoRendererBase
 
   // VideoRenderer implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
-                          const VideoDecoderList& decoders,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& max_time_cb,
@@ -129,11 +132,16 @@ class MEDIA_EXPORT VideoRendererBase
   // A read is scheduled to replace the frame.
   void DropNextReadyFrame_Locked();
 
+  void ResetDecoder();
+  void StopDecoder(const base::Closure& callback);
+
   void TransitionToPrerolled_Locked();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<VideoRendererBase> weak_factory_;
   base::WeakPtr<VideoRendererBase> weak_this_;
+
+  scoped_ptr<VideoDecoderSelector> decoder_selector_;
 
   // Used for accessing data members.
   base::Lock lock_;

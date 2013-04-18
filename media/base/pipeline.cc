@@ -944,7 +944,6 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   video_renderer_ = filter_collection_->GetVideoRenderer();
   video_renderer_->Initialize(
       stream,
-      *filter_collection_->GetVideoDecoders(),
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnVideoTimeUpdate, this),
@@ -953,7 +952,6 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::SetError, this),
       base::Bind(&Pipeline::GetMediaTime, this),
       base::Bind(&Pipeline::GetMediaDuration, this));
-  filter_collection_->GetVideoDecoders()->clear();
 }
 
 void Pipeline::OnAudioUnderflow() {

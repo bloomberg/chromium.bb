@@ -16,8 +16,7 @@ namespace media {
 class DemuxerStream;
 class VideoFrame;
 
-class MEDIA_EXPORT VideoDecoder
-    : public base::RefCountedThreadSafe<VideoDecoder> {
+class MEDIA_EXPORT VideoDecoder {
  public:
   // Status codes for read operations on VideoDecoder.
   enum Status {
@@ -25,6 +24,9 @@ class MEDIA_EXPORT VideoDecoder
     kDecodeError,  // Decoding error happened.
     kDecryptError  // Decrypting error happened.
   };
+
+  VideoDecoder();
+  virtual ~VideoDecoder();
 
   // Initializes a VideoDecoder with the given DemuxerStream, executing the
   // |status_cb| upon completion.
@@ -77,11 +79,7 @@ class MEDIA_EXPORT VideoDecoder
   // use a fixed set of VideoFrames for decoding.
   virtual bool HasOutputFrameAvailable() const;
 
- protected:
-  friend class base::RefCountedThreadSafe<VideoDecoder>;
-  virtual ~VideoDecoder();
-  VideoDecoder();
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };
 

@@ -31,18 +31,21 @@ static const gfx::Size kNaturalSize(320, 240);
 class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  public:
   VideoFrameStreamTest()
-      : video_frame_stream_(new VideoFrameStream(
-            message_loop_.message_loop_proxy(),
-            base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
-                       base::Unretained(this)))),
-        video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
+      : video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
                       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0,
                       GetParam()),
         demuxer_stream_(new StrictMock<MockDemuxerStream>()),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_(new StrictMock<MockVideoDecoder>()),
         is_initialized_(false) {
-    decoders_.push_back(decoder_);
+    ScopedVector<VideoDecoder> decoders;
+    decoders.push_back(decoder_);
+
+    video_frame_stream_ = new VideoFrameStream(
+        message_loop_.message_loop_proxy(),
+        decoders.Pass(),
+        base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
+                   base::Unretained(this)));
 
     EXPECT_CALL(*demuxer_stream_, type())
         .WillRepeatedly(Return(DemuxerStream::VIDEO));
@@ -88,7 +91,6 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         .WillOnce(SaveArg<1>(&decoder_init_cb_));
     video_frame_stream_->Initialize(
         demuxer_stream_,
-        decoders_,
         base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::OnInitialized,
                    base::Unretained(this)));
@@ -188,8 +190,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
-  scoped_refptr<StrictMock<MockVideoDecoder> > decoder_;
-  VideoFrameStream::VideoDecoderList decoders_;
+  StrictMock<MockVideoDecoder>* decoder_;  // Owned by |video_frame_stream_|.
 
   // Callbacks to simulate pending decoder operations.
   PipelineStatusCB decoder_init_cb_;

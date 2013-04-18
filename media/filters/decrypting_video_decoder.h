@@ -6,7 +6,7 @@
 #define MEDIA_FILTERS_DECRYPTING_VIDEO_DECODER_H_
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
@@ -34,6 +34,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   DecryptingVideoDecoder(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  virtual ~DecryptingVideoDecoder();
 
   // VideoDecoder implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -42,9 +43,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
-
- protected:
-  virtual ~DecryptingVideoDecoder();
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -96,6 +94,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   void DoStop();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
+  base::WeakPtr<DecryptingVideoDecoder> weak_this_;
 
   State state_;
 

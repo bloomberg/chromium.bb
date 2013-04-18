@@ -58,6 +58,7 @@ static int GetThreadCount() {
 VpxVideoDecoder::VpxVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
+      weak_factory_(this),
       state_(kUninitialized),
       vpx_codec_(NULL) {
 }
@@ -73,6 +74,7 @@ void VpxVideoDecoder::Initialize(
     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!demuxer_stream_) << "Already initialized.";
+  weak_this_ = weak_factory_.GetWeakPtr();
 
   if (!stream) {
     status_cb.Run(PIPELINE_ERROR_DECODE);
@@ -182,7 +184,7 @@ void VpxVideoDecoder::ReadFromDemuxerStream() {
   DCHECK(!read_cb_.is_null());
 
   demuxer_stream_->Read(base::Bind(
-      &VpxVideoDecoder::DoDecryptOrDecodeBuffer, this));
+      &VpxVideoDecoder::DoDecryptOrDecodeBuffer, weak_this_));
 }
 
 void VpxVideoDecoder::DoDecryptOrDecodeBuffer(

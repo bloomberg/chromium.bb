@@ -223,16 +223,17 @@ PipelineIntegrationTestBase::CreateFilterCollection(
     Decryptor* decryptor) {
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->SetDemuxer(demuxer);
-  scoped_refptr<VideoDecoder> video_decoder = new FFmpegVideoDecoder(
-      message_loop_.message_loop_proxy());
-  scoped_refptr<VpxVideoDecoder> vpx_decoder = new VpxVideoDecoder(
-      message_loop_.message_loop_proxy());
-  collection->GetVideoDecoders()->push_back(video_decoder);
-  collection->GetVideoDecoders()->push_back(vpx_decoder);
+
+  ScopedVector<VideoDecoder> video_decoders;
+  video_decoders.push_back(
+      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
+  video_decoders.push_back(
+      new VpxVideoDecoder(message_loop_.message_loop_proxy()));
 
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
       message_loop_.message_loop_proxy(),
+      video_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this), decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
