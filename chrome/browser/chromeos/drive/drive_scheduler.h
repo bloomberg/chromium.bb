@@ -182,8 +182,10 @@ class DriveScheduler
     // Online and cache path of the operation's target.
     // Used by:
     //   TYPE_DOWNLOAD_FILE
-    base::FilePath virtual_path;
-    base::FilePath local_cache_path;
+    //   TYPE_UPLOAD_NEW_FILE
+    //   TYPE_UPLOAD_EXISTING_FILE
+    base::FilePath drive_file_path;
+    base::FilePath local_file_path;
 
     // Parameter to get change list.
     // Used by:
@@ -272,8 +274,6 @@ class DriveScheduler
     // Used by:
     //   TYPE_UPLOAD_NEW_FILE
     //   TYPE_UPLOAD_EXISTING_FILE
-    base::FilePath drive_file_path;
-    base::FilePath local_file_path;
     std::string content_type;
     std::string etag;
     std::string title;
@@ -359,6 +359,9 @@ class DriveScheduler
       const base::FilePath& drive_path,
       const base::FilePath& file_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
+  // Updates the progress status of the specified job.
+  void UpdateProgress(JobID job_id, int64 progress, int64 total);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(

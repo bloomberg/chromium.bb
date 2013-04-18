@@ -52,9 +52,9 @@ struct JobInfo {
   explicit JobInfo(JobType in_job_type)
       : job_type(in_job_type),
         job_id(-1),
+        state(STATE_NONE),
         num_completed_bytes(0),
-        num_total_bytes(0),
-        state(STATE_NONE) {
+        num_total_bytes(0) {
   }
 
   // Type of the job.
@@ -63,17 +63,20 @@ struct JobInfo {
   // Id of the job, which can be used to query or modify it.
   JobID job_id;
 
-  // Number of bytes completed, if applicable.
+  // Current state of the operation.
+  JobState state;
+
+  // The fields below are available only for jobs with job_type:
+  // TYPE_DOWNLOAD_FILE, TYPE_UPLOAD_NEW_FILE, or TYPE_UPLOAD_EXISTING_FILE.
+
+  // Number of bytes completed.
   int64 num_completed_bytes;
 
-  // Total bytes of this operation, if applicable.
+  // Total bytes of this operation.
   int64 num_total_bytes;
 
   // Drive path of the file that this job acts on.
   base::FilePath file_path;
-
-  // Current state of the operation.
-  JobState state;
 };
 
 // The interface for observing JobListInterface.

@@ -305,8 +305,8 @@ void DriveScheduler::DownloadFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry);
-  new_job->virtual_path = virtual_path;
-  new_job->local_cache_path = local_cache_path;
+  new_job->drive_file_path = virtual_path;
+  new_job->local_file_path = local_cache_path;
   new_job->download_url = download_url;
   new_job->context = context;
   new_job->download_action_callback = download_action_callback;
@@ -363,6 +363,7 @@ void DriveScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
   // job_info is owned by job_map_ and released when it is removed in OnJobDone.
   JobInfo* job_info = new JobInfo(type);
   job->job_id = job_info->job_id = job_map_.Add(job_info);
+  job_info->file_path = job->drive_file_path;
 
   QueueJob(job.Pass());
   StartJobLoop(GetJobQueueType(type));
@@ -556,14 +557,16 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
 
     case TYPE_DOWNLOAD_FILE: {
       drive_service_->DownloadFile(
-          entry->virtual_path,
-          entry->local_cache_path,
+          entry->drive_file_path,
+          entry->local_file_path,
           entry->download_url,
           base::Bind(&DriveScheduler::OnDownloadActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)),
           entry->get_content_callback,
-          google_apis::ProgressCallback());
+          base::Bind(&DriveScheduler::UpdateProgress,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_info->job_id));
     }
     break;
 
@@ -577,7 +580,9 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)),
-          google_apis::ProgressCallback());
+          base::Bind(&DriveScheduler::UpdateProgress,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_info->job_id));
     }
     break;
 
@@ -591,7 +596,9 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)),
-          google_apis::ProgressCallback());
+          base::Bind(&DriveScheduler::UpdateProgress,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_info->job_id));
     }
     break;
 
@@ -848,6 +855,14 @@ void DriveScheduler::OnUploadCompletionJobDone(
   DCHECK(!queue_entry->upload_completion_callback.is_null());
   queue_entry->upload_completion_callback.Run(
       error, drive_path, file_path, resource_entry.Pass());
+}
+
+void DriveScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
+  JobInfo* job_info = job_map_.Lookup(job_id);
+  DCHECK(job_info);
+
+  job_info->num_completed_bytes = progress;
+  job_info->num_total_bytes = total;
 }
 
 void DriveScheduler::OnConnectionTypeChanged(

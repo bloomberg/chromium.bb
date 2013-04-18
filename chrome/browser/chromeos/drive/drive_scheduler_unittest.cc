@@ -462,7 +462,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
@@ -516,7 +516,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
@@ -570,7 +570,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
@@ -616,7 +616,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       DriveClientContext(BACKGROUND),
@@ -678,7 +678,7 @@ TEST_F(DriveSchedulerTest, JobInfo) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   expected_types.insert(TYPE_DOWNLOAD_FILE);
   scheduler_->DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
       GURL("https://file_content_url/"),
       DriveClientContext(BACKGROUND),
