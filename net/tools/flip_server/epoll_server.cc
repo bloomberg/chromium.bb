@@ -8,6 +8,7 @@
 #include <errno.h>    // for errno and strerror_r
 #include <algorithm>
 #include <ostream>
+#include <unistd.h>  // For read, pipe, close and write.
 #include <utility>
 #include <vector>
 

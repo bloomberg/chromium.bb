@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "net/quic/crypto/quic_random.h"
