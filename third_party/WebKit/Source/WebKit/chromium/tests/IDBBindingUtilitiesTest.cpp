@@ -37,7 +37,6 @@
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
-#include "WorldContextHandle.h"
 
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>

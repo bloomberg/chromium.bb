@@ -52,10 +52,10 @@ void WeakHandleListener<V8AbstractEventListener>::callback(v8::Isolate*, v8::Per
     listener->m_listener.clear();
 }
 
-V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, const WorldContextHandle& worldContext, v8::Isolate* isolate)
+V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
     : EventListener(JSEventListenerType)
     , m_isAttribute(isAttribute)
-    , m_worldContext(worldContext)
+    , m_world(world)
     , m_isolate(isolate)
 {
     ThreadLocalInspectorCounters::current().incrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
@@ -84,7 +84,7 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
 
     v8::HandleScope handleScope;
 
-    v8::Local<v8::Context> v8Context = toV8Context(context, worldContext());
+    v8::Local<v8::Context> v8Context = toV8Context(context, world());
     if (v8Context.IsEmpty())
         return;
 
@@ -110,7 +110,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     if (jsEvent.IsEmpty())
         return;
 
-    v8::Local<v8::Context> v8Context = toV8Context(context, worldContext());
+    v8::Local<v8::Context> v8Context = toV8Context(context, world());
     if (v8Context.IsEmpty())
         return;
 
@@ -182,7 +182,7 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptExecution
         return v8::Local<v8::Object>::New(m_listener.get());
 
     EventTarget* target = event->currentTarget();
-    v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), toV8Context(context, worldContext())->GetIsolate());
+    v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), toV8Context(context, world())->GetIsolate());
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
     return v8::Local<v8::Object>::New(v8::Handle<v8::Object>::Cast(value));

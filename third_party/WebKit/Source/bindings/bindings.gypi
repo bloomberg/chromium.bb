@@ -147,8 +147,6 @@
             'v8/WorkerScriptController.h',
             'v8/WorkerScriptDebugServer.cpp',
             'v8/WorkerScriptDebugServer.h',
-            'v8/WorldContextHandle.cpp',
-            'v8/WorldContextHandle.h',
             'v8/WrapperTypeInfo.h',
             'v8/custom/V8ArrayBufferCustom.cpp',
             'v8/custom/V8ArrayBufferCustom.h',

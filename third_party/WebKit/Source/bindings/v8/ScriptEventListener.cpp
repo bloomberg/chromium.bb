@@ -95,7 +95,7 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
 
     v8::HandleScope scope;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->worldContext());
+    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
     v8::Handle<v8::Object> function = v8Listener->getListenerObject(document);
     if (function.IsEmpty())
@@ -111,7 +111,7 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
 
     v8::HandleScope scope;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->worldContext());
+    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
     v8::Handle<v8::Object> function = v8Listener->getListenerObject(document);
     if (function.IsEmpty())
@@ -125,7 +125,7 @@ ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listen
         return 0;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::HandleScope scope;
-    v8::Handle<v8::Context> v8Context = v8Listener->worldContext().adjustedContext(frame->script());
+    v8::Handle<v8::Context> v8Context = v8::Local<v8::Context>::New(frame->script()->windowShell(v8Listener->world())->context());
     return ScriptState::forContext(*v8Context);
 }
 
@@ -136,7 +136,7 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
 
     v8::HandleScope scope;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->worldContext());
+    v8::Handle<v8::Context> context = toV8Context(document, v8Listener->world());
     v8::Context::Scope contextScope(context);
     v8::Handle<v8::Object> object = v8Listener->getListenerObject(document);
     if (object.IsEmpty() || !object->IsFunction())

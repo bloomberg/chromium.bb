@@ -53,7 +53,6 @@ namespace WebCore {
 
     class DOMStringList;
     class ScriptExecutionContext;
-    class WorldContextHandle;
 
     const int kMaxRecursionDepth = 22;
 
@@ -477,7 +476,6 @@ namespace WebCore {
     ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context>);
 
     // Returns the context associated with a ScriptExecutionContext.
-    v8::Local<v8::Context> toV8Context(ScriptExecutionContext*, const WorldContextHandle&);
     v8::Local<v8::Context> toV8Context(ScriptExecutionContext*, DOMWrapperWorld*);
 
     // Returns the frame object of the window object associated with

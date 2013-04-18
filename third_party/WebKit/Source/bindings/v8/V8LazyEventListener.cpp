@@ -46,14 +46,13 @@
 #include "V8HiddenPropertyName.h"
 #include "V8Node.h"
 #include "V8RecursionScope.h"
-#include "WorldContextHandle.h"
 
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 
 V8LazyEventListener::V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition& position, Node* node)
-    : V8AbstractEventListener(true, WorldContextHandle(UseMainWorld), v8::Isolate::GetCurrent()) // FIXME Remove GetCurrent()
+    : V8AbstractEventListener(true, mainThreadNormalWorld(), v8::Isolate::GetCurrent()) // FIXME Remove GetCurrent()
     , m_functionName(functionName)
     , m_eventParameterName(eventParameterName)
     , m_code(code)
@@ -128,7 +127,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
     v8::HandleScope handleScope;
 
     // Use the outer scope to hold context.
-    v8::Local<v8::Context> v8Context = toV8Context(context, worldContext());
+    v8::Local<v8::Context> v8Context = toV8Context(context, world());
     v8::Isolate* isolate = v8Context->GetIsolate();
     // Bail out if we cannot get the context.
     if (v8Context.IsEmpty())

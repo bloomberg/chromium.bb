@@ -65,8 +65,8 @@ public:
         return static_cast<DOMWrapperWorld*>(context->GetAlignedPointerFromEmbedderData(v8ContextIsolatedWorld));
     }
 
-    // Will return null if there is no DOMWrapperWorld representing the given ScriptExecutionContext.
-    static DOMWrapperWorld* current(ScriptExecutionContext*);
+    // Will return null if there is no DOMWrapperWorld for the current v8::Context
+    static DOMWrapperWorld* current();
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered

@@ -38,7 +38,7 @@ class DOMRequestState {
 public:
     explicit DOMRequestState(ScriptExecutionContext* scriptExecutionContext)
         : m_scriptExecutionContext(scriptExecutionContext)
-        , m_world(DOMWrapperWorld::current(scriptExecutionContext))
+        , m_world(DOMWrapperWorld::current())
     {
     }
 

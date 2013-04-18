@@ -31,6 +31,7 @@
 #ifndef V8EventListener_h
 #define V8EventListener_h
 
+#include "DOMWrapperWorld.h"
 #include "V8AbstractEventListener.h"
 #include <v8.h>
 #include <wtf/PassRefPtr.h>

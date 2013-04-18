@@ -214,7 +214,7 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
             continue;
         }
         V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener.get());
-        v8::Local<v8::Context> context = toV8Context(document, v8Listener->worldContext());
+        v8::Local<v8::Context> context = toV8Context(document, v8Listener->world());
         // Hide listeners from other contexts.
         if (context != v8::Context::GetCurrent())
             continue;

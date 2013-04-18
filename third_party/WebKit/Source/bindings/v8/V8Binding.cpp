@@ -50,7 +50,6 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "WorkerContext.h"
 #include "WorkerScriptController.h"
-#include "WorldContextHandle.h"
 #include "XPathNSResolver.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MainThread.h>
@@ -329,18 +328,6 @@ Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
     // did return |frame| we could get in trouble because the frame could be
     // navigated to another security origin.
     return 0;
-}
-
-v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldContextHandle& worldContext)
-{
-    if (context->isDocument()) {
-        if (Frame* frame = toDocument(context)->frame())
-            return worldContext.adjustedContext(frame->script());
-    } else if (context->isWorkerContext()) {
-        if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())
-            return script->context();
-    }
-    return v8::Local<v8::Context>();
 }
 
 v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWorld* world)

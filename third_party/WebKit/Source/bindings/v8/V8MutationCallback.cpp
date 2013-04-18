@@ -44,7 +44,7 @@ void WeakHandleListener<V8MutationCallback>::callback(v8::Isolate*, v8::Persiste
 V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ScriptExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : ActiveDOMCallback(context)
     , m_callback(callback)
-    , m_world(DOMWrapperWorld::current(context))
+    , m_world(DOMWrapperWorld::current())
 {
     owner->SetHiddenValue(V8HiddenPropertyName::callback(), callback);
     WeakHandleListener<V8MutationCallback>::makeWeak(isolate, m_callback.get(), this);

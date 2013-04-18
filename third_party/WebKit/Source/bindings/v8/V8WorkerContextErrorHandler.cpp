@@ -48,7 +48,7 @@ v8::Local<v8::Value> V8WorkerContextErrorHandler::callListenerFunction(ScriptExe
 {
     ASSERT(event->hasInterface(eventNames().interfaceForErrorEvent));
     v8::Local<v8::Object> listener = getListenerObject(context);
-    v8::Isolate* isolate = toV8Context(context, worldContext())->GetIsolate();
+    v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);

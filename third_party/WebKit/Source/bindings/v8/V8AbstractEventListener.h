@@ -31,10 +31,10 @@
 #ifndef V8AbstractEventListener_h
 #define V8AbstractEventListener_h
 
+#include "DOMWrapperWorld.h"
 #include "EventListener.h"
 #include "ScopedPersistent.h"
 #include "V8Utilities.h"
-#include "WorldContextHandle.h"
 #include <v8.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -105,10 +105,10 @@ namespace WebCore {
             return !m_listener.isEmpty();
         }
 
-        const WorldContextHandle& worldContext() const { return m_worldContext; }
+        DOMWrapperWorld* world() const { return m_world.get(); }
 
     protected:
-        V8AbstractEventListener(bool isAttribute, const WorldContextHandle&, v8::Isolate*);
+        V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
         virtual void prepareListenerObject(ScriptExecutionContext*) { }
 
@@ -134,7 +134,7 @@ namespace WebCore {
         // Indicates if this is an HTML type listener.
         bool m_isAttribute;
 
-        WorldContextHandle m_worldContext;
+        RefPtr<DOMWrapperWorld> m_world;
         v8::Isolate* m_isolate;
     };
 

@@ -65,14 +65,16 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
         m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
 }
 
-DOMWrapperWorld* DOMWrapperWorld::current(ScriptExecutionContext* scriptExecutionContext)
+DOMWrapperWorld* DOMWrapperWorld::current()
 {
-    if (scriptExecutionContext->isWorkerContext())
+    ASSERT(v8::Context::InContext());
+    v8::Handle<v8::Context> context = v8::Context::GetCurrent();
+    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info))
         return 0;
     ASSERT(isMainThread());
-    ASSERT(v8::Context::InContext());
-    DOMWrapperWorld* world = isolatedWorld(v8::Context::GetCurrent());
-    return world ? world : mainThreadNormalWorld();
+    if (DOMWrapperWorld* world = isolatedWorld(context))
+        return world;
+    return mainThreadNormalWorld();
 }
 
 DOMWrapperWorld* mainThreadNormalWorld()
