@@ -4,8 +4,8 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
+#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/test/base/testing_profile.h"
 
 #if defined(USE_ASH)

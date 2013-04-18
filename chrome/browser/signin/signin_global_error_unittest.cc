@@ -6,9 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"

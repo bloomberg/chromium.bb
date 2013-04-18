@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_
+#ifndef CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
+#define CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
 
 #include <string>
 
@@ -42,4 +42,4 @@ class FakeSigninManager : public SigninManager {
   static ProfileKeyedService* Build(Profile* profile);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_
+#endif  // CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_

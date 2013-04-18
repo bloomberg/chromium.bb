@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
 
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
