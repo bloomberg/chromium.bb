@@ -32,6 +32,8 @@
 #include "input-method-client-protocol.h"
 #include "text-client-protocol.h"
 
+struct keyboard;
+
 struct virtual_keyboard {
 	struct input_panel *input_panel;
 	struct input_method *input_method;
@@ -47,8 +49,7 @@ struct virtual_keyboard {
 	uint32_t content_purpose;
 	char *preferred_language;
 	char *surrounding_text;
-	struct window *window;
-	struct widget *widget;
+	struct keyboard *keyboard;
 };
 
 enum key_type {
@@ -637,14 +638,14 @@ handle_commit(void *data,
 	if (keyboard->surrounding_text)
 		fprintf(stderr, "Surrounding text updated: %s\n", keyboard->surrounding_text);
 
-	window_schedule_resize(keyboard->window,
+	window_schedule_resize(keyboard->keyboard->window,
 			       layout->columns * key_width,
 			       layout->rows * key_height);
 
 	input_method_context_language(context, keyboard->serial, layout->language);
 	input_method_context_text_direction(context, keyboard->serial, layout->text_direction);
 
-	widget_schedule_redraw(keyboard->widget);
+	widget_schedule_redraw(keyboard->keyboard->widget);
 }
 
 static void
@@ -680,6 +681,9 @@ input_method_activate(void *data,
 {
 	struct virtual_keyboard *keyboard = data;
 	struct wl_array modifiers_map;
+	const struct layout *layout;
+
+	keyboard->keyboard->state = keyboardstate_default;
 
 	if (keyboard->context)
 		input_method_context_destroy(keyboard->context);
@@ -688,6 +692,13 @@ input_method_activate(void *data,
 		free(keyboard->preedit_string);
 
 	keyboard->preedit_string = strdup("");
+	keyboard->content_hint = 0;
+	keyboard->content_purpose = 0;
+	free(keyboard->preferred_language);
+	keyboard->preferred_language = NULL;
+	free(keyboard->surrounding_text);
+	keyboard->surrounding_text = NULL;
+
 	keyboard->serial = serial;
 
 	keyboard->context = context;
@@ -702,6 +713,17 @@ input_method_activate(void *data,
 	input_method_context_modifiers_map(context, &modifiers_map);
 	keyboard->keysym.shift_mask = keysym_modifiers_get_mask(&modifiers_map, "Shift");
 	wl_array_release(&modifiers_map);
+
+	layout = get_current_layout(keyboard);
+
+	window_schedule_resize(keyboard->keyboard->window,
+			       layout->columns * key_width,
+			       layout->rows * key_height);
+
+	input_method_context_language(context, keyboard->serial, layout->language);
+	input_method_context_text_direction(context, keyboard->serial, layout->text_direction);
+
+	widget_schedule_redraw(keyboard->keyboard->widget);
 }
 
 static void
@@ -755,8 +777,8 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	keyboard->keyboard = virtual_keyboard;
 	keyboard->window = window_create_custom(virtual_keyboard->display);
 	keyboard->widget = window_add_widget(keyboard->window, keyboard);
-	virtual_keyboard->window = keyboard->window;
-	virtual_keyboard->widget = keyboard->widget;
+
+	virtual_keyboard->keyboard = keyboard;
 
 	window_set_title(keyboard->window, "Virtual keyboard");
 	window_set_user_data(keyboard->window, keyboard);
