@@ -446,7 +446,8 @@ void InspectorDebuggerAgent::stepInto(ErrorString* errorString)
         return;
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepIntoStatement();
-    m_listener->stepInto();
+    if (m_listener)
+        m_listener->stepInto();
 }
 
 void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
