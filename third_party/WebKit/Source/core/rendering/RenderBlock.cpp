@@ -1931,6 +1931,11 @@ void RenderBlock::moveRunInUnderSiblingBlockIfNeeded(RenderObject* runIn)
     if (curr->isAnonymous() || curr->isFloatingOrOutOfFlowPositioned())
         return;
 
+    // FIXME: We don't support run-ins with or as part of a continuation
+    // as it makes the back-and-forth placing complex.
+    if (curr->isElementContinuation() || curr->virtualContinuation())
+        return;
+
     RenderBoxModelObject* oldRunIn = toRenderBoxModelObject(runIn);
     RenderBoxModelObject* newRunIn = createReplacementRunIn(oldRunIn);
     destroyRunIn(oldRunIn);
