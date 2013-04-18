@@ -40,10 +40,6 @@
   ],
 
   'variables': {
-    # If set to 1, doesn't compile debug symbols into webcore reducing the
-    # size of the binary and increasing the speed of gdb.  gcc only.
-    'remove_webcore_debug_symbols%': 0,
-
     # If set to 0, doesn't build SVG support, reducing the size of the
     # binary and increasing the speed of gdb.
     'enable_svg%': 1,
@@ -134,6 +130,9 @@
       '../workers/chromium',
       '../xml',
       '../xml/parser',
+      '<(INTERMEDIATE_DIR)',
+      '<(SHARED_INTERMEDIATE_DIR)/webkit',
+      '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     ],
 
     'bindings_idl_files': [
@@ -263,26 +262,6 @@
   },
 
   'conditions': [
-    ['OS!="win" and remove_webcore_debug_symbols==1', {
-      # Remove -g from all targets defined here.
-      'target_defaults': {
-        'cflags!': ['-g'],
-      },
-    }],
-    ['os_posix==1 and OS!="mac" and gcc_version>=46', {
-      'target_defaults': {
-        # Disable warnings about c++0x compatibility, as some names (such as nullptr) conflict
-        # with upcoming c++0x types.
-        'cflags_cc': ['-Wno-c++0x-compat'],
-      },
-    }],
-    ['OS=="linux" and target_arch=="arm"', {
-      # Due to a bug in gcc arm, we get warnings about uninitialized timesNewRoman.unstatic.3258
-      # and colorTransparent.unstatic.4879.
-      'target_defaults': {
-        'cflags': ['-Wno-uninitialized'],
-      },
-    }],
     ['OS == "mac"', {
       'targets': [
         {
@@ -330,14 +309,6 @@
         },  # target webkit_system_interface
       ],  # targets
     }],  # condition OS == "mac"
-    ['clang==1', {
-      'target_defaults': {
-        'cflags': ['-Wglobal-constructors', '-Wunused-parameter'],
-        'xcode_settings': {
-          'WARNING_CFLAGS': ['-Wglobal-constructors', '-Wunused-parameter'],
-        },
-      },
-    }],
   ],  # conditions
 
   'targets': [
@@ -1228,12 +1199,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         '<@(webcore_include_dirs)',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-        ],
-      },
       'sources': [
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
@@ -1331,8 +1296,10 @@
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'webcore_bindings_sources',
+        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
+        '../../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1352,8 +1319,10 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'export_dependent_settings': [
+        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
+        '../../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1381,13 +1350,9 @@
           'WEBKIT_IMPLEMENTATION=1',
         ],
         'include_dirs': [
-          '../../Platform/chromium',
-          '<(INTERMEDIATE_DIR)',
           '<@(webcore_include_dirs)',
           '<(DEPTH)/gpu',
           '<(DEPTH)/third_party/angle/include/GLSLANG',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         ],
         'msvs_disabled_warnings': [
           4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
@@ -1990,7 +1955,6 @@
       'hard_dependency': 1,
       'sources': [
         '<@(webcore_files)',
-        '<@(modules_files)',
       ],
       'sources/': [
         ['exclude', 'rendering/'],
@@ -2048,6 +2012,7 @@
         'webcore_rendering',
         # Exported.
         'webcore_bindings',
+        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -2056,8 +2021,9 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
-        'webcore_bindings',
+        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
+        'webcore_bindings',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -2118,17 +2084,12 @@
       'target_name': 'webcore_test_support',
       'type': 'static_library',
       'dependencies': [
+        '../../config.gyp:config',
         'webcore',
       ],
       'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-        '<@(webcore_include_dirs)',
         '../testing',
         '../testing/v8',
-        '../../Platform/chromium',
       ],
       'sources': [
         '<@(webcore_test_support_files)',

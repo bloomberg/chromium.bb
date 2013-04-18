@@ -43,6 +43,7 @@
             'dependencies': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
                 '../../core/core.gyp/core.gyp:webcore',
+                '../../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
