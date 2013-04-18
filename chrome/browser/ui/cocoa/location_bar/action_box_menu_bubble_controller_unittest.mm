@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/action_box_menu_bubble_controller.h"
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -136,7 +137,7 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
 
 TEST_F(ActionBoxMenuBubbleControllerTest, CreateMenuWithExtensions) {
   scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
-      browser(), &menu_delegate_));
+      profile(), &menu_delegate_));
   AddPageLauncherExtension(model.get(), "Launch extension 1", 0);
   AddPageLauncherExtension(model.get(), "Launch extension 2", 1);
   CreateController(model.Pass());
@@ -169,8 +170,9 @@ TEST_F(ActionBoxMenuBubbleControllerTest, CreateMenuWithExtensions) {
 
 TEST_F(ActionBoxMenuBubbleControllerTest, CheckSeparatorWithShortExtensions) {
   scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
-      browser(), &menu_delegate_));
-  AddPageLauncherExtension(model.get(), "Short", 0);
+      profile(), &menu_delegate_));
+  model->AddItem(0, ASCIIToUTF16("Bookmark this page"));
+  AddPageLauncherExtension(model.get(), "Short", 1);
   CreateController(model.Pass());
 
   // The width of the menu is dictated by the widest item which in this case
@@ -181,9 +183,10 @@ TEST_F(ActionBoxMenuBubbleControllerTest, CheckSeparatorWithShortExtensions) {
 
 TEST_F(ActionBoxMenuBubbleControllerTest, CheckSeparatorWithLongExtensions) {
   scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
-      browser(), &menu_delegate_));
+      profile(), &menu_delegate_));
+  model->AddItem(0, ASCIIToUTF16("Bookmark this page"));
   AddPageLauncherExtension(model.get(),
-      "This is a long page launcher extension title...", 0);
+      "This is a long page launcher extension title...", 1);
   CreateController(model.Pass());
 
   // The width of the menu is dictated by the widest item which in this case

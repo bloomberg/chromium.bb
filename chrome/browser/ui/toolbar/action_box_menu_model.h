@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class Browser;
+class Profile;
 
 // A menu model that builds the contents of the action box menu. Effectively,
 // a ui::SimpleMenuModel with methods specifically for dealing with extension
@@ -21,7 +21,7 @@ class Browser;
 // the browser at creation time.
 class ActionBoxMenuModel : public ui::SimpleMenuModel {
  public:
-  ActionBoxMenuModel(Browser* browser, ui::SimpleMenuModel::Delegate* delegate);
+  ActionBoxMenuModel(Profile* profile, ui::SimpleMenuModel::Delegate* delegate);
   virtual ~ActionBoxMenuModel();
 
   // Adds an extension to the model with a given command ID.
@@ -43,7 +43,7 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel {
   // total items in the model if there are no extensions installed.
   int GetFirstExtensionIndex();
 
-  Browser* browser_;
+  Profile* profile_;
 
   // The list of extensions added to the menu, in order, if any.
   extensions::ExtensionIdList extension_ids_;

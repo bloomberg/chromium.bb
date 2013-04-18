@@ -44,6 +44,10 @@ class ActionBoxButtonController : public ui::SimpleMenuModel::Delegate,
   ActionBoxButtonController(Browser* browser, Delegate* delegate);
   virtual ~ActionBoxButtonController();
 
+  // Creates and populates an ActionBoxMenuModel according to the current
+  // state of the browser.
+  scoped_ptr<ActionBoxMenuModel> CreateMenuModel();
+
   // Notifies this that the action box button has been clicked.
   // Methods on the Delegate may be called re-entrantly.
   void OnButtonClicked();

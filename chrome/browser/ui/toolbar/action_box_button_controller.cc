@@ -8,10 +8,12 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/extensions/api/page_launcher/page_launcher_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -25,6 +27,10 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+
 
 using content::UserMetricsAction;
 using content::WebContents;
@@ -48,26 +54,52 @@ ActionBoxButtonController::ActionBoxButtonController(Browser* browser,
 
 ActionBoxButtonController::~ActionBoxButtonController() {}
 
-void ActionBoxButtonController::OnButtonClicked() {
+scoped_ptr<ActionBoxMenuModel> ActionBoxButtonController::CreateMenuModel() {
   // Build a menu model and display the menu.
   scoped_ptr<ActionBoxMenuModel> menu_model(
-      new ActionBoxMenuModel(browser_, this));
+      new ActionBoxMenuModel(browser_->profile(), this));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  const ExtensionSet* extensions =
+  // In some unit tests, GetActiveWebContents can return NULL.
+  bool starred = browser_->tab_strip_model()->GetActiveWebContents() &&
+      BookmarkTabHelper::FromWebContents(browser_->tab_strip_model()->
+          GetActiveWebContents())->is_starred();
+  menu_model->AddItemWithStringId(
+      IDC_BOOKMARK_PAGE_FROM_STAR,
+      starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
+  menu_model->SetIcon(
+      menu_model->GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
+      rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
+
+  // TODO(msw): Show the item as disabled for chrome: and file: scheme pages?
+  if (ChromeToMobileService::UpdateAndGetCommandState(browser_)) {
+    menu_model->AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
+                                    IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
+    menu_model->SetIcon(
+        menu_model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
+        rb.GetNativeImageNamed(IDR_MOBILE));
+  }
+
+  ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->
-          extension_service()->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const extensions::Extension* extension = *it;
-    if (ActionInfo::GetPageLauncherInfo(extension)) {
-      int command_id = GetCommandIdForExtension(*extension);
-      menu_model->AddExtension(*extension, command_id);
+          extension_service();
+  if (extension_service) {
+    const ExtensionSet* extensions = extension_service->extensions();
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      const extensions::Extension* extension = *it;
+      if (ActionInfo::GetPageLauncherInfo(extension)) {
+        int command_id = GetCommandIdForExtension(*extension);
+        menu_model->AddExtension(*extension, command_id);
+      }
     }
   }
-  content::RecordAction(UserMetricsAction("ActionBox.ClickButton"));
+  return menu_model.Pass();
+}
 
-  // And show the menu.
-  delegate_->ShowMenu(menu_model.Pass());
+void ActionBoxButtonController::OnButtonClicked() {
+  content::RecordAction(UserMetricsAction("ActionBox.ClickButton"));
+  delegate_->ShowMenu(CreateMenuModel());
 }
 
 bool ActionBoxButtonController::IsCommandIdChecked(int command_id) const {

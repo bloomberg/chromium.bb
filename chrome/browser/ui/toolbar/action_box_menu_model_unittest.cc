@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -27,25 +29,23 @@
 using extensions::FeatureSwitch;
 
 class ActionBoxMenuModelTest : public BrowserWithTestWindowTest,
-                               public ui::SimpleMenuModel::Delegate {
+                               public ActionBoxButtonController::Delegate {
  public:
   ActionBoxMenuModelTest() {}
 
-  // Testing overrides to ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
-    return false;
+  virtual void SetUp() OVERRIDE {
+    BrowserWithTestWindowTest::SetUp();
+    controller_.reset(new ActionBoxButtonController(browser(), this));
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
-    return false;
+  virtual void TearDown() OVERRIDE {
+    controller_.reset();
+    BrowserWithTestWindowTest::TearDown();
   }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {}
-
-    // Don't handle accelerators.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE { return false; }
+  scoped_ptr<ActionBoxMenuModel> CreateModel() {
+    return controller_->CreateMenuModel();
+  }
 
   void InitProfile(){
     profile()->set_incognito(true);
@@ -83,6 +83,8 @@ class ActionBoxMenuModelTest : public BrowserWithTestWindowTest,
   }
 
  private:
+  scoped_ptr<ActionBoxButtonController> controller_;
+
   DISALLOW_COPY_AND_ASSIGN(ActionBoxMenuModelTest);
 };
 
@@ -91,20 +93,18 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoNoMobiles) {
   InitProfile();
 
   NavigateToLocalPage();
-  // Create model.
-  ActionBoxMenuModel model(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model = CreateModel();
 
   // Expect no c2m command in model.
-  EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
-  // Create model.
-  ActionBoxMenuModel model2(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model2 = CreateModel();
 
   // Expect c2m command not in model.
-  EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model2->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
@@ -115,20 +115,17 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoHasMobiles) {
 
   NavigateToLocalPage();
 
-  // Create model.
-  ActionBoxMenuModel model(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model = CreateModel();
 
   // Expect no c2m command in model.
-  EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
-  // Create model.
-
-  ActionBoxMenuModel model2(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model2 = CreateModel();
   // Expect c2m command not in model.
-  EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model2->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
@@ -141,20 +138,18 @@ TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
 
   NavigateToLocalPage();
 
-  // Create model.
-  ActionBoxMenuModel model(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model = CreateModel();
 
   // Expect no c2m command in model.
-  EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
-  // Create model.
-  ActionBoxMenuModel model2(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model2 = CreateModel();
 
   // Expect c2m command not in model.
-  EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model2->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
@@ -169,30 +164,27 @@ TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
 
   NavigateToLocalPage();
 
-  // Create model.
-  ActionBoxMenuModel model(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model = CreateModel();
 
   // Expect no c2m command in model.
-  EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
-  // Create model.
-  ActionBoxMenuModel model2(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model2 = CreateModel();
 
   // Expect c2m command in model.
-  EXPECT_NE(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_NE(-1, model2->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   // Incognito-ize profile.
   profile()->set_incognito(true);
 
-  // Create another model.
-  ActionBoxMenuModel model3(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model3 = CreateModel();
 
   // Expect no c2m command in this model.
-  EXPECT_EQ(-1, model3.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_EQ(-1, model3->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   // Un-incognito-ize for shutdown.
@@ -211,19 +203,18 @@ TEST_F(ActionBoxMenuModelTest, BookmarkedPage) {
   GURL url1("http://www.google.com");
   AddTab(browser(), url1);
 
-  // Create model.
-  ActionBoxMenuModel model(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model = CreateModel();
 
   // Bokomark item should be in menu.
-  int bookmark_item_index = model.GetIndexOfCommandId(
+  int bookmark_item_index = model->GetIndexOfCommandId(
       IDC_BOOKMARK_PAGE_FROM_STAR);
-  EXPECT_NE(-1, bookmark_item_index);
+  ASSERT_NE(-1, bookmark_item_index);
 
   gfx::Image bookmark_icon;
   gfx::Image unlit_icon;
   gfx::Image lit_icon;
 
-  model.GetIconAt(bookmark_item_index, &bookmark_icon);
+  model->GetIconAt(bookmark_item_index, &bookmark_icon);
   unlit_icon =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_STAR);
 
@@ -240,10 +231,9 @@ TEST_F(ActionBoxMenuModelTest, BookmarkedPage) {
   // Now bookmark it.
   chrome::BookmarkCurrentPage(browser());
 
-  // Create model.
-  ActionBoxMenuModel model2(browser(), this);
+  scoped_ptr<ActionBoxMenuModel> model2 = CreateModel();
 
-  model2.GetIconAt(bookmark_item_index, &bookmark_icon);
+  model2->GetIconAt(bookmark_item_index, &bookmark_icon);
   lit_icon =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_STAR_LIT);
 

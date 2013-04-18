@@ -6,53 +6,22 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_to_mobile_service.h"
-#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/url_constants.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
+
 
 using extensions::ActionInfo;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ActionBoxMenuModel
 
-ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
+ActionBoxMenuModel::ActionBoxMenuModel(Profile* profile,
                                        ui::SimpleMenuModel::Delegate* delegate)
     : ui::SimpleMenuModel(delegate),
-      browser_(browser) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // TODO(msw): Show the item as disabled for chrome: and file: scheme pages?
-  if (ChromeToMobileService::UpdateAndGetCommandState(browser_)) {
-    AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
-                        IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
-    SetIcon(GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
-            rb.GetNativeImageNamed(IDR_MOBILE));
-  }
+      profile_(profile) {
 
-  // In some unit tests, GetActiveWebContents can return NULL.
-  bool starred = browser_->tab_strip_model()->GetActiveWebContents() &&
-      BookmarkTabHelper::FromWebContents(browser_->tab_strip_model()->
-          GetActiveWebContents())->is_starred();
-
-  AddItemWithStringId(IDC_BOOKMARK_PAGE_FROM_STAR,
-                      starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
-  SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
-          rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
-
-  AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 }
 
 ActionBoxMenuModel::~ActionBoxMenuModel() {
@@ -84,8 +53,7 @@ const extensions::Extension* ActionBoxMenuModel::GetExtensionAt(int index) {
   CHECK_LT(index_in_extension_ids, static_cast<int>(extension_ids_.size()));
 
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser_->profile())->
-          extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   return extension_service->extensions()->GetByID(
       extension_ids_[index_in_extension_ids]);
 }
