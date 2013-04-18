@@ -113,6 +113,7 @@ private:
     friend class SVGElement;
 #endif
 
+    const Attribute* attributeBase() const;
     const Attribute* getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
     size_t getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
 
@@ -964,10 +965,19 @@ inline const Attribute* ElementData::getAttributeItem(const AtomicString& name, 
     return 0;
 }
 
+inline const Attribute* ElementData::attributeBase() const
+{
+    if (m_isUnique)
+        return static_cast<const UniqueElementData*>(this)->m_attributeVector.begin();
+    return static_cast<const ShareableElementData*>(this)->m_attributeArray;
+}
+
 inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name) const
 {
+    const Attribute* begin = attributeBase();
     for (unsigned i = 0; i < length(); ++i) {
-        if (attributeItem(i)->name().matches(name))
+        const Attribute& attribute = begin[i];
+        if (attribute.name().matches(name))
             return i;
     }
     return notFound;
@@ -981,10 +991,11 @@ inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool 
     bool doSlowCheck = shouldIgnoreAttributeCase;
 
     // Optimize for the case where the attribute exists and its name exactly matches.
+    const Attribute* begin = attributeBase();
     for (unsigned i = 0; i < len; ++i) {
-        const Attribute* attribute = attributeItem(i);
-        if (!attribute->name().hasPrefix()) {
-            if (name == attribute->localName())
+        const Attribute& attribute = begin[i];
+        if (!attribute.name().hasPrefix()) {
+            if (name == attribute.localName())
                 return i;
         } else
             doSlowCheck = true;
@@ -997,19 +1008,19 @@ inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool 
 
 inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name) const
 {
+    const Attribute* begin = attributeBase();
     for (unsigned i = 0; i < length(); ++i) {
-        if (attributeItem(i)->name().matches(name))
-            return attributeItem(i);
+        const Attribute& attribute = begin[i];
+        if (attribute.name().matches(name))
+            return &attribute;
     }
     return 0;
 }
 
 inline const Attribute* ElementData::attributeItem(unsigned index) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(index < length());
-    if (m_isUnique)
-        return &static_cast<const UniqueElementData*>(this)->m_attributeVector.at(index);
-    return &static_cast<const ShareableElementData*>(this)->m_attributeArray[index];
+    RELEASE_ASSERT(index < length());
+    return attributeBase() + index;
 }
 
 } // namespace
