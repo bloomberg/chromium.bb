@@ -201,6 +201,7 @@ class Issue(object):
     'status': None, # Current issue status (text) (e.g. Assigned)
     'summary': None,# Issue summary (first comment)
     'title': None,  # Title text
+    'ccs': [],      # Cc list
     }
 
   __slots__ = SlotDefaults.keys()
@@ -364,7 +365,8 @@ class TrackerComm(object):
                                          author=self.author,
                                          status=issue.status,
                                          owner=issue.owner,
-                                         labels=issue.labels)
+                                         labels=issue.labels,
+                                         ccs=issue.ccs)
       issue.id = int(created.id.text.split('/')[-1])
       return issue.id
     except gdata.client.RequestError as ex:

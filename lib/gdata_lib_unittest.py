@@ -916,7 +916,8 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
                                    summary='TheSummary',
                                    status='TheStatus',
                                    owner='TheOwner',
-                                   labels='TheLabels')
+                                   labels='TheLabels',
+                                   ccs=[])
 
     # Replay script
     issue_id = cros_test_lib.EasyAttr(
@@ -928,6 +929,7 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
                               status=issue.status,
                               owner=issue.owner,
                               labels=issue.labels,
+                              ccs=issue.ccs,
                               ).AndReturn(issue_id)
     self.mox.ReplayAll()
 
