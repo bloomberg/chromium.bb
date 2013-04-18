@@ -36,7 +36,6 @@
 #include "EventNames.h"
 #include "EventTarget.h"
 #include "KURL.h"
-#include "MainThreadWebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
@@ -78,9 +77,9 @@ public:
     // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
     // it's bound to a value of 0 which is indistinguishable from the case 0
     // is passed as code parameter.
-    void close(unsigned short code, const String& reason, ExceptionCode& ec) { closeInternal(code, reason, ec); }
-    void close(ExceptionCode& ec) { closeInternal(MainThreadWebSocketChannel::CloseEventCodeNotSpecified, String(), ec); }
-    void close(unsigned short code, ExceptionCode& ec) { closeInternal(code, String(), ec); }
+    void close(unsigned short code, const String& reason, ExceptionCode&);
+    void close(ExceptionCode&);
+    void close(unsigned short code, ExceptionCode&);
 
     const KURL& url() const;
     State readyState() const;

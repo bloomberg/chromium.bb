@@ -54,6 +54,25 @@ public:
         InvalidMessage
     };
 
+    enum CloseEventCode {
+        CloseEventCodeNotSpecified = -1,
+        CloseEventCodeNormalClosure = 1000,
+        CloseEventCodeGoingAway = 1001,
+        CloseEventCodeProtocolError = 1002,
+        CloseEventCodeUnsupportedData = 1003,
+        CloseEventCodeFrameTooLarge = 1004,
+        CloseEventCodeNoStatusRcvd = 1005,
+        CloseEventCodeAbnormalClosure = 1006,
+        CloseEventCodeInvalidFramePayloadData = 1007,
+        CloseEventCodePolicyViolation = 1008,
+        CloseEventCodeMessageTooBig = 1009,
+        CloseEventCodeMandatoryExt = 1010,
+        CloseEventCodeInternalError = 1011,
+        CloseEventCodeTLSHandshake = 1015,
+        CloseEventCodeMinimumUserDefined = 3000,
+        CloseEventCodeMaximumUserDefined = 4999
+    };
+
     virtual void connect(const KURL&, const String& protocol) = 0;
     virtual String subprotocol() = 0; // Will be available after didConnect() callback is invoked.
     virtual String extensions() = 0; // Will be available after didConnect() callback is invoked.

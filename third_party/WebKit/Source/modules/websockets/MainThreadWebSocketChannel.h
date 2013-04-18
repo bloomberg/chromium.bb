@@ -89,25 +89,6 @@ public:
     virtual void didReceiveAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) OVERRIDE;
     virtual void didCancelAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) OVERRIDE;
 
-    enum CloseEventCode {
-        CloseEventCodeNotSpecified = -1,
-        CloseEventCodeNormalClosure = 1000,
-        CloseEventCodeGoingAway = 1001,
-        CloseEventCodeProtocolError = 1002,
-        CloseEventCodeUnsupportedData = 1003,
-        CloseEventCodeFrameTooLarge = 1004,
-        CloseEventCodeNoStatusRcvd = 1005,
-        CloseEventCodeAbnormalClosure = 1006,
-        CloseEventCodeInvalidFramePayloadData = 1007,
-        CloseEventCodePolicyViolation = 1008,
-        CloseEventCodeMessageTooBig = 1009,
-        CloseEventCodeMandatoryExt = 1010,
-        CloseEventCodeInternalError = 1011,
-        CloseEventCodeTLSHandshake = 1015,
-        CloseEventCodeMinimumUserDefined = 3000,
-        CloseEventCodeMaximumUserDefined = 4999
-    };
-
     // FileReaderLoaderClient functions.
     virtual void didStartLoading();
     virtual void didReceiveData();
