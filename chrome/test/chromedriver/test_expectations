@@ -56,7 +56,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'LocalStorageTest.*',
     'LocationContextTest.*',
     'MiscTest.testShouldBeAbleToGetTheSourceOfAnXmlDocument',
-    'OpacityTest.testShouldBeAbleToClickOnElementsWithOpacityZero',
     'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
     'PageLoadingTest.testShouldBeAbleToAccessPagesWithAnInsecureSslCertificate',
     'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',

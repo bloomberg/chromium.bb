@@ -413,13 +413,16 @@ Status ExecuteGetElementValueOfCSSProperty(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(),
-      webdriver::atoms::asString(webdriver::atoms::GET_EFFECTIVE_STYLE),
-      args,
-      value);
+  std::string property_name;
+  if (!params.GetString("propertyName", &property_name))
+    return Status(kUnknownError, "missing 'propertyName'");
+  std::string property_value;
+  Status status = GetElementEffectiveStyle(
+      session, web_view, element_id, property_name, &property_value);
+  if (status.IsError())
+    return status;
+  value->reset(new base::StringValue(property_value));
+  return Status(kOk);
 }
 
 Status ExecuteElementEquals(

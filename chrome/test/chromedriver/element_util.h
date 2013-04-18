@@ -53,6 +53,13 @@ Status GetElementClickableLocation(
     const std::string& element_id,
     WebPoint* location);
 
+Status GetElementEffectiveStyle(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const std::string& property_name,
+    std::string* property_value);
+
 Status GetElementRegion(
     Session* session,
     WebView* web_view,
