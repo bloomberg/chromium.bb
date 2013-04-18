@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
@@ -18,24 +17,24 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::AnyNumber;
-using ::testing::DoAll;
-using ::testing::Eq;
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::_;
 
 namespace drive {
 
 namespace {
 
-class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
+class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
-  MOCK_CONST_METHOD0(GetCurrentConnectionType,
-                     net::NetworkChangeNotifier::ConnectionType());
+  FakeNetworkChangeNotifier() : type_(CONNECTION_NONE) {}
+
+  void set_connection_type(ConnectionType type) { type_ = type; }
+
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+    return type_;
+  }
+
+ private:
+  net::NetworkChangeNotifier::ConnectionType type_;
 };
 
 void CopyResourceIdFromGetResourceEntryCallback(
@@ -56,7 +55,7 @@ class DriveSchedulerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
+    fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
 
     fake_drive_service_.reset(new google_apis::FakeDriveService());
     fake_drive_service_->LoadResourceListForWapi(
@@ -77,46 +76,45 @@ class DriveSchedulerTest : public testing::Test {
     scheduler_.reset();
     google_apis::test_util::RunBlockingPoolTask();
     fake_drive_service_.reset();
-    mock_network_change_notifier_.reset();
+    fake_network_change_notifier_.reset();
   }
 
-  // Sets up MockNetworkChangeNotifier as if it's connected to a network with
+ protected:
+  // Sets up FakeNetworkChangeNotifier as if it's connected to a network with
   // the specified connection type.
   void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    EXPECT_CALL(*mock_network_change_notifier_, GetCurrentConnectionType())
-        .WillRepeatedly(Return(type));
+    fake_network_change_notifier_->set_connection_type(type);
     // Notify the sync client that the network is changed. This is done via
     // NetworkChangeNotifier in production, but here, we simulate the behavior
     // by directly calling OnConnectionTypeChanged().
     scheduler_->OnConnectionTypeChanged(type);
   }
 
-  // Sets up MockNetworkChangeNotifier as if it's connected to wifi network.
+  // Sets up FakeNetworkChangeNotifier as if it's connected to wifi network.
   void ConnectToWifi() {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   }
 
-  // Sets up MockNetworkChangeNotifier as if it's connected to cellular network.
+  // Sets up FakeNetworkChangeNotifier as if it's connected to cellular network.
   void ConnectToCellular() {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_2G);
   }
 
-  // Sets up MockNetworkChangeNotifier as if it's connected to wimax network.
+  // Sets up FakeNetworkChangeNotifier as if it's connected to wimax network.
   void ConnectToWimax() {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
   }
 
-  // Sets up MockNetworkChangeNotifier as if it's disconnected.
+  // Sets up FakeNetworkChangeNotifier as if it's disconnected.
   void ConnectToNone() {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
- protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveScheduler> scheduler_;
-  scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
+  scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
 };
 
