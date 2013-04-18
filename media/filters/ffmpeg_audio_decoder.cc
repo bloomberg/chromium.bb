@@ -396,14 +396,20 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     }
 
     int decoded_audio_size = 0;
+#ifdef CHROMIUM_NO_AVFRAME_CHANNELS
+    int channels = av_get_channel_layout_nb_channels(
+        av_frame_->channel_layout);
+#else
+    int channels = av_frame_->channels;
+#endif
     if (frame_decoded) {
       if (av_frame_->sample_rate != samples_per_second_ ||
-          av_frame_->channels != channels_ ||
+          channels != channels_ ||
           av_frame_->format != av_sample_format_) {
         DLOG(ERROR) << "Unsupported midstream configuration change!"
                     << " Sample Rate: " << av_frame_->sample_rate << " vs "
                     << samples_per_second_
-                    << ", Channels: " << av_frame_->channels << " vs "
+                    << ", Channels: " << channels << " vs "
                     << channels_
                     << ", Sample Format: " << av_frame_->format << " vs "
                     << av_sample_format_;

@@ -510,15 +510,25 @@
           ],
         }],
         ['use_system_ffmpeg == 1', {
-          'defines': [
+          'cflags': [
             '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
-                '--code "#include <libavcodec/avcodec.h>\n'
+                '--code "#define __STDC_CONSTANT_MACROS\n'
+                '#include <libavcodec/avcodec.h>\n'
                 'int test() { return AV_CODEC_ID_OPUS; }" '
-                '--on-failure CHROMIUM_OMIT_AV_CODEC_ID_OPUS)',
+                '--on-failure -DCHROMIUM_OMIT_AV_CODEC_ID_OPUS=1)',
+
             '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
-                '--code "#include <libavcodec/avcodec.h>\n'
+                '--code "#define __STDC_CONSTANT_MACROS\n'
+                '#include <libavcodec/avcodec.h>\n'
                 'int test() { return AV_CODEC_ID_VP9; }" '
-                '--on-failure CHROMIUM_OMIT_AV_CODEC_ID_VP9)',
+                '--on-failure -DCHROMIUM_OMIT_AV_CODEC_ID_VP9=1)',
+
+            '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
+                '--code "#define __STDC_CONSTANT_MACROS\n'
+                '#include <libavcodec/avcodec.h>\n'
+                'int test() { struct AVFrame frame;\n'
+                'return av_frame_get_channels(&frame); }" '
+                '--on-failure -DCHROMIUM_NO_AVFRAME_CHANNELS=1)',
           ],
         }],
         ['OS == "ios"', {
