@@ -2850,7 +2850,7 @@ static Node* findFirstMarkable(Node* node)
         if (node->renderer()->isText())
             return node;
         if (node->renderer()->isTextControl())
-            node = toRenderTextControl(node->renderer())->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
+            node = toRenderTextControl(node->renderer())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
         else if (node->firstChild())
             node = node->firstChild();
         else

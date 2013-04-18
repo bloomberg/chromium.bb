@@ -317,17 +317,16 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     end = max(end, 0);
     start = min(max(start, 0), end);
 
-    RenderTextControl* control = toRenderTextControl(renderer());
-    if (!hasVisibleTextArea(control, innerTextElement())) {
+    if (!hasVisibleTextArea(toRenderTextControl(renderer()), innerTextElement())) {
         cacheSelection(start, end, direction);
         return;
     }
-    VisiblePosition startPosition = control->visiblePositionForIndex(start);
+    VisiblePosition startPosition = visiblePositionForIndex(start);
     VisiblePosition endPosition;
     if (start == end)
         endPosition = startPosition;
     else
-        endPosition = control->visiblePositionForIndex(end);
+        endPosition = visiblePositionForIndex(end);
 
     // startPosition and endPosition can be null position for example when
     // "-webkit-user-select: none" style attribute is specified.
@@ -344,6 +343,17 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
 
     if (Frame* frame = document()->frame())
         frame->selection()->setSelection(newSelection);
+}
+
+VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
+{
+    if (index <= 0)
+        return VisiblePosition(firstPositionInNode(innerTextElement()), DOWNSTREAM);
+    RefPtr<Range> range = Range::create(document());
+    range->selectNodeContents(innerTextElement(), ASSERT_NO_EXCEPTION);
+    CharacterIterator it(range.get());
+    it.advance(index - 1);
+    return VisiblePosition(it.range()->endPosition(), UPSTREAM);
 }
 
 int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& pos) const

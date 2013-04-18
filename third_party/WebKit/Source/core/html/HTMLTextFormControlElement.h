@@ -56,6 +56,7 @@ public:
     void updatePlaceholderVisibility(bool);
     static void fixPlaceholderRenderer(HTMLElement* placeholder, HTMLElement* siblingElement);
 
+    VisiblePosition visiblePositionForIndex(int) const;
     int indexForVisiblePosition(const VisiblePosition&) const;
     int selectionStart() const;
     int selectionEnd() const;
