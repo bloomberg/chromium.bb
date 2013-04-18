@@ -35,11 +35,10 @@ class GclientUtilsUnittest(GclientUtilBase):
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
         'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
         'PrintableObject', 'RemoveDirectory', 'RunEditor',
-        'SplitUrlRevision', 'SyntaxErrorToError',
-        'UpgradeToHttps', 'Wrapper', 'WorkItem',
-        'codecs', 'errno', 'lockedmethod', 'logging', 'os', 'Queue', 're',
-        'rmtree', 'safe_makedirs', 'stat', 'subprocess2', 'sys', 'tempfile',
-        'threading', 'time', 'urlparse',
+        'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
+        'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'Queue', 're',
+        'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2', 'sys',
+        'tempfile', 'threading', 'time', 'urlparse',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

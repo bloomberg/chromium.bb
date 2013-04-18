@@ -5,12 +5,12 @@
 """Generic utils."""
 
 import codecs
-import errno
 import logging
 import os
 import Queue
 import re
 import stat
+import subprocess
 import sys
 import tempfile
 import threading
@@ -125,34 +125,24 @@ def rmtree(path):
     raise Error('Called rmtree(%s) in non-directory' % path)
 
   if sys.platform == 'win32':
-    # Some people don't have the APIs installed. In that case we'll do without.
-    win32api = None
-    win32con = None
-    try:
-      # Unable to import 'XX'
-      # pylint: disable=F0401
-      import win32api, win32con
-    except ImportError:
-      pass
-  else:
-    # On POSIX systems, we need the x-bit set on the directory to access it,
-    # the r-bit to see its contents, and the w-bit to remove files from it.
-    # The actual modes of the files within the directory is irrelevant.
-    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+    # Give up and use cmd.exe's rd command.
+    path = os.path.normcase(path)
+    for _ in xrange(3):
+      exitcode = subprocess.call(['cmd.exe', '/c', 'rd', '/q', '/s', path])
+      if exitcode == 0:
+        return
+      else:
+        print >> sys.stderr, 'rd exited with code %d' % exitcode
+      time.sleep(3)
+    raise Exception('Failed to remove path %s' % path)
+
+  # On POSIX systems, we need the x-bit set on the directory to access it,
+  # the r-bit to see its contents, and the w-bit to remove files from it.
+  # The actual modes of the files within the directory is irrelevant.
+  os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
   def remove(func, subpath):
-    if sys.platform == 'win32':
-      os.chmod(subpath, stat.S_IWRITE)
-      if win32api and win32con:
-        win32api.SetFileAttributes(subpath, win32con.FILE_ATTRIBUTE_NORMAL)
-    try:
-      func(subpath)
-    except OSError, e:
-      if e.errno != errno.EACCES or sys.platform != 'win32':
-        raise
-      # Failed to delete, try again after a 100ms sleep.
-      time.sleep(0.1)
-      func(subpath)
+    func(subpath)
 
   for fn in os.listdir(path):
     # If fullpath is a symbolic link that points to a directory, isdir will
