@@ -57,7 +57,6 @@ public:
 
     virtual void requestSetDockSide(DockSide) = 0;
     virtual void changeAttachedWindowHeight(unsigned) = 0;
-    virtual void changeAttachedWindowWidth(unsigned) = 0;
 
     virtual void openInNewTab(const String& url) = 0;
 

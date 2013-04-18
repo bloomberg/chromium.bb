@@ -56,7 +56,6 @@ public:
 
     virtual void requestSetDockSide(DockSide) { }
     virtual void changeAttachedWindowHeight(unsigned) { }
-    virtual void changeAttachedWindowWidth(unsigned) { }
     virtual void openInNewTab(const String&) { }
     virtual void save(const String&, const String&, bool) { }
     virtual void append(const String&, const String&) { }

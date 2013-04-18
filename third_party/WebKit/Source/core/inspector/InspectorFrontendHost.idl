@@ -40,7 +40,6 @@
 
     void requestSetDockSide(DOMString side);
     void setAttachedWindowHeight(unsigned long height);
-    void setAttachedWindowWidth(unsigned long width);
     void moveWindowBy(float x, float y);
     void setInjectedScriptForOrigin(DOMString origin, DOMString script);
 

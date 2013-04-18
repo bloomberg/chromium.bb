@@ -106,11 +106,6 @@ void InspectorFrontendClientImpl::changeAttachedWindowHeight(unsigned height)
     m_client->changeAttachedWindowHeight(height);
 }
 
-void InspectorFrontendClientImpl::changeAttachedWindowWidth(unsigned)
-{
-    notImplemented();
-}
-
 void InspectorFrontendClientImpl::openInNewTab(const String& url)
 {
     m_client->openInNewTab(url);
