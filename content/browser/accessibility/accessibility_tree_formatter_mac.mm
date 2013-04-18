@@ -7,129 +7,173 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/files/file_path.h"
+#include "base/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+using base::StringPrintf;
+using base::SysNSStringToUTF8;
+using base::SysNSStringToUTF16;
+using std::string;
+
 namespace content {
 
 namespace {
 
-string16 Format(const char *prefix,
-                id value,
-                const char *suffix) {
-  if (value == nil)
-    return UTF8ToUTF16("");
-  NSString* format_str =
-      [NSString stringWithFormat:@"%s%%@%s", prefix, suffix];
-  NSString* tmp = [NSString stringWithFormat:format_str, value];
-  return UTF8ToUTF16([tmp cStringUsingEncoding:NSUTF8StringEncoding]);
-}
+NSArray* ALL_ATTRIBUTES = [NSArray arrayWithObjects:
+    NSAccessibilityRoleDescriptionAttribute,
+    NSAccessibilityTitleAttribute,
+    NSAccessibilityValueAttribute,
+    NSAccessibilityMinValueAttribute,
+    NSAccessibilityMaxValueAttribute,
+    NSAccessibilityValueDescriptionAttribute,
+    NSAccessibilityDescriptionAttribute,
+    NSAccessibilityHelpAttribute,
+    @"AXInvalid",
+    NSAccessibilityDisclosingAttribute,
+    NSAccessibilityDisclosureLevelAttribute,
+    @"AXAccessKey",
+    @"AXARIAAtomic",
+    @"AXARIABusy",
+    @"AXARIALive",
+    @"AXARIARelevant",
+    NSAccessibilityEnabledAttribute,
+    NSAccessibilityFocusedAttribute,
+    @"AXLoaded",
+    @"AXLoadingProcess",
+    NSAccessibilityNumberOfCharactersAttribute,
+    NSAccessibilityOrientationAttribute,
+    @"AXRequired",
+    NSAccessibilityURLAttribute,
+    NSAccessibilityVisibleCharacterRangeAttribute,
+    @"AXVisited",
+    nil];
 
-string16 FormatPosition(BrowserAccessibility* node) {
+const char* kPositionDictAttr = "position";
+const char* kXCoordDictAttr = "x";
+const char* kYCoordDictAttr = "y";
+const char* kSizeDictAttr = "size";
+const char* kWidthDictAttr = "width";
+const char* kHeightDictAttr = "height";
+
+scoped_ptr<DictionaryValue> PopulatePosition(const BrowserAccessibility& node) {
+  scoped_ptr<DictionaryValue> position(new DictionaryValue);
   // The NSAccessibility position of an object is in global coordinates and
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
-  BrowserAccessibility* root = node->manager()->GetRoot();
+  BrowserAccessibility* root = node.manager()->GetRoot();
   BrowserAccessibilityCocoa* cocoa_root = root->ToBrowserAccessibilityCocoa();
   NSPoint root_position = [[cocoa_root position] pointValue];
   NSSize root_size = [[cocoa_root size] sizeValue];
   int root_top = -static_cast<int>(root_position.y + root_size.height);
   int root_left = static_cast<int>(root_position.x);
 
-  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* cocoa_node =
+      const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
   NSPoint node_position = [[cocoa_node position] pointValue];
   NSSize node_size = [[cocoa_node size] sizeValue];
 
-  NSString* position_str =
-      [NSString stringWithFormat:@"position=(%d, %d)",
-                static_cast<int>(node_position.x - root_left),
-                static_cast<int>(
-                    -node_position.y - node_size.height - root_top)];
-  return UTF8ToUTF16([position_str cStringUsingEncoding:NSUTF8StringEncoding]);
+  position->SetInteger(kXCoordDictAttr,
+                       static_cast<int>(node_position.x - root_left));
+  position->SetInteger(kYCoordDictAttr,
+      static_cast<int>(-node_position.y - node_size.height - root_top));
+  return position.Pass();
 }
 
-string16 FormatSize(BrowserAccessibility* node) {
-  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
+scoped_ptr<DictionaryValue>
+PopulateSize(const BrowserAccessibilityCocoa* cocoa_node) {
+  scoped_ptr<DictionaryValue> size(new DictionaryValue);
   NSSize node_size = [[cocoa_node size] sizeValue];
-  NSString* size_str =
-      [NSString stringWithFormat:@"size=(%d, %d)",
-                static_cast<int>(node_size.width),
-                static_cast<int>(node_size.height)];
-  return UTF8ToUTF16([size_str cStringUsingEncoding:NSUTF8StringEncoding]);
+  size->SetInteger(kHeightDictAttr, static_cast<int>(node_size.height));
+  size->SetInteger(kWidthDictAttr, static_cast<int>(node_size.width));
+  return size.Pass();
 }
 
 }  // namespace
 
 void AccessibilityTreeFormatter::Initialize() {}
 
-string16 AccessibilityTreeFormatter::ToString(BrowserAccessibility* node,
-                                               char* prefix) {
-  StartLine();
-  NSArray* requestedAttributes = [NSArray arrayWithObjects:
-      NSAccessibilityRoleDescriptionAttribute,
-      NSAccessibilityTitleAttribute,
-      NSAccessibilityValueAttribute,
-      NSAccessibilityMinValueAttribute,
-      NSAccessibilityMaxValueAttribute,
-      NSAccessibilityValueDescriptionAttribute,
-      NSAccessibilityDescriptionAttribute,
-      NSAccessibilityHelpAttribute,
-      @"AXInvalid",
-      NSAccessibilityDisclosingAttribute,
-      NSAccessibilityDisclosureLevelAttribute,
-      @"AXAccessKey",
-      @"AXARIAAtomic",
-      @"AXARIABusy",
-      @"AXARIALive",
-      @"AXARIARelevant",
-      NSAccessibilityEnabledAttribute,
-      NSAccessibilityFocusedAttribute,
-      @"AXLoaded",
-      @"AXLoadingProcess",
-      NSAccessibilityNumberOfCharactersAttribute,
-      NSAccessibilityOrientationAttribute,
-      @"AXRequired",
-      NSAccessibilityURLAttribute,
-      NSAccessibilityVisibleCharacterRangeAttribute,
-      @"AXVisited",
-      nil];
-
-  NSArray* defaultAttributes = [NSArray arrayWithObjects:
-      NSAccessibilityTitleAttribute,
-      NSAccessibilityValueAttribute,
-      nil];
-
-  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
+void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
+                                               DictionaryValue* dict) {
+  BrowserAccessibilityCocoa* cocoa_node =
+      const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
   NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
 
-  Add(true,
-      Format("", [cocoa_node accessibilityAttributeValue:
-                      NSAccessibilityRoleAttribute],
-             ""));
-  Add(false,
-      Format("subrole=", [cocoa_node accessibilityAttributeValue:
-                              NSAccessibilitySubroleAttribute],
-             ""));
-  for (NSString* requestedAttribute in requestedAttributes) {
+  string role = SysNSStringToUTF8(
+      [cocoa_node accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
+  dict->SetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), role);
+
+  NSString* subrole =
+      [cocoa_node accessibilityAttributeValue:NSAccessibilitySubroleAttribute];
+  if (subrole != nil) {
+    dict->SetString(SysNSStringToUTF8(NSAccessibilitySubroleAttribute),
+                    SysNSStringToUTF8(subrole));
+  }
+
+  for (NSString* requestedAttribute in ALL_ATTRIBUTES) {
     if (![supportedAttributes containsObject:requestedAttribute]) {
       continue;
     }
-    NSString* methodName =
-        [cocoa_node methodNameForAttribute:requestedAttribute];
-    Add([defaultAttributes containsObject:requestedAttribute],
-        Format([[NSString stringWithFormat:@"%@='", methodName]
-                   cStringUsingEncoding:NSUTF8StringEncoding],
-               [cocoa_node accessibilityAttributeValue:
-                    requestedAttribute],
-               "'"));
+    id value = [cocoa_node accessibilityAttributeValue:requestedAttribute];
+    if (value != nil) {
+      dict->SetString(
+          SysNSStringToUTF8(requestedAttribute),
+          SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]));
+    }
   }
-  Add(false, FormatPosition(node));
-  Add(false, FormatSize(node));
+  dict->Set(kPositionDictAttr, PopulatePosition(node).release());
+  dict->Set(kSizeDictAttr, PopulateSize(cocoa_node).release());
+}
 
-  return ASCIIToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
+string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
+                                              const string16& indent) {
+  string16 line;
+  NSArray* defaultAttributes =
+      [NSArray arrayWithObjects:NSAccessibilityTitleAttribute,
+                                NSAccessibilityValueAttribute,
+                                nil];
+  string s_value;
+  dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
+  WriteAttribute(true, UTF8ToUTF16(s_value), &line);
+
+  string subroleAttribute = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
+  if (dict.GetString(subroleAttribute, &s_value)) {
+    WriteAttribute(false,
+                   StringPrintf("%s=%s",
+                                subroleAttribute.c_str(), s_value.c_str()),
+                   &line);
+  }
+
+  for (NSString* requestedAttribute in ALL_ATTRIBUTES) {
+    string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
+    if (!dict.GetString(requestedAttributeUTF8, &s_value))
+      continue;
+    WriteAttribute([defaultAttributes containsObject:requestedAttribute],
+                   StringPrintf("%s='%s'",
+                                requestedAttributeUTF8.c_str(),
+                                s_value.c_str()),
+                   &line);
+  }
+  const DictionaryValue* d_value = NULL;
+  if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
+    WriteAttribute(false,
+                   FormatCoordinates(kPositionDictAttr,
+                                     kXCoordDictAttr, kYCoordDictAttr,
+                                     *d_value),
+                   &line);
+  }
+  if (dict.GetDictionary(kSizeDictAttr, &d_value)) {
+    WriteAttribute(false,
+                   FormatCoordinates(kSizeDictAttr,
+                                     kWidthDictAttr, kHeightDictAttr, *d_value),
+                   &line);
+  }
+
+  return indent + line + ASCIIToUTF16("\n");
 }
 
 // static
@@ -145,17 +189,17 @@ AccessibilityTreeFormatter::GetExpectedFileSuffix() {
 }
 
 // static
-const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
+const string AccessibilityTreeFormatter::GetAllowEmptyString() {
   return "@MAC-ALLOW-EMPTY:";
 }
 
 // static
-const std::string AccessibilityTreeFormatter::GetAllowString() {
+const string AccessibilityTreeFormatter::GetAllowString() {
   return "@MAC-ALLOW:";
 }
 
 // static
-const std::string AccessibilityTreeFormatter::GetDenyString() {
+const string AccessibilityTreeFormatter::GetDenyString() {
   return "@MAC-DENY:";
 }
 

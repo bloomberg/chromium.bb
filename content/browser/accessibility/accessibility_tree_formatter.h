@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
 
@@ -23,10 +24,32 @@ class RenderViewHost;
 // implemented.
 class CONTENT_EXPORT AccessibilityTreeFormatter {
  public:
-  explicit AccessibilityTreeFormatter(BrowserAccessibility* node);
+  explicit AccessibilityTreeFormatter(BrowserAccessibility* root);
   virtual ~AccessibilityTreeFormatter();
 
   static AccessibilityTreeFormatter* Create(RenderViewHost* rvh);
+
+  // Populates the given DictionaryValue with the accessibility tree.
+  // The dictionary contains a key/value pair for each attribute of the node,
+  // plus a "children" attribute containing a list of all child nodes.
+  // {
+  //   "AXName": "node",  /* actual attributes will vary by platform */
+  //   "position": {  /* some attributes may be dictionaries */
+  //     "x": 0,
+  //     "y": 0
+  //   },
+  //   /* ... more attributes of |node| */
+  //   "children": [ {  /* list of children created recursively */
+  //     "AXName": "child node 1",
+  //     /* ... more attributes */
+  //     "children": [ ]
+  //   }, {
+  //     "AXName": "child name 2",
+  //     /* ... more attributes */
+  //     "children": [ ]
+  //   } ]
+  // }
+  scoped_ptr<DictionaryValue> BuildAccessibilityTree();
 
   // Dumps a BrowserAccessibility tree into a string.
   void FormatAccessibilityTree(string16* contents);
@@ -76,25 +99,45 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   static const std::string GetDenyString();
 
  protected:
-  void RecursiveFormatAccessibilityTree(BrowserAccessibility* node,
+  void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
                                         string16* contents,
                                         int indent);
+  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
+                                       DictionaryValue* tree_node);
+  void RecursiveFormatAccessibilityTree(const DictionaryValue& tree_node,
+                                        string16* contents,
+                                        int depth = 0);
+
+  // Overridden by each platform to add the required attributes for each node
+  // into the given dict.
+  void AddProperties(const BrowserAccessibility& node, DictionaryValue* dict);
+
+  string16 FormatCoordinates(const char* name,
+                             const char* x_name,
+                             const char* y_name,
+                             const DictionaryValue& value);
 
   // Returns a platform specific representation of a BrowserAccessibility.
   // Should be zero or more complete lines, each with |prefix| prepended
   // (to indent each line).
-  string16 ToString(BrowserAccessibility* node, char* prefix);
+  string16 ToString(const DictionaryValue& node, const string16& indent);
 
   void Initialize();
 
   bool MatchesFilters(const string16& text, bool default_result) const;
-  void StartLine();
-  void Add(bool include_by_default, const string16& attr);
-  string16 FinishLine();
 
-  BrowserAccessibility* node_;
+  // Writes the given attribute string out to |line| if it matches the filters.
+  void WriteAttribute(bool include_by_default,
+                      const string16& attr,
+                      string16* line);
+  void WriteAttribute(bool include_by_default,
+                      const std::string& attr,
+                      string16* line);
+
+  BrowserAccessibility* root_;
+
+  // Filters used when formatting the accessibility tree as text.
   std::vector<Filter> filters_;
-  string16 line_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatter);
 };

@@ -1,10 +1,10 @@
 AXWebArea
     AXMenuBar
-        AXMenuItem title='File'
-        AXMenuItem title='Edit'
-        AXMenuItem title='View'
-    AXMenu description='File'
-        AXMenuItem title='New'
-        AXMenuItem title='Open'
-        AXMenuItem title='Save'
-        AXMenuItem title='Quit'
+        AXMenuItem AXTitle='File'
+        AXMenuItem AXTitle='Edit'
+        AXMenuItem AXTitle='View'
+    AXMenu AXDescription='File'
+        AXMenuItem AXTitle='New'
+        AXMenuItem AXTitle='Open'
+        AXMenuItem AXTitle='Save'
+        AXMenuItem AXTitle='Quit'

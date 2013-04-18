@@ -2,6 +2,6 @@
 # wrong, so we assume this is correct.
 AXWebArea
     AXGroup
-        AXStaticText value='Some LTR text'
-        AXStaticText value='Some RTL text '
-        AXStaticText value='with some LTR text embedded'
+        AXStaticText AXValue='Some LTR text'
+        AXStaticText AXValue='Some RTL text '
+        AXStaticText AXValue='with some LTR text embedded'

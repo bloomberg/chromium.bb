@@ -1,5 +1,5 @@
 AXWebArea
     AXGroup
-        AXStaticText value='This paragraph has one '
-        AXStaticText value='word'
-        AXStaticText value=' in a span.'
+        AXStaticText AXValue='This paragraph has one '
+        AXStaticText AXValue='word'
+        AXStaticText AXValue=' in a span.'
