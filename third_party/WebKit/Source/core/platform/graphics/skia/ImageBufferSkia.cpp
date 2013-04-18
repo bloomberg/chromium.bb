@@ -254,7 +254,7 @@ void ImageBuffer::clip(GraphicsContext* context, const FloatRect& rect) const
 
 static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 {
-    return (dst->platformContext()->isDeferred() || src == dst);
+    return (src == dst);
 }
 
 void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect,

@@ -178,12 +178,6 @@ public:
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
-    // True if this context is deferring draw calls to be executed later.
-    // We need to know this for context-to-context draws, in order to know if
-    // the source bitmap needs to be copied.
-    bool isDeferred() const { return m_deferred; }
-    void setDeferred(bool deferred) { m_deferred = deferred; }
-
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float scale) { m_deviceScaleFactor = scale; }
 
@@ -290,7 +284,6 @@ private:
 
     bool m_printing;
     bool m_accelerated;
-    bool m_deferred;
     bool m_drawingToImageBuffer;
     float m_deviceScaleFactor;
 };
