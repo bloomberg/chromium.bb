@@ -28,7 +28,10 @@
 #include "HTMLDialogElement.h"
 
 #include "ExceptionCode.h"
-#include "RenderDialog.h"
+#include "FrameView.h"
+#include "RenderBlock.h"
+#include "RenderStyle.h"
+#include "StyleResolver.h"
 
 namespace WebCore {
 
@@ -36,8 +39,11 @@ using namespace HTMLNames;
 
 HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
+    , m_topIsValid(false)
+    , m_top(0)
 {
     ASSERT(hasTagName(dialogTag));
+    setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
@@ -54,6 +60,50 @@ void HTMLDialogElement::close(ExceptionCode& ec)
     }
     setBooleanAttribute(openAttr, false);
     document()->removeFromTopLayer(this);
+    m_topIsValid = false;
+}
+
+static bool needsCenteredPositioning(const RenderStyle* style)
+{
+    return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
+}
+
+PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()
+{
+    RefPtr<RenderStyle> originalStyle = document()->styleResolver()->styleForElement(this);
+    RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
+
+    // Override top to remain centered after style recalcs.
+    if (needsCenteredPositioning(style.get()) && m_topIsValid)
+        style->setTop(Length(m_top.toInt(), WebCore::Fixed));
+
+    return style.release();
+}
+
+void HTMLDialogElement::positionAndReattach()
+{
+    // Layout because we need to know our ancestors' positions and our own height.
+    document()->updateLayoutIgnorePendingStylesheets();
+
+    RenderBox* box = renderBox();
+    if (!box || !needsCenteredPositioning(box->style()))
+        return;
+
+    // Set up dialog's position to be safe-centered in the viewport.
+    // FIXME: Figure out what to do in vertical writing mode.
+    FrameView* frameView = document()->view();
+    int scrollTop = frameView->scrollOffset().height();
+    FloatPoint absolutePoint(0, scrollTop);
+    int visibleHeight = frameView->visibleContentRect(ScrollableArea::IncludeScrollbars).height();
+    if (box->height() < visibleHeight)
+        absolutePoint.move(0, (visibleHeight - box->height()) / 2);
+    FloatPoint localPoint = box->containingBlock()->absoluteToLocal(absolutePoint);
+
+    m_top = localPoint.y();
+    m_topIsValid = true;
+
+    // FIXME: It's inefficient to reattach here. We could do better by mutating style directly and forcing another layout.
+    reattach();
 }
 
 void HTMLDialogElement::show()
@@ -61,6 +111,7 @@ void HTMLDialogElement::show()
     if (fastHasAttribute(openAttr))
         return;
     setBooleanAttribute(openAttr, true);
+    positionAndReattach();
 }
 
 void HTMLDialogElement::showModal(ExceptionCode& ec)
@@ -69,8 +120,9 @@ void HTMLDialogElement::showModal(ExceptionCode& ec)
         ec = INVALID_STATE_ERR;
         return;
     }
-    setBooleanAttribute(openAttr, true);
     document()->addToTopLayer(this);
+    setBooleanAttribute(openAttr, true);
+    positionAndReattach();
 }
 
 bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
@@ -81,11 +133,6 @@ bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
         return true;
 
     return HTMLElement::isPresentationAttribute(name);
-}
-
-RenderObject* HTMLDialogElement::createRenderer(RenderArena* arena, RenderStyle*)
-{
-    return new (arena) RenderDialog(this);
 }
 
 }

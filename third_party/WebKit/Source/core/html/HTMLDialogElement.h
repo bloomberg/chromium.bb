@@ -45,8 +45,12 @@ public:
 private:
     HTMLDialogElement(const QualifiedName&, Document*);
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    void positionAndReattach();
+
+    bool m_topIsValid;
+    LayoutUnit m_top;
 };
 
 } // namespace WebCore

@@ -3,16 +3,60 @@ Tests default positioning of non-anchored dialogs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Dialog should be centered in the viewport.
 PASS dialog.getBoundingClientRect().top is expectedTop
 PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog should be recentered if show() is called after close().
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog should not be recentered on a relayout.
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+A tall dialog should be positioned at the top of the viewport.
 PASS dialog.getBoundingClientRect().top is 0
+PASS dialog.getBoundingClientRect().top is 0
+
+The dialog should be centered regardless of the presence of a horizontal scrollbar.
+PASS dialog.getBoundingClientRect().top is expectedTop
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Test that centering works when dialog is inside positioned containers.
 PASS dialog.getBoundingClientRect().top is expectedTop
 PASS dialog.getBoundingClientRect().top is expectedTop
 PASS dialog.getBoundingClientRect().top is expectedTop
-PASS dialog.offsetTop is plainDiv.offsetTop
-PASS dialog.offsetBottom is plainDiv.offsetBottom
-PASS dialog.offsetTop is plainDiv.offsetTop
+
+Dialog's position should survive after becoming display:none temporarily.
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog's position should survive after being re-added to document without another call to show().
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog's position should survive after close() and show().
+PASS dialog.style.top is expectedTop
+
+Dialog is recentered if show() is called after removing 'open'
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog should not be centered if show() was called when an ancestor had display 'none'.
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Test that setting 'top' on dialog results in the same position as for a plain, absolutely positioned span.
+PASS dialog.offsetTop is plainSpan.offsetTop
+PASS dialog.offsetTop is plainSpan.offsetTop
+
+Test that setting 'bottom' on dialog results in the same position as for a plain, absolutely positioned span.
+PASS dialog.offsetBottom is plainSpan.offsetBottom
+PASS dialog.offsetBottom is plainSpan.offsetBottom
+
+Test that fixed positioning for dialog has same behavior as for a plain span.
+PASS dialog.offsetTop is plainSpan.offsetTop
+PASS dialog.offsetTop is plainSpan.offsetTop
+
+Test that static position for a non-modal dialog has the same behavior as for a plain span.
 PASS dialog.offsetTop is expectedTop
+
+Test that relative position for a non-modal dialog has the same behavior as for a plain span.
 PASS dialog.offsetTop is expectedTop
 PASS successfullyParsed is true
 

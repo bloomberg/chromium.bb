@@ -1313,7 +1313,6 @@
             'rendering/RenderDeprecatedFlexibleBox.h',
             'rendering/RenderDetailsMarker.cpp',
             'rendering/RenderDetailsMarker.h',
-            'rendering/RenderDialog.cpp',
             'rendering/RenderEmbeddedObject.cpp',
             'rendering/RenderFieldset.cpp',
             'rendering/RenderFieldset.h',
