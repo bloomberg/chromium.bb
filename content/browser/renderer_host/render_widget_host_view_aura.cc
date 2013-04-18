@@ -2494,8 +2494,14 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     host_->SetInputMethodActive(false);
 
     // If we lose the focus while fullscreen, close the window; Pepper Flash
-    // won't do it for us (unlike NPAPI Flash).
-    if (is_fullscreen_ && !in_shutdown_) {
+    // won't do it for us (unlike NPAPI Flash). However, we do not close the
+    // window if we lose the focus to a window on another display.
+    gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
+    bool focusing_other_display =
+        gained_focus && screen->GetNumDisplays() > 1 &&
+        (screen->GetDisplayNearestWindow(window_).id() !=
+         screen->GetDisplayNearestWindow(gained_focus).id());
+    if (is_fullscreen_ && !in_shutdown_ && !focusing_other_display) {
       in_shutdown_ = true;
       host_->Shutdown();
     }
