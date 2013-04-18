@@ -5,6 +5,7 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_IMPL_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_IMPL_H_
 
+#include <queue>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -92,6 +93,25 @@ class SimpleEntryImpl : public Entry,
 
   virtual ~SimpleEntryImpl();
 
+  // Runs the next operation in the queue, if any and if there is no other
+  // operation running at the moment. Returns true if a operation has run.
+  bool RunNextOperationIfNeeded();
+
+  void CloseInternal();
+
+  void ReadDataInternal(int index,
+                        int offset,
+                        scoped_refptr<net::IOBuffer> buf,
+                        int buf_len,
+                        const CompletionCallback& callback);
+
+  void WriteDataInternal(int index,
+                         int offset,
+                         scoped_refptr<net::IOBuffer> buf,
+                         int buf_len,
+                         const CompletionCallback& callback,
+                         bool truncate);
+
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
   // OpenEntry(). If |sync_entry| is non-NULL, creation is successful and we
   // can return |this| SimpleEntryImpl to |*out_entry|. Runs
@@ -117,7 +137,6 @@ class SimpleEntryImpl : public Entry,
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> constructor_thread_;
   const base::WeakPtr<SimpleIndex> index_;
   const base::FilePath path_;
   const std::string key_;
@@ -129,16 +148,15 @@ class SimpleEntryImpl : public Entry,
   int32 data_size_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
-  // entries. It's owned by this SimpleEntryImpl whenever
-  // |synchronous_entry_in_use_by_worker_| is false (i.e. when an operation
-  // is not pending on the worker pool). When an operation is pending on the
-  // worker pool, the |synchronous_entry_| is owned by itself.
+  // entries. It's owned by this SimpleEntryImpl whenever |operation_running_|
+  // is false (i.e. when an operation is not pending on the worker pool).
   SimpleSynchronousEntry* synchronous_entry_;
 
   // Set to true when a worker operation is posted on the |synchronous_entry_|,
   // and false after. Used to ensure thread safety by not allowing multiple
   // threads to access the |synchronous_entry_| simultaneously.
-  bool synchronous_entry_in_use_by_worker_;
+  bool operation_running_;
+  std::queue<base::Closure> pending_operations_;
 };
 
 }  // namespace disk_cache

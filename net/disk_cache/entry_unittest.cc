@@ -2118,3 +2118,97 @@ TEST_F(DiskCacheEntryTest, KeySanityCheck) {
   ASSERT_NE(net::OK, OpenEntry(key, &entry));
   DisableIntegrityCheck();
 }
+
+// The simple cache backend isn't intended to work on Windows, which has very
+// different file system guarantees from Linux.
+#if !defined(OS_WIN)
+
+TEST_F(DiskCacheEntryTest, SimpleCacheInternalAsyncIO) {
+  SetSimpleCacheMode();
+  InitCache();
+  InternalAsyncIO();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheExternalAsyncIO) {
+  SetSimpleCacheMode();
+  InitCache();
+  ExternalAsyncIO();
+}
+
+// TODO(felipeg): flaky, failing to WritePlatformFile in
+// simple_synchronous_entry.cc. It failed in linux_asan bot.
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheReleaseBuffer) {
+  SetSimpleCacheMode();
+  InitCache();
+  ReleaseBuffer();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheStreamAccess) {
+  SetSimpleCacheMode();
+  InitCache();
+  StreamAccess();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheGetKey) {
+  SetSimpleCacheMode();
+  InitCache();
+  GetKey();
+}
+
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheGetTimes) {
+  SetSimpleCacheMode();
+  InitCache();
+  GetTimes();
+}
+
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheGrowData) {
+  SetSimpleCacheMode();
+  InitCache();
+  GrowData();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheTruncateData) {
+  SetSimpleCacheMode();
+  InitCache();
+  TruncateData();
+}
+
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheZeroLengthIO) {
+  SetSimpleCacheMode();
+  InitCache();
+  ZeroLengthIO();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheReuseExternalEntry) {
+  SetSimpleCacheMode();
+  SetMaxSize(200 * 1024);
+  InitCache();
+  ReuseEntry(20 * 1024);
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheReuseInternalEntry) {
+  SetSimpleCacheMode();
+  SetMaxSize(100 * 1024);
+  InitCache();
+  ReuseEntry(10 * 1024);
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheInvalidData) {
+  SetSimpleCacheMode();
+  InitCache();
+  InvalidData();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  DoomNormalEntry();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  DoomedEntry();
+}
+
+#endif  // !defined(OS_WIN)
