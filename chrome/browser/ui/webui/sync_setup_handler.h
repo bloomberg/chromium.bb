@@ -121,7 +121,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleConfigure(const base::ListValue* args);
   void HandlePassphraseEntry(const base::ListValue* args);
   void HandlePassphraseCancel(const base::ListValue* args);
-  void HandleAttachHandler(const base::ListValue* args);
   void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleShowSetupUIWithoutLogin(const base::ListValue* args);

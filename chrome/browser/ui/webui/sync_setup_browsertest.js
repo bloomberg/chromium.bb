@@ -25,7 +25,6 @@ SyncSetupWebUITest.prototype = {
                                      'SyncSetupConfigure',
                                      'SyncSetupPassphrase',
                                      'SyncSetupPassphraseCancel',
-                                     'SyncSetupAttachHandler',
                                      'SyncSetupShowErrorUI',
                                      'SyncSetupShowSetupUI',
                                     ]);
@@ -48,7 +47,7 @@ SyncSetupWebUITest.prototype = {
                             OptionsPage.navigateToPage('syncSetup');
                           }));
 
-    this.mockHandler.expects(once()).SyncSetupAttachHandler(NOT_NULL).
+    this.mockHandler.expects(once()).SyncSetupShowSetupUI().
         will(callFunction(function() {
                             SyncSetupOverlay.showSyncSetupPage(
                                 'login', {

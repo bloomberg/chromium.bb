@@ -578,10 +578,6 @@ void SyncSetupHandler::RegisterMessages() {
       base::Bind(&SyncSetupHandler::HandleConfigure,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SyncSetupAttachHandler",
-      base::Bind(&SyncSetupHandler::HandleAttachHandler,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "SyncSetupShowErrorUI",
       base::Bind(&SyncSetupHandler::HandleShowErrorUI,
                  base::Unretained(this)));
@@ -1034,18 +1030,6 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_PASSPHRASE);
   if (!configuration.sync_everything)
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
-}
-
-void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
-  bool force_login = false;
-  std::string json;
-  if (args->GetString(0, &json) && !json.empty()) {
-    scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
-    DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-    result->GetBoolean("forceLogin", &force_login);
-  }
-
-  OpenSyncSetup(force_login);
 }
 
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {

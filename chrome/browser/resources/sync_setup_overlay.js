@@ -100,9 +100,7 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
-      var forceLogin = document.location.hash == '#forceLogin';
-      var result = JSON.stringify({'forceLogin': forceLogin});
-      chrome.send('SyncSetupAttachHandler', [result]);
+      chrome.send('SyncSetupShowSetupUI');
     },
 
     /** @override */
