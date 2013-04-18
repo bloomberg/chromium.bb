@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/threading/thread_checker.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "third_party/icu/public/common/unicode/locid.h"
@@ -890,9 +889,6 @@ class CountryNames {
 
   // Maps ICU locale names to their corresponding collators.
   std::map<std::string, icu::Collator*> collators_;
-
-  // Verifies thread-safety of accesses to the application locale.
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
