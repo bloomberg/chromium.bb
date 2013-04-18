@@ -442,10 +442,6 @@ webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-work
 crbug.com/233124 http/tests/inspector/network/network-embed.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-content-replacement-embed.html [ Skip ]
 
-# Works slowly, we have an equivalent test that doesn't open Inspector and runs fast.
-# FIXME: Should this test be deleted if we have an equivalent test?
-[ Linux Debug ] inspector/profiler/cpu-profiler-profiling.html [ WontFix ]
-
 webkit.org/b/91435 http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
 webkit.org/b/91435 [ Linux Mac ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 webkit.org/b/91435 [ Win Release ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
