@@ -339,131 +339,6 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
       content::Details<const User>(active_user_));
 }
 
-void UserManagerImpl::RetailModeUserLoggedIn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_current_user_new_ = true;
-  active_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(kRetailModeUserEMail,
-                                    is_current_user_new_,
-                                    true);
-  WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
-}
-
-void UserManagerImpl::GuestUserLoggedIn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
-  active_user_ = User::CreateGuestUser();
-  // TODO(nkostylev): Add support for passing guest session cryptohome
-  // mount point. Legacy (--login-profile) value will be used for now.
-  // http://crosbug.com/230859
-  active_user_->SetStubImage(User::kInvalidImageIndex, false);
-}
-
-void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(gaia::ExtractDomainName(username), kKioskAppUserDomain);
-
-  WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
-  active_user_ = User::CreateKioskAppUser(username);
-  active_user_->SetStubImage(User::kInvalidImageIndex, false);
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceAppMode);
-  command_line->AppendSwitchASCII(::switches::kAppId,
-                                  active_user_->GetAccountName(false));
-}
-
-void UserManagerImpl::LocallyManagedUserLoggedIn(
-    const std::string& username) {
-  // TODO(nkostylev): Refactor, share code with RegularUserLoggedIn().
-
-  // Remove the user from the user list.
-  active_user_ = RemoveRegularOrLocallyManagedUserFromList(username);
-  // If the user was not found on the user list, create a new user.
-  if (!active_user_) {
-    is_current_user_new_ = true;
-    active_user_ = User::CreateLocallyManagedUser(username);
-    // Leaving OAuth token status at the default state = unknown.
-    WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
-  } else {
-    ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
-                                          kLocallyManagedUsersFirstRun);
-    if (prefs_new_users_update->Remove(base::StringValue(username), NULL)) {
-      is_current_user_new_ = true;
-      WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
-    }
-  }
-
-  // Add the user to the front of the user list.
-  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
-                                    kRegularUsers);
-  prefs_users_update->Insert(0, new base::StringValue(username));
-  users_.insert(users_.begin(), active_user_);
-
-  // Now that user is in the list, save display name.
-  if (is_current_user_new_) {
-    SaveUserDisplayName(active_user_->email(),
-                        active_user_->GetDisplayName());
-  }
-
-  user_image_manager_->UserLoggedIn(username, is_current_user_new_, true);
-  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-
-  // Make sure that new data is persisted to Local State.
-  g_browser_process->local_state()->CommitPendingWrite();
-}
-
-void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
-  is_current_user_new_ = true;
-  active_user_ = user;
-  // The UserImageManager chooses a random avatar picture when a user logs in
-  // for the first time. Tell the UserImageManager that this user is not new to
-  // prevent the avatar from getting changed.
-  user_image_manager_->UserLoggedIn(user->email(), false, true);
-  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-}
-
-void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
-                                          bool browser_restart) {
-  // Remove the user from the user list.
-  active_user_ = RemoveRegularOrLocallyManagedUserFromList(email);
-
-  // If the user was not found on the user list, create a new user.
-  if (!active_user_) {
-    is_current_user_new_ = true;
-    active_user_ = User::CreateRegularUser(email);
-    active_user_->set_oauth_token_status(LoadUserOAuthStatus(email));
-    SaveUserDisplayName(active_user_->email(),
-                        UTF8ToUTF16(active_user_->GetAccountName(true)));
-    WallpaperManager::Get()->SetInitialUserWallpaper(email, true);
-  }
-
-  // Add the user to the front of the user list.
-  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
-                                    kRegularUsers);
-  prefs_users_update->Insert(0, new base::StringValue(email));
-  users_.insert(users_.begin(), active_user_);
-
-  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
-
-  if (!browser_restart) {
-    // For GAIA login flow, logged in user wallpaper may not be loaded.
-    WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-  }
-
-  // Make sure that new data is persisted to Local State.
-  g_browser_process->local_state()->CommitPendingWrite();
-}
-
-void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_current_user_new_ = true;
-  is_current_user_ephemeral_regular_user_ = true;
-  active_user_ = User::CreateRegularUser(email);
-  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
-  WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
-}
-
 void UserManagerImpl::SessionStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   session_started_ = true;
@@ -1076,6 +951,131 @@ User* UserManagerImpl::FindUserInListAndModify(const std::string& email) {
       return *it;
   }
   return NULL;
+}
+
+void UserManagerImpl::GuestUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
+  active_user_ = User::CreateGuestUser();
+  // TODO(nkostylev): Add support for passing guest session cryptohome
+  // mount point. Legacy (--login-profile) value will be used for now.
+  // http://crosbug.com/230859
+  active_user_->SetStubImage(User::kInvalidImageIndex, false);
+}
+
+void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
+                                          bool browser_restart) {
+  // Remove the user from the user list.
+  active_user_ = RemoveRegularOrLocallyManagedUserFromList(email);
+
+  // If the user was not found on the user list, create a new user.
+  if (!active_user_) {
+    is_current_user_new_ = true;
+    active_user_ = User::CreateRegularUser(email);
+    active_user_->set_oauth_token_status(LoadUserOAuthStatus(email));
+    SaveUserDisplayName(active_user_->email(),
+                        UTF8ToUTF16(active_user_->GetAccountName(true)));
+    WallpaperManager::Get()->SetInitialUserWallpaper(email, true);
+  }
+
+  // Add the user to the front of the user list.
+  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
+                                    kRegularUsers);
+  prefs_users_update->Insert(0, new base::StringValue(email));
+  users_.insert(users_.begin(), active_user_);
+
+  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
+
+  if (!browser_restart) {
+    // For GAIA login flow, logged in user wallpaper may not be loaded.
+    WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+  }
+
+  // Make sure that new data is persisted to Local State.
+  g_browser_process->local_state()->CommitPendingWrite();
+}
+
+void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  is_current_user_new_ = true;
+  is_current_user_ephemeral_regular_user_ = true;
+  active_user_ = User::CreateRegularUser(email);
+  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
+  WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
+}
+
+void UserManagerImpl::LocallyManagedUserLoggedIn(
+    const std::string& username) {
+  // TODO(nkostylev): Refactor, share code with RegularUserLoggedIn().
+
+  // Remove the user from the user list.
+  active_user_ = RemoveRegularOrLocallyManagedUserFromList(username);
+  // If the user was not found on the user list, create a new user.
+  if (!active_user_) {
+    is_current_user_new_ = true;
+    active_user_ = User::CreateLocallyManagedUser(username);
+    // Leaving OAuth token status at the default state = unknown.
+    WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+  } else {
+    ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
+                                          kLocallyManagedUsersFirstRun);
+    if (prefs_new_users_update->Remove(base::StringValue(username), NULL)) {
+      is_current_user_new_ = true;
+      WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+    }
+  }
+
+  // Add the user to the front of the user list.
+  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
+                                    kRegularUsers);
+  prefs_users_update->Insert(0, new base::StringValue(username));
+  users_.insert(users_.begin(), active_user_);
+
+  // Now that user is in the list, save display name.
+  if (is_current_user_new_) {
+    SaveUserDisplayName(active_user_->email(),
+                        active_user_->GetDisplayName());
+  }
+
+  user_image_manager_->UserLoggedIn(username, is_current_user_new_, true);
+  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+
+  // Make sure that new data is persisted to Local State.
+  g_browser_process->local_state()->CommitPendingWrite();
+}
+
+void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
+  is_current_user_new_ = true;
+  active_user_ = user;
+  // The UserImageManager chooses a random avatar picture when a user logs in
+  // for the first time. Tell the UserImageManager that this user is not new to
+  // prevent the avatar from getting changed.
+  user_image_manager_->UserLoggedIn(user->email(), false, true);
+  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+}
+
+void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(gaia::ExtractDomainName(username), kKioskAppUserDomain);
+
+  WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
+  active_user_ = User::CreateKioskAppUser(username);
+  active_user_->SetStubImage(User::kInvalidImageIndex, false);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kForceAppMode);
+  command_line->AppendSwitchASCII(::switches::kAppId,
+                                  active_user_->GetAccountName(false));
+}
+
+void UserManagerImpl::RetailModeUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  is_current_user_new_ = true;
+  active_user_ = User::CreateRetailModeUser();
+  user_image_manager_->UserLoggedIn(kRetailModeUserEMail,
+                                    is_current_user_new_,
+                                    true);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
 }
 
 void UserManagerImpl::NotifyOnLogin() {

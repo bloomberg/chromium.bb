@@ -782,9 +782,12 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       host_ = NULL;
     } else {
 #endif
-      ActivateWizard(WizardController::IsDeviceRegistered() ?
-          WizardController::kTermsOfServiceScreenName :
-          WizardController::kRegistrationScreenName);
+      // Mark the device as registered., i.e. the second part of OOBE as
+      // completed.
+      if (!WizardController::IsDeviceRegistered())
+        WizardController::MarkDeviceRegistered();
+
+      ActivateWizard(WizardController::kTermsOfServiceScreenName);
 #ifndef NDEBUG
     }
 #endif
@@ -805,17 +808,12 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
   is_login_in_progress_ = false;
   offline_failed_ = false;
-  if (WizardController::IsDeviceRegistered()) {
-    LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
-  } else {
-    // Postpone CompleteOffTheRecordLogin until registration completion.
-    // TODO(nkostylev): Kind of hack. We have to instruct UserManager here
-    // that we're actually logged in as Guest user as we'll ask UserManager
-    // later in the code path whether we've signed in as Guest and depending
-    // on that would either show image screen or call CompleteOffTheRecordLogin.
-    UserManager::Get()->GuestUserLoggedIn();
-    ActivateWizard(WizardController::kRegistrationScreenName);
-  }
+
+  // Mark the device as registered., i.e. the second part of OOBE as completed.
+  if (!WizardController::IsDeviceRegistered())
+    WizardController::MarkDeviceRegistered();
+
+  LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
 
   if (login_status_consumer_)
     login_status_consumer_->OnOffTheRecordLoginSuccess();
@@ -896,12 +894,7 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
 // ExistingUserController, private:
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
-  DictionaryValue* params = NULL;
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
-    params = new DictionaryValue;
-    params->SetString("start_url", guest_mode_url_.spec());
-  }
-  host_->StartWizard(screen_name, params);
+  host_->StartWizard(screen_name, NULL);
 }
 
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {

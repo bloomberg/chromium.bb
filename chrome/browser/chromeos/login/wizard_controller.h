@@ -157,8 +157,6 @@ class WizardController : public ScreenObserver {
   static const char kLoginScreenName[];
   static const char kUpdateScreenName[];
   static const char kUserImageScreenName[];
-  // Not a real screen, just a placeholder for OOBE final stage.
-  static const char kRegistrationScreenName[];
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
@@ -197,8 +195,6 @@ class WizardController : public ScreenObserver {
   void OnUpdateErrorUpdating();
   void OnUserImageSelected();
   void OnUserImageSkipped();
-  void OnRegistrationSuccess();
-  void OnRegistrationSkipped();
   void OnEnterpriseEnrollmentDone();
   void OnEnterpriseAutoEnrollmentDone();
   void OnResetCanceled();

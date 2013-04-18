@@ -51,15 +51,6 @@ class UserManagerImpl
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
-  virtual void RetailModeUserLoggedIn() OVERRIDE;
-  virtual void GuestUserLoggedIn() OVERRIDE;
-  virtual void KioskAppLoggedIn(const std::string& username) OVERRIDE;
-  virtual void LocallyManagedUserLoggedIn(const std::string& username) OVERRIDE;
-  virtual void PublicAccountUserLoggedIn(User* user) OVERRIDE;
-  virtual void RegularUserLoggedIn(const std::string& email,
-                                   bool browser_restart) OVERRIDE;
-  virtual void RegularUserLoggedInAsEphemeral(
-      const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -172,6 +163,27 @@ class UserManagerImpl
 
   // Same as FindUserInList but returns non-const pointer to User object.
   User* FindUserInListAndModify(const std::string& email);
+
+  // Indicates that a user just logged in as guest.
+  void GuestUserLoggedIn();
+
+  // Indicates that a regular user just logged in.
+  void RegularUserLoggedIn(const std::string& email, bool browser_restart);
+
+  // Indicates that a regular user just logged in as ephemeral.
+  void RegularUserLoggedInAsEphemeral(const std::string& email);
+
+  // Indicates that a locally managed user just logged in.
+  void LocallyManagedUserLoggedIn(const std::string& username);
+
+  // Indicates that a user just logged into a public session.
+  void PublicAccountUserLoggedIn(User* user);
+
+  // Indicates that a kiosk app robot just logged in.
+  void KioskAppLoggedIn(const std::string& app_id);
+
+  // Indicates that a user just logged into a retail mode session.
+  void RetailModeUserLoggedIn();
 
   // Notifies that user has logged in.
   // Sends NOTIFICATION_LOGIN_USER_CHANGED notification.

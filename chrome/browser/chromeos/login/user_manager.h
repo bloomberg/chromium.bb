@@ -110,28 +110,6 @@ class UserManager {
   // Switches to active user identified by |email|. User has to be logged in.
   virtual void SwitchActiveUser(const std::string& email) = 0;
 
-  // Indicates that user just logged on as the retail mode user.
-  virtual void RetailModeUserLoggedIn() = 0;
-
-  // Indicates that user just started incognito session.
-  virtual void GuestUserLoggedIn() = 0;
-
-  // Indicates that a kiosk app robot just logged in.
-  virtual void KioskAppLoggedIn(const std::string& app_id) = 0;
-
-  // Indicates that a locally managed user just logged in.
-  virtual void LocallyManagedUserLoggedIn(const std::string& username) = 0;
-
-  // Indicates that a user just logged into a public account.
-  virtual void PublicAccountUserLoggedIn(User* user) = 0;
-
-  // Indicates that a regular user just logged in.
-  virtual void RegularUserLoggedIn(const std::string& email,
-                                   bool browser_restart) = 0;
-
-  // Indicates that a regular user just logged in as ephemeral.
-  virtual void RegularUserLoggedInAsEphemeral(const std::string& email) = 0;
-
   // Called when browser session is started i.e. after
   // browser_creator.LaunchBrowser(...) was called after user sign in.
   // When user is at the image screen IsUserLoggedIn() will return true

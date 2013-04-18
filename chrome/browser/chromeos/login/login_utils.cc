@@ -712,8 +712,6 @@ void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   VLOG(1) << "Completing incognito login";
 
-  UserManager::Get()->GuestUserLoggedIn();
-
   // For guest session we ask session manager to restart Chrome with --bwsi
   // flag. We keep only some of the arguments of this process.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();

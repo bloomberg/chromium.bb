@@ -114,7 +114,6 @@ const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
-const char WizardController::kRegistrationScreenName[] = "register";
 const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kErrorScreenName[] = "error-message";
@@ -533,21 +532,6 @@ void WizardController::OnUserImageSkipped() {
   OnUserImageSelected();
 }
 
-void WizardController::OnRegistrationSuccess() {
-  MarkDeviceRegistered();
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
-    std::string spec;
-    GURL start_url;
-    if (screen_parameters_.get() &&
-        screen_parameters_->GetString("start_url", &spec)) {
-      start_url = GURL(spec);
-    }
-    chromeos::LoginUtils::Get()->CompleteOffTheRecordLogin(start_url);
-  } else {
-    ShowTermsOfServiceScreen();
-  }
-}
-
 void WizardController::OnEnterpriseEnrollmentDone() {
   ShowLoginScreen();
 }
@@ -674,9 +658,6 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowUserImageScreen();
   } else if (screen_name == kEulaScreenName) {
     ShowEulaScreen();
-  } else if (screen_name == kRegistrationScreenName) {
-    // Just proceed to next stage.
-    OnRegistrationSuccess();
   } else if (screen_name == kResetScreenName) {
     ShowResetScreen();
   } else if (screen_name == kEnterpriseEnrollmentScreenName) {

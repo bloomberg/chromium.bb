@@ -66,7 +66,6 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::AnyOf;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
@@ -398,14 +397,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(0);
-  // This will be the first sign-in of a new user, which may cause the (legacy)
-  // registration to be activated. A real WizardController instance immediately
-  // advances to the Terms of Service or user image screen but this test uses
-  // MockLoginDisplayHost Instead.
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(AnyOf(WizardController::kRegistrationScreenName,
-                                WizardController::kTermsOfServiceScreenName),
-                          NULL))
+              StartWizard(WizardController::kTermsOfServiceScreenName, NULL))
       .Times(1);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
