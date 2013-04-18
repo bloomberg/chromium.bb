@@ -115,6 +115,7 @@ def _GetGclientSolutions(internal, use_pdf, rev):
       'svn_url': SVN_MIRROR_URL,
       'webkit_trunk': '%s/webkit-readonly/trunk' % SVN_MIRROR_URL,
       'googlecode_url': SVN_MIRROR_URL + '/%s',
+      'gsutil': SVN_MIRROR_URL + '/gsutil',
       'sourceforge_url': SVN_MIRROR_URL + '/%(repo)s'
     })
 
