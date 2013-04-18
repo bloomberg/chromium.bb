@@ -61,6 +61,17 @@ def CheckOptions(options, parser, required=[]):
     if not getattr(options, option_name):
       parser.error('--%s is required' % option_name.replace('_', '-'))
 
+def WriteJson(obj, path, only_if_changed=False):
+  old_dump = None
+  if os.path.exists(path):
+    with open(path, 'r') as oldfile:
+      old_dump = oldfile.read()
+
+  new_dump = json.dumps(obj)
+
+  if not only_if_changed or old_dump != new_dump:
+    with open(path, 'w') as outfile:
+      outfile.write(new_dump)
 
 def ReadJson(path):
   with open(path, 'r') as jsonfile:

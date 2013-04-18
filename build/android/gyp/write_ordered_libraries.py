@@ -107,8 +107,7 @@ def main(argv):
 
   libraries = GetSortedTransitiveDependencies(libraries)
 
-  with open(_options.output, 'w') as outfile:
-    json.dump(libraries, outfile)
+  build_utils.WriteJson(libraries, _options.output, only_if_changed=True)
 
   if _options.stamp:
     build_utils.Touch(_options.stamp)
