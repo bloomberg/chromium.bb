@@ -65,6 +65,7 @@ struct text_entry {
 	uint32_t serial;
 	uint32_t content_purpose;
 	uint32_t click_to_show;
+	char *preferred_language;
 };
 
 struct editor {
@@ -397,6 +398,7 @@ text_model_language(void *data,
 		    uint32_t serial,
 		    const char *language)
 {
+	fprintf(stderr, "input language is %s \n", language);
 }
 
 static void
@@ -405,6 +407,24 @@ text_model_text_direction(void *data,
 			  uint32_t serial,
 			  uint32_t direction)
 {
+	struct text_entry *entry = data;
+	PangoContext *context = pango_layout_get_context(entry->layout);
+	PangoDirection pango_direction;
+
+
+	switch (direction) {
+		case TEXT_MODEL_TEXT_DIRECTION_LTR:
+			pango_direction = PANGO_DIRECTION_LTR;
+			break;
+		case TEXT_MODEL_TEXT_DIRECTION_RTL:
+			pango_direction = PANGO_DIRECTION_RTL;
+			break;
+		case TEXT_MODEL_TEXT_DIRECTION_AUTO:
+		default:
+			pango_direction = PANGO_DIRECTION_NEUTRAL;
+	}
+	
+	pango_context_set_base_dir(context, pango_direction);
 }
 
 static const struct text_model_listener text_model_listener = {
@@ -615,6 +635,10 @@ text_entry_update(struct text_entry *entry)
 					entry->text,
 					entry->cursor,
 					entry->anchor);
+
+	if (entry->preferred_language)
+		text_model_set_preferred_language(entry->model,
+						  entry->preferred_language);
 
 	text_model_commit(entry->model);
 }
@@ -1063,10 +1087,18 @@ main(int argc, char *argv[])
 	struct editor editor;
 	int i;
 	uint32_t click_to_show = 0;
+	const char *preferred_language = NULL;
 
-	for (i = 1; i < argc; i++)
+	for (i = 1; i < argc; i++) {
 		if (strcmp("--click-to-show", argv[i]) == 0)
 			click_to_show = 1;
+		else if (strcmp("--preferred-language", argv[i]) == 0) {
+			if (i + 1 < argc) {
+				preferred_language = argv[i + 1];
+				i++;
+			}
+		}
+	}
 
 	memset(&editor, 0, sizeof editor);
 
@@ -1088,6 +1120,8 @@ main(int argc, char *argv[])
 
 	editor.entry = text_entry_create(&editor, "Entry");
 	editor.entry->click_to_show = click_to_show;
+	if (preferred_language)
+		editor.entry->preferred_language = strdup(preferred_language);
 	editor.editor = text_entry_create(&editor, "Numeric");
 	editor.editor->content_purpose = TEXT_MODEL_CONTENT_PURPOSE_NUMBER;
 	editor.editor->click_to_show = click_to_show;

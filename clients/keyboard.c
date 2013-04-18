@@ -45,6 +45,7 @@ struct virtual_keyboard {
 	uint32_t serial;
 	uint32_t content_hint;
 	uint32_t content_purpose;
+	char *preferred_language;
 	char *surrounding_text;
 	struct window *window;
 	struct widget *widget;
@@ -80,6 +81,9 @@ struct layout {
 
 	uint32_t columns;
 	uint32_t rows;
+
+	const char *language;
+	uint32_t text_direction;
 };
 
 static const struct key normal_keys[] = {
@@ -150,18 +154,81 @@ static const struct key numeric_keys[] = {
 	{ keytype_style, "", "", 2}
 };
 
+static const struct key arabic_keys[] = {
+	{ keytype_default, "ض", "ض", 1},
+	{ keytype_default, "ص", "ص", 1},
+	{ keytype_default, "ث", "ث", 1},
+	{ keytype_default, "ق", "ق", 1},
+	{ keytype_default, "ف", "ف", 1},
+	{ keytype_default, "غ", "إ", 1},
+	{ keytype_default, "ع", "ع", 1},
+	{ keytype_default, "ه", "ه", 1},
+	{ keytype_default, "خ", "خ", 1},
+	{ keytype_default, "ح", "ح", 1},
+	{ keytype_default, "ج", "ج", 1},
+	{ keytype_backspace, "-->", "-->", 2},
+
+	{ keytype_tab, "->|", "->|", 1},
+	{ keytype_default, "ش", "ش", 1},
+	{ keytype_default, "س", "س", 1},
+	{ keytype_default, "ي", "ي", 1},
+	{ keytype_default, "ب", "ب", 1},
+	{ keytype_default, "ل", "ل", 1},
+	{ keytype_default, "ا", "أ", 1},
+	{ keytype_default, "ت", "ت", 1},
+	{ keytype_default, "ن", "ن", 1},
+	{ keytype_default, "م", "م", 1},
+	{ keytype_default, "ك", "ك", 1},
+	{ keytype_default, "د", "د", 1},
+	{ keytype_enter, "Enter", "Enter", 2},
+
+	{ keytype_switch, "ABC", "abc", 2},
+	{ keytype_default, "ئ", "ئ", 1},
+	{ keytype_default, "ء", "ء", 1},
+	{ keytype_default, "ؤ", "ؤ", 1},
+	{ keytype_default, "ر", "ر", 1},
+	{ keytype_default, "ى", "آ", 1},
+	{ keytype_default, "ة", "ة", 1},
+	{ keytype_default, "و", "و", 1},
+	{ keytype_default, "ز", "ز", 1},
+	{ keytype_default, "ظ", "ظ", 1},
+	{ keytype_switch, "ABC", "abc", 2},
+
+	{ keytype_symbols, "؟٣٢١", "؟٣٢١", 1},
+	{ keytype_default, "ذ", "ذ", 1},
+	{ keytype_default, "،", "،", 1},
+	{ keytype_space, "", "", 6},
+	{ keytype_default, ".", ".", 1},
+	{ keytype_default, "ط", "ط", 1},
+	{ keytype_style, "", "", 2}
+};
+
+
 static const struct layout normal_layout = {
 	normal_keys,
 	sizeof(normal_keys) / sizeof(*normal_keys),
 	12,
-	4
+	4,
+	"en",
+	TEXT_MODEL_TEXT_DIRECTION_LTR
 };
 
 static const struct layout numeric_layout = {
 	numeric_keys,
 	sizeof(numeric_keys) / sizeof(*numeric_keys),
 	12,
-	2
+	2,
+	"en",
+	TEXT_MODEL_TEXT_DIRECTION_LTR
+};
+
+static const struct layout arabic_layout = {
+	arabic_keys,
+	sizeof(arabic_keys) / sizeof(*arabic_keys),
+	13,
+	4,
+	"ar",
+	TEXT_MODEL_TEXT_DIRECTION_RTL
 };
 
 static const char *style_labels[] = {
@@ -250,7 +317,11 @@ get_current_layout(struct virtual_keyboard *keyboard)
 		case TEXT_MODEL_CONTENT_PURPOSE_NUMBER:
 			return &numeric_layout;
 		default:
-			return &normal_layout;
+			if (keyboard->preferred_language &&
+			    strcmp(keyboard->preferred_language, "ar") == 0)
+				return &arabic_layout;
+			else
+				return &normal_layout;
 	}
 }
 
@@ -570,6 +641,9 @@ handle_commit(void *data,
 			       layout->columns * key_width,
 			       layout->rows * key_height);
 
+	input_method_context_language(context, keyboard->serial, layout->language);
+	input_method_context_text_direction(context, keyboard->serial, layout->text_direction);
+
 	widget_schedule_redraw(keyboard->widget);
 }
 
@@ -578,6 +652,15 @@ handle_preferred_language(void *data,
 			  struct input_method_context *context,
 			  const char *language)
 {
+	struct virtual_keyboard *keyboard = data;
+
+	if (keyboard->preferred_language)
+		free(keyboard->preferred_language);
+
+	keyboard->preferred_language = NULL;
+
+	if (language)
+		keyboard->preferred_language = strdup(language);
 }
 
 static const struct input_method_context_listener input_method_context_listener = {
