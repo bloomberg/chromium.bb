@@ -39,12 +39,9 @@
 #include "Timer.h"
 #include "UserGestureIndicator.h"
 #include <wtf/Forward.h>
+#include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
-
-#if ENABLE(TOUCH_EVENTS)
-#include <wtf/HashMap.h>
-#endif
 
 namespace WebCore {
 
@@ -209,9 +206,7 @@ public:
     void sendResizeEvent(); // Only called in FrameView
     void sendScrollEvent(); // Ditto
 
-#if ENABLE(TOUCH_EVENTS)
     bool handleTouchEvent(const PlatformTouchEvent&);
-#endif
 
     bool useHandCursor(Node*, bool isOverLink, bool shiftKey);
 
@@ -250,10 +245,8 @@ private:
 
     bool isInsideScrollbar(const IntPoint&) const;
 
-#if ENABLE(TOUCH_EVENTS)
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
     HitTestResult hitTestResultInFrame(Frame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
-#endif
 
     void invalidateClick();
 
@@ -388,13 +381,11 @@ private:
 
     RefPtr<Node> m_previousWheelScrolledNode;
 
-#if ENABLE(TOUCH_EVENTS)
     typedef HashMap<int, RefPtr<EventTarget> > TouchTargetMap;
     TouchTargetMap m_originatingTouchPointTargets;
     RefPtr<Document> m_originatingTouchPointDocument;
     unsigned m_originatingTouchPointTargetKey;
     bool m_touchPressed;
-#endif
 
     RefPtr<Node> m_scrollGestureHandlingNode;
     bool m_lastHitTestResultOverWidget;

@@ -47,12 +47,10 @@ public:
     virtual String extraMediaControlsStyleSheet() OVERRIDE;
 #endif
 
-#if ENABLE(TOUCH_EVENTS)
     virtual Color platformTapHighlightColor() const OVERRIDE
     {
         return RenderThemeChromiumAndroid::defaultTapHighlightColor;
     }
-#endif
 
     virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE
     {

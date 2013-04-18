@@ -53,9 +53,7 @@ class IntRect;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformGestureEvent;
-#if ENABLE(TOUCH_EVENTS)
 class PlatformTouchEvent;
-#endif
 class PlatformWheelEvent;
 class PopupMenuClient;
 
@@ -132,9 +130,7 @@ public:
     virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
     virtual bool handleWheelEvent(const PlatformWheelEvent&);
     virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
-#if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(const PlatformTouchEvent&);
-#endif
     virtual bool handleGestureEvent(const PlatformGestureEvent&);
 
     // ScrollView

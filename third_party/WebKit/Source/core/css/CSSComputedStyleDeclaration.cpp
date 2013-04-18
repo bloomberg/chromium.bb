@@ -327,9 +327,7 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitShapeInside,
     CSSPropertyWebkitShapeOutside,
 #endif
-#if ENABLE(TOUCH_EVENTS)
     CSSPropertyWebkitTapHighlightColor,
-#endif
     CSSPropertyWebkitTextCombine,
     CSSPropertyWebkitTextDecorationsInEffect,
     CSSPropertyWebkitTextEmphasisColor,
@@ -2436,10 +2434,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         }
         case CSSPropertyWebkitRtlOrdering:
             return cssValuePool().createIdentifierValue(style->rtlOrdering() ? CSSValueVisual : CSSValueLogical);
-#if ENABLE(TOUCH_EVENTS)
         case CSSPropertyWebkitTapHighlightColor:
             return currentColorOrValidColor(style.get(), style->tapHighlightColor());
-#endif
         case CSSPropertyWebkitUserDrag:
             return cssValuePool().createValue(style->userDrag());
         case CSSPropertyWebkitUserSelect:

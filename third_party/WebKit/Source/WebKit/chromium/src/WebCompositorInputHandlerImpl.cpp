@@ -207,12 +207,10 @@ WebCompositorInputHandlerImpl::EventDisposition WebCompositorInputHandlerImpl::h
             return DidHandle;
         else if (!m_flingActiveOnMainThread)
             return DropEvent;
-#if ENABLE(TOUCH_EVENT_TRACKING)
     } else if (event.type == WebInputEvent::TouchStart) {
         const WebTouchEvent& touchEvent = *static_cast<const WebTouchEvent*>(&event);
         if (!m_inputHandlerClient->haveTouchEventHandlersAt(touchEvent.touches[0].position))
             return DropEvent;
-#endif
     } else if (WebInputEvent::isKeyboardEventType(event.type)) {
          cancelCurrentFling();
     }

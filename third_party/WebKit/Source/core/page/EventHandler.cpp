@@ -70,6 +70,7 @@
 #include "PlatformEvent.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
+#include "PlatformTouchEvent.h"
 #include "PlatformWheelEvent.h"
 #include "PluginDocument.h"
 #include "RenderFrameSet.h"
@@ -86,6 +87,8 @@
 #include "StyleCachedImage.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
+#include "TouchEvent.h"
+#include "TouchList.h"
 #include "UserTypingGestureIndicator.h"
 #include "WheelEvent.h"
 #include "WindowsKeyboardCodes.h"
@@ -104,12 +107,6 @@
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGUseElement.h"
-#endif
-
-#if ENABLE(TOUCH_EVENTS)
-#include "PlatformTouchEvent.h"
-#include "TouchEvent.h"
-#include "TouchList.h"
 #endif
 
 #if ENABLE(CSS_IMAGE_SET)
@@ -190,7 +187,6 @@ private:
     double m_start;
 };
 
-#if ENABLE(TOUCH_EVENTS)
 class SyntheticTouchPoint : public PlatformTouchPoint {
 public:
 
@@ -255,7 +251,6 @@ public:
         m_touchPoints.append(SyntheticTouchPoint(event));
     }
 };
-#endif
 
 static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned deltaMode)
 {
@@ -313,10 +308,8 @@ EventHandler::EventHandler(Frame* frame)
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
     , m_widgetIsLatched(false)
-#if ENABLE(TOUCH_EVENTS)
     , m_originatingTouchPointTargetKey(0)
     , m_touchPressed(false)
-#endif
     , m_scrollGestureHandlingNode(0)
     , m_lastHitTestResultOverWidget(false)
     , m_maxMouseMovedDuration(0)
@@ -374,11 +367,9 @@ void EventHandler::clear()
     m_capturingMouseEventsNode = 0;
     m_latchedWheelEventNode = 0;
     m_previousWheelScrolledNode = 0;
-#if ENABLE(TOUCH_EVENTS)
     m_originatingTouchPointTargets.clear();
     m_originatingTouchPointDocument.clear();
     m_originatingTouchPointTargetKey = 0;
-#endif
     m_scrollGestureHandlingNode = 0;
     m_lastHitTestResultOverWidget = false;
     m_previousGestureScrolledNode = 0;
@@ -1377,11 +1368,9 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         return true;
     }
 
-#if ENABLE(TOUCH_EVENTS)
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
     if (defaultPrevented)
         return true;
-#endif
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
@@ -1568,11 +1557,9 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
     if (!m_frame)
         return false;
 
-#if ENABLE(TOUCH_EVENTS)
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
     if (defaultPrevented)
         return true;
-#endif
 
     RefPtr<FrameView> protector(m_frame->view());
     
@@ -1608,11 +1595,9 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
         hitType |= HitTestRequest::ReadOnly;
     }
 
-#if ENABLE(TOUCH_EVENTS)
     // Treat any mouse move events as readonly if the user is currently touching the screen.
     if (m_touchPressed)
         hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
-#endif
     HitTestRequest request(hitType);
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
     if (hoveredNode)
@@ -1709,11 +1694,9 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     m_frame->selection()->setCaretBlinkingSuspended(false);
 
-#if ENABLE(TOUCH_EVENTS)
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
     if (defaultPrevented)
         return true;
-#endif
 
     OwnPtr<UserGestureIndicator> gestureIndicator;
 
@@ -3625,8 +3608,6 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar, bool setL
     }
 }
 
-#if ENABLE(TOUCH_EVENTS)
-
 static const AtomicString& eventNameForTouchPointState(PlatformTouchPoint::State state)
 {
     switch (state) {
@@ -3892,8 +3873,6 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
     SyntheticSingleTouchEvent touchEvent(event);
     return handleTouchEvent(touchEvent);
 }
-
-#endif
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
 {

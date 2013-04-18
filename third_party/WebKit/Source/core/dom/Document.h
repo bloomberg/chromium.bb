@@ -149,6 +149,8 @@ class StyleSheetList;
 class Text;
 class TextAutosizer;
 class TextResourceDecoder;
+class Touch;
+class TouchList;
 class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
@@ -163,11 +165,6 @@ class SVGDocumentExtensions;
 #endif
 
 struct AnnotatedRegionValue;
-
-#if ENABLE(TOUCH_EVENTS)
-class Touch;
-class TouchList;
-#endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
 class FontLoader;
@@ -269,12 +266,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(selectionchange);
-#if ENABLE(TOUCH_EVENTS)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
-#endif
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockchange);
@@ -1043,9 +1038,7 @@ public:
     void decrementLoadEventDelayCount();
     bool isDelayingLoadEvent() const { return m_loadEventDelayCount; }
 
-#if ENABLE(TOUCH_EVENTS)
     PassRefPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force, ExceptionCode&) const;
-#endif
 
     const DocumentTiming* timing() const { return &m_documentTiming; }
 
@@ -1065,24 +1058,14 @@ public:
     double lastHandledUserGestureTimestamp() const { return m_lastHandledUserGestureTimestamp; }
     void resetLastHandledUserGestureTimestamp();
 
-#if ENABLE(TOUCH_EVENTS)
     bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
-#else
-    bool hasTouchEventHandlers() const { return false; }
-#endif
 
     void didAddTouchEventHandler(Node*);
     void didRemoveTouchEventHandler(Node*);
 
-#if ENABLE(TOUCH_EVENTS)
     void didRemoveEventTargetNode(Node*);
-#endif
 
-#if ENABLE(TOUCH_EVENTS)
     const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
-#else
-    const TouchEventTargetSet* touchEventTargets() const { return 0; }
-#endif
 
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
 
@@ -1459,9 +1442,7 @@ private:
     unsigned m_writeRecursionDepth;
     
     unsigned m_wheelEventHandlerCount;
-#if ENABLE(TOUCH_EVENTS)
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
-#endif
 
     double m_lastHandledUserGestureTimestamp;
 

@@ -70,6 +70,7 @@
 #include "ShadowRoot.h"
 #include "ScriptEventListener.h"
 #include "StyleResolver.h"
+#include "TouchEvent.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 
@@ -79,10 +80,6 @@
 
 #if ENABLE(INPUT_SPEECH)
 #include "RuntimeEnabledFeatures.h"
-#endif
-
-#if ENABLE(TOUCH_EVENTS)
-#include "TouchEvent.h"
 #endif
 
 using namespace std;
@@ -133,9 +130,7 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document* docum
     , m_valueAttributeWasUpdatedAfterParsing(false)
     , m_wasModifiedByUser(false)
     , m_canReceiveDroppedFiles(false)
-#if ENABLE(TOUCH_EVENTS)
     , m_hasTouchEventHandler(false)
-#endif
     , m_inputType(InputType::createText(this))
 {
     ASSERT(hasTagName(inputTag) || hasTagName(isindexTag));
@@ -176,10 +171,8 @@ HTMLInputElement::~HTMLInputElement()
     // We should unregister it to avoid accessing a deleted object.
     if (isRadioButton())
         document()->formController()->checkedRadioButtons().removeButton(this);
-#if ENABLE(TOUCH_EVENTS)
     if (m_hasTouchEventHandler)
         document()->didRemoveEventTargetNode(this);
-#endif
 }
 
 const AtomicString& HTMLInputElement::name() const
@@ -486,7 +479,6 @@ void HTMLInputElement::updateType()
     m_inputType = newType.release();
     m_inputType->createShadowSubtree();
 
-#if ENABLE(TOUCH_EVENTS)
     bool hasTouchEventHandler = m_inputType->hasTouchEventHandler();
     if (hasTouchEventHandler != m_hasTouchEventHandler) {
         if (hasTouchEventHandler)
@@ -495,7 +487,6 @@ void HTMLInputElement::updateType()
             document()->didRemoveTouchEventHandler(this);
         m_hasTouchEventHandler = hasTouchEventHandler;
     }
-#endif
 
     setNeedsWillValidateCheck();
 
@@ -1135,13 +1126,11 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
             return;
     }
 
-#if ENABLE(TOUCH_EVENTS)
     if (evt->isTouchEvent()) {
         m_inputType->handleTouchEvent(static_cast<TouchEvent*>(evt));
         if (evt->defaultHandled())
             return;
     }
-#endif
 
     if (evt->isKeyboardEvent() && evt->type() == eventNames().keydownEvent) {
         m_inputType->handleKeydownEvent(static_cast<KeyboardEvent*>(evt));
@@ -1529,19 +1518,15 @@ void HTMLInputElement::didMoveToNewDocument(Document* oldDocument)
             oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
         if (isRadioButton())
             oldDocument->formController()->checkedRadioButtons().removeButton(this);
-#if ENABLE(TOUCH_EVENTS)
         if (m_hasTouchEventHandler)
             oldDocument->didRemoveEventTargetNode(this);
-#endif
     }
 
     if (needsSuspensionCallback)
         document()->registerForPageCacheSuspensionCallbacks(this);
 
-#if ENABLE(TOUCH_EVENTS)
     if (m_hasTouchEventHandler)
         document()->didAddTouchEventHandler(this);
-#endif
 
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
 }

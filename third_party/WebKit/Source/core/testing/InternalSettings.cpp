@@ -218,13 +218,8 @@ void InternalSettings::setStyleScopedEnabled(bool enabled)
 
 void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionCode& ec)
 {
-#if ENABLE(TOUCH_EVENTS)
     InternalSettingsGuardForSettings();
     settings()->setTouchEventEmulationEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-    UNUSED_PARAM(ec);
-#endif
 }
 
 typedef void (Settings::*SetFontFamilyFunction)(const AtomicString&, UScriptCode);

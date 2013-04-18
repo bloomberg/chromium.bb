@@ -113,11 +113,9 @@ void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
     // is not the main frame.
     Region nonFastScrollableRegion = computeNonFastScrollableRegion(m_page->mainFrame(), IntPoint());
     setNonFastScrollableRegion(nonFastScrollableRegion);
-#if ENABLE(TOUCH_EVENT_TRACKING)
     Vector<IntRect> touchEventTargetRects;
     computeAbsoluteTouchEventTargetRects(m_page->mainFrame()->document(), touchEventTargetRects);
     setTouchEventTargetRects(touchEventTargetRects);
-#endif
     if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(frameView))
         scrollLayer->setBounds(frameView->contentsSize());
 }
@@ -298,7 +296,6 @@ void ScrollingCoordinator::setTouchEventTargetRects(const Vector<IntRect>& absol
 
 void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
 {
-#if ENABLE(TOUCH_EVENT_TRACKING)
     // The rects are always evaluated and used in the main frame coordinates.
     FrameView* frameView = m_page->mainFrame()->view();
     Document* document = m_page->mainFrame()->document();
@@ -310,7 +307,6 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
     Vector<IntRect> touchEventTargetRects;
     computeAbsoluteTouchEventTargetRects(document, touchEventTargetRects);
     setTouchEventTargetRects(touchEventTargetRects);
-#endif
 }
 
 void ScrollingCoordinator::setWheelEventHandlerCount(unsigned count)
@@ -393,7 +389,6 @@ Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, 
     return nonFastScrollableRegion;
 }
 
-#if ENABLE(TOUCH_EVENT_TRACKING)
 static void accumulateRendererTouchEventTargetRects(Vector<IntRect>& rects, const RenderObject* renderer, const IntRect& parentRect = IntRect())
 {
     IntRect adjustedParentRect = parentRect;
@@ -464,7 +459,6 @@ void ScrollingCoordinator::computeAbsoluteTouchEventTargetRects(const Document* 
     // FIXME: These rects won't be properly updated if the renderers are in a sub-tree that scrolls.
     accumulateDocumentEventTargetRects(rects, document);
 }
-#endif
 
 unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
 {

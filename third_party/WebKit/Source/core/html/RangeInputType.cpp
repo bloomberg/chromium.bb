@@ -48,15 +48,12 @@
 #include "ShadowRoot.h"
 #include "SliderThumbElement.h"
 #include "StepRange.h"
-#include <limits>
-#include <wtf/MathExtras.h>
-#include <wtf/PassOwnPtr.h>
-
-#if ENABLE(TOUCH_EVENTS)
 #include "Touch.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
-#endif
+#include <limits>
+#include <wtf/MathExtras.h>
+#include <wtf/PassOwnPtr.h>
 
 #if ENABLE(DATALIST_ELEMENT)
 #include "HTMLDataListElement.h"
@@ -167,7 +164,6 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
     thumb->dragFrom(event->absoluteLocation());
 }
 
-#if ENABLE(TOUCH_EVENTS)
 void RangeInputType::handleTouchEvent(TouchEvent* event)
 {
     if (element()->isDisabledOrReadOnly())
@@ -191,7 +187,6 @@ bool RangeInputType::hasTouchEventHandler() const
 {
     return true;
 }
-#endif
 
 void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
 {

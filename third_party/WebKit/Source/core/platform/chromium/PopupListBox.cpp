@@ -41,6 +41,7 @@
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformScreen.h"
+#include "PlatformTouchEvent.h"
 #include "PlatformWheelEvent.h"
 #include "PopupContainer.h"
 #include "PopupMenuChromium.h"
@@ -53,10 +54,6 @@
 #include <ctype.h>
 #include <limits>
 #include <wtf/CurrentTime.h>
-
-#if ENABLE(TOUCH_EVENTS)
-#include "PlatformTouchEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -176,12 +173,10 @@ bool PopupListBox::isInterestedInEventForKey(int keyCode)
     }
 }
 
-#if ENABLE(TOUCH_EVENTS)
 bool PopupListBox::handleTouchEvent(const PlatformTouchEvent&)
 {
     return false;
 }
-#endif
 
 bool PopupListBox::handleGestureEvent(const PlatformGestureEvent&)
 {

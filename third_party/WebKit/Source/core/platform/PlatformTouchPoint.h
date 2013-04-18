@@ -23,8 +23,6 @@
 #include "IntPoint.h"
 #include <wtf/Vector.h>
 
-#if ENABLE(TOUCH_EVENTS)
-
 namespace WebCore {
 
 class PlatformTouchEvent;
@@ -71,7 +69,5 @@ protected:
 };
 
 }
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 #endif // PlatformTouchPoint_h

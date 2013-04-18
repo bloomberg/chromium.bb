@@ -24,8 +24,6 @@
 #include "PlatformTouchPoint.h"
 #include <wtf/Vector.h>
 
-#if ENABLE(TOUCH_EVENTS)
-
 namespace WebCore {
 
 
@@ -43,7 +41,5 @@ protected:
 };
 
 }
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 #endif // PlatformTouchEvent_h

@@ -63,13 +63,11 @@ public:
         GesturePinchEnd,
         GesturePinchUpdate,
 
-#if ENABLE(TOUCH_EVENTS)
         // PlatformTouchEvent
         TouchStart,
         TouchMove,
         TouchEnd,
         TouchCancel,
-#endif
     };
 
     enum Modifiers {

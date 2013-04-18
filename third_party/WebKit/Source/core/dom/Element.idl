@@ -199,10 +199,10 @@
     [NotEnumerable, PerWorldBindings] attribute EventListener onreset;
     [NotEnumerable, PerWorldBindings] attribute EventListener onsearch;
     [NotEnumerable, PerWorldBindings] attribute EventListener onselectstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchmove;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchend;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchcancel;
+    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchstart;
+    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchmove;
+    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchend;
+    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchcancel;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
 };

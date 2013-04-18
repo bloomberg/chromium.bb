@@ -325,7 +325,6 @@ bool PlatformKeyboardEventBuilder::isCharacterKey() const
     return true;
 }
 
-#if ENABLE(TOUCH_EVENTS)
 inline PlatformEvent::Type toPlatformTouchEventType(const WebInputEvent::Type type)
 {
     switch (type) {
@@ -407,7 +406,6 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
     for (unsigned i = 0; i < event.touchesLength; ++i)
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
 }
-#endif
 
 static int getWebInputModifiers(const UIEventWithKeyState& event)
 {
@@ -576,8 +574,6 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), event.keyIdentifier().length());
 }
 
-#if ENABLE(TOUCH_EVENTS)
-
 static void addTouchPoints(const Widget* widget, const AtomicString& touchType, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const WebCore::RenderObject* renderObject)
 {
     unsigned numberOfTouches = std::min(touches->length(), static_cast<unsigned>(WebTouchEvent::touchesLengthCap));
@@ -622,8 +618,6 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::
     addTouchPoints(widget, event.type(), event.changedTouches(), changedTouches, &changedTouchesLength, renderObject);
     addTouchPoints(widget, event.type(), event.targetTouches(), targetTouches, &targetTouchesLength, renderObject);
 }
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const GestureEvent& event)
 {

@@ -193,9 +193,7 @@ public:
     virtual void handleKeypressEvent(KeyboardEvent*);
     virtual void handleKeyupEvent(KeyboardEvent*);
     virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
-#if ENABLE(TOUCH_EVENTS)
     virtual void handleTouchEvent(TouchEvent*);
-#endif
     virtual void forwardEvent(Event*);
     // Helpers for event handlers.
     virtual bool shouldSubmitImplicitly(Event*);
@@ -209,9 +207,7 @@ public:
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool canBeSuccessfulSubmitButton();
     virtual void subtreeHasChanged();
-#if ENABLE(TOUCH_EVENTS)
     virtual bool hasTouchEventHandler() const;
-#endif
 
     virtual void blur();
 

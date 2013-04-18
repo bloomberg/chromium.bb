@@ -180,9 +180,7 @@ public:
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) { }
     virtual void scheduleCompositingLayerFlush() { }
 
-#if ENABLE(TOUCH_EVENTS)
     virtual void needTouchEvents(bool) { }
-#endif
     
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
     

@@ -425,9 +425,7 @@ private:
     bool m_valueAttributeWasUpdatedAfterParsing : 1;
     bool m_wasModifiedByUser : 1;
     bool m_canReceiveDroppedFiles : 1;
-#if ENABLE(TOUCH_EVENTS)
     bool m_hasTouchEventHandler : 1;
-#endif
     OwnPtr<InputType> m_inputType;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into

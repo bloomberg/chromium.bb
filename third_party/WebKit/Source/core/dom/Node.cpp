@@ -424,10 +424,8 @@ Node::~Node()
 void Node::willBeDeletedFrom(Document* document)
 {
     if (hasEventTargetData()) {
-#if ENABLE(TOUCH_EVENT_TRACKING)
         if (document)
             document->didRemoveEventTargetNode(this);
-#endif
         clearEventTargetData();
     }
 
@@ -2355,10 +2353,8 @@ bool Node::dispatchEvent(PassRefPtr<Event> event)
 {
     if (event->isMouseEvent())
         return EventDispatcher::dispatchEvent(this, MouseEventDispatchMediator::create(adoptRef(toMouseEvent(event.leakRef())), MouseEventDispatchMediator::SyntheticMouseEvent));
-#if ENABLE(TOUCH_EVENTS)
     if (event->isTouchEvent())
         return dispatchTouchEvent(adoptRef(toTouchEvent(event.leakRef())));
-#endif
     return EventDispatcher::dispatchEvent(this, EventDispatchMediator::create(event));
 }
 
@@ -2417,12 +2413,10 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
     return EventDispatcher::dispatchEvent(this, GestureEventDispatchMediator::create(gestureEvent));
 }
 
-#if ENABLE(TOUCH_EVENTS)
 bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)
 {
     return EventDispatcher::dispatchEvent(this, TouchEventDispatchMediator::create(event));
 }
-#endif
 
 void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions, SimulatedClickVisualOptions visualOptions)
 {
@@ -2546,13 +2540,9 @@ bool Node::willRespondToMouseClickEvents()
 
 bool Node::willRespondToTouchEvents()
 {
-#if ENABLE(TOUCH_EVENTS)
     if (isDisabledFormControl(this))
         return false;
     return hasEventListeners(eventNames().touchstartEvent) || hasEventListeners(eventNames().touchmoveEvent) || hasEventListeners(eventNames().touchcancelEvent) || hasEventListeners(eventNames().touchendEvent);
-#else
-    return false;
-#endif
 }
 
 // This is here for inlining

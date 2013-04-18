@@ -169,6 +169,7 @@
 #include "TextAutosizer.h"
 #include "TextResourceDecoder.h"
 #include "Timer.h"
+#include "TouchList.h"
 #include "TraceEvent.h"
 #include "TransformSource.h"
 #include "TreeWalker.h"
@@ -207,10 +208,6 @@
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "SVGStyleElement.h"
-#endif
-
-#if ENABLE(TOUCH_EVENTS)
-#include "TouchList.h"
 #endif
 
 #if ENABLE(MATHML)
@@ -557,10 +554,8 @@ Document::~Document()
     if (m_templateDocument)
         m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
 
-#if ENABLE(TOUCH_EVENT_TRACKING)
     if (Document* ownerDocument = this->ownerDocument())
         ownerDocument->didRemoveEventTargetNode(this);
-#endif
     // FIXME: Should we reset m_domWindow when we detach from the Frame?
     if (m_domWindow)
         m_domWindow->resetUnlessSuspendedForPageCache();
@@ -2013,10 +2008,8 @@ void Document::detach()
     if (render)
         render->destroy();
 
-#if ENABLE(TOUCH_EVENTS)
     if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
         parentDocument()->didRemoveEventTargetNode(this);
-#endif
 
     // This is required, as our Frame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -5420,7 +5413,6 @@ void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 
-#if ENABLE(TOUCH_EVENTS)
 PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force, ExceptionCode&) const
 {
     // FIXME: It's not clear from the documentation at
@@ -5430,7 +5422,6 @@ PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, 
     Frame* frame = window ? window->frame() : this->frame();
     return Touch::create(frame, target, identifier, screenX, screenY, pageX, pageY, radiusX, radiusY, rotationAngle, force);
 }
-#endif
 
 static void wheelEventHandlerCountChanged(Document* document)
 {
@@ -5472,7 +5463,6 @@ void Document::didRemoveWheelEventHandler()
 
 void Document::didAddTouchEventHandler(Node* handler)
 {
-#if ENABLE(TOUCH_EVENTS)
     if (!m_touchEventTargets.get())
         m_touchEventTargets = adoptPtr(new TouchEventTargetSet);
     m_touchEventTargets->add(handler);
@@ -5481,21 +5471,15 @@ void Document::didAddTouchEventHandler(Node* handler)
         return;
     }
     if (Page* page = this->page()) {
-#if ENABLE(TOUCH_EVENT_TRACKING)
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             scrollingCoordinator->touchEventTargetRectsDidChange(this);
-#endif
         if (m_touchEventTargets->size() == 1)
             page->chrome()->client()->needTouchEvents(true);
     }
-#else
-    UNUSED_PARAM(handler);
-#endif
 }
 
 void Document::didRemoveTouchEventHandler(Node* handler)
 {
-#if ENABLE(TOUCH_EVENTS)
     if (!m_touchEventTargets.get())
         return;
     ASSERT(m_touchEventTargets->contains(handler));
@@ -5508,10 +5492,8 @@ void Document::didRemoveTouchEventHandler(Node* handler)
     Page* page = this->page();
     if (!page)
         return;
-#if ENABLE(TOUCH_EVENT_TRACKING)
     if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
         scrollingCoordinator->touchEventTargetRectsDidChange(this);
-#endif
     if (m_touchEventTargets->size())
         return;
     for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
@@ -5519,12 +5501,8 @@ void Document::didRemoveTouchEventHandler(Node* handler)
             return;
     }
     page->chrome()->client()->needTouchEvents(false);
-#else
-    UNUSED_PARAM(handler);
-#endif
 }
 
-#if ENABLE(TOUCH_EVENTS)
 void Document::didRemoveEventTargetNode(Node* handler)
 {
     if (m_touchEventTargets) {
@@ -5533,7 +5511,6 @@ void Document::didRemoveEventTargetNode(Node* handler)
             parentDocument()->didRemoveEventTargetNode(this);
     }
 }
-#endif
 
 void Document::resetLastHandledUserGestureTimestamp()
 {
@@ -5849,9 +5826,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_viewportArguments, "viewportArguments");
     info.addMember(m_documentTiming, "documentTiming");
     info.addMember(m_mediaQueryMatcher, "mediaQueryMatcher");
-#if ENABLE(TOUCH_EVENTS)
     info.addMember(m_touchEventTargets, "touchEventTargets");
-#endif
     info.addMember(m_scriptedAnimationController, "scriptedAnimationController");
     info.addMember(m_pendingTasksTimer, "pendingTasksTimer");
     info.addMember(m_textAutosizer, "textAutosizer");

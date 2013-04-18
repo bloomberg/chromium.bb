@@ -93,7 +93,6 @@ bool MouseOrFocusEventContext::isMouseOrFocusEventContext() const
     return true;
 }
 
-#if ENABLE(TOUCH_EVENTS)
 TouchEventContext::TouchEventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> currentTarget, PassRefPtr<EventTarget> target)
     : EventContext(node, currentTarget, target)
     , m_touches(TouchList::create())
@@ -133,7 +132,5 @@ void TouchEventContext::checkReachability(TouchList* touchList) const
         ASSERT(isReachable(touchList->item(i)->target()->toNode()));
 }
 #endif
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 }

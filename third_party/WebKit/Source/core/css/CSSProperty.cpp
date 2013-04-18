@@ -371,9 +371,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTextAnchor:
     case CSSPropertyWritingMode:
 #endif
-#if ENABLE(TOUCH_EVENTS)
     case CSSPropertyWebkitTapHighlightColor:
-#endif
         return true;
     case CSSPropertyDisplay:
     case CSSPropertyZoom:

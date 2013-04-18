@@ -101,9 +101,7 @@ public:
     void updateLayerPositionConstraint(RenderLayer*);
     void touchEventTargetRectsDidChange(const Document*);
 
-#if ENABLE(TOUCH_EVENT_TRACKING)
     void computeAbsoluteTouchEventTargetRects(const Document*, Vector<IntRect>&);
-#endif
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;

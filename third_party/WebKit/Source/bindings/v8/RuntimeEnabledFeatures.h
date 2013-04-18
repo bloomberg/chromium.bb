@@ -135,10 +135,8 @@ public:
     static bool webkitOfflineAudioContextEnabled() { return isWebAudioEnabled; }
 #endif
 
-#if ENABLE(TOUCH_EVENTS)
     static bool touchEnabled() { return isTouchEnabled; }
     static void setTouchEnabled(bool isEnabled) { isTouchEnabled = isEnabled; }
-#endif
 
     static void setDeviceMotionEnabled(bool isEnabled) { isDeviceMotionEnabled = isEnabled; }
     static bool deviceMotionEnabled() { return isDeviceMotionEnabled; }

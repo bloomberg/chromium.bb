@@ -379,12 +379,10 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 #endif
 
-#if ENABLE(TOUCH_EVENTS)
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
-#endif
 
         Performance* performance() const;
 

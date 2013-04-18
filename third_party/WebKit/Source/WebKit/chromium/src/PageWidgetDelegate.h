@@ -61,9 +61,7 @@ public:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleCharEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleGestureEvent(const WebGestureEvent&) = 0;
-#if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(WebCore::Frame& mainFrame, const WebTouchEvent&);
-#endif
     virtual ~PageWidgetEventHandler() { }
 };
 

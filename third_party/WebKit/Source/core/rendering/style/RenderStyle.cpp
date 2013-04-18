@@ -36,9 +36,7 @@
 #include "StyleImage.h"
 #include "StyleInheritedData.h"
 #include "StyleResolver.h"
-#if ENABLE(TOUCH_EVENTS)
 #include "RenderTheme.h"
-#endif
 #include "TextAutosizer.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MathExtras.h>
@@ -1529,12 +1527,10 @@ TextEmphasisMark RenderStyle::textEmphasisMark() const
     return TextEmphasisMarkSesame;
 }
 
-#if ENABLE(TOUCH_EVENTS)
 Color RenderStyle::initialTapHighlightColor()
 {
     return RenderTheme::tapHighlightColor();
 }
-#endif
 
 LayoutBoxExtent RenderStyle::imageOutsets(const NinePieceImage& image) const
 {

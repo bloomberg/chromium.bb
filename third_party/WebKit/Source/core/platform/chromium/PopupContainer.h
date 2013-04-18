@@ -62,9 +62,7 @@ public:
     virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
     virtual bool handleWheelEvent(const PlatformWheelEvent&);
     virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
-#if ENABLE(TOUCH_EVENTS)
     virtual bool handleTouchEvent(const PlatformTouchEvent&);
-#endif
     virtual bool handleGestureEvent(const PlatformGestureEvent&);
 
     // PopupContainer methods

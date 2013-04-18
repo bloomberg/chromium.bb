@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "TouchEvent.h"
 
 #include "EventDispatcher.h"
@@ -114,5 +112,3 @@ bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(TOUCH_EVENTS)

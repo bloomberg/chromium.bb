@@ -39,9 +39,7 @@ class EventTarget;
 class FocusEvent;
 class MouseEvent;
 class Node;
-#if ENABLE(TOUCH_EVENTS)
 class TouchEvent;
-#endif
 class TreeScope;
 
 enum EventDispatchBehavior {
@@ -54,10 +52,8 @@ public:
     static void calculateEventPath(Node*, Event*, EventPath&);
     static void adjustForMouseEvent(Node*, const MouseEvent&, EventPath&);
     static void adjustForFocusEvent(Node*, const FocusEvent&, EventPath&);
-#if ENABLE(TOUCH_EVENTS)
     typedef Vector<RefPtr<TouchList> > EventPathTouchLists;
     static void adjustForTouchEvent(Node*, const TouchEvent&, EventPath&);
-#endif
     static EventTarget* eventTargetRespectingTargetRules(Node* referenceNode);
 
 private:
@@ -71,9 +67,7 @@ private:
     static void calculateAdjustedNodes(const Node*, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior, EventPath&, AdjustedNodes&);
     static void buildRelatedNodeMap(const Node*, RelatedNodeMap&);
     static Node* findRelatedNode(TreeScope*, RelatedNodeMap&);
-#if ENABLE(TOUCH_EVENTS)
     static void adjustTouchList(const Node*, const TouchList*, const EventPath&, EventPathTouchLists&);
-#endif
 };
 
 inline EventTarget* EventRetargeter::eventTargetRespectingTargetRules(Node* referenceNode)

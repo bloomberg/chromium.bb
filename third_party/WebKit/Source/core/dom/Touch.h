@@ -26,8 +26,6 @@
 #ifndef Touch_h
 #define Touch_h
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "EventTarget.h"
 #include "LayoutPoint.h"
 #include <wtf/PassRefPtr.h>
@@ -88,7 +86,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 #endif /* Touch_h */

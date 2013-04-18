@@ -80,9 +80,7 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event, EventPath& ev
     bool inDocument = node->inDocument();
     bool isSVGElement = node->isSVGElement();
     bool isMouseOrFocusEvent = event->isMouseEvent() || event->isFocusEvent();
-#if ENABLE(TOUCH_EVENTS)
     bool isTouchEvent = event->isTouchEvent();
-#endif
     Vector<EventTarget*, 32> targetStack;
     for (EventPathWalker walker(node); walker.node(); walker.moveToParent()) {
         Node* node = walker.node();
@@ -92,10 +90,8 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event, EventPath& ev
             targetStack.append(targetStack.last());
         if (isMouseOrFocusEvent)
             eventPath.append(adoptPtr(new MouseOrFocusEventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
-#if ENABLE(TOUCH_EVENTS)
         else if (isTouchEvent)
             eventPath.append(adoptPtr(new TouchEventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
-#endif
         else
             eventPath.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
         if (!inDocument)
@@ -121,7 +117,6 @@ void EventRetargeter::adjustForFocusEvent(Node* node, const FocusEvent& focusEve
     adjustForRelatedTarget(node, focusEvent.relatedTarget(), eventPath);
 }
 
-#if ENABLE(TOUCH_EVENTS)
 void EventRetargeter::adjustForTouchEvent(Node* node, const TouchEvent& touchEvent, EventPath& eventPath)
 {
     size_t eventPathSize = eventPath.size();
@@ -158,7 +153,6 @@ void EventRetargeter::adjustTouchList(const Node* node, const TouchList* touchLi
             eventPathTouchLists[j]->append(touch.cloneWithNewTarget(adjustedNodes[j].get()));
     }
 }
-#endif
 
 void EventRetargeter::adjustForRelatedTarget(const Node* node, EventTarget* relatedTarget, EventPath& eventPath)
 {

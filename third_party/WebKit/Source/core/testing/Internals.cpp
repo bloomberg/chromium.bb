@@ -1312,7 +1312,6 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionCode& ec
     return count;
 }
 
-#if ENABLE(TOUCH_EVENT_TRACKING)
 PassRefPtr<ClientRectList> Internals::touchEventTargetClientRects(Document* document, ExceptionCode& ec)
 {
     if (!document || !document->view() || !document->page()) {
@@ -1333,7 +1332,6 @@ PassRefPtr<ClientRectList> Internals::touchEventTargetClientRects(Document* docu
 
     return ClientRectList::create(absoluteQuads);
 }
-#endif
 
 PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int x, int y, unsigned topPadding, unsigned rightPadding,
     unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionCode& ec) const

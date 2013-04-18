@@ -26,8 +26,6 @@
 #ifndef TouchList_h
 #define TouchList_h
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "Touch.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -55,7 +53,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 #endif /* TouchList_h */

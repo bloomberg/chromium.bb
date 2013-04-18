@@ -130,9 +130,7 @@ public:
     AtomicString m_lineGrid;
     unsigned m_tabSize;
 
-#if ENABLE(TOUCH_EVENTS)
     Color tapHighlightColor;
-#endif
 
     DataRef<StyleVariableData> m_variables;
 

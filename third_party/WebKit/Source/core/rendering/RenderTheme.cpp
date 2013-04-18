@@ -1158,12 +1158,10 @@ Color RenderTheme::platformInactiveTextSearchHighlightColor() const
     return Color(255, 255, 0); // Yellow.
 }
 
-#if ENABLE(TOUCH_EVENTS)
 Color RenderTheme::tapHighlightColor()
 {
     return defaultTheme()->platformTapHighlightColor();
 }
-#endif
 
 // Value chosen by observation. This can be tweaked.
 static const int minColorContrastValue = 1300;

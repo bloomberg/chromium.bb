@@ -153,9 +153,7 @@ public:
     virtual void setCursor(const WebCore::Cursor&);
     virtual void setCursorHiddenUntilMouseMoves(bool);
     virtual void formStateDidChange(const WebCore::Node*);
-#if ENABLE(TOUCH_EVENTS)
     virtual void needTouchEvents(bool needTouchEvents) OVERRIDE;
-#endif
 
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() const OVERRIDE;
 

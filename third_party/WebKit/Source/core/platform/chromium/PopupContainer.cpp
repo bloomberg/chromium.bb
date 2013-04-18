@@ -45,15 +45,12 @@
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformScreen.h"
+#include "PlatformTouchEvent.h"
 #include "PlatformWheelEvent.h"
 #include "PopupListBox.h"
 #include "PopupMenuClient.h"
 #include "UserGestureIndicator.h"
 #include <limits>
-
-#if ENABLE(TOUCH_EVENTS)
-#include "PlatformTouchEvent.h"
-#endif
 
 using namespace std;
 
@@ -293,12 +290,10 @@ bool PopupContainer::handleWheelEvent(const PlatformWheelEvent& event)
         constructRelativeWheelEvent(event, this, m_listBox.get()));
 }
 
-#if ENABLE(TOUCH_EVENTS)
 bool PopupContainer::handleTouchEvent(const PlatformTouchEvent&)
 {
     return false;
 }
-#endif
 
 // FIXME: Refactor this code to share functionality with EventHandler::handleGestureEvent.
 bool PopupContainer::handleGestureEvent(const PlatformGestureEvent& gestureEvent)

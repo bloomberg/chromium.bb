@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "Touch.h"
 
 #include "DOMWindow.h"
@@ -98,5 +96,3 @@ PassRefPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
 }
 
 } // namespace WebCore
-
-#endif

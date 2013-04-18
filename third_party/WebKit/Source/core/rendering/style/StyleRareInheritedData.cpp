@@ -48,9 +48,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     unsigned unsigneds[1];
     short hyphenationShorts[3];
 
-#if ENABLE(TOUCH_EVENTS)
     Color touchColors;
-#endif
 
     void* variableDataRefs[1];
 };
@@ -103,9 +101,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , hyphenationLimitLines(-1)
     , m_lineGrid(RenderStyle::initialLineGrid())
     , m_tabSize(RenderStyle::initialTabSize())
-#if ENABLE(TOUCH_EVENTS)
     , tapHighlightColor(RenderStyle::initialTapHighlightColor())
-#endif    
 {
     m_variables.init();
 }
@@ -169,9 +165,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
     , m_lineGrid(o.m_lineGrid)
     , m_tabSize(o.m_tabSize)
-#if ENABLE(TOUCH_EVENTS)
     , tapHighlightColor(o.tapHighlightColor)
-#endif
     , m_variables(o.m_variables)
 {
 }
@@ -198,9 +192,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && visitedLinkTextStrokeColor == o.visitedLinkTextStrokeColor
         && visitedLinkTextFillColor == o.visitedLinkTextFillColor
         && visitedLinkTextEmphasisColor == o.visitedLinkTextEmphasisColor
-#if ENABLE(TOUCH_EVENTS)
         && tapHighlightColor == o.tapHighlightColor
-#endif
         && shadowDataEquivalent(o)
         && highlight == o.highlight
         && cursorDataEquivalent(cursorData.get(), o.cursorData.get())

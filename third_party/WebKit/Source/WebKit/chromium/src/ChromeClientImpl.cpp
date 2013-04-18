@@ -1145,12 +1145,10 @@ bool ChromeClientImpl::shouldAutoscrollForDragAndDrop(WebCore::RenderBox*) const
 }
 
 
-#if ENABLE(TOUCH_EVENTS)
 void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
 {
     m_webView->hasTouchEventHandlers(needsTouchEvents);
 }
-#endif // ENABLE(TOUCH_EVENTS)
 
 bool ChromeClientImpl::requestPointerLock()
 {

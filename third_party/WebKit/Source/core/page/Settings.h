@@ -180,10 +180,8 @@ namespace WebCore {
         static void setUsesOverlayScrollbars(bool flag);
         static bool usesOverlayScrollbars();
 
-#if ENABLE(TOUCH_EVENTS)
         void setTouchEventEmulationEnabled(bool enabled) { m_touchEventEmulationEnabled = enabled; }
         bool isTouchEventEmulationEnabled() const { return m_touchEventEmulationEnabled; }
-#endif
 
     private:
         explicit Settings(Page*);
@@ -220,9 +218,7 @@ namespace WebCore {
         bool m_cssVariablesEnabled : 1;
         bool m_dnsPrefetchingEnabled : 1;
 
-#if ENABLE(TOUCH_EVENTS)
         bool m_touchEventEmulationEnabled : 1;
-#endif
 
         Timer<Settings> m_setImageLoadingSettingsTimer;
         void imageLoadingSettingsTimerFired(Timer<Settings>*);

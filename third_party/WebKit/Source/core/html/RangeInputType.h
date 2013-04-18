@@ -53,10 +53,8 @@ private:
     virtual StepRange createStepRange(AnyStepHandling) const OVERRIDE;
     virtual bool isSteppable() const OVERRIDE;
     virtual void handleMouseDownEvent(MouseEvent*) OVERRIDE;
-#if ENABLE(TOUCH_EVENTS)
     virtual void handleTouchEvent(TouchEvent*) OVERRIDE;
     virtual bool hasTouchEventHandler() const OVERRIDE;
-#endif
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;

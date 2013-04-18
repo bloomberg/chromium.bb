@@ -107,7 +107,6 @@ v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationConte
     return wrapper;
 }
 
-#if ENABLE(TOUCH_EVENTS)
 v8::Handle<v8::Value> V8Document::createTouchListMethodCustom(const v8::Arguments& args)
 {
     RefPtr<TouchList> touchList = TouchList::create();
@@ -119,6 +118,5 @@ v8::Handle<v8::Value> V8Document::createTouchListMethodCustom(const v8::Argument
 
     return toV8(touchList.release(), args.Holder(), args.GetIsolate());
 }
-#endif
 
 } // namespace WebCore

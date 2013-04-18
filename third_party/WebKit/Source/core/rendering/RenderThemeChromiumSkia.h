@@ -46,12 +46,10 @@ public:
     virtual String extraMediaControlsStyleSheet();
 #endif
 
-#if ENABLE(TOUCH_EVENTS)
     virtual Color platformTapHighlightColor() const OVERRIDE
     {
         return Color(defaultTapHighlightColor);
     }
-#endif
 
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const RenderStyle*) const;

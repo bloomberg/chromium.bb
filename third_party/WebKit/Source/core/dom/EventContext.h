@@ -35,9 +35,7 @@
 namespace WebCore {
 
 class Event;
-#if ENABLE(TOUCH_EVENTS)
 class TouchList;
-#endif
 
 class EventContext {
 public:
@@ -78,7 +76,6 @@ private:
 };
 
 
-#if ENABLE(TOUCH_EVENTS)
 class TouchEventContext : public EventContext {
 public:
     TouchEventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget, PassRefPtr<EventTarget> target);
@@ -105,7 +102,6 @@ inline TouchEventContext* toTouchEventContext(EventContext* eventContext)
     ASSERT_WITH_SECURITY_IMPLICATION(!eventContext || eventContext->isTouchEventContext());
     return static_cast<TouchEventContext*>(eventContext);
 }
-#endif // ENABLE(TOUCH_EVENTS)
 
 #ifndef NDEBUG
 inline bool EventContext::isUnreachableNode(EventTarget* target)

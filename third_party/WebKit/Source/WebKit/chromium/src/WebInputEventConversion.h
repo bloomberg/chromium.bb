@@ -82,7 +82,6 @@ public:
     bool isCharacterKey() const;
 };
 
-#if ENABLE(TOUCH_EVENTS)
 // Converts a WebTouchPoint to a WebCore::PlatformTouchPoint.
 class PlatformTouchPointBuilder : public WebCore::PlatformTouchPoint {
 public:
@@ -94,7 +93,6 @@ class PlatformTouchEventBuilder : public WebCore::PlatformTouchEvent {
 public:
     PlatformTouchEventBuilder(WebCore::Widget*, const WebTouchEvent&);
 };
-#endif
 
 // Converts a WebCore::MouseEvent to a corresponding WebMouseEvent.
 // NOTE: This is only implemented for mousemove, mouseover, mouseout,
@@ -121,7 +119,6 @@ public:
     WebKeyboardEventBuilder(const WebCore::KeyboardEvent&);
 };
 
-#if ENABLE(TOUCH_EVENTS)
 // Converts a WebCore::TouchEvent to a corresponding WebTouchEvent.
 // NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
 // exceeding that cap will be dropped.
@@ -129,7 +126,6 @@ class WebTouchEventBuilder : public WebTouchEvent {
 public:
     WebTouchEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::TouchEvent&);
 };
-#endif // ENABLE(TOUCH_EVENTS)
 
 // Converts WebCore::GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.

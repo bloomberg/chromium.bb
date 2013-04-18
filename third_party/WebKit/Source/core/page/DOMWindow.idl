@@ -268,10 +268,10 @@
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
     attribute EventListener onorientationchange;
 #endif
-    [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchstart;
-    [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchmove;
-    [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchend;
-    [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
+    [EnabledAtRuntime=touch] attribute EventListener ontouchstart;
+    [EnabledAtRuntime=touch] attribute EventListener ontouchmove;
+    [EnabledAtRuntime=touch] attribute EventListener ontouchend;
+    [EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
 
     [EnabledAtRuntime] attribute EventListener ondevicemotion;
     [EnabledAtRuntime] attribute EventListener ondeviceorientation;
@@ -518,9 +518,9 @@
     attribute XMLHttpRequestProgressEventConstructor XMLHttpRequestProgressEvent;
     [EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
     [EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
-    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchConstructor Touch;
-    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
-    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
+    [EnabledAtRuntime=touch] attribute TouchConstructor Touch;
+    [EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
+    [EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
     attribute StorageEventConstructor StorageEvent;
     [Conditional=INPUT_SPEECH] attribute SpeechInputEventConstructor SpeechInputEvent;
     [Conditional=WEBGL] attribute WebGLContextEventConstructor WebGLContextEvent;

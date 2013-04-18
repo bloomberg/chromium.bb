@@ -283,9 +283,7 @@ public:
     virtual void fullScreenRendererChanged(RenderBox*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }
 
-#if ENABLE(TOUCH_EVENTS)
     virtual void needTouchEvents(bool) = 0;
-#endif
 
     virtual bool selectItemWritingDirectionIsNatural() = 0;
     virtual bool selectItemAlignmentFollowsMenuWritingDirection() = 0;

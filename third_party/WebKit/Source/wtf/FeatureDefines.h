@@ -282,10 +282,6 @@
 #define ENABLE_THREADED_SCROLLING 0
 #endif
 
-#if !defined(ENABLE_TOUCH_EVENTS)
-#define ENABLE_TOUCH_EVENTS 0
-#endif
-
 #if !defined(ENABLE_TOUCH_ICON_LOADING)
 #define ENABLE_TOUCH_ICON_LOADING 0
 #endif

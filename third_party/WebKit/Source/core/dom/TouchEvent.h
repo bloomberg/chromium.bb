@@ -27,8 +27,6 @@
 #ifndef TouchEvent_h
 #define TouchEvent_h
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "EventDispatchMediator.h"
 #include "MouseRelatedEvent.h"
 #include "TouchList.h"
@@ -102,7 +100,5 @@ inline TouchEvent* toTouchEvent(Event* event)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(TOUCH_EVENTS)
 
 #endif // TouchEvent_h

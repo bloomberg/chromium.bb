@@ -2676,7 +2676,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-#if ENABLE(TOUCH_EVENTS)
     case CSSPropertyWebkitTapHighlightColor:
         if ((id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu
             || (id >= CSSValueWebkitFocusRingColor && id < CSSValueWebkitText && inQuirksMode())) {
@@ -2687,7 +2686,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
                 m_valueList->next();
         }
         break;
-#endif
 
         /* shorthand properties */
     case CSSPropertyBackground: {

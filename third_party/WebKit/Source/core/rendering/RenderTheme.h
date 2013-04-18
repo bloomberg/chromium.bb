@@ -154,10 +154,8 @@ public:
     static Color focusRingColor();
     virtual Color platformFocusRingColor() const { return Color(0, 0, 0); }
     static void setCustomFocusRingColor(const Color&);
-#if ENABLE(TOUCH_EVENTS)
     static Color tapHighlightColor();
     virtual Color platformTapHighlightColor() const { return RenderTheme::defaultTapHighlightColor; }
-#endif
     virtual void platformColorsDidChange();
 
     virtual double caretBlinkInterval() const { return 0.5; }
@@ -351,11 +349,9 @@ private:
     mutable Color m_activeListBoxSelectionForegroundColor;
     mutable Color m_inactiveListBoxSelectionForegroundColor;
 
-#if ENABLE(TOUCH_EVENTS)
     // This color is expected to be drawn on a semi-transparent overlay,
     // making it more transparent than its alpha value indicates.
     static const RGBA32 defaultTapHighlightColor = 0x66000000;
-#endif
 
 #if USE(NEW_THEME)
     Theme* m_theme; // The platform-specific theme.

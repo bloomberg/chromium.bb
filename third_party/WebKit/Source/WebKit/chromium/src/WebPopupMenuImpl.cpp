@@ -130,7 +130,6 @@ bool WebPopupMenuImpl::handleGestureEvent(const WebGestureEvent& event)
     return m_widget->handleGestureEvent(PlatformGestureEventBuilder(m_widget, event));
 }
 
-#if ENABLE(TOUCH_EVENTS)
 bool WebPopupMenuImpl::handleTouchEvent(const WebTouchEvent& event)
 {
 
@@ -138,7 +137,6 @@ bool WebPopupMenuImpl::handleTouchEvent(const WebTouchEvent& event)
     bool defaultPrevented(m_widget->handleTouchEvent(touchEventBuilder));
     return defaultPrevented;
 }
-#endif
 
 bool WebPopupMenuImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {

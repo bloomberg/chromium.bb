@@ -65,8 +65,6 @@
       'ENABLE_SVG_FONTS=<(enable_svg)',
       'ENABLE_THREADED_HTML_PARSER=1',
       'ENABLE_TOUCH_ADJUSTMENT=1',
-      'ENABLE_TOUCH_EVENTS=<(enable_touch_events)',
-      'ENABLE_TOUCH_EVENT_TRACKING=<(enable_touch_events)',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',
       'ENABLE_V8_SCRIPT_DEBUG_SERVER=1',
       'ENABLE_VIDEO=1',
@@ -85,11 +83,9 @@
     # through GYP_DEFINES.
     'variables': {
       'enable_svg%': 1,
-      'enable_touch_events%': 1,
       'enable_touch_icon_loading%' : 0,
     },
     'enable_svg%': '<(enable_svg)',
-    'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
       ['OS=="android"', {
         'feature_defines': [

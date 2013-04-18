@@ -28,6 +28,8 @@
 
 #include "AnimationController.h"
 #include "CachedFramePlatformData.h"
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -52,12 +54,6 @@
 #if ENABLE(SVG)
 #include "SVGDocumentExtensions.h"
 #endif
-
-#if ENABLE(TOUCH_EVENTS)
-#include "Chrome.h"
-#include "ChromeClient.h"
-#endif
-
 
 namespace WebCore {
 
@@ -126,10 +122,8 @@ void CachedFrameBase::restore()
     HistoryItem* historyItem = frame->loader()->history()->currentItem();
     m_document->enqueuePopstateEvent(historyItem && historyItem->stateObject() ? historyItem->stateObject() : SerializedScriptValue::nullValue());
     
-#if ENABLE(TOUCH_EVENTS)
     if (m_document->hasTouchEventHandlers())
         m_document->page()->chrome()->client()->needTouchEvents(true);
-#endif
 
     m_document->documentDidResumeFromPageCache();
 }

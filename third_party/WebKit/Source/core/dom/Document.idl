@@ -254,17 +254,16 @@
     [NotEnumerable] attribute EventListener onsearch;
     [NotEnumerable] attribute EventListener onselectstart;
     [NotEnumerable] attribute EventListener onselectionchange;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchmove;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchend;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
+    [NotEnumerable,EnabledAtRuntime=touch] attribute EventListener ontouchstart;
+    [NotEnumerable,EnabledAtRuntime=touch] attribute EventListener ontouchmove;
+    [NotEnumerable,EnabledAtRuntime=touch] attribute EventListener ontouchend;
+    [NotEnumerable,EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
     [NotEnumerable] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable] attribute EventListener onwebkitfullscreenerror;
     [NotEnumerable] attribute EventListener onwebkitpointerlockchange;
     [NotEnumerable] attribute EventListener onwebkitpointerlockerror;
     [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
 
-#if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
     [ReturnNewObject, EnabledAtRuntime=touch, RaisesException] Touch createTouch([Default=Undefined] optional DOMWindow window,
                                                      [Default=Undefined] optional EventTarget target,
                                                      [Default=Undefined] optional long identifier,
@@ -277,7 +276,6 @@
                                                      [Default=Undefined] optional float webkitRotationAngle,
                                                      [Default=Undefined] optional float webkitForce);
     [ReturnNewObject, EnabledAtRuntime=touch, Custom, RaisesException] TouchList createTouchList();
-#endif
 
 #if defined(ENABLE_CUSTOM_ELEMENTS) && ENABLE_CUSTOM_ELEMENTS
     [EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);

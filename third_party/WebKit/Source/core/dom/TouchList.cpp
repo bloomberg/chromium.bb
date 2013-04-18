@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(TOUCH_EVENTS)
-
 #include "TouchList.h"
 
 namespace WebCore {
@@ -44,5 +42,3 @@ const Touch* TouchList::item(unsigned index) const
 }
 
 } // namespace WebCore
-
-#endif
