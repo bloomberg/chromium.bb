@@ -16,6 +16,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -35,6 +36,9 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -64,6 +68,8 @@
 // TODO(kinaba): provide more non-intrusive way for handling local/remote
 // distinction and remove these ugly #ifdef's. http://crbug.com/140425
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -75,6 +81,9 @@ using content::WebContents;
 using printing::Metafile;
 
 namespace {
+
+// The cloud print OAuth2 scope.
+const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
 
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
@@ -236,6 +245,71 @@ static base::LazyInstance<printing::StickySettings> sticky_settings =
 
 }  // namespace
 
+class PrintPreviewHandler::AccessTokenService
+    : public OAuth2TokenService::Consumer {
+ public:
+  explicit AccessTokenService(PrintPreviewHandler* handler)
+      : handler_(handler) {
+  }
+
+  void RequestToken(const std::string& type) {
+    if (requests_.find(type) != requests_.end())
+      return;  // Already in progress.
+
+    OAuth2TokenService* service = NULL;
+    if (type == "profile") {
+      Profile* profile = Profile::FromWebUI(handler_->web_ui());
+      if (profile)
+        service = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    } else if (type == "device") {
+#if defined(OS_CHROMEOS)
+      service = chromeos::DeviceOAuth2TokenServiceFactory::Get();
+#endif
+    }
+
+    if (service) {
+      OAuth2TokenService::ScopeSet oauth_scopes;
+      oauth_scopes.insert(kCloudPrintAuth);
+      scoped_ptr<OAuth2TokenService::Request> request(
+          service->StartRequest(oauth_scopes, this));
+      requests_[type].reset(request.release());
+    } else {
+      handler_->SendAccessToken(type, std::string());  // Unknown type.
+    }
+  }
+
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) OVERRIDE {
+    OnServiceResponce(request, access_token);
+  }
+
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) OVERRIDE {
+    OnServiceResponce(request, std::string());
+  }
+
+ private:
+  void OnServiceResponce(const OAuth2TokenService::Request* request,
+                         const std::string& access_token) {
+    for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
+      if (i->second == request) {
+        handler_->SendAccessToken(i->first, access_token);
+        requests_.erase(i);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+
+  typedef std::map<std::string,
+                   linked_ptr<OAuth2TokenService::Request> > Requests;
+  Requests requests_;
+  PrintPreviewHandler* handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
+};
+
 // static
 printing::StickySettings* PrintPreviewHandler::GetStickySettings() {
   return sticky_settings.Pointer();
@@ -274,6 +348,9 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("signIn",
       base::Bind(&PrintPreviewHandler::HandleSignin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getAccessToken",
+      base::Bind(&PrintPreviewHandler::HandleGetAccessToken,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("manageCloudPrinters",
       base::Bind(&PrintPreviewHandler::HandleManageCloudPrint,
@@ -585,6 +662,15 @@ void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
       base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
+void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
+  std::string type;
+  if (!args->GetString(0, &type))
+    return;
+  if (!token_service_)
+    token_service_.reset(new AccessTokenService(this));
+  token_service_->RequestToken(type);
+}
+
 void PrintPreviewHandler::PrintWithCloudPrintDialog(
     const base::RefCountedBytes* data,
     const string16& title) {
@@ -781,6 +867,13 @@ void PrintPreviewHandler::ClosePreviewDialog() {
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(web_ui()->GetController());
   print_preview_ui->OnClosePrintPreviewDialog();
+}
+
+void PrintPreviewHandler::SendAccessToken(const std::string& type,
+                                          const std::string& access_token) {
+  VLOG(1) << "Get getAccessToken finished";
+  web_ui()->CallJavascriptFunction("onDidGetAccessToken", StringValue(type),
+                                   StringValue(access_token));
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(

@@ -115,6 +115,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // |args| is unused.
   void HandleSignin(const base::ListValue* args);
 
+  // Generates new token and sends back to UI.
+  void HandleGetAccessToken(const base::ListValue* args);
+
   // Brings up a web page to allow the user to configure cloud print.
   // |args| is unused.
   void HandleManageCloudPrint(const base::ListValue* args);
@@ -150,6 +153,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendInitialSettings(
       const std::string& default_printer,
       const std::string& cloud_print_data);
+
+  // Send OAuth2 access token.
+  void SendAccessToken(const std::string& type,
+                       const std::string& access_token);
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information.
@@ -221,6 +228,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.
   scoped_ptr<base::FilePath> print_to_pdf_path_;
+
+  // Holds token service to get OAuth2 access tokens.
+  class AccessTokenService;
+  scoped_ptr<AccessTokenService> token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
