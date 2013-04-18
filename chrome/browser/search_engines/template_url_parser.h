@@ -28,13 +28,15 @@ class TemplateURLParser {
   };
 
   // Decodes the chunk of data representing a TemplateURL, creates the
-  // TemplateURL, and returns it.  The caller owns the returned object.  Returns
-  // NULL if data does not describe a valid TemplateURL, the URLs referenced do
-  // not point to valid http/https resources, or for some other reason we do not
-  // support the described TemplateURL.  |parameter_filter| can be used if you
-  // want to filter some parameters out of the URL.  For example, when importing
-  // from another browser, we remove any parameter identifying that browser.  If
-  // set to NULL, the URL is not modified.
+  // TemplateURL, and returns it.  The caller owns the returned object.
+  // |profile| should only be non-NULL if this function is called on the UI
+  // thread.  Returns NULL if data does not describe a valid TemplateURL, the
+  // URLs referenced do not point to valid http/https resources, or for some
+  // other reason we do not support the described TemplateURL.
+  // |parameter_filter| can be used if you want to filter some parameters out of
+  // the URL.  For example, when importing from another browser, we remove any
+  // parameter identifying that browser.  If set to NULL, the URL is not
+  // modified.
   static TemplateURL* Parse(Profile* profile,
                             bool show_in_default_list,
                             const char* data,
