@@ -5,10 +5,17 @@
 #include "base/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/features/complex_feature.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
@@ -17,12 +24,16 @@ namespace chrome {
 
 namespace {
 
+const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+
 class TabCaptureApiTest : public ExtensionApiTest {
  public:
-  TabCaptureApiTest() : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {}
+  TabCaptureApiTest() {}
 
- private:
-  extensions::Feature::ScopedCurrentChannel current_channel_;
+  void AddExtensionToCommandLineWhitelist() {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kWhitelistedExtensionID, kExtensionId);
+  }
 };
 
 }  // namespace
@@ -38,6 +49,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   }
 #endif
 
+  AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "api_tests.html")) << message_;
 }
@@ -53,6 +65,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
   }
 #endif
 
+  AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "api_tests_audio.html")) << message_;
 }
@@ -86,6 +99,52 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GetUserMediaTest) {
   int routing_id = rvh->GetRoutingID();
 
   listener.Reply(base::StringPrintf("%i:%i", render_process_id, routing_id));
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Make sure tabCapture.capture only works if the tab has been granted
+// permission via an extension icon click or the extension is whitelisted.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ActiveTabPermission) {
+  ExtensionTestMessageListener before_open_tab("ready1", true);
+  ExtensionTestMessageListener before_grant_permission("ready2", true);
+  ExtensionTestMessageListener before_open_new_tab("ready3", true);
+  ExtensionTestMessageListener before_whitelist_extension("ready4", true);
+
+  ASSERT_TRUE(RunExtensionSubtest(
+      "tab_capture/experimental", "active_tab_permission_test.html"))
+          << message_;
+
+  // Open a new tab and make sure capture is denied.
+  EXPECT_TRUE(before_open_tab.WaitUntilSatisfied());
+  content::OpenURLParams params(GURL("http://google.com"), content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK, false);
+  content::WebContents* web_contents = browser()->OpenURL(params);
+  before_open_tab.Reply("");
+
+  // Grant permission and make sure capture succeeds.
+  EXPECT_TRUE(before_grant_permission.WaitUntilSatisfied());
+  ExtensionService* extension_service =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetExtensionService();
+  const extensions::Extension* extension =
+      extension_service->GetExtensionById(kExtensionId, false);
+  extensions::TabHelper::FromWebContents(web_contents)
+      ->active_tab_permission_granter()->GrantIfRequested(extension);
+  before_grant_permission.Reply("");
+
+  // Open a new tab and make sure capture is denied.
+  EXPECT_TRUE(before_open_new_tab.WaitUntilSatisfied());
+  browser()->OpenURL(params);
+  before_open_new_tab.Reply("");
+
+  // Add extension to whitelist and make sure capture succeeds.
+  EXPECT_TRUE(before_whitelist_extension.WaitUntilSatisfied());
+  AddExtensionToCommandLineWhitelist();
+  before_whitelist_extension.Reply("");
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());

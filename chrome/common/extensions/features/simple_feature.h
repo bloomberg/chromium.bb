@@ -88,13 +88,14 @@ class SimpleFeature : public Feature {
 
   virtual bool IsInternal() const OVERRIDE;
 
+  virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
+
  protected:
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   Manifest::Type type) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   const GURL& url) const;
-  bool IsIdInWhitelist(const std::string& extension_id) const;
 
  private:
   // For clarity and consistency, we handle the default value of each of these

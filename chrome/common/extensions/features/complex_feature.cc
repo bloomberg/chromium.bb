@@ -83,4 +83,13 @@ std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
   return features_[0]->GetAvailabilityMessage(result, type, url);
 }
 
+bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {
+  for (FeatureList::const_iterator it = features_.begin();
+       it != features_.end(); ++it) {
+    if ((*it)->IsIdInWhitelist(extension_id))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace extensions

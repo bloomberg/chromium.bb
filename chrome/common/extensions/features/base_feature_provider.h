@@ -29,6 +29,9 @@ class BaseFeatureProvider : public FeatureProvider {
   // Gets a feature provider for a specific feature type, like "permission".
   static FeatureProvider* GetByName(const std::string& name);
 
+  static FeatureProvider* GetPermissionFeatures() {
+    return GetByName("permission");
+  }
 
   // Gets the feature |feature_name|, if it exists.
   virtual Feature* GetFeature(const std::string& feature_name) OVERRIDE;

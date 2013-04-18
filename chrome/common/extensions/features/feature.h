@@ -169,6 +169,8 @@ class Feature {
                                              Manifest::Type type,
                                              const GURL& url) const = 0;
 
+  virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;
+
  protected:
   std::string name_;
   std::set<std::string> dependencies_;

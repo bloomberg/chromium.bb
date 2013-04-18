@@ -25,7 +25,7 @@ namespace extensions {
 class Extension;
 
 // Responsible for granting and revoking tab-specific permissions to extensions
-// with the activeTab permission.
+// with the activeTab or tabCapture permission.
 class ActiveTabPermissionGranter : public content::WebContentsObserver,
                                    public content::NotificationObserver {
  public:
@@ -34,8 +34,8 @@ class ActiveTabPermissionGranter : public content::WebContentsObserver,
                              Profile* profile);
   virtual ~ActiveTabPermissionGranter();
 
-  // If |extension| has the activeTab permission, grants tab-specific
-  // permissions to it until the next page navigation or refresh.
+  // If |extension| has the activeTab or tabCapture permission, grants
+  // tab-specific permissions to it until the next page navigation or refresh.
   void GrantIfRequested(const Extension* extension);
 
   // Returns true if |extension| has been granted tab-specific permissions

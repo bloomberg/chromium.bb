@@ -35,8 +35,10 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
-  if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab))
+  if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab) &&
+      !extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
     return;
+  }
 
   if (IsGranted(extension))
     return;
