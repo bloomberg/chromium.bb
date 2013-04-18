@@ -127,6 +127,8 @@ static void text_entry_delete_text(struct text_entry *entry,
 static void text_entry_delete_selected_text(struct text_entry *entry);
 static void text_entry_reset_preedit(struct text_entry *entry);
 static void text_entry_commit_and_reset(struct text_entry *entry);
+static void text_entry_get_cursor_rectangle(struct text_entry *entry, struct rectangle *rectangle);
+static void text_entry_update(struct text_entry *entry);
 
 static void
 text_input_commit_string(void *data,
@@ -165,6 +167,8 @@ text_input_preedit_string(void *data,
 	entry->preedit_info.cursor = 0;
 	entry->preedit_info.attr_list = NULL;
 
+	text_entry_update(entry);
+	
 	widget_schedule_redraw(entry->widget);
 }
 
@@ -630,6 +634,8 @@ text_entry_update_layout(struct text_entry *entry)
 static void
 text_entry_update(struct text_entry *entry)
 {
+	struct rectangle cursor_rectangle;
+
 	text_input_set_content_type(entry->text_input,
 				    TEXT_INPUT_CONTENT_HINT_NONE,
 				    entry->content_purpose);
@@ -642,6 +648,10 @@ text_entry_update(struct text_entry *entry)
 	if (entry->preferred_language)
 		text_input_set_preferred_language(entry->text_input,
 						  entry->preferred_language);
+
+	text_entry_get_cursor_rectangle(entry, &cursor_rectangle);
+	text_input_set_cursor_rectangle(entry->text_input, cursor_rectangle.x, cursor_rectangle.y,
+					cursor_rectangle.width, cursor_rectangle.height);
 
 	text_input_commit_state(entry->text_input);
 }
@@ -825,6 +835,34 @@ text_entry_delete_selected_text(struct text_entry *entry)
 	text_entry_delete_text(entry, start_index, end_index - start_index);
 
 	entry->anchor = entry->cursor;
+}
+
+static void
+text_entry_get_cursor_rectangle(struct text_entry *entry, struct rectangle *rectangle)
+{
+	struct rectangle allocation;
+	PangoRectangle extents;
+	PangoRectangle cursor_pos;
+
+	widget_get_allocation(entry->widget, &allocation);
+
+	if (entry->preedit.text && entry->preedit.cursor < 0) {
+		rectangle->x = 0;
+		rectangle->y = 0;
+		rectangle->width = 0;
+		rectangle->height = 0;
+		return;
+	}
+
+	pango_layout_get_extents(entry->layout, &extents, NULL);
+	pango_layout_get_cursor_pos(entry->layout,
+				    entry->cursor + entry->preedit.cursor,
+				    &cursor_pos, NULL);
+
+	rectangle->x = allocation.x + (allocation.height / 2) + PANGO_PIXELS(cursor_pos.x);
+	rectangle->y = allocation.y + 10 + PANGO_PIXELS(cursor_pos.y);
+	rectangle->width = PANGO_PIXELS(cursor_pos.width);
+	rectangle->height = PANGO_PIXELS(cursor_pos.height);
 }
 
 static void
