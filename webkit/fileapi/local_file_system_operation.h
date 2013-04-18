@@ -97,9 +97,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
-  void CopyInForeignFile(const base::FilePath& src_local_disk_path,
-                         const FileSystemURL& dest_url,
-                         const StatusCallback& callback);
+  virtual void CopyInForeignFile(const base::FilePath& src_local_disk_path,
+                                 const FileSystemURL& dest_url,
+                                 const StatusCallback& callback);
 
   // Removes a single file.
   //

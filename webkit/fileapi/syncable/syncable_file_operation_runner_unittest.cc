@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -55,6 +56,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
     file_system_.SetUp();
     sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
                                              base::MessageLoopProxy::current());
@@ -118,6 +120,12 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     EXPECT_EQ(expect, status);
     ++callback_count_;
   }
+
+  bool CreateTempFile(base::FilePath* path) {
+    return file_util::CreateTemporaryFileInDir(dir_.path(), path);
+  }
+
+  base::ScopedTempDir dir_;
 
   MessageLoop message_loop_;
   CannedSyncableFileSystem file_system_;
@@ -319,6 +327,45 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   sync_context_ = NULL;
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
+}
+
+// Test if CopyInForeignFile runs cooperatively with other Sync operations
+// when it is called directly via AsLocalFileSystemOperation.
+TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
+  const std::string kTestData("test data");
+
+  base::FilePath temp_path;
+  ASSERT_TRUE(CreateTempFile(&temp_path));
+  ASSERT_EQ(static_cast<int>(kTestData.size()),
+            file_util::WriteFile(
+                temp_path, kTestData.data(), kTestData.size()));
+
+  sync_status()->StartSyncing(URL(kFile));
+  ASSERT_FALSE(sync_status()->IsWritable(URL(kFile)));
+
+  // The URL is in syncing so CopyIn (which is a write operation) won't run.
+  ResetCallbackStatus();
+  file_system_.NewOperation()->AsLocalFileSystemOperation()->CopyInForeignFile(
+      temp_path, URL(kFile),
+      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(0, callback_count_);
+
+  // End syncing (to enable write).
+  sync_status()->EndSyncing(URL(kFile));
+  ASSERT_TRUE(sync_status()->IsWritable(URL(kFile)));
+
+  ResetCallbackStatus();
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, callback_count_);
+
+  // Now the file must have been created and have the same content as temp_path.
+  ResetCallbackStatus();
+  file_system_.DoVerifyFile(
+      URL(kFile), kTestData,
+      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, callback_count_);
 }
 
 }  // namespace sync_file_system

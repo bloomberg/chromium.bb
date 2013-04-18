@@ -77,6 +77,11 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
       const fileapi::FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
 
+  // LocalFileSystemOperation overrides.
+  virtual void CopyInForeignFile(const base::FilePath& src_local_disk_path,
+                                 const fileapi::FileSystemURL& dest_url,
+                                 const StatusCallback& callback) OVERRIDE;
+
  private:
   typedef SyncableFileSystemOperation self;
   class QueueableTask;

@@ -327,6 +327,27 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
   delete this;
 }
 
+void SyncableFileSystemOperation::CopyInForeignFile(
+    const base::FilePath& src_local_disk_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  DCHECK(operation_runner_.get());
+  target_paths_.push_back(dest_url);
+  completion_callback_ = callback;
+  scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
+      this,
+      base::Bind(&LocalFileSystemOperation::CopyInForeignFile,
+                 base::Unretained(NewOperation()),
+                 src_local_disk_path, dest_url,
+                 base::Bind(&self::DidFinish, base::Owned(this)))));
+  operation_runner_->PostOperationTask(task.Pass());
+}
+
 SyncableFileSystemOperation::SyncableFileSystemOperation(
     fileapi::FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
