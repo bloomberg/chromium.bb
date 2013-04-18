@@ -7,6 +7,7 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/flash/flash_cache_test_base.h"
 #include "net/disk_cache/flash/format.h"
+#include "net/disk_cache/flash/log_store.h"
 #include "net/disk_cache/flash/log_store_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,11 +15,14 @@ using disk_cache::LogStoreEntry;
 
 // Tests the behavior of a LogStoreEntry with empty streams.
 TEST_F(FlashCacheTest, LogStoreEntryEmpty) {
-  scoped_ptr<LogStoreEntry> entry(new LogStoreEntry(log_store_.get()));
+  disk_cache::LogStore log_store(path_, kStorageSize);
+  ASSERT_TRUE(log_store.Init());
+
+  scoped_ptr<LogStoreEntry> entry(new LogStoreEntry(&log_store));
   EXPECT_TRUE(entry->Init());
   EXPECT_TRUE(entry->Close());
 
-  entry.reset(new LogStoreEntry(log_store_.get(), entry->id()));
+  entry.reset(new LogStoreEntry(&log_store, entry->id()));
   EXPECT_TRUE(entry->Init());
 
   for (int i = 0; i < disk_cache::kFlashLogStoreEntryNumStreams; ++i) {
@@ -28,10 +32,14 @@ TEST_F(FlashCacheTest, LogStoreEntryEmpty) {
     EXPECT_EQ(0, entry->ReadData(i, 0, buf, kSize));
   }
   EXPECT_TRUE(entry->Close());
+  ASSERT_TRUE(log_store.Close());
 }
 
 TEST_F(FlashCacheTest, LogStoreEntryWriteRead) {
-  scoped_ptr<LogStoreEntry> entry(new LogStoreEntry(log_store_.get()));
+  disk_cache::LogStore log_store(path_, kStorageSize);
+  ASSERT_TRUE(log_store.Init());
+
+  scoped_ptr<LogStoreEntry> entry(new LogStoreEntry(&log_store));
   EXPECT_TRUE(entry->Init());
 
   int sizes[disk_cache::kFlashLogStoreEntryNumStreams] = {333, 444, 555, 666};
@@ -46,7 +54,7 @@ TEST_F(FlashCacheTest, LogStoreEntryWriteRead) {
   EXPECT_TRUE(entry->Close());
 
   int32 id = entry->id();
-  entry.reset(new LogStoreEntry(log_store_.get(), id));
+  entry.reset(new LogStoreEntry(&log_store, id));
   EXPECT_TRUE(entry->Init());
 
   for (int i = 0; i < disk_cache::kFlashLogStoreEntryNumStreams; ++i) {
@@ -57,4 +65,5 @@ TEST_F(FlashCacheTest, LogStoreEntryWriteRead) {
   }
   EXPECT_TRUE(entry->Close());
   EXPECT_EQ(id, entry->id());
+  ASSERT_TRUE(log_store.Close());
 }

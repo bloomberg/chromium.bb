@@ -1479,7 +1479,6 @@
         'disk_cache/simple/simple_index_unittest.cc',
         'disk_cache/simple/simple_util_unittest.cc',
         'disk_cache/storage_block_unittest.cc',
-        'disk_cache/flash/flash_entry_unittest.cc',
         'disk_cache/flash/log_store_entry_unittest.cc',
         'disk_cache/flash/log_store_unittest.cc',
         'disk_cache/flash/segment_unittest.cc',

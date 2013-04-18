@@ -37,8 +37,11 @@ const int32 kSegmentFreeSpace = disk_cache::kFlashSegmentSize -
 }  // namespace
 
 TEST_F(FlashCacheTest, SegmentUserTracking) {
+  disk_cache::Storage storage(path_, kStorageSize);
+  ASSERT_TRUE(storage.Init());
+
   scoped_ptr<disk_cache::Segment> segment(
-      new disk_cache::Segment(0, false, storage_.get()));
+      new disk_cache::Segment(0, false, &storage));
   EXPECT_TRUE(segment->Init());
 
   EXPECT_TRUE(segment->HasNoUsers());
@@ -55,30 +58,36 @@ TEST_F(FlashCacheTest, SegmentUserTracking) {
 }
 
 TEST_F(FlashCacheTest, SegmentCreateDestroy) {
+  disk_cache::Storage storage(path_, kStorageSize);
+  ASSERT_TRUE(storage.Init());
+
   int32 index = 0;
   scoped_ptr<disk_cache::Segment> segment(
-      new disk_cache::Segment(index, false, storage_.get()));
+      new disk_cache::Segment(index, false, &storage));
   EXPECT_TRUE(segment->Init());
   EXPECT_TRUE(segment->Close());
 
-  index = num_segments_in_storage_ - 1;
-  segment.reset(new disk_cache::Segment(index, false, storage_.get()));
+  index = kNumTestSegments - 1;
+  segment.reset(new disk_cache::Segment(index, false, &storage));
   EXPECT_TRUE(segment->Init());
   EXPECT_TRUE(segment->Close());
 
-  int32 invalid_index = num_segments_in_storage_;
-  segment.reset(new disk_cache::Segment(invalid_index, false, storage_.get()));
+  int32 invalid_index = kNumTestSegments;
+  segment.reset(new disk_cache::Segment(invalid_index, false, &storage));
   EXPECT_FALSE(segment->Init());
 
   invalid_index = -1;
-  segment.reset(new disk_cache::Segment(invalid_index, false, storage_.get()));
+  segment.reset(new disk_cache::Segment(invalid_index, false, &storage));
   EXPECT_FALSE(segment->Init());
 }
 
 TEST_F(FlashCacheTest, SegmentWriteDataReadData) {
-  int32 index = rand() % num_segments_in_storage_;
+  disk_cache::Storage storage(path_, kStorageSize);
+  ASSERT_TRUE(storage.Init());
+
+  int32 index = rand() % kNumTestSegments;
   scoped_ptr<disk_cache::Segment> segment(
-      new disk_cache::Segment(index, false, storage_.get()));
+      new disk_cache::Segment(index, false, &storage));
 
   EXPECT_TRUE(segment->Init());
   SmallEntry entry1;
@@ -88,7 +97,7 @@ TEST_F(FlashCacheTest, SegmentWriteDataReadData) {
   segment->StoreOffset(offset);
   EXPECT_TRUE(segment->Close());
 
-  segment.reset(new disk_cache::Segment(index, true, storage_.get()));
+  segment.reset(new disk_cache::Segment(index, true, &storage));
   EXPECT_TRUE(segment->Init());
   SmallEntry entry2;
   EXPECT_TRUE(segment->ReadData(entry2.data, entry2.size, offset));
@@ -97,9 +106,12 @@ TEST_F(FlashCacheTest, SegmentWriteDataReadData) {
 }
 
 TEST_F(FlashCacheTest, SegmentFillWithSmallEntries) {
-  int32 index = rand() % num_segments_in_storage_;
+  disk_cache::Storage storage(path_, kStorageSize);
+  ASSERT_TRUE(storage.Init());
+
+  int32 index = rand() % kNumTestSegments;
   scoped_ptr<disk_cache::Segment> segment(
-      new disk_cache::Segment(index, false, storage_.get()));
+      new disk_cache::Segment(index, false, &storage));
 
   EXPECT_TRUE(segment->Init());
   SmallEntry entry;
@@ -117,9 +129,12 @@ TEST_F(FlashCacheTest, SegmentFillWithSmallEntries) {
 }
 
 TEST_F(FlashCacheTest, SegmentFillWithLargeEntries) {
-  int32 index = rand() % num_segments_in_storage_;
+  disk_cache::Storage storage(path_, kStorageSize);
+  ASSERT_TRUE(storage.Init());
+
+  int32 index = rand() % kNumTestSegments;
   scoped_ptr<disk_cache::Segment> segment(
-      new disk_cache::Segment(index, false, storage_.get()));
+      new disk_cache::Segment(index, false, &storage));
 
   EXPECT_TRUE(segment->Init());
   scoped_ptr<LargeEntry> entry(new LargeEntry);

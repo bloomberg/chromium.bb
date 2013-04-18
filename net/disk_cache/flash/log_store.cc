@@ -12,16 +12,16 @@
 
 namespace disk_cache {
 
-LogStore::LogStore(Storage* storage)
-    : storage_(storage),
-      num_segments_(storage->size() / kFlashSegmentSize),
+LogStore::LogStore(const base::FilePath& path, int32 size)
+    : storage_(path, size),
+      num_segments_(size / kFlashSegmentSize),
       open_segments_(num_segments_),
       write_index_(0),
       current_entry_id_(-1),
       current_entry_num_bytes_left_to_write_(0),
       init_(false),
       closed_(false) {
-  DCHECK(storage->size() % kFlashSegmentSize == 0);
+  DCHECK(size % kFlashSegmentSize == 0);
 }
 
 LogStore::~LogStore() {
@@ -31,9 +31,12 @@ LogStore::~LogStore() {
 
 bool LogStore::Init() {
   DCHECK(!init_);
+  if (!storage_.Init())
+    return false;
+
   // TODO(agayev): Once we start persisting segment metadata to disk, we will
   // start from where we left off during the last shutdown.
-  scoped_ptr<Segment> segment(new Segment(write_index_, false, storage_));
+  scoped_ptr<Segment> segment(new Segment(write_index_, false, &storage_));
   if (!segment->Init())
     return false;
 
@@ -69,7 +72,7 @@ bool LogStore::CreateEntry(int32 size, int32* id) {
     }
 
     write_index_ = GetNextSegmentIndex();
-    scoped_ptr<Segment> segment(new Segment(write_index_, false, storage_));
+    scoped_ptr<Segment> segment(new Segment(write_index_, false, &storage_));
     if (!segment->Init())
       return false;
 
@@ -119,7 +122,7 @@ bool LogStore::OpenEntry(int32 id) {
   }
 
   // Segment is not open.
-  scoped_ptr<Segment> segment(new Segment(index, true, storage_));
+  scoped_ptr<Segment> segment(new Segment(index, true, &storage_));
   if (!segment->Init() || !segment->HaveOffset(id))
     return false;
 

@@ -11,14 +11,7 @@
 #include "net/disk_cache/flash/log_store.h"
 #include "net/disk_cache/flash/storage.h"
 
-namespace {
-
-const int32 kSegmentCount = 10;
-const base::FilePath::StringType kCachePath = FILE_PATH_LITERAL("cache");
-
-}  // namespace
-
-FlashCacheTest::FlashCacheTest() : num_segments_in_storage_(kSegmentCount) {
+FlashCacheTest::FlashCacheTest() {
   int seed = static_cast<int>(base::Time::Now().ToInternalValue());
   srand(seed);
 }
@@ -27,19 +20,10 @@ FlashCacheTest::~FlashCacheTest() {
 }
 
 void FlashCacheTest::SetUp() {
+  const base::FilePath::StringType kCachePath = FILE_PATH_LITERAL("cache");
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  const base::FilePath path(temp_dir_.path().Append(kCachePath));
-
-  int32 storage_size = num_segments_in_storage_ * disk_cache::kFlashSegmentSize;
-  storage_.reset(new disk_cache::Storage(path, storage_size));
-  ASSERT_TRUE(storage_->Init());
-
-  log_store_.reset(new disk_cache::LogStore(storage_.get()));
-  ASSERT_TRUE(log_store_->Init());
+  path_ = temp_dir_.path().Append(kCachePath);
 }
 
 void FlashCacheTest::TearDown() {
-  ASSERT_TRUE(log_store_->Close());
-  log_store_.reset();
-  storage_.reset();
 }

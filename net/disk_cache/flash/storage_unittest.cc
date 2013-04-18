@@ -14,11 +14,13 @@ namespace {
 
 const int32 kSizes[]   = {512, 1024, 4096, 133, 1333, 13333};
 const int32 kOffsets[] = {0,   1,    3333, 125, 12443, 4431};
-const int32 kStorageSize = 16 * 1024 * 1024;
 
 }  // namespace
 
 TEST_F(FlashCacheTest, StorageReadWrite) {
+  disk_cache::Storage storage(path_, kStorageSize);
+  EXPECT_TRUE(storage.Init());
+
   for (size_t i = 0; i < arraysize(kOffsets); ++i) {
     int32 size = kSizes[i];
     int32 offset = kOffsets[i];
@@ -28,10 +30,10 @@ TEST_F(FlashCacheTest, StorageReadWrite) {
 
     CacheTestFillBuffer(write_buffer->data(), size, false);
 
-    bool rv = storage_->Write(write_buffer->data(), size, offset);
+    bool rv = storage.Write(write_buffer->data(), size, offset);
     EXPECT_TRUE(rv);
 
-    rv = storage_->Read(read_buffer->data(), size, offset);
+    rv = storage.Read(read_buffer->data(), size, offset);
     EXPECT_TRUE(rv);
 
     EXPECT_EQ(0, memcmp(read_buffer->data(), write_buffer->data(), size));

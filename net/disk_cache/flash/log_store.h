@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "net/base/net_export.h"
+#include "net/disk_cache/flash/storage.h"
 
 namespace disk_cache {
 
 class Segment;
-class Storage;
 
 // This class implements a general purpose store for storing and retrieving
 // entries consisting of arbitrary binary data.  The store has log semantics,
@@ -24,7 +24,7 @@ class Storage;
 // any given time, while concurrent reading of multiple entries is supported.
 class NET_EXPORT_PRIVATE LogStore {
  public:
-  explicit LogStore(Storage* storage);
+  LogStore(const base::FilePath& path, int32 size);
   ~LogStore();
 
   // Performs initialization.  Must be the first function called and further
@@ -58,19 +58,15 @@ class NET_EXPORT_PRIVATE LogStore {
   void CloseEntry(int32 id);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStoreReadFromClosedSegment);
-  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStoreSegmentSelectionIsFifo);
-  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStoreInUseSegmentIsSkipped);
-  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStoreReadFromCurrentAfterClose);
+  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest, LogStoreReadFromClosedSegment);
+  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest, LogStoreSegmentSelectionIsFifo);
+  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest, LogStoreInUseSegmentIsSkipped);
+  FRIEND_TEST_ALL_PREFIXES(FlashCacheTest, LogStoreReadFromCurrentAfterClose);
 
   int32 GetNextSegmentIndex();
   bool InUse(int32 segment_index) const;
 
-  Storage* storage_;
+  Storage storage_;
 
   int32 num_segments_;
 
