@@ -927,7 +927,7 @@ class IsolateTest(IsolateBase):
     self.assertRaises(SystemExit, parser.parse_args, ['-V', 'Foo'])
 
   if sys.platform == 'darwin':
-    def test_symlink_path_case(self):
+    def test_expand_symlinks_path_case(self):
       # Ensures that the resulting path case is fixed on case insensitive file
       # system.
       os.symlink('dest', os.path.join(self.cwd, 'link'))
@@ -938,6 +938,67 @@ class IsolateTest(IsolateBase):
       self.assertEqual((u'Dest', [u'link']), result)
       result = isolate.expand_symlinks(unicode(self.cwd), 'link/File.txt')
       self.assertEqual((u'Dest/file.txt', [u'link']), result)
+
+    def test_expand_directories_and_symlinks_path_case(self):
+      # Ensures that the resulting path case is fixed on case insensitive file
+      # system. A superset of test_expand_symlinks_path_case.
+      # Create *all* the paths with the wrong path case.
+      basedir = os.path.join(self.cwd, 'baseDir')
+      os.mkdir(basedir.lower())
+      subdir = os.path.join(basedir, 'subDir')
+      os.mkdir(subdir.lower())
+      open(os.path.join(subdir, 'Foo.txt'), 'w').close()
+      os.symlink('subDir', os.path.join(basedir, 'linkdir'))
+      actual = isolate.expand_directories_and_symlinks(
+          unicode(self.cwd), [u'baseDir/'], lambda _: None, True, False)
+      expected = [
+        u'basedir/linkdir',
+        u'basedir/subdir/Foo.txt',
+        u'basedir/subdir/Foo.txt',
+      ]
+      self.assertEqual(expected, actual)
+
+    def test_process_input_path_case_simple(self):
+      # Ensure the symlink dest is saved in the right path case.
+      subdir = os.path.join(self.cwd, 'subdir')
+      os.mkdir(subdir)
+      linkdir = os.path.join(self.cwd, 'linkdir')
+      os.symlink('subDir', linkdir)
+      actual = isolate.process_input(unicode(linkdir.upper()), {}, True, 'mac')
+      # TODO(maruel): Should be subdir.
+      expected = {'l': u'subDir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
+      self.assertEqual(expected, actual)
+
+    def test_process_input_path_case_complex(self):
+      # Ensure the symlink dest is saved in the right path case. This includes 2
+      # layers of symlinks.
+      basedir = os.path.join(self.cwd, 'basebir')
+      os.mkdir(basedir)
+
+      linkeddir2 = os.path.join(self.cwd, 'linkeddir2')
+      os.mkdir(linkeddir2)
+
+      linkeddir1 = os.path.join(basedir, 'linkeddir1')
+      os.symlink('../linkedDir2', linkeddir1)
+
+      subsymlinkdir = os.path.join(basedir, 'symlinkdir')
+      os.symlink('linkedDir1', subsymlinkdir)
+
+      actual = isolate.process_input(
+          unicode(subsymlinkdir.upper()), {}, True, 'mac')
+      expected = {
+        # TODO(maruel): Should be linkeddir1.
+        'l': u'linkedDir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
+      }
+      self.assertEqual(expected, actual)
+
+      actual = isolate.process_input(
+          unicode(linkeddir1.upper()), {}, True, 'mac')
+      expected = {
+        # TODO(maruel): Should be ../linkedDir2.
+        'l': u'../linkedDir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
+      }
+      self.assertEqual(expected, actual)
 
 
 class IsolateLoad(IsolateBase):
