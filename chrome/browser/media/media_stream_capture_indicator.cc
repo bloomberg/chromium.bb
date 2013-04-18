@@ -440,10 +440,13 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
       close_callback = usage.StopScreenCaptureCallback();
     }
 
-    // Audio/video icon is shown only for extensions. For regular tabs, we show
-    // an indicator in the tab icon.
-    if (GetExtension(web_contents) &&
-        (usage.IsCapturingAudio() || usage.IsCapturingVideo())) {
+    // Audio/video icon is shown only for extensions or on Android.
+    // For regular tabs on desktop, we show an indicator in the tab icon.
+    if ((usage.IsCapturingAudio() || usage.IsCapturingVideo())
+#if !defined(OS_ANDROID)
+        && GetExtension(web_contents)
+#endif
+        ) {
       audio = audio || usage.IsCapturingAudio();
       video = video || usage.IsCapturingVideo();
 
