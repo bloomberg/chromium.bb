@@ -185,7 +185,7 @@ const int QuotaManager::kEvictionIntervalInMilliSeconds =
 // and by multiple apps.
 int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
 
-int64 CalculateQuotaForInstalledApp(
+int64 CalculateQuotaWithDiskSpace(
     int64 available_disk_space, int64 usage, int64 quota) {
   if (available_disk_space < QuotaManager::kMinimumPreserveForSystem ||
       quota < usage) {
@@ -204,15 +204,15 @@ int64 CalculateQuotaForInstalledApp(
 void CallGetUsageAndQuotaCallback(
     const QuotaManager::GetUsageAndQuotaCallback& callback,
     bool unlimited,
-    bool is_installed_app,
+    bool can_query_disk_size,
     QuotaStatusCode status,
     const QuotaAndUsage& quota_and_usage) {
   // Regular limited case.
   if (!unlimited) {
-    if (is_installed_app) {
+    if (can_query_disk_size) {
       // Cap the quota by the available disk space.
       callback.Run(status, quota_and_usage.usage,
-                   CalculateQuotaForInstalledApp(
+                   CalculateQuotaWithDiskSpace(
                        quota_and_usage.available_disk_space,
                        quota_and_usage.usage,
                        quota_and_usage.quota));
@@ -224,11 +224,12 @@ void CallGetUsageAndQuotaCallback(
 
   int64 usage = quota_and_usage.unlimited_usage;
 
-  // Unlimited case: this must be only for installed-app and extensions,
+  // Unlimited case: this must be only for apps with unlimitedStorage permission
   // or only when --unlimited-storage flag is given.
-  // We return the available disk space (minus kMinimumPreserveForSystem).
+  // We assume we can expose the disk size for them and return the available
+  // disk space (minus kMinimumPreserveForSystem).
   callback.Run(status, usage,
-               CalculateQuotaForInstalledApp(
+               CalculateQuotaWithDiskSpace(
                    quota_and_usage.available_disk_space,
                    usage, QuotaManager::kNoLimit));
 }
@@ -967,7 +968,7 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
   GetUsageAndQuotaInternal(
       origin, type, false /* global */,
       base::Bind(&CallGetUsageAndQuotaCallback, callback,
-                 IsStorageUnlimited(origin, type), IsInstalledApp(origin)));
+                 IsStorageUnlimited(origin, type), CanQueryDiskSize(origin)));
 }
 
 void QuotaManager::GetUsageAndQuota(
@@ -977,7 +978,7 @@ void QuotaManager::GetUsageAndQuota(
 
   if (IsStorageUnlimited(origin, type)) {
     CallGetUsageAndQuotaCallback(
-        callback, false, IsInstalledApp(origin),
+        callback, false, CanQueryDiskSize(origin),
         kQuotaStatusOk, QuotaAndUsage::CreateForUnlimitedStorage());
     return;
   }

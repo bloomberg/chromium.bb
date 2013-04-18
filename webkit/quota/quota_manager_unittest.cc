@@ -631,7 +631,7 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
     { "http://installed/",            kTemp, 1024 },
   };
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
-  mock_special_storage_policy()->AddInstalledApp(GURL("http://installed/"));
+  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
   RegisterClient(CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
       QuotaClient::kFileSystem));
   RegisterClient(CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
@@ -997,7 +997,7 @@ TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
   EXPECT_EQ(100, quota());
 
   // For installed app GetUsageAndQuotaForWebApps returns the capped quota.
-  mock_special_storage_policy()->AddInstalledApp(GURL("http://installed/"));
+  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
   SetPersistentHostQuota("installed", kAvailableSpaceForApp + 100);
   GetUsageAndQuotaForWebApps(GURL("http://installed/"), kPerm);
   MessageLoop::current()->RunUntilIdle();
@@ -1027,7 +1027,7 @@ TEST_F(QuotaManagerTest, GetSyncableQuota) {
 
   // For installed apps the quota manager should return
   // kAvailableSpaceForApp as syncable quota (because of the pre-condition).
-  mock_special_storage_policy()->AddInstalledApp(GURL("http://installed/"));
+  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
   GetUsageAndQuotaForWebApps(GURL("http://installed/"), kSync);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());

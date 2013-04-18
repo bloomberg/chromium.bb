@@ -31,7 +31,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
-  virtual bool IsInstalledApp(const GURL& origin) OVERRIDE;
+  virtual bool CanQueryDiskSize(const GURL& origin) OVERRIDE;
   virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
   virtual bool HasSessionOnlyOrigins() OVERRIDE;
 

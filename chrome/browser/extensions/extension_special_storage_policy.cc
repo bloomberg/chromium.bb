@@ -48,7 +48,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
-bool ExtensionSpecialStoragePolicy::IsInstalledApp(const GURL& origin) {
+bool ExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
   return installed_apps_.Contains(origin);
 }
 

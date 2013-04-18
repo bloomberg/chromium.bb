@@ -233,7 +233,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, AppWithUnlimitedStorage) {
   EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
 }
 
-TEST_F(ExtensionSpecialStoragePolicyTest, IsInstalled) {
+TEST_F(ExtensionSpecialStoragePolicyTest, CanQueryDiskSize) {
   const GURL kHttpUrl("http://foo");
   const GURL kExtensionUrl("chrome-extension://bar");
   scoped_refptr<Extension> regular_app(CreateRegularApp());
@@ -243,11 +243,11 @@ TEST_F(ExtensionSpecialStoragePolicyTest, IsInstalled) {
   policy_->GrantRightsForExtension(protected_app);
   policy_->GrantRightsForExtension(unlimited_app);
 
-  EXPECT_FALSE(policy_->IsInstalledApp(kHttpUrl));
-  EXPECT_FALSE(policy_->IsInstalledApp(kExtensionUrl));
-  EXPECT_TRUE(policy_->IsInstalledApp(regular_app->url()));
-  EXPECT_TRUE(policy_->IsInstalledApp(protected_app->url()));
-  EXPECT_TRUE(policy_->IsInstalledApp(unlimited_app->url()));
+  EXPECT_FALSE(policy_->CanQueryDiskSize(kHttpUrl));
+  EXPECT_FALSE(policy_->CanQueryDiskSize(kExtensionUrl));
+  EXPECT_TRUE(policy_->CanQueryDiskSize(regular_app->url()));
+  EXPECT_TRUE(policy_->CanQueryDiskSize(protected_app->url()));
+  EXPECT_TRUE(policy_->CanQueryDiskSize(unlimited_app->url()));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {

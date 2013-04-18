@@ -202,9 +202,9 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
 
   bool IsStorageUnlimited(const GURL& origin, StorageType type) const;
 
-  bool IsInstalledApp(const GURL& origin) const {
+  bool CanQueryDiskSize(const GURL& origin) const {
     return special_storage_policy_.get() &&
-           special_storage_policy_->IsInstalledApp(origin);
+           special_storage_policy_->CanQueryDiskSize(origin);
   }
 
   virtual void GetOriginsModifiedSince(StorageType type,

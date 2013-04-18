@@ -39,8 +39,9 @@ class WEBKIT_STORAGE_EXPORT SpecialStoragePolicy
   // Unlimited storage is not subject to 'quotas'.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
 
-  // Installed apps have access to the size of the remaining disk capacity.
-  virtual bool IsInstalledApp(const GURL& origin) = 0;
+  // Some origins (e.g. installed apps) have access to the size of the remaining
+  // disk capacity.
+  virtual bool CanQueryDiskSize(const GURL& origin) = 0;
 
   // Checks if extension identified with |extension_id| is registered as
   // file handler.
