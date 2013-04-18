@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 #define CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 
+class Browser;
+
 namespace chrome {
 
 // Starts a user initiated exit process. Called from Browser::Exit.
@@ -82,6 +84,10 @@ void OnAppExiting();
 // Called once the application is exiting to do any platform specific
 // processing required.
 void HandleAppExitingForPlatform();
+
+// Returns true if we can start the shutdown sequence for the browser, i.e. the
+// last browser window is being closed.
+bool ShouldStartShutdown(Browser* browser);
 
 }  // namespace chrome
 

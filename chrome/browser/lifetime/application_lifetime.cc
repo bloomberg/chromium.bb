@@ -384,4 +384,20 @@ void OnAppExiting() {
   HandleAppExitingForPlatform();
 }
 
+bool ShouldStartShutdown(Browser* browser) {
+  if (BrowserList::GetInstance(browser->host_desktop_type())->size() > 1)
+    return false;
+#if defined(OS_WIN) && defined(USE_AURA)
+  // On Windows 8 browser windows could be open in ASH and in the desktop. We
+  // should not start the shutdown process if browser windows are open in the
+  // other environment.
+  chrome::HostDesktopType other_desktop =
+      (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE ?
+          chrome::HOST_DESKTOP_TYPE_ASH : chrome::HOST_DESKTOP_TYPE_NATIVE);
+  if (!BrowserList::GetInstance(other_desktop)->empty())
+    return false;
+#endif
+  return true;
+}
+
 }  // namespace chrome
