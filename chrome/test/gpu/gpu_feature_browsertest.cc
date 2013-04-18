@@ -175,8 +175,9 @@ class GpuFeatureTest : public InProcessBrowserTest {
   bool gpu_enabled_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
 // This test is flaky on Windows. http://crbug.com/177113
+// Also fails under AddressSanitizer. http://crbug.com/185178
 #define MAYBE_AcceleratedCompositingAllowed DISABLED_AcceleratedCompositingAllowed
 #else
 #define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed

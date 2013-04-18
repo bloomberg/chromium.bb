@@ -110,7 +110,14 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatuses) {
+#if defined(ADDRESS_SANITIZER)
+// SyncFileSystemApiTest.GetFileStatuses fails under AddressSanitizer
+// on Precise. See http://crbug.com/230779.
+#define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
+#else
+#define MAYBE_GetFileStatuses GetFileStatuses
+#endif
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
   // Mocking to return IsConflicting() == true only for the path "Conflicting".
   base::FilePath conflicting = base::FilePath::FromUTF8Unsafe("Conflicting");
   EXPECT_CALL(*mock_remote_service(),

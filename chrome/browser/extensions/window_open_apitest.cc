@@ -241,10 +241,10 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
-#if defined(USE_ASH_PANELS) || defined(OS_WIN)
+#if defined(USE_ASH_PANELS) || defined(OS_WIN) || defined(ADDRESS_SANITIZER)
 // On Ash, this currently fails because we're currently opening new panel
 // windows as popup windows instead.
-// This is also flakey on Windows builds: crbug.com/179251
+// This is also flakey on Windows and ASan builds: crbug.com/179251
 #define MAYBE_WindowOpenPanelDetached DISABLED_WindowOpenPanelDetached
 #else
 #define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
