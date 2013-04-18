@@ -154,10 +154,10 @@ class InstantController : public InstantPage::Delegate,
   // The user is about to switch tabs. Commit the overlay if needed.
   void TabDeactivated(content::WebContents* contents);
 
-  // Sets whether Instant should show result overlays. |use_local_overlay_only|
-  // will force the use of kLocalOmniboxPopupURL as the Instant URL and is only
+  // Sets whether Instant should show result overlays. |use_local_page_only|
+  // will force the use of baked-in page as the Instant URL and is only
   // applicable if |extended_enabled_| is true.
-  void SetInstantEnabled(bool instant_enabled, bool use_local_overlay_only);
+  void SetInstantEnabled(bool instant_enabled, bool use_local_page_only);
 
   // The theme has changed. Pass the message to the overlay page.
   void ThemeChanged(const ThemeBackgroundInfo& theme_info);
@@ -223,7 +223,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OmniboxCommitsWhenShownFullHeight);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotLocalOverlay);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);
 
@@ -377,7 +377,7 @@ class InstantController : public InstantPage::Delegate,
   bool instant_enabled_;
 
   // If true, the Instant URL is set to kLocalOmniboxPopupURL.
-  bool use_local_overlay_only_;
+  bool use_local_page_only_;
 
   // The state of the overlay page, i.e., the page owned by |overlay_|. Ignored
   // if |instant_tab_| is in use.

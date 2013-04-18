@@ -220,7 +220,7 @@ InstantController::InstantController(BrowserInstantController* browser,
     : browser_(browser),
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
-      use_local_overlay_only_(true),
+      use_local_page_only_(true),
       model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
@@ -504,8 +504,16 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
 
   scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
 
-  // Override the blacklist on an explicit user action.
-  ResetNTP(true, false);
+  if (!use_local_page_only_) {
+    // Preload a new Instant NTP, unless using the local NTP which is not
+    // preloaded to conserve memory.
+    //
+    // Since this corresponds to a user action, give the remote page another
+    // try, even if it's blacklisted. We don't want to blacklist pages for the
+    // duration of a Browser object (for some people, that's effectively
+    // "forever").
+    ResetNTP(true, false);
+  }
   return ntp_contents.Pass();
 }
 
@@ -887,26 +895,33 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled,
-                                          bool use_local_overlay_only) {
+                                          bool use_local_page_only) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "SetInstantEnabled: instant_enabled=%d, use_local_overlay_only=%d",
-      instant_enabled, use_local_overlay_only));
+      "SetInstantEnabled: instant_enabled=%d, use_local_page_only=%d",
+      instant_enabled, use_local_page_only));
 
-  // Non extended mode does not care about |use_local_overlay_only|.
+  // Non extended mode does not care about |use_local_page_only|.
   if (instant_enabled == instant_enabled_ &&
       (!extended_enabled_ ||
-       use_local_overlay_only == use_local_overlay_only_)) {
+       use_local_page_only == use_local_page_only_)) {
     return;
   }
 
   instant_enabled_ = instant_enabled;
-  use_local_overlay_only_ = use_local_overlay_only;
+  use_local_page_only_ = use_local_page_only;
   HideInternal();
   overlay_.reset();
   if (extended_enabled_ || instant_enabled_)
     EnsureOverlayIsCurrent(false);
-  if (extended_enabled_)
-    ResetNTP(false, false);
+  if (extended_enabled_) {
+    // Preload the Instant NTP. But if we are using the local NTP, delete any
+    // existing preloaded NTP (which we should no longer use) and don't preload
+    // the local one to conserve memory.
+    if (use_local_page_only_)
+      ntp_.reset();
+    else
+      ResetNTP(false, false);
+  }
   if (instant_tab_)
     instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
@@ -1449,7 +1464,7 @@ void InstantController::SendPopupBoundsToPage() {
 bool InstantController::GetInstantURL(Profile* profile,
                                       bool ignore_blacklist,
                                       std::string* instant_url) const {
-  if (extended_enabled_ && use_local_overlay_only_)
+  if (extended_enabled_ && use_local_page_only_)
     return false;
 
   const GURL instant_url_obj = chrome::GetInstantURL(profile,

@@ -1482,17 +1482,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
   EXPECT_EQ(1, on_native_suggestions_calls_);
 }
 
-// Test that the local NTP doesn't end up with the local overlay's URL.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalNTPIsNotLocalOverlay) {
+// Test that the local NTP is not preloaded.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalNTPIsNotPreloaded) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   EXPECT_EQ(instant_url(), instant()->ntp_->contents()->GetURL());
 
-  // The second argument says to use only the local overlay.
+  // The second argument says to use only the local overlay and NTP.
   instant()->SetInstantEnabled(false, true);
 
-  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            instant()->ntp_->contents()->GetURL());
+  EXPECT_EQ(NULL, instant()->ntp());
 }
 
 // Verify top bars visibility when searching on |DEFAULT| pages and switching
