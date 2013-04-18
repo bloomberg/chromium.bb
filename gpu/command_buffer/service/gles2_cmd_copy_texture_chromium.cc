@@ -54,10 +54,11 @@ struct ShaderInfo {
 const ShaderInfo shader_infos[] = {
   // VERTEX_SHADER_POS_TEX
   SHADER(
+    uniform mat4 u_matrix;
     attribute vec4 a_position;
     varying vec2 v_uv;
     void main(void) {
-      gl_Position = a_position;
+      gl_Position = u_matrix * a_position;
       v_uv = a_position.xy * 0.5 + vec2(0.5, 0.5);
     }),
   // FRAGMENT_SHADER_TEX
@@ -279,6 +280,9 @@ void CopyTextureCHROMIUMResourceManager::Initialize(
 
     sampler_locations_[program] = glGetUniformLocation(programs_[program],
                                                       "u_texSampler");
+
+    matrix_handle_[program] = glGetUniformLocation(programs_[program],
+                                                   "u_matrix");
   }
 
   for (int shader = 0; shader < kNumShaders; ++shader)
@@ -313,6 +317,29 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha) {
+  // Use default transform matrix if no transform passed in.
+  const static GLfloat default_matrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
+                                             0.0f, 1.0f, 0.0f, 0.0f,
+                                             0.0f, 0.0f, 1.0f, 0.0f,
+                                             0.0f, 0.0f, 0.0f, 1.0f};
+  DoCopyTextureWithTransform(decoder, source_target, dest_target, source_id,
+      dest_id, level, width, height, flip_y, premultiply_alpha,
+      unpremultiply_alpha, default_matrix);
+}
+
+void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
+    const gles2::GLES2Decoder* decoder,
+    GLenum source_target,
+    GLenum dest_target,
+    GLuint source_id,
+    GLuint dest_id,
+    GLint level,
+    GLsizei width,
+    GLsizei height,
+    bool flip_y,
+    bool premultiply_alpha,
+    bool unpremultiply_alpha,
+    const GLfloat transform_matrix[16]) {
   DCHECK(source_target == GL_TEXTURE_2D ||
          source_target == GL_TEXTURE_EXTERNAL_OES);
   if (!initialized_) {
@@ -335,6 +362,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   }
 #endif
 
+  glUniformMatrix4fv(matrix_handle_[program], 1, GL_FALSE, transform_matrix);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, dest_id);
   // NVidia drivers require texture settings to be a certain way

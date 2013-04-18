@@ -9852,15 +9852,38 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         dest_texture, GL_TEXTURE_2D, level, true);
   }
 
-  copy_texture_CHROMIUM_->DoCopyTexture(this,
-                                        source_texture->target(),
-                                        dest_texture->target(),
-                                        source_texture->service_id(),
-                                        dest_texture->service_id(), level,
-                                        source_width, source_height,
-                                        unpack_flip_y_,
-                                        unpack_premultiply_alpha_,
-                                        unpack_unpremultiply_alpha_);
+  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
+  // before presenting.
+  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    // TODO(hkuang): get the StreamTexture transform matrix in GPU process
+    // instead of using default matrix crbug.com/226218.
+    const static GLfloat default_matrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 1.0f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 1.0f, 0.0f,
+                                               0.0f, 0.0f, 0.0f, 1.0f};
+    copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
+        this,
+        source_texture->target(),
+        dest_texture->target(),
+        source_texture->service_id(),
+        dest_texture->service_id(), level,
+        source_width, source_height,
+        unpack_flip_y_,
+        unpack_premultiply_alpha_,
+        unpack_unpremultiply_alpha_,
+        default_matrix);
+  } else {
+    copy_texture_CHROMIUM_->DoCopyTexture(
+        this,
+        source_texture->target(),
+        dest_texture->target(),
+        source_texture->service_id(),
+        dest_texture->service_id(), level,
+        source_width, source_height,
+        unpack_flip_y_,
+        unpack_premultiply_alpha_,
+        unpack_unpremultiply_alpha_);
+  }
 }
 
 static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {

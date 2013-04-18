@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -64,6 +65,14 @@ class WebMediaPlayerAndroid
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      uint8_t alpha);
+
+  virtual bool copyVideoTextureToPlatformTexture(
+      WebKit::WebGraphicsContext3D* web_graphics_context,
+      unsigned int texture,
+      unsigned int level,
+      unsigned int internal_format,
+      bool premultiply_alpha,
+      bool flip_y);
 
   // True if the loaded media has a playable video/audio track.
   virtual bool hasVideo() const;

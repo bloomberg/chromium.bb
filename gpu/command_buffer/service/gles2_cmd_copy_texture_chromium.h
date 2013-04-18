@@ -31,6 +31,16 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                      bool flip_y, bool premultiply_alpha,
                      bool unpremultiply_alpha);
 
+  // This will apply a transform on the source texture before copying to
+  // destination texture.
+  void DoCopyTextureWithTransform(const gles2::GLES2Decoder* decoder,
+                                  GLenum source_target, GLenum dest_target,
+                                  GLuint source_id, GLuint dest_id, GLint level,
+                                  GLsizei width, GLsizei height, bool flip_y,
+                                  bool premultiply_alpha,
+                                  bool unpremultiply_alpha,
+                                  const GLfloat transform_matrix[16]);
+
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
 
@@ -41,6 +51,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   GLuint programs_[kNumPrograms];
   GLuint buffer_id_;
   GLuint framebuffer_;
+  GLuint matrix_handle_[kNumPrograms];
   GLuint sampler_locations_[kNumPrograms];
 
   DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);

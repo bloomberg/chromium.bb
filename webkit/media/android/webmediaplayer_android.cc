@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
@@ -268,6 +269,34 @@ void WebMediaPlayerAndroid::paint(WebKit::WebCanvas* canvas,
                                   const WebKit::WebRect& rect,
                                   uint8_t alpha) {
   NOTIMPLEMENTED();
+}
+
+bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
+    WebKit::WebGraphicsContext3D* web_graphics_context,
+    unsigned int texture,
+    unsigned int level,
+    unsigned int internal_format,
+    bool premultiply_alpha,
+    bool flip_y) {
+  if (!texture_id_)
+    return false;
+
+  // The video is stored in an unmultiplied format, so premultiply if
+  // necessary.
+  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                    premultiply_alpha);
+
+  // Application itself needs to take care of setting the right flip_y
+  // value down to get the expected result.
+  // flip_y==true means to reverse the video orientation while
+  // flip_y==false means to keep the intrinsic orientation.
+  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
+  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, texture_id_,
+                                            texture, level, internal_format);
+  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
+  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                    false);
+  return true;
 }
 
 bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
