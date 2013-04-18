@@ -3216,7 +3216,6 @@ crbug.com/230079 [ Lion ] http/tests/css/vertical-align-baseline-after-image-loa
 crbug.com/230153 [ Debug ] svg/as-background-image/tiled-background-image.html [ Pass ImageOnlyFailure ]
 
 crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailure ]
-crbug.com/230339 virtual/gpu/compositedscrolling/scrollbars/short-scrollbar.html [ Pass ImageOnlyFailure ]
 
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
