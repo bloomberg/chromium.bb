@@ -34,6 +34,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -2054,5 +2055,34 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
                         MediaStreamDevicesControllerBrowserTest,
                         testing::Bool());
+
+#if !defined(OS_CHROMEOS)
+// Similar to PolicyTest but sets the proper policy before the browser is
+// started.
+class PolicyVariationsServiceTest : public PolicyTest {
+ public:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(
+        key::kVariationsRestrictParameter,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        base::Value::CreateStringValue("restricted"));
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
+  const std::string default_variations_url =
+      chrome_variations::VariationsService::
+          GetDefaultVariationsServerURLForTesting();
+
+  // Policy is applied and pref is already updated in local state.
+  EXPECT_EQ(default_variations_url + "?restrict=restricted",
+            chrome_variations::VariationsService::GetVariationsServerURL(
+                g_browser_process->local_state()).spec());
+}
+#endif
 
 }  // namespace policy
