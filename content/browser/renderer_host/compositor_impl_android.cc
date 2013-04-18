@@ -126,6 +126,8 @@ CompositorImpl::CompositorImpl(Compositor::Client* client)
 }
 
 CompositorImpl::~CompositorImpl() {
+  // Clean-up any surface references.
+  SetSurface(NULL);
 }
 
 void CompositorImpl::Composite() {
@@ -163,20 +165,27 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
 void CompositorImpl::SetSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
-  if (surface) {
-    ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
+
+  // First, cleanup any existing surface references.
+  if (surface_id_) {
+    DCHECK(g_surface_map.Get().find(surface_id_) !=
+           g_surface_map.Get().end());
+    base::AutoLock lock(g_surface_map_lock.Get());
+    g_surface_map.Get().erase(surface_id_);
+  }
+  SetWindowSurface(NULL);
+
+  // Now, set the new surface if we have one.
+  ANativeWindow* window = NULL;
+  if (surface)
+    window = ANativeWindow_fromSurface(env, surface);
+  if (window) {
     SetWindowSurface(window);
     ANativeWindow_release(window);
     {
       base::AutoLock lock(g_surface_map_lock.Get());
       g_surface_map.Get().insert(std::make_pair(surface_id_, j_surface));
     }
-  } else {
-    {
-      base::AutoLock lock(g_surface_map_lock.Get());
-      g_surface_map.Get().erase(surface_id_);
-    }
-    SetWindowSurface(NULL);
   }
 }
 
