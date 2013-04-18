@@ -400,6 +400,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context
     RefPtr<IDBIndex> index = IDBIndex::create(metadata, this, m_transaction.get());
     m_indexMap.set(name, index);
     m_metadata.indexes.set(indexId, metadata);
+    m_transaction->db()->indexCreated(id(), metadata);
 
     ASSERT(!ec);
     if (ec)
@@ -475,6 +476,7 @@ void IDBObjectStore::deleteIndex(const String& name, ExceptionCode& ec)
     backendDB()->deleteIndex(m_transaction->id(), id(), indexId);
 
     m_metadata.indexes.remove(indexId);
+    m_transaction->db()->indexDeleted(id(), indexId);
     IDBIndexMap::iterator it = m_indexMap.find(name);
     if (it != m_indexMap.end()) {
         it->value->markDeleted();

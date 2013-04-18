@@ -53,6 +53,8 @@ public:
     ~IDBDatabase();
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
+    void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
+    void indexDeleted(int64_t objectStoreId, int64_t indexId);
     void transactionCreated(IDBTransaction*);
     void transactionFinished(IDBTransaction*);
 

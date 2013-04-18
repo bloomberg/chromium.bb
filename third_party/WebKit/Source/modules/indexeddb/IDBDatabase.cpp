@@ -81,6 +81,20 @@ int64_t IDBDatabase::nextTransactionId()
     return atomicIncrement(&currentTransactionId);
 }
 
+void IDBDatabase::indexCreated(int64_t objectStoreId, const IDBIndexMetadata& metadata)
+{
+    IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(objectStoreId);
+    ASSERT(it != m_metadata.objectStores.end());
+    it->value.indexes.set(metadata.id, metadata);
+}
+
+void IDBDatabase::indexDeleted(int64_t objectStoreId, int64_t indexId)
+{
+    IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(objectStoreId);
+    ASSERT(it != m_metadata.objectStores.end());
+    it->value.indexes.remove(indexId);
+}
+
 void IDBDatabase::transactionCreated(IDBTransaction* transaction)
 {
     ASSERT(transaction);
