@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -32,7 +31,7 @@ class ChangeListProcessor;
 class DriveScheduler;
 class DriveWebAppsRegistry;
 
-// Callback run as a response to SearchFromServer and LoadDirectoryFromServer.
+// Callback run as a response to SearchFromServer.
 typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
                             DriveFileError error)> LoadFeedListCallback;
 
@@ -45,15 +44,22 @@ class ChangeListLoader {
                    DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
 
+  // Indicates whether there is a feed refreshing server request is in flight.
+  bool IsRefreshing() const;
+
   // Adds and removes the observer.
   void AddObserver(ChangeListLoaderObserver* observer);
   void RemoveObserver(ChangeListLoaderObserver* observer);
 
+  // Checks for updates on the server. Does nothing if the change list is now
+  // being loaded or refreshed. |callback| must not be null.
+  void CheckForUpdates(const FileOperationCallback& callback);
+
   // Starts the change list loading first from the cache. If loading from the
-  // cache is successful, runs |callback| and starts loading from the server
-  // if needed (i.e. the cache is old). If loading from the cache is
-  // unsuccessful, starts loading from the server, and runs |callback| to
-  // tell the result to the caller.
+  // cache is successful, runs |callback| immediately and starts checking
+  // server for updates in background. If loading from the cache is
+  // unsuccessful, starts loading from the server, and runs |callback| to tell
+  // the result to the caller when it is finished.
   //
   // If |directory_fetch_info| is not empty, the directory will be fetched
   // first from the server, so the UI can show the directory contents
@@ -86,29 +92,23 @@ class ChangeListLoader {
                         const GURL& next_feed,
                         const LoadFeedListCallback& callback);
 
-  // Checks for updates on the server. Does nothing if the change list is now
-  // being loaded or refreshed. |callback| must not be null.
-  void CheckForUpdates(const FileOperationCallback& callback);
-
+  // TODO(satorux): Make this private. crbug.com/232208
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
   //
   // See comments at ChangeListProcessor::ApplyFeeds() for
   // |about_resource| and |is_delta_feed|.
-  // |update_finished_callback| must not be null.
+  // |callback| must not be null.
   void UpdateFromFeed(scoped_ptr<google_apis::AboutResource> about_resource,
                       ScopedVector<ChangeList> change_lists,
                       bool is_delta_feed,
-                      const base::Closure& update_finished_callback);
-
-  // Indicates whether there is a feed refreshing server request is in flight.
-  bool IsRefreshing() const;
+                      const base::Closure& callback);
 
  private:
-  // Implementation of LoadIfNeeded and CheckForUpdates. Start metadata loading
-  // of |directory_fetch_info|, and calls |callback| when it's done. If there is
-  // already a loading job in-flight for |directory_fetch_info|, just append
-  // the |callback| to the callback queue of the already running job.
+  // Start metadata loading of |directory_fetch_info|, and calls |callback|
+  // when it's done. If there is already a loading job in-flight for
+  // |directory_fetch_info|, just append the |callback| to the callback queue
+  // of the already running job.
   void Load(const DirectoryFetchInfo& directory_fetch_info,
             const FileOperationCallback& callback);
 
@@ -125,88 +125,42 @@ class ChangeListLoader {
                     int64 local_changestamp);
 
   // Part of Load().
+  // This function should be called when the change list load is complete.
+  // Flushes the callbacks for change list loading and all directory loading.
+  void OnChangeListLoadComplete(DriveFileError error);
+
+  // Part of Load().
+  // This function should be called when the directory load is complete.
+  // Flushes the callbacks waiting for the directory to be loaded.
+  void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
+                               DriveFileError error);
+
+  // ================= Implementation for change list loading =================
+
   // Initiates the change list loading from the server when |local_changestamp|
   // is older than the server changestamp. If |directory_fetch_info| is set,
   // do directory loading before change list loading.
   void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
                               int64 local_changestamp);
 
-  // Part of Load().
-  // Checks the directory's changestamp and |last_known_remote_changestamp_|,
-  // and load the feed from server if it is old. Runs |callback| when it's done.
-  void CheckChangestampAndLoadDirectoryIfNeeed(
-      const DirectoryFetchInfo& directory_fetch_info,
-      int64 local_changestamp,
-      const FileOperationCallback& callback);
-
-  // Part of LoadChangeListFromServer().
-  // Callback to fetch all the resource list response from the server.
-  // After all the resource list are fetched, |callback|
-  // will be invoked with the collected change lists.
-  // |callback| must not be null.
-  void OnGetResourceList(
-      ScopedVector<ChangeList> change_lists,
-      const LoadFeedListCallback& callback,
-      base::TimeTicks start_time,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> data);
-
-  // Part of LoadDirectoryFromServer(). Called when
-  // DriveScheduler::GetAboutResource() is complete. Calls
-  // DoLoadDirectoryFromServer() to initiate the directory contents loading.
-  void LoadDirectoryFromServerAfterGetAbout(
-      const std::string& directory_resource_id,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Initiates the directory contents loading, based on |directory_fetch_info|.
-  // When it is finished it just runs |callback| but no other callbacks in
-  // |pending_load_callback_|, because it depends on the caller whether to flush
-  // callbacks. Thus, the caller must be responsible for task flushing.
-  void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
-                                 const FileOperationCallback& callback);
-
-  // Part of DoLoadDirectoryFromServer for the grand root ("/drive" directory).
-  // Called when GetEntryInfoByPath is completed.
-  // |callback| must not be null.
-  void DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of DoLoadDirectoryFromServer for the grand root ("/drive" directory).
-  // Called when GetAboutResource is completed.
-  // |callback| must not be null.
-  void DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Part of DoLoadDirectoryFromServer(). Called after
-  // LoadFromServer() is complete.
-  void DoLoadDirectoryFromServerAfterLoad(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      ScopedVector<ChangeList> change_lists,
-      DriveFileError error);
-
-  // Part of DoLoadDirectoryFromServer(). Called after
-  // DriveResourceMetadata::RefreshDirectory() is complete.
-  void DoLoadDirectoryFromServerAfterRefresh(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const base::FilePath& directory_path);
-
-  // Part of LoadFromServerIfNeeded(). Called when GetAboutResource is complete.
+  // Part of LoadFromServerIfNeeded().
+  // Called after GetAboutResource() for getting remote changestamp is complete.
   void LoadFromServerIfNeededAfterGetAbout(
       const DirectoryFetchInfo& directory_fetch_info,
       int64 local_changestamp,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Part of LoadFromServerIfNeeded().
+  // When LoadFromServerIfNeeded is called with |directory_fetch_info| for a
+  // specific directory, it tries to load the directory before loading the
+  // content of full filesystem. This method is called after directory loading
+  // is finished, and proceeds to the normal pass: LoadChangeListServer.
+  void LoadChangeListFromServerAfterLoadDirectory(
+      const DirectoryFetchInfo& directory_fetch_info,
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      int64 start_changestamp,
+      DriveFileError error);
 
   // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
@@ -217,29 +171,16 @@ class ChangeListLoader {
       int64 start_changestamp);
 
   // Part of LoadFromServerIfNeeded().
-  // Starts loading the change list from the server. Called after the
-  // directory contents are "fast-fetch"ed.
-  void LoadChangeListFromServerAfterLoadDirectory(
-    const DirectoryFetchInfo& directory_fetch_info,
-    scoped_ptr<google_apis::AboutResource> about_resource,
-    int64 start_changestamp,
-    DriveFileError error);
+  // Callback to fetch all the resource list response from the server.
+  // After all the resource list are fetched, |callback|
+  // will be invoked with the collected change lists.
+  void OnGetResourceList(ScopedVector<ChangeList> change_lists,
+                         const LoadFeedListCallback& callback,
+                         base::TimeTicks start_time,
+                         google_apis::GDataErrorCode status,
+                         scoped_ptr<google_apis::ResourceList> data);
 
-  // Callback for handling response from |DriveAPIService::GetAppList|.
-  // If the application list is successfully parsed, passes the list to
-  // Drive webapps registry.
-  void OnGetAppList(google_apis::GDataErrorCode status,
-                    scoped_ptr<google_apis::AppList> app_list);
-
-  // Part of SearchFromServer. Called when ResourceList is fetched from the
-  // server.
-  // |callback| must not be null.
-  void SearchFromServerAfterGetResourceList(
-      const LoadFeedListCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> resource_list);
-
-  // Part of LoadChangeListFromServer().
+  // Part of LoadFromServerIfNeeded().
   // Applies the change list loaded from the server to local metadata storage.
   void UpdateMetadataFromFeedAfterLoadFromServer(
       scoped_ptr<google_apis::AboutResource> about_resource,
@@ -247,23 +188,83 @@ class ChangeListLoader {
       ScopedVector<ChangeList> change_lists,
       DriveFileError error);
 
-  // Callback for ChangeListProcessor::ApplyFeeds.
-  void NotifyDirectoryChangedAfterApplyFeed(
-      bool should_notify,
-      const base::Closure& update_finished_callback);
-
-  // Part of LoadChangeListFromServer().
+  // Part of LoadFromServerIfNeeded().
   // Called when UpdateMetadataFromFeedAfterLoadFromServer is finished.
   void OnUpdateFromFeed();
 
-  // This function should be called when the change list load is complete.
-  // Flushes the callbacks for change list loading and all directory loading.
-  void OnChangeListLoadComplete(DriveFileError error);
+  // ================= Implementation for directory loading =================
 
-  // This function should be called when the directory load is complete.
-  // Flushes the callbacks waiting for the directory to be loaded.
-  void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
-                               DriveFileError error);
+  // Part of LoadDirectoryFromServer().
+  // Called after GetAboutResource() for getting remote changestamp is complete.
+  // Note that it directly proceeds to DoLoadDirectoryFromServer() not going
+  // through CheckChangestampAndLoadDirectoryIfNeeed, because the purpose of
+  // LoadDirectoryFromServer is to force reloading regardless of changestamp.
+  void LoadDirectoryFromServerAfterGetAbout(
+      const std::string& directory_resource_id,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Compares the directory's changestamp and |last_known_remote_changestamp_|.
+  // Starts DoLoadDirectoryFromServer() if the local data is old and runs
+  // |callback| when finished. If it is up to date, calls back immediately.
+  void CheckChangestampAndLoadDirectoryIfNeeed(
+      const DirectoryFetchInfo& directory_fetch_info,
+      int64 local_changestamp,
+      const FileOperationCallback& callback);
+
+  // Loads the directory contents from server, and updates the local metadata.
+  // Runs |callback| when it is finished.
+  void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
+                                 const FileOperationCallback& callback);
+
+  // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
+  void DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
+  void DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Part of DoLoadDirectoryFromServer() for a normal directory.
+  void DoLoadDirectoryFromServerAfterLoad(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      ScopedVector<ChangeList> change_lists,
+      DriveFileError error);
+
+  // Part of DoLoadDirectoryFromServer().
+  void DoLoadDirectoryFromServerAfterRefresh(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      DriveFileError error,
+      const base::FilePath& directory_path);
+
+  // ================= Implementation for other stuff =================
+
+  // Callback for handling response from |DriveAPIService::GetAppList|.
+  // If the application list is successfully parsed, passes the list to
+  // Drive webapps registry.
+  void OnGetAppList(google_apis::GDataErrorCode status,
+                    scoped_ptr<google_apis::AppList> app_list);
+
+  // Part of SearchFromServer().
+  // Processes the ResourceList received from server and passes to |callback|.
+  void SearchFromServerAfterGetResourceList(
+      const LoadFeedListCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> resource_list);
+
+  // Part of UpdateFromFeed().
+  // Callback for ChangeListProcessor::ApplyFeeds.
+  void NotifyDirectoryChangedAfterApplyFeed(bool should_notify,
+                                            const base::Closure& callback);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
