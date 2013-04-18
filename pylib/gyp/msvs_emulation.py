@@ -763,7 +763,8 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
 
     # Find cl.exe location for this architecture.
     args = vs.SetupScript(arch)
-    args.extend(('&&', 'where', 'cl.exe'))
+    args.extend(('&&',
+      'for', '%i', 'in', '(cl.exe)', 'do', '@echo', '%~$PATH:i'))
     popen = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE)
     output, _ = popen.communicate()
     cl_paths[arch] = _ExtractCLPath(output)

@@ -1417,11 +1417,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
 
-  cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
-      toplevel_build, generator_flags, OpenOutput)
-  for arch, path in cl_paths.iteritems():
-    master_ninja.variable('cl_' + arch,
-                          CommandWithWrapper('CC', wrappers, path))
+  if flavor == 'win':
+    cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
+        toplevel_build, generator_flags, OpenOutput)
+    for arch, path in cl_paths.iteritems():
+      master_ninja.variable('cl_' + arch,
+                            CommandWithWrapper('CC', wrappers, path))
 
   cc = GetEnvironFallback(['CC_target', 'CC'], cc)
   master_ninja.variable('cc', CommandWithWrapper('CC', wrappers, cc))
