@@ -232,6 +232,13 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
+        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
+        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::eventNames().mousemoveEvent, domWindow, platformMouseEvent, 0, document);
+        WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
+        EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
+    }
+
+    {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), 0, IntSize(10, 10), FloatPoint(10, 10), false, false, false, false);
         RefPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
         WebGestureEventBuilder webGestureBuilder(view, docRenderer, *gestureEvent);
