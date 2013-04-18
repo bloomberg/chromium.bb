@@ -211,7 +211,7 @@ static const struct layout normal_layout = {
 	12,
 	4,
 	"en",
-	TEXT_MODEL_TEXT_DIRECTION_LTR
+	TEXT_INPUT_TEXT_DIRECTION_LTR
 };
 
 static const struct layout numeric_layout = {
@@ -220,7 +220,7 @@ static const struct layout numeric_layout = {
 	12,
 	2,
 	"en",
-	TEXT_MODEL_TEXT_DIRECTION_LTR
+	TEXT_INPUT_TEXT_DIRECTION_LTR
 };
 
 static const struct layout arabic_layout = {
@@ -229,7 +229,7 @@ static const struct layout arabic_layout = {
 	13,
 	4,
 	"ar",
-	TEXT_MODEL_TEXT_DIRECTION_RTL
+	TEXT_INPUT_TEXT_DIRECTION_RTL
 };
 
 static const char *style_labels[] = {
@@ -314,8 +314,8 @@ static const struct layout *
 get_current_layout(struct virtual_keyboard *keyboard)
 {
 	switch (keyboard->content_purpose) {
-		case TEXT_MODEL_CONTENT_PURPOSE_DIGITS:
-		case TEXT_MODEL_CONTENT_PURPOSE_NUMBER:
+		case TEXT_INPUT_CONTENT_PURPOSE_DIGITS:
+		case TEXT_INPUT_CONTENT_PURPOSE_NUMBER:
 			return &numeric_layout;
 		default:
 			if (keyboard->preferred_language &&
