@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocol name="input_method">
   <copyright>
-    Copyright © 2012 Intel Corporation
+    Copyright © 2012, 2013 Intel Corporation
 
     Permission to use, copy, modify, distribute, and sell this
     software and its documentation for any purpose is hereby granted
@@ -215,7 +215,11 @@
       <arg name="position" type="uint"/>
     </request>
 
-    <request name="set_panel">
+    <request name="set_overlay_panel">
+      <description summary="set the surface type as an overlay panel">
+        An overlay panel is shown near the input cursor above the application
+        window when a text model is active.
+      </description>
     </request>
   </interface>
 </protocol>

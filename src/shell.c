@@ -3638,8 +3638,8 @@ input_panel_surface_set_toplevel(struct wl_client *client,
 }
 
 static void
-input_panel_surface_set_panel(struct wl_client *client,
-			      struct wl_resource *resource)
+input_panel_surface_set_overlay_panel(struct wl_client *client,
+				      struct wl_resource *resource)
 {
 	struct input_panel_surface *input_panel_surface = resource->data;
 	struct desktop_shell *shell = input_panel_surface->shell;
@@ -3652,7 +3652,7 @@ input_panel_surface_set_panel(struct wl_client *client,
 
 static const struct input_panel_surface_interface input_panel_surface_implementation = {
 	input_panel_surface_set_toplevel,
-	input_panel_surface_set_panel
+	input_panel_surface_set_overlay_panel
 };
 
 static void
