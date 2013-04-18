@@ -90,9 +90,7 @@ class LocalFileSystemOperationWriteTest
     base::FilePath base_dir = dir_.path().AppendASCII("filesystem");
 
     quota_manager_ = new MockQuotaManager(base_dir, 1024);
-    test_helper_.SetUp(base_dir,
-                      false /* unlimited quota */,
-                      quota_manager_->proxy());
+    test_helper_.SetUp(base_dir, quota_manager_->proxy());
     virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 
     NewOperation()->CreateFile(

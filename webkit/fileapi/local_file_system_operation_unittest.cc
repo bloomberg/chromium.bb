@@ -65,9 +65,7 @@ class LocalFileSystemOperationTest
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
         quota_manager(),
         base::MessageLoopProxy::current());
-    test_helper_.SetUp(base_dir,
-                      false /* unlimited quota */,
-                      quota_manager_proxy_.get());
+    test_helper_.SetUp(base_dir, quota_manager_proxy_.get());
   }
 
   virtual void TearDown() OVERRIDE {

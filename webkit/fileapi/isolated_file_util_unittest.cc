@@ -16,7 +16,6 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/async_file_test_helper.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -25,10 +24,9 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/local_file_util.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 
 using file_util::FileEnumerator;
 
@@ -108,13 +106,9 @@ class IsolatedFileUtilTest : public testing::Test {
     // root paths) as dropped files.
     SimulateDropFiles();
 
-    file_system_context_ = new FileSystemContext(
-        FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
-        make_scoped_refptr(new quota::MockSpecialStoragePolicy()),
+    file_system_context_ = CreateFileSystemContextForTesting(
         NULL /* quota_manager */,
-        partition_dir_.path(),
-        CreateAllowFileAccessOptions());
+        partition_dir_.path());
 
     isolated_context()->AddReference(filesystem_id_);
   }

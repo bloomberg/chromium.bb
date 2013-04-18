@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -52,6 +53,7 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
   static bool CanHandleURL(const fileapi::FileSystemURL& url);
 
   // fileapi::FileSystemMountPointProvider overrides.
+  virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
   virtual void ValidateFileSystemRoot(
       const GURL& origin_url,
       fileapi::FileSystemType type,

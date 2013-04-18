@@ -63,9 +63,7 @@ class LocalFileSystemQuotaTest
         base::MessageLoopProxy::current(),
         NULL);
 
-    test_helper_.SetUp(filesystem_dir_path,
-                       false /* unlimited quota */,
-                       quota_manager_->proxy());
+    test_helper_.SetUp(filesystem_dir_path, quota_manager_->proxy());
   }
 
   virtual void TearDown() OVERRIDE {

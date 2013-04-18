@@ -13,11 +13,10 @@
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
@@ -40,13 +39,7 @@ class CopyOrMoveFileValidatorTestHelper {
   void SetUp() {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
-    file_system_context_ = new FileSystemContext(
-        FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
-        make_scoped_refptr(new quota::MockSpecialStoragePolicy),
-        NULL,
-        base_dir,
-        CreateAllowFileAccessOptions());
+    file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 
     // Prepare the origin's root directory.
     if (src_type_ == kFileSystemTypeNativeMedia) {

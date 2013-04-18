@@ -22,13 +22,11 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
@@ -52,13 +50,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     special_storage_policy_ = new quota::MockSpecialStoragePolicy;
-    file_system_context_ =
-        new FileSystemContext(
-            FileSystemTaskRunners::CreateMockTaskRunners(),
-            ExternalMountPoints::CreateRefCounted().get(),
-            special_storage_policy_, NULL,
-            temp_dir_.path(),
-            CreateAllowFileAccessOptions());
+    file_system_context_ = CreateFileSystemContextForTesting(
+        NULL, temp_dir_.path());
 
     file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create

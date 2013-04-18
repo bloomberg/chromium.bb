@@ -756,7 +756,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     //   already been granted read permission for the file's nominal path, but
     //   for drive files, platform paths differ from the nominal paths.
     DCHECK(snapshot_file ||
-           fileapi::SandboxMountPointProvider::CanHandleType(url.type()) ||
+           fileapi::SandboxMountPointProvider::IsSandboxType(url.type()) ||
            url.type() == fileapi::kFileSystemTypeDrive);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);

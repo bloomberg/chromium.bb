@@ -11,15 +11,13 @@
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_quota_client.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/quota_types.h"
@@ -47,13 +45,8 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_system_context_ =
-        new FileSystemContext(
-            FileSystemTaskRunners::CreateMockTaskRunners(),
-            ExternalMountPoints::CreateRefCounted().get(),
-            NULL, NULL,
-            data_dir_.path(),
-            CreateDisallowFileAccessOptions());
+    file_system_context_ = CreateFileSystemContextForTesting(
+            NULL, data_dir_.path());
   }
 
   struct TestFile {

@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -98,6 +99,7 @@ TEST(DriveFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           mount_points,
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
+          ScopedVector<fileapi::FileSystemMountPointProvider>(),
           temp_dir_.path(),  // partition_path
           fileapi::CreateAllowFileAccessOptions()));
 

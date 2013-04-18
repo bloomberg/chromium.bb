@@ -43,6 +43,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
       DeleteFileSystemCallback;
   virtual ~FileSystemMountPointProvider() {}
 
+  // Returns true if this mount point provider can handle |type|.
+  // One mount point provider may be able to handle multiple filesystem types.
+  virtual bool CanHandleType(FileSystemType type) const = 0;
+
   // Validates the filesystem for the given |origin_url| and |type|.
   // This verifies if it is allowed to request (or create) the filesystem
   // and if it can access (or create) the root directory of the mount point.

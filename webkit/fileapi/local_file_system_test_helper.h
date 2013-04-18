@@ -47,7 +47,6 @@ class LocalFileSystemTestOriginHelper {
   // [deep down inside ObfuscatedFileUtil].
   void SetUp(FileSystemContext* file_system_context);
   void SetUp(const base::FilePath& base_dir,
-             bool unlimited_quota,
              quota::QuotaManagerProxy* quota_manager_proxy);
   void TearDown();
 

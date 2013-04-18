@@ -37,6 +37,9 @@ enum FileSystemType {
   kFileSystemTypeExternal = WebKit::WebFileSystemTypeExternal,
 
   // ------------------------------------------------------------------------
+  // Marks the beginning of internal type enum. (This is not the actual fs type)
+  kFileSystemInternalTypeEnumStart = 99,
+
   // Private FileSystem types, that should not appear in filesystem: URL as
   // WebKit has no idea how to handle those types.
   //
@@ -47,7 +50,7 @@ enum FileSystemType {
   // See the comments for IsolatedContext and/or FileSystemURL for more details.
 
   // Should be used only for testing.
-  kFileSystemTypeTest = 100,
+  kFileSystemTypeTest,
 
   // Indicates a local filesystem where we can access files using native
   // local path.
@@ -82,6 +85,11 @@ enum FileSystemType {
   // kFileSystemTypeNativeLocal. On Chrome OS, the path is parsed by
   // the handlers of kFileSystemTypeExternal.
   kFileSystemTypeNativeForPlatformApp,
+
+  // --------------------------------------------------------------------
+  // Marks the end of internal type enum. (This is not the actual fs type)
+  // New internal filesystem types must be added above this line.
+  kFileSystemInternalTypeEnumEnd,
 };
 
 }  // namespace fileapi

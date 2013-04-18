@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -17,9 +16,8 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
@@ -39,7 +37,7 @@ LocalFileSystemTestOriginHelper::~LocalFileSystemTestOriginHelper() {
 }
 
 void LocalFileSystemTestOriginHelper::SetUp(const base::FilePath& base_dir) {
-  SetUp(base_dir, false, NULL);
+  SetUp(base_dir, NULL);
 }
 
 void LocalFileSystemTestOriginHelper::SetUp(
@@ -61,18 +59,9 @@ void LocalFileSystemTestOriginHelper::SetUp(
 
 void LocalFileSystemTestOriginHelper::SetUp(
     const base::FilePath& base_dir,
-    bool unlimited_quota,
     quota::QuotaManagerProxy* quota_manager_proxy) {
-  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-      new quota::MockSpecialStoragePolicy;
-  special_storage_policy->SetAllUnlimited(unlimited_quota);
-  file_system_context_ = new FileSystemContext(
-      FileSystemTaskRunners::CreateMockTaskRunners(),
-      ExternalMountPoints::CreateRefCounted().get(),
-      special_storage_policy,
-      quota_manager_proxy,
-      base_dir,
-      CreateAllowFileAccessOptions());
+  file_system_context_ = CreateFileSystemContextForTesting(
+      quota_manager_proxy, base_dir);
 
   SetUpFileUtil();
 
@@ -172,13 +161,6 @@ FileSystemUsageCache* LocalFileSystemTestOriginHelper::usage_cache() {
 
 void LocalFileSystemTestOriginHelper::SetUpFileUtil() {
   DCHECK(file_system_context_);
-  if (type_ == kFileSystemTypeTest) {
-    file_system_context_->RegisterMountPointProvider(
-        type_,
-        new TestMountPointProvider(
-            file_system_context_->task_runners()->file_task_runner(),
-            file_system_context_->partition_path()));
-  }
   file_util_ = file_system_context_->GetFileUtil(type_);
   DCHECK(file_util_);
 }

@@ -19,13 +19,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_url_request_job.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 
 namespace webkit_blob {
 
@@ -169,13 +167,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void SetUpFileSystem() {
     // Prepare file system.
-    file_system_context_ = new fileapi::FileSystemContext(
-        fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
-        fileapi::ExternalMountPoints::CreateRefCounted().get(),
-        NULL,
-        NULL,
-        temp_dir_.path(),
-        fileapi::CreateDisallowFileAccessOptions());
+    file_system_context_ = fileapi::CreateFileSystemContextForTesting(
+        NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin),

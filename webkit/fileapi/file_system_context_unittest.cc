@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/mock_file_system_options.h"
@@ -64,6 +65,7 @@ class FileSystemContextTest : public testing::Test {
         external_mount_points,
         storage_policy_,
         mock_quota_manager_->proxy(),
+        ScopedVector<FileSystemMountPointProvider>(),
         data_dir_.path(),
         CreateAllowFileAccessOptions());
   }
@@ -134,7 +136,8 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
       GURL(kTestOrigin),
       kFileSystemTypeExternal,
       kFileSystemTypeNativeLocal,
-      base::FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
+      base::FilePath(
+          DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
       base::FilePath(FPL("system/root/file")).NormalizePathSeparators(),
       "system");
 
@@ -170,7 +173,8 @@ TEST_F(FileSystemContextTest, FileSystemContextKeepsMountPointsAlive) {
       GURL(kTestOrigin),
       kFileSystemTypeExternal,
       kFileSystemTypeNativeLocal,
-      base::FilePath(DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
+      base::FilePath(
+          DRIVE FPL("/test/sys/root/file")).NormalizePathSeparators(),
       base::FilePath(FPL("system/root/file")).NormalizePathSeparators(),
       "system");
 

@@ -28,14 +28,11 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 namespace {
@@ -60,16 +57,10 @@ class FileSystemURLRequestJobTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
     // We use the main thread so that we can get the root path synchronously.
     // TODO(adamk): Run this on the FILE thread we've created as well.
     file_system_context_ =
-        new FileSystemContext(
-            FileSystemTaskRunners::CreateMockTaskRunners(),
-            ExternalMountPoints::CreateRefCounted().get(),
-            special_storage_policy_, NULL,
-            temp_dir_.path(),
-            CreateDisallowFileAccessOptions());
+        CreateFileSystemContextForTesting(NULL, temp_dir_.path());
 
     file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
@@ -200,7 +191,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
   MessageLoop message_loop_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;
 

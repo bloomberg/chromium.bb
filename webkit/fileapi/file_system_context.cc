@@ -61,6 +61,7 @@ FileSystemContext::FileSystemContext(
     ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
+    ScopedVector<FileSystemMountPointProvider> additional_providers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
     : task_runners_(task_runners.Pass()),
@@ -72,6 +73,7 @@ FileSystemContext::FileSystemContext(
               partition_path,
               options)),
       isolated_provider_(new IsolatedMountPointProvider(partition_path)),
+      additional_providers_(additional_providers.Pass()),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path) {
   DCHECK(task_runners_.get());
@@ -81,15 +83,28 @@ FileSystemContext::FileSystemContext(
             this, options.is_incognito()));
   }
 
+  RegisterMountPointProvider(sandbox_provider_.get());
+  RegisterMountPointProvider(isolated_provider_.get());
+
 #if defined(OS_CHROMEOS)
+  // TODO(kinuko): Move this out of webkit/fileapi layer.
   DCHECK(external_mount_points);
   external_provider_.reset(
       new chromeos::CrosMountPointProvider(
           special_storage_policy,
           external_mount_points,
           ExternalMountPoints::GetSystemInstance()));
+  RegisterMountPointProvider(external_provider_.get());
 #endif
 
+  for (ScopedVector<FileSystemMountPointProvider>::const_iterator iter =
+          additional_providers_.begin();
+       iter != additional_providers_.end(); ++iter) {
+    RegisterMountPointProvider(*iter);
+  }
+
+  // Additional mount points must be added before regular system-wide
+  // mount points.
   if (external_mount_points)
     url_crackers_.push_back(external_mount_points);
   url_crackers_.push_back(ExternalMountPoints::GetSystemInstance());
@@ -151,35 +166,11 @@ FileSystemContext::GetCopyOrMoveFileValidatorFactory(
 
 FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
     FileSystemType type) const {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-    case kFileSystemTypeSyncable:
-      return sandbox_provider_.get();
-    case kFileSystemTypeExternal:
-    case kFileSystemTypeDrive:
-    case kFileSystemTypeRestrictedNativeLocal:
-      return external_provider_.get();
-    case kFileSystemTypeIsolated:
-    case kFileSystemTypeDragged:
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
-      return isolated_provider_.get();
-    case kFileSystemTypeNativeLocal:
-    case kFileSystemTypeNativeForPlatformApp:
-#if defined(OS_CHROMEOS)
-      return external_provider_.get();
-#else
-      return isolated_provider_.get();
-#endif
-    default:
-      if (provider_map_.find(type) != provider_map_.end())
-        return provider_map_.find(type)->second;
-      // Fall through.
-    case kFileSystemTypeUnknown:
-      NOTREACHED();
-      return NULL;
-  }
+  MountPointProviderMap::const_iterator found = provider_map_.find(type);
+  if (found != provider_map_.end())
+    return found->second;
+  NOTREACHED() << "Unknown filesystem type: " << type;
+  return NULL;
 }
 
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(
@@ -189,7 +180,7 @@ const UpdateObserverList* FileSystemContext::GetUpdateObservers(
   // TODO(kinuko): Probably GetUpdateObservers() virtual method should be
   // added to FileSystemMountPointProvider interface and be called like
   // other GetFoo() methods do.
-  if (SandboxMountPointProvider::CanHandleType(type))
+  if (SandboxMountPointProvider::IsSandboxType(type))
     return sandbox_provider()->GetUpdateObservers(type);
   if (type != kFileSystemTypeTest)
     return NULL;
@@ -320,14 +311,6 @@ scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
   return mount_point_provider->CreateFileStreamWriter(url, offset, this);
 }
 
-void FileSystemContext::RegisterMountPointProvider(
-    FileSystemType type,
-    FileSystemMountPointProvider* provider) {
-  DCHECK(provider);
-  DCHECK(provider_map_.find(type) == provider_map_.end());
-  provider_map_[type] = provider;
-}
-
 void FileSystemContext::SetLocalFileChangeTracker(
     scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker) {
   DCHECK(!change_tracker_.get());
@@ -367,8 +350,6 @@ void FileSystemContext::DeleteOnCorrectThread() const {
       task_runners_->io_task_runner()->DeleteSoon(FROM_HERE, this)) {
     return;
   }
-  STLDeleteContainerPairSecondPointers(provider_map_.begin(),
-                                       provider_map_.end());
   delete this;
 }
 
@@ -406,6 +387,34 @@ FileSystemFileUtil* FileSystemContext::GetFileUtil(
   if (!mount_point_provider)
     return NULL;
   return mount_point_provider->GetFileUtil(type);
+}
+
+void FileSystemContext::RegisterMountPointProvider(
+    FileSystemMountPointProvider* provider) {
+  const FileSystemType mount_types[] = {
+    kFileSystemTypeTemporary,
+    kFileSystemTypePersistent,
+    kFileSystemTypeIsolated,
+    kFileSystemTypeExternal,
+  };
+  // Register mount point providers for public mount types.
+  for (size_t j = 0; j < ARRAYSIZE_UNSAFE(mount_types); ++j) {
+    if (provider->CanHandleType(mount_types[j])) {
+      const bool inserted = provider_map_.insert(
+          std::make_pair(mount_types[j], provider)).second;
+      DCHECK(inserted);
+    }
+  }
+  // Register mount point providers for internal types.
+  for (int t = kFileSystemInternalTypeEnumStart + 1;
+       t < kFileSystemInternalTypeEnumEnd; ++t) {
+    FileSystemType type = static_cast<FileSystemType>(t);
+    if (provider->CanHandleType(type)) {
+      const bool inserted = provider_map_.insert(
+          std::make_pair(type, provider)).second;
+      DCHECK(inserted);
+    }
+  }
 }
 
 }  // namespace fileapi

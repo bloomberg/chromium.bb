@@ -67,7 +67,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // The FileSystem directory name.
   static const base::FilePath::CharType kFileSystemDirectory[];
 
-  static bool CanHandleType(FileSystemType type);
+  static bool IsSandboxType(FileSystemType type);
 
   // |file_task_runner| is used to validate the root directory and delete the
   // obfuscated file util.
@@ -79,6 +79,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   virtual ~SandboxMountPointProvider();
 
   // FileSystemMountPointProvider overrides.
+  virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void ValidateFileSystemRoot(
       const GURL& origin_url,
       FileSystemType type,

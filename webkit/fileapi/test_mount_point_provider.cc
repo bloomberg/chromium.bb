@@ -81,6 +81,10 @@ TestMountPointProvider::TestMountPointProvider(
 TestMountPointProvider::~TestMountPointProvider() {
 }
 
+bool TestMountPointProvider::CanHandleType(FileSystemType type) const {
+  return (type == kFileSystemTypeTest);
+}
+
 void TestMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url,
     FileSystemType type,

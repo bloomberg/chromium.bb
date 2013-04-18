@@ -15,6 +15,7 @@
 #include "webkit/blob/mock_blob_url_request_context.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/local_file_system_operation.h"
@@ -213,6 +214,7 @@ void CannedSyncableFileSystem::SetUp() {
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy,
       quota_manager_->proxy(),
+      ScopedVector<fileapi::FileSystemMountPointProvider>(),
       data_dir_.path(),
       fileapi::CreateAllowFileAccessOptions());
 

@@ -131,7 +131,7 @@ SandboxMountPointProvider::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("File System");
 
 // static
-bool SandboxMountPointProvider::CanHandleType(FileSystemType type) {
+bool SandboxMountPointProvider::IsSandboxType(FileSystemType type) {
   return type == kFileSystemTypeTemporary ||
          type == kFileSystemTypePersistent ||
          type == kFileSystemTypeSyncable;
@@ -186,6 +186,10 @@ SandboxMountPointProvider::~SandboxMountPointProvider() {
     if (!file_task_runner_->DeleteSoon(FROM_HERE, file_system_usage_cache))
       delete file_system_usage_cache;
   }
+}
+
+bool SandboxMountPointProvider::CanHandleType(FileSystemType type) const {
+  return IsSandboxType(type);
 }
 
 void SandboxMountPointProvider::ValidateFileSystemRoot(

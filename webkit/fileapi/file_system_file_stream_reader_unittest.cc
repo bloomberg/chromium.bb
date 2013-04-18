@@ -19,10 +19,8 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 
@@ -69,15 +67,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
-    file_system_context_ =
-        new FileSystemContext(
-            FileSystemTaskRunners::CreateMockTaskRunners(),
-            ExternalMountPoints::CreateRefCounted().get(),
-            special_storage_policy_,
-            NULL,
-            temp_dir_.path(),
-            CreateDisallowFileAccessOptions());
+    file_system_context_ = CreateFileSystemContextForTesting(
+        NULL, temp_dir_.path());
 
     file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL(kURLOrigin), kFileSystemTypeTemporary, true,  // create
@@ -155,7 +146,6 @@ class FileSystemFileStreamReaderTest : public testing::Test {
 
   MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::Time test_file_modification_time_;
 };

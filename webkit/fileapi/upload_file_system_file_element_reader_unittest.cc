@@ -9,13 +9,12 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 
 namespace fileapi {
 
@@ -35,13 +34,8 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_system_context_ = new fileapi::FileSystemContext(
-        fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
-        NULL,
-        NULL,
-        temp_dir_.path(),
-        fileapi::CreateDisallowFileAccessOptions());
+    file_system_context_ = fileapi::CreateFileSystemContextForTesting(
+        NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin),

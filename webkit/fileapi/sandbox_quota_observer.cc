@@ -29,7 +29,7 @@ SandboxQuotaObserver::SandboxQuotaObserver(
 SandboxQuotaObserver::~SandboxQuotaObserver() {}
 
 void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
-  DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
+  DCHECK(SandboxMountPointProvider::IsSandboxType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
   base::FilePath usage_file_path = GetUsageCachePath(url);
   if (usage_file_path.empty())
@@ -39,7 +39,7 @@ void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
 
 void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
                                     int64 delta) {
-  DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
+  DCHECK(SandboxMountPointProvider::IsSandboxType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
 
   if (quota_manager_proxy_) {
@@ -64,7 +64,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
 }
 
 void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
-  DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
+  DCHECK(SandboxMountPointProvider::IsSandboxType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
 
   base::FilePath usage_file_path = GetUsageCachePath(url);
@@ -82,7 +82,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
 }
 
 void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
-  DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
+  DCHECK(SandboxMountPointProvider::IsSandboxType(url.type()));
   if (quota_manager_proxy_) {
     quota_manager_proxy_->NotifyStorageAccessed(
         quota::QuotaClient::kFileSystem,

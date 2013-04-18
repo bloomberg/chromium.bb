@@ -241,6 +241,10 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "Syncable";
     case kFileSystemTypeNativeForPlatformApp:
       return "NativeForPlatformApp";
+    case kFileSystemInternalTypeEnumStart:
+    case kFileSystemInternalTypeEnumEnd:
+      NOTREACHED();
+      // Fall through.
     case kFileSystemTypeUnknown:
       return "Unknown";
   }

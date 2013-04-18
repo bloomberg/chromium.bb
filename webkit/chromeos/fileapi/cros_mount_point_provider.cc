@@ -77,6 +77,19 @@ CrosMountPointProvider::CrosMountPointProvider(
 CrosMountPointProvider::~CrosMountPointProvider() {
 }
 
+bool CrosMountPointProvider::CanHandleType(fileapi::FileSystemType type) const {
+  switch (type) {
+    case fileapi::kFileSystemTypeExternal:
+    case fileapi::kFileSystemTypeDrive:
+    case fileapi::kFileSystemTypeRestrictedNativeLocal:
+    case fileapi::kFileSystemTypeNativeLocal:
+    case fileapi::kFileSystemTypeNativeForPlatformApp:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void CrosMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url,
     fileapi::FileSystemType type,

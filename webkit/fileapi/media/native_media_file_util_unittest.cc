@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -117,6 +118,7 @@ class NativeMediaFileUtilTest : public testing::Test {
             ExternalMountPoints::CreateRefCounted().get(),
             storage_policy,
             NULL,
+            ScopedVector<FileSystemMountPointProvider>(),
             data_dir_.path(),
             CreateAllowFileAccessOptions());
 

@@ -128,6 +128,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
         external_mount_points.get(),
         special_storage_policy_,
         NULL,
+        ScopedVector<FileSystemMountPointProvider>(),
         data_dir_.path(),
         options);
 #if defined(OS_CHROMEOS)

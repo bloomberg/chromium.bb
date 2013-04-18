@@ -17,12 +17,13 @@
 #include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -141,13 +142,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
     // Every time we create a new helper, it creates another context, which
     // creates another path manager, another sandbox_mount_point_provider, and
     // another OFU.  We need to pass in the context to skip all that.
-    file_system_context_ = new FileSystemContext(
-        FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy,
+    file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(),
-        data_dir_.path(),
-        CreateAllowFileAccessOptions());
+        data_dir_.path());
 
     test_helper_.SetUp(file_system_context_.get());
 

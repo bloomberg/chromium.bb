@@ -13,17 +13,14 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/async_file_test_helper.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/test_file_set.h"
 #include "webkit/quota/mock_quota_manager.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -59,13 +56,9 @@ class CrossOperationTestHelper {
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
         quota_manager_,
         base::MessageLoopProxy::current());
-    file_system_context_ = new FileSystemContext(
-        FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
-        make_scoped_refptr(new quota::MockSpecialStoragePolicy),
+    file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_proxy_,
-        base_dir,
-        CreateAllowFileAccessOptions());
+        base_dir);
 
     // Prepare the origin's root directory.
     FileSystemMountPointProvider* mount_point_provider =

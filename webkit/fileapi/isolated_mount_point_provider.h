@@ -25,6 +25,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual ~IsolatedMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
+  virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void ValidateFileSystemRoot(
       const GURL& origin_url,
       FileSystemType type,

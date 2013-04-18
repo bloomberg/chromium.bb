@@ -139,8 +139,6 @@
         # test support target.
         '../webkit/appcache/appcache_test_helper.cc',
         '../webkit/appcache/appcache_test_helper.h',
-        '../webkit/quota/mock_special_storage_policy.cc',
-        '../webkit/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
         ['OS == "ios"', {

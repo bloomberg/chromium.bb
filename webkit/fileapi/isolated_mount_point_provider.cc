@@ -55,6 +55,23 @@ IsolatedMountPointProvider::IsolatedMountPointProvider(
 IsolatedMountPointProvider::~IsolatedMountPointProvider() {
 }
 
+bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
+  switch (type) {
+    case kFileSystemTypeIsolated:
+    case kFileSystemTypeDragged:
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypeDeviceMedia:
+      return true;
+#if !defined(OS_CHROMEOS)
+    case kFileSystemTypeNativeLocal:
+    case kFileSystemTypeNativeForPlatformApp:
+      return true;
+#endif
+    default:
+      return false;
+  }
+}
+
 void IsolatedMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url,
     FileSystemType type,

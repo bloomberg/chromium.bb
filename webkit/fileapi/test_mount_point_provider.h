@@ -34,6 +34,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
   virtual ~TestMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
+  virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void ValidateFileSystemRoot(
       const GURL& origin_url,
       FileSystemType type,

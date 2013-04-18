@@ -47,10 +47,11 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
 }  // namespace
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
-        const base::FilePath& profile_path, bool is_incognito,
-        fileapi::ExternalMountPoints* external_mount_points,
-        quota::SpecialStoragePolicy* special_storage_policy,
-        quota::QuotaManagerProxy* quota_manager_proxy) {
+    const base::FilePath& profile_path,
+    bool is_incognito,
+    fileapi::ExternalMountPoints* external_mount_points,
+    quota::SpecialStoragePolicy* special_storage_policy,
+    quota::QuotaManagerProxy* quota_manager_proxy) {
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
@@ -61,11 +62,14 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           pool->GetSequencedTaskRunner(media_sequence_token)));
 
+  // Setting up additional mount point providers.
+  ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
   return new fileapi::FileSystemContext(
       task_runners.Pass(),
       external_mount_points,
       special_storage_policy,
       quota_manager_proxy,
+      ScopedVector<fileapi::FileSystemMountPointProvider>(),
       profile_path,
       CreateBrowserFileSystemOptions(is_incognito));
 }
