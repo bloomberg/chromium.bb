@@ -102,7 +102,7 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     assert 'solutions' in self.spec
     keys = ['solutions', 'target_os', 'target_os_only']
     gclient_spec = '\n'.join('%s = %s' % (key, self.spec[key])
-                             for key in self.spec if key in keys)
+                             for key in keys if key in self.spec)
     self.spec['gclient_spec'] = gclient_spec
 
   def exists(self):
