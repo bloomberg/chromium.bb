@@ -50,6 +50,7 @@ struct virtual_keyboard {
 	uint32_t content_purpose;
 	char *preferred_language;
 	char *surrounding_text;
+	uint32_t surrounding_cursor;
 	struct keyboard *keyboard;
 };
 
@@ -380,9 +381,24 @@ resize_handler(struct widget *widget,
 	/* struct keyboard *keyboard = data; */
 }
 
+static char *
+insert_text(const char *text, uint32_t offset, const char *insert)
+{
+	char *new_text = malloc(strlen(text) + strlen(insert) + 1);
+
+	strncat(new_text, text, offset);
+	new_text[offset] = '\0';
+	strcat(new_text, insert);
+	strcat(new_text, text + offset);
+
+	return new_text;
+}
+
 static void
 virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 {
+	char *surrounding_text;
+
 	if (!keyboard->preedit_string ||
 	    strlen(keyboard->preedit_string) == 0)
 		return;
@@ -392,6 +408,19 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 	wl_input_method_context_commit_string(keyboard->context,
 					      keyboard->serial,
 					      keyboard->preedit_string);
+
+	if (keyboard->surrounding_text) {
+		surrounding_text = insert_text(keyboard->surrounding_text,
+					       keyboard->surrounding_cursor,
+					       keyboard->preedit_string);
+		free(keyboard->surrounding_text);
+		keyboard->surrounding_text = surrounding_text;
+		keyboard->surrounding_cursor += strlen(keyboard->preedit_string);
+	} else {
+		keyboard->surrounding_text = strdup(keyboard->preedit_string);
+		keyboard->surrounding_cursor = strlen(keyboard->preedit_string);
+	}
+
 	free(keyboard->preedit_string);
 	keyboard->preedit_string = strdup("");
 }
@@ -417,6 +446,59 @@ virtual_keyboard_send_preedit(struct virtual_keyboard *keyboard,
 					       keyboard->preedit_string);
 }
 
+static const char *
+prev_utf8_char(const char *s, const char *p)
+{
+	for (--p; p >= s; --p) {
+		if ((*p & 0xc0) != 0x80)
+			return p;
+	}
+	return NULL;
+}
+
+static const char *
+next_utf8_char(const char *p)
+{
+	if (*p == '\0')
+		return NULL;
+	for (++p; (*p & 0xc0) == 0x80; ++p)
+		;
+	return p;
+}
+
+static void
+delete_before_cursor(struct virtual_keyboard *keyboard)
+{
+	const char *start, *end;
+
+	if (!keyboard->surrounding_text) {
+		fprintf(stderr, "delete_before_cursor: No surrounding text available\n");
+		return;
+	}
+
+	start = prev_utf8_char(keyboard->surrounding_text,
+			       keyboard->surrounding_text + keyboard->surrounding_cursor);
+	if (!start) {
+		fprintf(stderr, "delete_before_cursor: No previous character to delete\n");
+		return;
+	}
+
+	end = next_utf8_char(start);
+
+	wl_input_method_context_delete_surrounding_text(keyboard->context,
+							(start - keyboard->surrounding_text) - keyboard->surrounding_cursor,
+							end - start);
+	wl_input_method_context_commit_string(keyboard->context,
+					      keyboard->serial,
+					      "");
+
+	/* Update surrounding text */
+	keyboard->surrounding_cursor = start - keyboard->surrounding_text;
+	keyboard->surrounding_text[keyboard->surrounding_cursor] = '\0';
+	if (*end)
+		memmove(keyboard->surrounding_text + keyboard->surrounding_cursor, end, strlen(end));
+}
+
 static void
 keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key, struct input *input, enum wl_pointer_button_state state)
 {
@@ -438,11 +520,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 				break;
 
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
-				wl_input_method_context_delete_surrounding_text(keyboard->keyboard->context,
-										-1, 1);
-				wl_input_method_context_commit_string(keyboard->keyboard->context,
-								      keyboard->keyboard->serial,
-								      "");
+				delete_before_cursor(keyboard->keyboard);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
 				virtual_keyboard_send_preedit(keyboard->keyboard, -1);
@@ -567,6 +645,8 @@ handle_surrounding_text(void *data,
 
 	free(keyboard->surrounding_text);
 	keyboard->surrounding_text = strdup(text);
+
+	keyboard->surrounding_cursor = cursor;
 }
 
 static void
