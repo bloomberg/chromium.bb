@@ -7,18 +7,19 @@
 //
 //  OVERVIEW
 //
-// A MetricsService instance is typically created at application startup.  It
-// is the central controller for the acquisition of log data, and the automatic
+// A MetricsService instance is typically created at application startup.  It is
+// the central controller for the acquisition of log data, and the automatic
 // transmission of that log data to an external server.  Its major job is to
 // manage logs, grouping them for transmission, and transmitting them.  As part
 // of its grouping, MS finalizes logs by including some just-in-time gathered
 // memory statistics, snapshotting the current stats of numerous histograms,
-// closing the logs, translating to XML text, and compressing the results for
-// transmission.  Transmission includes submitting a compressed log as data in a
-// URL-post, and retransmitting (or retaining at process termination) if the
-// attempted transmission failed.  Retention across process terminations is done
-// using the the PrefServices facilities. The retained logs (the ones that never
-// got transmitted) are compressed and base64-encoded before being persisted.
+// closing the logs, translating to protocol buffer format, and compressing the
+// results for transmission.  Transmission includes submitting a compressed log
+// as data in a URL-post, and retransmitting (or retaining at process
+// termination) if the attempted transmission failed.  Retention across process
+// terminations is done using the the PrefServices facilities. The retained logs
+// (the ones that never got transmitted) are compressed and base64-encoded
+// before being persisted.
 //
 // Logs fall into one of two categories: "initial logs," and "ongoing logs."
 // There is at most one initial log sent for each complete run of the chromium
@@ -814,14 +815,10 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 
 void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
-  server_url_xml_ = ASCIIToUTF16(kServerUrlXml);
-  server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
   http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  server_url_xml_ = dist->GetStatsServerURL();
-  server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = dist->GetNetworkStatsServer();
   http_pipelining_test_server_ = dist->GetHttpPipeliningTestServer();
 #endif
@@ -1155,7 +1152,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
   if (log_manager_.has_staged_log()) {
     // We may race here, and send second copy of the log later.
     MetricsLogManager::StoreType store_type;
-    if (current_fetch_xml_.get() || current_fetch_proto_.get())
+    if (current_fetch_.get())
       store_type = MetricsLogManager::PROVISIONAL_STORE;
     else
       store_type = MetricsLogManager::NORMAL_STORE;
@@ -1284,9 +1281,8 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   // If somehow there is a fetch in progress, we return and hope things work
   // out. The scheduler isn't informed since if this happens, the scheduler
   // will get a response from the upload.
-  DCHECK(!current_fetch_xml_.get());
-  DCHECK(!current_fetch_proto_.get());
-  if (current_fetch_xml_.get() || current_fetch_proto_.get())
+  DCHECK(!current_fetch_.get());
+  if (current_fetch_.get())
     return;
 
   // Abort if metrics were turned off during the final info gathering.
@@ -1381,7 +1377,7 @@ void MetricsService::SendStagedLog() {
 
   PrepareFetchWithStagedLog();
 
-  bool upload_created = current_fetch_xml_.get() || current_fetch_proto_.get();
+  bool upload_created = (current_fetch_.get() != NULL);
   UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", upload_created);
   if (!upload_created) {
     // Compression failed, and log discarded :-/.
@@ -1394,10 +1390,7 @@ void MetricsService::SendStagedLog() {
   DCHECK(!waiting_for_asynchronous_reporting_step_);
   waiting_for_asynchronous_reporting_step_ = true;
 
-  if (current_fetch_xml_.get())
-    current_fetch_xml_->Start();
-  if (current_fetch_proto_.get())
-    current_fetch_proto_->Start();
+  current_fetch_->Start();
 
   HandleIdleSinceLastTransmission(true);
 }
@@ -1405,72 +1398,37 @@ void MetricsService::SendStagedLog() {
 void MetricsService::PrepareFetchWithStagedLog() {
   DCHECK(log_manager_.has_staged_log());
 
-  // Prepare the XML version.
-  DCHECK(!current_fetch_xml_.get());
-  if (log_manager_.has_staged_log_xml()) {
-    current_fetch_xml_.reset(net::URLFetcher::Create(
-        GURL(server_url_xml_), net::URLFetcher::POST, this));
-    current_fetch_xml_->SetRequestContext(
-        g_browser_process->system_request_context());
-    current_fetch_xml_->SetUploadData(kMimeTypeXml,
-                                      log_manager_.staged_log_text().xml);
-    // We already drop cookies server-side, but we might as well strip them out
-    // client-side as well.
-    current_fetch_xml_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                     net::LOAD_DO_NOT_SEND_COOKIES);
-  }
-
   // Prepare the protobuf version.
-  DCHECK(!current_fetch_proto_.get());
+  DCHECK(!current_fetch_.get());
   if (log_manager_.has_staged_log_proto()) {
-    current_fetch_proto_.reset(net::URLFetcher::Create(
-        GURL(server_url_proto_), net::URLFetcher::POST, this));
-    current_fetch_proto_->SetRequestContext(
+    current_fetch_.reset(net::URLFetcher::Create(
+        GURL(kServerUrlProto), net::URLFetcher::POST, this));
+    current_fetch_->SetRequestContext(
         g_browser_process->system_request_context());
-    current_fetch_proto_->SetUploadData(kMimeTypeProto,
-                                        log_manager_.staged_log_text().proto);
+    current_fetch_->SetUploadData(kMimeTypeProto,
+                                  log_manager_.staged_log_text().proto);
     // We already drop cookies server-side, but we might as well strip them out
     // client-side as well.
-    current_fetch_proto_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                       net::LOAD_DO_NOT_SEND_COOKIES);
+    current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_COOKIES);
   }
 }
 
-// We need to wait for two responses: the response to the XML upload, and the
-// response to the protobuf upload.  In the case that exactly one of the uploads
-// fails and needs to be retried, we "zap" the other pipeline's staged log to
-// avoid incorrectly re-uploading it as well.
 void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(waiting_for_asynchronous_reporting_step_);
 
   // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
-  // Note however that |source| is aliased to one of these, so we should be
+  // Note however that |source| is aliased to the fetcher, so we should be
   // careful not to delete it too early.
-  scoped_ptr<net::URLFetcher> s;
-  bool is_xml;
-  if (source == current_fetch_xml_.get()) {
-    s.reset(current_fetch_xml_.release());
-    is_xml = true;
-  } else if (source == current_fetch_proto_.get()) {
-    s.reset(current_fetch_proto_.release());
-    is_xml = false;
-  } else {
-    NOTREACHED();
-    return;
-  }
+  DCHECK_EQ(current_fetch_.get(), source);
+  scoped_ptr<net::URLFetcher> s(current_fetch_.Pass());
 
   int response_code = source->GetResponseCode();
 
   // Log a histogram to track response success vs. failure rates.
-  if (is_xml) {
-    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.XML",
-                              ResponseCodeToStatus(response_code),
-                              NUM_RESPONSE_STATUSES);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
-                              ResponseCodeToStatus(response_code),
-                              NUM_RESPONSE_STATUSES);
-  }
+  UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
+                            ResponseCodeToStatus(response_code),
+                            NUM_RESPONSE_STATUSES);
 
   // If the upload was provisionally stored, drop it now that the upload is
   // known to have gone through.
@@ -1480,9 +1438,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
-  const size_t log_size = is_xml ?
-      log_manager_.staged_log_text().xml.length() :
-      log_manager_.staged_log_text().proto.length();
+  const size_t log_size = log_manager_.staged_log_text().proto.length();
   if (!upload_succeeded && log_size > kUploadLogAvoidRetransmitSize) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
                          static_cast<int>(log_size));
@@ -1492,16 +1448,8 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     discard_log = true;
   }
 
-  if (upload_succeeded || discard_log) {
-    if (is_xml)
-      log_manager_.DiscardStagedLogXml();
-    else
-      log_manager_.DiscardStagedLogProto();
-  }
-
-  // If we're still waiting for one of the responses, keep waiting...
-  if (current_fetch_xml_.get() || current_fetch_proto_.get())
-    return;
+  if (upload_succeeded || discard_log)
+    log_manager_.DiscardStagedLogProto();
 
   waiting_for_asynchronous_reporting_step_ = false;
 
@@ -1534,15 +1482,6 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-
-  // Note that we are essentially randomly choosing to report either the XML or
-  // the protobuf server's health status, but this is ok: In the case that the
-  // two statuses are not the same, one of the uploads succeeded but the other
-  // did not. In this case, we'll re-try only the upload that failed. This first
-  // re-try might ignore the server's unhealthiness; but the response to the
-  // re-tried upload will correctly propagate the server's health status for any
-  // subsequent re-tries. Hence, we'll at most delay slowing the upload rate by
-  // one re-try, which is fine.
   scheduler_->UploadFinished(server_is_healthy, log_manager_.has_unsent_logs());
 
   // Collect network stats if UMA upload succeeded.

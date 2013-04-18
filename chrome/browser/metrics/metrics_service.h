@@ -348,10 +348,6 @@ class MetricsService
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Logs debugging details, for the case where the server returns a response
-  // code other than 200.
-  void LogBadResponseCode(int response_code, bool is_xml);
-
   // Records a window-related notification. |window_or_tab| is either a pointer
   // to a WebContents (for a tab) or a Browser (for a window).
   void LogWindowOrTabChange(int type, uintptr_t window_or_tab);
@@ -441,12 +437,7 @@ class MetricsService
   scoped_ptr<MetricsLog> initial_log_;
 
   // The outstanding transmission appears as a URL Fetch operation.
-  scoped_ptr<net::URLFetcher> current_fetch_xml_;
-  scoped_ptr<net::URLFetcher> current_fetch_proto_;
-
-  // The URLs for the XML and protobuf metrics servers.
-  string16 server_url_xml_;
-  string16 server_url_proto_;
+  scoped_ptr<net::URLFetcher> current_fetch_;
 
   // The TCP/UDP echo server to collect network connectivity stats.
   std::string network_stats_server_;
