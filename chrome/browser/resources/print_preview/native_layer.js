@@ -39,7 +39,6 @@ cr.define('print_preview', function() {
     global['updatePrintPreview'] = this.onUpdatePrintPreview_.bind(this);
     global['printScalingDisabledForSourcePDF'] =
         this.onPrintScalingDisabledForSourcePDF_.bind(this);
-    global['onDidGetAccessToken'] = this.onDidGetAccessToken_.bind(this);
   };
 
   /**
@@ -48,7 +47,6 @@ cr.define('print_preview', function() {
    * @const
    */
   NativeLayer.EventType = {
-    ACCESS_TOKEN_READY: 'print_preview.NativeLayer.ACCESS_TOKEN_READY',
     CAPABILITIES_SET: 'print_preview.NativeLayer.CAPABILITIES_SET',
     CLOUD_PRINT_ENABLE: 'print_preview.NativeLayer.CLOUD_PRINT_ENABLE',
     DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
@@ -101,14 +99,6 @@ cr.define('print_preview', function() {
 
   NativeLayer.prototype = {
     __proto__: cr.EventTarget.prototype,
-
-    /**
-     * Requests access token for cloud print requests.
-     * @param {string} authType type of access token.
-     */
-    startGetAccessToken: function(authType) {
-      chrome.send('getAccessToken', [authType]);
-    },
 
     /** Gets the initial settings to initialize the print preview with. */
     startGetInitialSettings: function() {
@@ -527,20 +517,6 @@ cr.define('print_preview', function() {
       pagePreviewGenEvent.previewUid = previewUid;
       pagePreviewGenEvent.previewResponseId = previewResponseId;
       this.dispatchEvent(pagePreviewGenEvent);
-    },
-
-    /**
-     * Notification that access token is ready.
-     * @param {string} authType Type of access token.
-     * @param {string} accessToken Access token.
-     * @private
-     */
-    onDidGetAccessToken_: function(authType, accessToken) {
-      var getAccessTokenEvent = new cr.Event(
-          NativeLayer.EventType.ACCESS_TOKEN_READY);
-      getAccessTokenEvent.authType = authType;
-      getAccessTokenEvent.accessToken = accessToken;
-      this.dispatchEvent(getAccessTokenEvent);
     },
 
     /**
