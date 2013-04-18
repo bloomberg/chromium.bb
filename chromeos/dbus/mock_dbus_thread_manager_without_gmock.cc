@@ -5,6 +5,10 @@
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
@@ -15,7 +19,12 @@
 namespace chromeos {
 
 MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
-  : mock_ibus_client_(new MockIBusClient),
+  : fake_bluetooth_adapter_client_(new FakeBluetoothAdapterClient()),
+    fake_bluetooth_agent_manager_client_(new FakeBluetoothAgentManagerClient()),
+    fake_bluetooth_device_client_(new FakeBluetoothDeviceClient()),
+    fake_bluetooth_profile_manager_client_(
+        new FakeBluetoothProfileManagerClient()),
+    mock_ibus_client_(new MockIBusClient),
     mock_ibus_input_context_client_(new MockIBusInputContextClient),
     ibus_bus_(NULL) {
 }
@@ -104,28 +113,24 @@ DebugDaemonClient* MockDBusThreadManagerWithoutGMock::GetDebugDaemonClient() {
 
 ExperimentalBluetoothAdapterClient*
     MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothAdapterClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_bluetooth_adapter_client_.get();
 }
 
 ExperimentalBluetoothAgentManagerClient*
     MockDBusThreadManagerWithoutGMock::
         GetExperimentalBluetoothAgentManagerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_bluetooth_agent_manager_client_.get();
 }
 
 ExperimentalBluetoothDeviceClient*
     MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothDeviceClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_bluetooth_device_client_.get();
 }
 
 ExperimentalBluetoothProfileManagerClient*
     MockDBusThreadManagerWithoutGMock::
         GetExperimentalBluetoothProfileManagerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_bluetooth_profile_manager_client_.get();
 }
 
 ShillDeviceClient*

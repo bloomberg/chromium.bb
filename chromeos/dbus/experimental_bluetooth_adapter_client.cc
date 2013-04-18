@@ -4,11 +4,9 @@
 
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chromeos/dbus/bluetooth_property.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -252,122 +250,6 @@ class ExperimentalBluetoothAdapterClientImpl
   DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAdapterClientImpl);
 };
 
-// The ExperimentalBluetoothAdapterClient implementation used on Linux desktop,
-// which does nothing.
-class ExperimentalBluetoothAdapterClientStubImpl
-    : public ExperimentalBluetoothAdapterClient {
- public:
-  struct Properties : public ExperimentalBluetoothAdapterClient::Properties {
-    explicit Properties(const PropertyChangedCallback& callback)
-        : ExperimentalBluetoothAdapterClient::Properties(
-              NULL,
-              bluetooth_adapter::kExperimentalBluetoothAdapterInterface,
-              callback) {
-    }
-
-    virtual ~Properties() {
-    }
-
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE {
-      VLOG(1) << "Get " << property->name();
-      callback.Run(false);
-    }
-
-    virtual void GetAll() OVERRIDE {
-      VLOG(1) << "GetAll";
-    }
-
-    virtual void Set(dbus::PropertyBase *property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE {
-      VLOG(1) << "Set " << property->name();
-      if (property->name() == "Powered") {
-        property->ReplaceValueWithSetValue();
-        NotifyPropertyChanged(property->name());
-        callback.Run(true);
-      } else {
-        callback.Run(false);
-      }
-    }
-  };
-
-  ExperimentalBluetoothAdapterClientStubImpl() {
-    properties_.reset(new Properties(base::Bind(
-        &ExperimentalBluetoothAdapterClientStubImpl::OnPropertyChanged,
-        base::Unretained(this))));
-
-    properties_->address.ReplaceValue("hci0");
-    properties_->name.ReplaceValue("Fake Adapter");
-    properties_->pairable.ReplaceValue(true);
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual void AddObserver(Observer* observer) OVERRIDE {
-    observers_.AddObserver(observer);
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
-    observers_.RemoveObserver(observer);
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE {
-    std::vector<dbus::ObjectPath> object_paths;
-    object_paths.push_back(dbus::ObjectPath("/fake/hci0"));
-    return object_paths;
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE {
-    VLOG(1) << "GetProperties: " << object_path.value();
-    if (object_path.value() == "/fake/hci0")
-      return properties_.get();
-    else
-      return NULL;
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual void StartDiscovery(const dbus::ObjectPath& object_path,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "StartDiscovery: " << object_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "StopDiscovery: " << object_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-
-  // ExperimentalBluetoothAdapterClient override.
-  virtual void RemoveDevice(const dbus::ObjectPath& object_path,
-                            const dbus::ObjectPath& device_path,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "RemoveDevice: " << object_path.value()
-            << " " << device_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-
- private:
-  void OnPropertyChanged(const std::string& property_name) {
-    FOR_EACH_OBSERVER(ExperimentalBluetoothAdapterClient::Observer, observers_,
-                      AdapterPropertyChanged(dbus::ObjectPath("/fake/hci0"),
-                                             property_name));
-  }
-
-  // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
-
-  // Static properties we return.
-  scoped_ptr<Properties> properties_;
-};
-
 ExperimentalBluetoothAdapterClient::ExperimentalBluetoothAdapterClient() {
 }
 
@@ -380,7 +262,7 @@ ExperimentalBluetoothAdapterClient* ExperimentalBluetoothAdapterClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ExperimentalBluetoothAdapterClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ExperimentalBluetoothAdapterClientStubImpl();
+  return new FakeBluetoothAdapterClient();
 }
 
 }  // namespace chromeos

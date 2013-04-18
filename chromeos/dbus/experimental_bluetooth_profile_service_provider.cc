@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -253,19 +254,6 @@ class ExperimentalBluetoothProfileServiceProviderImpl
   DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileServiceProviderImpl);
 };
 
-// The ExperimentalBluetoothProfileServiceProvider implementation used on Linux
-// desktop, which does nothing.
-class ExperimentalBluetoothProfileServiceProviderStubImpl
-    : public ExperimentalBluetoothProfileServiceProvider {
- public:
-  explicit ExperimentalBluetoothProfileServiceProviderStubImpl(
-      Delegate* delegate) {
-  }
-
-  virtual ~ExperimentalBluetoothProfileServiceProviderStubImpl() {
-  }
-};
-
 ExperimentalBluetoothProfileServiceProvider::
     ExperimentalBluetoothProfileServiceProvider() {
 }
@@ -284,7 +272,7 @@ ExperimentalBluetoothProfileServiceProvider*
     return new ExperimentalBluetoothProfileServiceProviderImpl(
         bus, object_path, delegate);
   } else {
-    return new ExperimentalBluetoothProfileServiceProviderStubImpl(delegate);
+    return new FakeBluetoothProfileServiceProvider(object_path, delegate);
   }
 }
 

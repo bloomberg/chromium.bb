@@ -19,6 +19,10 @@ class ObjectPath;
 namespace chromeos {
 
 class DBusThreadManagerObserver;
+class FakeBluetoothAdapterClient;
+class FakeBluetoothAgentManagerClient;
+class FakeBluetoothDeviceClient;
+class FakeBluetoothProfileManagerClient;
 class MockIBusClient;
 class MockIBusConfigClient;
 class MockIBusEngineFactoryService;
@@ -85,6 +89,22 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual IBusPanelService* GetIBusPanelService() OVERRIDE;
 
+  FakeBluetoothAdapterClient* fake_bluetooth_adapter_client() {
+    return fake_bluetooth_adapter_client_.get();
+  }
+
+  FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client() {
+    return fake_bluetooth_agent_manager_client_.get();
+  }
+
+  FakeBluetoothDeviceClient* fake_bluetooth_device_client() {
+    return fake_bluetooth_device_client_.get();
+  }
+
+  FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
+    return fake_bluetooth_profile_manager_client_.get();
+  }
+
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
   }
@@ -114,6 +134,12 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   }
 
  private:
+  scoped_ptr<FakeBluetoothAdapterClient> fake_bluetooth_adapter_client_;
+  scoped_ptr<FakeBluetoothAgentManagerClient>
+      fake_bluetooth_agent_manager_client_;
+  scoped_ptr<FakeBluetoothDeviceClient> fake_bluetooth_device_client_;
+  scoped_ptr<FakeBluetoothProfileManagerClient>
+      fake_bluetooth_profile_manager_client_;
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -137,41 +138,6 @@ class ExperimentalBluetoothAgentManagerClientImpl
   DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentManagerClientImpl);
 };
 
-// The ExperimentalBluetoothAgentManagerClient implementation used on Linux
-// desktop, which does nothing.
-class ExperimentalBluetoothAgentManagerClientStubImpl
-    : public ExperimentalBluetoothAgentManagerClient {
- public:
-  ExperimentalBluetoothAgentManagerClientStubImpl() {
-  }
-
-  // ExperimentalBluetoothAgentManagerClient override.
-  virtual void RegisterAgent(const dbus::ObjectPath& agent_path,
-                             const std::string& capability,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "RegisterAgent: " << agent_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-
-  // ExperimentalBluetoothAgentManagerClient override.
-  virtual void UnregisterAgent(const dbus::ObjectPath& agent_path,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "UnregisterAgent: " << agent_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-
-  // ExperimentalBluetoothAgentManagerClient override.
-  virtual void RequestDefaultAgent(const dbus::ObjectPath& agent_path,
-                                   const base::Closure& callback,
-                                   const ErrorCallback& error_callback)
-      OVERRIDE {
-    VLOG(1) << "RequestDefaultAgent: " << agent_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-};
-
 ExperimentalBluetoothAgentManagerClient::
     ExperimentalBluetoothAgentManagerClient() {
 }
@@ -187,7 +153,7 @@ ExperimentalBluetoothAgentManagerClient*
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ExperimentalBluetoothAgentManagerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ExperimentalBluetoothAgentManagerClientStubImpl();
+  return new FakeBluetoothAgentManagerClient();
 }
 
 }  // namespace chromeos

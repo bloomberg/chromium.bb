@@ -35,6 +35,8 @@
         'bluetooth/bluetooth_device.h',
         'bluetooth/bluetooth_device_chromeos.cc',
         'bluetooth/bluetooth_device_chromeos.h',
+        'bluetooth/bluetooth_device_experimental_chromeos.cc',
+        'bluetooth/bluetooth_device_experimental_chromeos.h',
         'bluetooth/bluetooth_device_mac.h',
         'bluetooth/bluetooth_device_mac.mm',
         'bluetooth/bluetooth_device_win.cc',
@@ -162,6 +164,7 @@
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',
+        'bluetooth/bluetooth_experimental_chromeos_unittest.cc',
         'bluetooth/bluetooth_service_record_chromeos_unittest.cc',
         'bluetooth/bluetooth_service_record_mac_unittest.mm',
         'bluetooth/bluetooth_service_record_win_unittest.cc',
@@ -175,6 +178,7 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
+            '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../dbus/dbus.gyp:dbus',
           ]
         }],

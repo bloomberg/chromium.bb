@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -229,33 +230,6 @@ class ExperimentalBluetoothProfileManagerClientImpl
   DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileManagerClientImpl);
 };
 
-// The ExperimentalBluetoothProfileManagerClient implementation used on Linux
-// desktop, which does nothing.
-class ExperimentalBluetoothProfileManagerClientStubImpl
-    : public ExperimentalBluetoothProfileManagerClient {
- public:
-  ExperimentalBluetoothProfileManagerClientStubImpl() {
-  }
-
-  // ExperimentalBluetoothProfileManagerClient override.
-  virtual void RegisterProfile(const dbus::ObjectPath& profile_path,
-                               const std::string& uuid,
-                               const Options& options,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
-    error_callback.Run(kNoResponseError, "");
-  }
-
-  // ExperimentalBluetoothProfileManagerClient override.
-  virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "UnregisterAgent: " << profile_path.value();
-    error_callback.Run(kNoResponseError, "");
-  }
-};
-
 ExperimentalBluetoothProfileManagerClient::
     ExperimentalBluetoothProfileManagerClient() {
 }
@@ -271,7 +245,7 @@ ExperimentalBluetoothProfileManagerClient*
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ExperimentalBluetoothProfileManagerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ExperimentalBluetoothProfileManagerClientStubImpl();
+  return new FakeBluetoothProfileManagerClient();
 }
 
 }  // namespace chromeos

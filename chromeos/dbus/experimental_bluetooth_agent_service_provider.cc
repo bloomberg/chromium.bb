@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/fake_bluetooth_agent_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -481,19 +482,6 @@ class ExperimentalBluetoothAgentServiceProviderImpl
   DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentServiceProviderImpl);
 };
 
-// The ExperimentalBluetoothAgentServiceProvider implementation used on Linux
-// desktop, which does nothing.
-class ExperimentalBluetoothAgentServiceProviderStubImpl
-    : public ExperimentalBluetoothAgentServiceProvider {
- public:
-  explicit ExperimentalBluetoothAgentServiceProviderStubImpl(
-      Delegate* delegate) {
-  }
-
-  virtual ~ExperimentalBluetoothAgentServiceProviderStubImpl() {
-  }
-};
-
 ExperimentalBluetoothAgentServiceProvider::
     ExperimentalBluetoothAgentServiceProvider() {
 }
@@ -512,7 +500,7 @@ ExperimentalBluetoothAgentServiceProvider*
     return new ExperimentalBluetoothAgentServiceProviderImpl(
         bus, object_path, delegate);
   } else {
-    return new ExperimentalBluetoothAgentServiceProviderStubImpl(delegate);
+    return new FakeBluetoothAgentServiceProvider(object_path, delegate);
   }
 }
 
