@@ -29,6 +29,37 @@ namespace internal {
 
 namespace {
 
+
+class CancelCallbackHandler {
+ public:
+  CancelCallbackHandler(int update_events_before_cancel,
+                        FrameMaximizeButton* maximize_button) :
+      update_events_before_cancel_(update_events_before_cancel),
+      maximize_button_(maximize_button) {}
+  virtual ~CancelCallbackHandler() {}
+
+  void CountedCancelCallback(ui::EventType event_type,
+                             const gfx::Vector2dF& pos) {
+    if (event_type == ui::ET_GESTURE_SCROLL_UPDATE &&
+        !(--update_events_before_cancel_)) {
+      // Make sure that we are in the middle of a resizing operation, cancel it
+      // and then test that it is exited.
+      EXPECT_TRUE(maximize_button_->is_snap_enabled());
+      maximize_button_->DestroyMaximizeMenu();
+      EXPECT_FALSE(maximize_button_->is_snap_enabled());
+    }
+  }
+
+ private:
+  // When this counter reaches 0, the gesture maximize action gets cancelled.
+  int update_events_before_cancel_;
+
+  // The maximize button which needs to get informed of the gesture termination.
+  FrameMaximizeButton* maximize_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(CancelCallbackHandler);
+};
+
 class ShellViewsDelegate : public views::TestViewsDelegate {
  public:
   ShellViewsDelegate() {}
@@ -800,6 +831,37 @@ TEST_F(CustomFrameViewAshTest, MaximizeButtonDragDownMinimizes) {
       base::TimeDelta::FromMilliseconds(10), 1);
   EXPECT_TRUE(wm::IsWindowMinimized(window));
   EXPECT_FALSE(maximize_button->maximizer());
+}
+
+// Tests that dragging Left and pressing ESC does properly abort.
+TEST_F(CustomFrameViewAshTest, MaximizeButtonDragLeftEscapeExits) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::Rect window_position = gfx::Rect(10, 10, 100, 100);
+  widget->SetBounds(window_position);
+  CustomFrameViewAsh* frame = GetCustomFrameViewAsh(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  FrameMaximizeButton* maximize_button = test.maximize_button();
+
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() - button_pos.x() / 2, button_pos.y());
+
+  const int kGestureSteps = 10;
+  CancelCallbackHandler cancel_handler(kGestureSteps / 2, maximize_button);
+  aura::test::EventGenerator generator(window->GetRootWindow());
+  generator.GestureScrollSequenceWithCallback(
+      button_pos,
+      off_pos,
+      base::TimeDelta::FromMilliseconds(0),
+      kGestureSteps,
+      base::Bind(&CancelCallbackHandler::CountedCancelCallback,
+                 base::Unretained(&cancel_handler)));
+
+  // Check that there was no size change.
+  EXPECT_EQ(widget->GetWindowBoundsInScreen().size().ToString(),
+            window_position.size().ToString());
+  // Check that there is no phantom window left open.
+  EXPECT_FALSE(maximize_button->phantom_window_open());
 }
 
 }  // namespace internal
