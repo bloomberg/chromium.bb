@@ -17,7 +17,6 @@ readonly SCONS_NACL="./scons --mode=opt-host,nacl -j8"
 readonly SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
 
 readonly TRYBOT_TESTS="176.gcc 179.art 181.mcf 197.parser 252.eon 254.gap"
-readonly TRYBOT_TRANSLATOR_TESTS="176.gcc"
 readonly TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS="176.gcc"
 
 readonly BUILDBOT_PNACL="buildbot/buildbot_pnacl.sh"
@@ -237,15 +236,6 @@ measure-validator-speed() {
 
 ######################################################################
 # NOTE: trybots only runs a subset of the the spec2k tests
-# TODO: elminate this long running bot in favor per arch sharded bots
-pnacl-trybot-arm-qemu() {
-  clobber
-  build-prerequisites "arm" "bitcode"
-  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 1 1
-  run-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 1 1
-  build-tests SetupPnaclTranslatorFastArmOpt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  run-tests SetupPnaclTranslatorFastArmOpt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-}
 
 pnacl-trybot-arm-buildonly() {
   clobber
@@ -274,10 +264,10 @@ pnacl-trybot-x8632() {
   build-prerequisites "x86-32" "bitcode"
   build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
-  build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  build-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  run-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TESTS}" 1 1
   build-validator x86-32
   download-validator-test-nexes x86-32
   measure-validator-speed x86-32
@@ -298,24 +288,14 @@ pnacl-trybot-x8664() {
   build-prerequisites "x86-64" "bitcode"
   build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
-  build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  build-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
-  run-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TESTS}" 1 1
   pnacl-x86-64-zero-based-sandbox
   build-validator x86-64
   download-validator-test-nexes x86-64
   measure-validator-speed x86-64
-}
-
-# We probably will not keep a qemu bot on the waterfall, but will keep this
-# to test locally
-pnacl-arm-qemu() {
-  clobber
-  build-prerequisites "arm" "bitcode"
-  # arm takes a long time and we do not have sandboxed tests working
-  build-tests SetupPnaclArmOpt all 1 1
-  run-tests SetupPnaclArmOpt all 1 1
 }
 
 pnacl-arm-buildonly() {
