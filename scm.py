@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import sys
+import tempfile
 import time
 from xml.etree import ElementTree
 
@@ -779,19 +780,30 @@ class SVN(object):
     expected relative path.
     full_move means that move or copy operations should completely recreate the
     files, usually in the prospect to apply the patch for a try job."""
-    # Use "svn info" output instead of os.path.isdir because the latter fails
-    # when the file is deleted.
-    return SVN._DiffItemInternal(
-        filename,
-        cwd,
-        SVN.CaptureLocalInfo([filename], cwd),
-        full_move,
-        revision)
+    # If the user specified a custom diff command in their svn config file,
+    # then it'll be used when we do svn diff, which we don't want to happen
+    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+    # work, since they can have another diff executable in their path that
+    # gives different line endings.  So we use a bogus temp directory as the
+    # config directory, which gets around these problems.
+    bogus_dir = tempfile.mkdtemp()
+    try:
+      # Use "svn info" output instead of os.path.isdir because the latter fails
+      # when the file is deleted.
+      return SVN._DiffItemInternal(
+          filename,
+          cwd,
+          SVN.CaptureLocalInfo([filename], cwd),
+          bogus_dir,
+          full_move,
+          revision)
+    finally:
+      gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
-  def _DiffItemInternal(filename, cwd, info, full_move, revision):
+  def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
     """Grabs the diff data."""
-    command = ["diff", "--internal-diff", filename]
+    command = ["diff", "--config-dir", bogus_dir, filename]
     if revision:
       command.extend(['--revision', revision])
     data = None
@@ -859,66 +871,76 @@ class SVN(object):
       if os.path.normcase(path).startswith(root):
         return path[len(root):]
       return path
-    # Cleanup filenames
-    filenames = [RelativePath(f, root) for f in filenames]
-    # Get information about the modified items (files and directories)
-    data = dict([(f, SVN.CaptureLocalInfo([f], root)) for f in filenames])
-    diffs = []
-    if full_move:
-      # Eliminate modified files inside moved/copied directory.
-      for (filename, info) in data.iteritems():
-        if SVN.IsMovedInfo(info) and info.get("Node Kind") == "directory":
-          # Remove files inside the directory.
-          filenames = [f for f in filenames
-                       if not f.startswith(filename + os.path.sep)]
-      for filename in data.keys():
-        if not filename in filenames:
-          # Remove filtered out items.
-          del data[filename]
-    else:
-      metaheaders = []
-      for (filename, info) in data.iteritems():
-        if SVN.IsMovedInfo(info):
-          # for now, the most common case is a head copy,
-          # so let's just encode that as a straight up cp.
-          srcurl = info.get('Copied From URL')
-          file_root = info.get('Repository Root')
-          rev = int(info.get('Copied From Rev'))
-          assert srcurl.startswith(file_root)
-          src = srcurl[len(file_root)+1:]
-          try:
-            srcinfo = SVN.CaptureRemoteInfo(srcurl)
-          except subprocess2.CalledProcessError, e:
-            if not 'Not a valid URL' in e.stderr:
-              raise
-            # Assume the file was deleted. No idea how to figure out at which
-            # revision the file was deleted.
-            srcinfo = {'Revision': rev}
-          if (srcinfo.get('Revision') != rev and
-              SVN.Capture(['diff', '--internal-diff', '-r', '%d:head' % rev,
-                           srcurl], cwd)):
-            metaheaders.append("#$ svn cp -r %d %s %s "
-                               "### WARNING: note non-trunk copy\n" %
-                               (rev, src, filename))
-          else:
-            metaheaders.append("#$ cp %s %s\n" % (src, filename))
+    # If the user specified a custom diff command in their svn config file,
+    # then it'll be used when we do svn diff, which we don't want to happen
+    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+    # work, since they can have another diff executable in their path that
+    # gives different line endings.  So we use a bogus temp directory as the
+    # config directory, which gets around these problems.
+    bogus_dir = tempfile.mkdtemp()
+    try:
+      # Cleanup filenames
+      filenames = [RelativePath(f, root) for f in filenames]
+      # Get information about the modified items (files and directories)
+      data = dict([(f, SVN.CaptureLocalInfo([f], root)) for f in filenames])
+      diffs = []
+      if full_move:
+        # Eliminate modified files inside moved/copied directory.
+        for (filename, info) in data.iteritems():
+          if SVN.IsMovedInfo(info) and info.get("Node Kind") == "directory":
+            # Remove files inside the directory.
+            filenames = [f for f in filenames
+                         if not f.startswith(filename + os.path.sep)]
+        for filename in data.keys():
+          if not filename in filenames:
+            # Remove filtered out items.
+            del data[filename]
+      else:
+        metaheaders = []
+        for (filename, info) in data.iteritems():
+          if SVN.IsMovedInfo(info):
+            # for now, the most common case is a head copy,
+            # so let's just encode that as a straight up cp.
+            srcurl = info.get('Copied From URL')
+            file_root = info.get('Repository Root')
+            rev = int(info.get('Copied From Rev'))
+            assert srcurl.startswith(file_root)
+            src = srcurl[len(file_root)+1:]
+            try:
+              srcinfo = SVN.CaptureRemoteInfo(srcurl)
+            except subprocess2.CalledProcessError, e:
+              if not 'Not a valid URL' in e.stderr:
+                raise
+              # Assume the file was deleted. No idea how to figure out at which
+              # revision the file was deleted.
+              srcinfo = {'Revision': rev}
+            if (srcinfo.get('Revision') != rev and
+                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl], cwd)):
+              metaheaders.append("#$ svn cp -r %d %s %s "
+                                 "### WARNING: note non-trunk copy\n" %
+                                 (rev, src, filename))
+            else:
+              metaheaders.append("#$ cp %s %s\n" % (src,
+                                                    filename))
 
-      if metaheaders:
-        diffs.append("### BEGIN SVN COPY METADATA\n")
-        diffs.extend(metaheaders)
-        diffs.append("### END SVN COPY METADATA\n")
-    # Now ready to do the actual diff.
-    for filename in sorted(data.iterkeys()):
-      diffs.append(SVN._DiffItemInternal(filename, cwd, data[filename],
-                                         full_move, revision))
-    # Use StringIO since it can be messy when diffing a directory move with
-    # full_move=True.
-    buf = cStringIO.StringIO()
-    for d in filter(None, diffs):
-      buf.write(d)
-    result = buf.getvalue()
-    buf.close()
-    return result
+        if metaheaders:
+          diffs.append("### BEGIN SVN COPY METADATA\n")
+          diffs.extend(metaheaders)
+          diffs.append("### END SVN COPY METADATA\n")
+      # Now ready to do the actual diff.
+      for filename in sorted(data.iterkeys()):
+        diffs.append(SVN._DiffItemInternal(
+            filename, cwd, data[filename], bogus_dir, full_move, revision))
+      # Use StringIO since it can be messy when diffing a directory move with
+      # full_move=True.
+      buf = cStringIO.StringIO()
+      for d in filter(None, diffs):
+        buf.write(d)
+      result = buf.getvalue()
+      buf.close()
+      return result
+    finally:
+      gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
   def GetEmail(cwd):
