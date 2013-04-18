@@ -870,6 +870,10 @@ void
 weston_compositor_sleep(struct weston_compositor *compositor);
 void
 weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
+struct weston_surface *
+weston_compositor_pick_surface(struct weston_compositor *compositor,
+			       wl_fixed_t x, wl_fixed_t y,
+			       wl_fixed_t *sx, wl_fixed_t *sy);
 
 
 struct weston_binding;
@@ -1012,9 +1016,16 @@ int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
 weston_seat_init_touch(struct weston_seat *seat);
+void
+weston_device_repick(struct weston_seat *seat);
 
 void
 weston_seat_release(struct weston_seat *seat);
+int
+weston_compositor_xkb_init(struct weston_compositor *ec,
+			   struct xkb_rule_names *names);
+void
+weston_compositor_xkb_destroy(struct weston_compositor *ec);
 
 /* String literal of spaces, the same width as the timestamp. */
 #define STAMP_SPACE "               "
