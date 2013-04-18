@@ -26,11 +26,11 @@
     THIS SOFTWARE.
   </copyright>
 
-  <interface name="text_input" version="1">
+  <interface name="wl_text_input" version="1">
     <description summary="text input">
       An object used for text input. Adds support for text input and input 
       methods to applications. A text-input object is created from a
-      text_input_manager and corresponds typically to a text entry in an
+      wl_text_input_manager and corresponds typically to a text entry in an
       application.
       Requests are used to activate/deactivate the text-input object and set
       state information like surrounding and selected text or the content type.
@@ -318,7 +318,7 @@
     </event>
   </interface>
 
-  <interface name="text_input_manager" version="1">
+  <interface name="wl_text_input_manager" version="1">
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>
@@ -326,7 +326,7 @@
       <description summary="create text input">
         Creates a new text-input object.
       </description>
-      <arg name="id" type="new_id" interface="text_input"/>
+      <arg name="id" type="new_id" interface="wl_text_input"/>
     </request>
   </interface>
 </protocol>

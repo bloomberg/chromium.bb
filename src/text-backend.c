@@ -120,7 +120,7 @@ deactivate_text_input(struct text_input *text_input,
 		input_method->model = NULL;
 		input_method->context = NULL;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
-		text_input_send_leave(&text_input->resource);
+		wl_text_input_send_leave(&text_input->resource);
 	}
 }
 
@@ -190,7 +190,7 @@ text_input_activate(struct wl_client *client,
 		wl_signal_emit(&ec->update_input_panel_signal, &text_input->cursor_rectangle);
 	}
 
-	text_input_send_enter(&text_input->resource, &text_input->surface->resource);
+	wl_text_input_send_enter(&text_input->resource, &text_input->surface->resource);
 }
 
 static void
@@ -329,7 +329,7 @@ text_input_set_preferred_language(struct wl_client *client,
 	}
 }
 
-static const struct text_input_interface text_input_implementation = {
+static const struct wl_text_input_interface text_input_implementation = {
 	text_input_activate,
 	text_input_deactivate,
 	text_input_show_input_panel,
@@ -353,7 +353,7 @@ static void text_input_manager_create_text_input(struct wl_client *client,
 	text_input = calloc(1, sizeof *text_input);
 
 	text_input->resource.object.id = id;
-	text_input->resource.object.interface = &text_input_interface;
+	text_input->resource.object.interface = &wl_text_input_interface;
 	text_input->resource.object.implementation =
 		(void (**)(void)) &text_input_implementation;
 
@@ -367,7 +367,7 @@ static void text_input_manager_create_text_input(struct wl_client *client,
 	wl_client_add_resource(client, &text_input->resource);
 };
 
-static const struct text_input_manager_interface text_input_manager_implementation = {
+static const struct wl_text_input_manager_interface text_input_manager_implementation = {
 	text_input_manager_create_text_input
 };
 
@@ -381,7 +381,7 @@ bind_text_input_manager(struct wl_client *client,
 
 	/* No checking for duplicate binding necessary.
 	 * No events have to be sent, so we don't need the return value. */
-	wl_client_add_object(client, &text_input_manager_interface,
+	wl_client_add_object(client, &wl_text_input_manager_interface,
 			     &text_input_manager_implementation,
 			     id, text_input_manager);
 }
@@ -409,7 +409,7 @@ text_input_manager_create(struct weston_compositor *ec)
 
 	text_input_manager->text_input_manager_global =
 		wl_display_add_global(ec->wl_display,
-				      &text_input_manager_interface,
+				      &wl_text_input_manager_interface,
 				      text_input_manager, bind_text_input_manager);
 
 	text_input_manager->destroy_listener.notify = text_input_manager_notifier_destroy;
@@ -431,7 +431,7 @@ input_method_context_commit_string(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_commit_string(&context->model->resource, serial, text);
+	wl_text_input_send_commit_string(&context->model->resource, serial, text);
 }
 
 static void
@@ -443,7 +443,7 @@ input_method_context_preedit_string(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_preedit_string(&context->model->resource, serial, text, commit);
+	wl_text_input_send_preedit_string(&context->model->resource, serial, text, commit);
 }
 
 static void
@@ -455,7 +455,7 @@ input_method_context_preedit_styling(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_preedit_styling(&context->model->resource, index, length, style);
+	wl_text_input_send_preedit_styling(&context->model->resource, index, length, style);
 }
 
 static void
@@ -465,7 +465,7 @@ input_method_context_preedit_cursor(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_preedit_cursor(&context->model->resource, cursor);
+	wl_text_input_send_preedit_cursor(&context->model->resource, cursor);
 }
 
 static void
@@ -476,7 +476,7 @@ input_method_context_delete_surrounding_text(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_delete_surrounding_text(&context->model->resource, index, length);
+	wl_text_input_send_delete_surrounding_text(&context->model->resource, index, length);
 }
 
 static void
@@ -487,7 +487,7 @@ input_method_context_cursor_position(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_cursor_position(&context->model->resource, index, anchor);
+	wl_text_input_send_cursor_position(&context->model->resource, index, anchor);
 }
 
 static void
@@ -497,7 +497,7 @@ input_method_context_modifiers_map(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_modifiers_map(&context->model->resource, map);
+	wl_text_input_send_modifiers_map(&context->model->resource, map);
 }
 
 static void
@@ -511,7 +511,7 @@ input_method_context_keysym(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_keysym(&context->model->resource, serial, time,
+	wl_text_input_send_keysym(&context->model->resource, serial, time,
 			       sym, state, modifiers);
 }
 
@@ -635,7 +635,7 @@ input_method_context_language(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_language(&context->model->resource, serial, language);
+	wl_text_input_send_language(&context->model->resource, serial, language);
 }
 
 static void
@@ -646,7 +646,7 @@ input_method_context_text_direction(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_text_direction(&context->model->resource, serial, direction);
+	wl_text_input_send_text_direction(&context->model->resource, serial, direction);
 }
 
 
