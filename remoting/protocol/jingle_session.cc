@@ -554,8 +554,14 @@ bool JingleSession::InitializeConfigFromDescription(
 
 void JingleSession::ProcessAuthenticationStep() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state_, CONNECTED);
   DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
+
+  if (state_ != CONNECTED) {
+    DCHECK(state_ == FAILED || state_ == CLOSED);
+    // The remote host closed the connection while the authentication was being
+    // processed asynchronously, nothing to do.
+    return;
+  }
 
   if (authenticator_->state() == Authenticator::MESSAGE_READY) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
