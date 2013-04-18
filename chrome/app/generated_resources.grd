@@ -6777,6 +6777,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable locally managed users.">
         Enables support for user profiles that are managed by another user and can have restrictions applied.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_NAME" desc="Title for the flag to enable 'image/webp' in accept header.">
+        Enable 'image/webp' accept header
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_DESCRIPTION" desc="Description for the flag to enable 'image/webp' in accept header.">
+        Enables 'image/webp' accept header in HTTP requests for images, to denote WebP image support.
+      </message>
 
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC" desc="Generic 'Automatic' experiment choice option name.">
         Automatic

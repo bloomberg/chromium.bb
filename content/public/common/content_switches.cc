@@ -777,4 +777,7 @@ const char kEnableVsyncNotification[] = "enable-vsync-notification";
 const char kEnableOverscrollHistoryNavigation[] =
     "enable-overscroll-history-navigation";
 
+// Enables 'image/webp' accept header for image requests.
+const char kEnableWebPInAcceptHeader[] = "enable-webp-in-accept-header";
+
 }  // namespace switches

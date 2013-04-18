@@ -244,6 +244,8 @@ extern const char kDisableCarbonInterposing[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
+extern const char kEnableWebPInAcceptHeader[];
+
 }  // namespace switches
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_

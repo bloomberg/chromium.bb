@@ -1349,6 +1349,13 @@ const Experiment kExperiments[] = {
     kOsLinux | kOsCrOS | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
   },
+  {
+    "enable-webp-in-accept-header",
+    IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_NAME,
+    IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebPInAcceptHeader)
+  },
 };
 
 const Experiment* experiments = kExperiments;
