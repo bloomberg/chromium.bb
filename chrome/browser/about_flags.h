@@ -22,7 +22,7 @@ namespace about_flags {
 // Enumeration of OSs.
 // This is exposed only for testing.
 enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 , kOsCrOS = 1 << 3,
-       kOsAndroid = 1 << 4 };
+       kOsAndroid = 1 << 4, kOsCrOSOwnerOnly = 1 << 5 };
 
 // Experiment is used internally by about_flags to describe an experiment (and
 // for testing).
@@ -107,8 +107,14 @@ struct Experiment {
 // commandline flags belonging to the active experiments to |command_line|.
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
 
+// Differentiate between generic flags available on a per session base and flags
+// that influence the whole machine and can be said by the admin only. This flag
+// is relevant for ChromeOS for now only and dictates whether entries marked
+// with the |kOsCrOSOwnerOnly| label should be enabled in the UI or not.
+enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
+
 // Get a list of all available experiments. The caller owns the result.
-base::ListValue* GetFlagsExperimentsData(PrefService* prefs);
+base::ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access);
 
 // Returns true if one of the experiment flags has been flipped since startup.
 bool IsRestartNeededToCommitChanges();

@@ -88,7 +88,8 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
-  explicit FlagsDOMHandler(PrefService* prefs) : prefs_(prefs) {}
+  explicit FlagsDOMHandler(PrefService* prefs, about_flags::FlagAccess access)
+      : prefs_(prefs), access_(access) {}
   virtual ~FlagsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
@@ -108,6 +109,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 
  private:
   PrefService* prefs_;
+  about_flags::FlagAccess access_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
@@ -130,7 +132,7 @@ void FlagsDOMHandler::RegisterMessages() {
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   DictionaryValue results;
   results.Set("flagsExperiments",
-              about_flags::GetFlagsExperimentsData(prefs_));
+              about_flags::GetFlagsExperimentsData(prefs_, access_));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
   web_ui()->CallJavascriptFunction("returnFlagsExperiments", results);
@@ -181,7 +183,8 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
                  weak_factory_.GetWeakPtr(), profile));
 #else
   web_ui->AddMessageHandler(
-      new FlagsDOMHandler(g_browser_process->local_state()));
+      new FlagsDOMHandler(g_browser_process->local_state(),
+                          about_flags::kOwnerAccessToFlags));
 
   // Set up the about:flags source.
   content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
@@ -217,10 +220,13 @@ void FlagsUI::FinishInitialization(
   // On Chrome OS the owner can set system wide flags and other users can only
   // set flags for their own session.
   if (!current_user_is_owner) {
-    web_ui()->AddMessageHandler(new FlagsDOMHandler(profile->GetPrefs()));
+    web_ui()->AddMessageHandler(
+        new FlagsDOMHandler(profile->GetPrefs(),
+                            about_flags::kGeneralAccessFlagsOnly));
   } else {
     web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(g_browser_process->local_state()));
+        new FlagsDOMHandler(g_browser_process->local_state(),
+                            about_flags::kOwnerAccessToFlags));
     // If the owner managed to set the flags pref on his own profile clear it
     // because it will never be accessible anymore.
     if (profile->GetPrefs()->HasPrefPath(prefs::kEnabledLabsExperiments))

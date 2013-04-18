@@ -86,6 +86,7 @@ void AddOsStrings(unsigned bitmask, ListValue* list) {
     {kOsLinux, "Linux"},
     {kOsCrOS, "Chrome OS"},
     {kOsAndroid, "Android"},
+    {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBitsToOs); ++i)
     if (bitmask & kBitsToOs[i].bit)
@@ -326,7 +327,7 @@ const Experiment kExperiments[] = {
     "threaded-compositing-mode",
     IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME,
     IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION,
-    kOsDesktop & ~kOsCrOS,
+    kOsMac | kOsWin | kOsLinux,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableThreadedCompositing,
                               switches::kDisableThreadedCompositing)
   },
@@ -709,7 +710,7 @@ const Experiment kExperiments[] = {
     "enable-managed-users",
     IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME,
     IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION,
-    kOsAll,
+    kOsMac | kOsWin | kOsLinux | kOsAndroid | kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(switches::kEnableManagedUsers)
   },
 #if defined(USE_ASH)
@@ -992,28 +993,28 @@ const Experiment kExperiments[] = {
     "disable-boot-animation",
     IDS_FLAGS_DISABLE_BOOT_ANIMATION,
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,
-    kOsCrOS,
+    kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(switches::kDisableBootAnimation),
   },
   {
     "disable-boot-animation2",
     IDS_FLAGS_DISABLE_BOOT_ANIMATION2,
     IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION,
-    kOsCrOS,
+    kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableBootAnimation2),
   },
   {
     "boot-animation-fucntion",
     IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION,
     IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION_DESCRIPTION,
-    kOsCrOS,
+    kOsCrOSOwnerOnly,
     MULTI_VALUE_TYPE(kAshBootAnimationFunction),
   },
   {
     "captive-portal-detector",
     IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_NAME,
     IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_DESCRIPTION,
-    kOsCrOS,
+    kOsCrOSOwnerOnly,
     MULTI_VALUE_TYPE(kChromeCaptivePortalDetectionChoices),
   },
   {
@@ -1041,7 +1042,7 @@ const Experiment kExperiments[] = {
     "disable-app-mode",
     IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
     IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,
-    kOsCrOS,
+    kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(switches::kDisableAppMode),
   },
   {
@@ -1496,6 +1497,10 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
   for (size_t i = 0; i < num_experiments; ++i) {
     if (experiments[i].supported_platforms & current_platform)
       AddInternalName(experiments[i], &platform_experiments);
+#if defined(OS_CHROMEOS)
+    if (experiments[i].supported_platforms & kOsCrOSOwnerOnly)
+      AddInternalName(experiments[i], &platform_experiments);
+#endif
   }
 
   std::set<std::string> new_enabled_experiments;
@@ -1556,7 +1561,7 @@ void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(prefs, command_line);
 }
 
-ListValue* GetFlagsExperimentsData(PrefService* prefs) {
+ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access) {
   std::set<std::string> enabled_experiments;
   GetSanitizedEnabledFlags(prefs, &enabled_experiments);
 
@@ -1582,7 +1587,12 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
     data->SetString("description",
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
-    bool supported = !!(experiment.supported_platforms & current_platform);
+    bool supported = (experiment.supported_platforms & current_platform) != 0;
+#if defined(OS_CHROMEOS)
+    if (access == kOwnerAccessToFlags &&
+        (experiment.supported_platforms & kOsCrOSOwnerOnly) != 0)
+      supported = true;
+#endif
     data->SetBoolean("supported", supported);
 
     ListValue* supported_platforms = new ListValue();
