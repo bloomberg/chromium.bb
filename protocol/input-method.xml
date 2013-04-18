@@ -210,5 +210,8 @@
       </description>
       <arg name="position" type="uint"/>
     </request>
+
+    <request name="set_panel">
+    </request>
   </interface>
 </protocol>

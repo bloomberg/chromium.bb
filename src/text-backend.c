@@ -41,6 +41,8 @@ struct text_input {
 
 	struct wl_surface *surface;
 
+	pixman_box32_t cursor_rectangle;
+
 	uint32_t input_panel_visible;
 };
 
@@ -185,8 +187,10 @@ text_input_activate(struct wl_client *client,
 
 	input_method_context_create(text_input, input_method, serial);
 
-	if (text_input->input_panel_visible)
-		wl_signal_emit(&ec->show_input_panel_signal, ec);
+	if (text_input->input_panel_visible) {
+		wl_signal_emit(&ec->show_input_panel_signal, text_input->surface);
+		wl_signal_emit(&ec->update_input_panel_signal, &text_input->cursor_rectangle);
+	}
 
 	text_input_send_enter(&text_input->resource, &text_input->surface->resource);
 }
@@ -226,6 +230,15 @@ text_input_set_cursor_rectangle(struct wl_client *client,
 				int32_t width,
 				int32_t height)
 {
+	struct text_input *text_input = resource->data;
+	struct weston_compositor *ec = text_input->ec;
+
+	text_input->cursor_rectangle.x1 = x;
+	text_input->cursor_rectangle.y1 = y;
+	text_input->cursor_rectangle.x2 = x + width;
+	text_input->cursor_rectangle.y2 = y + height;
+
+	wl_signal_emit(&ec->update_input_panel_signal, &text_input->cursor_rectangle);
 }
 
 static void
@@ -283,8 +296,10 @@ text_input_show_input_panel(struct wl_client *client,
 
 	text_input->input_panel_visible = 1;
 
-	if (!wl_list_empty(&text_input->input_methods))
-		wl_signal_emit(&ec->show_input_panel_signal, ec);
+	if (!wl_list_empty(&text_input->input_methods)) {
+		wl_signal_emit(&ec->show_input_panel_signal, text_input->surface);
+		wl_signal_emit(&ec->update_input_panel_signal, &text_input->cursor_rectangle);
+	}
 }
 
 static void
