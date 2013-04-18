@@ -592,6 +592,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
       cc::switches::IsImplSidePaintingEnabled();
 
+  prefs.spatial_navigation_enabled = command_line.HasSwitch(
+      switches::kEnableSpatialNavigation);
+
   GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
   // Disable compositing in guests until we have compositing path implemented

@@ -137,6 +137,7 @@ WebPreferences::WebPreferences()
 #else
       smart_insert_delete_enabled(false),
 #endif
+      spatial_navigation_enabled(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -456,6 +457,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setInitializeAtMinimumPageScale(initialize_at_minimum_page_scale);
 
   settings->setSmartInsertDeleteEnabled(smart_insert_delete_enabled);
+
+  settings->setSpatialNavigationEnabled(spatial_navigation_enabled);
+
   settings->setSelectionIncludesAltImageText(true);
 
 #if defined(OS_ANDROID)

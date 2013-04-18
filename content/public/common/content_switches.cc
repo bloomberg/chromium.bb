@@ -365,6 +365,9 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 // Enable the seccomp sandbox (Linux only)
 const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
+// Enable spatial navigation
+const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
+
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
