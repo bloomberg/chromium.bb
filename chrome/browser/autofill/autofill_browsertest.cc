@@ -541,7 +541,7 @@ class AutofillTest : public InProcessBrowserTest {
 #if defined(OS_MACOSX)
 #define MAYBE_BasicFormFill BasicFormFill
 #else
-#define MAYBE_BasicFormFill DISABLED_BasicFormFill
+#define MAYBE_BasicFormFill FLAKY_BasicFormFill
 #endif
 // Test that basic form fill is working.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_BasicFormFill) {
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_BasicFormFill) {
 #if defined(OS_MACOSX)
 #define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
 #else
-#define MAYBE_AutofillViaDownArrow DISABLED_AutofillViaDownArrow
+#define MAYBE_AutofillViaDownArrow FLAKY_AutofillViaDownArrow
 #endif
 // Test that form filling can be initiated by pressing the down arrow.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
 #if defined(OS_MACOSX)
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
 #else
-#define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
+#define MAYBE_OnChangeAfterAutofill FLAKY_OnChangeAfterAutofill
 #endif
 // Test that a JavaScript onchange event is fired after auto-filling a form.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
