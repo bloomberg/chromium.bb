@@ -3143,3 +3143,5 @@ crbug.com/231721 [ XP Release ] svg/custom/invisible-text-after-scrolling.xhtml 
 
 # The image output is wrong (some red dots can be seen).
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
+
+crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Pass Failure ]
