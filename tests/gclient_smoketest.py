@@ -20,7 +20,9 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from testing_support.fake_repos import join, write, FakeReposTestBase
+from testing_support.fake_repos import join, write
+from testing_support.fake_repos import FakeReposTestBase, FakeRepoTransitive
+
 import gclient_utils
 
 import subprocess2
@@ -346,43 +348,6 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree['src/file/other/DEPS'] = (
         self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/svn_hooked1'] = 'svn_hooked1'
-    self.assertTree(tree)
-
-  def testSyncTransitive(self):
-    # TODO(maruel): safesync.
-    if not self.enabled:
-      return
-    self.gclient(['config', self.svn_base + 'trunk/src/'])
-
-    # Make sure we can populate a new repository with --transitive.
-    self.parseGclient(
-        ['sync', '--transitive', '--revision', 'src@1', '--deps', 'mac',
-          '--jobs', '1'],
-        ['running', 'running', 'running', 'running'])
-    tree = self.mangle_svn_tree(
-        ('trunk/src@1', 'src'),
-        ('trunk/third_party/foo@1', 'src/third_party/fpp'),
-        ('trunk/other@1', 'src/other'),
-        ('trunk/third_party/foo@1', 'src/third_party/prout'))
-
-    # Get up to date, so we can test synching back.
-    self.gclient(['sync', '--deps', 'mac', '--jobs', '1'])
-
-    # Manually remove svn_hooked1 before synching to make sure it's not
-    # recreated.
-    os.remove(join(self.root_dir, 'src', 'svn_hooked1'))
-
-    self.parseGclient(
-        ['sync', '--transitive', '--revision', 'src@1', '--deps', 'mac',
-          '--delete_unversioned_trees', '--jobs', '1'],
-        ['running', 'running', 'running', 'running', 'deleting'])
-    tree = self.mangle_svn_tree(
-        ('trunk/src@1', 'src'),
-        ('trunk/third_party/foo@1', 'src/third_party/fpp'),
-        ('trunk/other@1', 'src/other'),
-        ('trunk/third_party/foo@1', 'src/third_party/prout'))
-    tree['src/file/other/DEPS'] = (
-        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     self.assertTree(tree)
 
   def testSyncIgnoredSolutionName(self):
@@ -799,6 +764,62 @@ class GClientSmokeSVN(GClientSmokeBase):
     # Cripple src/third_party/foo and make sure gclient still succeeds.
     gclient_utils.rmtree(join(third_party, 'foo', '.svn'))
     self.assertEquals(0, self.gclient(cmd)[-1])
+
+
+class GClientSmokeSVNTransitive(GClientSmokeBase):
+  FAKE_REPOS_CLASS = FakeRepoTransitive
+
+  def setUp(self):
+    super(GClientSmokeSVNTransitive, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_svn()
+
+  def testSyncTransitive(self):
+    if not self.enabled:
+      return
+
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+
+    def test_case(parent, timestamp, fixed, output):
+      # We check out revision 'parent' and expect the following:
+      #  - src/ is checked out at r'parent'
+      #  - src/same_repo is checked out at r'parent' (due to --transitive)
+      #  - src/same_repo_fixed is checked out at r'fixed'
+      #  - src/different_repo is checked out at r'timestamp'
+      #    (due to --transitive)
+      #  - src/different_repo_fixed is checked out at r'fixed'
+
+      revisions = self.FAKE_REPOS.svn_revs
+      self.parseGclient(
+          ['sync', '--transitive', '--revision', 'src@%d' % parent,
+           '--jobs', '1'], output)
+      self.assertTree({
+        'src/origin': revisions[parent]['trunk/src/origin'],
+        'src/DEPS': revisions[parent]['trunk/src/DEPS'],
+        'src/same_repo/origin': revisions[parent]['trunk/third_party/origin'],
+        'src/same_repo_fixed/origin':
+            revisions[fixed]['trunk/third_party/origin'],
+        'src/different_repo/origin':
+            revisions[timestamp]['trunk/third_party/origin'],
+        'src/different_repo_fixed/origin':
+            revisions[fixed]['trunk/third_party/origin'],
+      })
+
+    # Here are the test cases for checking out 'trunk/src' at r1, r2 and r3
+    # r1: Everything is normal
+    test_case(parent=1, timestamp=1, fixed=1,
+              output=['running', 'running', 'running', 'running', 'running'])
+    # r2: Svn will scan from r1 upwards until it finds a revision matching the
+    # given timestamp or it takes the next smallest one (which is r2 in this
+    # case).
+    test_case(parent=2, timestamp=2, fixed=1,
+              output=['running', 'running', 'running'])
+    # r3: Svn will scan from r1 upwards until it finds a revision matching the
+    # given timestamp or it takes the next smallest one. Since
+    # timestamp(r3) < timestamp(r2) svn will checkout r1.
+    # This happens often on http://googlecode.com but is unexpected to happen
+    # with svnserve (unless you manually change 'svn:date')
+    test_case(parent=3, timestamp=1, fixed=1,
+              output=['running', 'running', 'running'])
 
 
 class GClientSmokeGIT(GClientSmokeBase):

@@ -298,6 +298,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._processed = False
     # This dependency had its hook run
     self._hooks_ran = False
+    # This is the scm used to checkout self.url. It may be used by dependencies
+    # to get the datetime of the revision we checked out.
+    self._used_scm = None
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
@@ -538,42 +541,42 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
 
-  @staticmethod
   def maybeGetParentRevision(
-      command, options, parsed_url, parent_name, revision_overrides):
-    """If we are performing an update and --transitive is set, set the
-    revision to the parent's revision. If we have an explicit revision
-    do nothing."""
+      self, command, options, parsed_url, parent_name, revision_overrides):
+    """Uses revision/timestamp of parent if no explicit revision was specified.
+
+    If we are performing an update and --transitive is set, use
+    - the parent's revision if 'self.url' is in the same repository
+    - the parent's timestamp otherwise
+    to update 'self.url'. The used revision/timestamp will be set in
+    'options.revision'.
+    If we have an explicit revision do nothing.
+    """
     if command == 'update' and options.transitive and not options.revision:
       _, revision = gclient_utils.SplitUrlRevision(parsed_url)
       if not revision:
         options.revision = revision_overrides.get(parent_name)
-        if options.verbose and options.revision:
-          print("Using parent's revision date: %s" % options.revision)
-        # If the parent has a revision override, then it must have been
-        # converted to date format.
-        assert (not options.revision or
-                gclient_utils.IsDateRevision(options.revision))
-
-  @staticmethod
-  def maybeConvertToDateRevision(
-      command, options, name, scm, revision_overrides):
-    """If we are performing an update and --transitive is set, convert the
-    revision to a date-revision (if necessary). Instead of having
-    -r 101 replace the revision with the time stamp of 101 (e.g.
-    "{2011-18-04}").
-    This way dependencies are upgraded to the revision they had at the
-    check-in of revision 101."""
-    if (command == 'update' and
-        options.transitive and
-        options.revision and
-        not gclient_utils.IsDateRevision(options.revision)):
-      revision_date = scm.GetRevisionDate(options.revision)
-      revision = gclient_utils.MakeDateRevision(revision_date)
-      if options.verbose:
-        print("Updating revision override from %s to %s." %
-              (options.revision, revision))
-      revision_overrides[name] = revision
+        if (options.revision and
+            not gclient_utils.IsDateRevision(options.revision)):
+          assert self.parent and self.parent.used_scm
+          # If this dependency is in the same repository as parent it's url will
+          # start with a slash. If so we take the parent revision instead of
+          # it's timestamp.
+          # (The timestamps of commits in google code are broken -- which can
+          # result in dependencies to be checked out at the wrong revision)
+          if self.url.startswith('/'):
+            if options.verbose:
+              print('Using parent\'s revision %s since we are in the same '
+                    'repository.' % options.revision)
+          else:
+            parent_revision_date = self.parent.used_scm.GetRevisionDate(
+                options.revision)
+            options.revision = gclient_utils.MakeDateRevision(
+                parent_revision_date)
+            if options.verbose:
+              print('Using parent\'s revision date %s since we are in a '
+                    'different repository.' % options.revision)
+          revision_overrides[self.name] = options.revision
 
   # Arguments number differs from overridden method
   # pylint: disable=W0221
@@ -596,22 +599,19 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           # Sadly, pylint doesn't realize that parsed_url is of FileImpl.
           # pylint: disable=E1103
           options.revision = parsed_url.GetRevision()
-          scm = gclient_scm.SVNWrapper(parsed_url.GetPath(),
-                                       self.root.root_dir,
-                                       self.name)
-          scm.RunCommand('updatesingle', options,
-                         args + [parsed_url.GetFilename()],
-                         file_list)
+          self._used_scm = gclient_scm.SVNWrapper(
+              parsed_url.GetPath(), self.root.root_dir, self.name)
+          self._used_scm.RunCommand('updatesingle',
+              options, args + [parsed_url.GetFilename()], file_list)
       else:
         # Create a shallow copy to mutate revision.
         options = copy.copy(options)
         options.revision = revision_overrides.get(self.name)
         self.maybeGetParentRevision(
             command, options, parsed_url, self.parent.name, revision_overrides)
-        scm = gclient_scm.CreateSCM(parsed_url, self.root.root_dir, self.name)
-        scm.RunCommand(command, options, args, file_list)
-        self.maybeConvertToDateRevision(
-            command, options, self.name, scm, revision_overrides)
+        self._used_scm = gclient_scm.CreateSCM(
+            parsed_url, self.root.root_dir, self.name)
+        self._used_scm.RunCommand(command, options, args, file_list)
         file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
       # TODO(phajdan.jr): We should know exactly when the paths are absolute.
@@ -826,6 +826,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def file_list(self):
     return tuple(self._file_list)
+
+  @property
+  def used_scm(self):
+    """SCMWrapper instance for this dependency or None if not processed yet."""
+    return self._used_scm
 
   @property
   def file_list_and_children(self):

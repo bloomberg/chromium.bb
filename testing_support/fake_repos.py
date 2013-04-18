@@ -161,8 +161,6 @@ def wait_for_port_to_free(host, port):
   assert False, '%d is still bound' % port
 
 
-_FAKE_LOADED = False
-
 class FakeReposBase(object):
   """Generate both svn and git repositories to test gclient functionality.
 
@@ -181,11 +179,6 @@ class FakeReposBase(object):
   ]
 
   def __init__(self, host=None):
-    global _FAKE_LOADED
-    if _FAKE_LOADED:
-      raise Exception('You can only start one FakeRepos at a time.')
-    _FAKE_LOADED = True
-
     self.trial = trial_dir.TrialDir('repos')
     self.host = host or '127.0.0.1'
     # Format is [ None, tree, tree, ...]
@@ -321,6 +314,17 @@ class FakeReposBase(object):
     text += ''.join('%s = %s\n' % (usr, pwd) for usr, pwd in self.USERS)
     write(join(self.svn_repo, 'conf', 'passwd'), text)
 
+    # Necessary to be able to change revision properties
+    revprop_hook_filename = join(self.svn_repo, 'hooks', 'pre-revprop-change')
+    if sys.platform == 'win32':
+      # TODO(kustermann): Test on Windows one day.
+      write("%s.bat" % revprop_hook_filename, "")
+    else:
+      write(revprop_hook_filename,
+          '#!/bin/sh\n'
+          'exit 0\n')
+      os.chmod(revprop_hook_filename, 0755)
+
     # Mac 10.6 ships with a buggy subversion build and we need this line
     # to work around the bug.
     write(join(self.svn_repo, 'db', 'fsfs.conf'),
@@ -391,6 +395,14 @@ class FakeReposBase(object):
     else:
       new_tree = tree.copy()
     self.svn_revs.append(new_tree)
+
+  def _set_svn_commit_date(self, revision, date):
+    subprocess2.check_output(
+        ['svn', 'propset', 'svn:date', '--revprop', '-r', revision, date,
+         self.svn_base,
+         '--username', self.USERS[0][0],
+         '--password', self.USERS[0][1],
+         '--non-interactive'])
 
   def _commit_git(self, repo, tree):
     repo_root = join(self.git_root, repo)
@@ -642,22 +654,67 @@ hooks = [
     })
 
 
+class FakeRepoTransitive(FakeReposBase):
+  """Implements populateSvn()"""
+
+  def populateSvn(self):
+    """Creates a few revisions of changes including a DEPS file."""
+    # Repos
+    subprocess2.check_call(
+        ['svn', 'checkout', self.svn_base, self.svn_checkout,
+         '-q', '--non-interactive', '--no-auth-cache',
+         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
+    assert os.path.isdir(join(self.svn_checkout, '.svn'))
+
+    def file_system(rev):
+      DEPS = """deps = {
+                'src/different_repo': '%(svn_base)strunk/third_party',
+                'src/different_repo_fixed': '%(svn_base)strunk/third_party@1',
+                'src/same_repo': '/trunk/third_party',
+                'src/same_repo_fixed': '/trunk/third_party@1',
+             }""" % { 'svn_base': self.svn_base }
+      return {
+        'trunk/src/DEPS': DEPS,
+        'trunk/src/origin': 'svn/trunk/src@%(rev)d' % { 'rev': rev },
+        'trunk/third_party/origin':
+            'svn/trunk/third_party@%(rev)d' % { 'rev': rev },
+      }
+
+    # We make three commits. We use always the same DEPS contents but
+    # - 'trunk/src/origin' contains 'svn/trunk/src/origin@rX'
+    # - 'trunk/third_party/origin' contains 'svn/trunk/third_party/origin@rX'
+    # where 'X' is the revision number.
+    # So the 'origin' files will change in every commit.
+    self._commit_svn(file_system(1))
+    self._commit_svn(file_system(2))
+    self._commit_svn(file_system(3))
+    # We rewrite the timestamps so we can test that '--transitive' will take the
+    # parent timestamp on different repositories and the parent revision
+    # otherwise.
+    self._set_svn_commit_date('1', '2011-10-01T03:00:00.000000Z')
+    self._set_svn_commit_date('2', '2011-10-09T03:00:00.000000Z')
+    self._set_svn_commit_date('3', '2011-10-02T03:00:00.000000Z')
+
+  def populateGit(self):
+    pass
+
+
 class FakeReposTestBase(trial_dir.TestCase):
   """This is vaguely inspired by twisted."""
-  # static FakeRepos instance. Lazy loaded.
-  FAKE_REPOS = None
+  # Static FakeRepos instances. Lazy loaded.
+  CACHED_FAKE_REPOS = {}
   # Override if necessary.
   FAKE_REPOS_CLASS = FakeRepos
 
   def setUp(self):
     super(FakeReposTestBase, self).setUp()
-    if not FakeReposTestBase.FAKE_REPOS:
-      # Lazy create the global instance.
-      FakeReposTestBase.FAKE_REPOS = self.FAKE_REPOS_CLASS()
+    if not self.FAKE_REPOS_CLASS in self.CACHED_FAKE_REPOS:
+      self.CACHED_FAKE_REPOS[self.FAKE_REPOS_CLASS] = self.FAKE_REPOS_CLASS()
+    self.FAKE_REPOS = self.CACHED_FAKE_REPOS[self.FAKE_REPOS_CLASS]
     # No need to call self.FAKE_REPOS.setUp(), it will be called by the child
     # class.
     # Do not define tearDown(), since super's version does the right thing and
-    # FAKE_REPOS is kept across tests.
+    # self.FAKE_REPOS is kept across tests.
 
   @property
   def svn_base(self):
