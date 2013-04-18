@@ -16,7 +16,6 @@ IndexedDBBrowserTest.ValueSizeTest
 IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
-IndexedDBLayoutTest.BasicTests
 
 # Failures
 RenderViewHostTest.BaseURLParam
@@ -97,3 +96,7 @@ WebRTCInternalsBrowserTest.UpdatePeerConnection
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
+
+# http://crbug.com/232997
+IndexedDBLayoutTest.BasicTests
+IndexedDBLayoutTest.IndexTests
