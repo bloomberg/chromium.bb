@@ -33,6 +33,13 @@
       receive information about the text model from the application via events.
       Input method contexts do not keep state after deactivation and should be
       destroyed after deactivation is handled.
+
+      Serials are used to synchronize the state between the text input and
+      an input method. New serials are sent by the text input in the
+      commit_state request and are used by the input method to indicate
+      the known text input state in events like preedit_string, commit_string,
+      and keysym. The text input can then ignore events from the input method
+      which are based on an outdated state (for example after a reset).
     </description>
     <request name="destroy" type="destructor"/>
     <request name="commit_string">
@@ -63,7 +70,6 @@
 
         This request should be sent before sending preedit_string request.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
       <arg name="style" type="uint"/>
@@ -75,16 +81,13 @@
 
         This request should be sent before sending preedit_string request.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
     </request>
     <request name="delete_surrounding_text">
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </request>
     <request name="cursor_position">
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="anchor" type="int"/>
     </request>
@@ -147,7 +150,6 @@
       <arg name="anchor" type="uint"/>
     </event>
     <event name="reset">
-      <arg name="serial" type="uint"/>
     </event>
     <event name="content_type">
       <arg name="hint" type="uint"/>
@@ -157,7 +159,9 @@
       <arg name="button" type="uint"/>
       <arg name="index" type="uint"/>
     </event>
-    <event name="commit"/>
+    <event name="commit_state">
+      <arg name="serial" type="uint"/>
+    </event>
     <event name="preferred_language">
       <arg name="language" type="string"/>
     </event>
@@ -176,7 +180,6 @@
         which allows communication with the text model.
       </description>
       <arg name="id" type="new_id" interface="input_method_context"/>
-      <arg name="serial" type="uint"/>
     </event>
     <event name="deactivate">
       <description summary="activate event">

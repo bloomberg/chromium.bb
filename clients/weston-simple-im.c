@@ -112,16 +112,13 @@ handle_surrounding_text(void *data,
 
 static void
 handle_reset(void *data,
-	     struct input_method_context *context,
-	     uint32_t serial)
+	     struct input_method_context *context)
 {
 	struct simple_im *keyboard = data;
 
 	fprintf(stderr, "Reset pre-edit buffer\n");
 
 	keyboard->compose_state = state_normal;
-
-	keyboard->serial = serial;
 }
 
 static void
@@ -141,9 +138,13 @@ handle_invoke_action(void *data,
 }
 
 static void
-handle_commit(void *data,
-	      struct input_method_context *context)
+handle_commit_state(void *data,
+		    struct input_method_context *context,
+		    uint32_t serial)
 {
+	struct simple_im *keyboard = data;
+
+	keyboard->serial = serial;
 }
 
 static void
@@ -158,7 +159,7 @@ static const struct input_method_context_listener input_method_context_listener 
 	handle_reset,
 	handle_content_type,
 	handle_invoke_action,
-	handle_commit,
+	handle_commit_state,
 	handle_preferred_language
 };
 
@@ -285,8 +286,7 @@ static const struct wl_keyboard_listener input_method_keyboard_listener = {
 static void
 input_method_activate(void *data,
 		      struct input_method *input_method,
-		      struct input_method_context *context,
-		      uint32_t serial)
+		      struct input_method_context *context)
 {
 	struct simple_im *keyboard = data;
 
@@ -295,7 +295,7 @@ input_method_activate(void *data,
 
 	keyboard->compose_state = state_normal;
 
-	keyboard->serial = serial;
+	keyboard->serial = 0;
 
 	keyboard->context = context;
 	input_method_context_add_listener(context,
@@ -396,7 +396,7 @@ simple_im_key_handler(struct simple_im *keyboard,
 
 		for (i = 0; i < sizeof(ignore_keys_on_compose) / sizeof(ignore_keys_on_compose[0]); i++) {
 			if (sym == ignore_keys_on_compose[i]) {
-				input_method_context_key(context, serial, time, key, state);
+				input_method_context_key(context, keyboard->serial, time, key, state);
 				return;
 			}
 		}
@@ -412,13 +412,11 @@ simple_im_key_handler(struct simple_im *keyboard,
 		if (cs) {
 			if (cs->keys[i + 1] == 0) {
 				input_method_context_preedit_cursor(keyboard->context,
-								    keyboard->serial,
 								    0);
 				input_method_context_preedit_string(keyboard->context,
 								    keyboard->serial,
 								    "", "");
 				input_method_context_cursor_position(keyboard->context,
-								     keyboard->serial,
 								     0, 0);
 				input_method_context_commit_string(keyboard->context,
 								   keyboard->serial,
@@ -432,7 +430,6 @@ simple_im_key_handler(struct simple_im *keyboard,
 				}
 
 				input_method_context_preedit_cursor(keyboard->context,
-								    keyboard->serial,
 								    strlen(text));
 				input_method_context_preedit_string(keyboard->context,
 								    keyboard->serial,
@@ -446,13 +443,11 @@ simple_im_key_handler(struct simple_im *keyboard,
 				idx += xkb_keysym_to_utf8(keyboard->compose_seq.keys[j], text + idx, sizeof(text) - idx);
 			}
 			input_method_context_preedit_cursor(keyboard->context,
-							    keyboard->serial,
 							    0);
 			input_method_context_preedit_string(keyboard->context,
 							    keyboard->serial,
 							    "", "");
 			input_method_context_cursor_position(keyboard->context,
-							     keyboard->serial,
 							     0, 0);
 			input_method_context_commit_string(keyboard->context,
 							   keyboard->serial,
@@ -471,7 +466,6 @@ simple_im_key_handler(struct simple_im *keyboard,
 		return;
 
 	input_method_context_cursor_position(keyboard->context,
-					     keyboard->serial,
 					     0, 0);
 	input_method_context_commit_string(keyboard->context,
 					   keyboard->serial,

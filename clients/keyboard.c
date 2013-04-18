@@ -395,7 +395,6 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 					    "",
 					    "");
 	input_method_context_cursor_position(keyboard->context,
-					     keyboard->serial,
 					     0, 0);
 	input_method_context_commit_string(keyboard->context,
 					   keyboard->serial,
@@ -412,14 +411,12 @@ virtual_keyboard_send_preedit(struct virtual_keyboard *keyboard,
 
 	if (keyboard->preedit_style)
 		input_method_context_preedit_styling(keyboard->context,
-						     keyboard->serial,
 						     0,
 						     strlen(keyboard->preedit_string),
 						     keyboard->preedit_style);
 	if (cursor > 0)
 		index = cursor;
 	input_method_context_preedit_cursor(keyboard->context,
-					    keyboard->serial,
 					    index);
 	input_method_context_preedit_string(keyboard->context,
 					    keyboard->serial,
@@ -449,7 +446,6 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
 				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
-									     keyboard->keyboard->serial,
 									     -1, 1);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
@@ -579,8 +575,7 @@ handle_surrounding_text(void *data,
 
 static void
 handle_reset(void *data,
-	     struct input_method_context *context,
-	     uint32_t serial)
+	     struct input_method_context *context)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -597,8 +592,6 @@ handle_reset(void *data,
 		free(keyboard->preedit_string);
 		keyboard->preedit_string = strdup("");
 	}
-
-	keyboard->serial = serial;
 }
 
 static void
@@ -628,11 +621,14 @@ handle_invoke_action(void *data,
 }
 
 static void
-handle_commit(void *data,
-	      struct input_method_context *context)
+handle_commit_state(void *data,
+		    struct input_method_context *context,
+		    uint32_t serial)
 {
 	struct virtual_keyboard *keyboard = data;
 	const struct layout *layout;
+
+	keyboard->serial = serial;
 
 	layout = get_current_layout(keyboard);
 
@@ -670,15 +666,14 @@ static const struct input_method_context_listener input_method_context_listener 
 	handle_reset,
 	handle_content_type,
 	handle_invoke_action,
-	handle_commit,
+	handle_commit_state,
 	handle_preferred_language
 };
 
 static void
 input_method_activate(void *data,
 		      struct input_method *input_method,
-		      struct input_method_context *context,
-		      uint32_t serial)
+		      struct input_method_context *context)
 {
 	struct virtual_keyboard *keyboard = data;
 	struct wl_array modifiers_map;
@@ -700,7 +695,7 @@ input_method_activate(void *data,
 	free(keyboard->surrounding_text);
 	keyboard->surrounding_text = NULL;
 
-	keyboard->serial = serial;
+	keyboard->serial = 0;
 
 	keyboard->context = context;
 	input_method_context_add_listener(context,

@@ -2,7 +2,7 @@
 <protocol name="text">
 
   <copyright>
-    Copyright © 2012 Intel Corporation
+    Copyright © 2012, 2013 Intel Corporation
 
     Permission to use, copy, modify, distribute, and sell this
     software and its documentation for any purpose is hereby granted
@@ -38,6 +38,13 @@
       the pre-edit and commit events. Using this interface removes the need
       for applications to directly process hardware key events and compose text
       out of them.
+
+      Serials are used to synchronize the state between the text input and
+      an input method. New serials are sent by the text input in the
+      commit_state request and are used by the input method to indicate
+      the known text input state in events like preedit_string, commit_string,
+      and keysym. The text input can then ignore events from the input method
+      which are based on an outdated state (for example after a reset).
     </description>
     <request name="activate">
       <description summary="request activation">
@@ -48,7 +55,6 @@
         text-input object and tracked for focus lost. The enter event
         is emitted on successful activation.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="seat" type="object" interface="wl_seat"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
@@ -76,7 +82,6 @@
         reset, for example after the text was changed outside of the normal
         input method flow.
       </description>
-      <arg name="serial" type="uint"/>
     </request>
     <request name="set_surrounding_text">
       <description summary="sets the surrounding text">
@@ -162,6 +167,7 @@
       <arg name="language" type="string"/>
     </request>
     <request name="commit_state">
+      <arg name="serial" type="uint" summary="used to identify the known state"/>
     </request>
     <request name="invoke_action">
       <arg name="button" type="uint"/>
@@ -204,7 +210,7 @@
         The commit text can be used to replace the preedit text on reset
         (for example on unfocus).
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="text" type="string"/>
       <arg name="commit" type="string"/>
     </event>
@@ -228,7 +234,6 @@
         This event should be handled as part of a following preedit_string
         event.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
       <arg name="style" type="uint"/>
@@ -241,7 +246,6 @@
         This event should be handled as part of a following preedit_string
         event.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
     </event>
     <event name="commit_string">
@@ -253,7 +257,7 @@
 
         Any previously set composing text should be removed.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="text" type="string"/>
     </event>
     <event name="cursor_position">
@@ -261,7 +265,6 @@
         Notify when the cursor or anchor position should be modified. It
         should take effect after the next commit_string event.
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="anchor" type="int"/>
     </event>
@@ -271,7 +274,6 @@
         deleted. Index is relative to the current cursor (as byte index).
         Length is the length of deleted text (in bytes).
       </description>
-      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </event>
@@ -284,7 +286,7 @@
         wl_keyboard key_state. Modifiers are a mask for effective modifiers
         (where the modifier indices are set by the modifiers_map event)
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="time" type="uint"/>
       <arg name="sym" type="uint"/>
       <arg name="state" type="uint"/>
@@ -295,7 +297,7 @@
         Sets the language of the input text. The "language" argument is a RFC-3066 
         format language tag.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="language" type="string"/>
     </event>
     <enum name="text_direction">
@@ -311,7 +313,7 @@
         editor when there is no input yet done and making sure neutral
         direction text is laid out properly.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="direction" type="uint"/>
     </event>
   </interface>

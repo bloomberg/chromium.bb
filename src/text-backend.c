@@ -98,8 +98,7 @@ struct text_backend {
 };
 
 static void input_method_context_create(struct text_input *model,
-					struct input_method *input_method,
-					uint32_t serial);
+					struct input_method *input_method);
 static void input_method_context_end_keyboard_grab(struct input_method_context *context);
 
 static void input_method_init_seat(struct weston_seat *seat);
@@ -161,7 +160,6 @@ text_input_set_surrounding_text(struct wl_client *client,
 static void
 text_input_activate(struct wl_client *client,
 	            struct wl_resource *resource,
-		    uint32_t serial,
 		    struct wl_resource *seat,
 		    struct wl_resource *surface)
 {
@@ -185,7 +183,7 @@ text_input_activate(struct wl_client *client,
 
 	text_input->surface = surface->data;
 
-	input_method_context_create(text_input, input_method, serial);
+	input_method_context_create(text_input, input_method);
 
 	if (text_input->input_panel_visible) {
 		wl_signal_emit(&ec->show_input_panel_signal, text_input->surface);
@@ -209,8 +207,7 @@ text_input_deactivate(struct wl_client *client,
 
 static void
 text_input_reset(struct wl_client *client,
-		 struct wl_resource *resource,
-		 uint32_t serial)
+		 struct wl_resource *resource)
 {
 	struct text_input *text_input = resource->data;
 	struct input_method *input_method, *next;
@@ -218,7 +215,7 @@ text_input_reset(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_reset(&input_method->context->resource, serial);
+		input_method_context_send_reset(&input_method->context->resource);
 	}
 }
 
@@ -275,7 +272,8 @@ text_input_invoke_action(struct wl_client *client,
 
 static void
 text_input_commit_state(struct wl_client *client,
-			struct wl_resource *resource)
+			struct wl_resource *resource,
+			uint32_t serial)
 {
 	struct text_input *text_input = resource->data;
 	struct input_method *input_method, *next;
@@ -283,7 +281,7 @@ text_input_commit_state(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_input->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_commit(&input_method->context->resource);
+		input_method_context_send_commit_state(&input_method->context->resource, serial);
 	}
 }
 
@@ -451,49 +449,45 @@ input_method_context_preedit_string(struct wl_client *client,
 static void
 input_method_context_preedit_styling(struct wl_client *client,
 				     struct wl_resource *resource,
-				     uint32_t serial,
 				     uint32_t index,
 				     uint32_t length,
 				     uint32_t style)
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_preedit_styling(&context->model->resource, serial, index, length, style);
+	text_input_send_preedit_styling(&context->model->resource, index, length, style);
 }
 
 static void
 input_method_context_preedit_cursor(struct wl_client *client,
 				    struct wl_resource *resource,
-				    uint32_t serial,
 				    int32_t cursor)
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_preedit_cursor(&context->model->resource, serial, cursor);
+	text_input_send_preedit_cursor(&context->model->resource, cursor);
 }
 
 static void
 input_method_context_delete_surrounding_text(struct wl_client *client,
 					     struct wl_resource *resource,
-					     uint32_t serial,
 					     int32_t index,
 					     uint32_t length)
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_delete_surrounding_text(&context->model->resource, serial, index, length);
+	text_input_send_delete_surrounding_text(&context->model->resource, index, length);
 }
 
 static void
 input_method_context_cursor_position(struct wl_client *client,
 				     struct wl_resource *resource,
-				     uint32_t serial,
 				     int32_t index,
 				     int32_t anchor)
 {
 	struct input_method_context *context = resource->data;
 
-	text_input_send_cursor_position(&context->model->resource, serial, index, anchor);
+	text_input_send_cursor_position(&context->model->resource, index, anchor);
 }
 
 static void
@@ -687,8 +681,7 @@ destroy_input_method_context(struct wl_resource *resource)
 
 static void
 input_method_context_create(struct text_input *model,
-			    struct input_method *input_method,
-			    uint32_t serial)
+			    struct input_method *input_method)
 {
 	struct input_method_context *context;
 
@@ -713,7 +706,7 @@ input_method_context_create(struct text_input *model,
 
 	wl_client_add_resource(input_method->input_method_binding->client, &context->resource);
 
-	input_method_send_activate(input_method->input_method_binding, &context->resource, serial);
+	input_method_send_activate(input_method->input_method_binding, &context->resource);
 }
 
 static void

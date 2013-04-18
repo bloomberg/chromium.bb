@@ -51,7 +51,6 @@ text_input_preedit_string(void *data,
 static void
 text_input_delete_surrounding_text(void *data,
 				   struct text_input *text_input,
-				   uint32_t serial,
 				   int32_t index,
 				   uint32_t length)
 {
@@ -60,7 +59,6 @@ text_input_delete_surrounding_text(void *data,
 static void
 text_input_cursor_position(void *data,
 			   struct text_input *text_input,
-			   uint32_t serial,
 			   int32_t index,
 			   int32_t anchor)
 {
@@ -69,7 +67,6 @@ text_input_cursor_position(void *data,
 static void
 text_input_preedit_styling(void *data,
 			   struct text_input *text_input,
-			   uint32_t serial,
 			   uint32_t index,
 			   uint32_t length,
 			   uint32_t style)
@@ -79,7 +76,6 @@ text_input_preedit_styling(void *data,
 static void
 text_input_preedit_cursor(void *data,
 			  struct text_input *text_input,
-			  uint32_t serial,
 			  int32_t index)
 {
 }
@@ -195,7 +191,7 @@ TEST(text_test)
 	assert(client->input->keyboard->focus == client->surface);
 
 	/* Activate test model and make sure we get enter event. */
-	text_input_activate(text_input, 0, client->input->wl_seat,
+	text_input_activate(text_input, client->input->wl_seat,
 			    client->surface->wl_surface);
 	client_roundtrip(client);
 	assert(state.activated == 1 && state.deactivated == 0);
@@ -206,7 +202,7 @@ TEST(text_test)
 	assert(state.activated == 1 && state.deactivated == 1);
 
 	/* Activate test model again. */
-	text_input_activate(text_input, 0, client->input->wl_seat,
+	text_input_activate(text_input, client->input->wl_seat,
 			    client->surface->wl_surface);
 	client_roundtrip(client);
 	assert(state.activated == 2 && state.deactivated == 1);

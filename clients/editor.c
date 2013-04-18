@@ -63,6 +63,7 @@ struct text_entry {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
 	uint32_t serial;
+	uint32_t reset_serial;
 	uint32_t content_purpose;
 	uint32_t click_to_show;
 	char *preferred_language;
@@ -138,6 +139,12 @@ text_input_commit_string(void *data,
 {
 	struct text_entry *entry = data;
 
+	if ((entry->serial - serial) > (entry->serial - entry->reset_serial)) {
+		fprintf(stderr, "Ignore commit. Serial: %u, Current: %u, Reset: %u\n",
+			serial, entry->serial, entry->reset_serial);
+		return;
+	}
+
 	text_entry_reset_preedit(entry);
 
 	text_entry_delete_selected_text(entry);
@@ -175,7 +182,6 @@ text_input_preedit_string(void *data,
 static void
 text_input_delete_surrounding_text(void *data,
 				   struct text_input *text_input,
-				   uint32_t serial,
 				   int32_t index,
 				   uint32_t length)
 {
@@ -207,7 +213,6 @@ text_input_delete_surrounding_text(void *data,
 static void
 text_input_cursor_position(void *data,
 			   struct text_input *text_input,
-			   uint32_t serial,
 			   int32_t index,
 			   int32_t anchor)
 {
@@ -220,7 +225,6 @@ text_input_cursor_position(void *data,
 static void
 text_input_preedit_styling(void *data,
 			   struct text_input *text_input,
-			   uint32_t serial,
 			   uint32_t index,
 			   uint32_t length,
 			   uint32_t style)
@@ -272,7 +276,6 @@ text_input_preedit_styling(void *data,
 static void
 text_input_preedit_cursor(void *data,
 			  struct text_input *text_input,
-			  uint32_t serial,
 			  int32_t index)
 {
 	struct text_entry *entry = data;
@@ -373,6 +376,9 @@ text_input_enter(void *data,
 		return;
 
 	entry->active = 1;
+
+	text_entry_update(entry);
+	entry->reset_serial = entry->serial;
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -552,10 +558,7 @@ text_entry_activate(struct text_entry *entry,
 	if (!entry->click_to_show)
 		text_input_show_input_panel(entry->text_input);
 
-	entry->serial++;
-
 	text_input_activate(entry->text_input,
-			    entry->serial,
 			    seat,
 			    surface);
 }
@@ -653,7 +656,7 @@ text_entry_update(struct text_entry *entry)
 	text_input_set_cursor_rectangle(entry->text_input, cursor_rectangle.x, cursor_rectangle.y,
 					cursor_rectangle.width, cursor_rectangle.height);
 
-	text_input_commit_state(entry->text_input);
+	text_input_commit_state(entry->text_input, ++entry->serial);
 }
 
 static void
@@ -714,8 +717,9 @@ text_entry_commit_and_reset(struct text_entry *entry)
 		free(commit);
 	}
 
-	entry->serial++;
-	text_input_reset(entry->text_input, entry->serial);
+	text_input_reset(entry->text_input);
+	text_entry_update(entry);
+	entry->reset_serial = entry->serial;
 }
 
 static void
