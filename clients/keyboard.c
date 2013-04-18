@@ -233,8 +233,8 @@ static const struct layout arabic_layout = {
 };
 
 static const char *style_labels[] = {
-	"none",
 	"default",
+	"none",
 	"active",
 	"inactive",
 	"highlight",

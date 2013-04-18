@@ -209,7 +209,8 @@
       <arg name="commit" type="string"/>
     </event>
     <enum name="preedit_style">
-      <entry name="default" value="1"/>
+      <entry name="default" value="0" summary="default style for composing text"/>
+      <entry name="none" value="1" summary="style should be the same as in non-composing text"/>
       <entry name="active" value="2"/>
       <entry name="inactive" value="3"/>
       <entry name="highlight" value="4"/>
