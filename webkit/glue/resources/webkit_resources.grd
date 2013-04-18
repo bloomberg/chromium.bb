@@ -93,7 +93,6 @@
       <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT" file="pdf_button_print.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_HOVER" file="pdf_button_print_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_PRESSED" file="pdf_button_print_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_DISABLED" file="pdf_button_print_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_0" file="pdf_thumbnail_0.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_1" file="pdf_thumbnail_1.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_2" file="pdf_thumbnail_2.png" />
