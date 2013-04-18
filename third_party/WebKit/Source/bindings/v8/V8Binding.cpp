@@ -335,7 +335,7 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWo
     if (context->isDocument()) {
         ASSERT(world);
         if (Frame* frame = toDocument(context)->frame())
-            return v8::Local<v8::Context>::New(frame->script()->windowShell(world)->context());
+            return frame->script()->windowShell(world)->context();
     } else if (context->isWorkerContext()) {
         ASSERT(!world);
         if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())

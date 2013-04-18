@@ -374,7 +374,7 @@ void ScriptController::evaluateInIsolatedWorld(int worldID, const Vector<ScriptS
         if (!isolatedWorldShell->isContextInitialized())
             return;
 
-        v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolatedWorldShell->context());
+        v8::Local<v8::Context> context = isolatedWorldShell->context();
         v8::Context::Scope contextScope(context);
         v8::Local<v8::Array> resultArray = v8::Array::New(sources.size());
 
@@ -415,7 +415,7 @@ void ScriptController::finishedWithEvent(Event* event)
 
 static inline v8::Local<v8::Context> contextForWorld(ScriptController* scriptController, DOMWrapperWorld* world)
 {
-    return v8::Local<v8::Context>::New(scriptController->windowShell(world)->context());
+    return scriptController->windowShell(world)->context();
 }
 
 v8::Local<v8::Context> ScriptController::currentWorldContext()
@@ -487,7 +487,7 @@ void ScriptController::disableEval(const String& errorMessage)
     if (!m_windowShell->isContextInitialized())
         return;
     v8::HandleScope handleScope;
-    v8::Handle<v8::Context> v8Context = m_windowShell->context();
+    v8::Local<v8::Context> v8Context = m_windowShell->context();
     v8Context->AllowCodeGenerationFromStrings(false);
     v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(errorMessage, v8Context->GetIsolate()));
 }
@@ -663,10 +663,10 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
         SecurityOrigin* origin = isolatedWorldShell->world()->isolatedWorldSecurityOrigin();
         if (!origin)
             continue;
-        v8::Handle<v8::Context> v8Context = isolatedWorldShell->context();
+        v8::Local<v8::Context> v8Context = isolatedWorldShell->context();
         if (v8Context.IsEmpty())
             continue;
-        ScriptState* scriptState = ScriptState::forContext(v8::Local<v8::Context>::New(v8Context));
+        ScriptState* scriptState = ScriptState::forContext(v8Context);
         result.append(std::pair<ScriptState*, SecurityOrigin*>(scriptState, origin));
     }
 }
@@ -677,7 +677,7 @@ bool ScriptController::setContextDebugId(int debugId)
     if (!m_windowShell->isContextInitialized())
         return false;
     v8::HandleScope scope;
-    v8::Handle<v8::Context> context = m_windowShell->context();
+    v8::Local<v8::Context> context = m_windowShell->context();
     return V8PerContextDebugData::setContextDebugData(context, "page", debugId);
 }
 

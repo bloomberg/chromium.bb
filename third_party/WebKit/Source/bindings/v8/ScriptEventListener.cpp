@@ -125,7 +125,7 @@ ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listen
         return 0;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::HandleScope scope;
-    v8::Handle<v8::Context> v8Context = v8::Local<v8::Context>::New(frame->script()->windowShell(v8Listener->world())->context());
+    v8::Handle<v8::Context> v8Context = frame->script()->windowShell(v8Listener->world())->context();
     return ScriptState::forContext(*v8Context);
 }
 

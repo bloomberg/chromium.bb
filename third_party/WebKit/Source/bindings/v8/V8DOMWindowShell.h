@@ -36,6 +36,7 @@
 #include "SecurityOrigin.h"
 #include "V8PerContextData.h"
 #include "WrapperTypeInfo.h"
+#include <v8.h>
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
@@ -55,7 +56,7 @@ class V8DOMWindowShell {
 public:
     static PassOwnPtr<V8DOMWindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
-    v8::Persistent<v8::Context> context() const { return m_context.get(); }
+    v8::Local<v8::Context> context() const { return v8::Local<v8::Context>::New(m_context.get()); }
 
     // Update document object of the frame.
     void updateDocument();

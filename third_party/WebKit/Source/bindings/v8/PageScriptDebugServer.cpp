@@ -95,7 +95,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     V8DOMWindowShell* shell = scriptController->existingWindowShell(mainThreadNormalWorld());
     if (!shell || !shell->isContextInitialized())
         return;
-    v8::Handle<v8::Context> context = shell->context();
+    v8::Local<v8::Context> context = shell->context();
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getScripts")));
     v8::Handle<v8::Value> argv[] = { context->GetEmbedderData(0) };
     v8::Handle<v8::Value> value;
