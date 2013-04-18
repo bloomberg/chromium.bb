@@ -208,6 +208,7 @@
       <description summary="set the surface type as a keyboard">
 	A keybaord surface is only shown, when a text model is active
       </description>
+      <arg name="output" type="object" interface="wl_output"/>
       <arg name="position" type="uint"/>
     </request>
 

@@ -39,6 +39,7 @@ struct virtual_keyboard {
 	struct input_method *input_method;
 	struct input_method_context *context;
 	struct display *display;
+	struct output *output;
 	char *preedit_string;
 	uint32_t preedit_style;
 	struct {
@@ -768,7 +769,7 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	struct keyboard *keyboard;
 	const struct layout *layout;
 	struct input_panel_surface *ips;
-
+	
 	layout = get_current_layout(virtual_keyboard);
 
 	keyboard = malloc(sizeof *keyboard);
@@ -795,27 +796,18 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	ips = input_panel_get_input_panel_surface(virtual_keyboard->input_panel,
 						  window_get_wl_surface(keyboard->window));
 
-	input_panel_surface_set_toplevel(ips, INPUT_PANEL_SURFACE_POSITION_CENTER_BOTTOM);
-}
+	input_panel_surface_set_toplevel(ips,
+					 output_get_wl_output(output),
+					 INPUT_PANEL_SURFACE_POSITION_CENTER_BOTTOM);
 
-static void
-handle_output_configure(struct output *output, void *data)
-{
-	struct virtual_keyboard *virtual_keyboard = data;
-
-	/* skip existing outputs */
-	if (output_get_user_data(output))
-		return;
-
-	output_set_user_data(output, virtual_keyboard);
-
-	keyboard_create(output, virtual_keyboard);
+	fprintf(stderr, "%s, %p\n", __FUNCTION__, output_get_wl_output(output));
 }
 
 int
 main(int argc, char *argv[])
 {
 	struct virtual_keyboard virtual_keyboard;
+	struct output *output;
 
 	memset(&virtual_keyboard, 0, sizeof virtual_keyboard);
 
@@ -827,7 +819,9 @@ main(int argc, char *argv[])
 
 	display_set_user_data(virtual_keyboard.display, &virtual_keyboard);
 	display_set_global_handler(virtual_keyboard.display, global_handler);
-	display_set_output_configure_handler(virtual_keyboard.display, handle_output_configure);
+
+	output = display_get_output(virtual_keyboard.display);
+	keyboard_create(output, &virtual_keyboard);
 
 	display_run(virtual_keyboard.display);
 
