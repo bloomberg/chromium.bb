@@ -301,7 +301,21 @@ bool TouchPlatformFile(PlatformFile file, const base::Time& last_access_time,
   timeval times[2];
   times[0] = last_access_time.ToTimeVal();
   times[1] = last_modified_time.ToTimeVal();
+
+#ifdef __USE_XOPEN2K8
+  // futimens should be available, but futimes might not be
+  // http://pubs.opengroup.org/onlinepubs/9699919799/
+
+  timespec ts_times[2];
+  ts_times[0].tv_sec  = times[0].tv_sec;
+  ts_times[0].tv_nsec = times[0].tv_usec * 1000;
+  ts_times[1].tv_sec  = times[1].tv_sec;
+  ts_times[1].tv_nsec = times[1].tv_usec * 1000;
+
+  return !futimens(file, ts_times);
+#else
   return !futimes(file, times);
+#endif
 }
 
 bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
