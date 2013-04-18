@@ -2203,6 +2203,30 @@ END
     AddToImplContentInternals($code);
 }
 
+# The Web IDL specification states that Interface objects for interfaces MUST have a property named
+# "length" that returns the length of the shortest argument list of the entries in the effective
+# overload set for constructors. In other words, use the lowest number of mandatory arguments among
+# all constructors.
+sub GetInterfaceLength
+{
+    my $interface = shift;
+
+    my $leastNumMandatoryParams = 0;
+    if ($codeGenerator->IsConstructorTemplate($interface, "Event") || $codeGenerator->IsConstructorTemplate($interface, "TypedArray")) {
+        $leastNumMandatoryParams = 1;
+    } elsif ($interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"CustomConstructor"}) {
+        my @constructors = @{$interface->constructors};
+        my @customConstructors = @{$interface->customConstructors};
+        $leastNumMandatoryParams = 255;
+        foreach my $constructor (@constructors, @customConstructors) {
+            my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($constructor);
+            $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
+        }
+    }
+
+    return $leastNumMandatoryParams;
+}
+
 sub GenerateConstructorCallback
 {
     my $interface = shift;
@@ -3180,10 +3204,12 @@ END
         if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
             $methodForMainWorld = "${interfaceName}V8Internal::${name}MethodCallbackForMainWorld";
         }
+        # numMandatoryParams is used to set the "length" property of the Function object.
+        my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($function);
         my $conditionalString = $codeGenerator->GenerateConditionalString($function->signature);
         $code .= "#if ${conditionalString}\n" if $conditionalString;
         $code .= <<END;
-    {"$name", ${interfaceName}V8Internal::${name}MethodCallback, ${methodForMainWorld}},
+    {"$name", ${interfaceName}V8Internal::${name}MethodCallback, ${methodForMainWorld}, ${numMandatoryParams}},
 END
         $code .= "#endif\n" if $conditionalString;
         $num_callbacks++;
@@ -3321,6 +3347,8 @@ END
 
     if (IsConstructable($interface)) {
         $code .= "    desc->SetCallHandler(${v8InterfaceName}::constructorCallback);\n";
+        my $interfaceLength = GetInterfaceLength($interface);
+        $code .= "    desc->SetLength(${interfaceLength});\n";
     }
 
     if ($access_check or @enabledAtRuntimeAttributes or @normalFunctions or $has_constants) {

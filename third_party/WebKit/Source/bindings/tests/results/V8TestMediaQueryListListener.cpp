@@ -27,6 +27,7 @@
 #include "Frame.h"
 #include "MediaQueryListListener.h"
 #include "RuntimeEnabledFeatures.h"
+#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
 #include <wtf/UnusedParam.h>
@@ -89,7 +90,7 @@ static v8::Handle<v8::Value> methodMethodCallback(const v8::Arguments& args)
 } // namespace TestMediaQueryListListenerV8Internal
 
 static const V8DOMConfiguration::BatchedMethod V8TestMediaQueryListListenerMethods[] = {
-    {"method", TestMediaQueryListListenerV8Internal::methodMethodCallback, 0},
+    {"method", TestMediaQueryListListenerV8Internal::methodMethodCallback, 0, 1},
 };
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListenerTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

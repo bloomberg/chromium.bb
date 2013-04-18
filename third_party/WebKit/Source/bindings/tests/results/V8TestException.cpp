@@ -25,6 +25,7 @@
 #include "ContextFeatures.h"
 #include "Frame.h"
 #include "RuntimeEnabledFeatures.h"
+#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
 #include <wtf/UnusedParam.h>

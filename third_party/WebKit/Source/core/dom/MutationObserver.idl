@@ -29,7 +29,7 @@
  */
 
 [
-    CustomConstructor,
+    CustomConstructor(MutationCallback callback),
     ImplementationLacksVTable
 ] interface MutationObserver {
     [RaisesException] void observe(Node target, Dictionary options);

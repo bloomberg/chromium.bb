@@ -26,15 +26,16 @@
 #include "DOMStringList.h"
 #include "Dictionary.h"
 #include "ExceptionCode.h"
-#include "UseCounter.h"
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGPropertyTearOff.h"
 #include "SVGStaticPropertyTearOff.h"
+#include "ScriptController.h"
 #include "ScriptProfile.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
+#include "UseCounter.h"
 #include "V8Binding.h"
 #include "V8DOMStringList.h"
 #include "V8DOMWrapper.h"
@@ -3411,58 +3412,58 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
 };
 
 static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
-    {"voidMethod", TestObjV8Internal::voidMethodMethodCallback, 0},
-    {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0},
-    {"objMethod", TestObjV8Internal::objMethodMethodCallback, 0},
-    {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0},
-    {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0},
-    {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0},
-    {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0},
-    {"customMethod", TestObjV8Internal::customMethodMethodCallback, 0},
-    {"customMethodWithArgs", TestObjV8Internal::customMethodWithArgsMethodCallback, 0},
-    {"addEventListener", TestObjV8Internal::addEventListenerMethodCallback, 0},
-    {"removeEventListener", TestObjV8Internal::removeEventListenerMethodCallback, 0},
-    {"withScriptStateVoid", TestObjV8Internal::withScriptStateVoidMethodCallback, 0},
-    {"withScriptStateObj", TestObjV8Internal::withScriptStateObjMethodCallback, 0},
-    {"withScriptStateVoidException", TestObjV8Internal::withScriptStateVoidExceptionMethodCallback, 0},
-    {"withScriptStateObjException", TestObjV8Internal::withScriptStateObjExceptionMethodCallback, 0},
-    {"withScriptExecutionContext", TestObjV8Internal::withScriptExecutionContextMethodCallback, 0},
-    {"withScriptExecutionContextAndScriptState", TestObjV8Internal::withScriptExecutionContextAndScriptStateMethodCallback, 0},
-    {"withScriptExecutionContextAndScriptStateObjException", TestObjV8Internal::withScriptExecutionContextAndScriptStateObjExceptionMethodCallback, 0},
-    {"withScriptExecutionContextAndScriptStateWithSpaces", TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethodCallback, 0},
-    {"methodWithOptionalArg", TestObjV8Internal::methodWithOptionalArgMethodCallback, 0},
-    {"methodWithNonOptionalArgAndOptionalArg", TestObjV8Internal::methodWithNonOptionalArgAndOptionalArgMethodCallback, 0},
-    {"methodWithNonOptionalArgAndTwoOptionalArgs", TestObjV8Internal::methodWithNonOptionalArgAndTwoOptionalArgsMethodCallback, 0},
-    {"methodWithOptionalString", TestObjV8Internal::methodWithOptionalStringMethodCallback, 0},
-    {"methodWithOptionalStringIsUndefined", TestObjV8Internal::methodWithOptionalStringIsUndefinedMethodCallback, 0},
-    {"methodWithOptionalStringIsNullString", TestObjV8Internal::methodWithOptionalStringIsNullStringMethodCallback, 0},
-    {"methodWithCallbackArg", TestObjV8Internal::methodWithCallbackArgMethodCallback, 0},
-    {"methodWithNonCallbackArgAndCallbackArg", TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethodCallback, 0},
-    {"methodWithCallbackAndOptionalArg", TestObjV8Internal::methodWithCallbackAndOptionalArgMethodCallback, 0},
-    {"methodWithEnforceRangeInt32", TestObjV8Internal::methodWithEnforceRangeInt32MethodCallback, 0},
-    {"methodWithEnforceRangeUInt32", TestObjV8Internal::methodWithEnforceRangeUInt32MethodCallback, 0},
-    {"methodWithEnforceRangeInt64", TestObjV8Internal::methodWithEnforceRangeInt64MethodCallback, 0},
-    {"methodWithEnforceRangeUInt64", TestObjV8Internal::methodWithEnforceRangeUInt64MethodCallback, 0},
+    {"voidMethod", TestObjV8Internal::voidMethodMethodCallback, 0, 0},
+    {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0, 0},
+    {"objMethod", TestObjV8Internal::objMethodMethodCallback, 0, 0},
+    {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0, 1},
+    {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
+    {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
+    {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},
+    {"customMethod", TestObjV8Internal::customMethodMethodCallback, 0, 0},
+    {"customMethodWithArgs", TestObjV8Internal::customMethodWithArgsMethodCallback, 0, 3},
+    {"addEventListener", TestObjV8Internal::addEventListenerMethodCallback, 0, 2},
+    {"removeEventListener", TestObjV8Internal::removeEventListenerMethodCallback, 0, 2},
+    {"withScriptStateVoid", TestObjV8Internal::withScriptStateVoidMethodCallback, 0, 0},
+    {"withScriptStateObj", TestObjV8Internal::withScriptStateObjMethodCallback, 0, 0},
+    {"withScriptStateVoidException", TestObjV8Internal::withScriptStateVoidExceptionMethodCallback, 0, 0},
+    {"withScriptStateObjException", TestObjV8Internal::withScriptStateObjExceptionMethodCallback, 0, 0},
+    {"withScriptExecutionContext", TestObjV8Internal::withScriptExecutionContextMethodCallback, 0, 0},
+    {"withScriptExecutionContextAndScriptState", TestObjV8Internal::withScriptExecutionContextAndScriptStateMethodCallback, 0, 0},
+    {"withScriptExecutionContextAndScriptStateObjException", TestObjV8Internal::withScriptExecutionContextAndScriptStateObjExceptionMethodCallback, 0, 0},
+    {"withScriptExecutionContextAndScriptStateWithSpaces", TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethodCallback, 0, 0},
+    {"methodWithOptionalArg", TestObjV8Internal::methodWithOptionalArgMethodCallback, 0, 0},
+    {"methodWithNonOptionalArgAndOptionalArg", TestObjV8Internal::methodWithNonOptionalArgAndOptionalArgMethodCallback, 0, 1},
+    {"methodWithNonOptionalArgAndTwoOptionalArgs", TestObjV8Internal::methodWithNonOptionalArgAndTwoOptionalArgsMethodCallback, 0, 1},
+    {"methodWithOptionalString", TestObjV8Internal::methodWithOptionalStringMethodCallback, 0, 0},
+    {"methodWithOptionalStringIsUndefined", TestObjV8Internal::methodWithOptionalStringIsUndefinedMethodCallback, 0, 0},
+    {"methodWithOptionalStringIsNullString", TestObjV8Internal::methodWithOptionalStringIsNullStringMethodCallback, 0, 0},
+    {"methodWithCallbackArg", TestObjV8Internal::methodWithCallbackArgMethodCallback, 0, 1},
+    {"methodWithNonCallbackArgAndCallbackArg", TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethodCallback, 0, 2},
+    {"methodWithCallbackAndOptionalArg", TestObjV8Internal::methodWithCallbackAndOptionalArgMethodCallback, 0, 0},
+    {"methodWithEnforceRangeInt32", TestObjV8Internal::methodWithEnforceRangeInt32MethodCallback, 0, 1},
+    {"methodWithEnforceRangeUInt32", TestObjV8Internal::methodWithEnforceRangeUInt32MethodCallback, 0, 1},
+    {"methodWithEnforceRangeInt64", TestObjV8Internal::methodWithEnforceRangeInt64MethodCallback, 0, 1},
+    {"methodWithEnforceRangeUInt64", TestObjV8Internal::methodWithEnforceRangeUInt64MethodCallback, 0, 1},
 #if ENABLE(Condition1)
-    {"conditionalMethod1", TestObjV8Internal::conditionalMethod1MethodCallback, 0},
+    {"conditionalMethod1", TestObjV8Internal::conditionalMethod1MethodCallback, 0, 0},
 #endif
 #if ENABLE(Condition1) && ENABLE(Condition2)
-    {"conditionalMethod2", TestObjV8Internal::conditionalMethod2MethodCallback, 0},
+    {"conditionalMethod2", TestObjV8Internal::conditionalMethod2MethodCallback, 0, 0},
 #endif
 #if ENABLE(Condition1) || ENABLE(Condition2)
-    {"conditionalMethod3", TestObjV8Internal::conditionalMethod3MethodCallback, 0},
+    {"conditionalMethod3", TestObjV8Internal::conditionalMethod3MethodCallback, 0, 0},
 #endif
-    {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0},
-    {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0},
-    {"getSVGDocument", TestObjV8Internal::getSVGDocumentMethodCallback, 0},
-    {"mutablePointFunction", TestObjV8Internal::mutablePointFunctionMethodCallback, 0},
-    {"immutablePointFunction", TestObjV8Internal::immutablePointFunctionMethodCallback, 0},
-    {"orange", TestObjV8Internal::orangeMethodCallback, 0},
-    {"strictFunction", TestObjV8Internal::strictFunctionMethodCallback, 0},
-    {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0},
-    {"variadicDoubleMethod", TestObjV8Internal::variadicDoubleMethodMethodCallback, 0},
-    {"perWorldMethod", TestObjV8Internal::perWorldMethodMethodCallback, TestObjV8Internal::perWorldMethodMethodCallbackForMainWorld},
-    {"overloadedPerWorldMethod", TestObjV8Internal::overloadedPerWorldMethodMethodCallback, TestObjV8Internal::overloadedPerWorldMethodMethodCallbackForMainWorld},
+    {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
+    {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0, 2},
+    {"getSVGDocument", TestObjV8Internal::getSVGDocumentMethodCallback, 0, 0},
+    {"mutablePointFunction", TestObjV8Internal::mutablePointFunctionMethodCallback, 0, 0},
+    {"immutablePointFunction", TestObjV8Internal::immutablePointFunctionMethodCallback, 0, 0},
+    {"orange", TestObjV8Internal::orangeMethodCallback, 0, 0},
+    {"strictFunction", TestObjV8Internal::strictFunctionMethodCallback, 0, 3},
+    {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0, 2},
+    {"variadicDoubleMethod", TestObjV8Internal::variadicDoubleMethodMethodCallback, 0, 2},
+    {"perWorldMethod", TestObjV8Internal::perWorldMethodMethodCallback, TestObjV8Internal::perWorldMethodMethodCallbackForMainWorld, 0},
+    {"overloadedPerWorldMethod", TestObjV8Internal::overloadedPerWorldMethodMethodCallback, TestObjV8Internal::overloadedPerWorldMethodMethodCallbackForMainWorld, 1},
 };
 
 static const V8DOMConfiguration::BatchedConstant V8TestObjConsts[] = {
@@ -3521,6 +3522,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
         V8TestObjMethods, WTF_ARRAY_LENGTH(V8TestObjMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestObj::constructorCallback);
+    desc->SetLength(1);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.

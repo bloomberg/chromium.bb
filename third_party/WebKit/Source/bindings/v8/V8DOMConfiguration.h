@@ -102,6 +102,7 @@ public:
         const char* const name;
         v8::InvocationCallback callback;
         v8::InvocationCallback callbackForMainWorld;
+        int length;
     };
 
     static void batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const BatchedMethod*, size_t callbackCount, v8::Isolate*, WrapperWorldType);

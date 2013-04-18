@@ -26,6 +26,7 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "RuntimeEnabledFeatures.h"
+#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8Collection.h"
 #include "V8DOMWrapper.h"
@@ -168,10 +169,10 @@ static v8::Handle<v8::Value> dispatchEventMethodCallback(const v8::Arguments& ar
 } // namespace TestEventTargetV8Internal
 
 static const V8DOMConfiguration::BatchedMethod V8TestEventTargetMethods[] = {
-    {"item", TestEventTargetV8Internal::itemMethodCallback, 0},
-    {"namedItem", TestEventTargetV8Internal::namedItemMethodCallback, 0},
-    {"addEventListener", TestEventTargetV8Internal::addEventListenerMethodCallback, 0},
-    {"removeEventListener", TestEventTargetV8Internal::removeEventListenerMethodCallback, 0},
+    {"item", TestEventTargetV8Internal::itemMethodCallback, 0, 1},
+    {"namedItem", TestEventTargetV8Internal::namedItemMethodCallback, 0, 1},
+    {"addEventListener", TestEventTargetV8Internal::addEventListenerMethodCallback, 0, 2},
+    {"removeEventListener", TestEventTargetV8Internal::removeEventListenerMethodCallback, 0, 2},
 };
 
 v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
