@@ -614,13 +614,20 @@ void RenderText::Draw(Canvas* canvas) {
   if (!text().empty())
     DrawSelection(canvas);
 
-  DrawCursor(canvas);
+  if (cursor_enabled() && cursor_visible() && focused())
+    DrawCursor(canvas, selection_model_);
 
   if (!text().empty())
     DrawVisualText(canvas);
 
   if (clip_to_display_rect())
     canvas->Restore();
+}
+
+void RenderText::DrawCursor(Canvas* canvas, const SelectionModel& position) {
+  // Paint cursor. Replace cursor is drawn as rectangle for now.
+  // TODO(msw): Draw a better cursor with a better indication of association.
+  canvas->FillRect(GetCursorBounds(position, true), cursor_color_);
 }
 
 void RenderText::DrawSelectedText(Canvas* canvas) {
@@ -639,6 +646,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   EnsureLayout();
 
   size_t caret_pos = caret.caret_pos();
+  DCHECK(IsCursorablePosition(caret_pos));
   // In overtype mode, ignore the affinity and always indicate that we will
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
@@ -707,6 +715,16 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
 
 void RenderText::SetTextShadows(const ShadowValues& shadows) {
   text_shadows_ = shadows;
+}
+
+// static
+bool RenderText::RangeContainsCaret(const ui::Range& range,
+                                    size_t caret_pos,
+                                    LogicalCursorDirection caret_affinity) {
+  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
+  size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
+      caret_pos - 1 : caret_pos + 1;
+  return range.Contains(ui::Range(caret_pos, adjacent));
 }
 
 RenderText::RenderText()
@@ -883,16 +901,6 @@ void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
   renderer->SetDrawLooper(looper.get());
 }
 
-// static
-bool RenderText::RangeContainsCaret(const ui::Range& range,
-                                    size_t caret_pos,
-                                    LogicalCursorDirection caret_affinity) {
-  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
-  size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
-      caret_pos - 1 : caret_pos + 1;
-  return range.Contains(ui::Range(caret_pos, adjacent));
-}
-
 void RenderText::MoveCursorTo(size_t position, bool select) {
   size_t cursor = std::min(position, text().length());
   if (IsCursorablePosition(cursor))
@@ -964,15 +972,6 @@ void RenderText::DrawSelection(Canvas* canvas) {
   const std::vector<Rect> sel = GetSubstringBounds(selection());
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(*i, color);
-}
-
-void RenderText::DrawCursor(Canvas* canvas) {
-  // Paint cursor. Replace cursor is drawn as rectangle for now.
-  // TODO(msw): Draw a better cursor with a better indication of association.
-  if (cursor_enabled() && cursor_visible() && focused()) {
-    canvas->FillRect(GetUpdatedCursorBounds(),
-        insert_mode_ ? cursor_color_ : selection_background_unfocused_color_);
-  }
 }
 
 }  // namespace gfx

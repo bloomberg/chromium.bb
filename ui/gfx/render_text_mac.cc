@@ -91,7 +91,7 @@ size_t RenderTextMac::LayoutIndexToTextIndex(size_t index) const {
 
 bool RenderTextMac::IsCursorablePosition(size_t position) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
-  return false;
+  return true;
 }
 
 void RenderTextMac::ResetLayout() {

@@ -69,6 +69,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
@@ -293,8 +294,11 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
 
   // The textfield's text and drop cursor visibility.
   bool is_cursor_visible_;
+
   // The drop cursor is a visual cue for where dragged text will be dropped.
   bool is_drop_cursor_visible_;
+  // Position of the drop cursor, if it is visible.
+  gfx::SelectionModel drop_cursor_position_;
 
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;

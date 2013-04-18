@@ -275,6 +275,9 @@ class UI_EXPORT RenderText {
 
   void Draw(Canvas* canvas);
 
+  // Draws a cursor at |position|.
+  void DrawCursor(Canvas* canvas, const SelectionModel& position);
+
   // Draw the selected text without a cursor or selection highlight.
   void DrawSelectedText(Canvas* canvas);
 
@@ -315,6 +318,12 @@ class UI_EXPORT RenderText {
   // specifies the character range for which the corresponding font has been
   // chosen.
   virtual std::vector<FontSpan> GetFontSpansForTesting() = 0;
+
+  // A convenience function to check whether the glyph attached to the caret
+  // is within the given range.
+  static bool RangeContainsCaret(const ui::Range& range,
+                                 size_t caret_pos,
+                                 LogicalCursorDirection caret_affinity);
 
  protected:
   RenderText();
@@ -419,12 +428,6 @@ class UI_EXPORT RenderText {
   // Applies text shadows to |renderer|.
   void ApplyTextShadows(internal::SkiaTextRenderer* renderer);
 
-  // A convenience function to check whether the glyph attached to the caret
-  // is within the given range.
-  static bool RangeContainsCaret(const ui::Range& range,
-                                 size_t caret_pos,
-                                 LogicalCursorDirection caret_affinity);
-
  private:
   friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, DefaultStyle);
@@ -449,9 +452,8 @@ class UI_EXPORT RenderText {
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
 
-  // Draw the selection and cursor.
+  // Draw the selection.
   void DrawSelection(Canvas* canvas);
-  void DrawCursor(Canvas* canvas);
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;

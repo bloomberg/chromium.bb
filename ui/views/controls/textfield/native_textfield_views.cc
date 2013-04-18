@@ -263,7 +263,14 @@ bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
 
 int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
-  bool in_selection = GetRenderText()->IsPointInSelection(event.location());
+
+  const ui::Range& selection = GetRenderText()->selection();
+  drop_cursor_position_ = GetRenderText()->FindCursorPosition(event.location());
+  bool in_selection = !selection.is_empty() &&
+      GetRenderText()->RangeContainsCaret(
+          selection,
+          drop_cursor_position_.caret_pos(),
+          drop_cursor_position_.caret_affinity());
   is_drop_cursor_visible_ = !in_selection;
   // TODO(msw): Pan over text when the user drags to the visible text edge.
   OnCaretBoundsChanged();
@@ -278,8 +285,15 @@ int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 }
 
+void NativeTextfieldViews::OnDragExited() {
+  is_drop_cursor_visible_ = false;
+  SchedulePaint();
+}
+
 int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
+
+  is_drop_cursor_visible_ = false;
 
   TextfieldController* controller = textfield_->GetController();
   if (controller) {
@@ -1081,10 +1095,14 @@ void NativeTextfieldViews::RepaintCursor() {
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   TRACE_EVENT0("views", "NativeTextfieldViews::PaintTextAndCursor");
   canvas->Save();
-  GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
-      (is_cursor_visible_ && !model_->HasSelection()));
+  GetRenderText()->set_cursor_visible(!is_drop_cursor_visible_ &&
+      is_cursor_visible_ && !model_->HasSelection());
   // Draw the text, cursor, and selection.
   GetRenderText()->Draw(canvas);
+
+  // Draw the detached drop cursor that marks where the text will be dropped.
+  if (is_drop_cursor_visible_)
+    GetRenderText()->DrawCursor(canvas, drop_cursor_position_);
 
   // Draw placeholder text if needed.
   if (model_->GetText().empty() &&
