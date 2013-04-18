@@ -25,6 +25,7 @@ extern const char kProxyIdValue[];
 extern const char kPrinterNameValue[];
 extern const char kPrinterDescValue[];
 extern const char kPrinterCapsValue[];
+extern const char kPrinterDisplayNameValue[];
 extern const char kPrinterDefaultsValue[];
 extern const char kPrinterStatusValue[];
 extern const char kPrinterTagValue[];

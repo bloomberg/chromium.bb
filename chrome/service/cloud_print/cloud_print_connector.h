@@ -68,7 +68,7 @@ class CloudPrintConnector
     PENDING_PRINTER_DELETE
   };
 
-  // TODO(jhawkins): This name conflicts with base::PendingTask.
+  // TODO(vitalybuka): Consider delete pending_tasks_ and just use MessageLoop.
   struct PendingTask {
     PendingTaskType type;
     // Optional members, depending on type.

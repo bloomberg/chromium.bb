@@ -14,6 +14,8 @@ namespace {
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
+const char kName[] = "name";
+const char kConnect[] = "connect";
 
 }  // namespace
 
@@ -68,29 +70,39 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
       prefs::kCloudPrintXmppPingTimeout, kDefaultXmppPingTimeoutSecs);
   SetXmppPingTimeoutSec(timeout);
 
-  const base::ListValue* printers = prefs->GetList(
-      prefs::kCloudPrintPrinterBlacklist);
+  const base::ListValue* printers = prefs->GetList(prefs::kCloudPrintPrinters);
   if (printers) {
     for (size_t i = 0; i < printers->GetSize(); ++i) {
-      std::string printer;
-      if (printers->GetString(i, &printer))
-        printer_blacklist_.insert(printer);
+      const base::DictionaryValue* dictionary = NULL;
+      if (printers->GetDictionary(i, &dictionary) && dictionary) {
+        std::string name;
+        dictionary->GetString(kName, &name);
+        if (!name.empty()) {
+          bool connect = connect_new_printers_;
+          dictionary->GetBoolean(kConnect, &connect);
+          if (connect != connect_new_printers_)
+            printers_.insert(name);
+        }
+      }
     }
   }
 }
 
-bool ConnectorSettings::IsPrinterBlacklisted(const std::string& name) const {
-  return printer_blacklist_.find(name) != printer_blacklist_.end();
-};
+bool ConnectorSettings::ShouldConnect(const std::string& printer_name) const {
+  Printers::const_iterator printer = printers_.find(printer_name);
+  if (printer != printers_.end())
+    return !connect_new_printers_;
+  return connect_new_printers_;
+}
 
 void ConnectorSettings::CopyFrom(const ConnectorSettings& source) {
   server_url_ = source.server_url();
   proxy_id_ = source.proxy_id();
   delete_on_enum_fail_ = source.delete_on_enum_fail();
-  connect_new_printers_ = source.connect_new_printers();
+  connect_new_printers_ = source.connect_new_printers_;
   xmpp_ping_enabled_ = source.xmpp_ping_enabled();
   xmpp_ping_timeout_sec_ = source.xmpp_ping_timeout_sec();
-  printer_blacklist_ = source.printer_blacklist_;
+  printers_ = source.printers_;
   if (source.print_system_settings())
     print_system_settings_.reset(source.print_system_settings()->DeepCopy());
 }

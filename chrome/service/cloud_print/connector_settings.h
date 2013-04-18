@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
@@ -40,16 +41,8 @@ class ConnectorSettings {
     return delete_on_enum_fail_;
   }
 
-  bool connect_new_printers() const {
-    return connect_new_printers_;
-  };
-
   bool xmpp_ping_enabled() const {
     return xmpp_ping_enabled_;
-  }
-
-  void set_xmpp_ping_enabled(bool enabled) {
-    xmpp_ping_enabled_ = enabled;
   }
 
   int xmpp_ping_timeout_sec() const {
@@ -60,11 +53,18 @@ class ConnectorSettings {
     return print_system_settings_.get();
   };
 
-  bool IsPrinterBlacklisted(const std::string& name) const;
+  bool ShouldConnect(const std::string& printer_name) const;
+
+ private:
+  friend class ConnectorSettingsTest;
+  FRIEND_TEST_ALL_PREFIXES(ConnectorSettingsTest, SettersTest);
+
+  void set_xmpp_ping_enabled(bool enabled) {
+    xmpp_ping_enabled_ = enabled;
+  }
 
   void SetXmppPingTimeoutSec(int timeout);
 
- private:
   // Cloud Print server url.
   GURL server_url_;
 
@@ -85,8 +85,9 @@ class ConnectorSettings {
   // Indicate timeout between XMPP pings.
   int xmpp_ping_timeout_sec_;
 
-  // List of printers which should not be connected.
-  std::set<std::string> printer_blacklist_;
+  // Black list if connect_new_printers_ is true, or whitelist if false.
+  typedef std::set<std::string> Printers;
+  Printers printers_;
 
   // Print system settings.
   scoped_ptr<base::DictionaryValue> print_system_settings_;

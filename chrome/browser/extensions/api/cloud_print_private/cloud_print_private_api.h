@@ -12,6 +12,15 @@
 
 namespace extensions {
 
+namespace api {
+namespace cloud_print_private {
+
+struct UserSettings;
+
+}  // namespace cloud_print_private
+}  // namespace api
+
+
 // For use only in tests.
 class CloudPrintTestsDelegate {
  public:
@@ -22,8 +31,7 @@ class CloudPrintTestsDelegate {
       const std::string& user_email,
       const std::string& robot_email,
       const std::string& credentials,
-      bool connect_new_printers,
-      const std::vector<std::string>& printer_blacklist) = 0;
+      const api::cloud_print_private::UserSettings& user_settings) = 0;
 
   virtual std::string GetHostName() = 0;
 

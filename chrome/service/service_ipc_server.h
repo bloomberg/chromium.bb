@@ -15,6 +15,12 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_sender.h"
 
+namespace base {
+
+class DictionaryValue;
+
+}  // namespace base
+
 // This class handles IPC commands for the service process.
 class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
  public:
@@ -49,8 +55,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
       const std::string& robot_auth_code,
       const std::string& robot_email,
       const std::string& user_email,
-      bool connect_new_printers,
-      const std::vector<std::string>& printer_blacklist);
+      const base::DictionaryValue& user_settings);
   void OnGetCloudPrintProxyInfo();
   void OnDisableCloudPrintProxy();
 

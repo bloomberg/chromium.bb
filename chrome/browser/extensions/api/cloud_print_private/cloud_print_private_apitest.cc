@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/cloud_print_private.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,37 +56,49 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
 
 #if !defined(OS_CHROMEOS)
 
+using extensions::api::cloud_print_private::UserSettings;
+
 class CloudPrintTestsDelegateMock : public extensions::CloudPrintTestsDelegate {
  public:
   CloudPrintTestsDelegateMock() {}
 
-  MOCK_METHOD5(SetupConnector,
+  MOCK_METHOD4(SetupConnector,
                void(const std::string& user_email,
                     const std::string& robot_email,
                     const std::string& credentials,
-                    bool connect_new_printers,
-                    const std::vector<std::string>& printer_blacklist));
+                    const UserSettings& user_settings));
   MOCK_METHOD0(GetHostName, std::string());
   MOCK_METHOD0(GetPrinters, std::vector<std::string>());
   MOCK_METHOD0(GetClientId, std::string());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPrintTestsDelegateMock);
 };
 
+MATCHER(IsExpectedUserSettings, "") {
+  const UserSettings& settings = arg;
+  return settings.connect_new_printers &&
+         settings.printers.size() == 2 &&
+         settings.printers[0]->name == "printer1" &&
+         !settings.printers[0]->connect &&
+         settings.printers[1]->name == "printer2" &&
+         settings.printers[1]->connect;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest, CloudPrintHosted) {
   CloudPrintTestsDelegateMock cloud_print_mock;
-  std::vector<std::string> printers;
-  printers.push_back("printer1");
-  printers.push_back("printer2");
 
   EXPECT_CALL(cloud_print_mock,
               SetupConnector("foo@gmail.com",
                              "foorobot@googleusercontent.com",
                              "1/23546efa54",
-                             true,
-                             printers));
+                             IsExpectedUserSettings()));
   EXPECT_CALL(cloud_print_mock, GetHostName())
       .WillRepeatedly(Return("TestHostName"));
+
+  std::vector<std::string> printers;
+  printers.push_back("printer1");
+  printers.push_back("printer2");
   EXPECT_CALL(cloud_print_mock, GetPrinters())
       .WillRepeatedly(Return(printers));
 

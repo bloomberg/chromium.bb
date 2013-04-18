@@ -90,11 +90,11 @@ void CloudPrintConnector::GetPrinterIds(std::list<std::string>* printer_ids) {
 
 void CloudPrintConnector::RegisterPrinters(
     const printing::PrinterList& printers) {
-  if (!settings_.connect_new_printers() || !IsRunning())
+  if (!IsRunning())
     return;
   printing::PrinterList::const_iterator it;
   for (it = printers.begin(); it != printers.end(); ++it) {
-    if (!settings_.IsPrinterBlacklisted(it->printer_name))
+    if (settings_.ShouldConnect(it->printer_name))
       AddPendingRegisterTask(*it);
   }
 }
@@ -212,7 +212,8 @@ CloudPrintConnector::HandlePrinterListResponse(
         printer_data->GetString(kNameValue, &printer_name);
         std::string printer_id;
         printer_data->GetString(kIdValue, &printer_id);
-        if (settings_.IsPrinterBlacklisted(printer_name)) {
+
+        if (!settings_.ShouldConnect(printer_name)) {
           VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
               " id: " << printer_id << " as blacklisted";
           AddPendingDeleteTask(printer_id);

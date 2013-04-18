@@ -118,8 +118,7 @@ void CloudPrintProxy::EnableForUserWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    bool connect_new_printers,
-    const std::vector<std::string>& printer_blacklist) {
+    const base::DictionaryValue& user_settings) {
   DCHECK(CalledOnValidThread());
 
   ShutdownBackend();
@@ -130,14 +129,8 @@ void CloudPrintProxy::EnableForUserWithRobot(
     // Keep only proxy id;
     service_prefs_->SetString(prefs::kCloudPrintProxyId, proxy_id);
   }
-  service_prefs_->SetBoolean(prefs::kCloudPrintConnectNewPrinters,
-                             connect_new_printers);
-  if (!printer_blacklist.empty()) {
-    scoped_ptr<base::ListValue> printers(new base::ListValue());
-    printers->AppendStrings(printer_blacklist);
-    service_prefs_->SetValue(prefs::kCloudPrintPrinterBlacklist,
-                             printers.release());
-  }
+  service_prefs_->SetValue(prefs::kCloudPrintUserSettings,
+                           user_settings.DeepCopy());
   service_prefs_->WritePrefs();
 
   if (!CreateBackend())

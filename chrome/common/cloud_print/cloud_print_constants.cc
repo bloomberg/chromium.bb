@@ -16,6 +16,7 @@ const char kProxyIdValue[] = "proxy";
 const char kPrinterNameValue[] = "printer";
 const char kPrinterDescValue[] = "description";
 const char kPrinterCapsValue[] = "capabilities";
+const char kPrinterDisplayNameValue[] = "default_display_name";
 const char kPrinterDefaultsValue[] = "defaults";
 const char kPrinterStatusValue[] = "status";
 const char kPrinterTagValue[] = "tag";

@@ -91,13 +91,12 @@ void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    bool connect_new_printers,
-    const std::vector<std::string>& printer_blacklist) {
+    const base::DictionaryValue& user_preferences) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
     InvokeServiceTask(
         base::Bind(&CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
                    weak_factory_.GetWeakPtr(), robot_auth_code, robot_email,
-                   user_email, connect_new_printers, printer_blacklist));
+                   user_email, base::Owned(user_preferences.DeepCopy())));
   }
 }
 
@@ -185,14 +184,12 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    bool connect_new_printers,
-    const std::vector<std::string>& printer_blacklist) {
+    const base::DictionaryValue* user_preferences) {
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
   process_control->Send(
       new ServiceMsg_EnableCloudPrintProxyWithRobot(
-          robot_auth_code, robot_email, user_email, connect_new_printers,
-          printer_blacklist));
+          robot_auth_code, robot_email, user_email, *user_preferences));
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, user_email);
 }

@@ -696,8 +696,9 @@ extern const char kCloudPrintRobotEmail[];
 extern const char kCloudPrintConnectNewPrinters[];
 extern const char kCloudPrintXmppPingEnabled[];
 extern const char kCloudPrintXmppPingTimeout[];
-extern const char kCloudPrintPrinterBlacklist[];
+extern const char kCloudPrintPrinters[];
 extern const char kCloudPrintSubmitEnabled[];
+extern const char kCloudPrintUserSettings[];
 
 #if !defined(OS_ANDROID)
 extern const char kChromeToMobileDeviceList[];

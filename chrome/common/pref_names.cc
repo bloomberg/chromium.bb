@@ -2104,13 +2104,16 @@ const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
 // A boolean indicating whether we should connect to cloud print new printers.
-const char kCloudPrintConnectNewPrinters[] = "cloud_print.connect_new_printers";
+const char kCloudPrintConnectNewPrinters[] =
+    "cloud_print.user_settings.connect_new_printers";
 // A boolean indicating whether we should ping XMPP connection.
 const char kCloudPrintXmppPingEnabled[] = "cloud_print.xmpp_ping_enabled";
 // An int value indicating the average timeout between xmpp pings.
 const char kCloudPrintXmppPingTimeout[] = "cloud_print.xmpp_ping_timeout_sec";
-// List of printers which should not be connected.
-const char kCloudPrintPrinterBlacklist[] = "cloud_print.printer_blacklist";
+// Dictionary with settings stored by connector setup page.
+const char kCloudPrintUserSettings[] = "cloud_print.user_settings";
+// List of printers settings.
+extern const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
 // A boolean indicating whether submitting jobs to Google Cloud Print is
 // blocked by policy.
 const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
