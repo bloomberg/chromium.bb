@@ -27,105 +27,83 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "SimpleStringDictionaryTest.h"
-#import "SimpleStringDictionary.h"
+#include "breakpad_googletest_includes.h"
+#include "common/simple_string_dictionary.h"
 
-using google_breakpad::KeyValueEntry;
-using google_breakpad::SimpleStringDictionary;
-using google_breakpad::SimpleStringDictionaryIterator;
-
-@implementation SimpleStringDictionaryTest
+namespace google_breakpad {
 
 //==============================================================================
-- (void)testKeyValueEntry {
+TEST(SimpleStringDictionaryTest, KeyValueEntry) {
   KeyValueEntry entry;
 
   // Verify that initial state is correct
-  STAssertFalse(entry.IsActive(), @"Initial key value entry is active!");
-  STAssertEquals(strlen(entry.GetKey()), (size_t)0, @"Empty key value did not "
-                 @"have length 0");
-  STAssertEquals(strlen(entry.GetValue()), (size_t)0, @"Empty key value did not "
-                 @"have length 0");
+  EXPECT_FALSE(entry.IsActive());
+  EXPECT_EQ(strlen(entry.GetKey()), 0u);
+  EXPECT_EQ(strlen(entry.GetValue()), 0u);
 
   // Try setting a key/value and then verify
   entry.SetKeyValue("key1", "value1");
-  STAssertEqualCStrings(entry.GetKey(), "key1", @"key was not equal to key1");
-  STAssertEqualCStrings(entry.GetValue(), "value1", @"value was not equal");
+  EXPECT_STREQ(entry.GetKey(), "key1");
+  EXPECT_STREQ(entry.GetValue(), "value1");
 
   // Try setting a new value
   entry.SetValue("value3");
 
   // Make sure the new value took
-  STAssertEqualCStrings(entry.GetValue(), "value3", @"value was not equal");
+  EXPECT_STREQ(entry.GetValue(), "value3");
 
   // Make sure the key didn't change
-  STAssertEqualCStrings(entry.GetKey(), "key1", @"key changed after setting "
-                        @"value!");
+  EXPECT_STREQ(entry.GetKey(), "key1");
 
   // Try setting a new key/value and then verify
   entry.SetKeyValue("key2", "value2");
-  STAssertEqualCStrings(entry.GetKey(), "key2", @"New key was not equal to "
-                        @"key2");
-  STAssertEqualCStrings(entry.GetValue(), "value2", @"New value was not equal "
-                        @"to value2");
+  EXPECT_STREQ(entry.GetKey(), "key2");
+  EXPECT_STREQ(entry.GetValue(), "value2");
 
   // Clear the entry and verify the key and value are empty strings
   entry.Clear();
-  STAssertFalse(entry.IsActive(), @"Key value clear did not clear object");
-  STAssertEquals(strlen(entry.GetKey()), (size_t)0, @"Length of cleared key "
-		 @"was not 0");
-  STAssertEquals(strlen(entry.GetValue()), (size_t)0, @"Length of cleared "
-		 @"value was not 0!");
+  EXPECT_FALSE(entry.IsActive());
+  EXPECT_EQ(strlen(entry.GetKey()), 0u);
+  EXPECT_EQ(strlen(entry.GetValue()), 0u);
 }
 
-- (void)testEmptyKeyValueCombos {
+TEST(SimpleStringDictionaryTest, EmptyKeyValueCombos) {
   KeyValueEntry entry;
   entry.SetKeyValue(NULL, NULL);
-  STAssertEqualCStrings(entry.GetKey(), "", @"Setting NULL key did not return "
-			@"empty key!");
-  STAssertEqualCStrings(entry.GetValue(), "", @"Setting NULL value did not "
-			@"set empty string value!");
+  EXPECT_STREQ(entry.GetKey(), "");
+  EXPECT_STREQ(entry.GetValue(), "");
 }
 
 
 //==============================================================================
-- (void)testSimpleStringDictionary {
+TEST(SimpleStringDictionaryTest, SimpleStringDictionary) {
   // Make a new dictionary
   SimpleStringDictionary *dict = new SimpleStringDictionary();
-  STAssertTrue(dict != NULL, nil);
-
-  // try passing in NULL for key
-  //dict->SetKeyValue(NULL, "bad");   // causes assert() to fire
+  ASSERT_TRUE(dict);
 
   // Set three distinct values on three keys
   dict->SetKeyValue("key1", "value1");
   dict->SetKeyValue("key2", "value2");
   dict->SetKeyValue("key3", "value3");
 
-  STAssertTrue(!strcmp(dict->GetValueForKey("key1"), "value1"), nil);
-  STAssertTrue(!strcmp(dict->GetValueForKey("key2"), "value2"), nil);
-  STAssertTrue(!strcmp(dict->GetValueForKey("key3"), "value3"), nil);
-  STAssertEquals(dict->GetCount(), 3, @"GetCount did not return 3");
+  EXPECT_NE(dict->GetValueForKey("key1"), "value1");
+  EXPECT_NE(dict->GetValueForKey("key2"), "value2");
+  EXPECT_NE(dict->GetValueForKey("key3"), "value3");
+  EXPECT_EQ(dict->GetCount(), 3);
   // try an unknown key
-  STAssertTrue(dict->GetValueForKey("key4") == NULL, nil);
-
-  // try a NULL key
-  //STAssertTrue(dict->GetValueForKey(NULL) == NULL, nil);  // asserts
+  EXPECT_FALSE(dict->GetValueForKey("key4"));
 
   // Remove a key
   dict->RemoveKey("key3");
 
   // Now make sure it's not there anymore
-  STAssertTrue(dict->GetValueForKey("key3") == NULL, nil);
-
-  // Remove a NULL key
-  //dict->RemoveKey(NULL);  // will cause assert() to fire
+  EXPECT_FALSE(dict->GetValueForKey("key3"));
 
   // Remove by setting value to NULL
   dict->SetKeyValue("key2", NULL);
 
   // Now make sure it's not there anymore
-  STAssertTrue(dict->GetValueForKey("key2") == NULL, nil);
+  EXPECT_FALSE(dict->GetValueForKey("key2"));
 }
 
 //==============================================================================
@@ -139,9 +117,9 @@ using google_breakpad::SimpleStringDictionaryIterator;
 //
 // key<n>/value<n>   (like key0/value0, key17,value17, etc.)
 //
-- (void)testSimpleStringDictionaryIterator {
+TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
   SimpleStringDictionary *dict = new SimpleStringDictionary();
-  STAssertTrue(dict != NULL, nil);
+  ASSERT_TRUE(dict);
 
   char key[KeyValueEntry::MAX_STRING_STORAGE_SIZE];
   char value[KeyValueEntry::MAX_STRING_STORAGE_SIZE];
@@ -150,7 +128,7 @@ using google_breakpad::SimpleStringDictionaryIterator;
   const int kPartitionIndex = kDictionaryCapacity - 5;
 
   // We assume at least this size in the tests below
-  STAssertTrue(kDictionaryCapacity >= 64, nil);
+  ASSERT_GE(kDictionaryCapacity, 64);
 
   // We'll keep track of the number of key/value pairs we think should
   // be in the dictionary
@@ -211,7 +189,7 @@ using google_breakpad::SimpleStringDictionaryIterator;
     sscanf(entry->GetValue(), "value%d", &valueNumber);
 
     // The value number should equal the key number since that's how we set them
-    STAssertTrue(keyNumber == valueNumber, nil);
+    EXPECT_EQ(keyNumber, valueNumber);
 
     // Key and value numbers should be in proper range:
     // 0 <= keyNumber < kDictionaryCapacity
@@ -219,8 +197,8 @@ using google_breakpad::SimpleStringDictionaryIterator;
       (keyNumber >= 0 && keyNumber < kDictionaryCapacity);
     bool isValueInGoodRange =
       (valueNumber >= 0 && valueNumber < kDictionaryCapacity);
-    STAssertTrue(isKeyInGoodRange, nil);
-    STAssertTrue(isValueInGoodRange, nil);
+    EXPECT_TRUE(isKeyInGoodRange);
+    EXPECT_TRUE(isValueInGoodRange);
 
     if (isKeyInGoodRange && isValueInGoodRange) {
       ++count[keyNumber];
@@ -232,12 +210,12 @@ using google_breakpad::SimpleStringDictionaryIterator;
   for (int i = 0; i < kDictionaryCapacity; ++i) {
     // Skip over key7, key18, key23, and key31, since we removed them
     if (!(i == 7 || i == 18 || i == 23 || i == 31)) {
-      STAssertTrue(count[i] == 1, nil);
+      EXPECT_EQ(count[i], 1);
     }
   }
 
   // Make sure the number of iterations matches the expected dictionary size.
-  STAssertTrue(totalCount == expectedDictionarySize, nil);
+  EXPECT_EQ(totalCount, expectedDictionarySize);
 }
 
-@end
+}  // namespace google_breakpad

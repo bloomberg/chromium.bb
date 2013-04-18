@@ -26,14 +26,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//  SimpleStringDictionary.mm
-//  Simple string dictionary that does not allocate memory
-//
 
 #include <assert.h>
 
-#import "SimpleStringDictionary.h"
+#include "common/simple_string_dictionary.h"
 
 namespace google_breakpad {
 
@@ -50,7 +46,7 @@ int SimpleStringDictionary::GetCount() const {
       ++count;
     }
   }
-  
+
   return count;
 }
 
@@ -82,18 +78,18 @@ void SimpleStringDictionary::SetKeyValue(const char *key,
   assert(key);
   if (!key)
     return;
-  
+
   // key must not be empty string
   assert(key[0] != '\0');
   if (key[0] == '\0')
     return;
-  
+
   int free_index = -1;
-  
+
   // check if key already exists
   for (int i = 0; i < MAX_NUM_ENTRIES; ++i) {
     KeyValueEntry &entry = entries_[i];
-    
+
     if (entry.IsActive()) {
       if (!strcmp(entry.GetKey(), key)) {
         entry.SetValue(value);
@@ -106,10 +102,10 @@ void SimpleStringDictionary::SetKeyValue(const char *key,
       }
     }
   }
-  
+
   // check if we've run out of space
   assert(free_index != -1);
-  
+
   // Put new key into an empty slot (if found)
   if (free_index != -1) {
     entries_[free_index].SetKeyValue(key, value);

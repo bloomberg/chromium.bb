@@ -41,7 +41,6 @@
 #import "client/mac/Framework/Breakpad.h"
 #import "client/mac/handler/minidump_generator.h"
 
-#import "common/mac/SimpleStringDictionary.h"
 #import "common/mac/MachIPC.h"
 #include "common/mac/bootstrap_compat.h"
 

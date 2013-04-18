@@ -26,12 +26,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//  SimpleStringDictionary.h
-//
 
-#ifndef SimpleStringDictionary_H__
-#define SimpleStringDictionary_H__
+#ifndef COMMON_SIMPLE_STRING_DICTIONARY_H_
+#define COMMON_SIMPLE_STRING_DICTIONARY_H_
 
 #import <string>
 #import <vector>
@@ -70,37 +67,37 @@ class KeyValueEntry {
   KeyValueEntry() {
     Clear();
   }
-  
+
   KeyValueEntry(const char *key, const char *value) {
     SetKeyValue(key, value);
   }
 
-  void        SetKeyValue(const char *key, const char *value) {
+  void SetKeyValue(const char *key, const char *value) {
     if (!key) {
       key = "";
     }
     if (!value) {
       value = "";
     }
-    
+
     strlcpy(key_, key, sizeof(key_));
     strlcpy(value_, value, sizeof(value_));
-  }  
+  }
 
-  void        SetValue(const char *value) {
+  void SetValue(const char *value) {
     if (!value) {
       value = "";
     }
     strlcpy(value_, value, sizeof(value_));
   };
-  
+
   // Removes the key/value
-  void        Clear() {
+  void Clear() {
     memset(key_, 0, sizeof(key_));
     memset(value_, 0, sizeof(value_));
   }
 
-  bool        IsActive() const { return key_[0] != '\0'; }
+  bool IsActive() const { return key_[0] != '\0'; }
   const char *GetKey() const { return key_; }
   const char *GetValue() const { return value_; }
 
@@ -108,7 +105,7 @@ class KeyValueEntry {
   // of MachMessage (in MachIPC.h)
   // (see also struct KeyValueMessageData in Inspector.h)
   enum {MAX_STRING_STORAGE_SIZE = 256};
-  
+
  private:
   char key_[MAX_STRING_STORAGE_SIZE];
   char value_[MAX_STRING_STORAGE_SIZE];
@@ -126,7 +123,7 @@ class KeyValueEntry {
 class SimpleStringDictionary {
  public:
   SimpleStringDictionary() {};  // entries will all be cleared
-  
+
   // Returns the number of active key/value pairs.  The upper limit for this
   // is MAX_NUM_ENTRIES.
   int GetCount() const;
@@ -135,12 +132,12 @@ class SimpleStringDictionary {
   // If |key| is NULL, an assert will fire or NULL will be returned.  If |key|
   // is not found or is an empty string, NULL is returned.
   const char *GetValueForKey(const char *key) const;
-    
+
   // Stores a string |value| represented by |key|.  If |key| is NULL or an empty
   // string, this will assert (or do nothing).  If |value| is NULL then
   // the |key| will be removed.  An empty string is OK for |value|.
   void SetKeyValue(const char *key, const char *value);
-  
+
   // Given |key|, removes any associated value.  It will assert (or do nothing)
   // if NULL is passed in.  It will do nothing if |key| is not found.
   void RemoveKey(const char *key);
@@ -155,7 +152,7 @@ class SimpleStringDictionary {
 
   const KeyValueEntry *GetEntry(int i) const;
 
-  KeyValueEntry             entries_[MAX_NUM_ENTRIES];
+  KeyValueEntry entries_[MAX_NUM_ENTRIES];
 };
 
 //==============================================================================
@@ -169,7 +166,7 @@ class SimpleStringDictionaryIterator {
   void Start() {
     i_ = 0;
   }
-  
+
   // like the nextObject method of NSEnumerator (in Cocoa)
   // returns NULL when there are no more entries
   //
@@ -184,12 +181,12 @@ class SimpleStringDictionaryIterator {
 
     return NULL;  // reached end of array
   }
-  
+
  private:
-  const SimpleStringDictionary&   dict_;
-  int                             i_;
+  const SimpleStringDictionary& dict_;
+  int i_;
 };
 
 }  // namespace google_breakpad
 
-#endif  // SimpleStringDictionary_H__
+#endif  // COMMON_SIMPLE_STRING_DICTIONARY_H_

@@ -52,7 +52,7 @@
 #import "client/mac/Framework/OnDemandServer.h"
 #import "client/mac/handler/protected_memory_allocator.h"
 #import "common/mac/MachIPC.h"
-#import "common/mac/SimpleStringDictionary.h"
+#import "common/simple_string_dictionary.h"
 
 #ifndef __EXCEPTIONS
 // This file uses C++ try/catch (but shouldn't). Duplicate the macros from

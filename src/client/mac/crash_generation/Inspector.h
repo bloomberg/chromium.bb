@@ -30,7 +30,7 @@
 // Interface file between the Breakpad.framework and
 // the Inspector process.
 
-#import "common/mac/SimpleStringDictionary.h"
+#include "common/simple_string_dictionary.h"
 
 #import <Foundation/Foundation.h>
 #include <mach/mach.h>

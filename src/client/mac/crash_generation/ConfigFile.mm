@@ -36,7 +36,6 @@
 #include <sys/time.h>
 
 #import "client/apple/Framework/BreakpadDefines.h"
-#import "common/mac/SimpleStringDictionary.h"
 #import "GTMDefines.h"
 
 #define VERBOSE 0
