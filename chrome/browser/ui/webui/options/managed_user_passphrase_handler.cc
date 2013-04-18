@@ -39,10 +39,6 @@ void ManagedUserPassphraseHandler::RegisterMessages() {
       "setElevated",
       base::Bind(&ManagedUserPassphraseHandler::SetElevated,
                  weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "resetPassphrase",
-      base::Bind(&ManagedUserPassphraseHandler::ResetPassphrase,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ManagedUserPassphraseHandler::GetLocalizedValues(
@@ -91,29 +87,29 @@ void ManagedUserPassphraseHandler::SetElevated(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManagedUserPassphraseHandler::ResetPassphrase(
-    const base::ListValue* args) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  pref_service->SetString(prefs::kManagedModeLocalPassphrase, std::string());
-  pref_service->SetString(prefs::kManagedModeLocalSalt, std::string());
-}
-
 void ManagedUserPassphraseHandler::SetLocalPassphrase(
     const base::ListValue* args) {
   // Only change the passphrase if the custodian is authenticated.
   if (!ManagedModeNavigationObserver::FromWebContents(
-      web_ui()->GetWebContents())->is_elevated())
+      web_ui()->GetWebContents())->is_elevated()) {
     return;
+  }
 
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   std::string passphrase;
   args->GetString(0, &passphrase);
+  if (passphrase.empty()) {
+    pref_service->SetString(prefs::kManagedModeLocalPassphrase, std::string());
+    pref_service->SetString(prefs::kManagedModeLocalSalt, std::string());
+    return;
+  }
+
   ManagedUserPassphrase passphrase_key_generator((std::string()));
   std::string encoded_passphrase_hash;
   bool success = passphrase_key_generator.GenerateHashFromPassphrase(
       passphrase,
       &encoded_passphrase_hash);
   if (success) {
-    PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
     pref_service->SetString(prefs::kManagedModeLocalPassphrase,
                             encoded_passphrase_hash);
     pref_service->SetString(prefs::kManagedModeLocalSalt,

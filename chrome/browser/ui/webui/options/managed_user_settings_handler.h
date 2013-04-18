@@ -22,7 +22,6 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
-  virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
@@ -32,9 +31,6 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
 
   // Records metric that the settings page was opened. Called from WebUI.
   void HandlePageOpened(const base::ListValue* args);
-
-  // Called when the local passphrase changes.
-  void OnLocalPassphraseChanged();
 
   // Decides whether a given pattern is valid, or if it should be
   // rejected. Called while the user is editing an exception pattern.

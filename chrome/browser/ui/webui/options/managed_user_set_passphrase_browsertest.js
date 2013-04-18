@@ -87,7 +87,7 @@ TEST_F('ManagedUserSetPassphraseTest', 'EmptyPassphrase',
       this.setPassphrase();
       this.enterPassphrase('');
       this.confirmPassphrase('');
-      this.mockHandler.expects(never()).setPassphrase(ANYTHING);
+      this.mockHandler.expects(once()).setPassphrase(['']);
       this.savePassphrase();
     });
 

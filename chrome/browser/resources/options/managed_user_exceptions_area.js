@@ -21,7 +21,6 @@ cr.define('options.managedUserSettings', function() {
    */
   function ExceptionsListItem(exception) {
     var el = cr.doc.createElement('div');
-    el.contentType = 'manual-exceptions';
     el.dataItem = exception;
     el.__proto__ = ExceptionsListItem.prototype;
     el.decorate();
@@ -441,7 +440,7 @@ cr.define('options.managedUserSettings', function() {
    */
   function ManagedUserSettingsExceptionsArea() {
     OptionsPage.call(this, 'manualExceptions',
-                     loadTimeData.getString('managedUserSettingsPageTabTitle'),
+                     loadTimeData.getString('manualExceptionsTabTitle'),
                      'managed-user-exceptions-area');
   }
 
@@ -464,8 +463,7 @@ cr.define('options.managedUserSettings', function() {
 
     /** @override */
     canShowPage: function() {
-      return ManagedUserSettings.getInstance().authenticationState ==
-          options.ManagedUserAuthentication.AUTHENTICATED;
+      return ManagedUserSettings.getInstance().isAuthenticated;
     },
   };
 

@@ -42,14 +42,6 @@ class ManagedUserPassphraseHandler : public OptionsPageUIHandler {
   // the authentication was successful.
   void PassphraseDialogCallback(bool success);
 
-  // Checks if there is already a passphrase specified. It expects as parameter
-  // the name of the Javascript function which should be called with the results
-  // of this check.
-  void IsPassphraseSet(const base::ListValue* args);
-
-  // Resets the passphrase to the empty string.
-  void ResetPassphrase(const base::ListValue* args);
-
   // The name of the Javascript function which should be called after the
   // passphrase has been checked.
   std::string callback_function_name_;

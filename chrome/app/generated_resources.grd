@@ -8175,13 +8175,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Require a passphrase to modify the settings for this managed user
       </message>
       <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles.">
-        Set passphrase
+        Change passphrase...
       </message>
       <message name="IDS_SET_PASSPHRASE_TITLE" desc="A title for the Managed User Set Passphrase dialog.">
         Set a passphrase
       </message>
       <message name="IDS_SET_PASSPHRASE_INSTRUCTIONS" desc="Text describing the set passphrase dialog.">
-        You'll have to enter the passphrase to change this user's settings later
+        Enter a passphrase to change this user's settings later.
       </message>
       <message name="IDS_ENTER_PASSPHRASE_LABEL" desc="A label for entering a passphrase to save.">
         Enter a passphrase:

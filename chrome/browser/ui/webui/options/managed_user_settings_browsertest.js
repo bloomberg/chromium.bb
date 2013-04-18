@@ -33,14 +33,11 @@ ManagedUserSettingsTest.prototype = {
 
 };
 
-// Verify that the settings page is locked when a passphrase is specified.
+// Verify that the settings page is locked and can be unlocked.
 TEST_F('ManagedUserSettingsTest', 'PageLocked',
     function() {
-      // Check that the user is not authenticated when a passphrase is set.
-      ManagedUserSettings.passphraseChanged(true);
       var instance = ManagedUserSettings.getInstance();
-      expectEquals(instance.authenticationState,
-                   options.ManagedUserAuthentication.UNAUTHENTICATED);
+      expectFalse(instance.isAuthenticated);
       // Now verify that the unlock button can be clicked.
       var unlockButton =
           options.ManagedUserSettingsForTesting.getUnlockButton();
@@ -48,19 +45,6 @@ TEST_F('ManagedUserSettingsTest', 'PageLocked',
       this.mockHandler.expects(once()).setElevated([true]);
       unlockButton.click();
       // When closing the page, we expect the elevation to be reset.
-      this.mockHandler.expects(once()).setElevated([false]);
-      OptionsPage.closeOverlay();
-    });
-
-// Verify that the settings page is also locked when no passphrase is specified.
-TEST_F('ManagedUserSettingsTest', 'PageLockedNoPassphrase',
-    function() {
-      var instance = ManagedUserSettings.getInstance();
-      expectEquals(instance.authenticationState,
-                   options.ManagedUserAuthentication.UNAUTHENTICATED);
-      var unlockButton =
-          options.ManagedUserSettingsForTesting.getUnlockButton();
-      expectFalse(unlockButton.disabled);
       this.mockHandler.expects(once()).setElevated([false]);
       OptionsPage.closeOverlay();
     });

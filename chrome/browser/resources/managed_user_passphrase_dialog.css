@@ -4,6 +4,7 @@
 
 #managed-mode-passphrase-page {
   min-width: 350px;
+  padding: 5px 15px;
 }
 
 #managed-user-logo {
@@ -12,10 +13,12 @@
   width: 65px;
 }
 
-#instructions,
-#entry,
-#incorrect-passphrase-warning {
-  padding: 5px 15px;
+#entry {
+  margin: 15px 0;
+}
+
+#passphrase-entry {
+  width: 100%;
 }
 
 #buttons {
@@ -24,10 +27,6 @@
 
 html[dir=rtl] #buttons {
   float: left;
-}
-
-#buttons {
-  padding: 15px 15px;
 }
 
 #incorrect-passphrase-warning {

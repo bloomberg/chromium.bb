@@ -6,7 +6,6 @@ if (loadTimeData.getBoolean('managedUsersEnabled')) {
 
 cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
-  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   //////////////////////////////////////////////////////////////////////////////
   // ManagedUserSettings class:
@@ -17,13 +16,11 @@ cr.define('options', function() {
    * @class
    */
   function ManagedUserSettings() {
-    SettingsDialog.call(
+    OptionsPage.call(
         this,
         'manageduser',
         loadTimeData.getString('managedUserSettingsPageTabTitle'),
-        'managed-user-settings-page',
-        $('managed-user-settings-confirm'),
-        $('managed-user-settings-cancel'));
+        'managed-user-settings-page');
   }
 
   cr.addSingletonGetter(ManagedUserSettings);
@@ -41,32 +38,22 @@ cr.define('options', function() {
   };
 
   ManagedUserSettings.prototype = {
-    // Inherit from SettingsDialog.
-    __proto__: SettingsDialog.prototype,
+    // Inherit from OptionsPage.
+    __proto__: OptionsPage.prototype,
 
     // The current authentication state of the manager of the managed account.
-    authenticationState: ManagedUserAuthentication.UNAUTHENTICATED,
+    authenticationState_: ManagedUserAuthentication.UNAUTHENTICATED,
 
-    // True if the local passphrase of the manager of the managed account is
-    // set. If it is not set, no authentication is required.
-    isPassphraseSet: false,
+    get isAuthenticated() {
+      return !cr.isChromeOS &&
+             (this.authenticationState_ ==
+              ManagedUserAuthentication.AUTHENTICATED);
+    },
 
-    /**
-     * Initialize the page.
-     * @override
-     */
+    /** @override */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      SettingsDialog.prototype.initializePage.call(this);
-
       $('manage-exceptions-button').onclick = function(event) {
-        var page = ManagedUserSettingsExceptionsArea.getInstance();
-        var url = page.name;
-
         OptionsPage.navigateToPage('manualExceptions');
-        uber.invokeMethodOnParent('setPath', {path: url});
-        uber.invokeMethodOnParent('setTitle',
-            {title: loadTimeData.getString('manualExceptionsTabTitle')});
       };
 
       $('get-content-packs-button').onclick = function(event) {
@@ -78,58 +65,57 @@ cr.define('options', function() {
           OptionsPage.navigateToPage('setPassphrase');
         };
 
-        $('use-passphrase-checkbox').onclick = function() {
-          $('set-passphrase').disabled = !$('use-passphrase-checkbox').checked;
-        };
-
         var self = this;
         $('lock-settings').onclick = function() {
           chrome.send('setElevated', [false]);
           // The managed user is currently authenticated, so don't wait for a
           // callback to set the new authentication state since a reset to not
           // elevated is done without showing the passphrase dialog.
-          self.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
-          self.enableControls(false);
+        self.authenticationState_ = ManagedUserAuthentication.UNAUTHENTICATED;
+        self.updateControls_();
         };
 
         $('unlock-settings').onclick = function() {
-          if (self.authenticationState == ManagedUserAuthentication.CHECKING)
+        if (self.authenticationState_ == ManagedUserAuthentication.CHECKING)
             return;
-          self.authenticationState = ManagedUserAuthentication.CHECKING;
+
+        self.authenticationState_ = ManagedUserAuthentication.CHECKING;
           chrome.send('setElevated', [true]);
         };
       }
+
+      $('managed-user-settings-done').onclick = function() {
+        OptionsPage.closeOverlay();
+      };
     },
 
-    /** @override */
-    handleConfirm: function() {
-      if (!cr.isChromeOS) {
-        if ($('use-passphrase-checkbox').checked && !this.isPassphraseSet) {
-          OptionsPage.navigateToPage('setPassphrase');
-          return;
-        }
-        if (!$('use-passphrase-checkbox').checked)
-          chrome.send('resetPassphrase');
-      }
-      SettingsDialog.prototype.handleConfirm.call(this);
-    },
-
-    /** Update the page according to the current authentication state */
+    /**
+     * Update the page according to the current authentication state.
+     * @override
+     */
     didShowPage: function() {
-      var isAuthenticated =
-          this.authenticationState == ManagedUserAuthentication.AUTHENTICATED;
-      this.enableControls(isAuthenticated);
+      this.updateControls_();
       chrome.send('settingsPageOpened');
+    },
+
+    /**
+     * Reset the authentication to UNAUTHENTICATED when the managed user
+     * settings dialog is closed.
+     * @override
+     */
+    didClosePage: function() {
+      // Reset the authentication of the custodian.
+      this.authenticationState_ = ManagedUserAuthentication.UNAUTHENTICATED;
+      chrome.send('setElevated', [false]);
+      chrome.send('confirmManagedUserSettings');
     },
 
     // Enables or disables all controls based on the authentication state of
     // the managed user. If |enable| is true, the controls will be enabled.
-    enableControls: function(enable) {
-      if (!cr.isChromeOS) {
-        $('set-passphrase').disabled =
-            !enable || !$('use-passphrase-checkbox').checked;
-        $('use-passphrase-checkbox').disabled = !enable;
-      }
+    updateControls_: function() {
+      var enable = this.isAuthenticated;
+
+      $('set-passphrase').disabled = !enable;
       // TODO(sergiu): make $('get-content-packs-button') behave the same as
       // the other controls once the button actually does something.
       $('manage-exceptions-button').disabled = !enable;
@@ -138,51 +124,30 @@ cr.define('options', function() {
       $('contentpacks-block').setDisabled('notManagedUserModifiable', !enable);
       $('safe-search-checkbox').setDisabled('notManagedUserModifiable',
                                             !enable);
-      $('allow-signin-checkbox').setDisabled('notManagedUserModifiable',
-                                             !enable);
-      // TODO(akuegel): Add disable-history-deletion-checkbox once this feature
-      // is implemented.
+
       if (enable)
         $('managed-user-settings-page').classList.remove('locked');
       else
         $('managed-user-settings-page').classList.add('locked');
     },
 
-    // Is called when the passphrase dialog is closed. |success| is true
-    // if the authentication was successful.
-    isAuthenticated_: function(success) {
+    // Called when the passphrase dialog is closed. |success| is true iff the
+    // authentication was successful.
+    setAuthenticated_: function(success) {
       if (success) {
-        this.authenticationState = ManagedUserAuthentication.AUTHENTICATED;
-        this.enableControls(true);
+        this.authenticationState_ = ManagedUserAuthentication.AUTHENTICATED;
+        this.updateControls_();
       } else {
-        this.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
+        this.authenticationState_ = ManagedUserAuthentication.UNAUTHENTICATED;
       }
     },
 
-    // Reset the authentication to UNAUTHENTICATED when the managed user
-    // settings dialog is closed.
-    didClosePage: function() {
-      // Reset the authentication of the custodian.
-      this.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
-      chrome.send('setElevated', [false]);
-      chrome.send('confirmManagedUserSettings');
-    },
   };
 
   // Sets the authentication state of the managed user. |success| is true if
   // the authentication was successful.
-  ManagedUserSettings.isAuthenticated = function(success) {
-    ManagedUserSettings.getInstance().isAuthenticated_(success);
-  };
-
-  // Sets the use passphrase checkbox according to if a passphrase is specified
-  // or not. |hasPassphrase| is true if the local passphrase is non-empty.
-  ManagedUserSettings.passphraseChanged = function(hasPassphrase) {
-    var instance = ManagedUserSettings.getInstance();
-    if (instance.authenticationState == ManagedUserAuthentication.AUTHENTICATED)
-      $('set-passphrase').disabled = !hasPassphrase;
-    $('use-passphrase-checkbox').checked = hasPassphrase;
-    ManagedUserSettings.getInstance().isPassphraseSet = hasPassphrase;
+  ManagedUserSettings.setAuthenticated = function(success) {
+    ManagedUserSettings.getInstance().setAuthenticated_(success);
   };
 
   var ManagedUserSettingsForTesting = {
@@ -220,7 +185,6 @@ cr.define('options', function() {
   return {
     ManagedUserSettings: ManagedUserSettings,
     ManagedUserSettingsForTesting: ManagedUserSettingsForTesting,
-    ManagedUserAuthentication: ManagedUserAuthentication
   };
 });
 
