@@ -799,6 +799,20 @@
    obj:*/libtotem-cone-plugin.so
    fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
 }
+{
+   glib/gthread malloc leak in component build
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:g_thread_proxy
+}
+{
+   glib/gthread calloc leak in component build
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:g_thread_proxy
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
