@@ -82,29 +82,21 @@ struct editor {
 };
 
 static const char *
-utf8_start_char(const char *text, const char *p)
-{
-	for (; p >= text; --p) {
-		if ((*p & 0xc0) != 0x80)
-			return p;
-	}
-	return NULL;
-}
-
-static const char *
-utf8_prev_char(const char *text, const char *p)
-{
-	if (p > text)
-		return utf8_start_char(text, --p);
-	return NULL;
-}
-
-static const char *
 utf8_end_char(const char *p)
 {
 	while ((*p & 0xc0) == 0x80)
 		p++;
 	return p;
+}
+
+static const char *
+utf8_prev_char(const char *s, const char *p)
+{
+	for (--p; p >= s; --p) {
+		if ((*p & 0xc0) != 0x80)
+			return p;
+	}
+	return NULL;
 }
 
 static const char *
@@ -211,7 +203,7 @@ text_input_delete_surrounding_text(void *data,
 	entry->pending_commit.delete_index = entry->cursor + index;
 	entry->pending_commit.delete_length = length;
 
-	text_length = utf8_characters(entry->text);
+	text_length = strlen(entry->text);
 
 	if (entry->pending_commit.delete_index > text_length) {
 		fprintf(stderr, "Invalid cursor index %d\n", index);
@@ -339,10 +331,11 @@ text_input_keysym(void *data,
 
 		if (new_char != NULL) {
 			entry->cursor = new_char - entry->text;
-			if (!(modifiers & entry->keysym.shift_mask))
-				entry->anchor = entry->cursor;
-			widget_schedule_redraw(entry->widget);
 		}
+
+		if (!(modifiers & entry->keysym.shift_mask))
+			entry->anchor = entry->cursor;
+		widget_schedule_redraw(entry->widget);
 
 		return;
 	}
@@ -356,11 +349,11 @@ text_input_keysym(void *data,
 		text_entry_commit_and_reset(entry);
 
 		start = utf8_prev_char(entry->text, entry->text + entry->cursor);
+		end = utf8_next_char(start);
 
 		if (start == NULL)
 			return;
 
-		end = utf8_end_char(entry->text + entry->cursor);
 		text_entry_delete_text(entry,
 				       start - entry->text,
 				       end - start);
@@ -593,8 +586,8 @@ text_entry_update_layout(struct text_entry *entry)
 	char *text;
 	PangoAttrList *attr_list;
 
-	assert((entry->cursor) <= strlen(entry->text) +
-	       (entry->preedit.text ? strlen(entry->preedit.text) : 0));
+	assert(entry->cursor <= (strlen(entry->text) +
+	       (entry->preedit.text ? strlen(entry->preedit.text) : 0)));
 
 	if (entry->preedit.text) {
 		text = malloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
@@ -692,6 +685,7 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text,
 		entry->anchor = entry->cursor + strlen(text) + anchor;
 	else
 		entry->anchor = entry->cursor + 1 + anchor;
+
 	if (cursor >= 0)
 		entry->cursor += strlen(text) + cursor;
 	else
@@ -764,6 +758,7 @@ text_entry_try_invoke_preedit_action(struct text_entry *entry,
 {
 	int index, trailing;
 	uint32_t cursor;
+	const char *text;
 
 	if (!entry->preedit.text)
 		return 0;
@@ -771,7 +766,9 @@ text_entry_try_invoke_preedit_action(struct text_entry *entry,
 	pango_layout_xy_to_index(entry->layout,
 				 x * PANGO_SCALE, y * PANGO_SCALE,
 				 &index, &trailing);
-	cursor = index + trailing;
+
+	text = pango_layout_get_text(entry->layout);
+	cursor = g_utf8_offset_to_pointer(text + index, trailing) - text;
 
 	if (cursor < entry->cursor ||
 	    cursor > entry->cursor + strlen(entry->preedit.text)) {
@@ -791,13 +788,16 @@ text_entry_set_cursor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
 	int index, trailing;
+	const char *text;
 
 	text_entry_commit_and_reset(entry);
 
 	pango_layout_xy_to_index(entry->layout,
 				 x * PANGO_SCALE, y * PANGO_SCALE,
 				 &index, &trailing);
-	entry->cursor = index + trailing;
+
+	text = pango_layout_get_text(entry->layout);
+	entry->cursor = g_utf8_offset_to_pointer(text + index, trailing) - text;
 
 	text_entry_update_layout(entry);
 
@@ -811,11 +811,14 @@ text_entry_set_anchor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
 	int index, trailing;
+	const char *text;
 
 	pango_layout_xy_to_index(entry->layout,
 				 x * PANGO_SCALE, y * PANGO_SCALE,
 				 &index, &trailing);
-	entry->anchor = index + trailing;
+
+	text = pango_layout_get_text(entry->layout);
+	entry->anchor = g_utf8_offset_to_pointer(text + index, trailing) - text;
 
 	text_entry_update_layout(entry);
 
@@ -828,13 +831,17 @@ static void
 text_entry_delete_text(struct text_entry *entry,
 		       uint32_t index, uint32_t length)
 {
+	uint32_t l;
+
 	if (entry->cursor > index)
 		entry->cursor -= length;
 
 	entry->anchor = entry->cursor;
 
-	entry->text[index] = '\0';
-	strcat(entry->text, entry->text + index + length);
+	l = strlen(entry->text + index + length);
+	memmove(entry->text + index,
+		entry->text + index + length,
+		l + 1);
 
 	text_entry_update_layout(entry);
 
@@ -873,6 +880,7 @@ text_entry_get_cursor_rectangle(struct text_entry *entry, struct rectangle *rect
 		rectangle->height = 0;
 		return;
 	}
+
 
 	pango_layout_get_extents(entry->layout, &extents, NULL);
 	pango_layout_get_cursor_pos(entry->layout,
@@ -1053,7 +1061,7 @@ key_handler(struct window *window,
 {
 	struct editor *editor = data;
 	struct text_entry *entry;
-	const char *start, *end, *new_char;
+	const char *new_char;
 	char text[16];
 
 	if (!editor->active_entry)
@@ -1068,32 +1076,20 @@ key_handler(struct window *window,
 		case XKB_KEY_BackSpace:
 			text_entry_commit_and_reset(entry);
 
-			start = utf8_prev_char(entry->text, entry->text + entry->cursor);
-
-			if (start == NULL)
-				break;
-
-			end = utf8_end_char(entry->text + entry->cursor);
-			text_entry_delete_text(entry,
-					       start - entry->text,
-					       end - start);
+			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
+			if (new_char != NULL)
+				text_entry_delete_text(entry,
+						       new_char - entry->text,
+						       (entry->text + entry->cursor) - new_char);
 			break;
 		case XKB_KEY_Delete:
 			text_entry_commit_and_reset(entry);
 
-			start = utf8_start_char(entry->text, entry->text + entry->cursor);
-
-			if (start == NULL)
-				break;
-
-			end = utf8_next_char(start);
-
-			if (end == NULL)
-				break;
-
-			text_entry_delete_text(entry,
-					       start - entry->text,
-					       end - start);
+			new_char = utf8_next_char(entry->text + entry->cursor);
+			if (new_char != NULL)
+				text_entry_delete_text(entry,
+						       entry->cursor,
+						       new_char - (entry->text + entry->cursor));
 			break;
 		case XKB_KEY_Left:
 			text_entry_commit_and_reset(entry);
