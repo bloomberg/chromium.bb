@@ -25,14 +25,6 @@
 using base::TimeTicks;
 using history::HistoryDatabase;
 
-namespace {
-
-// Number of days to search for full text results. The longer this is, the more
-// time it will take.
-const int kDaysToSearch = 30;
-
-}  // namespace
-
 HistoryContentsProvider::MatchReference::MatchReference(
     const history::URLResult* result,
     int relevance)
@@ -135,11 +127,28 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
     if (history) {
       done_ = false;
 
+      // Number of days to search for full text results. The longer
+      // this is, the more time it will take.
+      const int kDaysToSearch = 30;
+
+      // The maximum number of characters used in a search for full
+      // text results.  This was chosen arbitrarily because omnibox
+      // results that come back too late (after tens of seconds)
+      // aren't useful to the user so it's not worth spending CPU time
+      // on them.  Furthermore, if a URL matches the first 2k of
+      // characters the user typed (more likely pasted) into the
+      // omnibox, it's likely it matches the rest; there's strongly
+      // diminished returns for the ability to add additional search
+      // terms.
+      const size_t kMaxCharactersToConsider = 2000u;
+
       history::QueryOptions options;
       options.body_only = body_only_;
       options.SetRecentDayRange(kDaysToSearch);
       options.max_count = kMaxMatches;
-      history->QueryHistory(input.text(), options,
+      history->QueryHistory(
+          input.text().substr(0, kMaxCharactersToConsider),
+          options,
           &request_consumer_,
           base::Bind(&HistoryContentsProvider::QueryComplete,
                      base::Unretained(this)));
