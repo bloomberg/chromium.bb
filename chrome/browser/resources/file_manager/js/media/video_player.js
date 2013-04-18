@@ -51,7 +51,7 @@ function FullWindowVideoControls(
   VideoControls.call(this,
       controlsContainer,
       onPlaybackError,
-      this.toggleFullscreen_.bind(this),
+      this.toggleFullScreen_.bind(this),
       videoContainer);
 
   this.playerContainer_ = playerContainer;
@@ -109,7 +109,7 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
  * Toggles the full screen mode.
  * @private
  */
-FullWindowVideoControls.prototype.toggleFullscreen_ = function() {
+FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
   util.toggleFullScreen(this.playerContainer_.ownerDocument,
                         !util.isFullScreen());
 };

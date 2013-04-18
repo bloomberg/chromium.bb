@@ -1052,7 +1052,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   this.fullscreenBeforeSlideshow_ = util.isFullScreen();
   if (!this.fullscreenBeforeSlideshow_) {
     // Wait until the zoom animation from the mosaic mode is done.
-    setTimeout(this.toggleFullscreen_.bind(this),
+    setTimeout(this.toggleFullScreen_.bind(this),
                ImageView.ZOOM_ANIMATION_DURATION);
     opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
         SlideMode.FULLSCREEN_TOGGLE_DELAY;
