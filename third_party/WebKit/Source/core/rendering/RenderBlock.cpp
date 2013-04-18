@@ -153,8 +153,9 @@ public:
         bool horizontalLayoutOverflowChanged = hasHorizontalLayoutOverflow != m_hadHorizontalLayoutOverflow;
         bool verticalLayoutOverflowChanged = hasVerticalLayoutOverflow != m_hadVerticalLayoutOverflow;
         if (horizontalLayoutOverflowChanged || verticalLayoutOverflowChanged) {
-            if (FrameView* frameView = m_block->document()->view())
-                frameView->scheduleEvent(OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow), m_block->node());
+            RefPtr<Event> overflowChangedEvent = OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow);
+            overflowChangedEvent->setTarget(m_block->node());
+            m_block->document()->eventQueue()->enqueueEvent(overflowChangedEvent);
         }
     }
 

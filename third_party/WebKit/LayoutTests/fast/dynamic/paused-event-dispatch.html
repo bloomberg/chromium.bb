@@ -3,7 +3,9 @@
     function overflowChanged()
     {
         document.getElementById("result").innerText = "PASS";
-    }
+        if (window.testRunner)
+            testRunner.notifyDone();
+   }
 
     function test()
     {
@@ -28,8 +30,6 @@
     function finish()
     {
         document.getElementById("tallBox").style.height = "50px";
-        if (window.testRunner)
-            testRunner.notifyDone();
     }
 </script>
 <p>
