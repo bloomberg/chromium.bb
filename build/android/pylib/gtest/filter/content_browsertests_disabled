@@ -100,3 +100,15 @@ RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
 # http://crbug.com/232997
 IndexedDBLayoutTest.BasicTests
 IndexedDBLayoutTest.IndexTests
+
+# http://crbug.com/233118
+FileSystemLayoutTest.DirectoryEntryToUri
+FileSystemLayoutTest.FileWriterAbortContinue
+FileSystemLayoutTest.ReadDirectory
+FileSystemLayoutTest.WorkersFileWriterSyncTruncateExtend
+FileSystemLayoutTest.WorkersFileWriterGcBlob
+IndexedDBBrowserTest.CallbackAccounting
+IndexedDBBrowserTest.TransactionGetTest
+IndexedDBLayoutTest.IndexTests
+IndexedDBLayoutTest.RegressionTests
+IndexedDBLayoutTest.TransactionTests
