@@ -1048,7 +1048,7 @@ error::Error GLES2DecoderImpl::HandleGetError(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = GetGLError();
+  *result_dst = GetErrorState()->GetGLError();
   return error::kNoError;
 }
 

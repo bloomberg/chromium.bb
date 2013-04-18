@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -63,7 +64,7 @@ class TextureManagerTest : public testing::Test {
         kMaxTextureSize, kMaxCubeMapTextureSize));
     TestHelper::SetupTextureManagerInitExpectations(gl_.get(), "");
     manager_->Initialize();
-    decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>());
+    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
   }
 
   virtual void TearDown() {
@@ -76,7 +77,7 @@ class TextureManagerTest : public testing::Test {
   void SetParameter(
       Texture* texture, GLenum pname, GLint value, GLenum error) {
     TestHelper::SetTexParameterWithExpectations(
-        gl_.get(), decoder_.get(), manager_.get(),
+        gl_.get(), error_state_.get(), manager_.get(),
         texture, pname, value, error);
   }
 
@@ -84,7 +85,7 @@ class TextureManagerTest : public testing::Test {
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
-  scoped_ptr<MockGLES2Decoder> decoder_;
+  scoped_ptr<MockErrorState> error_state_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -172,7 +173,7 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
   Texture* texture = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(texture != NULL);
   TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), decoder_.get(), &manager, texture,
+      gl_.get(), error_state_.get(), &manager, texture,
       GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE,GL_NO_ERROR);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_ATTACHMENT_ANGLE),
             texture->usage());
@@ -382,6 +383,7 @@ class TextureTestBase : public testing::Test {
         memory_tracker, feature_info_.get(),
         kMaxTextureSize, kMaxCubeMapTextureSize));
     decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>());
+    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     manager_->CreateTexture(kClient1Id, kService1Id);
     texture_ = manager_->GetTexture(kClient1Id);
     ASSERT_TRUE(texture_.get() != NULL);
@@ -410,15 +412,16 @@ class TextureTestBase : public testing::Test {
   void SetParameter(
       Texture* texture, GLenum pname, GLint value, GLenum error) {
     TestHelper::SetTexParameterWithExpectations(
-        gl_.get(), decoder_.get(), manager_.get(),
+        gl_.get(), error_state_.get(), manager_.get(),
         texture, pname, value, error);
   }
 
+  scoped_ptr<MockGLES2Decoder> decoder_;
+  scoped_ptr<MockErrorState> error_state_;
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
-  scoped_ptr<MockGLES2Decoder> decoder_;
   scoped_refptr<Texture> texture_;
 };
 
@@ -852,11 +855,11 @@ TEST_F(TextureTest, FloatNotLinear) {
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), decoder_.get(), &manager,
+      gl_.get(), error_state_.get(), &manager,
       texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), decoder_.get(), &manager,
+      gl_.get(), error_state_.get(), &manager,
       texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
@@ -896,11 +899,11 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), decoder_.get(), &manager,
+      gl_.get(), error_state_.get(), &manager,
       texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), decoder_.get(), &manager,
+      gl_.get(), error_state_.get(), &manager,
       texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
@@ -1293,6 +1296,9 @@ class SaveRestoreTextureTest : public TextureTest {
     TextureTest::SetUpBase(NULL, "GL_OES_EGL_image_external");
     manager_->CreateTexture(kClient2Id, kService2Id);
     texture2_ = manager_->GetTexture(kClient2Id);
+
+    EXPECT_CALL(*decoder_.get(), GetErrorState())
+      .WillRepeatedly(Return(error_state_.get()));
   }
 
   virtual void TearDown() {

@@ -6,6 +6,7 @@
 #include "base/bits.h"
 #include "base/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -1047,17 +1048,19 @@ bool TextureManager::Restore(
   glBindTexture(texture->target(), texture->service_id());
   texture->SetImmutable(definition->immutable());
   texture->SetStreamTexture(definition->stream_texture());
-  SetParameter(function_name, decoder, texture, GL_TEXTURE_MIN_FILTER,
+
+  ErrorState* error_state = decoder->GetErrorState();
+  SetParameter(function_name, error_state, texture, GL_TEXTURE_MIN_FILTER,
                definition->min_filter());
-  SetParameter(function_name, decoder, texture, GL_TEXTURE_MAG_FILTER,
+  SetParameter(function_name, error_state, texture, GL_TEXTURE_MAG_FILTER,
                definition->mag_filter());
-  SetParameter(function_name, decoder, texture, GL_TEXTURE_WRAP_S,
+  SetParameter(function_name, error_state, texture, GL_TEXTURE_WRAP_S,
                definition->wrap_s());
-  SetParameter(function_name, decoder, texture, GL_TEXTURE_WRAP_T,
+  SetParameter(function_name, error_state, texture, GL_TEXTURE_WRAP_T,
                definition->wrap_t());
   if (feature_info_->validators()->texture_parameter.IsValid(
       GL_TEXTURE_USAGE_ANGLE)) {
-    SetParameter(function_name, decoder, texture, GL_TEXTURE_USAGE_ANGLE,
+    SetParameter(function_name, error_state, texture, GL_TEXTURE_USAGE_ANGLE,
                  definition->usage());
   }
 
@@ -1065,9 +1068,9 @@ bool TextureManager::Restore(
 }
 
 void TextureManager::SetParameter(
-    const char* function_name, GLES2Decoder* decoder,
+    const char* function_name, ErrorState* error_state,
     Texture* texture, GLenum pname, GLint param) {
-  DCHECK(decoder);
+  DCHECK(error_state);
   DCHECK(texture);
   if (!texture->CanRender(feature_info_)) {
     DCHECK_NE(0, num_unrenderable_textures_);
@@ -1080,11 +1083,11 @@ void TextureManager::SetParameter(
   GLenum result = texture->SetParameter(feature_info_, pname, param);
   if (result != GL_NO_ERROR) {
     if (result == GL_INVALID_ENUM) {
-      GLESDECODER_SET_GL_ERROR_INVALID_ENUM(
-          decoder, function_name, param, "param");
+      ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+          error_state, function_name, param, "param");
     } else {
-      GLESDECODER_SET_GL_ERROR_INVALID_PARAM(
-          decoder, result, function_name, pname, static_cast<GLint>(param));
+      ERRORSTATE_SET_GL_ERROR_INVALID_PARAM(
+          error_state, result, function_name, pname, static_cast<GLint>(param));
     }
   } else {
     // Texture tracking pools exist only for the command decoder, so

@@ -25,6 +25,7 @@ class StreamTextureManager;
 namespace gles2 {
 
 class ContextGroup;
+class ErrorState;
 class QueryManager;
 
 class MockGLES2Decoder : public GLES2Decoder {
@@ -89,26 +90,7 @@ class MockGLES2Decoder : public GLES2Decoder {
       int width,
       int height,
       bool is_texture_immutable));
-  MOCK_METHOD0(GetGLError, uint32());
-  MOCK_METHOD5(SetGLError, void(
-      const char* filename, int line,
-      unsigned error, const char* function_name, const char* msg));
-  MOCK_METHOD5(SetGLErrorInvalidEnum, void(
-      const char* filename, int line,
-      const char* function_name, unsigned value, const char* label));
-  MOCK_METHOD6(SetGLErrorInvalidParam, void(
-      const char* filename,
-      int line,
-      unsigned error,
-      const char* function_name,
-      unsigned pname,
-      int param));
-  MOCK_METHOD3(PeekGLError, unsigned(
-      const char* file, int line, const char* filename));
-  MOCK_METHOD3(CopyRealGLErrorsToWrapper, void(
-      const char* file, int line, const char* filename));
-  MOCK_METHOD3(ClearRealGLErrors, void(
-      const char* file, int line, const char* filename));
+  MOCK_METHOD0(GetErrorState, ErrorState *());
 
   MOCK_METHOD0(GetLogger, Logger*());
   MOCK_METHOD1(SetShaderCacheCallback,

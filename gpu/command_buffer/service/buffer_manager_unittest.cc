@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ class BufferManagerTestBase : public testing::Test {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
       feature_info->Initialize(NULL);
     }
-    decoder_.reset(new MockGLES2Decoder());
+    error_state_.reset(new MockErrorState());
     manager_.reset(new BufferManager(memory_tracker, feature_info));
   }
 
@@ -37,7 +37,7 @@ class BufferManagerTestBase : public testing::Test {
     manager_->Destroy(false);
     manager_.reset();
     ::gfx::GLInterface::SetGLInterface(NULL);
-    decoder_.reset();
+    error_state_.reset();
     gl_.reset();
   }
 
@@ -49,7 +49,7 @@ class BufferManagerTestBase : public testing::Test {
       Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data,
       GLenum error) {
     TestHelper::DoBufferData(
-        gl_.get(), decoder_.get(), manager_.get(),
+        gl_.get(), error_state_.get(), manager_.get(),
         buffer, size, usage, data, error);
   }
 
@@ -58,9 +58,9 @@ class BufferManagerTestBase : public testing::Test {
       const GLvoid* data) {
     bool success = true;
     if (!buffer->CheckRange(offset, size)) {
-      EXPECT_CALL(*decoder_, SetGLError(_, _, GL_INVALID_VALUE, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
+      EXPECT_CALL(*error_state_, SetGLError(_, _, GL_INVALID_VALUE, _, _))
+         .Times(1)
+         .RetiresOnSaturation();
       success = false;
     } else if (!buffer->IsClientSideArray()) {
       EXPECT_CALL(*gl_, BufferSubData(
@@ -69,14 +69,14 @@ class BufferManagerTestBase : public testing::Test {
           .RetiresOnSaturation();
     }
     manager_->DoBufferSubData(
-        decoder_.get(), buffer, offset, size, data);
+        error_state_.get(), buffer, offset, size, data);
     return success;
   }
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<BufferManager> manager_;
-  scoped_ptr<MockGLES2Decoder> decoder_;
+  scoped_ptr<MockErrorState> error_state_;
 };
 
 class BufferManagerTest : public BufferManagerTestBase {

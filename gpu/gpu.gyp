@@ -289,7 +289,7 @@
       ],
       'sources': [
         'command_buffer/service/gles2_cmd_decoder_mock.cc',
-        'command_buffer/service/gles2_cmd_decoder_mock.cc',
+        'command_buffer/service/error_state_mock.cc',
       ],
     },
   ],

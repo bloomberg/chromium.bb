@@ -9,6 +9,7 @@
 
 #include <vector>
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -20,6 +21,7 @@ namespace gpu {
 namespace gles2 {
 
 class Buffer;
+class ErrorState;
 class FeatureInfo;
 class Framebuffer;
 class Program;
@@ -91,7 +93,7 @@ struct Vec4 {
 };
 
 struct GPU_EXPORT ContextState {
-  explicit ContextState(FeatureInfo* feature_info);
+  ContextState(FeatureInfo* feature_info, Logger* logger);
   ~ContextState();
 
   void Initialize();
@@ -114,6 +116,8 @@ struct GPU_EXPORT ContextState {
   bool GetStateAsGLfloat(
       GLenum pname, GLfloat* params, GLsizei* num_written) const;
   bool GetEnabled(GLenum cap) const;
+
+  ErrorState* GetErrorState();
 
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
@@ -161,8 +165,10 @@ struct GPU_EXPORT ContextState {
   bool pack_reverse_row_order;
 
   mutable bool fbo_binding_for_scissor_workaround_dirty_;
-
   FeatureInfo* feature_info_;
+
+ private:
+  scoped_ptr<ErrorState> error_state_;
 };
 
 }  // namespace gles2

@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -34,7 +35,7 @@ TextureUnit::TextureUnit()
 TextureUnit::~TextureUnit() {
 }
 
-ContextState::ContextState(FeatureInfo* feature_info)
+ContextState::ContextState(FeatureInfo* feature_info, Logger* logger)
     : pack_alignment(4),
       unpack_alignment(4),
       active_texture_unit(0),
@@ -42,7 +43,8 @@ ContextState::ContextState(FeatureInfo* feature_info)
       hint_fragment_shader_derivative(GL_DONT_CARE),
       pack_reverse_row_order(false),
       fbo_binding_for_scissor_workaround_dirty_(false),
-      feature_info_(feature_info) {
+      feature_info_(feature_info),
+      error_state_(ErrorState::Create(logger)) {
   Initialize();
 }
 
@@ -159,6 +161,10 @@ void ContextState::RestoreState() const {
   RestoreRenderbufferBindings();
   RestoreProgramBindings();
   RestoreGlobalState();
+}
+
+ErrorState* ContextState::GetErrorState() {
+  return error_state_.get();
 }
 
 // Include the auto-generated part of this file. We split this because it means

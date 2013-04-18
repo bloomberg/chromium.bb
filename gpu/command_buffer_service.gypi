@@ -40,6 +40,8 @@
     'command_buffer/service/context_state_autogen.h',
     'command_buffer/service/context_state_impl_autogen.h',
     'command_buffer/service/context_state.cc',
+    'command_buffer/service/error_state.cc',
+    'command_buffer/service/error_state.h',
     'command_buffer/service/feature_info.h',
     'command_buffer/service/feature_info.cc',
     'command_buffer/service/framebuffer_manager.h',

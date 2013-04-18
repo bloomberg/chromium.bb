@@ -23,6 +23,7 @@ namespace gles2 {
 
 class GLES2Decoder;
 class Display;
+class ErrorState;
 class FeatureInfo;
 class TextureDefinition;
 class TextureManager;
@@ -477,7 +478,7 @@ class GPU_EXPORT TextureManager {
   // Returns GL_NO_ERROR on success. Otherwise the error to generate.
   // TODO(gman): Expand to SetParameteri,f,iv,fv
   void SetParameter(
-      const char* function_name, GLES2Decoder* decoder,
+      const char* function_name, ErrorState* error_state,
       Texture* texture, GLenum pname, GLint param);
 
   // Makes each of the mip levels as though they were generated.

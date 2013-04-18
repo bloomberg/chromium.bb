@@ -19,8 +19,8 @@ namespace gpu {
 namespace gles2 {
 
 class BufferManager;
+class ErrorState;
 class FeatureInfo;
-class GLES2Decoder;
 
 // Info about Buffers currently in the system.
 class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
@@ -194,7 +194,7 @@ class GPU_EXPORT BufferManager {
   // Does a glBufferData and updates the approprate accounting. Currently
   // assume the values have already been validated.
   void DoBufferData(
-      GLES2Decoder* decoder,
+      ErrorState* error_state,
       Buffer* buffer,
       GLsizeiptr size,
       GLenum usage,
@@ -202,7 +202,7 @@ class GPU_EXPORT BufferManager {
 
   // Does a glBufferSubData and updates the approrate accounting.
   void DoBufferSubData(
-      GLES2Decoder* decoder,
+      ErrorState* error_state,
       Buffer* buffer,
       GLintptr offset,
       GLsizeiptr size,

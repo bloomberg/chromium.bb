@@ -10,6 +10,7 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
@@ -280,7 +281,7 @@ bool GetErrorQuery::Begin() {
 
 bool GetErrorQuery::End(uint32 submit_count) {
   MarkAsPending(submit_count);
-  return MarkAsCompleted(manager()->decoder()->GetGLError());
+  return MarkAsCompleted(manager()->decoder()->GetErrorState()->GetGLError());
 }
 
 bool GetErrorQuery::Process() {

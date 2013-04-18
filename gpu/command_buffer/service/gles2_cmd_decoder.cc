@@ -23,7 +23,6 @@
 #endif
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -34,6 +33,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -42,7 +42,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
-#include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -127,17 +126,20 @@ class GLES2DecoderImpl;
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
-    GLESDECODER_SET_GL_ERROR(this, error, function_name, msg)
+    ERRORSTATE_SET_GL_ERROR(state_.GetErrorState(), error, function_name, msg)
 #define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label) \
-    GLESDECODER_SET_GL_ERROR_INVALID_ENUM(this, function_name, value, label)
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), \
+                                         function_name, value, label)
 #define LOCAL_SET_GL_ERROR_INVALID_PARAM(error, function_name, pname) \
-    GLESDECODER_SET_GL_ERROR_INVALID_PARAM(this, error, function_name, pname)
+    ERRORSTATE_SET_GL_ERROR_INVALID_PARAM(state_.GetErrorState(), error, \
+                                          function_name, pname)
 #define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name) \
-    GLESDECODER_COPY_REAL_GL_ERRORS_TO_WRAPPER(this, function_name)
+    ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(state_.GetErrorState(), \
+                                              function_name)
 #define LOCAL_PEEK_GL_ERROR(function_name) \
-    GLESDECODER_PEEK_GL_ERROR(this, function_name)
+    ERRORSTATE_PEEK_GL_ERROR(state_.GetErrorState(), function_name)
 #define LOCAL_CLEAR_REAL_GL_ERRORS(function_name) \
-    GLESDECODER_CLEARREAL_GL_ERRORS(this, function_name)
+    ERRORSTATE_CLEAR_REAL_GL_ERRORS(state_.GetErrorState(), function_name)
 #define LOCAL_PERFORMANCE_WARNING(msg) \
     PerformanceWarning(__FILE__, __LINE__, msg)
 #define LOCAL_RENDER_WARNING(msg) \
@@ -560,8 +562,6 @@ bool GLES2Decoder::IsAngle() {
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder {
  public:
-  static const int kMaxLogMessages = 256;
-
   // Used by PrepForSetUniformByLocation to validate types.
   struct BaseUniformInfo {
     const GLenum* const valid_types;
@@ -639,6 +639,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
   virtual Logger* GetLogger() OVERRIDE;
+  virtual ErrorState* GetErrorState() OVERRIDE;
 
   virtual void SetShaderCacheCallback(
       const ShaderCacheCallback& callback) OVERRIDE;
@@ -655,8 +656,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id) OVERRIDE;
-
-  virtual uint32 GetGLError() OVERRIDE;
 
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
@@ -1406,34 +1405,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
-  virtual void SetGLError(
-      const char* filename,
-      int line,
-      unsigned error,
-      const char* function_name,
-      const char* msg) OVERRIDE;
-  virtual void SetGLErrorInvalidEnum(
-      const char* filename,
-      int line,
-      const char* function_name,
-      unsigned value,
-      const char* label) OVERRIDE;
-  // Generates a GL error for a bad parameter.
-  virtual void SetGLErrorInvalidParam(
-      const char* filename,
-      int line,
-      unsigned error,
-      const char* function_name,
-      unsigned pname,
-      int param) OVERRIDE;
-
-  virtual unsigned PeekGLError(
-      const char* filename, int line, const char* function_name) OVERRIDE;
-  virtual void CopyRealGLErrorsToWrapper(
-      const char* filename, int line, const char* function_name) OVERRIDE;
-  virtual void ClearRealGLErrors(
-      const char* filename, int line, const char* function_name) OVERRIDE;
-
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
       const char* function_name, GLuint max_vertex_accessed, GLsizei primcount);
@@ -1661,9 +1632,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Current width and height of the offscreen frame buffer.
   gfx::Size offscreen_size_;
 
-  // Current GL error bits.
-  uint32 error_bits_;
-
   // Util to help with GL.
   GLES2Util util_;
 
@@ -1748,9 +1716,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   bool teximage2d_faster_than_texsubimage2d_;
 
-  // The last error message set.
-  std::string last_error_;
-
   // The current decoder error.
   error::Error current_decoder_error_;
 
@@ -1814,11 +1779,12 @@ ScopedGLErrorSuppressor::ScopedGLErrorSuppressor(
     const char* function_name, GLES2DecoderImpl* decoder)
     : function_name_(function_name),
       decoder_(decoder) {
-  GLESDECODER_COPY_REAL_GL_ERRORS_TO_WRAPPER(decoder_, function_name_);
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(decoder_->GetErrorState(),
+                                            function_name_);
 }
 
 ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
-  GLESDECODER_CLEAR_REAL_GL_ERRORS(decoder_, function_name_);
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(decoder_->GetErrorState(), function_name_);
 }
 
 ScopedTexture2DBinder::ScopedTexture2DBinder(GLES2DecoderImpl* decoder,
@@ -2201,8 +2167,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
       group_(group),
       logger_(&debug_marker_manager_),
-      state_(group_->feature_info()),
-      error_bits_(0),
+      state_(group_->feature_info(), &logger_),
       unpack_flip_y_(false),
       unpack_premultiply_alpha_(false),
       unpack_unpremultiply_alpha_(false),
@@ -3088,25 +3053,25 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         true);
     parent_texture_manager->SetParameter(
         "UpdateParentTextureInfo",
-        this,
+        GetErrorState(),
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_MAG_FILTER,
         GL_NEAREST);
     parent_texture_manager->SetParameter(
         "UpdateParentTextureInfo",
-        this,
+        GetErrorState(),
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_MIN_FILTER,
         GL_NEAREST);
     parent_texture_manager->SetParameter(
         "UpdateParentTextureInfo",
-        this,
+        GetErrorState(),
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_WRAP_S,
         GL_CLAMP_TO_EDGE);
     parent_texture_manager->SetParameter(
         "UpdateParentTextureInfo",
-        this,
+        GetErrorState(),
         offscreen_saved_color_texture_info_,
         GL_TEXTURE_WRAP_T,
         GL_CLAMP_TO_EDGE);
@@ -3122,6 +3087,10 @@ void GLES2DecoderImpl::SetResizeCallback(
 
 Logger* GLES2DecoderImpl::GetLogger() {
   return &logger_;
+}
+
+ErrorState* GLES2DecoderImpl::GetErrorState() {
+  return state_.GetErrorState();
 }
 
 void GLES2DecoderImpl::SetShaderCacheCallback(
@@ -5245,7 +5214,8 @@ void GLES2DecoderImpl::DoTexParameterf(
   }
 
   texture_manager()->SetParameter(
-      "glTexParameterf", this, texture, pname, static_cast<GLint>(param));
+      "glTexParameterf", GetErrorState(), texture, pname,
+      static_cast<GLint>(param));
 }
 
 void GLES2DecoderImpl::DoTexParameteri(
@@ -5257,7 +5227,7 @@ void GLES2DecoderImpl::DoTexParameteri(
   }
 
   texture_manager()->SetParameter(
-      "glTexParameteri", this, texture, pname, param);
+      "glTexParameteri", GetErrorState(), texture, pname, param);
 }
 
 void GLES2DecoderImpl::DoTexParameterfv(
@@ -5269,7 +5239,8 @@ void GLES2DecoderImpl::DoTexParameterfv(
   }
 
   texture_manager()->SetParameter(
-      "glTexParameterfv", this, texture, pname, static_cast<GLint>(params[0]));
+      "glTexParameterfv", GetErrorState(), texture, pname,
+      static_cast<GLint>(params[0]));
 }
 
 void GLES2DecoderImpl::DoTexParameteriv(
@@ -5282,7 +5253,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
   }
 
   texture_manager()->SetParameter(
-      "glTexParameteriv", this, texture, pname, *params);
+      "glTexParameteriv", GetErrorState(), texture, pname, *params);
 }
 
 bool GLES2DecoderImpl::CheckCurrentProgram(const char* function_name) {
@@ -5693,77 +5664,6 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program_id) {
   }
 }
 
-uint32 GLES2DecoderImpl::GetGLError() {
-  // Check the GL error first, then our wrapped error.
-  GLenum error = glGetError();
-  if (error == GL_NO_ERROR && error_bits_ != 0) {
-    for (uint32 mask = 1; mask != 0; mask = mask << 1) {
-      if ((error_bits_ & mask) != 0) {
-        error = GLES2Util::GLErrorBitToGLError(mask);
-        break;
-      }
-    }
-  }
-
-  if (error != GL_NO_ERROR) {
-    // There was an error, clear the corresponding wrapped error.
-    error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
-  }
-  return error;
-}
-
-unsigned GLES2DecoderImpl::PeekGLError(
-    const char* filename, int line, const char* function_name) {
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    SetGLError(filename, line, error, function_name, "");
-  }
-  return error;
-}
-
-void GLES2DecoderImpl::SetGLError(
-    const char* filename, int line,
-    unsigned error, const char* function_name, const char* msg) {
-  if (msg) {
-    last_error_ = msg;
-    logger_.LogMessage(filename, line,
-               logger_.GetLogPrefix() + ": " + std::string("GL ERROR :") +
-               GLES2Util::GetStringEnum(error) + " : " +
-               function_name + ": " + msg);
-  }
-  error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
-}
-
-void GLES2DecoderImpl::SetGLErrorInvalidEnum(
-    const char* filename, int line,
-    const char* function_name, unsigned value, const char* label) {
-  SetGLError(filename, line, GL_INVALID_ENUM, function_name,
-             (std::string(label) + " was " +
-              GLES2Util::GetStringEnum(value)).c_str());
-}
-
-void GLES2DecoderImpl::SetGLErrorInvalidParam(
-    const char* filename,
-    int line,
-    unsigned error,
-    const char* function_name,
-    unsigned pname,
-    int param) {
-  if (error == GL_INVALID_ENUM) {
-    SetGLError(
-        filename, line, GL_INVALID_ENUM, function_name,
-        (std::string("trying to set ") +
-         GLES2Util::GetStringEnum(pname) + " to " +
-         GLES2Util::GetStringEnum(param)).c_str());
-  } else {
-    SetGLError(
-        filename, line, error, function_name,
-        (std::string("trying to set ") +
-         GLES2Util::GetStringEnum(pname) + " to " +
-         base::StringPrintf("%d", param)).c_str());
-  }
-}
-
 void GLES2DecoderImpl::RenderWarning(
     const char* filename, int line, const std::string& msg) {
   logger_.LogMessage(filename, line, std::string("RENDER WARNING: ") + msg);
@@ -5771,8 +5671,8 @@ void GLES2DecoderImpl::RenderWarning(
 
 void GLES2DecoderImpl::PerformanceWarning(
     const char* filename, int line, const std::string& msg) {
-  logger_.LogMessage(filename, line, std::string("PERFORMANCE WARNING: ")
-                     + msg);
+  logger_.LogMessage(filename, line,
+                     std::string("PERFORMANCE WARNING: ") + msg);
 }
 
 void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
@@ -5789,30 +5689,6 @@ void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
                                           shader,
                                           translator,
                                           feature_info_);
-  }
-}
-
-void GLES2DecoderImpl::CopyRealGLErrorsToWrapper(
-    const char* filename, int line, const char* function_name) {
-  GLenum error;
-  while ((error = glGetError()) != GL_NO_ERROR) {
-    SetGLError(filename, line, error, function_name,
-               "<- error from previous GL command");
-  }
-}
-
-void GLES2DecoderImpl::ClearRealGLErrors(
-    const char* filename, int line, const char* function_name) {
-  GLenum error;
-  while ((error = glGetError()) != GL_NO_ERROR) {
-    if (error != GL_OUT_OF_MEMORY) {
-      // GL_OUT_OF_MEMORY can legally happen on lost device.
-      logger_.LogMessage(filename, line,
-                 logger_.GetLogPrefix() + ": " + std::string("GL ERROR :") +
-                 GLES2Util::GetStringEnum(error) + " : " +
-                 function_name + ": was unhandled");
-      NOTREACHED() << "GL error " << error << " was unhandled.";
-    }
   }
 }
 
@@ -7380,7 +7256,7 @@ void GLES2DecoderImpl::DoBufferData(
     return;
   }
 
-  buffer_manager()->DoBufferData(this, buffer, size, usage, data);
+  buffer_manager()->DoBufferData(GetErrorState(), buffer, size, usage, data);
 }
 
 error::Error GLES2DecoderImpl::HandleBufferData(
@@ -7423,7 +7299,8 @@ void GLES2DecoderImpl::DoBufferSubData(
     return;
   }
 
-  buffer_manager()->DoBufferSubData(this, buffer, offset, size, data);
+  buffer_manager()->DoBufferSubData(GetErrorState(), buffer, offset, size,
+                                    data);
 }
 
 bool GLES2DecoderImpl::ClearLevel(

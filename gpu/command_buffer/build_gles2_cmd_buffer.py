@@ -1577,7 +1577,7 @@ _FUNCTION_INFO = {
   },
   'GetError': {
     'type': 'Is',
-    'decoder_func': 'GetGLError',
+    'decoder_func': 'GetErrorState()->GetGLError',
     'impl_func': False,
     'result': ['GLenum'],
     'client_test': False,

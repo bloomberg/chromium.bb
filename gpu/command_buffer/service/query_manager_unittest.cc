@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -552,7 +553,10 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
 
   EXPECT_TRUE(manager->BeginQuery(query));
 
-  EXPECT_CALL(*decoder_.get(), GetGLError())
+  MockErrorState mock_error_state;
+  EXPECT_CALL(*decoder_.get(), GetErrorState())
+      .WillRepeatedly(Return(&mock_error_state));
+  EXPECT_CALL(mock_error_state, GetGLError())
       .WillOnce(Return(GL_INVALID_ENUM))
       .RetiresOnSaturation();
 
