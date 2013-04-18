@@ -38,8 +38,8 @@ lose_pointer_focus(struct wl_listener *listener, void *data)
 static void
 lose_keyboard_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_keyboard *keyboard =
-		container_of(listener, struct wl_keyboard, focus_listener);
+	struct weston_keyboard *keyboard =
+		container_of(listener, struct weston_keyboard, focus_listener);
 
 	keyboard->focus_resource = NULL;
 }
@@ -160,10 +160,10 @@ static const struct wl_touch_grab_interface default_touch_grab_interface = {
 };
 
 static void
-default_grab_key(struct wl_keyboard_grab *grab,
+default_grab_key(struct weston_keyboard_grab *grab,
 		 uint32_t time, uint32_t key, uint32_t state)
 {
-	struct wl_keyboard *keyboard = grab->keyboard;
+	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_resource *resource;
 	struct wl_display *display;
 	uint32_t serial;
@@ -193,11 +193,11 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 }
 
 static void
-default_grab_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
+default_grab_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 		       uint32_t mods_depressed, uint32_t mods_latched,
 		       uint32_t mods_locked, uint32_t group)
 {
-	struct wl_keyboard *keyboard = grab->keyboard;
+	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_pointer *pointer = keyboard->seat->pointer;
 	struct wl_resource *resource, *pr;
 
@@ -222,7 +222,7 @@ default_grab_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
 	}
 }
 
-static const struct wl_keyboard_grab_interface
+static const struct weston_keyboard_grab_interface
 				default_keyboard_grab_interface = {
 	default_grab_key,
 	default_grab_modifiers,
@@ -253,7 +253,7 @@ wl_pointer_release(struct wl_pointer *pointer)
 }
 
 WL_EXPORT void
-wl_keyboard_init(struct wl_keyboard *keyboard)
+weston_keyboard_init(struct weston_keyboard *keyboard)
 {
 	memset(keyboard, 0, sizeof *keyboard);
 	wl_list_init(&keyboard->resource_list);
@@ -266,7 +266,7 @@ wl_keyboard_init(struct wl_keyboard *keyboard)
 }
 
 WL_EXPORT void
-wl_keyboard_release(struct wl_keyboard *keyboard)
+weston_keyboard_release(struct weston_keyboard *keyboard)
 {
 	/* XXX: What about keyboard->resource_list? */
 	if (keyboard->focus_resource)
@@ -316,7 +316,7 @@ wl_seat_release(struct wl_seat *seat)
 	if (seat->pointer)
 		wl_pointer_release(seat->pointer);
 	if (seat->keyboard)
-		wl_keyboard_release(seat->keyboard);
+		weston_keyboard_release(seat->keyboard);
 	if (seat->touch)
 		wl_touch_release(seat->touch);
 }
@@ -354,7 +354,7 @@ wl_seat_set_pointer(struct wl_seat *seat, struct wl_pointer *pointer)
 }
 
 WL_EXPORT void
-wl_seat_set_keyboard(struct wl_seat *seat, struct wl_keyboard *keyboard)
+wl_seat_set_keyboard(struct wl_seat *seat, struct weston_keyboard *keyboard)
 {
 	if (keyboard && (seat->keyboard || keyboard->seat))
 		return; /* XXX: error? */
@@ -387,7 +387,7 @@ WL_EXPORT void
 wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 		     wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct wl_keyboard *kbd = pointer->seat->keyboard;
+	struct weston_keyboard *kbd = pointer->seat->keyboard;
 	struct wl_resource *resource, *kr;
 	struct wl_display *display;
 	uint32_t serial;
@@ -434,7 +434,8 @@ wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 }
 
 WL_EXPORT void
-wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
+weston_keyboard_set_focus(struct weston_keyboard *keyboard,
+			  struct wl_surface *surface)
 {
 	struct wl_resource *resource;
 	struct wl_display *display;
@@ -474,8 +475,8 @@ wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
 }
 
 WL_EXPORT void
-wl_keyboard_start_grab(struct wl_keyboard *keyboard,
-		       struct wl_keyboard_grab *grab)
+weston_keyboard_start_grab(struct weston_keyboard *keyboard,
+			   struct weston_keyboard_grab *grab)
 {
 	keyboard->grab = grab;
 	grab->keyboard = keyboard;
@@ -484,7 +485,7 @@ wl_keyboard_start_grab(struct wl_keyboard *keyboard,
 }
 
 WL_EXPORT void
-wl_keyboard_end_grab(struct wl_keyboard *keyboard)
+weston_keyboard_end_grab(struct weston_keyboard *keyboard)
 {
 	keyboard->grab = &keyboard->default_grab;
 }

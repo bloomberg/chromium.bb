@@ -527,10 +527,10 @@ unbind_keyboard(struct wl_resource *resource)
 }
 
 static void
-input_method_context_grab_key(struct wl_keyboard_grab *grab,
+input_method_context_grab_key(struct weston_keyboard_grab *grab,
 			      uint32_t time, uint32_t key, uint32_t state_w)
 {
-	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
+	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_display *display;
 	uint32_t serial;
 
@@ -544,11 +544,11 @@ input_method_context_grab_key(struct wl_keyboard_grab *grab,
 }
 
 static void
-input_method_context_grab_modifier(struct wl_keyboard_grab *grab, uint32_t serial,
+input_method_context_grab_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
 				   uint32_t mods_depressed, uint32_t mods_latched,
 				   uint32_t mods_locked, uint32_t group)
 {
-	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
+	struct weston_keyboard *keyboard = grab->keyboard;
 
 	if (!keyboard->input_method_resource)
 		return;
@@ -558,7 +558,7 @@ input_method_context_grab_modifier(struct wl_keyboard_grab *grab, uint32_t seria
 				   mods_locked, group);
 }
 
-static const struct wl_keyboard_grab_interface input_method_context_grab = {
+static const struct weston_keyboard_grab_interface input_method_context_grab = {
 	input_method_context_grab_key,
 	input_method_context_grab_modifier,
 };
@@ -583,10 +583,10 @@ input_method_context_grab_keyboard(struct wl_client *client,
 				seat->xkb_info.keymap_fd,
 				seat->xkb_info.keymap_size);
 
-	if (keyboard->keyboard.grab != &keyboard->keyboard.default_grab) {
-		wl_keyboard_end_grab(&keyboard->keyboard);
+	if (keyboard->grab != &keyboard->default_grab) {
+		weston_keyboard_end_grab(keyboard);
 	}
-	wl_keyboard_start_grab(&keyboard->keyboard, &keyboard->input_method_grab);
+	weston_keyboard_start_grab(keyboard, &keyboard->input_method_grab);
 	keyboard->input_method_resource = cr;
 }
 
@@ -600,8 +600,8 @@ input_method_context_key(struct wl_client *client,
 {
 	struct input_method_context *context = resource->data;
 	struct weston_seat *seat = context->input_method->seat;
-	struct wl_keyboard *keyboard = seat->seat.keyboard;
-	struct wl_keyboard_grab *default_grab = &keyboard->default_grab;
+	struct weston_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard_grab *default_grab = &keyboard->default_grab;
 
 	default_grab->interface->key(default_grab, time, key, state_w);
 }
@@ -618,8 +618,8 @@ input_method_context_modifiers(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 
 	struct weston_seat *seat = context->input_method->seat;
-	struct wl_keyboard *keyboard = seat->seat.keyboard;
-	struct wl_keyboard_grab *default_grab = &keyboard->default_grab;
+	struct weston_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard_grab *default_grab = &keyboard->default_grab;
 
 	default_grab->interface->modifiers(default_grab,
 					   serial, mods_depressed,
@@ -712,14 +712,14 @@ input_method_context_create(struct text_input *model,
 static void
 input_method_context_end_keyboard_grab(struct input_method_context *context)
 {
-	struct wl_keyboard_grab *grab = &context->input_method->seat->keyboard.input_method_grab;
-	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
+	struct weston_keyboard_grab *grab = &context->input_method->seat->keyboard.input_method_grab;
+	struct weston_keyboard *keyboard = grab->keyboard;
 
 	if (!grab->keyboard)
 		return;
 
 	if (grab->keyboard->grab == grab)
-		wl_keyboard_end_grab(grab->keyboard);
+		weston_keyboard_end_grab(grab->keyboard);
 
 	keyboard->input_method_resource = NULL;
 }
@@ -790,7 +790,7 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 static void
 handle_keyboard_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_keyboard *keyboard = data;
+	struct weston_keyboard *keyboard = data;
 	struct input_method *input_method =
 		container_of(listener, struct input_method, keyboard_focus_listener);
 	struct wl_surface *surface = keyboard->focus;

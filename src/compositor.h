@@ -229,18 +229,18 @@ struct wl_pointer_grab {
 	wl_fixed_t x, y;
 };
 
-struct wl_keyboard_grab;
-struct wl_keyboard_grab_interface {
-	void (*key)(struct wl_keyboard_grab *grab, uint32_t time,
+struct weston_keyboard_grab;
+struct weston_keyboard_grab_interface {
+	void (*key)(struct weston_keyboard_grab *grab, uint32_t time,
 		    uint32_t key, uint32_t state);
-	void (*modifiers)(struct wl_keyboard_grab *grab, uint32_t serial,
+	void (*modifiers)(struct weston_keyboard_grab *grab, uint32_t serial,
 			  uint32_t mods_depressed, uint32_t mods_latched,
 			  uint32_t mods_locked, uint32_t group);
 };
 
-struct wl_keyboard_grab {
-	const struct wl_keyboard_grab_interface *interface;
-	struct wl_keyboard *keyboard;
+struct weston_keyboard_grab {
+	const struct weston_keyboard_grab_interface *interface;
+	struct weston_keyboard *keyboard;
 	struct wl_surface *focus;
 	uint32_t key;
 };
@@ -310,31 +310,6 @@ struct wl_pointer {
 	uint32_t button_count;
 };
 
-struct wl_keyboard {
-	struct wl_seat *seat;
-
-	struct wl_list resource_list;
-	struct wl_surface *focus;
-	struct wl_resource *focus_resource;
-	struct wl_listener focus_listener;
-	uint32_t focus_serial;
-	struct wl_signal focus_signal;
-
-	struct wl_keyboard_grab *grab;
-	struct wl_keyboard_grab default_grab;
-	uint32_t grab_key;
-	uint32_t grab_serial;
-	uint32_t grab_time;
-
-	struct wl_array keys;
-
-	struct {
-		uint32_t mods_depressed;
-		uint32_t mods_latched;
-		uint32_t mods_locked;
-		uint32_t group;
-	} modifiers;
-};
 
 struct wl_touch {
 	struct wl_seat *seat;
@@ -358,7 +333,7 @@ struct wl_seat {
 	struct wl_signal destroy_signal;
 
 	struct wl_pointer *pointer;
-	struct wl_keyboard *keyboard;
+	struct weston_keyboard *keyboard;
 	struct wl_touch *touch;
 
 	uint32_t selection_serial;
@@ -388,7 +363,7 @@ wl_seat_release(struct wl_seat *seat);
 void
 wl_seat_set_pointer(struct wl_seat *seat, struct wl_pointer *pointer);
 void
-wl_seat_set_keyboard(struct wl_seat *seat, struct wl_keyboard *keyboard);
+wl_seat_set_keyboard(struct wl_seat *seat, struct weston_keyboard *keyboard);
 void
 wl_seat_set_touch(struct wl_seat *seat, struct wl_touch *touch);
 
@@ -408,16 +383,17 @@ void
 wl_pointer_set_current(struct wl_pointer *pointer, struct wl_surface *surface);
 
 void
-wl_keyboard_init(struct wl_keyboard *keyboard);
+weston_keyboard_init(struct weston_keyboard *keyboard);
 void
-wl_keyboard_release(struct wl_keyboard *keyboard);
+weston_keyboard_release(struct weston_keyboard *keyboard);
 void
-wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface);
+weston_keyboard_set_focus(struct weston_keyboard *keyboard,
+			  struct wl_surface *surface);
 void
-wl_keyboard_start_grab(struct wl_keyboard *device,
-		       struct wl_keyboard_grab *grab);
+weston_keyboard_start_grab(struct weston_keyboard *device,
+			   struct weston_keyboard_grab *grab);
 void
-wl_keyboard_end_grab(struct wl_keyboard *keyboard);
+weston_keyboard_end_grab(struct weston_keyboard *keyboard);
 
 void
 wl_touch_init(struct wl_touch *touch);
@@ -459,9 +435,31 @@ struct weston_xkb_info {
 };
 
 struct weston_keyboard {
-	struct wl_keyboard keyboard;
+	struct wl_seat *seat;
 
-	struct wl_keyboard_grab input_method_grab;
+	struct wl_list resource_list;
+	struct wl_surface *focus;
+	struct wl_resource *focus_resource;
+	struct wl_listener focus_listener;
+	uint32_t focus_serial;
+	struct wl_signal focus_signal;
+
+	struct weston_keyboard_grab *grab;
+	struct weston_keyboard_grab default_grab;
+	uint32_t grab_key;
+	uint32_t grab_serial;
+	uint32_t grab_time;
+
+	struct wl_array keys;
+
+	struct {
+		uint32_t mods_depressed;
+		uint32_t mods_latched;
+		uint32_t mods_locked;
+		uint32_t group;
+	} modifiers;
+
+	struct weston_keyboard_grab input_method_grab;
 	struct wl_resource *input_method_resource;
 };
 

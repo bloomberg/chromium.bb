@@ -143,11 +143,11 @@ weston_binding_list_destroy_all(struct wl_list *list)
 
 struct binding_keyboard_grab {
 	uint32_t key;
-	struct wl_keyboard_grab grab;
+	struct weston_keyboard_grab grab;
 };
 
 static void
-binding_key(struct wl_keyboard_grab *grab,
+binding_key(struct weston_keyboard_grab *grab,
 	    uint32_t time, uint32_t key, uint32_t state_w)
 {
 	struct binding_keyboard_grab *b =
@@ -156,14 +156,14 @@ binding_key(struct wl_keyboard_grab *grab,
 	struct wl_display *display;
 	enum wl_keyboard_key_state state = state_w;
 	uint32_t serial;
-	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
+	struct weston_keyboard *keyboard = grab->keyboard;
 
 	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
-			wl_keyboard_end_grab(grab->keyboard);
+			weston_keyboard_end_grab(grab->keyboard);
 			if (keyboard->input_method_resource)
-				keyboard->keyboard.grab = &keyboard->input_method_grab;
+				keyboard->grab = &keyboard->input_method_grab;
 			free(b);
 		}
 	} else if (resource) {
@@ -174,7 +174,7 @@ binding_key(struct wl_keyboard_grab *grab,
 }
 
 static void
-binding_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
+binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 		  uint32_t mods_depressed, uint32_t mods_latched,
 		  uint32_t mods_locked, uint32_t group)
 {
@@ -188,7 +188,7 @@ binding_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
 				   mods_latched, mods_locked, group);
 }
 
-static const struct wl_keyboard_grab_interface binding_grab = {
+static const struct weston_keyboard_grab_interface binding_grab = {
 	binding_key,
 	binding_modifiers,
 };
@@ -202,7 +202,7 @@ install_binding_grab(struct wl_seat *seat,
 	grab = malloc(sizeof *grab);
 	grab->key = key;
 	grab->grab.interface = &binding_grab;
-	wl_keyboard_start_grab(seat->keyboard, &grab->grab);
+	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
 }
 
 WL_EXPORT void

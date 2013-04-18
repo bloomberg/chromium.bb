@@ -504,7 +504,7 @@ restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 		surface = state->keyboard_focus ?
 			&state->keyboard_focus->surface : NULL;
 
-		wl_keyboard_set_focus(state->seat->seat.keyboard, surface);
+		weston_keyboard_set_focus(state->seat->seat.keyboard, surface);
 	}
 }
 
@@ -901,8 +901,8 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	drop_focus_state(shell, from, surface);
 	wl_list_for_each(seat, &shell->compositor->seat_list, link)
 		if (seat->has_keyboard &&
-		    seat->keyboard.keyboard.focus == &surface->surface)
-			wl_keyboard_set_focus(&seat->keyboard.keyboard, NULL);
+		    seat->keyboard.focus == &surface->surface)
+			weston_keyboard_set_focus(&seat->keyboard, NULL);
 
 	weston_surface_damage_below(surface);
 }
@@ -3737,7 +3737,7 @@ struct switcher {
 	struct desktop_shell *shell;
 	struct weston_surface *current;
 	struct wl_listener listener;
-	struct wl_keyboard_grab grab;
+	struct weston_keyboard_grab grab;
 };
 
 static void
@@ -3804,8 +3804,7 @@ static void
 switcher_destroy(struct switcher *switcher)
 {
 	struct weston_surface *surface;
-	struct wl_keyboard *keyboard = switcher->grab.keyboard;
-	struct weston_keyboard *weston_keyboard = (struct weston_keyboard *)keyboard;
+	struct weston_keyboard *keyboard = switcher->grab.keyboard;
 	struct workspace *ws = get_current_workspace(switcher->shell);
 
 	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
@@ -3817,14 +3816,14 @@ switcher_destroy(struct switcher *switcher)
 		activate(switcher->shell, switcher->current,
 			 (struct weston_seat *) keyboard->seat);
 	wl_list_remove(&switcher->listener.link);
-	wl_keyboard_end_grab(keyboard);
-	if (weston_keyboard->input_method_resource)
-		keyboard->grab = &weston_keyboard->input_method_grab;
+	weston_keyboard_end_grab(keyboard);
+	if (keyboard->input_method_resource)
+		keyboard->grab = &keyboard->input_method_grab;
 	free(switcher);
 }
 
 static void
-switcher_key(struct wl_keyboard_grab *grab,
+switcher_key(struct weston_keyboard_grab *grab,
 	     uint32_t time, uint32_t key, uint32_t state_w)
 {
 	struct switcher *switcher = container_of(grab, struct switcher, grab);
@@ -3835,7 +3834,7 @@ switcher_key(struct wl_keyboard_grab *grab,
 }
 
 static void
-switcher_modifier(struct wl_keyboard_grab *grab, uint32_t serial,
+switcher_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
 		  uint32_t mods_depressed, uint32_t mods_latched,
 		  uint32_t mods_locked, uint32_t group)
 {
@@ -3846,7 +3845,7 @@ switcher_modifier(struct wl_keyboard_grab *grab, uint32_t serial,
 		switcher_destroy(switcher);
 }
 
-static const struct wl_keyboard_grab_interface switcher_grab = {
+static const struct weston_keyboard_grab_interface switcher_grab = {
 	switcher_key,
 	switcher_modifier,
 };
@@ -3866,8 +3865,8 @@ switcher_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 
 	lower_fullscreen_layer(switcher->shell);
 	switcher->grab.interface = &switcher_grab;
-	wl_keyboard_start_grab(seat->keyboard, &switcher->grab);
-	wl_keyboard_set_focus(seat->keyboard, NULL);
+	weston_keyboard_start_grab(seat->keyboard, &switcher->grab);
+	weston_keyboard_set_focus(seat->keyboard, NULL);
 	switcher_next(switcher);
 }
 
@@ -3915,14 +3914,14 @@ fan_debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 struct debug_binding_grab {
-	struct wl_keyboard_grab grab;
+	struct weston_keyboard_grab grab;
 	struct weston_seat *seat;
 	uint32_t key[2];
 	int key_released[2];
 };
 
 static void
-debug_binding_key(struct wl_keyboard_grab *grab, uint32_t time,
+debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 		  uint32_t key, uint32_t state)
 {
 	struct debug_binding_grab *db = (struct debug_binding_grab *) grab;
@@ -3990,16 +3989,15 @@ debug_binding_key(struct wl_keyboard_grab *grab, uint32_t time,
 	}
 
 	if (terminate) {
-		struct weston_keyboard *weston_keyboard = (struct weston_keyboard *) grab->keyboard;
-		wl_keyboard_end_grab(grab->keyboard);
-		if (weston_keyboard->input_method_resource)
-			grab->keyboard->grab = &weston_keyboard->input_method_grab;
+		weston_keyboard_end_grab(grab->keyboard);
+		if (grab->keyboard->input_method_resource)
+			grab->keyboard->grab = &grab->keyboard->input_method_grab;
 		free(db);
 	}
 }
 
 static void
-debug_binding_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
+debug_binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
 			uint32_t mods_depressed, uint32_t mods_latched,
 			uint32_t mods_locked, uint32_t group)
 {
@@ -4013,7 +4011,7 @@ debug_binding_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
 				   mods_latched, mods_locked, group);
 }
 
-struct wl_keyboard_grab_interface debug_binding_keyboard_grab = {
+struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {
 	debug_binding_key,
 	debug_binding_modifiers
 };
@@ -4030,7 +4028,7 @@ debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 	grab->seat = (struct weston_seat *) seat;
 	grab->key[0] = key;
 	grab->grab.interface = &debug_binding_keyboard_grab;
-	wl_keyboard_start_grab(seat->keyboard, &grab->grab);
+	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
 }
 
 static void
