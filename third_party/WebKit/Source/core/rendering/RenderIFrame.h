@@ -26,17 +26,16 @@
 #ifndef RenderIFrame_h
 #define RenderIFrame_h
 
-#include "RenderFrameBase.h"
+#include "RenderPart.h"
 
 namespace WebCore {
 
 class RenderView;
 
-class RenderIFrame : public RenderFrameBase {
+class RenderIFrame : public RenderPart {
 public:
     explicit RenderIFrame(Element*);
 
-    bool flattenFrame() const;
     bool isSeamless() const;
 
 private:
