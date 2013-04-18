@@ -27,8 +27,6 @@
 #include "config.h"
 #include "ContextMenuController.h"
 
-#if ENABLE(CONTEXT_MENUS)
-
 #include "BackForwardController.h"
 #include "Chrome.h"
 #include "ContextMenu.h"
@@ -940,5 +938,3 @@ void ContextMenuController::showContextMenuAt(Frame* frame, const IntPoint& clic
 #endif
 
 } // namespace WebCore
-
-#endif // ENABLE(CONTEXT_MENUS)

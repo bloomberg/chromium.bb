@@ -58,20 +58,19 @@ using namespace std;
 
 namespace WebCore {
 
-#if ENABLE(CONTEXT_MENUS)
 class FrontendMenuProvider : public ContextMenuProvider {
 public:
     static PassRefPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptObject frontendApiObject, const Vector<ContextMenuItem>& items)
     {
         return adoptRef(new FrontendMenuProvider(frontendHost, frontendApiObject, items));
     }
-    
+
     void disconnect()
     {
         m_frontendApiObject = ScriptObject();
         m_frontendHost = 0;
     }
-    
+
 private:
     FrontendMenuProvider(InspectorFrontendHost* frontendHost, ScriptObject frontendApiObject, const Vector<ContextMenuItem>& items)
         : m_frontendHost(frontendHost)
@@ -84,13 +83,13 @@ private:
     {
         contextMenuCleared();
     }
-    
+
     virtual void populateContextMenu(ContextMenu* menu)
     {
         for (size_t i = 0; i < m_items.size(); ++i)
             menu->appendItem(m_items[i]);
     }
-    
+
     virtual void contextMenuItemSelected(const ContextMenuItem* item)
     {
         if (m_frontendHost) {
@@ -102,7 +101,7 @@ private:
             function.call();
         }
     }
-    
+
     virtual void contextMenuCleared()
     {
         if (m_frontendHost) {
@@ -118,14 +117,11 @@ private:
     ScriptObject m_frontendApiObject;
     Vector<ContextMenuItem> m_items;
 };
-#endif
 
 InspectorFrontendHost::InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage)
     : m_client(client)
     , m_frontendPage(frontendPage)
-#if ENABLE(CONTEXT_MENUS)
     , m_menuProvider(0)
-#endif
 {
 }
 
@@ -137,10 +133,8 @@ InspectorFrontendHost::~InspectorFrontendHost()
 void InspectorFrontendHost::disconnectClient()
 {
     m_client = 0;
-#if ENABLE(CONTEXT_MENUS)
     if (m_menuProvider)
         m_menuProvider->disconnect();
-#endif
     m_frontendPage = 0;
 }
 
@@ -246,7 +240,6 @@ void InspectorFrontendHost::sendMessageToBackend(const String& message)
         m_client->sendMessageToBackend(message);
 }
 
-#if ENABLE(CONTEXT_MENUS)
 void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
 {
     if (!event)
@@ -264,7 +257,6 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
     menuController->showContextMenu(event, menuProvider);
     m_menuProvider = menuProvider.get();
 }
-#endif
 
 String InspectorFrontendHost::loadResourceSynchronously(const String& url)
 {

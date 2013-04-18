@@ -27,12 +27,8 @@
 #ifndef ContextMenuItem_h
 #define ContextMenuItem_h
 
-#if ENABLE(CONTEXT_MENUS)
-
 #include <wtf/OwnPtr.h>
 #include <wtf/text/WTFString.h>
-
-#endif // ENABLE(CONTEXT_MENUS)
 
 namespace WebCore {
 
@@ -128,7 +124,6 @@ namespace WebCore {
         SubmenuType
     };
 
-#if ENABLE(CONTEXT_MENUS)
     class ContextMenuItem {
         WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -168,7 +163,6 @@ namespace WebCore {
         bool m_checked;
         Vector<ContextMenuItem> m_subMenuItems;
     };
-#endif // ENABLE(CONTEXT_MENUS)
 }
 
 #endif // ContextMenuItem_h

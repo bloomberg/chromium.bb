@@ -26,8 +26,6 @@
 #include "config.h"
 #include "ContextMenu.h"
 
-#if ENABLE(CONTEXT_MENUS)
-
 namespace WebCore {
 
 ContextMenu::ContextMenu()
@@ -55,5 +53,3 @@ const ContextMenuItem* ContextMenu::itemWithAction(unsigned action)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CONTEXT_MENUS)

@@ -32,7 +32,7 @@
 namespace WebCore {
 
     class IntSize;
-    
+
     String inputElementAltText();
     String resetButtonDefaultLabel();
     String searchableIndexIntroduction();
@@ -43,7 +43,6 @@ namespace WebCore {
     String fileButtonNoFilesSelectedLabel();
     String defaultDetailsSummaryText();
 
-#if ENABLE(CONTEXT_MENUS)
     String contextMenuItemTagOpenLinkInNewWindow();
     String contextMenuItemTagDownloadLinkToDisk();
     String contextMenuItemTagCopyLinkToClipboard();
@@ -91,7 +90,6 @@ namespace WebCore {
     String contextMenuItemTagMediaPause();
     String contextMenuItemTagMediaMute();
     String contextMenuItemTagInspectElement();
-#endif // ENABLE(CONTEXT_MENUS)
 
     String searchMenuNoRecentSearchesText();
     String searchMenuRecentSearchesText();

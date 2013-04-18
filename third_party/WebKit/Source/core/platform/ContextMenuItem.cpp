@@ -28,8 +28,6 @@
 
 #include "ContextMenu.h"
 
-#if ENABLE(CONTEXT_MENUS)
-
 namespace WebCore {
 
 ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu* subMenu)
@@ -118,5 +116,3 @@ bool ContextMenuItem::enabled() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CONTEXT_MENUS)

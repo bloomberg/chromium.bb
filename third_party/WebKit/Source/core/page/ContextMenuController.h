@@ -26,8 +26,6 @@
 #ifndef ContextMenuController_h
 #define ContextMenuController_h
 
-#if ENABLE(CONTEXT_MENUS)
-
 #include "HitTestResult.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
@@ -76,7 +74,7 @@ namespace WebCore {
 
         PassOwnPtr<ContextMenu> createContextMenu(Event*);
         void showContextMenu(Event*);
-        
+
         void appendItem(ContextMenuItem&, ContextMenu* parentMenu);
 
         void createAndAppendFontSubMenu(ContextMenuItem&);
@@ -97,5 +95,4 @@ namespace WebCore {
 
 }
 
-#endif // ENABLE(CONTEXT_MENUS)
 #endif

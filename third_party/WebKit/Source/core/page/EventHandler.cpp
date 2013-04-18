@@ -2478,7 +2478,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
 
 bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent)
 {
-#if ENABLE(CONTEXT_MENUS) && !OS(ANDROID)
+#if !OS(ANDROID)
     if (!m_didLongPressInvokeContextMenu)
         return sendContextMenuEventForGesture(gestureEvent);
 #endif
@@ -2497,12 +2497,9 @@ bool EventHandler::handleGestureForTextSelectionOrContextMenu(const PlatformGest
             return true;
     }
 #endif
-#if ENABLE(CONTEXT_MENUS)
     m_didLongPressInvokeContextMenu = (gestureEvent.type() == PlatformEvent::GestureLongPress);
+
     return sendContextMenuEventForGesture(gestureEvent);
-#else
-    return false;
-#endif
 }
 
 bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gestureEvent)
@@ -2708,14 +2705,13 @@ bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEven
 }
 #endif
 
-#if ENABLE(CONTEXT_MENUS)
 bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 {
     Document* doc = m_frame->document();
     FrameView* v = m_frame->view();
     if (!v)
         return false;
-    
+
     // Clear mouse press state to avoid initiating a drag while context menu is up.
     m_mousePressed = false;
     bool swallowEvent;
@@ -2735,7 +2731,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
     }
 
     swallowEvent = !dispatchMouseEvent(eventNames().contextmenuEvent, mev.targetNode(), true, 0, event, false);
-    
+
     return swallowEvent;
 }
 
@@ -2833,7 +2829,6 @@ bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& ev
     // We do not need to send a corresponding mouse release because in case of
     // right-click, the context menu takes capture and consumes all events.
 }
-#endif // ENABLE(CONTEXT_MENUS)
 
 void EventHandler::scheduleHoverStateUpdate()
 {

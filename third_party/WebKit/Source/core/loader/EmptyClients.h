@@ -415,7 +415,6 @@ private:
     EmptyTextCheckerClient m_textCheckerClient;
 };
 
-#if ENABLE(CONTEXT_MENUS)
 class EmptyContextMenuClient : public ContextMenuClient {
     WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -438,7 +437,6 @@ public:
     virtual void showContextMenu() { }
 #endif
 };
-#endif // ENABLE(CONTEXT_MENUS)
 
 class EmptyDragClient : public DragClient {
     WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED;

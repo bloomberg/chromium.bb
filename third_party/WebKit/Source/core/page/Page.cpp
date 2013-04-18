@@ -124,9 +124,7 @@ Page::Page(PageClients& pageClients)
     , m_dragCaretController(DragCaretController::create())
     , m_dragController(DragController::create(this, pageClients.dragClient))
     , m_focusController(FocusController::create(this))
-#if ENABLE(CONTEXT_MENUS)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
-#endif
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_settings(Settings::create(this))
@@ -1203,9 +1201,7 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 
     info.addMember(m_dragController, "dragController");
     info.addMember(m_focusController, "focusController");
-#if ENABLE(CONTEXT_MENUS)
     info.addMember(m_contextMenuController, "contextMenuController");
-#endif
     info.addMember(m_inspectorController, "inspectorController");
     info.addMember(m_pointerLockController, "pointerLockController");
     info.addMember(m_scrollingCoordinator, "scrollingCoordinator");
@@ -1244,9 +1240,7 @@ void Page::captionPreferencesChanged()
 Page::PageClients::PageClients()
     : alternativeTextClient(0)
     , chromeClient(0)
-#if ENABLE(CONTEXT_MENUS)
     , contextMenuClient(0)
-#endif
     , editorClient(0)
     , dragClient(0)
     , inspectorClient(0)

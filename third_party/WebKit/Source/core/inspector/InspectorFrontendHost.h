@@ -98,16 +98,12 @@ public:
     String localizedStringsURL();
 
 private:
-#if ENABLE(CONTEXT_MENUS)
     friend class FrontendMenuProvider;
-#endif
     InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage);
 
     InspectorFrontendClient* m_client;
     Page* m_frontendPage;
-#if ENABLE(CONTEXT_MENUS)
     FrontendMenuProvider* m_menuProvider;
-#endif
 };
 
 } // namespace WebCore

@@ -26,8 +26,6 @@
 #ifndef ContextMenu_h
 #define ContextMenu_h
 
-#if ENABLE(CONTEXT_MENUS)
-
 #include <wtf/Noncopyable.h>
 
 #include "ContextMenuItem.h"
@@ -65,5 +63,4 @@ namespace WebCore {
     };
 }
 
-#endif // ENABLE(CONTEXT_MENUS)
 #endif // ContextMenu_h

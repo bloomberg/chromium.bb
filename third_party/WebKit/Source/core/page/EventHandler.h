@@ -181,11 +181,9 @@ public:
     bool adjustGesturePosition(const PlatformGestureEvent&, IntPoint& adjustedPoint);
 #endif
 
-#if ENABLE(CONTEXT_MENUS)
     bool sendContextMenuEvent(const PlatformMouseEvent&);
     bool sendContextMenuEventForKey();
     bool sendContextMenuEventForGesture(const PlatformGestureEvent&);
-#endif
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
@@ -202,7 +200,7 @@ public:
     void focusDocumentView();
 
     void capsLockStateMayHaveChanged(); // Only called by FrameSelection
-    
+
     void sendResizeEvent(); // Only called in FrameView
     void sendScrollEvent(); // Ditto
 

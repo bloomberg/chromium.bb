@@ -26,8 +26,6 @@
 #ifndef ContextMenuClient_h
 #define ContextMenuClient_h
 
-#if ENABLE(CONTEXT_MENUS)
-
 #include "ContextMenu.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
@@ -60,5 +58,4 @@ namespace WebCore {
     };
 }
 
-#endif // ENABLE(CONTEXT_MENUS)
 #endif

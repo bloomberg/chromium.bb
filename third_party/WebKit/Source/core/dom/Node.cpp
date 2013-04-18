@@ -2480,12 +2480,10 @@ void Node::defaultEventHandler(Event* event)
         int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
         if (dispatchDOMActivateEvent(detail, event))
             event->setDefaultHandled();
-#if ENABLE(CONTEXT_MENUS)
     } else if (eventType == eventNames().contextmenuEvent) {
         if (Frame* frame = document()->frame())
             if (Page* page = frame->page())
                 page->contextMenuController()->handleContextMenuEvent(event);
-#endif
     } else if (eventType == eventNames().textInputEvent) {
         if (event->hasInterface(eventNames().interfaceForTextEvent))
             if (Frame* frame = document()->frame())
@@ -2509,7 +2507,7 @@ void Node::defaultEventHandler(Event* event)
 #endif
     } else if (eventType == eventNames().mousewheelEvent && event->hasInterface(eventNames().interfaceForWheelEvent)) {
         WheelEvent* wheelEvent = static_cast<WheelEvent*>(event);
-        
+
         // If we don't have a renderer, send the wheel event to the first node we find with a renderer.
         // This is needed for <option> and <optgroup> elements so that <select>s get a wheel scroll.
         Node* startNode = this;
