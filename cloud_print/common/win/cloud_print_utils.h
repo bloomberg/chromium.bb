@@ -21,6 +21,9 @@ string16 GetErrorMessage(HRESULT hr);
 // calling code.
 string16 LoadLocalString(DWORD id);
 
+// Sets registry value to notify Google Update that product was used.
+void SetGoogleUpdateUsage(const string16& product_id);
+
 }  // namespace cloud_print
 
 #endif  // CLOUD_PRINT_COMMON_CLOUD_PRINT_UTILS_H_

@@ -9,8 +9,7 @@ namespace cloud_print {
 
 extern const wchar_t kPortName[];
 extern const size_t kPortNameSize;
-extern const wchar_t kGoogleUpdateClientsKey[];
-extern const wchar_t kGoogleUpdateClientStateKey[];
+extern const wchar_t kGoogleUpdateProductId[];
 
 }  // namespace cloud_print
 

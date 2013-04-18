@@ -25,6 +25,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
@@ -405,14 +406,7 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
                                  DWORD job_id,
                                  DWORD,
                                  BYTE*) {
-  const wchar_t* kUsageKey = L"dr";
-  // Set appropriate key to 1 to let Omaha record usage.
-  base::win::RegKey key;
-  if (key.Create(HKEY_CURRENT_USER, kGoogleUpdateClientStateKey,
-                 KEY_SET_VALUE) != ERROR_SUCCESS ||
-      key.WriteValue(kUsageKey, L"1") != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to set usage key";
-  }
+  SetGoogleUpdateUsage(kGoogleUpdateProductId);
   if (port_handle == NULL) {
     LOG(ERROR) << "port_handle should not be NULL.";
     SetLastError(ERROR_INVALID_PARAMETER);

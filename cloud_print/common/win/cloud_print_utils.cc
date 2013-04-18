@@ -6,7 +6,17 @@
 
 #include <windows.h>
 
+#include "base/win/registry.h"
+
 namespace cloud_print {
+
+namespace {
+
+// Google Update related constants.
+const wchar_t kClientStateKey[] = L"SOFTWARE\\Google\\Update\\ClientState\\";
+const wchar_t* kUsageKey = L"dr";
+
+}  // namespace
 
 HRESULT GetLastHResult() {
   DWORD error_code = GetLastError();
@@ -35,6 +45,17 @@ string16 GetErrorMessage(HRESULT hr) {
   string16 result(buffer);
   ::LocalFree(buffer);
   return result;
+}
+
+void SetGoogleUpdateUsage(const string16& product_id) {
+  // Set appropriate key to 1 to let Omaha record usage.
+  base::win::RegKey key;
+  if (key.Create(HKEY_CURRENT_USER,
+                 (kClientStateKey + product_id).c_str(),
+                 KEY_SET_VALUE) != ERROR_SUCCESS ||
+      key.WriteValue(kUsageKey, L"1") != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to set usage key";
+  }
 }
 
 }  // namespace cloud_print
