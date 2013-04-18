@@ -464,6 +464,13 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase,
   virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
       OVERRIDE;
 
+  // Creates a test file with the given spec. This is a utility for
+  // CreateTestFile() as well.
+  virtual void CreateTestFileWithMimeType(const std::string& name,
+                                          const std::string& mime_type,
+                                          int64 length,
+                                          const std::string& modification_time);
+
   // Waits until a notification for a directory change is received.
   void WaitUntilDirectoryChanged();
 
@@ -502,10 +509,18 @@ void FileManagerBrowserDriveTest::CreateTestFile(
     const std::string& name,
     int64 length,
     const std::string& modification_time) {
+  CreateTestFileWithMimeType(name, "text/plain", length, modification_time);
+}
+
+void FileManagerBrowserDriveTest::CreateTestFileWithMimeType(
+    const std::string& name,
+    const std::string& mime_type,
+    int64 length,
+    const std::string& modification_time) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> resource_entry;
   fake_drive_service_->AddNewFile(
-      "text/plain",
+      mime_type,
       length,
       fake_drive_service_->GetRootResourceId(),
       name,
@@ -654,6 +669,14 @@ FileManagerBrowserDriveTest::CreateDriveSystemService(Profile* profile) {
   // Create test files and directories inside the fake drive service.
   CreateTestFilesAndDirectories();
 
+  // For testing Drive, create more entries with Drive specific attributes.
+  // TODO(haruki): Add a case for an entry cached by DriveCache.
+  // TODO(haruki): Add a case for a shared-with-me entry.
+  CreateTestFileWithMimeType("Test Document",
+                             "application/vnd.google-apps.document",
+                             0,
+                             "10 Apr 2013 16:20:00");
+
   system_service_ = new drive::DriveSystemService(profile,
                                                   fake_drive_service_,
                                                   test_cache_root_.path(),
@@ -712,6 +735,14 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
 
   ResultCatcher catcher;
   StartTest("autocomplete");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
+  ResultCatcher catcher;
+  StartTest("openSidebarOffline");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 

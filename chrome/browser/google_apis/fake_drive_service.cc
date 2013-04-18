@@ -995,11 +995,18 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
     return;
   }
 
+  // Prepare "kind" for hosted documents. This only supports Google Document.
+  std::string entry_kind;
+  if (content_type == "application/vnd.google-apps.document")
+    entry_kind = "document";
+  else
+    entry_kind = "file";
+
   const base::DictionaryValue* new_entry = AddNewEntry(content_type,
                                                        content_length,
                                                        parent_resource_id,
                                                        title,
-                                                       "file");
+                                                       entry_kind);
   if (!new_entry) {
     scoped_ptr<ResourceEntry> null;
     MessageLoop::current()->PostTask(
