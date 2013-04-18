@@ -36,6 +36,7 @@
 #include "CrossThreadTask.h"
 #include "Document.h"
 #include "MainThreadWebSocketChannel.h"
+#include "RuntimeEnabledFeatures.h"
 #include "ScriptExecutionContext.h"
 #include "ThreadableWebSocketChannelClientWrapper.h"
 #include "WebSocketChannel.h"
@@ -146,9 +147,14 @@ void WorkerThreadableWebSocketChannel::resume()
 WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode)
     : m_workerClientWrapper(clientWrapper)
     , m_loaderProxy(loaderProxy)
-    , m_mainWebSocketChannel(MainThreadWebSocketChannel::create(toDocument(context), this))
+    , m_mainWebSocketChannel(0)
     , m_taskMode(taskMode)
 {
+    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+        // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this);
+    } else
+        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(toDocument(context), this);
     ASSERT(isMainThread());
 }
 

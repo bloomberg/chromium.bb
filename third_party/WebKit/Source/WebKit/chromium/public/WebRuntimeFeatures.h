@@ -175,6 +175,9 @@ public:
     WEBKIT_EXPORT static void enableDirectoryUpload(bool);
     WEBKIT_EXPORT static bool isDirectoryUploadEnabled();
 
+    WEBKIT_EXPORT static void enableExperimentalWebSocket(bool);
+    WEBKIT_EXPORT static bool isExperimentalWebSocketEnabled();
+
 private:
     WebRuntimeFeatures();
 };

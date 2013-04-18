@@ -580,4 +580,14 @@ bool WebRuntimeFeatures::isDirectoryUploadEnabled()
     return RuntimeEnabledFeatures::directoryUploadEnabled();
 }
 
+void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
+{
+    RuntimeEnabledFeatures::setExperimentalWebSocketEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isExperimentalWebSocketEnabled()
+{
+    return RuntimeEnabledFeatures::experimentalWebSocketEnabled();
+}
+
 } // namespace WebKit

@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "KURL.h"
 #include "MainThreadWebSocketChannel.h"
+#include "RuntimeEnabledFeatures.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
 #include "WebSocketChannel.h"
@@ -52,7 +53,11 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     : m_client(client)
     , m_binaryType(BinaryTypeBlob)
 {
-    m_private = MainThreadWebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
+    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+        // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
+        m_private = MainThreadWebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
+    } else
+        m_private = MainThreadWebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
 }
 
 WebSocketImpl::~WebSocketImpl()

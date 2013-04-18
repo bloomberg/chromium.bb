@@ -250,6 +250,9 @@ public:
     static bool directoryUploadEnabled() { return isDirectoryUploadEnabled; }
     static void setDirectoryUploadEnabled(bool isEnabled) { isDirectoryUploadEnabled = isEnabled; }
 
+    static void setExperimentalWebSocketEnabled(bool isEnabled) { isExperimentalWebSocketEnabled = isEnabled; }
+    static bool experimentalWebSocketEnabled() { return isExperimentalWebSocketEnabled; }
+
 private:
     // Never instantiate.
     RuntimeEnabledFeatures() { }
@@ -334,6 +337,8 @@ private:
     static bool isWebPInAcceptHeaderEnabled;
 
     static bool isDirectoryUploadEnabled;
+
+    static bool isExperimentalWebSocketEnabled;
 };
 
 } // namespace WebCore

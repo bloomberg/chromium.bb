@@ -58,6 +58,7 @@ bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
 bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isScriptedSpeechEnabled = false;
+bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
 
 #if ENABLE(MEDIA_STREAM)
 bool RuntimeEnabledFeatures::isMediaStreamEnabled = true;

@@ -34,6 +34,7 @@
 
 #include "Document.h"
 #include "MainThreadWebSocketChannel.h"
+#include "RuntimeEnabledFeatures.h"
 #include "ScriptExecutionContext.h"
 #include "ThreadableWebSocketChannelClientWrapper.h"
 #include "WebSocketChannelClient.h"
@@ -61,6 +62,10 @@ PassRefPtr<WebSocketChannel> WebSocketChannel::create(ScriptExecutionContext* co
         return WorkerThreadableWebSocketChannel::create(workerContext, client, mode);
     }
 
+    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+        // FIXME: Create and return an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
+        return MainThreadWebSocketChannel::create(toDocument(context), client);
+    }
     return MainThreadWebSocketChannel::create(toDocument(context), client);
 }
 
