@@ -34,6 +34,7 @@
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendInterface.h"
 #include "IDBDatabaseCallbacksImpl.h"
+#include "IDBKeyRange.h"
 #include "IDBOpenDBRequest.h"
 #include "IDBTransactionCoordinator.h"
 #include "ScriptController.h"
