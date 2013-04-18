@@ -7,6 +7,9 @@
 It is evaluated through Python.
 """
 
+import fnmatch
+
+
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.*',
@@ -131,10 +134,22 @@ _OS_NEGATIVE_FILTER['android'] = [
     'ElementSelectingTest.testShouldBeAbleToToggleEnabledMultiSelectOption',
     'ExecutingAsyncJavascriptTest.shouldBeAbleToExecuteAsynchronousScripts',
     'ExecutingAsyncJavascriptTest.shouldNotTimeoutIfScriptCallsbackInsideAZeroTimeout',
+    'FormHandlingTest.testSendingKeyboardEventsShouldAppendTextInInputs',
+    'FormHandlingTest.testSendingKeyboardEventsShouldAppendTextInInputsWithExistingValue',
+    'FormHandlingTest.testSendingKeyboardEventsShouldAppendTextinTextAreas',
+    'FormHandlingTest.testSendKeysKeepsCapitalization',
+    'FormHandlingTest.testShouldBeAbleToClearTextFromInputElements',
+    'FormHandlingTest.testShouldBeAbleToClearTextFromTextAreas',
+    'FormHandlingTest.testShouldBeAbleToEnterTextIntoATextAreaBySettingItsValue',
+    'FormHandlingTest.testShouldEnterDataIntoFormFields',
     'FrameSwitchingTest.testClosingTheFinalBrowserWindowShouldNotCauseAnExceptionToBeThrown',
     'FrameSwitchingTest.testGetCurrentUrl',
+    'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
     'I18nTest.testEnteringHebrewTextFromLeftToRight',
     'I18nTest.testEnteringHebrewTextFromRightToLeft',
+    'I18nTest.testShouldBeAbleToInputJapanese',
+    'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
+    'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
     'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
     'JavascriptEnabledDriverTest.testShouldBeAbleToClickALinkThatClosesAWindow',
     'JavascriptEnabledDriverTest.testShouldFireOnChangeEventWhenSettingAnElementsValue',
@@ -146,6 +161,8 @@ _OS_NEGATIVE_FILTER['android'] = [
     'TakesScreenshotTest.testCaptureToBase64',
     'TakesScreenshotTest.testSaveScreenshotAsFile',
     'TextHandlingTest.testShouldBeAbleToEnterDatesAfterFillingInOtherValuesFirst',
+    'TextHandlingTest.testShouldBeAbleToSetMoreThanOneLineOfTextInATextArea',
+    'TextHandlingTest.testTextOfATextAreaShouldBeEqualToItsDefaultTextEvenAfterTyping',
     'TouchFlickTest.*',
     'TouchScrollTest.*',
     'TouchSingleTapTest.*',
@@ -185,10 +202,5 @@ def ApplyJavaTestFilter(operating_system, chrome_version, tests):
              _REVISION_NEGATIVE_FILTER[chrome_version])
   passed = set(tests)
   for f in filters:
-    passed.difference_update(set(t for t in tests if _TestMatchesFilter(t, f)))
+    passed.difference_update(set(t for t in tests if fnmatch.fnmatch(t, f)))
   return passed
-
-def _TestMatchesFilter(test, filter):
-  if '*' in filter:
-    return test[:len(filter) - 1] == test[:-1]
-  return test == filter
