@@ -78,7 +78,7 @@ body[new-ui] .scrollbar-vertical > .scrollbar-button.pressed {
   opacity: 0.5;
 }
 
-#butter-bar-container {
+body:not([new-ui]) #butter-bar-container {
   -webkit-box-pack: center;
   display: -webkit-box;
   left: 0;
@@ -89,7 +89,11 @@ body[new-ui] .scrollbar-vertical > .scrollbar-button.pressed {
   z-index: 3;
 }
 
-#butter-bar {
+body[new-ui] #butter-bar-container {
+  width: 100%;
+}
+
+body:not([new-ui]) #butter-bar {
   -webkit-border-radius: 2px;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
@@ -111,12 +115,18 @@ body[new-ui] .scrollbar-vertical > .scrollbar-button.pressed {
 }
 
 body[new-ui] #butter-bar {
-  -webkit-app-region: no-drag;
+  color: #666;
+  display: -webkit-box;
+  padding: 15px;
 }
 
 #butter-bar:not(.visible) {
   opacity: 0;
   pointer-events: none;
+}
+
+body[new-ui] #butter-bar:not(.visible) {
+  display: none;
 }
 
 #butter-bar .content {
@@ -127,12 +137,21 @@ body[new-ui] #butter-bar {
   min-height: 35px;
 }
 
+body[new-ui] #butter-bar .content {
+  -webkit-box-pack: end;
+  min-height: 0;
+}
+
 #butter-bar .actions {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   -webkit-margin-start: 6px;
   display: -webkit-box;
+}
+
+body[new-ui] #butter-bar .actions {
+  -webkit-box-align: end;
 }
 
 #butter-bar .actions a {
@@ -156,6 +175,10 @@ body[new-ui] #butter-bar {
   margin-left: -6px;
 }
 
+body[new-ui] #butter-bar .actions a.x {
+  margin-bottom: -14px;
+}
+
 #butter-bar.error {
   background-color: rgba(221, 75, 57, 0.2);
 }
@@ -166,7 +189,11 @@ body[new-ui] #butter-bar {
   white-space: nowrap;
 }
 
-#butter-bar .progress-track {
+body[new-ui] #butter-bar .butter-message.single-line {
+  line-height: 2.0;
+}
+
+body:not([new-ui]) #butter-bar .progress-track {
   height: 5px;
 }
 
