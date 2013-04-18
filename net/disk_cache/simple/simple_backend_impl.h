@@ -12,13 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace disk_cache {
@@ -31,11 +31,13 @@ namespace disk_cache {
 
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
 
+class SimpleIndex;
+
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
  public:
   SimpleBackendImpl(const base::FilePath& path, int max_bytes,
                     net::CacheType type,
-                    const scoped_refptr<base::TaskRunner>& cache_thread,
+                    base::SingleThreadTaskRunner* cache_thread,
                     net::NetLog* net_log);
 
   virtual ~SimpleBackendImpl();
@@ -74,13 +76,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
   // Try to create the directory if it doesn't exist.
   // Must run on Cache Thread.
   static void CreateDirectory(
-      base::MessageLoopProxy* io_thread,
+      base::SingleThreadTaskRunner* io_thread,
       const base::FilePath& path,
       const InitializeIndexCallback& initialize_index_callback);
 
   const base::FilePath path_;
-  scoped_refptr<SimpleIndex> index_;
-  const scoped_refptr<base::TaskRunner> cache_thread_;
+  scoped_ptr<SimpleIndex> index_;
+  const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
 };
 
 }  // namespace disk_cache

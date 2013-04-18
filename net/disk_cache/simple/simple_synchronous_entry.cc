@@ -33,7 +33,7 @@ using base::PLATFORM_FILE_OPEN;
 using base::PLATFORM_FILE_READ;
 using base::PLATFORM_FILE_WRITE;
 using base::ReadPlatformFile;
-using base::TaskRunner;
+using base::SingleThreadTaskRunner;
 using base::Time;
 using base::TruncatePlatformFile;
 using base::WritePlatformFile;
@@ -49,7 +49,7 @@ using simple_util::GetFileOffsetFromKeyAndDataOffset;
 void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
-    const scoped_refptr<TaskRunner>& callback_runner,
+    SingleThreadTaskRunner* callback_runner,
     const SynchronousCreationCallback& callback) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(callback_runner, path, key);
@@ -66,7 +66,7 @@ void SimpleSynchronousEntry::OpenEntry(
 void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
-    const scoped_refptr<TaskRunner>& callback_runner,
+    SingleThreadTaskRunner* callback_runner,
     const SynchronousCreationCallback& callback) {
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(callback_runner, path, key);
@@ -85,7 +85,7 @@ void SimpleSynchronousEntry::CreateEntry(
 void SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
-    const scoped_refptr<TaskRunner>& callback_runner,
+    SingleThreadTaskRunner* callback_runner,
     const net::CompletionCallback& callback) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath to_delete = path.AppendASCII(GetFilenameFromKeyAndIndex(key, i));
@@ -157,7 +157,7 @@ void SimpleSynchronousEntry::WriteData(
 }
 
 SimpleSynchronousEntry::SimpleSynchronousEntry(
-    const scoped_refptr<TaskRunner>& callback_runner,
+    SingleThreadTaskRunner* callback_runner,
     const FilePath& path,
     const std::string& key)
     : callback_runner_(callback_runner),
@@ -302,7 +302,7 @@ int SimpleSynchronousEntry::InitializeForCreate() {
 void SimpleSynchronousEntry::Doom() {
   // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
   DoomEntry(path_, key_,
-            scoped_refptr<base::TaskRunner>(), net::CompletionCallback());
+            scoped_refptr<SingleThreadTaskRunner>(), net::CompletionCallback());
 }
 
 }  // namespace disk_cache

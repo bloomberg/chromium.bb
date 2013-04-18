@@ -34,7 +34,7 @@ using base::Time;
 using base::WorkerPool;
 
 // static
-int SimpleEntryImpl::OpenEntry(const scoped_refptr<SimpleIndex>& index,
+int SimpleEntryImpl::OpenEntry(SimpleIndex* index,
                                const FilePath& path,
                                const std::string& key,
                                Entry** entry,
@@ -58,7 +58,7 @@ int SimpleEntryImpl::OpenEntry(const scoped_refptr<SimpleIndex>& index,
 }
 
 // static
-int SimpleEntryImpl::CreateEntry(const scoped_refptr<SimpleIndex>& index,
+int SimpleEntryImpl::CreateEntry(SimpleIndex* index,
                                  const FilePath& path,
                                  const std::string& key,
                                  Entry** entry,
@@ -77,7 +77,7 @@ int SimpleEntryImpl::CreateEntry(const scoped_refptr<SimpleIndex>& index,
 }
 
 // static
-int SimpleEntryImpl::DoomEntry(const scoped_refptr<SimpleIndex>& index,
+int SimpleEntryImpl::DoomEntry(SimpleIndex* index,
                                const FilePath& path,
                                const std::string& key,
                                const CompletionCallback& callback) {
@@ -143,7 +143,8 @@ int SimpleEntryImpl::ReadData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  index_->UseIfExists(key_);
+  if (index_)
+    index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  this, callback);
@@ -168,7 +169,8 @@ int SimpleEntryImpl::WriteData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
-  index_->UseIfExists(key_);
+  if (index_)
+    index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  this, callback);
@@ -230,11 +232,11 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-SimpleEntryImpl::SimpleEntryImpl(const scoped_refptr<SimpleIndex>& index,
-                                 const base::FilePath& path,
+SimpleEntryImpl::SimpleEntryImpl(SimpleIndex* index,
+                                 const FilePath& path,
                                  const std::string& key)
-    : constructor_thread_(base::MessageLoopProxy::current()),
-      index_(index),
+    : constructor_thread_(MessageLoopProxy::current()),
+      index_(index->AsWeakPtr()),
       path_(path),
       key_(key),
       synchronous_entry_(NULL),
@@ -264,17 +266,20 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (!sync_entry) {
     completion_callback.Run(net::ERR_FAILED);
     // If OpenEntry failed, we must remove it from our index.
-    index_->Remove(key_);
+    if (index_)
+      index_->Remove(key_);
     // The reference held by the Callback calling us will go out of scope and
     // delete |this| on leaving this scope.
     return;
   }
-  // Adding a reference to self will keep |this| alive after the scope of our
-  // Callback calling us is destroyed.
+  // The Backend interface requires us to return |this|, and keep the Entry
+  // alive until Entry::Close(). Adding a reference to self will keep |this|
+  // alive after the scope of the Callback calling us is destroyed.
   AddRef();  // Balanced in Close().
   synchronous_entry_ = sync_entry;
   SetSynchronousData();
-  index_->Insert(key_);
+  if (index_)
+    index_->Insert(key_);
   *out_entry = this;
   completion_callback.Run(net::OK);
 }
@@ -287,11 +292,13 @@ void SimpleEntryImpl::EntryOperationComplete(
   DCHECK(synchronous_entry_in_use_by_worker_);
   synchronous_entry_in_use_by_worker_ = false;
   SetSynchronousData();
-  if (result >= 0) {
-    index_->UpdateEntrySize(synchronous_entry_->key(),
-                            synchronous_entry_->GetFileSize());
-  } else {
-    index_->Remove(synchronous_entry_->key());
+  if (index_) {
+    if (result >= 0) {
+      index_->UpdateEntrySize(synchronous_entry_->key(),
+                              synchronous_entry_->GetFileSize());
+    } else {
+      index_->Remove(synchronous_entry_->key());
+    }
   }
   completion_callback.Run(result);
 }

@@ -16,6 +16,7 @@
 
 using base::FilePath;
 using base::MessageLoopProxy;
+using base::SingleThreadTaskRunner;
 using base::Time;
 using base::WorkerPool;
 using file_util::DirectoryExists;
@@ -41,7 +42,7 @@ SimpleBackendImpl::SimpleBackendImpl(
     const FilePath& path,
     int max_bytes,
     net::CacheType type,
-    const scoped_refptr<base::TaskRunner>& cache_thread,
+    base::SingleThreadTaskRunner* cache_thread,
     net::NetLog* net_log)
   : path_(path),
     index_(new SimpleIndex(cache_thread,
@@ -78,18 +79,19 @@ int32 SimpleBackendImpl::GetEntryCount() const {
 int SimpleBackendImpl::OpenEntry(const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
-  return SimpleEntryImpl::OpenEntry(index_, path_, key, entry, callback);
+  return SimpleEntryImpl::OpenEntry(index_.get(), path_, key, entry, callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
-  return SimpleEntryImpl::CreateEntry(index_, path_, key, entry, callback);
+  return SimpleEntryImpl::CreateEntry(index_.get(), path_, key, entry,
+                                      callback);
 }
 
 int SimpleBackendImpl::DoomEntry(const std::string& key,
                                  const net::CompletionCallback& callback) {
-  return SimpleEntryImpl::DoomEntry(index_, path_, key, callback);
+  return SimpleEntryImpl::DoomEntry(index_.get(), path_, key, callback);
 }
 
 int SimpleBackendImpl::DoomAllEntries(const CompletionCallback& callback) {
@@ -141,7 +143,7 @@ void SimpleBackendImpl::InitializeIndex(
 
 // static
 void SimpleBackendImpl::CreateDirectory(
-    MessageLoopProxy* io_thread,
+    SingleThreadTaskRunner* io_thread,
     const base::FilePath& path,
     const InitializeIndexCallback& initialize_index_callback) {
   int rv = net::OK;

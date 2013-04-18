@@ -21,11 +21,10 @@
 
 namespace disk_cache {
 
-EntryMetadata::EntryMetadata() :
-    hash_key_(0),
-    last_used_time_(0),
-    entry_size_(0)
-{}
+EntryMetadata::EntryMetadata() : hash_key_(0),
+                                 last_used_time_(0),
+                                 entry_size_(0) {
+}
 
 
 EntryMetadata::EntryMetadata(uint64 hash_key,
@@ -33,8 +32,8 @@ EntryMetadata::EntryMetadata(uint64 hash_key,
                              uint64 entry_size) :
     hash_key_(hash_key),
     last_used_time_(last_used_time.ToInternalValue()),
-    entry_size_(entry_size)
-{}
+    entry_size_(entry_size) {
+}
 
 base::Time EntryMetadata::GetLastUsedTime() const {
   return base::Time::FromInternalValue(last_used_time_);
@@ -70,8 +69,8 @@ void EntryMetadata::MergeWith(const EntryMetadata& from) {
 }
 
 SimpleIndex::SimpleIndex(
-    const scoped_refptr<base::TaskRunner>& cache_thread,
-    const scoped_refptr<base::TaskRunner>& io_thread,
+    base::SingleThreadTaskRunner* cache_thread,
+    base::SingleThreadTaskRunner* io_thread,
     const base::FilePath& path)
     : cache_size_(0),
       initialized_(false),
@@ -86,7 +85,7 @@ SimpleIndex::~SimpleIndex() {
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   IndexCompletionCallback merge_callback =
-      base::Bind(&SimpleIndex::MergeInitializingSet, this);
+      base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
   base::WorkerPool::PostTask(FROM_HERE,
                              base::Bind(&SimpleIndex::LoadFromDisk,
                                         index_filename_,
@@ -162,7 +161,7 @@ void SimpleIndex::InsertInEntrySet(
 // static
 void SimpleIndex::LoadFromDisk(
     const base::FilePath& index_filename,
-    const scoped_refptr<base::TaskRunner>& io_thread,
+    base::SingleThreadTaskRunner* io_thread,
     const IndexCompletionCallback& completion_callback) {
   scoped_ptr<EntrySet> index_file_entries =
       SimpleIndexFile::LoadFromDisk(index_filename);

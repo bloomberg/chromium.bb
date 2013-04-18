@@ -14,6 +14,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
@@ -22,7 +23,7 @@ class Pickle;
 class PickleIterator;
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace disk_cache {
@@ -67,13 +68,14 @@ class NET_EXPORT_PRIVATE EntryMetadata {
 
 // This class is not Thread-safe.
 class NET_EXPORT_PRIVATE SimpleIndex
-    : public base::RefCountedThreadSafe<SimpleIndex> {
-  friend class base::RefCountedThreadSafe<SimpleIndex>;
+    : public base::SupportsWeakPtr<SimpleIndex> {
  public:
   SimpleIndex(
-      const scoped_refptr<base::TaskRunner>& cache_thread,
-      const scoped_refptr<base::TaskRunner>& io_thread,
+      base::SingleThreadTaskRunner* cache_thread,
+      base::SingleThreadTaskRunner* io_thread,
       const base::FilePath& path);
+
+  virtual ~SimpleIndex();
 
   void Initialize();
 
@@ -104,11 +106,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
  private:
   typedef base::Callback<void(scoped_ptr<EntrySet>)> IndexCompletionCallback;
 
-  virtual ~SimpleIndex();
-
   static void LoadFromDisk(
       const base::FilePath& index_filename,
-      const scoped_refptr<base::TaskRunner>& io_thread,
+      base::SingleThreadTaskRunner* io_thread,
       const IndexCompletionCallback& completion_callback);
 
   // Enumerates all entries' files on disk and regenerates the index.
@@ -131,8 +131,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   base::FilePath index_filename_;
 
-  scoped_refptr<base::TaskRunner> cache_thread_;
-  scoped_refptr<base::TaskRunner> io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.

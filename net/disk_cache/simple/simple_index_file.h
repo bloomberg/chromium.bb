@@ -18,10 +18,6 @@
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_index.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace disk_cache {
 
 const uint64 kSimpleIndexMagicNumber = GG_UINT64_C(0x656e74657220796f);

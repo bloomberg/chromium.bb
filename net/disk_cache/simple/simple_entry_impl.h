@@ -29,23 +29,24 @@ class SimpleSynchronousEntry;
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
+
 class SimpleEntryImpl : public Entry,
                         public base::RefCountedThreadSafe<SimpleEntryImpl> {
   friend class base::RefCountedThreadSafe<SimpleEntryImpl>;
  public:
-  static int OpenEntry(const scoped_refptr<SimpleIndex>& index,
+  static int OpenEntry(SimpleIndex* index,
                        const base::FilePath& path,
                        const std::string& key,
                        Entry** entry,
                        const CompletionCallback& callback);
 
-  static int CreateEntry(const scoped_refptr<SimpleIndex>& index,
+  static int CreateEntry(SimpleIndex* index,
                          const base::FilePath& path,
                          const std::string& key,
                          Entry** entry,
                          const CompletionCallback& callback);
 
-  static int DoomEntry(const scoped_refptr<SimpleIndex>& index,
+  static int DoomEntry(SimpleIndex* index,
                        const base::FilePath& path,
                        const std::string& key,
                        const CompletionCallback& callback);
@@ -85,7 +86,7 @@ class SimpleEntryImpl : public Entry,
   virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
 
  private:
-  SimpleEntryImpl(const scoped_refptr<SimpleIndex>& index,
+  SimpleEntryImpl(SimpleIndex* index,
                   const base::FilePath& path,
                   const std::string& key);
 
@@ -116,8 +117,8 @@ class SimpleEntryImpl : public Entry,
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  const scoped_refptr<base::MessageLoopProxy> constructor_thread_;
-  const scoped_refptr<SimpleIndex> index_;
+  const scoped_refptr<base::SingleThreadTaskRunner> constructor_thread_;
+  const base::WeakPtr<SimpleIndex> index_;
   const base::FilePath path_;
   const std::string key_;
 
