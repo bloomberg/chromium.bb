@@ -29,6 +29,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
+  virtual net::URLRequestContextGetter* CreateRequestContext(
+      content::BrowserContext* browser_context,
+      content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
 
   content::ShellBrowserContext* browser_context();
 
