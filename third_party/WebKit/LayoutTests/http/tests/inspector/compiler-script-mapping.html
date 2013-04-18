@@ -328,7 +328,36 @@ function test()
             var uiLocation = script.rawLocationToUILocation(0, 0);
             InspectorTest.addResult(uiLocation.uiSourceCode.originURL());
             next();
-        }
+        },
+
+        function testSourceRoot(next)
+        {
+            /*
+                example.js:
+                0         1         2         3
+                012345678901234567890123456789012345
+                function add(variable_x, variable_y)
+                {
+                    return variable_x + variable_y;
+                }
+
+                var global = "foo";
+                ----------------------------------------
+                example-compiled.js:
+                0         1         2         3
+                012345678901234567890123456789012345
+                function add(a,b){return a+b}var global="foo";
+            */
+            var mappingPayload = {
+                "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;",
+                "sources":["example.js"],
+                "sourceRoot":"/"
+            };
+            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            checkMapping(0, 9, "/example.js", 0, 9, mapping);
+            checkReverseMapping(0, 0, "/example.js", 0, mapping);
+            next();
+        },
     ]);
 };
 

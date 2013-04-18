@@ -75,3 +75,10 @@ Running: testInlinedSourceMap
 Running: testSourceMapCouldNotBeLoaded
 compiled.js
 
+Running: testSourceRoot
+/example.js === /example.js
+0 === 0
+9 === 9
+0 === 0
+0 === 0
+
