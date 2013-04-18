@@ -19,13 +19,11 @@ namespace media {
 
 VideoFrameStream::VideoFrameStream(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
       weak_factory_(this),
       state_(UNINITIALIZED),
-      decoder_selector_(
-          message_loop_, decoders.Pass(), set_decryptor_ready_cb) {
+      set_decryptor_ready_cb_(set_decryptor_ready_cb) {
 }
 
 VideoFrameStream::~VideoFrameStream() {
@@ -33,6 +31,7 @@ VideoFrameStream::~VideoFrameStream() {
 }
 
 void VideoFrameStream::Initialize(const scoped_refptr<DemuxerStream>& stream,
+                                  const VideoDecoderList& decoders,
                                   const StatisticsCB& statistics_cb,
                                   const InitCB& init_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -45,8 +44,20 @@ void VideoFrameStream::Initialize(const scoped_refptr<DemuxerStream>& stream,
   init_cb_ = init_cb;
   stream_ = stream;
 
-  decoder_selector_.SelectVideoDecoder(this, statistics_cb, base::Bind(
-      &VideoFrameStream::OnDecoderSelected, weak_this_));
+  scoped_ptr<VideoDecoderSelector> decoder_selector(
+      new VideoDecoderSelector(message_loop_,
+                               decoders,
+                               set_decryptor_ready_cb_));
+
+  // To avoid calling |decoder_selector| methods and passing ownership of
+  // |decoder_selector| in the same line.
+  VideoDecoderSelector* decoder_selector_ptr = decoder_selector.get();
+
+  decoder_selector_ptr->SelectVideoDecoder(
+      this,
+      statistics_cb,
+      base::Bind(&VideoFrameStream::OnDecoderSelected, weak_this_,
+                 base::Passed(&decoder_selector)));
 }
 
 void VideoFrameStream::ReadFrame(const VideoDecoder::ReadCB& read_cb) {
@@ -117,7 +128,7 @@ void VideoFrameStream::Stop(const base::Closure& closure) {
   // we don't need this here. See: http://crbug.com/173313
   stream_ = NULL;
   decrypting_demuxer_stream_ = NULL;
-  decoder_.reset();
+  decoder_ = NULL;
   message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
 }
 
@@ -153,7 +164,8 @@ void VideoFrameStream::EnableBitstreamConverter() {
 }
 
 void VideoFrameStream::OnDecoderSelected(
-    scoped_ptr<VideoDecoder> selected_decoder,
+    scoped_ptr<VideoDecoderSelector> decoder_selector,
+    const scoped_refptr<VideoDecoder>& selected_decoder,
     const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, UNINITIALIZED);
@@ -163,7 +175,7 @@ void VideoFrameStream::OnDecoderSelected(
     state_ = UNINITIALIZED;
     base::ResetAndReturn(&init_cb_).Run(false, false);
   } else {
-    decoder_ = selected_decoder.Pass();
+    decoder_ = selected_decoder;
     decrypting_demuxer_stream_ = decrypting_demuxer_stream;
     state_ = NORMAL;
     base::ResetAndReturn(&init_cb_).Run(true, decoder_->HasAlpha());
@@ -227,7 +239,7 @@ void VideoFrameStream::OnDecoderStopped() {
   // we don't need this here. See: http://crbug.com/173313
   stream_ = NULL;
   decrypting_demuxer_stream_ = NULL;
-  decoder_.reset();
+  decoder_ = NULL;
   base::ResetAndReturn(&stop_cb_).Run();
 }
 

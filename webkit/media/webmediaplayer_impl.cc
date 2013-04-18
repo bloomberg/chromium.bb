@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -24,17 +23,11 @@
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
-#include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_demuxer.h"
-#include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/opus_audio_decoder.h"
 #include "media/filters/video_renderer_base.h"
-#include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -45,6 +38,7 @@
 #include "v8/include/v8.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/buffered_data_source.h"
+#include "webkit/media/filter_helpers.h"
 #include "webkit/media/webaudiosourceprovider_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_params.h"
@@ -138,6 +132,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(base::MessageLoopProxy::current()),
+      filter_collection_(new media::FilterCollection()),
       media_thread_("MediaPipeline"),
       paused_(true),
       seeking_(false),
@@ -149,7 +144,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
-      gpu_factories_(params.gpu_factories()),
       is_local_source_(false),
       supports_save_(true),
       starting_(false),
@@ -176,6 +170,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Also we want to be notified of |main_loop_| destruction.
   MessageLoop::current()->AddDestructionObserver(this);
 
+  media::SetDecryptorReadyCB set_decryptor_ready_cb;
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
         client,
@@ -184,12 +179,44 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey)));
+    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
+                                        base::Unretained(decryptor_.get()));
   }
 
-  // Use the null sink if no sink was provided.
+  // Create the GPU video decoder if factories were provided.
+  if (params.gpu_factories()) {
+    filter_collection_->GetVideoDecoders()->push_back(
+        new media::GpuVideoDecoder(
+            media_thread_.message_loop_proxy(),
+            params.gpu_factories()));
+    gpu_factories_ = params.gpu_factories();
+  }
+
+  // Create default video renderer.
+  scoped_ptr<media::VideoRenderer> video_renderer(
+      new media::VideoRendererBase(
+          media_thread_.message_loop_proxy(),
+          set_decryptor_ready_cb,
+          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
+          true));
+  filter_collection_->SetVideoRenderer(video_renderer.Pass());
+
+  // Create default audio renderer using the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
       params.audio_renderer_sink() ? params.audio_renderer_sink() :
       new media::NullAudioSink(media_thread_.message_loop_proxy()));
+
+  ScopedVector<media::AudioDecoder> audio_decoders;
+  AddDefaultAudioDecoders(media_thread_.message_loop_proxy(), &audio_decoders);
+
+  scoped_ptr<media::AudioRenderer> audio_renderer(
+      new media::AudioRendererImpl(
+        media_thread_.message_loop_proxy(),
+        audio_source_provider_,
+        audio_decoders.Pass(),
+        set_decryptor_ready_cb));
+  filter_collection_->SetAudioRenderer(audio_renderer.Pass());
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -261,6 +288,12 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
           AsWeakPtr(), gurl));
 
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+
+  BuildDefaultCollection(
+      data_source_,
+      media_thread_.message_loop_proxy(),
+      filter_collection_.get(),
+      BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""));
 }
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
@@ -276,6 +309,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
       BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
       base::Bind(&LogMediaSourceError, media_log_));
 
+  BuildMediaSourceCollection(chunk_demuxer_,
+                             media_thread_.message_loop_proxy(),
+                             filter_collection_.get());
   supports_save_ = false;
   StartPipeline();
 }
@@ -1139,7 +1175,7 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 void WebMediaPlayerImpl::StartPipeline() {
   starting_ = true;
   pipeline_->Start(
-      BuildFilterCollection(),
+      filter_collection_.Pass(),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
@@ -1248,84 +1284,6 @@ void WebMediaPlayerImpl::FrameReady(
   pending_repaint_ = true;
   main_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
-}
-
-scoped_ptr<media::FilterCollection>
-WebMediaPlayerImpl::BuildFilterCollection() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-
-  scoped_ptr<media::FilterCollection> filter_collection(
-      new media::FilterCollection());
-
-  // Figure out which demuxer to use.
-  if (data_source_) {
-    DCHECK(!chunk_demuxer_);
-    filter_collection->SetDemuxer(new media::FFmpegDemuxer(
-        media_thread_.message_loop_proxy(), data_source_,
-        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", "")));
-  } else {
-    DCHECK(chunk_demuxer_);
-    filter_collection->SetDemuxer(chunk_demuxer_);
-
-    // Disable GpuVideoDecoder creation until it supports codec config changes.
-    // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
-    gpu_factories_ = NULL;
-  }
-
-  // Figure out if EME is enabled.
-  media::SetDecryptorReadyCB set_decryptor_ready_cb;
-  if (decryptor_) {
-    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
-                                        base::Unretained(decryptor_.get()));
-  }
-
-  // Create our audio decoders and renderer.
-  ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(
-      media_thread_.message_loop_proxy()));
-  if (cmd_line->HasSwitch(switches::kEnableOpusPlayback)) {
-    audio_decoders.push_back(new media::OpusAudioDecoder(
-        media_thread_.message_loop_proxy()));
-  }
-
-  scoped_ptr<media::AudioRenderer> audio_renderer(
-      new media::AudioRendererImpl(media_thread_.message_loop_proxy(),
-                                   audio_source_provider_,
-                                   audio_decoders.Pass(),
-                                   set_decryptor_ready_cb));
-  filter_collection->SetAudioRenderer(audio_renderer.Pass());
-
-  // Create our video decoders and renderer.
-  ScopedVector<media::VideoDecoder> video_decoders;
-
-  if (gpu_factories_) {
-    video_decoders.push_back(new media::GpuVideoDecoder(
-        media_thread_.message_loop_proxy(), gpu_factories_));
-  }
-
-  video_decoders.push_back(new media::FFmpegVideoDecoder(
-      media_thread_.message_loop_proxy()));
-
-  // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
-  // (http://crbug.com/174287) .
-#if !defined(MEDIA_DISABLE_LIBVPX)
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
-    video_decoders.push_back(new media::VpxVideoDecoder(
-        media_thread_.message_loop_proxy()));
-  }
-#endif  // !defined(MEDIA_DISABLE_LIBVPX)
-
-  scoped_ptr<media::VideoRenderer> video_renderer(
-      new media::VideoRendererBase(
-          media_thread_.message_loop_proxy(),
-          video_decoders.Pass(),
-          set_decryptor_ready_cb,
-          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
-          true));
-  filter_collection->SetVideoRenderer(video_renderer.Pass());
-
-  return filter_collection.Pass();
 }
 
 }  // namespace webkit_media

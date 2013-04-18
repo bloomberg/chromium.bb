@@ -113,13 +113,12 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source,
                                                   need_key_cb));
+  collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
+      message_loop));
 
-
-  ScopedVector<media::VideoDecoder> video_decoders;
-  video_decoders.push_back(new media::FFmpegVideoDecoder(message_loop));
+  // Create our video renderer and save a reference to it for painting.
   scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererBase(
       message_loop,
-      video_decoders.Pass(),
       media::SetDecryptorReadyCB(),
       base::Bind(&Paint, paint_message_loop, paint_cb),
       base::Bind(&SetOpaque),

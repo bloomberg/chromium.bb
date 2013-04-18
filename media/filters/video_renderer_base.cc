@@ -23,15 +23,14 @@ base::TimeDelta VideoRendererBase::kMaxLastFrameDuration() {
 
 VideoRendererBase::VideoRendererBase(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const PaintCB& paint_cb,
     const SetOpaqueCB& set_opaque_cb,
     bool drop_frames)
     : message_loop_(message_loop),
       weak_factory_(this),
-      video_frame_stream_(new VideoFrameStream(
-          message_loop, decoders.Pass(), set_decryptor_ready_cb)),
+      video_frame_stream_(new VideoFrameStream(message_loop,
+                                               set_decryptor_ready_cb)),
       received_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -137,6 +136,7 @@ void VideoRendererBase::Preroll(base::TimeDelta time,
 }
 
 void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
+                                   const VideoDecoderList& decoders,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
@@ -148,6 +148,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
+  DCHECK(!decoders.empty());
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
@@ -171,6 +172,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
 
   video_frame_stream_->Initialize(
       stream,
+      decoders,
       statistics_cb,
       base::Bind(&VideoRendererBase::OnVideoFrameStreamInitialized,
                  weak_this_));

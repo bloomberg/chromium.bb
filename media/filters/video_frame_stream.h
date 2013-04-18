@@ -11,14 +11,12 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
-#include "media/filters/video_decoder_selector.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -33,16 +31,18 @@ class VideoDecoderSelector;
 // VideoFrames to its client (e.g. VideoRendererBase).
 class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
  public:
+  typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
+
   // Indicates completion of VideoFrameStream initialization.
   typedef base::Callback<void(bool success, bool has_alpha)> InitCB;
 
   VideoFrameStream(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                   ScopedVector<VideoDecoder> decoders,
                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
 
   // Initializes the VideoFrameStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
   void Initialize(const scoped_refptr<DemuxerStream>& stream,
+                  const VideoDecoderList& decoders,
                   const StatisticsCB& statistics_cb,
                   const InitCB& init_cb);
 
@@ -90,8 +90,11 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
   // Called when |decoder_selector_| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
   // is created to help decrypt the encrypted stream.
+  // Note: |decoder_selector| is passed here to keep the VideoDecoderSelector
+  // alive until OnDecoderSelected() finishes.
   void OnDecoderSelected(
-      scoped_ptr<VideoDecoder> selected_decoder,
+      scoped_ptr<VideoDecoderSelector> decoder_selector,
+      const scoped_refptr<VideoDecoder>& selected_decoder,
       const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream);
 
   // Callback for VideoDecoder::Read().
@@ -115,12 +118,12 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
   base::Closure reset_cb_;
   base::Closure stop_cb_;
 
-  VideoDecoderSelector decoder_selector_;
+  SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   scoped_refptr<DemuxerStream> stream_;
 
   // These two will be set by VideoDecoderSelector::SelectVideoDecoder().
-  scoped_ptr<VideoDecoder> decoder_;
+  scoped_refptr<VideoDecoder> decoder_;
   scoped_refptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameStream);

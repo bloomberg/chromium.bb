@@ -50,11 +50,13 @@ ACTION_P(ReturnBuffer, buffer) {
 class FFmpegVideoDecoderTest : public testing::Test {
  public:
   FFmpegVideoDecoderTest()
-      : decoder_(new FFmpegVideoDecoder(message_loop_.message_loop_proxy())),
+      : decoder_(NULL),
         demuxer_(new StrictMock<MockDemuxerStream>()),
         read_cb_(base::Bind(&FFmpegVideoDecoderTest::FrameReady,
                             base::Unretained(this))) {
     FFmpegGlue::InitializeFFmpeg();
+
+    decoder_ = new FFmpegVideoDecoder(message_loop_.message_loop_proxy());
 
     // Initialize various test buffers.
     frame_buffer_.reset(new uint8[kCodedSize.GetArea()]);
@@ -199,7 +201,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
                                 const scoped_refptr<VideoFrame>&));
 
   MessageLoop message_loop_;
-  scoped_ptr<FFmpegVideoDecoder> decoder_;
+  scoped_refptr<FFmpegVideoDecoder> decoder_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
   VideoDecoderConfig config_;

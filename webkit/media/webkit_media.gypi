@@ -74,6 +74,8 @@
         'crypto/ppapi_decryptor.h',
         'crypto/proxy_decryptor.cc',
         'crypto/proxy_decryptor.h',
+        'filter_helpers.cc',
+        'filter_helpers.h',
         'media_stream_audio_renderer.cc',
         'media_stream_audio_renderer.h',
         'media_stream_client.h',

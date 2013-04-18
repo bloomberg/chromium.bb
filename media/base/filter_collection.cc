@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
+#include "media/base/video_decoder.h"
 #include "media/base/video_renderer.h"
 
 namespace media {
@@ -39,6 +40,10 @@ void FilterCollection::SetVideoRenderer(
 
 scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
   return video_renderer_.Pass();
+}
+
+FilterCollection::VideoDecoderList* FilterCollection::GetVideoDecoders() {
+  return &video_decoders_;
 }
 
 }  // namespace media

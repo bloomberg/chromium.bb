@@ -19,10 +19,10 @@ namespace media {
 
 VideoDecoderSelector::VideoDecoderSelector(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    ScopedVector<VideoDecoder> decoders,
+    const VideoDecoderList& decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
-      decoders_(decoders.Pass()),
+      decoders_(decoders),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -43,8 +43,7 @@ void VideoDecoderSelector::SelectVideoDecoder(
   const VideoDecoderConfig& config = stream->video_decoder_config();
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid video stream config.";
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), NULL);
+    base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
     return;
   }
 
@@ -52,19 +51,24 @@ void VideoDecoderSelector::SelectVideoDecoder(
   statistics_cb_ = statistics_cb;
 
   if (!config.is_encrypted()) {
-    InitializeDecoder(decoders_.begin());
+    if (decoders_.empty()) {
+      DLOG(ERROR) << "No video decoder can be used to decode the input stream.";
+      base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
+      return;
+    }
+
+    InitializeNextDecoder();
     return;
   }
 
   // This could happen if Encrypted Media Extension (EME) is not enabled.
   if (set_decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), NULL);
+    base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
     return;
   }
 
-  video_decoder_.reset(new DecryptingVideoDecoder(
-      message_loop_, set_decryptor_ready_cb_));
+  video_decoder_ = new DecryptingVideoDecoder(message_loop_,
+                                              set_decryptor_ready_cb_);
 
   video_decoder_->Initialize(
       input_stream_,
@@ -79,7 +83,16 @@ void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder_.Pass(), NULL);
+    decoders_.clear();
+    base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder_, NULL);
+    return;
+  }
+
+  video_decoder_ = NULL;
+
+  if (decoders_.empty()) {
+    DLOG(ERROR) << "No video decoder can be used to decode the input stream.";
+    base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
     return;
   }
 
@@ -99,48 +112,42 @@ void VideoDecoderSelector::DecryptingDemuxerStreamInitDone(
 
   if (status != PIPELINE_OK) {
     decrypted_stream_ = NULL;
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), NULL);
+    base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
     return;
   }
 
   DCHECK(!decrypted_stream_->video_decoder_config().is_encrypted());
   input_stream_ = decrypted_stream_;
-  InitializeDecoder(decoders_.begin());
+  InitializeNextDecoder();
 }
 
-void VideoDecoderSelector::InitializeDecoder(
-    ScopedVector<VideoDecoder>::iterator iter) {
+void VideoDecoderSelector::InitializeNextDecoder() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(!decoders_.empty());
 
-  if (iter == decoders_.end()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), NULL);
-    return;
-  }
-
-  (*iter)->Initialize(
-      input_stream_,
-      BindToCurrentLoop(base::Bind(
-          &VideoDecoderSelector::DecoderInitDone,
-          weak_ptr_factory_.GetWeakPtr(),
-          iter)),
-      statistics_cb_);
+  video_decoder_ = decoders_.front();
+  decoders_.pop_front();
+  DCHECK(video_decoder_);
+  video_decoder_->Initialize(input_stream_,
+                             BindToCurrentLoop(base::Bind(
+                                 &VideoDecoderSelector::DecoderInitDone,
+                                 weak_ptr_factory_.GetWeakPtr())),
+                             statistics_cb_);
 }
 
-void VideoDecoderSelector::DecoderInitDone(
-    ScopedVector<VideoDecoder>::iterator iter, PipelineStatus status) {
+void VideoDecoderSelector::DecoderInitDone(PipelineStatus status) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    InitializeDecoder(++iter);
+    if (!decoders_.empty())
+      InitializeNextDecoder();
+    else
+      base::ResetAndReturn(&select_decoder_cb_).Run(NULL, NULL);
     return;
   }
 
-  scoped_ptr<VideoDecoder> video_decoder(*iter);
-  decoders_.weak_erase(iter);
-
-  base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder.Pass(),
+  decoders_.clear();
+  base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder_,
                                                 decrypted_stream_);
 }
 

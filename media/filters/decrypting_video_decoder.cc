@@ -24,7 +24,6 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
-      weak_factory_(this),
       state_(kUninitialized),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
@@ -41,7 +40,6 @@ void DecryptingVideoDecoder::Initialize(
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(stream);
   init_cb_ = BindToCurrentLoop(status_cb);
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   const VideoDecoderConfig& config = stream->video_decoder_config();
   if (!config.IsValidConfig()) {
@@ -63,7 +61,7 @@ void DecryptingVideoDecoder::Initialize(
 
   state_ = kDecryptorRequested;
   set_decryptor_ready_cb_.Run(BindToCurrentLoop(base::Bind(
-      &DecryptingVideoDecoder::SetDecryptor, weak_this_)));
+      &DecryptingVideoDecoder::SetDecryptor, this)));
 }
 
 void DecryptingVideoDecoder::Read(const ReadCB& read_cb) {
@@ -168,7 +166,7 @@ void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
   state_ = kPendingDecoderInit;
   decryptor_->InitializeVideoDecoder(
       demuxer_stream_->video_decoder_config(), BindToCurrentLoop(base::Bind(
-          &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
+          &DecryptingVideoDecoder::FinishInitialization, this)));
 }
 
 void DecryptingVideoDecoder::FinishInitialization(bool success) {
@@ -190,7 +188,7 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
   }
 
   decryptor_->RegisterNewKeyCB(Decryptor::kVideo, BindToCurrentLoop(
-      base::Bind(&DecryptingVideoDecoder::OnKeyAdded, weak_this_)));
+      base::Bind(&DecryptingVideoDecoder::OnKeyAdded, this)));
 
   // Success!
   state_ = kIdle;
@@ -232,7 +230,7 @@ void DecryptingVideoDecoder::ReadFromDemuxerStream() {
   DCHECK(!read_cb_.is_null());
 
   demuxer_stream_->Read(
-      base::Bind(&DecryptingVideoDecoder::DecryptAndDecodeBuffer, weak_this_));
+      base::Bind(&DecryptingVideoDecoder::DecryptAndDecodeBuffer, this));
 }
 
 void DecryptingVideoDecoder::DecryptAndDecodeBuffer(
@@ -255,7 +253,7 @@ void DecryptingVideoDecoder::DecryptAndDecodeBuffer(
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
     decryptor_->InitializeVideoDecoder(
         demuxer_stream_->video_decoder_config(), BindToCurrentLoop(base::Bind(
-            &DecryptingVideoDecoder::FinishConfigChange, weak_this_)));
+            &DecryptingVideoDecoder::FinishConfigChange, this)));
     return;
   }
 
@@ -291,7 +289,7 @@ void DecryptingVideoDecoder::DecodePendingBuffer() {
 
   decryptor_->DecryptAndDecodeVideo(
       pending_buffer_to_decode_, BindToCurrentLoop(base::Bind(
-          &DecryptingVideoDecoder::DeliverFrame, weak_this_, buffer_size)));
+          &DecryptingVideoDecoder::DeliverFrame, this, buffer_size)));
 }
 
 void DecryptingVideoDecoder::DeliverFrame(

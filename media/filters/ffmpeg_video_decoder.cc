@@ -58,7 +58,6 @@ static int GetThreadCount(CodecID codec_id) {
 FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
-      weak_factory_(this),
       state_(kUninitialized),
       codec_context_(NULL),
       av_frame_(NULL) {
@@ -135,7 +134,6 @@ void FFmpegVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   FFmpegGlue::InitializeFFmpeg();
   DCHECK(!demuxer_stream_) << "Already initialized.";
@@ -226,8 +224,7 @@ void FFmpegVideoDecoder::ReturnFrameOrReadFromDemuxerStream() {
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK(!read_cb_.is_null());
-  demuxer_stream_->Read(base::Bind(
-      &FFmpegVideoDecoder::BufferReady, weak_this_));
+  demuxer_stream_->Read(base::Bind(&FFmpegVideoDecoder::BufferReady, this));
 }
 
 void FFmpegVideoDecoder::BufferReady(

@@ -6,7 +6,7 @@
 #define MEDIA_FILTERS_VPX_VIDEO_DECODER_H_
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
 
@@ -23,7 +23,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
   explicit VpxVideoDecoder(
       const scoped_refptr<base::MessageLoopProxy>& message_loop);
-  virtual ~VpxVideoDecoder();
 
   // VideoDecoder implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -32,6 +31,9 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
+
+ protected:
+  virtual ~VpxVideoDecoder();
 
  private:
   enum DecoderState {
@@ -64,8 +66,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
                       scoped_refptr<VideoFrame>* video_frame);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  base::WeakPtrFactory<VpxVideoDecoder> weak_factory_;
-  base::WeakPtr<VpxVideoDecoder> weak_this_;
 
   DecoderState state_;
 

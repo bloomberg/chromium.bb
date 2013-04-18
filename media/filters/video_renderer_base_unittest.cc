@@ -45,12 +45,8 @@ class VideoRendererBaseTest : public ::testing::Test {
         demuxer_stream_(new MockDemuxerStream()),
         video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
                       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false) {
-    ScopedVector<VideoDecoder> decoders;
-    decoders.push_back(decoder_);
-
     renderer_.reset(new VideoRendererBase(
         message_loop_.message_loop_proxy(),
-        decoders.Pass(),
         media::SetDecryptorReadyCB(),
         base::Bind(&VideoRendererBaseTest::OnPaint, base::Unretained(this)),
         base::Bind(&VideoRendererBaseTest::OnSetOpaque, base::Unretained(this)),
@@ -122,8 +118,11 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void CallInitialize(const PipelineStatusCB& status_cb) {
+    VideoRendererBase::VideoDecoderList decoders;
+    decoders.push_back(decoder_);
     renderer_->Initialize(
         demuxer_stream_,
+        decoders,
         status_cb,
         base::Bind(&MockStatisticsCB::OnStatistics,
                    base::Unretained(&statistics_cb_object_)),
@@ -296,7 +295,7 @@ class VideoRendererBaseTest : public ::testing::Test {
  protected:
   // Fixture members.
   scoped_ptr<VideoRendererBase> renderer_;
-  MockVideoDecoder* decoder_;  // Owned by |renderer_|.
+  scoped_refptr<MockVideoDecoder> decoder_;
   scoped_refptr<MockDemuxerStream> demuxer_stream_;
   MockStatisticsCB statistics_cb_object_;
 

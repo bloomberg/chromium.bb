@@ -5,9 +5,10 @@
 #ifndef MEDIA_FILTERS_VIDEO_DECODER_SELECTOR_H_
 #define MEDIA_FILTERS_VIDEO_DECODER_SELECTOR_H_
 
+#include <list>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
@@ -28,6 +29,8 @@ class Decryptor;
 // encrypted, a DecryptingDemuxerStream may also be created.
 class MEDIA_EXPORT VideoDecoderSelector {
  public:
+  typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
+
   // Indicates completion of VideoDecoder selection.
   // - First parameter: The initialized VideoDecoder. If it's set to NULL, then
   // VideoDecoder initialization failed.
@@ -38,16 +41,14 @@ class MEDIA_EXPORT VideoDecoderSelector {
   // The caller should call DecryptingDemuxerStream::Reset() before
   // calling VideoDecoder::Reset() to release any pending decryption or read.
   typedef base::Callback<
-      void(scoped_ptr<VideoDecoder>,
+      void(const scoped_refptr<VideoDecoder>&,
            const scoped_refptr<DecryptingDemuxerStream>&)> SelectDecoderCB;
 
-  // |decoders| contains the VideoDecoders to use when initializing.
-  //
   // |set_decryptor_ready_cb| is optional. If |set_decryptor_ready_cb| is null,
   // no decryptor will be available to perform decryption.
   VideoDecoderSelector(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      ScopedVector<VideoDecoder> decoders,
+      const VideoDecoderList& decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
   ~VideoDecoderSelector();
 
@@ -61,19 +62,18 @@ class MEDIA_EXPORT VideoDecoderSelector {
  private:
   void DecryptingVideoDecoderInitDone(PipelineStatus status);
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
-  void InitializeDecoder(ScopedVector<VideoDecoder>::iterator iter);
-  void DecoderInitDone(ScopedVector<VideoDecoder>::iterator iter,
-                       PipelineStatus status);
+  void InitializeNextDecoder();
+  void DecoderInitDone(PipelineStatus status);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  ScopedVector<VideoDecoder> decoders_;
+  VideoDecoderList decoders_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   scoped_refptr<DemuxerStream> input_stream_;
   StatisticsCB statistics_cb_;
   SelectDecoderCB select_decoder_cb_;
 
-  scoped_ptr<VideoDecoder> video_decoder_;
+  scoped_refptr<VideoDecoder> video_decoder_;
   scoped_refptr<DecryptingDemuxerStream> decrypted_stream_;
 
   base::WeakPtrFactory<VideoDecoderSelector> weak_ptr_factory_;
