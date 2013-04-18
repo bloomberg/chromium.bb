@@ -253,6 +253,9 @@ public class ImeAdapter {
 
     public void attach(int nativeImeAdapter, int textInputType, int selectionStart,
             int selectionEnd) {
+        if (mNativeImeAdapterAndroid != 0) {
+            nativeResetImeAdapter(mNativeImeAdapterAndroid);
+        }
         mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputType = textInputType;
         mInitialSelectionStart = selectionStart;
@@ -266,6 +269,9 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(int nativeImeAdapter) {
+        if (mNativeImeAdapterAndroid != 0) {
+            nativeResetImeAdapter(mNativeImeAdapterAndroid);
+        }
         mNativeImeAdapterAndroid = nativeImeAdapter;
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
@@ -569,4 +575,5 @@ public class ImeAdapter {
     private native void nativeCut(int nativeImeAdapterAndroid);
     private native void nativeCopy(int nativeImeAdapterAndroid);
     private native void nativePaste(int nativeImeAdapterAndroid);
+    private native void nativeResetImeAdapter(int nativeImeAdapterAndroid);
 }

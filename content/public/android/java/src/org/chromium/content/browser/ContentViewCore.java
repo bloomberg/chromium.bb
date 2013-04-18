@@ -2210,6 +2210,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onWebContentsSwapped() {
+        if (mImeAdapter != null && mNativeContentViewCore != 0) {
+            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
+        }
+    }
+
     /**
      * @return Whether a reload happens when this ContentView is activated.
      */
