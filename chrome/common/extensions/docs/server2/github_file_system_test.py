@@ -13,7 +13,6 @@ from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import files
 from fake_fetchers import ConfigureFakeFetchers
 from github_file_system import GithubFileSystem
-from in_memory_object_store import InMemoryObjectStore
 import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):

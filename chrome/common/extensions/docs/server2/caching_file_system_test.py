@@ -10,7 +10,6 @@ import unittest
 from caching_file_system import CachingFileSystem
 from file_system import FileSystem, StatInfo
 from future import Future
-from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
@@ -66,20 +65,20 @@ class CachingFileSystemTest(unittest.TestCase):
     self.assertTrue(fake_fs.CheckAndReset())
 
     # Test if the Stat version is the same the resource is not re-fetched.
-    file_system._stat_object_store.Delete('bob/bob0')
+    file_system._stat_object_store.Del('bob/bob0')
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
     self.assertTrue(fake_fs.CheckAndReset(stat_count=1))
 
     # Test if there is a newer version, the resource is re-fetched.
-    file_system._stat_object_store.Delete('bob/bob0')
+    file_system._stat_object_store.Del('bob/bob0')
     fake_fs.IncrementStat();
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
     self.assertTrue(fake_fs.CheckAndReset(read_count=1, stat_count=1))
 
     # Test directory and subdirectory stats are cached.
-    file_system._stat_object_store.Delete('bob/bob0')
-    file_system._read_object_store.Delete('bob/bob0')
-    file_system._stat_object_store.Delete('bob/bob1')
+    file_system._stat_object_store.Del('bob/bob0')
+    file_system._read_object_store.Del('bob/bob0')
+    file_system._stat_object_store.Del('bob/bob1')
     fake_fs.IncrementStat();
     self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
@@ -88,8 +87,8 @@ class CachingFileSystemTest(unittest.TestCase):
     self.assertTrue(fake_fs.CheckAndReset())
 
     # Test a more recent parent directory doesn't force a refetch of children.
-    file_system._read_object_store.Delete('bob/bob0')
-    file_system._read_object_store.Delete('bob/bob1')
+    file_system._read_object_store.Del('bob/bob0')
+    file_system._read_object_store.Del('bob/bob1')
     self.assertEqual('bob/bob1 contents', file_system.ReadSingle('bob/bob1'))
     self.assertEqual('bob/bob2 contents', file_system.ReadSingle('bob/bob2'))
     self.assertEqual('bob/bob3 contents', file_system.ReadSingle('bob/bob3'))
@@ -100,7 +99,7 @@ class CachingFileSystemTest(unittest.TestCase):
     self.assertEqual('bob/bob3 contents', file_system.ReadSingle('bob/bob3'))
     self.assertTrue(fake_fs.CheckAndReset())
 
-    file_system._stat_object_store.Delete('bob/bob0')
+    file_system._stat_object_store.Del('bob/bob0')
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))
     self.assertTrue(fake_fs.CheckAndReset(read_count=1, stat_count=1))
     self.assertEqual('bob/bob0 contents', file_system.ReadSingle('bob/bob0'))

@@ -147,5 +147,6 @@ class TemplateDataSource(object):
     try:
       return self._cache.GetFromFile(base_path + '/' + real_path)
     except FileNotFoundError as e:
-      logging.info(e)
+      logging.warning('Template %s in %s not found: %s' % (
+          template_name, base_path, e))
       return None

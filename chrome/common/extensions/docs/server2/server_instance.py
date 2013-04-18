@@ -11,15 +11,15 @@ from api_list_data_source import APIListDataSource
 from appengine_blobstore import AppEngineBlobstore
 from appengine_url_fetcher import AppEngineUrlFetcher
 from branch_utility import BranchUtility
+from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
 from example_zipper import ExampleZipper
 from file_system import FileNotFoundError
 from github_file_system import GithubFileSystem
-from in_memory_object_store import InMemoryObjectStore
 from intro_data_source import IntroDataSource
 from local_file_system import LocalFileSystem
-from caching_file_system import CachingFileSystem
 from object_store_creator import ObjectStoreCreator
+from offline_file_system import OfflineFileSystem
 from path_canonicalizer import PathCanonicalizer
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
@@ -27,6 +27,7 @@ from sidenav_data_source import SidenavDataSource
 from subversion_file_system import SubversionFileSystem
 import svn_constants
 from template_data_source import TemplateDataSource
+from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 import url_constants
 
@@ -35,32 +36,43 @@ def _IsBinaryMimetype(mimetype):
              for prefix in ['audio', 'image', 'video'])
 
 class ServerInstance(object):
-  '''Per-instance per-branch state.
-  '''
-  _instances = {}
-
+  # Lazily create so we don't create github file systems unnecessarily in
+  # tests.
   branch_utility = None
   github_file_system = None
 
   @staticmethod
-  def GetOrCreate(channel):
-    # Lazily create so that we don't do unnecessary work in tests.
-    if ServerInstance.branch_utility is None:
-      ServerInstance.branch_utility = BranchUtility(
-          url_constants.OMAHA_PROXY_URL, AppEngineUrlFetcher())
-    branch = ServerInstance.branch_utility.GetBranchNumberForChannelName(
-        channel)
-
-    # Use the branch as the key to |_instances| since the branch data is
-    # predictable while the channel data (channels can swich branches) isn't.
-    instance = ServerInstance._instances.get(branch)
-    if instance is None:
-      instance = ServerInstance._CreateForProduction(channel, branch)
-      ServerInstance._instances[branch] = instance
-    return instance
+  @memoize
+  def GetOrCreateOffline(channel):
+    '''Gets/creates a local ServerInstance, meaning that only resources local to
+    the server - memcache, object store, etc, are queried. This amounts to not
+    setting up the subversion nor github file systems.
+    '''
+    branch_utility = ServerInstance._GetOrCreateBranchUtility()
+    branch = branch_utility.GetBranchNumberForChannelName(channel)
+    object_store_creator_factory = ObjectStoreCreator.Factory(branch)
+    # No svn nor github file systems. Rely on the crons to fill the caches, and
+    # for the caches to exist.
+    return ServerInstance(
+        channel,
+        object_store_creator_factory,
+        CachingFileSystem(OfflineFileSystem(SubversionFileSystem),
+                          object_store_creator_factory),
+        # TODO(kalman): convert GithubFileSystem to be wrappable in a
+        # CachingFileSystem so that it can be replaced with an
+        # OfflineFileSystem. Currently GFS doesn't set the child versions of
+        # stat requests so it doesn't.
+        ServerInstance._GetOrCreateGithubFileSystem())
 
   @staticmethod
-  def _CreateForProduction(channel, branch):
+  @memoize
+  def GetOrCreateOnline(channel):
+    '''Creates/creates an online server instance, meaning that both local and
+    subversion/github resources are queried.
+    '''
+    branch_utility = ServerInstance._GetOrCreateBranchUtility()
+    branch = branch_utility.GetBranchNumberForChannelName(channel)
+
     if branch == 'trunk':
       svn_url = '/'.join((url_constants.SVN_TRUNK_URL,
                           'src',
@@ -81,17 +93,10 @@ class ServerInstance(object):
                              AppEngineUrlFetcher(viewvc_url)),
         object_store_creator_factory)
 
-    # Lazily create so we don't create github file systems unnecessarily in
-    # tests.
-    if ServerInstance.github_file_system is None:
-      ServerInstance.github_file_system = GithubFileSystem(
-          AppEngineUrlFetcher(url_constants.GITHUB_URL),
-          AppEngineBlobstore())
-
     return ServerInstance(channel,
                           object_store_creator_factory,
                           svn_file_system,
-                          ServerInstance.github_file_system)
+                          ServerInstance._GetOrCreateGithubFileSystem())
 
   @staticmethod
   def CreateForTest(file_system):
@@ -99,6 +104,22 @@ class ServerInstance(object):
                           ObjectStoreCreator.Factory('test'),
                           file_system,
                           None)
+
+  @staticmethod
+  def _GetOrCreateBranchUtility():
+    if ServerInstance.branch_utility is None:
+      ServerInstance.branch_utility = BranchUtility(
+          url_constants.OMAHA_PROXY_URL,
+          AppEngineUrlFetcher())
+    return ServerInstance.branch_utility
+
+  @staticmethod
+  def _GetOrCreateGithubFileSystem():
+    if ServerInstance.github_file_system is None:
+      ServerInstance.github_file_system = GithubFileSystem(
+          AppEngineUrlFetcher(url_constants.GITHUB_URL),
+          AppEngineBlobstore())
+    return ServerInstance.github_file_system
 
   def __init__(self,
                channel,

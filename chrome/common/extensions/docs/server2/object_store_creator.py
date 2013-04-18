@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from in_memory_object_store import InMemoryObjectStore
+from cache_chain_object_store import CacheChainObjectStore
 from memcache_object_store import MemcacheObjectStore
+from persistent_object_store import PersistentObjectStore
 
 class ObjectStoreCreator(object):
   class Factory(object):
@@ -45,4 +46,5 @@ class ObjectStoreCreator(object):
       namespace = '%s/%s' % (namespace, version)
     if self._store_type is not None:
       return self._store_type(namespace)
-    return InMemoryObjectStore(MemcacheObjectStore(namespace))
+    return CacheChainObjectStore((MemcacheObjectStore(namespace),
+                                  PersistentObjectStore(namespace)))

@@ -103,7 +103,7 @@ class TestFileSystem(FileSystem):
     return self._StatImpl(path)
 
   def _StatImpl(self, path):
-    read_result = self._ReadImpl([path]).Get()[path]
+    read_result = self._ReadImpl([path]).Get().get(path)
     stat_result = StatInfo(self._SinglePathStat(path))
     if isinstance(read_result, list):
       stat_result.child_versions = dict(

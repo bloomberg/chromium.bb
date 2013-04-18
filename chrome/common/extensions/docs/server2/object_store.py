@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import CACHE_TIMEOUT
 from future import Future
 
 class _SingleGetFuture(object):
@@ -14,33 +13,36 @@ class _SingleGetFuture(object):
     return self._future.Get().get(self._key)
 
 class ObjectStore(object):
-  """A class for caching picklable objects.
-  """
-  def Set(self, key, value, time=CACHE_TIMEOUT):
-    """Sets key -> value in the object store, with the specified timeout.
-    """
-    self.SetMulti({ key: value }, time=time)
-
-  def SetMulti(self, mapping, time=CACHE_TIMEOUT):
-    """Sets the mapping of keys to values in the object store with the specified
-    timeout.
-    """
-    raise NotImplementedError()
-
-  def Get(self, key, time=CACHE_TIMEOUT):
-    """Gets a |Future| with the value of |key| in the object store, or None
+  '''A class for caching picklable objects.
+  '''
+  def Get(self, key):
+    '''Gets a |Future| with the value of |key| in the object store, or None
     if |key| is not in the object store.
-    """
-    return Future(delegate=_SingleGetFuture(self.GetMulti([key], time=time),
-                                            key))
+    '''
+    return Future(delegate=_SingleGetFuture(self.GetMulti([key]), key))
 
-  def GetMulti(self, keys, time=CACHE_TIMEOUT):
-    """Gets a |Future| with values mapped to |keys| from the object store, with
-    any keys not in the object store mapped to None.
-    """
+  def GetMulti(self, keys):
+    '''Gets a |Future| with values mapped to |keys| from the object store, with
+    any keys not in the object store omitted.
+    '''
     raise NotImplementedError()
 
-  def Delete(self, key):
-    """Deletes a key from the object store.
-    """
+  def Set(self, key, value):
+    '''Sets key -> value in the object store.
+    '''
+    self.SetMulti({ key: value })
+
+  def SetMulti(self, items):
+    '''Atomically sets the mapping of keys to values in the object store.
+    '''
+    raise NotImplementedError()
+
+  def Del(self, key):
+    '''Deletes a key from the object store.
+    '''
+    self.DelMulti([key])
+
+  def DelMulti(self, keys):
+    '''Deletes |keys| from the object store.
+    '''
     raise NotImplementedError()

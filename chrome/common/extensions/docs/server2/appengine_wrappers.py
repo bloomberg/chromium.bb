@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
+def IsDevServer():
+  return os.environ.get('SERVER_SOFTWARE', '').find('Development') == 0
+
 # This will attempt to import the actual App Engine modules, and if it fails,
 # they will be replaced with fake modules. This is useful during testing.
 try:
@@ -12,11 +17,7 @@ try:
   import google.appengine.api.files as files
   import google.appengine.api.memcache as memcache
   import google.appengine.api.urlfetch as urlfetch
-  # Default to a 5 minute cache timeout.
-  CACHE_TIMEOUT = 300
 except ImportError:
-  # Cache for one second because zero means cache forever.
-  CACHE_TIMEOUT = 1
   import re
   from StringIO import StringIO
 
@@ -47,6 +48,9 @@ except ImportError:
 
     def get_result(self):
       return self.result
+
+    def wait(self):
+      pass
 
   class FakeUrlFetch(object):
     """A fake urlfetch module that uses the current
@@ -130,23 +134,37 @@ except ImportError:
   files = FakeFiles()
 
   class InMemoryMemcache(object):
-    """A fake memcache that does nothing.
+    """An in-memory memcache implementation.
     """
+    def __init__(self):
+      self._namespaces = {}
+
     class Client(object):
       def set_multi_async(self, mapping, namespace='', time=0):
-        return
+        for k, v in mapping.iteritems():
+          memcache.set(k, v, namespace=namespace, time=time)
 
       def get_multi_async(self, keys, namespace='', time=0):
-        return _RPC(result=dict((k, None) for k in keys))
+        return _RPC(result=dict(
+          (k, memcache.get(k, namespace=namespace, time=time)) for k in keys))
 
     def set(self, key, value, namespace='', time=0):
-      return
+      self._GetNamespace(namespace)[key] = value
 
     def get(self, key, namespace='', time=0):
-      return None
+      return self._GetNamespace(namespace).get(key)
 
-    def delete(self, key, namespace):
-      return
+    def delete(self, key, namespace=''):
+      self._GetNamespace(namespace).pop(key, None)
+
+    def delete_multi(self, keys, namespace=''):
+      for k in keys:
+        self.delete(k, namespace=namespace)
+
+    def _GetNamespace(self, namespace):
+      if namespace not in self._namespaces:
+        self._namespaces[namespace] = {}
+      return self._namespaces[namespace]
 
   memcache = InMemoryMemcache()
 
@@ -176,20 +194,60 @@ except ImportError:
 
   class db(object):
     _store = {}
+
     class StringProperty(object):
       pass
 
+    class BlobProperty(object):
+      pass
+
+    class Key(object):
+      def __init__(self, key):
+        self._key = key
+
+      @staticmethod
+      def from_path(model_name, path):
+        return db.Key('%s/%s' % (model_name, path))
+
+      def __eq__(self, obj):
+        return self.__class__ == obj.__class__ and self._key == obj._key
+
+      def __hash__(self):
+        return hash(self._key)
+
+      def __str__(self):
+        return str(self._key)
+
     class Model(object):
-      def __init__(self, key_='', value=''):
-        self._key = key_
-        self._value = value
+      key = None
+
+      def __init__(self, **optargs):
+        cls = self.__class__
+        for k, v in optargs.iteritems():
+          assert hasattr(cls, k), '%s does not define property %s' % (
+              cls.__name__, k)
+          setattr(self, k, v)
 
       @staticmethod
       def gql(query, key):
-        return _Db_Result(db._store.get(key, None))
+        return _Db_Result(db._store.get(key))
 
       def put(self):
-        db._store[self._key] = self._value
+        db._store[self.key_] = self.value
+
+    @staticmethod
+    def get_async(key):
+      return _RPC(result=db._store.get(key))
+
+    @staticmethod
+    def delete_async(key):
+      db._store.pop(key, None)
+      return _RPC()
+
+    @staticmethod
+    def put_async(value):
+      db._store[value.key] = value
+      return _RPC()
 
   class BlobReferenceProperty(object):
     pass

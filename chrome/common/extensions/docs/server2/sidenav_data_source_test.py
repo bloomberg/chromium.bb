@@ -8,7 +8,6 @@ import sys
 import unittest
 
 from compiled_file_system import CompiledFileSystem
-from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from sidenav_data_source import SidenavDataSource

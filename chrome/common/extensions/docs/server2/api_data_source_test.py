@@ -14,7 +14,6 @@ from api_data_source import (APIDataSource,
                              _RemoveNoDocs)
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
-from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
@@ -61,29 +60,6 @@ class APIDataSourceTest(unittest.TestCase):
     return ReferenceResolver.Factory(data_source,
                                      data_source,
                                      ObjectStoreCreator.Factory()).Create()
-
-  def DISABLED_testSimple(self):
-    compiled_fs_factory = CompiledFileSystem.Factory(
-        LocalFileSystem(self._base_path),
-        InMemoryObjectStore('fake_branch'))
-    data_source_factory = APIDataSource.Factory(compiled_fs_factory,
-                                                '.')
-    data_source_factory.SetSamplesDataSourceFactory(FakeSamplesDataSource())
-    data_source = data_source_factory.Create({}, disable_refs=True)
-
-    # Take the dict out of the list.
-    expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
-    expected['permissions'] = None
-    test1 = data_source.get('test_file')
-    test1.pop('samples')
-    self.assertEqual(expected, test1)
-    test2 = data_source.get('testFile')
-    test2.pop('samples')
-    self.assertEqual(expected, test2)
-    test3 = data_source.get('testFile.html')
-    test3.pop('samples')
-    self.assertEqual(expected, test3)
-    self.assertRaises(FileNotFoundError, data_source.get, 'junk')
 
   def _LoadJSON(self, filename):
     return json.loads(self._ReadLocalFile(filename))

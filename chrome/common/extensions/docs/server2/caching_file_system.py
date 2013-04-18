@@ -23,7 +23,7 @@ class _AsyncUncachedFuture(object):
       version = self._file_system.Stat(item).version
       mapping[item] = (new_items[item], version)
       self._current_result[item] = new_items[item]
-    self._object_store.SetMulti(mapping, time=0)
+    self._object_store.SetMulti(mapping)
     return self._current_result
 
 class CachingFileSystem(FileSystem):
@@ -33,7 +33,8 @@ class CachingFileSystem(FileSystem):
     self._file_system = file_system
     def create_object_store(category):
       return (object_store_creator_factory.Create(CachingFileSystem)
-          .Create(category=category, version=file_system.GetVersion()))
+          .Create(category='%s/%s' % (file_system.GetName(), category),
+                  version=file_system.GetVersion()))
     self._stat_object_store = create_object_store('stat')
     self._read_object_store = create_object_store('read')
     self._read_binary_object_store = create_object_store('read-binary')
@@ -73,31 +74,30 @@ class CachingFileSystem(FileSystem):
     """Reads a list of files. If a file is in memcache and it is not out of
     date, it is returned. Otherwise, the file is retrieved from the file system.
     """
-    result = {}
-    uncached = []
     read_object_store = (self._read_binary_object_store if binary else
                          self._read_object_store)
-    results = read_object_store.GetMulti(paths).Get()
-    result_values = [x[1] for x in sorted(results.iteritems())]
-    stats = self._stat_object_store.GetMulti(paths).Get()
-    stat_values = [x[1] for x in sorted(stats.iteritems())]
-    for path, cached_result, stat in zip(sorted(paths),
-                                         result_values,
-                                         stat_values):
-      if cached_result is None:
+    read_values = read_object_store.GetMulti(paths).Get()
+    stat_values = self._stat_object_store.GetMulti(paths).Get()
+    result = {}
+    uncached = []
+    for path in paths:
+      read_value = read_values.get(path)
+      stat_value = stat_values.get(path)
+      if read_value is None:
         uncached.append(path)
         continue
-      data, version = cached_result
+      data, version = read_value
       # TODO(cduvall): Make this use a multi stat.
-      if stat is None:
-        stat = self.Stat(path).version
-      if stat != version:
+      if stat_value is None:
+        stat_value = self.Stat(path).version
+      if stat_value != version:
         uncached.append(path)
         continue
       result[path] = data
 
     if not uncached:
       return Future(value=result)
+
     return Future(delegate=_AsyncUncachedFuture(
         self._file_system.Read(uncached, binary=binary),
         result,

@@ -20,12 +20,9 @@ def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
     if item.get('nodoc', False):
       return True
-    to_remove = []
     for key, value in item.items():
       if _RemoveNoDocs(value):
-        to_remove.append(key)
-    for k in to_remove:
-      del item[k]
+        del item[key]
   elif type(item) == list:
     to_remove = []
     for i in item:

@@ -18,6 +18,24 @@ import time
 _DEFAULT_CHANNEL = 'stable'
 
 class Handler(webapp.RequestHandler):
+  # AppEngine instances should never need to call out to SVN. That should only
+  # ever be done by the cronjobs, which then write the result into DataStore,
+  # which is as far as instances look.
+  #
+  # Why? SVN is slow and a bit flaky. Cronjobs failing is annoying but
+  # temporary. Instances failing affects users, and is really bad.
+  #
+  # Anyway - to enforce this, we actually don't give instances access to SVN.
+  # If anything is missing from datastore, it'll be a 404. If the cronjobs
+  # don't manage to catch everything - uhoh. On the other hand, we'll figure it
+  # out pretty soon, and it also means that legitimate 404s are caught before a
+  # round trip to SVN.
+  #
+  # However, we can't expect users of preview.py to run a cronjob first, so,
+  # this is a hack allow that to be online all of the time.
+  # TODO(kalman): achieve this via proper dependency injection.
+  ALWAYS_ONLINE = False
+
   def __init__(self, request, response):
     super(Handler, self).__init__(request, response)
 
@@ -38,16 +56,17 @@ class Handler(webapp.RequestHandler):
     if real_path.strip('/') == 'extensions':
       real_path = 'extensions/index.html'
 
-    server_instance = ServerInstance.GetOrCreate(channel_name)
+    constructor = (
+        ServerInstance.GetOrCreateOnline if Handler.ALWAYS_ONLINE else
+        ServerInstance.GetOrCreateOffline)
+    server_instance = constructor(channel_name)
 
     canonical_path = server_instance.path_canonicalizer.Canonicalize(real_path)
     if real_path != canonical_path:
       self.redirect(canonical_path)
       return
 
-    ServerInstance.GetOrCreate(channel_name).Get(real_path,
-                                                 self.request,
-                                                 self.response)
+    server_instance.Get(real_path, self.request, self.response)
 
   def _HandleCron(self, path):
     # Cron strategy:
@@ -75,26 +94,33 @@ class Handler(webapp.RequestHandler):
     channel = path.split('/')[-1]
     logging.info('cron/%s: starting' % channel)
 
-    server_instance = ServerInstance.GetOrCreate(channel)
+    server_instance = ServerInstance.GetOrCreateOnline(channel)
 
-    def run_cron_for_dir(d):
+    def run_cron_for_dir(d, path_prefix=''):
       error = None
       start_time = time.time()
       files = [f for f in server_instance.content_cache.GetFromFileListing(d)
                if not f.endswith('/')]
       for f in files:
+        path = '%s%s' % (path_prefix, f)
         try:
-          server_instance.Get(f, MockRequest(f), MockResponse())
+          response = MockResponse()
+          server_instance.Get(path, MockRequest(path), response)
+          if response.status != 200:
+            error = 'Got %s response' % response.status
         except error:
-          logging.error('cron/%s: error rendering %s/%s: %s' % (
-              channel, d, f, error))
-      logging.info('cron/%s: rendering %s files in %s took %s seconds' % (
-          channel, len(files), d, time.time() - start_time))
+          pass
+        if error:
+          logging.error('cron/%s: error rendering %s: %s' % (
+              channel, path, error))
+      logging.info('cron/%s: rendering %s files took %s seconds' % (
+          channel, len(files), time.time() - start_time))
       return error
 
     # Don't use "or" since we want to evaluate everything no matter what.
-    was_error = any((run_cron_for_dir(svn_constants.PUBLIC_TEMPLATE_PATH),
-                     run_cron_for_dir(svn_constants.STATIC_PATH)))
+    was_error = any((
+        run_cron_for_dir(svn_constants.PUBLIC_TEMPLATE_PATH),
+        run_cron_for_dir(svn_constants.STATIC_PATH, path_prefix='static/')))
 
     if was_error:
       self.response.status = 500

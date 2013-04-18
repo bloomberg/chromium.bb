@@ -89,13 +89,13 @@ class CompiledFileSystem(object):
     will be ignored.
     """
     version = self._file_system.Stat(path).version
-    cache_entry = self._file_object_store.Get(path, time=0).Get()
+    cache_entry = self._file_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
       return cache_entry._cache_data
     cache_data = self._populate_function(
         path,
         self._file_system.ReadSingle(path, binary=binary))
-    self._file_object_store.Set(path, _CacheEntry(cache_data, version), time=0)
+    self._file_object_store.Set(path, _CacheEntry(cache_data, version))
     return cache_data
 
   def GetFromFileListing(self, path):
@@ -105,9 +105,9 @@ class CompiledFileSystem(object):
     if not path.endswith('/'):
       path += '/'
     version = self._file_system.Stat(path).version
-    cache_entry = self._list_object_store.Get(path, time=0).Get()
+    cache_entry = self._list_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
         return cache_entry._cache_data
     cache_data = self._populate_function(path, self._RecursiveList(path))
-    self._list_object_store.Set(path, _CacheEntry(cache_data, version), time=0)
+    self._list_object_store.Set(path, _CacheEntry(cache_data, version))
     return cache_data

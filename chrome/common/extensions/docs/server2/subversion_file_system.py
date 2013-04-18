@@ -134,5 +134,6 @@ class SubversionFileSystem(FileSystem):
       stat_info.version = stat_info.child_versions[filename]
     return stat_info
 
-  def GetVersion(self):
+  @classmethod
+  def GetVersion(cls):
     return _VERSION

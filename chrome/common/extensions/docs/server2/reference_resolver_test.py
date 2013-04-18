@@ -9,7 +9,6 @@ import sys
 import unittest
 
 from file_system import FileNotFoundError
-from in_memory_object_store import InMemoryObjectStore
 from reference_resolver import ReferenceResolver
 from test_object_store import TestObjectStore
 

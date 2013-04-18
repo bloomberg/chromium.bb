@@ -7,7 +7,6 @@ import os
 import sys
 import unittest
 
-from in_memory_object_store import InMemoryObjectStore
 from branch_utility import BranchUtility
 from fake_url_fetcher import FakeUrlFetcher
 from test_object_store import TestObjectStore

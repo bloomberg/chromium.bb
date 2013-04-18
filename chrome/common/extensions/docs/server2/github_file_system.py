@@ -131,8 +131,11 @@ class GithubFileSystem(FileSystem):
 
   def _DefaultStat(self, path):
     version = 0
-    # Cache for a minute so we don't try to keep fetching bad data.
-    self._stat_object_store.Set(path, version, time=60)
+    # TODO(kalman): we should replace all of this by wrapping the
+    # GithubFileSystem in a CachingFileSystem. A lot of work has been put into
+    # CFS to be robust, and GFS is missing out.
+    # For example: the following line is wrong, but it could be moot.
+    self._stat_object_store.Set(path, version)
     return StatInfo(version)
 
   def Stat(self, path):

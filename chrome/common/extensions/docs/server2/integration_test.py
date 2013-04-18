@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
+from handler import Handler
+from local_renderer import LocalRenderer
 import optparse
 import os
 import sys
-from StringIO import StringIO
-import re
+import time
 import unittest
 
 # Run build_server so that files needed by tests are copied to the local
@@ -16,150 +16,94 @@ import unittest
 import build_server
 build_server.main()
 
-BASE_PATH = None
-EXPLICIT_TEST_FILES = None
+# Arguments set up if __main__ specifies them.
+_BASE_PATH = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), os.pardir, os.pardir)
+_EXPLICIT_TEST_FILES = None
 
-from fake_fetchers import ConfigureFakeFetchers
-ConfigureFakeFetchers(os.path.join(sys.path[0], os.pardir))
-
-# Import Handler later because it immediately makes a request to github. We need
-# the fake urlfetch to be in place first.
-from handler import Handler
-
-class _MockResponse(object):
-  def __init__(self):
-    self.status = 200
-    self.out = StringIO()
-    self.headers = {}
-
-  def set_status(self, status):
-    self.status = status
-
-class _MockRequest(object):
-  def __init__(self, path):
-    self.headers = {}
-    self.path = path
-    self.url = 'http://localhost' + path
+def _GetPublicFiles():
+  '''Gets all public files mapped to their contents.
+  '''
+  public_path = os.path.join(_BASE_PATH, 'docs', 'templates', 'public', '')
+  public_files = {}
+  for path, dirs, files in os.walk(public_path):
+    relative_path = path[len(public_path):]
+    for filename in files:
+      with open(os.path.join(path, filename), 'r') as f:
+        public_files[os.path.join(relative_path, filename)] = f.read()
+  return public_files
 
 class IntegrationTest(unittest.TestCase):
-  def _TestSamplesLocales(self, sample_path, failures):
-    # Use US English, Spanish, and Arabic.
-    for lang in ['en-US', 'es', 'ar']:
-      request = _MockRequest(sample_path)
-      request.headers['Accept-Language'] = lang + ';q=0.8'
-      response = _MockResponse()
-      try:
-        Handler(request, response).get()
-        if 200 != response.status:
-          failures.append(
-              'Samples page with language %s does not have 200 status.'
-              ' Status was %d.' %  (lang, response.status))
-        if not response.out.getvalue():
-          failures.append(
-              'Rendering samples page with language %s produced no output.' %
-                  lang)
-      except Exception as e:
-        failures.append('Error rendering samples page with language %s: %s' %
-            (lang, e))
+  def setUp(self):
+    self._renderer = LocalRenderer(_BASE_PATH)
 
-  def _RunPublicTemplatesTest(self):
-    base_path = os.path.join(BASE_PATH, 'docs', 'templates', 'public')
-    if EXPLICIT_TEST_FILES is None:
-      test_files = []
-      for path, dirs, files in os.walk(base_path):
-        for dir_ in dirs:
-          if dir_.startswith('.'):
-            dirs.remove(dir_)
-        for name in files:
-          if name.startswith('.') or name == '404.html':
-            continue
-          test_files.append(os.path.join(path, name)[len(base_path + os.sep):])
-    else:
-      test_files = EXPLICIT_TEST_FILES
-    test_files = [f.replace(os.sep, '/') for f in test_files]
-    failures = []
-    for filename in test_files:
-      request = _MockRequest(filename)
-      response = _MockResponse()
-      try:
-        Handler(request, response).get()
-        if 200 != response.status:
-          failures.append('%s does not have 200 status. Status was %d.' %
-              (filename, response.status))
-        if not response.out.getvalue():
-          failures.append('Rendering %s produced no output.' % filename)
-        if filename.endswith('samples.html'):
-          self._TestSamplesLocales(filename, failures)
-      except Exception as e:
-        failures.append('Error rendering %s: %s' % (filename, e))
-    if failures:
-      self.fail('\n'.join(failures))
-
-  def testAllPublicTemplates(self):
-    logging.getLogger().setLevel(logging.ERROR)
-    logging_error = logging.error
-    try:
-      logging.error = self.fail
-      self._RunPublicTemplatesTest()
-    finally:
-      logging.error = logging_error
-
-  def testNonexistentFile(self):
-    logging.getLogger().setLevel(logging.CRITICAL)
-    request = _MockRequest('extensions/junk.html')
-    bad_response = _MockResponse()
-    Handler(request, bad_response).get()
-    self.assertEqual(404, bad_response.status)
-    request_404 = _MockRequest('404.html')
-    response_404 = _MockResponse()
-    Handler(request_404, response_404).get()
-    self.assertEqual(200, response_404.status)
-    self.assertEqual(response_404.out.getvalue(), bad_response.out.getvalue())
-
-  def testCron(self):
-    if EXPLICIT_TEST_FILES is not None:
+  def testCronAndPublicFiles(self):
+    '''Runs cron then requests every public file. Cron needs to be run first
+    because the public file requests are offline.
+    '''
+    if _EXPLICIT_TEST_FILES is not None:
       return
-    logging_error = logging.error
+
+    print('Running cron...')
+    start_time = time.time()
     try:
-      logging.error = self.fail
-      request = _MockRequest('/cron/trunk')
-      response = _MockResponse()
-      Handler(request, response).get()
-      self.assertEqual(200, response.status)
-      self.assertEqual('Success', response.out.getvalue())
+      render_content, render_status, _ = self._renderer.Render('/cron/stable')
+      self.assertEqual(200, render_status)
+      self.assertEqual('Success', render_content)
     finally:
-      logging.error = logging_error
+      print('Took %s seconds' % (time.time() - start_time))
+
+    public_files = _GetPublicFiles()
+
+    print('Rendering %s public files...' % len(public_files.keys()))
+    start_time = time.time()
+    try:
+      for path, content in _GetPublicFiles().iteritems():
+        def check_result(render_content, render_status, _):
+          self.assertEqual(200, render_status)
+          # This is reaaaaally rough since usually these will be tiny templates
+          # that render large files. At least it'll catch zero-length responses.
+          self.assertTrue(len(render_content) >= len(content))
+        check_result(*self._renderer.Render(path))
+        # Samples are internationalized, test some locales.
+        if path.endswith('/samples.html'):
+          for lang in ['en-US', 'es', 'ar']:
+            check_result(*self._renderer.Render(
+                path, headers={'Accept-Language': '%s;q=0.8' % lang}))
+    finally:
+      print('Took %s seconds' % (time.time() - start_time))
+
+  def testExplicitFiles(self):
+    '''Tests just the files in _EXPLICIT_TEST_FILES.
+    '''
+    if _EXPLICIT_TEST_FILES is None:
+      return
+    print('Rendering %s explicit files...' % len(_EXPLICIT_TEST_FILES))
+    for filename in _EXPLICIT_TEST_FILES:
+      print('Rendering %s...' % filename)
+      start_time = time.time()
+      try:
+        render_content, render_status, _ = self._renderer.Render(
+            filename, always_online=True)
+        self.assertEqual(200, render_status)
+        self.assertTrue(render_content != '')
+      finally:
+        print('Took %s seconds' % (time.time() - start_time))
+
+  def testFileNotFound(self):
+    render_content, render_status, _ = self._renderer.Render(
+        '/extensions/notfound.html')
+    self.assertEqual(404, render_status)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()
-  parser.add_option('-p',
-                    '--path',
-                    default=os.path.join(
-                        os.path.abspath(os.path.dirname(__file__)),
-                        os.pardir,
-                        os.pardir))
-  parser.add_option('-a',
-                    '--all',
-                    action='store_true',
-                    default=False)
+  parser.add_option('-p', '--path', default=None)
+  parser.add_option('-a', '--all', action='store_true', default=False)
   (opts, args) = parser.parse_args()
-
   if not opts.all:
-    EXPLICIT_TEST_FILES = args
-  BASE_PATH = opts.path
-  suite = unittest.TestSuite(tests=[
-    IntegrationTest('testNonexistentFile'),
-    IntegrationTest('testCron'),
-    IntegrationTest('testAllPublicTemplates')
-  ])
-  result = unittest.TestResult()
-  suite.run(result)
-  if result.failures:
-    print('*----------------------------------*')
-    print('| integration_test.py has failures |')
-    print('*----------------------------------*')
-    for test, failure in result.failures:
-      print(test)
-      print(failure)
-    exit(1)
-  exit(0)
+    _EXPLICIT_TEST_FILES = args
+  if opts.path is not None:
+    _BASE_PATH = opts.path
+  # Kill sys.argv because we have our own flags.
+  sys.argv = [sys.argv[0]]
+  unittest.main()

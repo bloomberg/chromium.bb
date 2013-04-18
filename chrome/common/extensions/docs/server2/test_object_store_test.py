@@ -20,9 +20,24 @@ class TestObjectStoreTest(unittest.TestCase):
     store.Set('hi', 'blah')
     self.assertEqual('blah', store.Get('hi').Get())
     self.assertEqual({'hi': 'blah'}, store.GetMulti(['hi', 'lo']).Get())
-    store.Delete('hi')
+    store.Del('hi')
     self.assertEqual(None, store.Get('hi').Get())
     self.assertEqual({}, store.GetMulti(['hi', 'lo']).Get())
+
+  def testCheckAndReset(self):
+    store = TestObjectStore('namespace')
+    store.Set('x', 'y')
+    self.assertTrue(store.CheckAndReset(set_count=1))
+    store.Set('x', 'y')
+    store.Set('x', 'y')
+    self.assertTrue(store.CheckAndReset(set_count=2))
+    store.Set('x', 'y')
+    store.Set('x', 'y')
+    store.Get('x')
+    store.Get('x')
+    store.Get('x')
+    store.Del('x')
+    self.assertTrue(store.CheckAndReset(get_count=3, set_count=2, del_count=1))
 
 if __name__ == '__main__':
   unittest.main()
