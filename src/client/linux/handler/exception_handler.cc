@@ -94,7 +94,9 @@
 #include "common/linux/eintr_wrapper.h"
 #include "third_party/lss/linux_syscall_support.h"
 
+#if defined(__ANDROID__)
 #include "linux/sched.h"
+#endif
 
 #ifndef PR_SET_PTRACER
 #define PR_SET_PTRACER 0x59616d61
