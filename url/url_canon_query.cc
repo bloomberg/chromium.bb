@@ -27,8 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_internal.h"
+#include "url/url_canon.h"
+#include "url/url_canon_internal.h"
 
 // Query canonicalization in IE
 // ----------------------------

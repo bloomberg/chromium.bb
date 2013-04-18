@@ -27,12 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef URL_URL_CANON_ICU_H_
+#define URL_URL_CANON_ICU_H_
+
 // ICU integration functions.
 
-#ifndef GOOGLEURL_SRC_URL_CANON_ICU_H__
-#define GOOGLEURL_SRC_URL_CANON_ICU_H__
-
-#include "googleurl/src/url_canon.h"
+#include "url/url_canon.h"
 
 typedef struct UConverter UConverter;
 
@@ -45,13 +45,13 @@ class ICUCharsetConverter : public CharsetConverter {
   // Constructs a converter using an already-existing ICU character set
   // converter. This converter is NOT owned by this object; the lifetime must
   // be managed by the creator such that it is alive as long as this is.
-  GURL_API ICUCharsetConverter(UConverter* converter);
+  ICUCharsetConverter(UConverter* converter);
 
-  GURL_API virtual ~ICUCharsetConverter();
+  virtual ~ICUCharsetConverter();
 
-  GURL_API virtual void ConvertFromUTF16(const char16* input,
-                                         int input_len,
-                                         CanonOutput* output);
+  virtual void ConvertFromUTF16(const char16* input,
+                                int input_len,
+                                CanonOutput* output);
 
  private:
   // The ICU converter, not owned by this class.
@@ -60,4 +60,4 @@ class ICUCharsetConverter : public CharsetConverter {
 
 }  // namespace url_canon
 
-#endif  // GOOGLEURL_SRC_URL_CANON_ICU_H__
+#endif  // URL_URL_CANON_ICU_H_

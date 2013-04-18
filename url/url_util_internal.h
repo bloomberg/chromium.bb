@@ -27,14 +27,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLEURL_SRC_URL_UTIL_INTERNAL_H__
-#define GOOGLEURL_SRC_URL_UTIL_INTERNAL_H__
+#ifndef URL_URL_UTIL_INTERNAL_H_
+#define URL_URL_UTIL_INTERNAL_H_
 
 #include <string>
 
 #include "base/string16.h"
-#include "googleurl/src/url_common.h"
-#include "googleurl/src/url_parse.h"
+#include "url/url_parse.h"
 
 namespace url_util {
 
@@ -53,4 +52,4 @@ bool CompareSchemeComponent(const char16* spec,
 
 }  // namespace url_util
 
-#endif  // GOOGLEURL_SRC_URL_UTIL_INTERNAL_H__
+#endif  // URL_URL_UTIL_INTERNAL_H_

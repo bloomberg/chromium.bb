@@ -31,8 +31,8 @@
 // of a URL, these are URLs that have no authority section, only a path. For
 // example, "javascript:" and "data:".
 
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_internal.h"
+#include "url/url_canon.h"
+#include "url/url_canon_internal.h"
 
 namespace url_canon {
 

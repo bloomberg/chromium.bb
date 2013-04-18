@@ -27,23 +27,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLEURL_SRC_URL_CANON_IP_H__
-#define GOOGLEURL_SRC_URL_CANON_IP_H__
+#ifndef URL_URL_CANON_IP_H_
+#define URL_URL_CANON_IP_H_
 
 #include "base/string16.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_common.h"
-#include "googleurl/src/url_parse.h"
+#include "url/url_canon.h"
+#include "url/url_parse.h"
 
 namespace url_canon {
 
 // Writes the given IPv4 address to |output|.
-GURL_API void AppendIPv4Address(const unsigned char address[4],
-                                CanonOutput* output);
+void AppendIPv4Address(const unsigned char address[4],
+                       CanonOutput* output);
 
 // Writes the given IPv6 address to |output|.
-GURL_API void AppendIPv6Address(const unsigned char address[16],
-                                CanonOutput* output);
+void AppendIPv6Address(const unsigned char address[16],
+                       CanonOutput* output);
 
 // Searches the host name for the portions of the IPv4 address. On success,
 // each component will be placed into |components| and it will return true.
@@ -63,11 +62,11 @@ GURL_API void AppendIPv6Address(const unsigned char address[16],
 // Mozilla), so this code path never gets hit. Our host canonicalization will
 // notice these spaces and escape them, which will make IP address finding
 // fail. This seems like better behavior than stripping after a space.
-GURL_API bool FindIPv4Components(const char* spec,
-                                 const url_parse::Component& host,
+bool FindIPv4Components(const char* spec,
+                        const url_parse::Component& host,
                                  url_parse::Component components[4]);
-GURL_API bool FindIPv4Components(const char16* spec,
-                                 const url_parse::Component& host,
+bool FindIPv4Components(const char16* spec,
+                        const url_parse::Component& host,
                                  url_parse::Component components[4]);
 
 // Converts an IPv4 address to a 32-bit number (network byte order).
@@ -81,12 +80,12 @@ GURL_API bool FindIPv4Components(const char16* spec,
 //
 // On success, |num_ipv4_components| will be populated with the number of
 // components in the IPv4 address.
-GURL_API CanonHostInfo::Family IPv4AddressToNumber(
+CanonHostInfo::Family IPv4AddressToNumber(
     const char* spec,
     const url_parse::Component& host,
     unsigned char address[4],
     int* num_ipv4_components);
-GURL_API CanonHostInfo::Family IPv4AddressToNumber(
+CanonHostInfo::Family IPv4AddressToNumber(
     const char16* spec,
     const url_parse::Component& host,
     unsigned char address[4],
@@ -97,13 +96,13 @@ GURL_API CanonHostInfo::Family IPv4AddressToNumber(
 //
 // NOTE that |host| is expected to be surrounded by square brackets.
 // i.e. "[::1]" rather than "::1".
-GURL_API bool IPv6AddressToNumber(const char* spec,
-                                  const url_parse::Component& host,
-                                  unsigned char address[16]);
-GURL_API bool IPv6AddressToNumber(const char16* spec,
-                                  const url_parse::Component& host,
-                                  unsigned char address[16]);
+bool IPv6AddressToNumber(const char* spec,
+                         const url_parse::Component& host,
+                         unsigned char address[16]);
+bool IPv6AddressToNumber(const char16* spec,
+                         const url_parse::Component& host,
+                         unsigned char address[16]);
 
 }  // namespace url_canon
 
-#endif  // GOOGLEURL_SRC_URL_CANON_IP_H__
+#endif  // URL_URL_CANON_IP_H_

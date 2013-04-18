@@ -27,6 +27,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef URL_URL_CANON_INTERNAL_FILE_H_
+#define URL_URL_CANON_INTERNAL_FILE_H_
+
 // As with url_canon_internal.h, this file is intended to be included in
 // another C++ file where the template types are defined. This allows the
 // programmer to use this to use these functions for their own strings
@@ -36,11 +39,9 @@
 // *** This file must be included after url_canon_internal as we depend on some
 // functions in it. ***
 
-#ifndef GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
-#define GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
 
-#include "googleurl/src/url_file.h"
-#include "googleurl/src/url_parse_internal.h"
+#include "url/url_file.h"
+#include "url/url_parse_internal.h"
 
 using namespace url_canon;
 
@@ -154,4 +155,4 @@ static bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
   return success;
 }
 
-#endif  // GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
+#endif  // URL_URL_CANON_INTERNAL_FILE_H_

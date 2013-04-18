@@ -27,18 +27,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef URL_URL_CANON_INTERNAL_H_
+#define URL_URL_CANON_INTERNAL_H_
+
 // This file is intended to be included in another C++ file where the character
 // types are defined. This allows us to write mostly generic code, but not have
 // templace bloat because everything is inlined when anybody calls any of our
 // functions.
 
-#ifndef GOOGLEURL_SRC_URL_CANON_INTERNAL_H__
-#define GOOGLEURL_SRC_URL_CANON_INTERNAL_H__
-
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "googleurl/src/url_canon.h"
+#include "url/url_canon.h"
 
 namespace url_canon {
 
@@ -108,7 +108,7 @@ void AppendStringOfType(const char16* source, int length,
 
 // Maps the hex numerical values 0x0 to 0xf to the corresponding ASCII digit
 // that will be used to represent it.
-GURL_API extern const char kHexCharLookup[0x10];
+extern const char kHexCharLookup[0x10];
 
 // This lookup table allows fast conversion between ASCII hex letters and their
 // corresponding numerical value. The 8-bit range is divided up into 8
@@ -175,8 +175,8 @@ extern const char16 kUnicodeReplacementCharacter;
 // (for a single-byte ASCII character, it will not be changed).
 //
 // Implementation is in url_canon_icu.cc.
-GURL_API bool ReadUTFChar(const char* str, int* begin, int length,
-                          unsigned* code_point_out);
+bool ReadUTFChar(const char* str, int* begin, int length,
+                 unsigned* code_point_out);
 
 // Generic To-UTF-8 converter. This will call the given append method for each
 // character that should be appended, with the given output method. Wrappers
@@ -252,8 +252,8 @@ inline void AppendUTF8EscapedValue(unsigned char_value, CanonOutput* output) {
 // (for a single-16-bit-word character, it will not be changed).
 //
 // Implementation is in url_canon_icu.cc.
-GURL_API bool ReadUTFChar(const char16* str, int* begin, int length,
-                          unsigned* code_point);
+bool ReadUTFChar(const char16* str, int* begin, int length,
+                 unsigned* code_point);
 
 // Equivalent to U16_APPEND_UNSAFE in ICU but uses our output method.
 inline void AppendUTF16Value(unsigned code_point,
@@ -371,10 +371,10 @@ void AppendInvalidNarrowString(const char16* spec, int begin, int end,
 // replacing the invalid characters with the "invalid character". It will
 // return false in the failure case, and the caller should not continue as
 // normal.
-GURL_API bool ConvertUTF16ToUTF8(const char16* input, int input_len,
-                                 CanonOutput* output);
-GURL_API bool ConvertUTF8ToUTF16(const char* input, int input_len,
-                                 CanonOutputT<char16>* output);
+bool ConvertUTF16ToUTF8(const char16* input, int input_len,
+                        CanonOutput* output);
+bool ConvertUTF8ToUTF16(const char* input, int input_len,
+                        CanonOutputT<char16>* output);
 
 // Converts from UTF-16 to 8-bit using the character set converter. If the
 // converter is NULL, this will use UTF-8.
@@ -433,9 +433,9 @@ bool CanonicalizePartialPath(const char16* spec,
 #ifndef WIN32
 
 // Implementations of Windows' int-to-string conversions
-GURL_API int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
-GURL_API int _itow_s(int value, char16* buffer, size_t size_in_chars,
-                     int radix);
+int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
+int _itow_s(int value, char16* buffer, size_t size_in_chars,
+            int radix);
 
 // Secure template overloads for these functions
 template<size_t N>
@@ -458,4 +458,4 @@ inline unsigned long long _strtoui64(const char* nptr,
 
 }  // namespace url_canon
 
-#endif  // GOOGLEURL_SRC_URL_CANON_INTERNAL_H__
+#endif  // URL_URL_CANON_INTERNAL_H_

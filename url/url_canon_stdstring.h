@@ -27,15 +27,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef URL_URL_CANON_STDSTRING_H_
+#define URL_URL_CANON_STDSTRING_H_
+
 // This header file defines a canonicalizer output method class for STL
 // strings. Because the canonicalizer tries not to be dependent on the STL,
 // we have segregated it here.
 
-#ifndef GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
-#define GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
-
 #include <string>
-#include "googleurl/src/url_canon.h"
+
+#include "url/url_canon.h"
 
 namespace url_canon {
 
@@ -130,5 +131,4 @@ class StdStringReplacements :
 
 }  // namespace url_canon
 
-#endif  // GOOGLEURL_SRC_URL_CANON_STDSTRING_H__
-
+#endif  // URL_URL_CANON_STDSTRING_H_
