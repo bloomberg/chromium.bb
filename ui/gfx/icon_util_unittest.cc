@@ -22,17 +22,17 @@ static const char kTempIconFilename[] = "temp_test_icon.ico";
 
 class IconUtilTest : public testing::Test {
  public:
-  IconUtilTest() {
+  virtual void SetUp() OVERRIDE {
     PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_);
+    temp_directory_.CreateUniqueTempDir();
   }
-  ~IconUtilTest() {}
 
   static const int kSmallIconWidth = 16;
   static const int kSmallIconHeight = 16;
   static const int kLargeIconWidth = 128;
   static const int kLargeIconHeight = 128;
 
-  // Given a file name for an .ico file and an image dimentions, this
+  // Given a file name for an .ico file and an image dimensions, this
   // function loads the icon and returns an HICON handle.
   HICON LoadIconFromFile(const base::FilePath& filename,
                          int width, int height) {
@@ -55,14 +55,11 @@ class IconUtilTest : public testing::Test {
   }
 
  protected:
-  // The root directory for test files.
+  // The root directory for test files. This should be treated as read-only.
   base::FilePath test_data_directory_;
 
   // Directory for creating files by this test.
   base::ScopedTempDir temp_directory_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IconUtilTest);
 };
 
 }  // namespace
@@ -128,9 +125,10 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
 // fails gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   scoped_ptr<SkBitmap> bitmap;
-  base::FilePath valid_icon_filename = test_data_directory_.AppendASCII(
-      kSmallIconName);
-  base::FilePath invalid_icon_filename(FILE_PATH_LITERAL("C:\\<>?.ico"));
+  base::FilePath valid_icon_filename = temp_directory_.path().AppendASCII(
+      kTempIconFilename);
+  base::FilePath invalid_icon_filename = temp_directory_.path().AppendASCII(
+      "<>?.ico");
 
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
@@ -138,6 +136,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   bitmap->setConfig(SkBitmap::kA8_Config, kSmallIconWidth, kSmallIconHeight);
   EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
+  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
@@ -145,6 +144,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   bitmap->setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
   EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
+  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
 
   // Bitmap with no allocated pixels.
   bitmap.reset(new SkBitmap);
@@ -154,6 +154,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
                     kSmallIconHeight);
   EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
+  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
 
   // Invalid file name.
   bitmap->allocPixels();
@@ -161,10 +162,11 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   memset(bitmap->getPixels(), 0, bitmap->width() * bitmap->height() * 4);
   EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     invalid_icon_filename));
+  EXPECT_FALSE(file_util::PathExists(invalid_icon_filename));
 }
 
 // This test case makes sure that when we load an icon from disk and convert
-// the HICON into a bitmap, the bitmap has the expected format and dimentions.
+// the HICON into a bitmap, the bitmap has the expected format and dimensions.
 TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   scoped_ptr<SkBitmap> bitmap;
   base::FilePath small_icon_filename = test_data_directory_.AppendASCII(
@@ -198,7 +200,7 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
 
 // This test case makes sure that when an HICON is created from an SkBitmap,
 // the returned handle is valid and refers to an icon with the expected
-// dimentions color depth etc.
+// dimensions color depth etc.
 TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
   SkBitmap bitmap = CreateBlackSkBitmap(kSmallIconWidth, kSmallIconHeight);
   HICON icon = IconUtil::CreateHICONFromSkBitmap(bitmap);
@@ -238,7 +240,7 @@ TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
 // creates a valid .ico file given an SkBitmap.
 TEST_F(IconUtilTest, TestCreateIconFile) {
   base::FilePath icon_filename =
-      test_data_directory_.AppendASCII(kTempIconFilename);
+      temp_directory_.path().AppendASCII(kTempIconFilename);
 
   SkBitmap bitmap = CreateBlackSkBitmap(kSmallIconWidth, kSmallIconHeight);
   EXPECT_TRUE(IconUtil::CreateIconFileFromSkBitmap(bitmap, SkBitmap(),
@@ -258,7 +260,7 @@ TEST_F(IconUtilTest, TestCreateIconFile) {
 
 TEST_F(IconUtilTest, TestCreateIconFileWithLargeBitmap) {
   const base::FilePath icon_path(
-      temp_directory_.path().AppendASCII("test.ico"));
+      temp_directory_.path().AppendASCII(kTempIconFilename));
   const SkBitmap bitmap_48 = CreateBlackSkBitmap(48, 48);
   const SkBitmap bitmap_256 = CreateBlackSkBitmap(256, 256);
 
