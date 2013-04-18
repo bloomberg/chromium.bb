@@ -725,7 +725,8 @@ def _FormatAsEnvironmentBlock(envvar_dict):
   return block
 
 def _ExtractCLPath(output_of_where):
-  """Gets the path to cl.exe based on the output of `set && where`."""
+  """Gets the path to cl.exe based on the output of calling the environment
+  setup batch file, followed by the equivalent of `where`."""
   # Take the first line, as that's the first found in the PATH.
   for line in output_of_where.strip().splitlines():
     if line.startswith('LOC:'):
@@ -746,11 +747,15 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   meet your requirement (e.g. for custom toolchains), you can pass
   "-G ninja_use_custom_environment_files" to the gyp to suppress file
   generation and use custom environment files prepared by yourself."""
+  archs = ('x86', 'x64')
   if generator_flags.get('ninja_use_custom_environment_files', 0):
-    return
+    cl_paths = {}
+    for arch in archs:
+      cl_paths[arch] = 'cl.exe'
+    return cl_paths
   vs = GetVSVersion(generator_flags)
   cl_paths = {}
-  for arch in ('x86', 'x64'):
+  for arch in archs:
     # Extract environment variables for subprocesses.
     args = vs.SetupScript(arch)
     args.extend(('&&', 'set'))
