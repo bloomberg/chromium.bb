@@ -170,6 +170,10 @@ class SigninManager : public GaiaAuthConsumer,
   // overridden by mocks.
   virtual bool AuthInProgress() const;
 
+  // If an authentication is in progress, return the username being
+  // authenticated. Returns an empty string if no auth is in progress.
+  const std::string& GetUsernameForAuthInProgress() const;
+
   // Handles errors if a required user info key is not returned from the
   // GetUserInfo call.
   void OnGetUserInfoKeyNotFound(const std::string& key);

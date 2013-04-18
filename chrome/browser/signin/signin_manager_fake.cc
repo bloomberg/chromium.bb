@@ -14,8 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
-FakeSigninManager::FakeSigninManager(Profile* profile)
-    : auth_in_progress_(false) {
+FakeSigninManager::FakeSigninManager(Profile* profile) {
   profile_ = profile;
   signin_global_error_.reset(new SigninGlobalError(this, profile));
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
@@ -66,10 +65,6 @@ void FakeSigninManager::ForceSignOut() {
   // Allow signing out now.
   prohibit_signout_ = false;
   SignOut();
-}
-
-bool FakeSigninManager::AuthInProgress() const {
-  return auth_in_progress_;
 }
 
 // static

@@ -312,6 +312,34 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
 
   ASSERT_FALSE(store2->policy());
   store2->RemoveObserver(&observer_);
+
+  // Sign out - we should be able to load the policy (don't check usernames
+  // when signed out).
+  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
+  scoped_ptr<UserCloudPolicyStore> store3(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
+  store3->AddObserver(&observer_);
+  EXPECT_CALL(observer_, OnStoreLoaded(store3.get()));
+  store3->Load();
+  RunUntilIdle();
+
+  ASSERT_TRUE(store3->policy());
+  store3->RemoveObserver(&observer_);
+
+  // Now start a signin as a different user - this should fail validation.
+  FakeSigninManager* signin = static_cast<FakeSigninManager*>(
+      SigninManagerFactory::GetForProfile(profile_.get()));
+  signin->set_auth_in_progress("foobar@foobar.com");
+
+  scoped_ptr<UserCloudPolicyStore> store4(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
+  store4->AddObserver(&observer_);
+  ExpectError(store4.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
+  store4->Load();
+  RunUntilIdle();
+
+  ASSERT_FALSE(store4->policy());
+  store4->RemoveObserver(&observer_);
 }
 
 }  // namespace

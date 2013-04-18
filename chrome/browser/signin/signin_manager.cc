@@ -594,6 +594,10 @@ bool SigninManager::AuthInProgress() const {
   return !possibly_invalid_username_.empty();
 }
 
+const std::string& SigninManager::GetUsernameForAuthInProgress() const {
+  return possibly_invalid_username_;
+}
+
 void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
   DCHECK(key == kGetInfoDisplayEmailKey || key == kGetInfoEmailKey);
   LOG(ERROR) << "Account is not associated with a valid email address. "

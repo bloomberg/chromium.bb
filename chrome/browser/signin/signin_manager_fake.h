@@ -34,16 +34,12 @@ class FakeSigninManager : public SigninManager {
   // Helper function to force a signout.
   virtual void ForceSignOut();
 
-  virtual bool AuthInProgress() const OVERRIDE;
-  void set_auth_in_progress(bool in_progress) {
-    auth_in_progress_ = in_progress;
+  void set_auth_in_progress(const std::string& username) {
+    possibly_invalid_username_ = username;
   }
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
   static ProfileKeyedService* Build(Profile* profile);
-
- private:
-  bool auth_in_progress_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_

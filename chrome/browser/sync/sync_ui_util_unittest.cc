@@ -197,7 +197,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                                   Return(false)));
       EXPECT_CALL(service, HasUnrecoverableError())
                   .WillRepeatedly(Return(false));
-      signin->set_auth_in_progress(true);
+      signin->set_auth_in_progress("test_user@test.com");
       return;
     }
     case STATUS_CASE_AUTH_ERROR: {

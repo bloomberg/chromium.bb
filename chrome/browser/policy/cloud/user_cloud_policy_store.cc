@@ -215,7 +215,11 @@ void UserCloudPolicyStore::Validate(
   SigninManager* signin = SigninManagerFactory::GetForProfileIfExists(profile_);
   if (signin) {
     std::string username = signin->GetAuthenticatedUsername();
-    // Validate the username if the user is signed in.
+    if (username.empty())
+      username = signin->GetUsernameForAuthInProgress();
+
+    // Validate the username if the user is signed in (or in the process of
+    // signing in).
     if (!username.empty())
       validator->ValidateUsername(username);
   }

@@ -598,11 +598,13 @@ TEST_F(SigninManagerTest, ProvideSecondFactorFailure) {
 TEST_F(SigninManagerTest, SignOutMidConnect) {
   manager_->Initialize(profile_.get());
   manager_->StartSignIn("username", "password", std::string(), std::string());
+  EXPECT_EQ("username", manager_->GetUsernameForAuthInProgress());
   manager_->SignOut();
   EXPECT_EQ(0U, google_login_success_.size());
   EXPECT_EQ(1U, google_login_failure_.size());
 
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(manager_->GetUsernameForAuthInProgress().empty());
 }
 
 TEST_F(SigninManagerTest, SignInWithOAuth) {
