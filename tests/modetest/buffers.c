@@ -100,6 +100,7 @@ static const struct format_info format_info[] = {
 	{ DRM_FORMAT_NV16, "NV16", MAKE_YUV_INFO(YUV_YCbCr, 2, 1, 2) },
 	{ DRM_FORMAT_NV61, "NV61", MAKE_YUV_INFO(YUV_YCrCb, 2, 1, 2) },
 	/* YUV planar */
+	{ DRM_FORMAT_YUV420, "YU12", MAKE_YUV_INFO(YUV_YCbCr, 2, 2, 1) },
 	{ DRM_FORMAT_YVU420, "YV12", MAKE_YUV_INFO(YUV_YCrCb, 2, 2, 1) },
 	/* RGB16 */
 	{ DRM_FORMAT_ARGB4444, "AR12", MAKE_RGB_INFO(4, 8, 4, 4, 4, 0, 4, 12) },
@@ -600,9 +601,13 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], u, v,
 					     width, height, stride);
 
-	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YUV420:
 		return fill_smpte_yuv_planar(&info->yuv, planes[0], planes[1],
 					     planes[2], width, height, stride);
+
+	case DRM_FORMAT_YVU420:
+		return fill_smpte_yuv_planar(&info->yuv, planes[0], planes[2],
+					     planes[1], width, height, stride);
 
 	case DRM_FORMAT_ARGB4444:
 	case DRM_FORMAT_XRGB4444:
@@ -863,9 +868,13 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 		return fill_tiles_yuv_planar(info, planes[0], u, v,
 					     width, height, stride);
 
-	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YUV420:
 		return fill_tiles_yuv_planar(info, planes[0], planes[1],
 					     planes[2], width, height, stride);
+
+	case DRM_FORMAT_YVU420:
+		return fill_tiles_yuv_planar(info, planes[0], planes[2],
+					     planes[1], width, height, stride);
 
 	case DRM_FORMAT_ARGB4444:
 	case DRM_FORMAT_XRGB4444:
@@ -1055,6 +1064,7 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 		planes[1] = virtual + offsets[1];
 		break;
 
+	case DRM_FORMAT_YUV420:
 	case DRM_FORMAT_YVU420:
 		offsets[0] = 0;
 		kms_bo_get_prop(bo, KMS_HANDLE, &handles[0]);
