@@ -123,6 +123,11 @@ unsigned ProgramBindingBase::CreateShaderProgram(WebGraphicsContext3D* context,
       context->bindAttribLocation(program_object,
                                   GeometryBinding::TexCoordAttribLocation(),
                                   "a_texCoord"));
+  GLC(context,
+      context->bindAttribLocation(
+          program_object,
+          GeometryBinding::TriangleIndexAttribLocation(),
+          "a_index"));
 
   return program_object;
 }
