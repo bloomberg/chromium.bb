@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/content_settings_observer.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -318,6 +320,10 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
 }
 
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(WebFrame* frame) {
+  // Whitelist Instant processes.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess))
+    return true;
+
   // Whitelist ftp directory listings, as they require JavaScript to function
   // properly.
   webkit_glue::WebURLResponseExtraDataImpl* extra_data =

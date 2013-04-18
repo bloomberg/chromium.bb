@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -1001,4 +1002,37 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_FALSE(instant_service->IsInstantProcess(
       active_tab->GetRenderProcessHost()->GetID()));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, ContentSettingsWhitelist) {
+  // Creates a 2x2 pixel image element and checks its height after it loads.
+  const char* kImageRenderScript =
+      "var testImage = document.createElement('img');"
+      "testImage.onload = function () {"
+      "  domAutomationController.send(testImage.height > 0); };"
+      "testImage.src = 'data:image/png;base64,Qk1GAAAAAAAAADYAAAAoAAAAAgAAAAIA"
+      "AAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/w==';";
+
+  Profile* profile = browser()->profile();
+
+  // Block images through content settings.
+  profile->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantSupport();
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+
+  // Make sure this is an Instant process.
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      overlay->GetRenderProcessHost()->GetID()));
+
+  bool result;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(overlay, kImageRenderScript,
+      &result));
+  EXPECT_TRUE(result);
 }
