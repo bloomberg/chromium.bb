@@ -730,7 +730,7 @@ def _ExtractCLPath(output_of_where):
   # Take the first line, as that's the first found in the PATH.
   for line in output_of_where.strip().splitlines():
     if line.startswith('LOC:'):
-      return line[4:].strip()
+      return line[len('LOC:'):].strip()
 
 def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   """It's not sufficient to have the absolute path to the compiler, linker,
