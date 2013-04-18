@@ -7,7 +7,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/chrome.pak',
-          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/libclearkeycdm.so',
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
@@ -27,7 +26,11 @@
     }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
+        'command': [
+          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
+        ],
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
@@ -55,6 +58,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/D3DCompiler_43.dll',
+          '<(PRODUCT_DIR)/chrome.dll',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
