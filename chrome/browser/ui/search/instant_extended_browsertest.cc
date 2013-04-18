@@ -447,6 +447,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
   EXPECT_EQ("hello", GetOmniboxText());
 }
 
+// Flaky on Linux Tests bot.  See http://crbug.com/233090.
+#if defined(OS_LINUX)
+#define MAYBE_NavigateToURLSuggestionHitEnterAndLookForSubmit DISABLED_NavigateToURLSuggestionHitEnterAndLookForSubmit
+#else
+#define MAYBE_NavigateToURLSuggestionHitEnterAndLookForSubmit NavigateToURLSuggestionHitEnterAndLookForSubmit
+#endif
+
 // This test simulates a search provider using the InstantExtended API to
 // navigate through the suggested results and back to the original user query.
 // If this test starts to flake, it may be that the second call to AcceptInput
@@ -454,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
 // navigation. In that case, see https://codereview.chromium.org/12895007/#msg28
 // and onwards for possible alternatives.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       NavigateToURLSuggestionHitEnterAndLookForSubmit) {
+                       MAYBE_NavigateToURLSuggestionHitEnterAndLookForSubmit) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
