@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "net/base/completion_callback.h"
 #include "webkit/blob/file_stream_reader.h"
@@ -59,7 +60,35 @@ class LocalReaderProxy : public ReaderProxy {
   DISALLOW_COPY_AND_ASSIGN(LocalReaderProxy);
 };
 
-// TODO(hidehiko): implement the NetworkReaderProxy.
+// The read operation implementation for the file which is being downloaded.
+class NetworkReaderProxy : public ReaderProxy {
+ public:
+  explicit NetworkReaderProxy(int64 content_length);
+  virtual ~NetworkReaderProxy();
+
+  // ReaderProxy overrides.
+  virtual int Read(net::IOBuffer* buffer, int buffer_length,
+                   const net::CompletionCallback& callback) OVERRIDE;
+  virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
+  virtual void OnError(DriveFileError error) OVERRIDE;
+
+ private:
+  // The data received from the server, but not yet read.
+  ScopedVector<std::string> pending_data_;
+
+  // The number of bytes of remaining data (including the data not yet
+  // received from the server).
+  int64 remaining_content_length_;
+
+  int error_code_;
+
+  // To support pending Read(), it is necessary to keep its arguments.
+  scoped_refptr<net::IOBuffer> buffer_;
+  int buffer_length_;
+  net::CompletionCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkReaderProxy);
+};
 
 }  // namespace internal
 

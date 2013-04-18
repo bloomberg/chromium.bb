@@ -29,7 +29,7 @@ TEST(LocalReaderProxyTest, Read) {
   std::string expected_content;
   ASSERT_TRUE(file_util::ReadFileToString(kTestFile, &expected_content));
 
-  // The LocaReaderProxy should live on IO thread.
+  // The LocalReaderProxy should live on IO thread.
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
@@ -65,6 +65,120 @@ TEST(LocalReaderProxyTest, Read) {
 
   // Make sure the read contant is as same as the file.
   EXPECT_EQ(expected_content, concatenated_content);
+}
+
+TEST(NetworkReaderProxyTest, EmptyFile) {
+  // The NetworkReaderProxy should live on IO thread.
+  MessageLoopForIO io_loop;
+  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+
+  NetworkReaderProxy proxy(0);
+
+  net::TestCompletionCallback callback;
+  const int kBufferSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+
+  // For empty file, Read() should return 0 immediately.
+  EXPECT_EQ(0, result);
+}
+
+TEST(NetworkReaderProxyTest, Read) {
+  // The NetworkReaderProxy should live on IO thread.
+  MessageLoopForIO io_loop;
+  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+
+  NetworkReaderProxy proxy(10);
+
+  net::TestCompletionCallback callback;
+  const int kBufferSize = 3;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+
+  // If no data is available yet, ERR_IO_PENDING should be returned.
+  int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(net::ERR_IO_PENDING, result);
+
+  // And when the data is supplied, the callback will be called.
+  scoped_ptr<std::string> data(new std::string("abcde"));
+  proxy.OnGetContent(data.Pass());
+
+  // The returned data should be fit to the buffer size.
+  result = callback.GetResult(result);
+  EXPECT_EQ(3, result);
+  EXPECT_EQ("abc", std::string(buffer->data(), result));
+
+  // The next Read should return immediately because there is pending data
+  result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(2, result);
+  EXPECT_EQ("de", std::string(buffer->data(), result));
+
+  // Supply the data before calling Read operation.
+  data.reset(new std::string("fg"));
+  proxy.OnGetContent(data.Pass());
+  data.reset(new std::string("hij"));
+  proxy.OnGetContent(data.Pass());  // Now 10 bytes are supplied.
+
+  // The data should be concatenated if possible.
+  result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(3, result);
+  EXPECT_EQ("fgh", std::string(buffer->data(), result));
+
+  result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(2, result);
+  EXPECT_EQ("ij", std::string(buffer->data(), result));
+
+  // The whole data is read, so Read() should return 0 immediately by then.
+  result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(0, result);
+}
+
+TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
+  // The NetworkReaderProxy should live on IO thread.
+  MessageLoopForIO io_loop;
+  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+
+  NetworkReaderProxy proxy(10);
+
+  net::TestCompletionCallback callback;
+  const int kBufferSize = 3;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+
+  // Set pending callback.
+  int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+  EXPECT_EQ(net::ERR_IO_PENDING, result);
+
+  // Emulate that an error is found. The callback should be called internally.
+  proxy.OnError(DRIVE_FILE_ERROR_FAILED);
+  result = callback.GetResult(result);
+  EXPECT_EQ(net::ERR_FAILED, result);
+
+  // The next Read call should also return the same error code.
+  EXPECT_EQ(net::ERR_FAILED,
+            proxy.Read(buffer.get(), kBufferSize, callback.callback()));
+}
+
+TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
+  // The NetworkReaderProxy should live on IO thread.
+  MessageLoopForIO io_loop;
+  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+
+  NetworkReaderProxy proxy(10);
+
+  net::TestCompletionCallback callback;
+  const int kBufferSize = 3;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+
+  // Supply the data before an error.
+  scoped_ptr<std::string> data(new std::string("abcde"));
+  proxy.OnGetContent(data.Pass());
+
+  // Emulate that an error is found.
+  proxy.OnError(DRIVE_FILE_ERROR_FAILED);
+
+  // The next Read call should return the error code, even if there is
+  // pending data (the pending data should be released in OnError.
+  EXPECT_EQ(net::ERR_FAILED,
+            proxy.Read(buffer.get(), kBufferSize, callback.callback()));
 }
 
 }  // namespace internal
