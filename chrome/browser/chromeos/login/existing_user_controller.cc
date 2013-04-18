@@ -31,13 +31,13 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -275,15 +275,15 @@ void ExistingUserController::Observe(
     LOG(INFO) << "Authentication was entered manually, possibly for proxyauth.";
     scoped_refptr<net::URLRequestContextGetter> browser_process_context_getter =
         g_browser_process->system_request_context();
-    Profile* default_profile = ProfileManager::GetDefaultProfile();
-    scoped_refptr<net::URLRequestContextGetter> default_profile_context_getter =
-        default_profile->GetRequestContext();
+    Profile* signin_profile = ProfileHelper::GetSigninProfile();
+    scoped_refptr<net::URLRequestContextGetter> signin_profile_context_getter =
+        signin_profile->GetRequestContext();
     DCHECK(browser_process_context_getter.get());
-    DCHECK(default_profile_context_getter.get());
+    DCHECK(signin_profile_context_getter.get());
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&TransferContextAuthenticationsOnIOThread,
-                   default_profile_context_getter,
+                   signin_profile_context_getter,
                    browser_process_context_getter),
         base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }

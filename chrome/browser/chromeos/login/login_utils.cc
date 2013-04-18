@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -127,11 +128,14 @@ class LoginUtilsImpl
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
     // During tests, the browser_process may not be initialized yet causing
     // this to fail.
-    if (g_browser_process) {
+    // TODO(dzhioev): Disabled in tests for a while.
+    // TODO(dzhioev): Move prewarm out of LoginUtils.
+    if (g_browser_process &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
       registrar_.Add(
           this,
           chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
-          content::Source<Profile>(ProfileManager::GetDefaultProfile()));
+          content::Source<Profile>(ProfileHelper::GetSigninProfile()));
     }
   }
 
@@ -800,7 +804,7 @@ class WarmingObserver : public ConnectivityStateHelperObserver,
       registrar_.Add(
           this,
           chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
-          content::Source<Profile>(ProfileManager::GetDefaultProfile()));
+          content::Source<Profile>(ProfileHelper::GetSigninProfile()));
     }
   }
 
