@@ -28,7 +28,6 @@
 #include "components/autofill/browser/webdata/autofill_entry.h"
 #include "components/autofill/browser/webdata/autofill_table.h"
 #include "components/webdata/common/web_database.h"
-#include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +35,6 @@ using autofill::AutofillProfile;
 using autofill::AutofillTable;
 using autofill::CreditCard;
 using base::Time;
-using content::BrowserThread;
 
 namespace {
 
@@ -162,13 +160,7 @@ void CheckNoBackupData(const sql::Connection& connection,
 // |WebDatabase::MigrateOldVersionsAsNeeded()|.
 class WebDatabaseMigrationTest : public testing::Test {
  public:
-  // In order to access the application locale -- which the tested functions do
-  // internally -- this test must run on the UI thread.
-  // TODO(isherman): The WebDatabase code should probably verify that it is
-  // running on the DB thread.  Once that verification is added, this code will
-  // need to be updated to create both threads.
-  WebDatabaseMigrationTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_for_ui_) {}
+  WebDatabaseMigrationTest() {}
   virtual ~WebDatabaseMigrationTest() {}
 
   virtual void SetUp() {
@@ -243,8 +235,6 @@ class WebDatabaseMigrationTest : public testing::Test {
   void LoadDatabase(const base::FilePath::StringType& file);
 
  private:
-  MessageLoopForUI message_loop_for_ui_;
-  content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
