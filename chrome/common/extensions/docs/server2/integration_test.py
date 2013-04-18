@@ -3,6 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Run build_server so that files needed by tests are copied to the local
+# third_party directory.
+import build_server
+build_server.main()
+
 from handler import Handler
 from local_renderer import LocalRenderer
 import optparse
@@ -10,11 +15,6 @@ import os
 import sys
 import time
 import unittest
-
-# Run build_server so that files needed by tests are copied to the local
-# third_party directory.
-import build_server
-build_server.main()
 
 # Arguments set up if __main__ specifies them.
 _BASE_PATH = os.path.join(
