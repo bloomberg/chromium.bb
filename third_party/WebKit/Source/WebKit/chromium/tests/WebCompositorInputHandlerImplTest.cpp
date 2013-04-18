@@ -66,7 +66,7 @@ public:
     MOCK_METHOD2(scrollVerticallyByPageIfPossible, bool(WebPoint, WebScrollbar::ScrollDirection));
     MOCK_METHOD0(scrollEnd, void());
 
-    MOCK_METHOD0(didReceiveLastInputEventForVSync, void());
+    MOCK_METHOD1(didReceiveLastInputEventForVSync, void(double));
 
 private:
     virtual void startPageScaleAnimation(WebSize targetPosition,
@@ -828,8 +828,9 @@ TEST_F(WebCompositorInputHandlerImplTest, lastInputEventForVSync)
     VERIFY_AND_RESET_MOCKS();
 
     gesture.type = WebInputEvent::GestureFlingCancel;
+    gesture.timeStampSeconds = 1234;
     gesture.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
-    EXPECT_CALL(m_mockInputHandlerClient, didReceiveLastInputEventForVSync());
+    EXPECT_CALL(m_mockInputHandlerClient, didReceiveLastInputEventForVSync(gesture.timeStampSeconds));
     m_inputHandler->handleInputEvent(gesture);
 }
 

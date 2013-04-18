@@ -84,8 +84,10 @@ public:
     // given WebPoint.
     virtual bool haveTouchEventHandlersAt(WebPoint) = 0;
 
-    // Indicate that the final input event for the current vsync interval was received.
-    virtual void didReceiveLastInputEventForVSync() { }
+    // Indicate that the final input event for the current vsync interval was
+    // received. The frame time is given in the same time base as
+    // monotonicallyIncreasingTime().
+    virtual void didReceiveLastInputEventForVSync(double frameTimeSeconds) { }
 
 protected:
     virtual ~WebInputHandlerClient() { }

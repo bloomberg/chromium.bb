@@ -112,7 +112,7 @@ void WebCompositorInputHandlerImpl::handleInputEvent(const WebInputEvent& event)
         break;
     }
     if (event.modifiers & WebInputEvent::IsLastInputEventForCurrentVSync)
-        m_inputHandlerClient->didReceiveLastInputEventForVSync();
+        m_inputHandlerClient->didReceiveLastInputEventForVSync(event.timeStampSeconds);
 }
 
 WebCompositorInputHandlerImpl::EventDisposition WebCompositorInputHandlerImpl::handleInputEventInternal(const WebInputEvent& event)
