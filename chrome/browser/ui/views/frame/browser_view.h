@@ -172,15 +172,16 @@ class BrowserView : public BrowserWindow,
   // incognito.
   bool IsOffTheRecord() const;
 
+  // Returns the resource ID to use for the OTR icon, which depends on
+  // which layout is being shown and whether we are full-screen.
+  int GetOTRIconResourceID() const;
+
   // Returns true if the profile associated with this Browser window is
   // a guest session.
   bool IsGuestSession() const;
 
   // Returns true if the non-client view should render an avatar icon.
-  virtual bool ShouldShowAvatar() const;
-
-  // Handle the specified |accelerator| being pressed.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  bool ShouldShowAvatar() const;
 
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
@@ -424,10 +425,6 @@ class BrowserView : public BrowserWindow,
   // gfx::SysColorChangeListener overrides:
   virtual void OnSysColorChange() OVERRIDE;
 
-  // Returns the resource ID to use for the OTR icon, which depends on
-  // which layout is being shown and whether we are full-screen.
-  int GetOTRIconResourceID() const;
-
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -438,26 +435,15 @@ class BrowserView : public BrowserWindow,
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+
+  // Testing interface:
   views::SingleSplitView* GetContentsSplitForTest() { return contents_split_; }
-  // TODO(jamescook): Rename |contents_| and |contents_container_|.
-  ContentsContainer* GetContentsContainerForTest() { return contents_; }
-  views::WebView* GetContentsWebViewForTest() { return contents_container_; }
-
- protected:
-  // Appends to |toolbars| a pointer to each AccessiblePaneView that
-  // can be traversed using F6, in the order they should be traversed.
-  // Abstracted here so that it can be extended for Chrome OS.
-  void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
-
-  // Browser window related initializations.
-  void Init();
-
-  // Callback for the loading animation(s) associated with this view.
-  void LoadingAnimationCallback();
-
-  // LoadCompleteListener::Delegate implementation. Creates and initializes the
-  // |jumplist_| after the first page load.
-  virtual void OnLoadCompleted() OVERRIDE;
+  ContentsContainer* GetContentsContainerForTest() {
+    return contents_container_;
+  }
+  views::WebView* GetContentsWebViewForTest() { return contents_web_view_; }
 
  private:
   friend class BrowserViewLayout;
@@ -481,6 +467,20 @@ class BrowserView : public BrowserWindow,
     GURL url;
     FullscreenExitBubbleType bubble_type;
   };
+
+  // Appends to |toolbars| a pointer to each AccessiblePaneView that
+  // can be traversed using F6, in the order they should be traversed.
+  void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
+
+  // Browser window related initializations.
+  void Init();
+
+  // Callback for the loading animation(s) associated with this view.
+  void LoadingAnimationCallback();
+
+  // LoadCompleteListener::Delegate implementation. Creates and initializes the
+  // |jumplist_| after the first page load.
+  virtual void OnLoadCompleted() OVERRIDE;
 
   // Returns the BrowserViewLayout.
   BrowserViewLayout* GetBrowserViewLayout() const;
@@ -609,10 +609,10 @@ class BrowserView : public BrowserWindow,
   // |------------------------------------------------------------------|
   // | Debugger splitter (contents_split_)                              |
   // |  --------------------------------------------------------------  |
-  // |  | Page content (contents_)                                   |  |
+  // |  | Page content (contents_container_)                         |  |
   // |  |  --------------------------------------------------------  |  |
-  // |  |  | contents_container_ and/or                           |  |  |
-  // |  |  | overlay_controller_->overlay_container_              |  |  |
+  // |  |  | contents_web_view_ and/or                            |  |  |
+  // |  |  | overlay_controller_->overlay_                        |  |  |
   // |  |  |                                                      |  |  |
   // |  |  |                                                      |  |  |
   // |  |  --------------------------------------------------------  |  |
@@ -626,10 +626,9 @@ class BrowserView : public BrowserWindow,
   // --------------------------------------------------------------------
   //
   // [1] The bookmark bar and info bar are swapped when on the new tab page.
-  //     Additionally contents_ is positioned on top of the bookmark bar when
-  //     the bookmark bar is detached. This is done to allow the
-  //     overlay_controller_->overlay_container_ to appear over the bookmark
-  //     bar.
+  //     Additionally contents_container_ is positioned on top of the bookmark
+  //     bar when the bookmark bar is detached. This is done to allow the
+  //     overlay_controller_->overlay_ to appear over the bookmark bar.
 
   // The view that manages the tab strip, toolbar, and sometimes the bookmark
   // bar. Stacked in the top of the view hiearachy so it can be used to
@@ -658,16 +657,14 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container_;
 
   // The view that contains the selected WebContents.
-  // TODO(jamescook): Rename this to |contents_web_view_| in order to
-  // reduce confusion with ContentsContainer |contents_| below.
-  views::WebView* contents_container_;
+  views::WebView* contents_web_view_;
 
   // The view that contains devtools window for the selected WebContents.
   views::WebView* devtools_container_;
 
-  // The view managing both the contents_container_ and
-  // overlay_controller_->overlay_container_.
-  ContentsContainer* contents_;
+  // The view managing both the |contents_web_view_| and
+  // |overlay_controller_->overlay_|.
+  ContentsContainer* contents_container_;
 
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;

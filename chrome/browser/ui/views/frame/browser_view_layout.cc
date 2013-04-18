@@ -288,7 +288,7 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       // We're installed as the LayoutManager before BrowserView creates the
       // contents, so we have to set contents_container_ here rather than in
       // Installed.
-      contents_container_ = browser_view_->contents_;
+      contents_container_ = browser_view_->contents_container_;
       break;
     }
     case VIEW_ID_DOWNLOAD_SHELF:
@@ -307,7 +307,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   // contents to continue to display from that origin.  If suggestions
   // completely obscure the tab's contents, there's no need to modify the
   // content origin.
-  views::WebView* contents = browser_view_->contents_container_;
+  views::WebView* contents = browser_view_->contents_web_view_;
   int overlay_height = contents_container_->overlay_height();
   gfx::Point old_contents_origin;
   if (overlay_height > 0 && !contents_container_->IsOverlayFullHeight()) {

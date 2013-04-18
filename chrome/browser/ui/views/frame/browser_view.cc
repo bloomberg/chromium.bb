@@ -439,9 +439,9 @@ BrowserView::BrowserView(Browser* browser)
       toolbar_(NULL),
       window_switcher_button_(NULL),
       infobar_container_(NULL),
-      contents_container_(NULL),
+      contents_web_view_(NULL),
       devtools_container_(NULL),
-      contents_(NULL),
+      contents_container_(NULL),
       contents_split_(NULL),
       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
       devtools_window_(NULL),
@@ -534,7 +534,7 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
 }
 
 gfx::Rect BrowserView::GetClientAreaBounds() const {
-  gfx::Rect container_bounds = contents_->bounds();
+  gfx::Rect container_bounds = contents_container_->bounds();
   gfx::Point container_origin = container_bounds.origin();
   ConvertPointToTarget(this, parent(), &container_origin);
   container_bounds.set_origin(container_origin);
@@ -574,6 +574,20 @@ bool BrowserView::IsOffTheRecord() const {
   return browser_->profile()->IsOffTheRecord();
 }
 
+int BrowserView::GetOTRIconResourceID() const {
+  int otr_resource_id = IDR_OTR_ICON;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+    if (IsFullscreen())
+      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
+#if defined(OS_WIN)
+    if (win8::IsSingleWindowMetroMode())
+      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
+#endif
+  }
+
+  return otr_resource_id;
+}
+
 bool BrowserView::IsGuestSession() const {
   return browser_->profile()->IsGuestSession();
 }
@@ -594,30 +608,6 @@ bool BrowserView::ShouldShowAvatar() const {
   }
 
   return AvatarMenuModel::ShouldShowAvatarMenu();
-}
-
-bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-#if defined(OS_CHROMEOS)
-  // If accessibility is enabled, stop speech and return false so that key
-  // combinations involving Search can be used for extra accessibility
-  // functionality.
-  if (accelerator.key_code() == ui::VKEY_LWIN &&
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kSpokenFeedbackEnabled)) {
-    TtsController::GetInstance()->Stop();
-    return false;
-  }
-#endif
-
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
-  DCHECK(iter != accelerator_table_.end());
-  int command_id = iter->second;
-
-  chrome::BrowserCommandController* controller = browser_->command_controller();
-  if (!controller->block_command_execution())
-    UpdateAcceleratorMetrics(accelerator, command_id);
-  return chrome::ExecuteCommand(browser_.get(), command_id);
 }
 
 bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
@@ -697,7 +687,7 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_);
+  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
 }
 
 void BrowserView::ShowInactive() {
@@ -944,10 +934,10 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   bool use_fast_resize =
       is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
   if (use_fast_resize)
-    contents_container_->SetFastResize(true);
+    contents_web_view_->SetFastResize(true);
   UpdateUIForContents(GetActiveWebContents());
   if (use_fast_resize)
-    contents_container_->SetFastResize(false);
+    contents_web_view_->SetFastResize(false);
 
   // Inform the InfoBarContainer that the distance to the location icon may have
   // changed.  We have to do this after the block above so that the toolbars are
@@ -979,7 +969,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // call never needs to do this, because after it returns, the normal call
   // wrapping it will do it.
   if ((call_state == NORMAL) && !is_animating) {
-    contents_container_->InvalidateLayout();
+    contents_web_view_->InvalidateLayout();
     contents_split_->Layout();
   }
 }
@@ -1296,9 +1286,9 @@ int BrowserView::GetExtraRenderViewHeight() const {
 }
 
 void BrowserView::WebContentsFocused(WebContents* contents) {
-  if (contents_container_->GetWebContents() == contents)
-    contents_container_->OnWebContentsFocused(contents);
-  else if (contents_->overlay_web_contents() == contents)
+  if (contents_web_view_->GetWebContents() == contents)
+    contents_web_view_->OnWebContentsFocused(contents);
+  else if (contents_container_->overlay_web_contents() == contents)
     overlay_controller_->overlay()->OnWebContentsFocused(contents);
   else
     devtools_container_->OnWebContentsFocused(contents);
@@ -1442,7 +1432,7 @@ void BrowserView::Paste() {
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {
-  return contents_->GetOverlayBounds();
+  return contents_container_->GetOverlayBounds();
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1475,7 +1465,7 @@ LocationBarView* BrowserView::GetLocationBarView() const {
 }
 
 views::View* BrowserView::GetTabContentsContainerView() const {
-  return contents_container_;
+  return contents_web_view_;
 }
 
 ToolbarView* BrowserView::GetToolbarView() const {
@@ -1493,7 +1483,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
-    contents_container_->SetWebContents(NULL);
+    contents_web_view_->SetWebContents(NULL);
     infobar_container_->ChangeInfoBarService(NULL);
     UpdateDevToolsForContents(NULL);
   }
@@ -1514,10 +1504,10 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   DCHECK(new_contents);
 
   // See if the Instant overlay is being activated (committed).
-  if (contents_->overlay_web_contents() == new_contents) {
-    contents_->MakeOverlayContentsActiveContents();
-    views::WebView* old_container = contents_container_;
-    contents_container_ = overlay_controller_->release_overlay();
+  if (contents_container_->overlay_web_contents() == new_contents) {
+    contents_container_->MakeOverlayContentsActiveContents();
+    views::WebView* old_container = contents_web_view_;
+    contents_web_view_ = overlay_controller_->release_overlay();
     old_container->SetWebContents(NULL);
     delete old_container;
   }
@@ -1527,7 +1517,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   // Visibility API under Windows, as ChangeWebContents will briefly hide
   // the WebContents window.
   bool change_tab_contents =
-      contents_container_->web_contents() != new_contents;
+      contents_web_view_->web_contents() != new_contents;
 
   // Update various elements that are interested in knowing the current
   // WebContents.
@@ -1536,7 +1526,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
   if (change_tab_contents)
-    contents_container_->SetWebContents(NULL);
+    contents_web_view_->SetWebContents(NULL);
   infobar_container_->ChangeInfoBarService(
       InfoBarService::FromWebContents(new_contents));
   if (bookmark_bar_view_.get()) {
@@ -1551,8 +1541,8 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   UpdateDevToolsForContents(new_contents);
 
   if (change_tab_contents) {
-    contents_container_->SetWebContents(new_contents);
-    contents_->MaybeStackOverlayAtTop();
+    contents_web_view_->SetWebContents(new_contents);
+    contents_container_->MaybeStackOverlayAtTop();
   }
 
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
@@ -1780,7 +1770,7 @@ bool BrowserView::GetSavedWindowPlacement(
 }
 
 views::View* BrowserView::GetContentsView() {
-  return contents_container_;
+  return contents_web_view_;
 }
 
 views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
@@ -1947,7 +1937,34 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, protected
+// BrowserView, ui::AcceleratorTarget overrides:
+
+bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+#if defined(OS_CHROMEOS)
+  // If accessibility is enabled, stop speech and return false so that key
+  // combinations involving Search can be used for extra accessibility
+  // functionality.
+  if (accelerator.key_code() == ui::VKEY_LWIN &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kSpokenFeedbackEnabled)) {
+    TtsController::GetInstance()->Stop();
+    return false;
+  }
+#endif
+
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerator_table_.find(accelerator);
+  DCHECK(iter != accelerator_table_.end());
+  int command_id = iter->second;
+
+  chrome::BrowserCommandController* controller = browser_->command_controller();
+  if (!controller->block_command_execution())
+    UpdateAcceleratorMetrics(accelerator, command_id);
+  return chrome::ExecuteCommand(browser_.get(), command_id);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, private
 
 void BrowserView::GetAccessiblePanes(
     std::vector<views::AccessiblePaneView*>* panes) {
@@ -1995,21 +2012,7 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 }
 
 void BrowserView::OnSysColorChange() {
-  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_);
-}
-
-int BrowserView::GetOTRIconResourceID() const {
-  int otr_resource_id = IDR_OTR_ICON;
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-    if (IsFullscreen())
-      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
-#if defined(OS_WIN)
-    if (win8::IsSingleWindowMetroMode())
-      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
-#endif
-  }
-
-  return otr_resource_id;
+  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
 }
 
 void BrowserView::Init() {
@@ -2041,12 +2044,12 @@ void BrowserView::Init() {
                                                 browser()->search_model());
   AddChildView(infobar_container_);
 
-  contents_container_ = new views::WebView(browser_->profile());
-  contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
-  contents_ = new ContentsContainer(contents_container_, this);
+  contents_web_view_ = new views::WebView(browser_->profile());
+  contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
+  contents_container_ = new ContentsContainer(contents_web_view_, this);
 
   overlay_controller_.reset(
-      new InstantOverlayControllerViews(browser(), contents_));
+      new InstantOverlayControllerViews(browser(), contents_container_));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeProperties::COLOR_TOOLBAR);
@@ -2055,10 +2058,10 @@ void BrowserView::Init() {
   devtools_container_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
 
-  views::View* contents_view = contents_;
+  views::View* contents_container_view = contents_container_;
 
   contents_split_ = new views::SingleSplitView(
-      contents_view,
+      contents_container_view,
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT,
       this);
@@ -2070,7 +2073,7 @@ void BrowserView::Init() {
   AddChildView(contents_split_);
   set_contents_view(contents_split_);
 
-  status_bubble_.reset(new StatusBubbleViews(contents_));
+  status_bubble_.reset(new StatusBubbleViews(contents_container_));
 
   // Top container holds tab strip and toolbar and lives at the front of the
   // view hierarchy.
@@ -2134,8 +2137,6 @@ void BrowserView::OnLoadCompleted() {
   jumplist_->AddObserver(browser_->profile());
 #endif
 }
-
-// BrowserView, private --------------------------------------------------------
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());
