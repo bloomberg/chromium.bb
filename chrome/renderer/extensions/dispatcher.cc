@@ -654,15 +654,16 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
     const std::string& field) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::String> key = v8::String::New(field.c_str());
-  // If the object has a callback property, it is assumed it is an unavailable
-  // API, so it is safe to delete. This is checked before GetOrCreateObject is
-  // called.
-  if (object->HasRealNamedCallbackProperty(key)) {
-    object->Delete(key);
-  } else if (object->HasRealNamedProperty(key)) {
+  // This little dance is for APIs that may be unavailable but have available
+  // children. For example, chrome.app can be unavailable, while
+  // chrome.app.runtime is available. The lazy getter for chrome.app must be
+  // deleted, so that there isn't an error when accessing chrome.app.runtime.
+  if (object->Has(key)) {
     v8::Handle<v8::Value> value = object->Get(key);
-    CHECK(value->IsObject());
-    return handle_scope.Close(v8::Handle<v8::Object>::Cast(value));
+    if (value->IsObject())
+      return handle_scope.Close(v8::Handle<v8::Object>::Cast(value));
+    else
+      object->Delete(key);
   }
 
   v8::Handle<v8::Object> new_object = v8::Object::New();
@@ -672,7 +673,8 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
 
 void Dispatcher::RegisterSchemaGeneratedBindings(
     ModuleSystem* module_system,
-    ChromeV8Context* context) {
+    ChromeV8Context* context,
+    v8::Handle<v8::Context> v8_context) {
   std::set<std::string> apis =
       ExtensionAPI::GetSharedInstance()->GetAllAPINames();
   for (std::set<std::string>::iterator it = apis.begin();
@@ -687,36 +689,12 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
     std::vector<std::string> split;
     base::SplitString(api_name, '.', &split);
 
-    v8::Handle<v8::Object> bind_object =
-        GetOrCreateChrome(context->v8_context());
-
-    // Check if this API has an ancestor. If the API's ancestor is available and
-    // the API is not available, don't install the bindings for this API. If
-    // the API is available and its ancestor is not, delete the ancestor and
-    // install the bindings for the API. This is to prevent loading the ancestor
-    // API schema if it will not be needed.
-    //
-    // For example:
-    //  If app is available and app.window is not, just install app.
-    //  If app.window is available and app is not, delete app and install
-    //  app.window on a new object so app does not have to be loaded.
-    std::string ancestor_name;
-    bool only_ancestor_available = false;
-    for (size_t i = 0; i < split.size() - 1; ++i) {
-      ancestor_name += (i ? ".": "") + split[i];
-      if (!ancestor_name.empty() &&
-          context->GetAvailability(ancestor_name).is_available() &&
-          !context->GetAvailability(api_name).is_available()) {
-        only_ancestor_available = true;
-        break;
-      }
+    v8::Handle<v8::Object> bind_object = GetOrCreateChrome(v8_context);
+    for (size_t i = 0; i < split.size() - 1; ++i)
       bind_object = GetOrCreateObject(bind_object, split[i]);
-    }
-    if (only_ancestor_available)
-      continue;
 
     if (lazy_bindings_map_.find(api_name) != lazy_bindings_map_.end()) {
-      InstallBindings(module_system, context->v8_context(), api_name);
+      InstallBindings(module_system, v8_context, api_name);
     } else if (!source_map_.Contains(api_name)) {
       module_system->RegisterNativeHandler(
           api_name,
@@ -1005,14 +983,31 @@ void Dispatcher::DidCreateScriptContext(
 
   GetOrCreateChrome(v8_context);
 
-  // TODO(kalman): see comment below about ExtensionAPI.
-  InstallBindings(module_system.get(), v8_context, "app");
-  InstallBindings(module_system.get(), v8_context, "webstore");
-  if (extension && !extension->is_platform_app())
-    module_system->Require("miscellaneous_bindings");
-  module_system->Require("json");  // see paranoid comment in json.js
+  // Loading JavaScript is expensive, so only run the full API bindings
+  // generation mechanisms in extension pages (NOT all web pages).
+  switch (context_type) {
+    case Feature::UNSPECIFIED_CONTEXT:
+    case Feature::WEB_PAGE_CONTEXT:
+      // TODO(kalman): see comment below about ExtensionAPI.
+      InstallBindings(module_system.get(), v8_context, "app");
+      InstallBindings(module_system.get(), v8_context, "webstore");
+      break;
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      if (extension && !extension->is_platform_app())
+        module_system->Require("miscellaneous_bindings");
+      module_system->Require("json");  // see paranoid comment in json.js
 
-  RegisterSchemaGeneratedBindings(module_system.get(), context);
+      // TODO(kalman): move this code back out of the switch and execute it
+      // regardless of |context_type|. ExtensionAPI knows how to return the
+      // correct APIs, however, until it doesn't have a 2MB overhead we can't
+      // load it in every process.
+      RegisterSchemaGeneratedBindings(module_system.get(),
+                                      context,
+                                      v8_context);
+      break;
+  }
 
   bool is_within_platform_app = IsWithinPlatformApp(frame);
   // Inject custom JS into the platform app context.
