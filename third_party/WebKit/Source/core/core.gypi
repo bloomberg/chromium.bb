@@ -1044,7 +1044,6 @@
             'loader/PrerendererClient.cpp',
             'loader/PrerendererClient.h',
             'loader/ProgressTracker.cpp',
-            'loader/ResourceBuffer.cpp',
             'loader/ResourceLoadNotifier.cpp',
             'loader/ResourceLoader.cpp',
             'loader/ResourceLoaderOptions.h',

@@ -27,7 +27,7 @@
 
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
-#include "ResourceBuffer.h"
+#include "SharedBuffer.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

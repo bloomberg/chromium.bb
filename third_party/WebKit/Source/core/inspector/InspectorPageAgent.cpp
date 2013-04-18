@@ -66,7 +66,6 @@
 #include "MemoryCache.h"
 #include "Page.h"
 #include "RegularExpression.h"
-#include "ResourceBuffer.h"
 #include "ScriptController.h"
 #include "ScriptObject.h"
 #include "SecurityOrigin.h"
@@ -168,7 +167,7 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
 
     *base64Encoded = !hasTextContent(cachedResource);
     if (*base64Encoded) {
-        RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer()->sharedBuffer();
+        RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
 
         if (!buffer)
             return false;
@@ -191,7 +190,7 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
             *result = static_cast<CachedScript*>(cachedResource)->script();
             return true;
         case CachedResource::RawResource: {
-            ResourceBuffer* buffer = cachedResource->resourceBuffer();
+            SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
                 return false;
             RefPtr<TextResourceDecoder> decoder = createXHRTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
@@ -203,7 +202,7 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
             return true;
         }
         default:
-            ResourceBuffer* buffer = cachedResource->resourceBuffer();
+            SharedBuffer* buffer = cachedResource->resourceBuffer();
             return decodeBuffer(buffer ? buffer->data() : 0, buffer ? buffer->size() : 0, cachedResource->encoding(), result);
         }
     }
@@ -212,7 +211,7 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
 
 bool InspectorPageAgent::mainResourceContent(Frame* frame, bool withBase64Encode, String* result)
 {
-    RefPtr<ResourceBuffer> buffer = frame->loader()->documentLoader()->mainResourceData();
+    RefPtr<SharedBuffer> buffer = frame->loader()->documentLoader()->mainResourceData();
     if (!buffer)
         return false;
     String textEncodingName = frame->document()->inputEncoding();

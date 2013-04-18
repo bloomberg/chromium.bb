@@ -39,7 +39,6 @@
 #include "KURL.h"
 #include "Logging.h"
 #include "PurgeableBuffer.h"
-#include "ResourceBuffer.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
@@ -356,7 +355,7 @@ void CachedResource::appendData(const char* data, int length)
     if (m_data)
         m_data->append(data, length);
     else
-        m_data = ResourceBuffer::create(data, length);
+        m_data = SharedBuffer::create(data, length);
     setEncodedSize(m_data->size());
 }
 
@@ -869,7 +868,7 @@ bool CachedResource::makePurgeable(bool purgeable)
     if (!m_purgeableData->makePurgeable(false))
         return false; 
 
-    m_data = ResourceBuffer::adoptSharedBuffer(SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release()));
+    m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());
     return true;
 }
 

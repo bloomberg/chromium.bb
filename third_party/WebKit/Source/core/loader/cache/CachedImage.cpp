@@ -34,7 +34,6 @@
 #include "MemoryCache.h"
 #include "Page.h"
 #include "RenderObject.h"
-#include "ResourceBuffer.h"
 #include "ResourceLoader.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
@@ -87,7 +86,7 @@ void CachedImage::didAddClient(CachedResourceClient* c)
 {
     if (m_data && !m_image && !errorOccurred()) {
         createImage();
-        m_image->setData(m_data->sharedBuffer(), true);
+        m_image->setData(m_data, true);
     }
     
     ASSERT(c->resourceClientType() == CachedImageClient::expectedType());
@@ -355,7 +354,7 @@ void CachedImage::updateImage(bool allDataReceived)
     // It will not do anything now, but will delay decoding until 
     // queried for info (like size or specific image frames).
     if (m_image)
-        sizeAvailable = m_image->setData(m_data ? m_data->sharedBuffer() : 0, allDataReceived);
+        sizeAvailable = m_image->setData(m_data, allDataReceived);
 
     // Go ahead and tell our observers to try to draw if we have either
     // received all the data or the size is known.  Each chunk from the

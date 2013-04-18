@@ -32,7 +32,7 @@
 #include "CachedStyleSheetClient.h"
 #include "HTTPParsers.h"
 #include "MemoryCache.h"
-#include "ResourceBuffer.h"
+#include "SharedBuffer.h"
 #include "StyleSheetContents.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"

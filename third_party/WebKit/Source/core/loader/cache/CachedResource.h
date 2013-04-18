@@ -48,7 +48,6 @@ class CachedResourceHandleBase;
 class CachedResourceLoader;
 class InspectorResource;
 class PurgeableBuffer;
-class ResourceBuffer;
 class ResourceLoader;
 class SecurityOrigin;
 class SharedBuffer;
@@ -174,7 +173,7 @@ public:
     
     void stopLoading();
 
-    ResourceBuffer* resourceBuffer() const { ASSERT(!m_purgeableData); return m_data.get(); }
+    SharedBuffer* resourceBuffer() const { ASSERT(!m_purgeableData); return m_data.get(); }
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse&) { m_requestedFromNetworkingLayer = true; }
     virtual void responseReceived(const ResourceResponse&);
@@ -286,7 +285,7 @@ protected:
     ResourceResponse m_response;
     double m_responseTimestamp;
 
-    RefPtr<ResourceBuffer> m_data;
+    RefPtr<SharedBuffer> m_data;
     OwnPtr<PurgeableBuffer> m_purgeableData;
     Timer<CachedResource> m_decodedDataDeletionTimer;
 

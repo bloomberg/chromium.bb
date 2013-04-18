@@ -42,7 +42,6 @@
 #include "NotImplemented.h"
 #include "Page.h"
 #include "RawDataDocumentParser.h"
-#include "ResourceBuffer.h"
 #include "Settings.h"
 
 using std::min;

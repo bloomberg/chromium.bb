@@ -33,7 +33,6 @@
 #include "FontCustomPlatformData.h"
 #include "FontPlatformData.h"
 #include "MemoryCache.h"
-#include "ResourceBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/Vector.h>
@@ -86,7 +85,7 @@ void CachedFont::beginLoadIfNeeded(CachedResourceLoader* dl)
 bool CachedFont::ensureCustomFontData()
 {
     if (!m_fontData && !errorOccurred() && !isLoading() && m_data) {
-        m_fontData = createFontCustomPlatformData(m_data.get()->sharedBuffer());
+        m_fontData = createFontCustomPlatformData(m_data.get());
         if (!m_fontData)
             setStatus(DecodeError);
     }

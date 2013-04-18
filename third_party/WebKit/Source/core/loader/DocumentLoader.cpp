@@ -53,7 +53,6 @@
 #include "MemoryCache.h"
 #include "Page.h"
 #include "ProgressTracker.h"
-#include "ResourceBuffer.h"
 #include "ResourceLoader.h"
 #include "SchemeRegistry.h"
 #include "SecurityPolicy.h"
@@ -136,10 +135,10 @@ DocumentLoader::~DocumentLoader()
     }
 }
 
-PassRefPtr<ResourceBuffer> DocumentLoader::mainResourceData() const
+PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
 {
     if (m_substituteData.isValid())
-        return ResourceBuffer::create(m_substituteData.content()->data(), m_substituteData.content()->size());
+        return m_substituteData.content()->copy();
     if (m_mainResource)
         return m_mainResource->resourceBuffer();
     return 0;
@@ -846,8 +845,7 @@ bool DocumentLoader::maybeCreateArchive()
     if (!isArchiveMIMEType(m_response.mimeType()))
         return false;
 
-    RefPtr<ResourceBuffer> mainResourceBuffer = mainResourceData();
-    m_archive = MHTMLArchive::create(m_response.url(), mainResourceBuffer ? mainResourceBuffer->sharedBuffer() : 0);
+    m_archive = MHTMLArchive::create(m_response.url(), mainResourceData().get());
     ASSERT(m_archive);
     
     addAllArchiveResources(m_archive.get());
@@ -1190,7 +1188,7 @@ void DocumentLoader::maybeFinishLoadingMultipartContent()
 
     frameLoader()->setupForReplace();
     m_committed = false;
-    RefPtr<ResourceBuffer> resourceData = mainResourceData();
+    RefPtr<SharedBuffer> resourceData = mainResourceData();
     commitLoad(resourceData->data(), resourceData->size());
 }
 

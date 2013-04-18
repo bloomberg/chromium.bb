@@ -29,8 +29,8 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
 #include "CachedResourceLoader.h"
-#include "ResourceBuffer.h"
 #include "ResourceLoader.h"
+#include "SharedBuffer.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/PassRefPtr.h>
 

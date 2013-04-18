@@ -32,7 +32,7 @@
 #include "HTTPParsers.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryCache.h"
-#include "ResourceBuffer.h"
+#include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/Vector.h>
