@@ -661,15 +661,32 @@ fill_smpte(const struct format_info *info, void *planes[3], unsigned int width,
 #define BLUE  0
 
 static void
-make_pwetty(void *data, int width, int height, int stride)
+make_pwetty(void *data, int width, int height, int stride, uint32_t format)
 {
 #ifdef HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int x, y;
+	cairo_format_t cairo_format;
+
+	/* we can ignore the order of R,G,B channels */
+	switch (format) {
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_ABGR8888:
+		cairo_format = CAIRO_FORMAT_ARGB32;
+		break;
+	case DRM_FORMAT_RGB565:
+	case DRM_FORMAT_BGR565:
+		cairo_format = CAIRO_FORMAT_RGB16_565;
+		break;
+	default:
+		return;
+	}
 
 	surface = cairo_image_surface_create_for_data(data,
-						      CAIRO_FORMAT_ARGB32,
+						      cairo_format,
 						      width, height,
 						      stride);
 	cr = cairo_create(surface);
@@ -779,6 +796,7 @@ fill_tiles_rgb16(const struct format_info *info, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
 	const struct rgb_info *rgb = &info->rgb;
+	unsigned char *mem_base = mem;
 	unsigned int x, y;
 
 	for (y = 0; y < height; ++y) {
@@ -795,6 +813,8 @@ fill_tiles_rgb16(const struct format_info *info, unsigned char *mem,
 		}
 		mem += stride;
 	}
+
+	make_pwetty(mem_base, width, height, stride, info->format);
 }
 
 static void
@@ -842,7 +862,7 @@ fill_tiles_rgb32(const struct format_info *info, unsigned char *mem,
 		mem += stride;
 	}
 
-	make_pwetty(mem_base, width, height, stride);
+	make_pwetty(mem_base, width, height, stride, info->format);
 }
 
 static void
