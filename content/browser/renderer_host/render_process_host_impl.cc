@@ -84,6 +84,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
+#include "content/browser/renderer_host/webrtc_logging_handler_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
@@ -677,6 +678,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
   channel_->AddFilter(new HyphenatorMessageFilter(this));
+#if defined(ENABLE_WEBRTC)
+  channel_->AddFilter(new WebRtcLoggingHandlerHost());
+#endif
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

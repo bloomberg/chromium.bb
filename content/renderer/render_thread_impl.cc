@@ -70,6 +70,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/webrtc_logging_message_filter.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -383,6 +384,12 @@ void RenderThreadImpl::Init() {
   AddFilter(audio_message_filter_.get());
 
   AddFilter(new IndexedDBMessageFilter);
+
+#if defined(ENABLE_WEBRTC)
+  webrtc_logging_message_filter_ =
+      new WebRtcLoggingMessageFilter(GetIOMessageLoopProxy());
+  AddFilter(webrtc_logging_message_filter_.get());
+#endif
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

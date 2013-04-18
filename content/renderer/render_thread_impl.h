@@ -87,6 +87,7 @@ class RenderProcessObserver;
 class VideoCaptureImplManager;
 class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
+class WebRtcLoggingMessageFilter;
 
 // The RenderThreadImpl class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
@@ -400,6 +401,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
+
+  scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
