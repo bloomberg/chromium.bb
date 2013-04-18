@@ -440,7 +440,15 @@ def process_input(filepath, prevdict, read_only, flavor):
       # Reuse the previous link destination if available.
       out['l'] = prevdict.get('l')
     if out.get('l') is None:
-      out['l'] = os.readlink(filepath)  # pylint: disable=E1101
+      # The link could be in an incorrect path case. In practice, this only
+      # happen on OSX on case insensitive HFS.
+      # TODO(maruel): It'd be better if it was only done once, in
+      # expand_directory_and_symlink(), so it would not be necessary to do again
+      # here.
+      symlink_value = os.readlink(filepath)  # pylint: disable=E1101
+      filedir = trace_inputs.get_native_path_case(os.path.dirname(filepath))
+      native_dest = fix_native_path_case(filedir, symlink_value)
+      out['l'] = os.path.relpath(native_dest, filedir)
   return out
 
 

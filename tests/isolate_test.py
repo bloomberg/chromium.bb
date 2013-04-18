@@ -965,8 +965,7 @@ class IsolateTest(IsolateBase):
       linkdir = os.path.join(self.cwd, 'linkdir')
       os.symlink('subDir', linkdir)
       actual = isolate.process_input(unicode(linkdir.upper()), {}, True, 'mac')
-      # TODO(maruel): Should be subdir.
-      expected = {'l': u'subDir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
+      expected = {'l': u'subdir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
       self.assertEqual(expected, actual)
 
     def test_process_input_path_case_complex(self):
@@ -987,16 +986,14 @@ class IsolateTest(IsolateBase):
       actual = isolate.process_input(
           unicode(subsymlinkdir.upper()), {}, True, 'mac')
       expected = {
-        # TODO(maruel): Should be linkeddir1.
-        'l': u'linkedDir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
+        'l': u'linkeddir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
       }
       self.assertEqual(expected, actual)
 
       actual = isolate.process_input(
           unicode(linkeddir1.upper()), {}, True, 'mac')
       expected = {
-        # TODO(maruel): Should be ../linkedDir2.
-        'l': u'../linkedDir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
+        'l': u'../linkeddir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
       }
       self.assertEqual(expected, actual)
 
