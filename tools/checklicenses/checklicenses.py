@@ -40,6 +40,7 @@ WHITELISTED_LICENSES = [
     'BSD (2 clause)',
     'BSD (2 clause) MIT/X11 (BSD like)',
     'BSD (3 clause)',
+    'BSD (3 clause) GPL (v2)',
     'BSD (3 clause) ISC',
     'BSD (3 clause) LGPL (v2 or later)',
     'BSD (3 clause) LGPL (v2.1 or later)',
