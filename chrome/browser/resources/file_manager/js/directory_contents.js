@@ -435,17 +435,6 @@ DirectoryContentsBasic.prototype.createDirectory = function(
 };
 
 /**
- * List of search types for DirectoryContentsDriveSearch.
- * SEARCH_FULL uses the full feed to search from everything.
- * SEARCH_SHARED_WITH_ME uses the shared-with-me feed.
- * @enum {number}
- */
-DirectoryContentsDriveSearch.SearchType = {
-  SEARCH_FULL: 0,
-  SEARCH_SHARED_WITH_ME: 1
-};
-
-/**
  * Delay to be used for drive search scan.
  * The goal is to reduce the number of server requests when user is typing the
  * query.
@@ -469,20 +458,17 @@ DirectoryContentsDriveSearch.MAX_RESULTS = 100;
  * @param {DirectoryEntry} previousDirEntry DirectoryEntry that was current
  *     before the search.
  * @param {string} query Search query.
- * @param {DirectoryContentsDriveSearch.SearchType} type Type of search.
  * @constructor
  * @extends {DirectoryContents}
  */
 function DirectoryContentsDriveSearch(context,
                                       dirEntry,
                                       previousDirEntry,
-                                      query,
-                                      type) {
+                                      query) {
   DirectoryContents.call(this, context);
-  this.query_ = query;
-  this.type_ = type;
   this.directoryEntry_ = dirEntry;
   this.previousDirectoryEntry_ = previousDirEntry;
+  this.query_ = query;
   this.nextFeed_ = '';
   this.done_ = false;
   this.fetchedResultsNum_ = 0;

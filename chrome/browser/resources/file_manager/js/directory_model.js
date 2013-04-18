@@ -1321,8 +1321,7 @@ DirectoryModel.prototype.search = function(query,
         this.currentFileListContext_,
         this.getCurrentDirEntry(),
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
-        query,
-        DirectoryContentsDriveSearch.SearchType.SEARCH_FULL);
+        query);
   } else {
     newDirContents = new DirectoryContentsLocalSearch(
         this.currentFileListContext_, this.getCurrentDirEntry(), query);
