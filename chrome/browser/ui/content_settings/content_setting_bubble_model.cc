@@ -446,7 +446,9 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 }
 
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
-  if (settings_changed()) {
+  // On some plattforms e.g. MacOS X it is possible to close a tab while the
+  // cookies settubgs bubble is open. This resets the web contents to NULL.
+  if (settings_changed() && web_contents()) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()));
   }
@@ -610,6 +612,10 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
 }
 
 ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
+  // On some plattforms e.g. MacOS X it is possible to close a tab while the
+  // media stream bubble is open. This resets the web contents to NULL.
+  if (!web_contents())
+    return;
   bool media_setting_changed = false;
   for (MediaMenuMap::const_iterator it = bubble_content().media_menus.begin();
       it != bubble_content().media_menus.end(); ++it) {
