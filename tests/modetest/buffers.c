@@ -702,11 +702,12 @@ make_pwetty(void *data, int width, int height, int stride)
 }
 
 static void
-fill_tiles_yuv_planar(const struct yuv_info *yuv,
+fill_tiles_yuv_planar(const struct format_info *info,
 		      unsigned char *y_mem, unsigned char *u_mem,
 		      unsigned char *v_mem, unsigned int width,
 		      unsigned int height, unsigned int stride)
 {
+	const struct yuv_info *yuv = &info->yuv;
 	unsigned int cs = yuv->chroma_stride;
 	unsigned int xsub = yuv->xsub;
 	unsigned int ysub = yuv->ysub;
@@ -736,10 +737,11 @@ fill_tiles_yuv_planar(const struct yuv_info *yuv,
 }
 
 static void
-fill_tiles_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
+fill_tiles_yuv_packed(const struct format_info *info, unsigned char *mem,
 		      unsigned int width, unsigned int height,
 		      unsigned int stride)
 {
+	const struct yuv_info *yuv = &info->yuv;
 	unsigned char *y_mem = (yuv->order & YUV_YC) ? mem : mem + 1;
 	unsigned char *c_mem = (yuv->order & YUV_CY) ? mem : mem + 1;
 	unsigned int u = (yuv->order & YUV_YCrCb) ? 2 : 0;
@@ -768,9 +770,10 @@ fill_tiles_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 }
 
 static void
-fill_tiles_rgb16(const struct rgb_info *rgb, unsigned char *mem,
+fill_tiles_rgb16(const struct format_info *info, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
+	const struct rgb_info *rgb = &info->rgb;
 	unsigned int x, y;
 
 	for (y = 0; y < height; ++y) {
@@ -790,9 +793,10 @@ fill_tiles_rgb16(const struct rgb_info *rgb, unsigned char *mem,
 }
 
 static void
-fill_tiles_rgb24(const struct rgb_info *rgb, unsigned char *mem,
+fill_tiles_rgb24(const struct format_info *info, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
+	const struct rgb_info *rgb = &info->rgb;
 	unsigned int x, y;
 
 	for (y = 0; y < height; ++y) {
@@ -811,9 +815,10 @@ fill_tiles_rgb24(const struct rgb_info *rgb, unsigned char *mem,
 }
 
 static void
-fill_tiles_rgb32(const struct rgb_info *rgb, unsigned char *mem,
+fill_tiles_rgb32(const struct format_info *info, unsigned char *mem,
 		 unsigned int width, unsigned int height, unsigned int stride)
 {
+	const struct rgb_info *rgb = &info->rgb;
 	unsigned char *mem_base = mem;
 	unsigned int x, y;
 
@@ -846,7 +851,7 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
 	case DRM_FORMAT_YVYU:
-		return fill_tiles_yuv_packed(&info->yuv, planes[0],
+		return fill_tiles_yuv_packed(info, planes[0],
 					     width, height, stride);
 
 	case DRM_FORMAT_NV12:
@@ -855,11 +860,11 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 	case DRM_FORMAT_NV61:
 		u = info->yuv.order & YUV_YCbCr ? planes[1] : planes[1] + 1;
 		v = info->yuv.order & YUV_YCrCb ? planes[1] : planes[1] + 1;
-		return fill_tiles_yuv_planar(&info->yuv, planes[0], u, v,
+		return fill_tiles_yuv_planar(info, planes[0], u, v,
 					     width, height, stride);
 
 	case DRM_FORMAT_YVU420:
-		return fill_tiles_yuv_planar(&info->yuv, planes[0], planes[1],
+		return fill_tiles_yuv_planar(info, planes[0], planes[1],
 					     planes[2], width, height, stride);
 
 	case DRM_FORMAT_ARGB4444:
@@ -880,12 +885,12 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 	case DRM_FORMAT_RGBX5551:
 	case DRM_FORMAT_BGRA5551:
 	case DRM_FORMAT_BGRX5551:
-		return fill_tiles_rgb16(&info->rgb, planes[0],
+		return fill_tiles_rgb16(info, planes[0],
 					width, height, stride);
 
 	case DRM_FORMAT_BGR888:
 	case DRM_FORMAT_RGB888:
-		return fill_tiles_rgb24(&info->rgb, planes[0],
+		return fill_tiles_rgb24(info, planes[0],
 					width, height, stride);
 	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_XRGB8888:
@@ -903,7 +908,7 @@ fill_tiles(const struct format_info *info, void *planes[3], unsigned int width,
 	case DRM_FORMAT_RGBX1010102:
 	case DRM_FORMAT_BGRA1010102:
 	case DRM_FORMAT_BGRX1010102:
-		return fill_tiles_rgb32(&info->rgb, planes[0],
+		return fill_tiles_rgb32(info, planes[0],
 					width, height, stride);
 	}
 }
