@@ -76,6 +76,7 @@ enum IPCMessageStart {
   VisitedLinkMsgStart,
   OneClickSigninMsgStart,
   AppShimMsgStart,
+  WebRtcLoggingMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

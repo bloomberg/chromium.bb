@@ -45,4 +45,5 @@
 #include "content/common/text_input_client_messages.h"
 #include "content/common/utility_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/webrtc_logging_messages.h"
 #include "content/common/worker_messages.h"

@@ -384,6 +384,7 @@
     'common/webkitplatformsupport_impl.h',
     'common/webmessageportchannel_impl.cc',
     'common/webmessageportchannel_impl.h',
+    'common/webrtc_logging_messages.h',
     'common/worker_messages.h',
     'common/zygote_commands_linux.h',
     'port/common/input_event_ack_state.h',
