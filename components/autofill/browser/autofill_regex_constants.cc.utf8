@@ -64,11 +64,11 @@ const char kAddressLine2LabelRe[] =
     "|indirizzo"  // it-IT
     "|地址"  // zh-CN
     "|주소";  // ko-KR
-const char kAddressLine3Re[] =
-    "address.*line3|address3|addr3|street|line3"
+const char kAddressLinesExtraRe[] =
+    "address.*line[3-9]|address[3-9]|addr[3-9]|street|line[3-9]"
     "|municipio"  // es
     "|batiment|residence"  // fr-FR
-    "|indirizzo3";  // it-IT
+    "|indirizzo[3-9]";  // it-IT
 const char kCountryRe[] =
     "country|countries|location"
     "|país|pais"  // es

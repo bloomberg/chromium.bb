@@ -1,0 +1,54 @@
+UNKNOWN_TYPE | txtSearch | Buy tickets Live train information | Search
+UNKNOWN_TYPE | JP1$txtFrom | From * | 
+UNKNOWN_TYPE | JP1$txtTo | To * | 
+UNKNOWN_TYPE | JP1$txtDepartureDate | Out date | 18/04/2013
+UNKNOWN_TYPE | JP1$ddlDepartureHour | Hour | 15
+UNKNOWN_TYPE | JP1$ddlDepartureMin | Min | 00
+UNKNOWN_TYPE | JP1$chkReturn | Return ticket? | on
+UNKNOWN_TYPE | JP1$txtReturnDate | Return date | 18/04/2013
+UNKNOWN_TYPE | JP1$ddlReturnHour | Hour | 16
+UNKNOWN_TYPE | JP1$ddlReturnMin | Min | 00
+UNKNOWN_TYPE | JP1$ddlAdults | Adults | 1
+UNKNOWN_TYPE | JP1$ddlChildren | Children | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl00$Count | 16-25 Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl01$Count | Annual Gold Card | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl02$Count | Cambrian Lines Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl03$Count | Cotswold Line Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl04$Count | Devon & Cornwall Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl05$Count | Dales Railcards | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl06$Count | Disabled Adult Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl07$Count | Disabled Child Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl08$Count | Esk Valley Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl09$Count | Family & Friends Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl10$Count | Groupsave 3 | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl11$Count | Groupsave 4 | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl12$Count | Heart of Wales Line Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl13$Count | HM Forces Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl14$Count | Jobcentre Plus Discount Card | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl15$Count | Network Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl16$Count | Pembrokeshire Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl17$Count | Senior Railcard | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl18$Count | Scottish Youth | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl19$Count | Valleys senior | 0
+UNKNOWN_TYPE | JP1$rptCards$ctl20$Count | Valleys student | 0
+UNKNOWN_TYPE | JP1$ddlRailCard | Railcards and GroupSave | none
+UNKNOWN_TYPE | Register1$ddlTitle | Title: | MR
+NAME_FIRST | Register1$txtForenames | Forename(s): * | 
+NAME_LAST | Register1$txtSurname | Surname: * | 
+EMAIL_ADDRESS | Register1$txtEmail | Email: * | 
+EMAIL_ADDRESS | Register1$txtConfirmEmail | Confirm Email: * | 
+PHONE_HOME_WHOLE_NUMBER | Register1$txtDayPhone | Day time phone: | 
+PHONE_HOME_WHOLE_NUMBER | Register1$txtEveningPhone | Evening phone: | 
+PHONE_HOME_WHOLE_NUMBER | Register1$txtMobilePhone | Mobile phone: | 
+ADDRESS_HOME_LINE1 | Register1$txtAddress1 | Address Line 1: * | 
+ADDRESS_HOME_LINE2 | Register1$txtAddress2 | Address Line 2: * | 
+UNKNOWN_TYPE | Register1$txtAddress3 | Address Line 3: | 
+UNKNOWN_TYPE | Register1$txtAddress4 | Address Line 4: | 
+UNKNOWN_TYPE | Register1$txtAddress5 | Address Line 5: | 
+ADDRESS_HOME_ZIP | Register1$txtPostCode | Post Code: * | 
+ADDRESS_HOME_COUNTRY | Register1$ddlCountry | Country: * | Z0
+UNKNOWN_TYPE | Register1$termsandconditions$chkTerms | I agree to the terms and          conditions * | on
+UNKNOWN_TYPE | Register1$chkPrivacy1984 | Please tick here if you DO NOT wish to receive information and exclusive offers from South West Trains | on
+UNKNOWN_TYPE | Register1$chkPrivacy2003 | Please tick here if you DO wish to receive information and exclusive offers from our carefully selected partners | on
+UNKNOWN_TYPE | Register1$txtPassword | Password: * | 
+UNKNOWN_TYPE | Register1$txtConfirmPassword | Confirm Password: * | 

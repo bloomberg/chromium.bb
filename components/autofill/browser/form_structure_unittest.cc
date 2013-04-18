@@ -1137,6 +1137,45 @@ TEST(FormStructureTest, BillingAndShippingAddresses) {
   EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(3)->heuristic_type());
 }
 
+// Numbered address lines after line two are ignored.
+TEST(FormStructureTest, SurplusAddressLinesIgnored) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Address Line1");
+  field.name = ASCIIToUTF16("shipping.address.addressLine1");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address Line2");
+  field.name = ASCIIToUTF16("shipping.address.addressLine2");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address Line3");
+  field.name = ASCIIToUTF16("billing.address.addressLine3");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address Line4");
+  field.name = ASCIIToUTF16("billing.address.addressLine4");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  ASSERT_EQ(4U, form_structure->field_count());
+  ASSERT_EQ(2U, form_structure->autofill_count());
+
+  // Address Line 1.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
+  // Address Line 2.
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
+  // Address Line 3 (ignored).
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  // Address Line 4 (ignored).
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
+}
 
 // This example comes from expedia.com where they use a "Suite" label to
 // indicate a suite or apartment number.  We interpret this as address line 2.

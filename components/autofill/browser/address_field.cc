@@ -227,10 +227,12 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
                         &address_field->address2_);
   }
 
-  // Try for a third line, which we will promptly discard.
+  // Try for surplus lines, which we will promptly discard.
   if (address_field->address2_ != NULL) {
-    pattern = UTF8ToUTF16(autofill::kAddressLine3Re);
-    ParseField(scanner, pattern, NULL);
+    pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
+    while (ParseField(scanner, pattern, NULL)) {
+      // Consumed a surplus line, try for another.
+    }
   }
 
   return true;
