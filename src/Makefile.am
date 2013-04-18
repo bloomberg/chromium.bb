@@ -18,6 +18,8 @@ weston_SOURCES =				\
 	log.c					\
 	compositor.c				\
 	compositor.h				\
+	input.c					\
+	data-device.c				\
 	filter.c				\
 	filter.h				\
 	screenshooter.c				\
