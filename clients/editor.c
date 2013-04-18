@@ -391,6 +391,22 @@ text_model_input_panel_state(void *data,
 {
 }
 
+static void
+text_model_language(void *data,
+		    struct text_model *text_model,
+		    uint32_t serial,
+		    const char *language)
+{
+}
+
+static void
+text_model_text_direction(void *data,
+			  struct text_model *text_model,
+			  uint32_t serial,
+			  uint32_t direction)
+{
+}
+
 static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
@@ -402,7 +418,9 @@ static const struct text_model_listener text_model_listener = {
 	text_model_keysym,
 	text_model_enter,
 	text_model_leave,
-	text_model_input_panel_state
+	text_model_input_panel_state,
+	text_model_language,
+	text_model_text_direction
 };
 
 static struct text_entry*

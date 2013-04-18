@@ -300,6 +300,22 @@ text_model_hide_input_panel(struct wl_client *client,
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
 }
 
+static void
+text_model_set_preferred_language(struct wl_client *client,
+				  struct wl_resource *resource,
+				  const char *language)
+{
+	struct text_model *text_model = resource->data;
+	struct input_method *input_method, *next;
+
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
+		if (!input_method->context)
+			continue;
+		input_method_context_send_preferred_language(&input_method->context->resource,
+							     language);
+	}
+}
+
 static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
 	text_model_activate,
@@ -310,7 +326,8 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_invoke_action,
 	text_model_commit,
 	text_model_show_input_panel,
-	text_model_hide_input_panel
+	text_model_hide_input_panel,
+	text_model_set_preferred_language
 };
 
 static void text_model_factory_create_text_model(struct wl_client *client,
@@ -601,6 +618,29 @@ input_method_context_modifiers(struct wl_client *client,
 					   group);
 }
 
+static void
+input_method_context_language(struct wl_client *client,
+			      struct wl_resource *resource,
+			      uint32_t serial,
+			      const char *language)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_language(&context->model->resource, serial, language);
+}
+
+static void
+input_method_context_text_direction(struct wl_client *client,
+				    struct wl_resource *resource,
+				    uint32_t serial,
+				    uint32_t direction)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_text_direction(&context->model->resource, serial, direction);
+}
+
+
 static const struct input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
@@ -613,7 +653,9 @@ static const struct input_method_context_interface input_method_context_implemen
 	input_method_context_keysym,
 	input_method_context_grab_keyboard,
 	input_method_context_key,
-	input_method_context_modifiers
+	input_method_context_modifiers,
+	input_method_context_language,
+	input_method_context_text_direction
 };
 
 static void

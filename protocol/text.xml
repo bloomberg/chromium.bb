@@ -150,6 +150,18 @@
         Requests input panels (virtual keyboard) to hide.
       </description>
     </request>
+    <request name="set_preferred_language">
+      <description summary="sets preferred language">
+        Sets a specific language. This allows for example a virtual keyboard to
+        show a language specific layout. The "language" argument is a RFC-3066 
+	format language tag.
+
+	It could be used for example in a word processor to indicate language of
+	currently edited document or in an instant message application which tracks
+	languages of contacts.
+      </description>
+      <arg name="language" type="string"/>
+    </request>
     <event name="commit_string">
       <description summary="commit">
         Notify when text should be inserted into the editor widget. The text
@@ -271,6 +283,30 @@
         Notify when the visibility state of the input panel changed.
       </description>
       <arg name="state" type="uint"/>
+    </event>
+    <event name="language">
+      <description summary="language">
+        Sets the language of the input text. The "language" argument is a RFC-3066 
+        format language tag.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="language" type="string"/>
+    </event>
+    <enum name="text_direction">
+      <entry name="auto" value="0" summary="automatic text direction based on text and language"/>
+      <entry name="ltr" value="1" summary="left-to-right"/>
+      <entry name="rtl" value="2" summary="right-to-left"/>
+    </enum>
+    <event name="text_direction">
+      <description summary="text direction">
+        Sets the text direction of input text.
+
+        It is mainly needed for showing input cursor on correct side of the
+        editor when there is no input yet done and making sure neutral
+        direction text is laid out properly.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="direction" type="uint"/>
     </event>
   </interface>
 

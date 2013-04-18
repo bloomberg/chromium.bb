@@ -113,6 +113,14 @@
       <arg name="mods_locked" type="uint"/>
       <arg name="group" type="uint"/>
     </request>
+    <request name="language">
+      <arg name="serial" type="uint"/>
+      <arg name="language" type="string"/>
+    </request>
+    <request name="text_direction">
+      <arg name="serial" type="uint"/>
+      <arg name="direction" type="uint"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the
@@ -136,6 +144,9 @@
       <arg name="index" type="uint"/>
     </event>
     <event name="commit"/>
+    <event name="preferred_language">
+      <arg name="language" type="string"/>
+    </event>
   </interface>
 
   <interface name="input_method" version="1">

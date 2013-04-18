@@ -492,11 +492,11 @@ button_handler(struct widget *widget,
 }
 
 static void
-input_method_context_surrounding_text(void *data,
-				      struct input_method_context *context,
-				      const char *text,
-				      uint32_t cursor,
-				      uint32_t anchor)
+handle_surrounding_text(void *data,
+			struct input_method_context *context,
+			const char *text,
+			uint32_t cursor,
+			uint32_t anchor)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -505,9 +505,9 @@ input_method_context_surrounding_text(void *data,
 }
 
 static void
-input_method_context_reset(void *data,
-			   struct input_method_context *context,
-			   uint32_t serial)
+handle_reset(void *data,
+	     struct input_method_context *context,
+	     uint32_t serial)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -529,10 +529,10 @@ input_method_context_reset(void *data,
 }
 
 static void
-input_method_context_content_type(void *data,
-				  struct input_method_context *context,
-				  uint32_t hint,
-				  uint32_t purpose)
+handle_content_type(void *data,
+		    struct input_method_context *context,
+		    uint32_t hint,
+		    uint32_t purpose)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -541,10 +541,10 @@ input_method_context_content_type(void *data,
 }
 
 static void
-input_method_context_invoke_action(void *data,
-				   struct input_method_context *context,
-				   uint32_t button,
-				   uint32_t index)
+handle_invoke_action(void *data,
+		     struct input_method_context *context,
+		     uint32_t button,
+		     uint32_t index)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -555,8 +555,8 @@ input_method_context_invoke_action(void *data,
 }
 
 static void
-input_method_context_commit(void *data,
-			    struct input_method_context *context)
+handle_commit(void *data,
+	      struct input_method_context *context)
 {
 	struct virtual_keyboard *keyboard = data;
 	const struct layout *layout;
@@ -573,12 +573,20 @@ input_method_context_commit(void *data,
 	widget_schedule_redraw(keyboard->widget);
 }
 
+static void
+handle_preferred_language(void *data,
+			  struct input_method_context *context,
+			  const char *language)
+{
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
-	input_method_context_surrounding_text,
-	input_method_context_reset,
-	input_method_context_content_type,
-	input_method_context_invoke_action,
-	input_method_context_commit
+	handle_surrounding_text,
+	handle_reset,
+	handle_content_type,
+	handle_invoke_action,
+	handle_commit,
+	handle_preferred_language
 };
 
 static void
