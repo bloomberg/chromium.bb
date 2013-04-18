@@ -74,7 +74,10 @@ bool BluetoothDeviceExperimentalChromeOS::IsPaired() const {
           GetProperties(object_path_);
   DCHECK(properties);
 
-  return properties->paired.value();
+  // Trusted devices are devices that don't support pairing but that the
+  // user has explicitly connected; it makes no sense for UI purposes to
+  // treat them differently from each other.
+  return properties->paired.value() || properties->trusted.value();
 }
 
 bool BluetoothDeviceExperimentalChromeOS::IsConnected() const {
@@ -139,8 +142,8 @@ void BluetoothDeviceExperimentalChromeOS::Connect(
   VLOG(1) << object_path_.value() << ": Connecting, " << num_connecting_calls_
           << " in progress";
 
-  if (IsPaired() || IsConnected() || !pairing_delegate) {
-    // No need to pair, skip straight to connection.
+  if (IsPaired() || IsConnected() || !pairing_delegate || !IsPairable()) {
+    // No need to pair, or unable to, skip straight to connection.
     ConnectInternal(callback, error_callback);
   } else {
     // Initiate high-security connection with pairing.
@@ -396,6 +399,8 @@ void BluetoothDeviceExperimentalChromeOS::OnConnect(
   VLOG(1) << object_path_.value() << ": Connected, " << num_connecting_calls_
         << " still in progress";
 
+  SetTrusted();
+
   callback.Run();
 }
 
@@ -465,21 +470,8 @@ void BluetoothDeviceExperimentalChromeOS::OnPair(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Paired";
-
-  // Now that we're paired, we need to set the device as trusted so that
-  // incoming connections will be accepted. This should only ever fail if
-  // the device is removed mid-pairing, so do it in the background while
-  // we connect and don't worry about errors.
-  DBusThreadManager::Get()->GetExperimentalBluetoothDeviceClient()->
-      GetProperties(object_path_)->trusted.Set(
-          true,
-          base::Bind(
-              &BluetoothDeviceExperimentalChromeOS::OnSetTrusted,
-              weak_ptr_factory_.GetWeakPtr()));
-
   UnregisterAgent();
-
-  // Now we can connect to the device!
+  SetTrusted();
   ConnectInternal(callback, error_callback);
 }
 
@@ -518,6 +510,19 @@ void BluetoothDeviceExperimentalChromeOS::OnCancelPairingError(
     const std::string& error_message) {
   LOG(WARNING) << object_path_.value() << ": Failed to cancel pairing: "
                << error_name << ": " << error_message;
+}
+
+void BluetoothDeviceExperimentalChromeOS::SetTrusted() {
+  // Unconditionally send the property change, rather than checking the value
+  // first; there's no harm in doing this and it solves any race conditions
+  // with the property becoming true or false and this call happening before
+  // we get the D-Bus signal about the earlier change.
+  DBusThreadManager::Get()->GetExperimentalBluetoothDeviceClient()->
+      GetProperties(object_path_)->trusted.Set(
+          true,
+          base::Bind(
+              &BluetoothDeviceExperimentalChromeOS::OnSetTrusted,
+              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDeviceExperimentalChromeOS::OnSetTrusted(bool success) {

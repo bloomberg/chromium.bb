@@ -139,9 +139,11 @@ class BluetoothDeviceChromeOS
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
 
-  // Called by BluetoothProperty when the call to Set() for the Trusted
-  // property completes. |success| indicates whether or not the request
-  // succeeded.
+  // Set the device as trusted. Trusted devices can connect to us automatically,
+  // and we can connect to them after rebooting. This also causes the device to
+  // be remembered by the stack even if not paired. |success| to the callback
+  // indicates whether or not the request succeeded.
+  void SetTrusted();
   void OnSetTrusted(bool success);
 
   // Called by BluetoothAdapterClient when a call to GetServiceRecords()

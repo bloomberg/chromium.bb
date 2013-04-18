@@ -131,7 +131,11 @@ class BluetoothDeviceExperimentalChromeOS
   void OnCancelPairingError(const std::string& error_name,
                             const std::string& error_message);
 
-  // Called by dbus:: on completion of the trusted property change.
+  // Internal method to set the device as trusted. Trusted devices can connect
+  // to us automatically, and we can connect to them after rebooting; it also
+  // causes the device to be remembered by the stack even if not paired.
+  // |success| to the callback indicates whether or not the request succeeded.
+  void SetTrusted();
   void OnSetTrusted(bool success);
 
   // Internal method to unregister the pairing agent and method called by dbus::

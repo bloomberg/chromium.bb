@@ -881,6 +881,56 @@ TEST_F(BluetoothExperimentalChromeOSTest, ForgetDevice) {
   ASSERT_EQ(0U, devices.size());
 }
 
+TEST_F(BluetoothExperimentalChromeOSTest, ForgetUnpairedDevice) {
+  GetAdapter();
+  DiscoverDevices();
+
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  // Connect the device so it becomes trusted and remembered.
+  device->Connect(
+      NULL,
+      base::Bind(&BluetoothExperimentalChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothExperimentalChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  ASSERT_EQ(1, callback_count_);
+  ASSERT_EQ(0, error_callback_count_);
+  callback_count_ = 0;
+
+  ASSERT_TRUE(device->IsConnected());
+  ASSERT_FALSE(device->IsConnecting());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
+  ASSERT_TRUE(properties->trusted.value());
+
+  // Install an observer; expect the DeviceRemoved method to be called
+  // with the device we remove.
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  device->Forget(
+      base::Bind(&BluetoothExperimentalChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(1, observer.device_removed_count_);
+  EXPECT_EQ(FakeBluetoothDeviceClient::kMicrosoftMouseAddress,
+            observer.last_device_address_);
+
+  // GetDevices shouldn't return the device either.
+  device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+  EXPECT_FALSE(device != NULL);
+}
+
 TEST_F(BluetoothExperimentalChromeOSTest, ConnectPairedDevice) {
   GetAdapter();
 
@@ -940,6 +990,12 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectUnpairableDevice) {
 
   EXPECT_TRUE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
+  EXPECT_TRUE(properties->trusted.value());
 }
 
 TEST_F(BluetoothExperimentalChromeOSTest, ConnectConnectedDevice) {

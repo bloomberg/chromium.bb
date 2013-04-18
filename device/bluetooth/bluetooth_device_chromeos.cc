@@ -163,8 +163,9 @@ void BluetoothDeviceChromeOS::Connect(
     // Connection to already paired or connected device.
     ConnectApplications(wrapped_callback, wrapped_error_callback);
 
-  } else if (!pairing_delegate) {
-    // No pairing delegate supplied, initiate low-security connection only.
+  } else if (!pairing_delegate || !IsPairable()) {
+    // No pairing delegate supplied, or unpairable device; initiate
+    // low-security connection only.
     DBusThreadManager::Get()->GetBluetoothAdapterClient()->
         CreateDevice(adapter_->object_path_,
                      address_,
@@ -410,16 +411,7 @@ void BluetoothDeviceChromeOS::OnCreateDevice(
         << object_path_.value();
   }
 
-  // Mark the device trusted so it can connect to us automatically, and
-  // we can connect after rebooting. This information is part of the
-  // pairing information of the device, and is unique to the combination
-  // of our bluetooth address and the device's bluetooth address. A
-  // different host needs a new pairing, so it's not useful to sync.
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-      GetProperties(object_path_)->trusted.Set(
-          true,
-          base::Bind(&BluetoothDeviceChromeOS::OnSetTrusted,
-                     weak_ptr_factory_.GetWeakPtr()));
+  SetTrusted();
 
   // In parallel with the |trusted| property change, call GetServiceRecords to
   // retrieve the SDP from the device and then, either on success or failure,
@@ -488,6 +480,19 @@ void BluetoothDeviceChromeOS::CollectServiceRecordsCallback(
   service_records_loaded_ = true;
 
   callback.Run(service_records_);
+}
+
+void BluetoothDeviceChromeOS::SetTrusted() {
+  // Unconditionally send the property change, rather than checking the value
+  // first; there's no harm in doing this and it solves any race conditions
+  // with the property becoming true or false and this call happening before
+  // we get the D-Bus signal about the earlier change.
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      GetProperties(object_path_)->trusted.Set(
+          true,
+          base::Bind(
+              &BluetoothDeviceChromeOS::OnSetTrusted,
+              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDeviceChromeOS::OnSetTrusted(bool success) {
@@ -613,6 +618,7 @@ void BluetoothDeviceChromeOS::OnConnect(const base::Closure& callback,
   // run on the same thread, which is true).
   if (connecting_applications_counter_ == -1) {
     connecting_applications_counter_ = 0;
+    SetTrusted();
     callback.Run();
   }
 }
