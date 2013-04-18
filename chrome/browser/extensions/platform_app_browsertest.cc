@@ -455,12 +455,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNoIntent) {
       << message_;
 }
 
-// Tests that no launch data is sent through if the file MIME type cannot
-// be read.
+// Tests that launch data is sent through with the MIME type set to
+// application/octet-stream if the file MIME type cannot be read.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoType) {
   SetCommandLineArg("platform_apps/launch_files/test.unknownextension");
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
-      << message_;
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_application_octet_stream")) << message_;
 }
 
 // Tests that no launch data is sent through if the file does not exist.

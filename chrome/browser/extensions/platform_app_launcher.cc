@@ -56,6 +56,8 @@ namespace extensions {
 
 namespace {
 
+const char kFallbackMimeType[] = "application/octet-stream";
+
 bool MakePathAbsolute(const base::FilePath& current_directory,
                       base::FilePath* file_path) {
   DCHECK(file_path);
@@ -154,14 +156,8 @@ class PlatformAppPathLauncher
     }
 
     std::string mime_type;
-    // If we cannot obtain the MIME type, launch with no launch data.
-    if (!net::GetMimeTypeFromFile(file_path_, &mime_type)) {
-      LOG(WARNING) << "Could not obtain MIME type for "
-                   << file_path_.value();
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-              &PlatformAppPathLauncher::LaunchWithNoLaunchData, this));
-      return;
-    }
+    if (!net::GetMimeTypeFromFile(file_path_, &mime_type))
+      mime_type = kFallbackMimeType;
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
             &PlatformAppPathLauncher::LaunchWithMimeType, this, mime_type));
@@ -189,13 +185,12 @@ class PlatformAppPathLauncher
                       drive::DriveFileType file_type) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    if (error != drive::DRIVE_FILE_OK || mime_type.empty() ||
-        file_type != drive::REGULAR_FILE) {
+    if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE) {
       LaunchWithNoLaunchData();
       return;
     }
 
-    LaunchWithMimeType(mime_type);
+    LaunchWithMimeType(mime_type.empty() ? kFallbackMimeType : mime_type);
   }
 #endif  // defined(OS_CHROMEOS)
 
