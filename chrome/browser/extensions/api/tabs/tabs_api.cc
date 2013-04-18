@@ -603,8 +603,6 @@ bool WindowsCreateFunction::RunImpl() {
       ShellWindow::CreateParams create_params;
       create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
-      create_params.minimum_size = window_bounds.size();
-      create_params.maximum_size = window_bounds.size();
       create_params.focused = saw_focus_key && focused;
       ShellWindow* shell_window =
           new ShellWindow(window_profile, GetExtension());
