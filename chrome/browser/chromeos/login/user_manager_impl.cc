@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -206,6 +207,7 @@ UserManagerImpl::UserManagerImpl()
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
       content::NotificationService::AllSources());
   RetrieveTrustedDevicePolicies();
+  UpdateLoginState();
 }
 
 UserManagerImpl::~UserManagerImpl() {
@@ -342,6 +344,7 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
 void UserManagerImpl::SessionStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   session_started_ = true;
+  UpdateLoginState();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::Source<UserManager>(this),
@@ -661,6 +664,7 @@ void UserManagerImpl::SetCurrentUserIsOwner(bool is_current_user_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lk(is_current_user_owner_lock_);
   is_current_user_owner_ = is_current_user_owner;
+  UpdateLoginState();
 }
 
 bool UserManagerImpl::IsCurrentUserNew() const {
@@ -1080,6 +1084,7 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UpdateLoginState();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
@@ -1391,6 +1396,34 @@ void UserManagerImpl::NotifyMergeSessionStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
                     MergeSessionStateChanged(merge_session_state_));
+}
+
+void UserManagerImpl::UpdateLoginState() {
+  if (!LoginState::IsInitialized())
+    return;  // LoginState may not be intialized in tests.
+  LoginState::LoggedInState logged_in_state;
+  logged_in_state = active_user_ ? LoginState::LOGGED_IN_ACTIVE
+      : LoginState::LOGGED_IN_NONE;
+
+  LoginState::LoggedInUserType login_user_type;
+  if (logged_in_state == LoginState::LOGGED_IN_NONE)
+    login_user_type = LoginState::LOGGED_IN_USER_NONE;
+  else if (is_current_user_owner_)
+    login_user_type = LoginState::LOGGED_IN_USER_OWNER;
+  else if (active_user_->GetType() == User::USER_TYPE_GUEST)
+    login_user_type = LoginState::LOGGED_IN_USER_GUEST;
+  else if (active_user_->GetType() == User::USER_TYPE_RETAIL_MODE)
+    login_user_type = LoginState::LOGGED_IN_USER_RETAIL_MODE;
+  else if (active_user_->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT)
+    login_user_type = LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
+  else if (active_user_->GetType() == User::USER_TYPE_LOCALLY_MANAGED)
+    login_user_type = LoginState::LOGGED_IN_USER_LOCALLY_MANAGED;
+  else if (active_user_->GetType() == User::USER_TYPE_KIOSK_APP)
+    login_user_type = LoginState::LOGGED_IN_USER_KIOSK_APP;
+  else
+    login_user_type = LoginState::LOGGED_IN_USER_REGULAR;
+
+  LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
 }
 
 }  // namespace chromeos

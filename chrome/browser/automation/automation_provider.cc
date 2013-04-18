@@ -77,8 +77,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
 using WebKit::WebFindOptions;
@@ -219,7 +219,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     // Observer will delete itself.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kLoginManager) &&
-        !chromeos::UserManager::Get()->IsUserLoggedIn()) {
+        !chromeos::LoginState::Get()->IsUserLoggedIn()) {
       login_webui_ready_ = false;
       new OOBEWebuiReadyObserver(this);
     }
