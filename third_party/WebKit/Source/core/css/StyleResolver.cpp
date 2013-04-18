@@ -957,7 +957,10 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
         if (sharedStyle)
+        {
+            state.clear();
             return sharedStyle;
+        }
     }
 
     if (state.parentStyle()) {
