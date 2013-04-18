@@ -23,6 +23,10 @@ class MediaGalleriesPrivateEjectApiTest;
 class PlatformAppMediaGalleriesBrowserTest;
 class SystemInfoStorageApiTest;
 
+namespace device {
+class MediaTransferProtocolManager;
+}
+
 namespace chrome {
 
 class MediaFileSystemRegistryTest;
@@ -78,6 +82,11 @@ class StorageMonitor {
       const std::string& storage_device_id,
       string16* device_location,
       string16* storage_object_id) const = 0;
+#endif
+
+#if defined(OS_LINUX)
+  virtual device::MediaTransferProtocolManager*
+      media_transfer_protocol_manager() = 0;
 #endif
 
   // Returns information for attached removable storage.

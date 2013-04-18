@@ -16,6 +16,7 @@
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,6 +64,12 @@ class TestStorageMonitorCros : public StorageMonitorCros {
   TestStorageMonitorCros() {}
 
   virtual ~TestStorageMonitorCros() {}
+
+  void Init() {
+    SetMediaTransferProtocolManagerForTest(
+        new chrome::TestMediaTransferProtocolManagerLinux());
+    StorageMonitorCros::Init();
+  }
 
   virtual void OnMountEvent(
       disks::DiskMountManager::MountEvent event,
@@ -171,6 +178,7 @@ void StorageMonitorCrosTest::SetUp() {
 
   // Initialize the test subject.
   monitor_.reset(new TestStorageMonitorCros());
+  monitor_->Init();
   monitor_->AddObserver(mock_storage_observer_.get());
 }
 

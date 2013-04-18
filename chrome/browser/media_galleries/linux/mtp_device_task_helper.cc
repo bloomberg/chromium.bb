@@ -8,6 +8,7 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -25,10 +26,7 @@ void DoNothing(bool error) {
 }
 
 device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
-  device::MediaTransferProtocolManager* mtp_device_mgr =
-      device::MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_device_mgr);
-  return mtp_device_mgr;
+  return StorageMonitor::GetInstance()->media_transfer_protocol_manager();
 }
 
 }  // namespace

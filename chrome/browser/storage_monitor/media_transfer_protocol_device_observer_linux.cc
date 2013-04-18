@@ -24,6 +24,13 @@ static MediaTransferProtocolDeviceObserverLinux* g_mtp_device_observer = NULL;
 // Device root path constant.
 const char kRootPath[] = "/";
 
+device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (!monitor)
+    return NULL;
+  return monitor->media_transfer_protocol_manager();
+}
+
 // Constructs and returns the location of the device using the |storage_name|.
 std::string GetDeviceLocationFromStorageName(const std::string& storage_name) {
   // Construct a dummy device path using the storage name. This is only used
@@ -101,10 +108,8 @@ void GetStorageInfo(const std::string& storage_name,
                     string16* label,
                     std::string* location) {
   DCHECK(!storage_name.empty());
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
   const MtpStorageInfo* storage_info =
-      mtp_manager->GetStorageInfo(storage_name);
+      GetMediaTransferProtocolManager()->GetStorageInfo(storage_name);
 
   if (!storage_info)
     return;
@@ -128,10 +133,7 @@ MediaTransferProtocolDeviceObserverLinux(StorageMonitor::Receiver* receiver)
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_manager);
-  mtp_manager->AddObserver(this);
+  GetMediaTransferProtocolManager()->AddObserver(this);
   EnumerateStorages();
 }
 
@@ -152,7 +154,7 @@ MediaTransferProtocolDeviceObserverLinux::
   g_mtp_device_observer = NULL;
 
   device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
+      GetMediaTransferProtocolManager();
   if (mtp_manager)
     mtp_manager->RemoveObserver(this);
 }
@@ -219,9 +221,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
 void MediaTransferProtocolDeviceObserverLinux::EnumerateStorages() {
   typedef std::vector<std::string> StorageList;
-  device::MediaTransferProtocolManager* mtp_manager =
-      device::MediaTransferProtocolManager::GetInstance();
-  StorageList storages = mtp_manager->GetStorages();
+  StorageList storages = GetMediaTransferProtocolManager()->GetStorages();
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {
     StorageChanged(true, *storage_iter);

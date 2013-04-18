@@ -42,6 +42,9 @@ class StorageMonitorCros : public chrome::StorageMonitor,
   void Init();
 
  protected:
+  void SetMediaTransferProtocolManagerForTest(
+      device::MediaTransferProtocolManager* test_manager);
+
   // disks::DiskMountManager::Observer implementation.
   virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -62,6 +65,8 @@ class StorageMonitorCros : public chrome::StorageMonitor,
   virtual void EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) OVERRIDE;
+  virtual device::MediaTransferProtocolManager*
+      media_transfer_protocol_manager() OVERRIDE;
 
  private:
   // Mapping of mount path to removable mass storage info.
@@ -80,6 +85,8 @@ class StorageMonitorCros : public chrome::StorageMonitor,
   // Mapping of relevant mount points and their corresponding mount devices.
   MountMap mount_map_;
 
+  scoped_ptr<device::MediaTransferProtocolManager>
+      media_transfer_protocol_manager_;
   scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
 

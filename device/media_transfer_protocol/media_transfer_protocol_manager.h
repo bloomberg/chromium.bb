@@ -132,19 +132,13 @@ class MediaTransferProtocolManager {
                                uint32 file_id,
                                const GetFileInfoCallback& callback) = 0;
 
-  // Creates the global MediaTransferProtocolManager instance.
+  // Creates and returns the global MediaTransferProtocolManager instance.
   // On Linux, |loop_proxy| specifies the message loop proxy to process
   // asynchronous operations.
   // On ChromeOS, |loop_proxy| is set to NULL because ChromeOS already has a
   // dedicated message loop proxy.
-  static void Initialize(scoped_refptr<base::MessageLoopProxy> loop_proxy);
-
-  // Destroys the global MediaTransferProtocolManager instance if it exists.
-  static void Shutdown();
-
-  // Returns a pointer to the global MediaTransferProtocolManager instance.
-  // Initialize() should already have been called.
-  static MediaTransferProtocolManager* GetInstance();
+  static MediaTransferProtocolManager* Initialize(
+      scoped_refptr<base::MessageLoopProxy> loop_proxy);
 };
 
 }  // namespace device

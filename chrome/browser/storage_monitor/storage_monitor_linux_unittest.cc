@@ -22,6 +22,7 @@
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -143,6 +144,8 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
   TestStorageMonitorLinux(const base::FilePath& path, MessageLoop* message_loop)
       : StorageMonitorLinux(path),
         message_loop_(message_loop) {
+    SetMediaTransferProtocolManagerForTest(
+        new TestMediaTransferProtocolManagerLinux());
     SetGetDeviceInfoCallbackForTest(base::Bind(&GetDeviceInfo));
   }
   virtual ~TestStorageMonitorLinux() {}
@@ -257,7 +260,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     return *mock_storage_observer_;
   }
 
-  StorageMonitorLinux* notifier() {
+  StorageMonitor* notifier() {
     return monitor_.get();
   }
 

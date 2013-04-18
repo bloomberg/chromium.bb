@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_STORAGE_MONITOR_TEST_STORAGE_MONITOR_H_
 #define CHROME_BROWSER_STORAGE_MONITOR_TEST_STORAGE_MONITOR_H_
 
+#include <string>
+
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace chrome {
@@ -30,6 +32,11 @@ class TestStorageMonitor : public chrome::StorageMonitor {
       string16* storage_object_id) const OVERRIDE;
 #endif
 
+#if defined(OS_LINUX)
+  virtual device::MediaTransferProtocolManager*
+      media_transfer_protocol_manager() OVERRIDE;
+#endif
+
   virtual Receiver* receiver() const OVERRIDE;
 
   virtual void EjectDevice(
@@ -41,6 +48,11 @@ class TestStorageMonitor : public chrome::StorageMonitor {
 
  private:
   std::string ejected_device_;
+
+#if defined(OS_LINUX)
+  scoped_ptr<device::MediaTransferProtocolManager>
+      media_transfer_protocol_manager_;
+#endif
 };
 
 }  // namespace test

@@ -23,6 +23,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/storage_monitor/mtab_watcher_linux.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,18 +35,14 @@ class MediaTransferProtocolDeviceObserverLinux;
 class StorageMonitorLinux : public StorageMonitor,
                             public MtabWatcherLinux::Delegate {
  public:
-  // Should only be called by browser start up code.  Use GetInstance() instead.
-  explicit StorageMonitorLinux(const base::FilePath& path);
+  // Should only be called by browser start up code.
+  // Use StorageMonitor::GetInstance() instead.
+  // |mtab_file_path| is the path to a mtab file to watch for mount points.
+  explicit StorageMonitorLinux(const base::FilePath& mtab_file_path);
   virtual ~StorageMonitorLinux();
 
   // Must be called for StorageMonitorLinux to work.
   void Init();
-
-  // Finds the device that contains |path| and populates |device_info|.
-  // Returns false if unable to find the device.
-  virtual bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      StorageInfo* device_info) const OVERRIDE;
 
  protected:
   // Gets device information given a |device_path| and |mount_point|.
@@ -55,6 +52,9 @@ class StorageMonitorLinux : public StorageMonitor,
 
   void SetGetDeviceInfoCallbackForTest(
       const GetDeviceInfoCallback& get_device_info_callback);
+
+  void SetMediaTransferProtocolManagerForTest(
+      device::MediaTransferProtocolManager* test_manager);
 
   // MtabWatcherLinux::Delegate implementation.
   virtual void UpdateMtab(
@@ -89,6 +89,12 @@ class StorageMonitorLinux : public StorageMonitor,
   // any) we have notified system monitor about.
   typedef std::map<base::FilePath, ReferencedMountPoint> MountPriorityMap;
 
+  // StorageMonitor implementation.
+  virtual bool GetStorageInfoForPath(const base::FilePath& path,
+                                     StorageInfo* device_info) const OVERRIDE;
+  virtual device::MediaTransferProtocolManager*
+      media_transfer_protocol_manager() OVERRIDE;
+
   // Called when the MtabWatcher has been created.
   void OnMtabWatcherCreated(MtabWatcherLinux* watcher);
 
@@ -121,6 +127,8 @@ class StorageMonitorLinux : public StorageMonitor,
   // points.
   MountPriorityMap mount_priority_map_;
 
+  scoped_ptr<device::MediaTransferProtocolManager>
+      media_transfer_protocol_manager_;
   scoped_ptr<MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
 

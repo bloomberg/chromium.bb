@@ -16,6 +16,7 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
@@ -117,13 +118,15 @@ using chrome::StorageInfo;
 
 StorageMonitorCros::StorageMonitorCros()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  // TODO(thestig) Do not do this here. Do it in TestingBrowserProcess when
+  // BrowserProcess owns StorageMonitor.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    SetMediaTransferProtocolManagerForTest(
+        new chrome::TestMediaTransferProtocolManagerLinux());
+  }
 }
 
 StorageMonitorCros::~StorageMonitorCros() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    device::MediaTransferProtocolManager::Shutdown();
-  }
-
   disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
@@ -135,13 +138,14 @@ void StorageMonitorCros::Init() {
   disks::DiskMountManager::GetInstance()->AddObserver(this);
   CheckExistingMountPoints();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+  if (!media_transfer_protocol_manager_) {
     scoped_refptr<base::MessageLoopProxy> loop_proxy;
-    device::MediaTransferProtocolManager::Initialize(loop_proxy);
-
-    media_transfer_protocol_device_observer_.reset(
-        new chrome::MediaTransferProtocolDeviceObserverLinux(receiver()));
+    media_transfer_protocol_manager_.reset(
+        device::MediaTransferProtocolManager::Initialize(loop_proxy));
   }
+
+  media_transfer_protocol_device_observer_.reset(
+      new chrome::MediaTransferProtocolDeviceObserverLinux(receiver()));
 }
 
 void StorageMonitorCros::CheckExistingMountPoints() {
@@ -214,13 +218,17 @@ void StorageMonitorCros::OnFormatEvent(
     const std::string& device_path) {
 }
 
+void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
+    device::MediaTransferProtocolManager* test_manager) {
+  DCHECK(!media_transfer_protocol_manager_);
+  media_transfer_protocol_manager_.reset(test_manager);
+}
+
+
 bool StorageMonitorCros::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
-  // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
-  // valid.
-  if (media_transfer_protocol_device_observer_ &&
-      media_transfer_protocol_device_observer_->GetStorageInfoForPath(
+  if (media_transfer_protocol_device_observer_->GetStorageInfoForPath(
           path, device_info)) {
     return true;
   }
@@ -277,6 +285,11 @@ void StorageMonitorCros::EjectDevice(
 
   manager->UnmountPath(mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
                        base::Bind(NotifyUnmountResult, callback));
+}
+
+device::MediaTransferProtocolManager*
+StorageMonitorCros::media_transfer_protocol_manager() {
+  return media_transfer_protocol_manager_.get();
 }
 
 void StorageMonitorCros::AddMountedPath(

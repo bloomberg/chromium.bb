@@ -35,7 +35,7 @@ MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
 // The MediaTransferProtocolManager implementation.
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  public:
-  MediaTransferProtocolManagerImpl(
+  explicit MediaTransferProtocolManagerImpl(
       scoped_refptr<base::MessageLoopProxy> loop_proxy)
       : weak_ptr_factory_(this) {
     dbus::Bus* bus = NULL;
@@ -71,6 +71,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   virtual ~MediaTransferProtocolManagerImpl() {
+    DCHECK(g_media_transfer_protocol_manager);
+    g_media_transfer_protocol_manager = NULL;
+    VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
   }
 
   // MediaTransferProtocolManager override.
@@ -434,31 +437,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 }  // namespace
 
 // static
-void MediaTransferProtocolManager::Initialize(
+MediaTransferProtocolManager* MediaTransferProtocolManager::Initialize(
     scoped_refptr<base::MessageLoopProxy> loop_proxy) {
-  if (g_media_transfer_protocol_manager) {
-    LOG(WARNING) << "MediaTransferProtocolManager was already initialized";
-    return;
-  }
+  DCHECK(!g_media_transfer_protocol_manager);
+
   g_media_transfer_protocol_manager =
       new MediaTransferProtocolManagerImpl(loop_proxy);
   VLOG(1) << "MediaTransferProtocolManager initialized";
-}
 
-// static
-void MediaTransferProtocolManager::Shutdown() {
-  if (!g_media_transfer_protocol_manager) {
-    LOG(WARNING) << "MediaTransferProtocolManager::Shutdown() called with "
-                 << "NULL manager";
-    return;
-  }
-  delete g_media_transfer_protocol_manager;
-  g_media_transfer_protocol_manager = NULL;
-  VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
-}
-
-// static
-MediaTransferProtocolManager* MediaTransferProtocolManager::GetInstance() {
   return g_media_transfer_protocol_manager;
 }
 

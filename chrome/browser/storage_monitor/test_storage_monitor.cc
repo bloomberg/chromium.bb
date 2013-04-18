@@ -6,11 +6,21 @@
 
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 
+#if defined(OS_LINUX)
+#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#endif
+
 namespace chrome {
 namespace test {
 
 TestStorageMonitor::TestStorageMonitor()
-    : StorageMonitor() {}
+    : StorageMonitor() {
+#if defined(OS_LINUX)
+  media_transfer_protocol_manager_.reset(
+      new TestMediaTransferProtocolManagerLinux());
+#endif
+}
 
 TestStorageMonitor::~TestStorageMonitor() {}
 
@@ -42,6 +52,13 @@ bool TestStorageMonitor::GetMTPStorageInfoFromDeviceId(
     string16* device_location,
     string16* storage_object_id) const {
   return false;
+}
+#endif
+
+#if defined(OS_LINUX)
+device::MediaTransferProtocolManager*
+TestStorageMonitor::media_transfer_protocol_manager() {
+  return media_transfer_protocol_manager_.get();
 }
 #endif
 
