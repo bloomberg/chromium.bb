@@ -479,7 +479,6 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
   base::DictionaryValue local_metadata;
   local_metadata.SetDouble("account-largest-changestamp-local",
                            metadata.largest_changestamp);
-  local_metadata.SetBoolean("account-metadata-loaded", metadata.loaded);
   local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
   web_ui()->CallJavascriptFunction("updateLocalMetadata", local_metadata);
 }
@@ -581,7 +580,6 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(gcache_contents),
                  base::Owned(gcache_summary)));
-
 }
 
 void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {

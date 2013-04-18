@@ -20,9 +20,6 @@ struct DriveFileSystemMetadata {
   // from the one on the server)
   int64 largest_changestamp;
 
-  // True if the file system feed is loaded from the cache or from the server.
-  bool loaded;
-
   // True if the feed is now being fetched from the server.
   bool refreshing;
 

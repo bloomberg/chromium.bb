@@ -174,10 +174,11 @@ function updateAppList(appList) {
  * @param {Object} localMetadata Dictionary describing account metadata.
  */
 function updateLocalMetadata(localMetadata) {
+  var changestamp = localMetadata['account-largest-changestamp-local'];
+
   $('account-largest-changestamp-local').textContent =
-      localMetadata['account-largest-changestamp-local'];
-  $('account-metadata-loaded').textContent =
-      localMetadata['account-metadata-loaded'].toString() +
+      changestamp.toString() +
+      (changestamp > 0 ? ' (loaded)' : ' (not loaded)') +
       (localMetadata['account-metadata-refreshing'] ? ' (refreshing)' : '');
 }
 

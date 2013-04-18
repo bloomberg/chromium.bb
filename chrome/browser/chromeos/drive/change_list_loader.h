@@ -49,8 +49,6 @@ class ChangeListLoader {
   void AddObserver(ChangeListLoaderObserver* observer);
   void RemoveObserver(ChangeListLoaderObserver* observer);
 
-  bool loaded() const { return loaded_; }
-
   // Starts the change list loading first from the cache. If loading from the
   // cache is successful, runs |callback| and starts loading from the server
   // if needed (i.e. the cache is old). If loading from the cache is

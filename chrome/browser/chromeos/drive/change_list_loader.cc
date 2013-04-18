@@ -509,7 +509,7 @@ void ChangeListLoader::LoadIfNeeded(
   // directory_fetch_info), we have nothing to do. For "fast fetch", we need to
   // schedule a fetching if a feed refresh is currently running, because we
   // don't want to wait a possibly large delta feed to arrive.
-  if (loaded() && (directory_fetch_info.empty() || !IsRefreshing())) {
+  if (loaded_ && (directory_fetch_info.empty() || !IsRefreshing())) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_FILE_OK));
@@ -603,7 +603,7 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (loaded() && !IsRefreshing())
+  if (loaded_ && !IsRefreshing())
     Load(DirectoryFetchInfo(), callback);
 }
 
