@@ -918,16 +918,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * @return Whether the ContentView is covered by an overlay that is more than half
-     *         of it's surface. This is used to determine if we need to do a slow bitmap capture or
-     *         to show the ContentView without them.
-     */
-    public boolean hasLargeOverlay() {
-        // TODO(nileshagrawal): Implement this.
-        return false;
-    }
-
-    /**
      * @return Whether the current WebContents has a previous navigation entry.
      */
     public boolean canGoBack() {
@@ -2430,14 +2420,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     public boolean isReady() {
         return nativeIsRenderWidgetHostViewReady(mNativeContentViewCore);
-    }
-
-    /**
-     * @return Whether or not the texture view is available or not.
-     */
-    public boolean isAvailable() {
-        // TODO(nileshagrawal): Implement this.
-        return false;
     }
 
     @CalledByNative

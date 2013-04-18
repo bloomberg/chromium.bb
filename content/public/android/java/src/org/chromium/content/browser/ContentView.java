@@ -23,11 +23,8 @@ import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
-
-import java.util.ArrayList;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
@@ -233,15 +230,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     public Bitmap getBitmap(int width, int height) {
         return mContentViewCore.getBitmap(width, height);
-    }
-
-    /**
-     * @return Whether the ContentView is covered by an overlay that is more than half
-     *         of it's surface. This is used to determine if we need to do a slow bitmap capture or
-     *         to show the ContentView without them.
-     */
-    public boolean hasLargeOverlay() {
-        return mContentViewCore.hasLargeOverlay();
     }
 
     /**
@@ -773,13 +761,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public boolean isReady() {
         return mContentViewCore.isReady();
-    }
-
-    /**
-     * @return Whether or not the texture view is available or not.
-     */
-    public boolean isAvailable() {
-        return mContentViewCore.isAvailable();
     }
 
     /**
