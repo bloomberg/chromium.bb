@@ -54,6 +54,12 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendInvalidEntryEnumeration();
   void BackendFixEnumerators();
   void BackendDoomRecent();
+
+  // Adds 5 sparse entries. |doomed_start| and |doomed_end| if not NULL,
+  // will be filled with times, used by DoomEntriesSince and DoomEntriesBetween.
+  // There are 4 entries after doomed_start and 2 after doomed_end.
+  void InitSparseCache(base::Time* doomed_start, base::Time* doomed_end);
+
   void BackendDoomBetween();
   void BackendTransaction(const std::string& name, int num_entries, bool load);
   void BackendRecoverInsert();
@@ -1334,6 +1340,101 @@ TEST_F(DiskCacheBackendTest, MemoryOnlyDoomRecent) {
   BackendDoomRecent();
 }
 
+void DiskCacheBackendTest::InitSparseCache(base::Time* doomed_start,
+                                           base::Time* doomed_end) {
+  InitCache();
+
+  const int kSize = 50;
+  // This must be greater then MemEntryImpl::kMaxSparseEntrySize.
+  const int kOffset = 10 + 1024 * 1024;
+
+  disk_cache::Entry* entry0 = NULL;
+  disk_cache::Entry* entry1 = NULL;
+  disk_cache::Entry* entry2 = NULL;
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  ASSERT_EQ(net::OK, CreateEntry("zeroth", &entry0));
+  ASSERT_EQ(kSize, WriteSparseData(entry0, 0, buffer.get(), kSize));
+  ASSERT_EQ(kSize,
+            WriteSparseData(entry0, kOffset + kSize, buffer.get(), kSize));
+  entry0->Close();
+
+  FlushQueueForTest();
+  AddDelay();
+  if (doomed_start)
+    *doomed_start = base::Time::Now();
+
+  // Order in rankings list:
+  // first_part1, first_part2, second_part1, second_part2
+  ASSERT_EQ(net::OK, CreateEntry("first", &entry1));
+  ASSERT_EQ(kSize, WriteSparseData(entry1, 0, buffer.get(), kSize));
+  ASSERT_EQ(kSize,
+            WriteSparseData(entry1, kOffset + kSize, buffer.get(), kSize));
+  entry1->Close();
+
+  ASSERT_EQ(net::OK, CreateEntry("second", &entry2));
+  ASSERT_EQ(kSize, WriteSparseData(entry2, 0, buffer.get(), kSize));
+  ASSERT_EQ(kSize,
+            WriteSparseData(entry2, kOffset + kSize, buffer.get(), kSize));
+  entry2->Close();
+
+  FlushQueueForTest();
+  AddDelay();
+  if (doomed_end)
+    *doomed_end = base::Time::Now();
+
+  // Order in rankings list:
+  // third_part1, fourth_part1, third_part2, fourth_part2
+  disk_cache::Entry* entry3 = NULL;
+  disk_cache::Entry* entry4 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry("third", &entry3));
+  ASSERT_EQ(kSize, WriteSparseData(entry3, 0, buffer.get(), kSize));
+  ASSERT_EQ(net::OK, CreateEntry("fourth", &entry4));
+  ASSERT_EQ(kSize, WriteSparseData(entry4, 0, buffer.get(), kSize));
+  ASSERT_EQ(kSize,
+            WriteSparseData(entry3, kOffset + kSize, buffer.get(), kSize));
+  ASSERT_EQ(kSize,
+            WriteSparseData(entry4, kOffset + kSize, buffer.get(), kSize));
+  entry3->Close();
+  entry4->Close();
+
+  FlushQueueForTest();
+  AddDelay();
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyDoomEntriesSinceSparse) {
+  SetMemoryOnlyMode();
+  base::Time start;
+  InitSparseCache(&start, NULL);
+  DoomEntriesSince(start);
+  EXPECT_EQ(1, cache_->GetEntryCount());
+}
+
+TEST_F(DiskCacheBackendTest, DoomEntriesSinceSparse) {
+  base::Time start;
+  InitSparseCache(&start, NULL);
+  DoomEntriesSince(start);
+  // NOTE: BackendImpl counts child entries in its GetEntryCount(), while
+  // MemBackendImpl does not. Thats why expected value differs here from
+  // MemoryOnlyDoomEntriesSinceSparse.
+  EXPECT_EQ(3, cache_->GetEntryCount());
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyDoomAllSparse) {
+  SetMemoryOnlyMode();
+  InitSparseCache(NULL, NULL);
+  EXPECT_EQ(net::OK, DoomAllEntries());
+  EXPECT_EQ(0, cache_->GetEntryCount());
+}
+
+TEST_F(DiskCacheBackendTest, DoomAllSparse) {
+  InitSparseCache(NULL, NULL);
+  EXPECT_EQ(net::OK, DoomAllEntries());
+  EXPECT_EQ(0, cache_->GetEntryCount());
+}
+
 void DiskCacheBackendTest::BackendDoomBetween() {
   InitCache();
 
@@ -1389,6 +1490,31 @@ TEST_F(DiskCacheBackendTest, NewEvictionDoomBetween) {
 TEST_F(DiskCacheBackendTest, MemoryOnlyDoomBetween) {
   SetMemoryOnlyMode();
   BackendDoomBetween();
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyDoomEntriesBetweenSparse) {
+  SetMemoryOnlyMode();
+  base::Time start, end;
+  InitSparseCache(&start, &end);
+  DoomEntriesBetween(start, end);
+  EXPECT_EQ(3, cache_->GetEntryCount());
+
+  start = end;
+  end = base::Time::Now();
+  DoomEntriesBetween(start, end);
+  EXPECT_EQ(1, cache_->GetEntryCount());
+}
+
+TEST_F(DiskCacheBackendTest, DoomEntriesBetweenSparse) {
+  base::Time start, end;
+  InitSparseCache(&start, &end);
+  DoomEntriesBetween(start, end);
+  EXPECT_EQ(9, cache_->GetEntryCount());
+
+  start = end;
+  end = base::Time::Now();
+  DoomEntriesBetween(start, end);
+  EXPECT_EQ(3, cache_->GetEntryCount());
 }
 
 void DiskCacheBackendTest::BackendTransaction(const std::string& name,
