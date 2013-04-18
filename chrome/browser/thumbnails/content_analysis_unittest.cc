@@ -470,7 +470,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargettedThumbnailImage) {
   EXPECT_LT(result.height(), image_size.height());
   // TODO(motek): this test is problematic/flaky on Win7. Investigate.
 #if !defined(OS_WIN)
-  int histogram[256];
+  int histogram[256] = {};
   color_utils::BuildLumaHistogram(result, histogram);
   int non_zero_color_count = std::count_if(
       histogram, histogram + 256, std::bind2nd(std::greater<int>(), 0));
