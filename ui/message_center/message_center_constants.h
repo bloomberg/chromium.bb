@@ -33,9 +33,10 @@ extern const int kMessageFontSize;  // For everything but title.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
-extern const SkColor kLegacyIconBackgroundColor;   // Used behind icons smaller
+extern const SkColor kLegacyIconBackgroundColor;   // Used behind icons smaller.
                                                    // than the icon view.
 extern const SkColor kRegularTextColor;            // Title, message, ...
+extern const SkColor kFocusBorderColor;            // The focus border.
 
 // Limits.
 extern const int kNotificationMaximumImageHeight;  // For image notifications.

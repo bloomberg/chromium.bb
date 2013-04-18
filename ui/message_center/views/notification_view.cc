@@ -256,6 +256,7 @@ class NotificationButton : public views::CustomButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::CustomButton:
   virtual void StateChanged() OVERRIDE;
@@ -322,6 +323,13 @@ int NotificationButton::GetHeightForWidth(int width) {
 
 void NotificationButton::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
+}
+
+void NotificationButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
+                     message_center::kFocusBorderColor);
+  }
 }
 
 void NotificationButton::StateChanged() {

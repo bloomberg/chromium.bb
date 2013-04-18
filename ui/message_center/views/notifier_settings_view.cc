@@ -51,6 +51,7 @@ class EntryView : public views::View {
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryView);
@@ -81,6 +82,13 @@ gfx::Size EntryView::GetPreferredSize() {
 
 void EntryView::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
+}
+
+void EntryView::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
+                     kFocusBorderColor);
+  }
 }
 
 // The separator line between the title and the scroll view. Currently

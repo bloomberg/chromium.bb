@@ -48,9 +48,6 @@ const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 const SkColor kFooterTextColor = SkColorSetRGB(0x80, 0x80, 0x80);
 const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x32, 0x32, 0x32);
 const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
-// The focus color and focus-border logic is copied from ash tray.
-// TODO(mukai): unite those implementations.
-const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 
 // PoorMessageCenterButtonBar //////////////////////////////////////////////////
 

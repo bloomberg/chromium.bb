@@ -30,6 +30,7 @@ const int kMessageFontSize = 12;
 const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);
 const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(230, 230, 230);
 const SkColor kRegularTextColor = SkColorSetRGB(51, 51, 51);
+const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 // Limits.
 const int kNotificationMaximumImageHeight = kNotificationWidth;

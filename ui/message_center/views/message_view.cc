@@ -55,6 +55,7 @@ class ControlButton : public views::ImageButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // The SetPadding() method also sets the button's image alignment (positive
   // values yield left/top alignments, negative values yield right/bottom ones,
@@ -132,6 +133,13 @@ void ControlButton::OnPaint(gfx::Canvas* canvas) {
 
 void ControlButton::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
+}
+
+void ControlButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
+                     message_center::kFocusBorderColor);
+  }
 }
 
 gfx::Point ControlButton::ComputePaddedImagePaintPosition(
