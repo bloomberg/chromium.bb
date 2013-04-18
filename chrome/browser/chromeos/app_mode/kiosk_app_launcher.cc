@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -231,8 +231,8 @@ void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
   // StartupAppLauncher deletes itself when done.
   (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
 
-  if (BaseLoginDisplayHost::default_host())
-    BaseLoginDisplayHost::default_host()->OnSessionStart();
+  if (LoginDisplayHostImpl::default_host())
+    LoginDisplayHostImpl::default_host()->OnSessionStart();
   UserManager::Get()->SessionStarted();
 
   ReportLaunchResult(KioskAppLaunchError::NONE);

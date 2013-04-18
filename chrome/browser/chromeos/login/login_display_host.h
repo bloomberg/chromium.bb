@@ -21,8 +21,8 @@ namespace chromeos {
 class WizardController;
 
 // An interface that defines OOBE/login screen host.
-// Host encapsulates implementation specific background window (views/WebUI),
-// OOBE/login controllers, views/WebUI UI implementation (such as LoginDisplay).
+// Host encapsulates WebUI window OOBE/login controllers,
+// UI implementation (such as LoginDisplay).
 class LoginDisplayHost {
  public:
   virtual ~LoginDisplayHost() {}

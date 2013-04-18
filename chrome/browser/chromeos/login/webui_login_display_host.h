@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -24,7 +24,7 @@ class WebUILoginView;
 
 // WebUI-specific implementation of the OOBE/login screen host. Uses
 // WebUILoginDisplay as the login screen UI implementation,
-class WebUILoginDisplayHost : public BaseLoginDisplayHost,
+class WebUILoginDisplayHost : public LoginDisplayHostImpl,
                               public content::WebContentsObserver {
  public:
   explicit WebUILoginDisplayHost(const gfx::Rect& background_bounds);
@@ -44,7 +44,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   virtual void StartSignInScreen() OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
 
-  // BaseLoginDisplayHost overrides:
+  // LoginDisplayHostImpl overrides:
   virtual WizardController* CreateWizardController() OVERRIDE;
   virtual void OnBrowserCreated() OVERRIDE;
 

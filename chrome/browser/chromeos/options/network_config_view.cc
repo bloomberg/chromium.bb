@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "chrome/browser/chromeos/options/wimax_config_view.h"
@@ -39,8 +39,8 @@ using views::Widget;
 namespace {
 
 gfx::NativeWindow GetDialogParent() {
-  if (chromeos::BaseLoginDisplayHost::default_host()) {
-    return chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
+  if (chromeos::LoginDisplayHostImpl::default_host()) {
+    return chromeos::LoginDisplayHostImpl::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(),

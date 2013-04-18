@@ -22,8 +22,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -1081,7 +1081,7 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(::switches::kEnableManagedUsers))
     return;
-  BaseLoginDisplayHost::default_host()->
+  LoginDisplayHostImpl::default_host()->
       StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
       NULL);
 }
@@ -1212,7 +1212,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
-  bool is_signin_to_add = BaseLoginDisplayHost::default_host() &&
+  bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
       UserManager::Get()->IsUserLoggedIn();
 
   bool single_user = users.size() == 1;
@@ -1359,7 +1359,7 @@ void SigninScreenHandler::HandleCreateAccount() {
 }
 
 void SigninScreenHandler::HandleOpenProxySettings() {
-  BaseLoginDisplayHost::default_host()->OpenProxySettings();
+  LoginDisplayHostImpl::default_host()->OpenProxySettings();
 }
 
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {

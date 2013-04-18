@@ -61,7 +61,7 @@ const char kWebUIInitPostpone[] = "postpone";
 // WebUILoginDisplayHost -------------------------------------------------------
 
 WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
-    : BaseLoginDisplayHost(background_bounds),
+    : LoginDisplayHostImpl(background_bounds),
       login_window_(NULL),
       login_view_(NULL),
       webui_login_display_(NULL),
@@ -196,7 +196,7 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
 
-  BaseLoginDisplayHost::StartWizard(first_screen_name,
+  LoginDisplayHostImpl::StartWizard(first_screen_name,
                                     scoped_parameters.release());
 }
 
@@ -213,7 +213,7 @@ void WebUILoginDisplayHost::StartSignInScreen() {
   if (!login_window_)
     LoadURL(GURL(kLoginURL));
 
-  BaseLoginDisplayHost::StartSignInScreen();
+  LoginDisplayHostImpl::StartSignInScreen();
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(webui_login_display_, webui_login_display_);
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
@@ -266,7 +266,7 @@ void WebUILoginDisplayHost::Observe(
                       chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
   } else {
-    BaseLoginDisplayHost::Observe(type, source, details);
+    LoginDisplayHostImpl::Observe(type, source, details);
   }
 }
 

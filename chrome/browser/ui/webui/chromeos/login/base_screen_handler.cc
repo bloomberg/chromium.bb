@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -86,7 +86,7 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
 }
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
-  return BaseLoginDisplayHost::default_host()->GetNativeWindow();
+  return LoginDisplayHostImpl::default_host()->GetNativeWindow();
 }
 
 }  // namespace chromeos

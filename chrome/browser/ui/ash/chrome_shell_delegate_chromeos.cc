@@ -136,7 +136,7 @@ void ChromeShellDelegate::ToggleSpokenFeedback(
 
   chromeos::WebUILoginDisplayHost* host =
       static_cast<chromeos::WebUILoginDisplayHost*>(
-          chromeos::BaseLoginDisplayHost::default_host());
+          chromeos::LoginDisplayHostImpl::default_host());
   if (host && host->GetOobeUI())
     web_ui = host->GetOobeUI()->web_ui();
 

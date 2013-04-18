@@ -54,9 +54,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -957,7 +957,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ChangeProxySettings() OVERRIDE {
     CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
-    BaseLoginDisplayHost::default_host()->OpenProxySettings();
+    LoginDisplayHostImpl::default_host()->OpenProxySettings();
   }
 
   virtual ash::VolumeControlDelegate*

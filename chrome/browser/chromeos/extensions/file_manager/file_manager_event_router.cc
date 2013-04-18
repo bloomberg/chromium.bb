@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
@@ -719,7 +719,7 @@ void FileManagerEventRouter::ShowRemovableDeviceInFileManager(
     const DiskMountManager::Disk& disk, const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.
-  if (chromeos::BaseLoginDisplayHost::default_host() ||
+  if (chromeos::LoginDisplayHostImpl::default_host() ||
       chromeos::ScreenLocker::default_screen_locker())
     return;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
@@ -110,12 +110,12 @@ ui::Layer* GetLayer(views::Widget* widget) {
 namespace chromeos {
 
 // static
-LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
+LoginDisplayHost* LoginDisplayHostImpl::default_host_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
-// BaseLoginDisplayHost, public
+// LoginDisplayHostImpl, public
 
-BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
+LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
       ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)),
       shutting_down_(false),
@@ -148,7 +148,7 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   chrome::StartKeepAlive();
 }
 
-BaseLoginDisplayHost::~BaseLoginDisplayHost() {
+LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   // Let chrome process exit after login/oobe screen if needed.
   chrome::EndKeepAlive();
 
@@ -156,13 +156,13 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BaseLoginDisplayHost, LoginDisplayHost implementation:
+// LoginDisplayHostImpl, LoginDisplayHost implementation:
 
-void BaseLoginDisplayHost::BeforeSessionStart() {
+void LoginDisplayHostImpl::BeforeSessionStart() {
   session_starting_ = true;
 }
 
-void BaseLoginDisplayHost::OnSessionStart() {
+void LoginDisplayHostImpl::OnSessionStart() {
   DVLOG(1) << "Session starting";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
@@ -174,14 +174,14 @@ void BaseLoginDisplayHost::OnSessionStart() {
   ShutdownDisplayHost(false);
 }
 
-void BaseLoginDisplayHost::OnCompleteLogin() {
+void LoginDisplayHostImpl::OnCompleteLogin() {
   // Cancelling the |auto_enrollment_client_| now allows it to determine whether
   // its protocol finished before login was complete.
   if (auto_enrollment_client_.get())
     auto_enrollment_client_.release()->CancelAndDeleteSoon();
 }
 
-void BaseLoginDisplayHost::StartWizard(
+void LoginDisplayHostImpl::StartWizard(
     const std::string& first_screen_name,
     DictionaryValue* screen_parameters) {
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
@@ -197,7 +197,7 @@ void BaseLoginDisplayHost::StartWizard(
   wizard_controller_->Init(first_screen_name, screen_parameters);
 }
 
-void BaseLoginDisplayHost::StartSignInScreen() {
+void LoginDisplayHostImpl::StartSignInScreen() {
   DVLOG(1) << "Starting sign in screen";
   const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
 
@@ -234,11 +234,11 @@ void BaseLoginDisplayHost::StartSignInScreen() {
       kPolicyServiceInitializationDelayMilliseconds);
 }
 
-WizardController* BaseLoginDisplayHost::GetWizardController() {
+WizardController* LoginDisplayHostImpl::GetWizardController() {
   return wizard_controller_.get();
 }
 
-void BaseLoginDisplayHost::ResumeSignInScreen() {
+void LoginDisplayHostImpl::ResumeSignInScreen() {
   // We only get here after a previous call the StartSignInScreen. That sign-in
   // was successful but was interrupted by an auto-enrollment execution; once
   // auto-enrollment is complete we resume the normal login flow from here.
@@ -250,7 +250,7 @@ void BaseLoginDisplayHost::ResumeSignInScreen() {
   sign_in_controller_->ResumeLogin();
 }
 
-void BaseLoginDisplayHost::CheckForAutoEnrollment() {
+void LoginDisplayHostImpl::CheckForAutoEnrollment() {
   // This method is called when the controller determines that the
   // auto-enrollment check can start. This happens either after the EULA is
   // accepted, or right after a reboot if the EULA has already been accepted.
@@ -263,14 +263,14 @@ void BaseLoginDisplayHost::CheckForAutoEnrollment() {
   // Start by checking if the device has already been owned.
   pointer_factory_.InvalidateWeakPtrs();
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&BaseLoginDisplayHost::OnOwnershipStatusCheckDone,
+      base::Bind(&LoginDisplayHostImpl::OnOwnershipStatusCheckDone,
                  pointer_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BaseLoginDisplayHost, content:NotificationObserver implementation:
+// LoginDisplayHostImpl, content:NotificationObserver implementation:
 
-void BaseLoginDisplayHost::Observe(
+void LoginDisplayHostImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -298,7 +298,7 @@ void BaseLoginDisplayHost::Observe(
   }
 }
 
-void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
+void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   if (shutting_down_)
     return;
 
@@ -309,7 +309,7 @@ void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
     MessageLoop::current()->Quit();
 }
 
-void BaseLoginDisplayHost::StartAnimation() {
+void LoginDisplayHostImpl::StartAnimation() {
   if (ash::Shell::GetContainer(
           ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_DesktopBackgroundContainer)->
@@ -324,7 +324,7 @@ void BaseLoginDisplayHost::StartAnimation() {
     ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
 }
 
-void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
+void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status,
     bool current_user_is_owner) {
   if (status != DeviceSettingsService::OWNERSHIP_NONE) {
@@ -350,13 +350,13 @@ void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
   } else {
     VLOG(1) << "CheckForAutoEnrollment: starting auto-enrollment client";
     auto_enrollment_client_.reset(policy::AutoEnrollmentClient::Create(
-        base::Bind(&BaseLoginDisplayHost::OnAutoEnrollmentClientDone,
+        base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentClientDone,
                    base::Unretained(this))));
     auto_enrollment_client_->Start();
   }
 }
 
-void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
+void LoginDisplayHostImpl::OnAutoEnrollmentClientDone() {
   bool auto_enroll = auto_enrollment_client_->should_auto_enroll();
   VLOG(1) << "OnAutoEnrollmentClientDone, decision is " << auto_enroll;
 
@@ -364,7 +364,7 @@ void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
     ForceAutoEnrollment();
 }
 
-void BaseLoginDisplayHost::ForceAutoEnrollment() {
+void LoginDisplayHostImpl::ForceAutoEnrollment() {
   if (sign_in_controller_.get())
     sign_in_controller_->DoAutoEnrollment();
 }

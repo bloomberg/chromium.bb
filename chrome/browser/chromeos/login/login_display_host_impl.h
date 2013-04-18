@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_BASE_LOGIN_DISPLAY_HOST_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_BASE_LOGIN_DISPLAY_HOST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_DISPLAY_HOST_IMPL_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_DISPLAY_HOST_IMPL_H_
 
 #include <string>
 
@@ -28,13 +28,13 @@ namespace chromeos {
 class ExistingUserController;
 class WizardController;
 
-// An abstract base class that defines OOBE/login screen host.
+// An implementation class for OOBE/login screen host.
 // It encapsulates controllers, background integration and flow.
-class BaseLoginDisplayHost : public LoginDisplayHost,
+class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::NotificationObserver {
  public:
-  explicit BaseLoginDisplayHost(const gfx::Rect& background_bounds);
-  virtual ~BaseLoginDisplayHost();
+  explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
+  virtual ~LoginDisplayHostImpl();
 
   // Returns the default LoginDispalyHost instance if it has been created.
   static LoginDisplayHost* default_host() {
@@ -91,7 +91,7 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<BaseLoginDisplayHost> pointer_factory_;
+  base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
 
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
@@ -116,9 +116,9 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // True if session start is in progress.
   bool session_starting_;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
+  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_BASE_LOGIN_DISPLAY_HOST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_DISPLAY_HOST_IMPL_H_

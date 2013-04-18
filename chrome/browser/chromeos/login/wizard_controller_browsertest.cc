@@ -7,11 +7,11 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   MockConsumer mock_consumer;
 
   // Must have a pending signin to resume after auto-enrollment:
-  BaseLoginDisplayHost::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen();
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->DoAutoEnrollment();
   ExistingUserController::current_controller()->set_login_status_consumer(
@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
 
-  BaseLoginDisplayHost::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen();
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->OnStartDeviceReset();
 
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
 
-  BaseLoginDisplayHost::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen();
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->ShowWrongHWIDScreen();
 

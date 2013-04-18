@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
   MessageLoop::current()->DeleteSoon(
-      FROM_HERE, chromeos::BaseLoginDisplayHost::default_host());
+      FROM_HERE, chromeos::LoginDisplayHostImpl::default_host());
 }
 
 // Verifies that the webui for login comes up successfully.

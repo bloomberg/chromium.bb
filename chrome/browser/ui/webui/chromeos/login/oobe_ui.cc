@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -325,7 +325,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // 1. Out-of-box / login
   // 2. Lock screen.
   // 3. Multi-profiles sign in (add user to current session).
-  if (BaseLoginDisplayHost::default_host()) {
+  if (LoginDisplayHostImpl::default_host()) {
     if (!UserManager::Get()->IsUserLoggedIn())
       localized_strings->SetString("screenType", "login");
     else

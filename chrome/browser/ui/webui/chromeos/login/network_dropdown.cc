@@ -8,8 +8,8 @@
 
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
@@ -135,11 +135,11 @@ void NetworkDropdown::OnItemChosen(int id) {
 }
 
 gfx::NativeWindow NetworkDropdown::GetNativeWindow() const {
-  return BaseLoginDisplayHost::default_host()->GetNativeWindow();
+  return LoginDisplayHostImpl::default_host()->GetNativeWindow();
 }
 
 void NetworkDropdown::OpenButtonOptions() {
-  BaseLoginDisplayHost::default_host()->OpenProxySettings();
+  LoginDisplayHostImpl::default_host()->OpenProxySettings();
 }
 
 bool NetworkDropdown::ShouldOpenButtonOptions() const {
