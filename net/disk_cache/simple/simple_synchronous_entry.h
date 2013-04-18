@@ -6,10 +6,12 @@
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_SYNCHRONOUS_ENTRY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/task_runner.h"
 #include "base/time.h"
@@ -63,6 +65,13 @@ class SimpleSynchronousEntry {
                         base::SingleThreadTaskRunner* callback_runner,
                         const net::CompletionCallback& callback);
 
+  // Like |DoomEntry()| above. Deletes all entries corresponding to the
+  // |key_hashes|. Succeeds only when all entries are deleted.
+  static void DoomEntrySet(scoped_ptr<std::vector<uint64> > key_hashes,
+                           const base::FilePath& path,
+                           base::SingleThreadTaskRunner* callback_runner,
+                           const net::CompletionCallback& callback);
+
   // N.B. Close(), ReadData() and WriteData() may block on IO.
   void Close();
   void ReadData(int index,
@@ -105,6 +114,9 @@ class SimpleSynchronousEntry {
   int InitializeForCreate();
 
   void Doom();
+
+  static bool DeleteFilesForEntry(const base::FilePath& path,
+                                  const std::string& key);
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   const base::FilePath path_;

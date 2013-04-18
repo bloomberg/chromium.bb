@@ -33,7 +33,8 @@ namespace disk_cache {
 
 class SimpleIndex;
 
-class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
+class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
+    public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
   SimpleBackendImpl(const base::FilePath& path, int max_bytes,
                     net::CacheType type,
@@ -72,6 +73,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
 
   // Must run on IO Thread.
   void InitializeIndex(const CompletionCallback& callback, int result);
+
+  // Dooms all entries previously accessed between |initial_time| and
+  // |end_time|. Invoked when the index is ready.
+  void IndexReadyForDoom(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback,
+                         int result);
 
   // Try to create the directory if it doesn't exist.
   // Must run on Cache Thread.

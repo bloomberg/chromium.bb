@@ -2899,4 +2899,16 @@ TEST_F(DiskCacheBackendTest, SimpleOpenBadFile) {
   ASSERT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
 }
 
+TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
+  SetSimpleCacheMode();
+  InitCache();
+  BackendDoomRecent();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
+  SetSimpleCacheMode();
+  InitCache();
+  BackendDoomBetween();
+}
+
 #endif  // !defined(OS_WIN)

@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_synchronous_entry.h"
 
 using base::FilePath;
 using base::MessageLoopProxy;
@@ -72,8 +73,8 @@ net::CacheType SimpleBackendImpl::GetCacheType() const {
 }
 
 int32 SimpleBackendImpl::GetEntryCount() const {
-  NOTIMPLEMENTED();
-  return 0;
+  // TODO(pasko): Use directory file count when index is not ready.
+  return index_->GetEntryCount();
 }
 
 int SimpleBackendImpl::OpenEntry(const std::string& key,
@@ -95,23 +96,41 @@ int SimpleBackendImpl::DoomEntry(const std::string& key,
 }
 
 int SimpleBackendImpl::DoomAllEntries(const CompletionCallback& callback) {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  return DoomEntriesBetween(Time(), Time(), callback);
+}
+
+void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
+                                          Time end_time,
+                                          const CompletionCallback& callback,
+                                          int result) {
+  if (result != net::OK) {
+    callback.Run(result);
+    return;
+  }
+  scoped_ptr<std::vector<uint64> > key_hashes(
+      index_->RemoveEntriesBetween(initial_time, end_time).release());
+  WorkerPool::PostTask(FROM_HERE,
+                       base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                                  base::Passed(&key_hashes),
+                                  path_,
+                                  MessageLoopProxy::current(),
+                                  callback),
+                       true);
 }
 
 int SimpleBackendImpl::DoomEntriesBetween(
     const Time initial_time,
     const Time end_time,
     const CompletionCallback& callback) {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  return index_->ExecuteWhenReady(
+      base::Bind(&SimpleBackendImpl::IndexReadyForDoom, AsWeakPtr(),
+                 initial_time, end_time, callback));
 }
 
 int SimpleBackendImpl::DoomEntriesSince(
     const Time initial_time,
     const CompletionCallback& callback) {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  return DoomEntriesBetween(initial_time, Time(), callback);
 }
 
 int SimpleBackendImpl::OpenNextEntry(void** iter,
@@ -131,7 +150,7 @@ void SimpleBackendImpl::GetStats(
 }
 
 void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
-  NOTIMPLEMENTED();
+  index_->UseIfExists(key);
 }
 
 void SimpleBackendImpl::InitializeIndex(

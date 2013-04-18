@@ -40,6 +40,9 @@ using base::WritePlatformFile;
 
 namespace disk_cache {
 
+using simple_util::ConvertEntryHashKeyToHexString;
+using simple_util::GetEntryHashKeyAsHexString;
+using simple_util::GetFilenameFromHexStringAndIndex;
 using simple_util::GetFilenameFromKeyAndIndex;
 using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
@@ -82,18 +85,47 @@ void SimpleSynchronousEntry::CreateEntry(
 }
 
 // static
+bool SimpleSynchronousEntry::DeleteFilesForEntry(const FilePath& path,
+                                                 const std::string& hash_key) {
+  bool result = true;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    FilePath to_delete = path.AppendASCII(
+        GetFilenameFromHexStringAndIndex(hash_key, i));
+    if (!file_util::Delete(to_delete, false)) {
+      result = false;
+      DLOG(ERROR) << "Could not delete " << to_delete.MaybeAsASCII();
+    }
+  }
+  return result;
+}
+
+// static
 void SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
     SingleThreadTaskRunner* callback_runner,
     const net::CompletionCallback& callback) {
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath to_delete = path.AppendASCII(GetFilenameFromKeyAndIndex(key, i));
-    bool ALLOW_UNUSED result = file_util::Delete(to_delete, false);
-    DLOG_IF(ERROR, !result) << "Could not delete " << to_delete.MaybeAsASCII();
-  }
+  bool deleted_well = DeleteFilesForEntry(path,
+                                          GetEntryHashKeyAsHexString(key));
+  int result = deleted_well ? net::OK : net::ERR_FAILED;
   if (!callback.is_null())
-    callback_runner->PostTask(FROM_HERE, base::Bind(callback, net::OK));
+    callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
+}
+
+// static
+void SimpleSynchronousEntry::DoomEntrySet(
+    scoped_ptr<std::vector<uint64> > key_hashes,
+    const FilePath& path,
+    SingleThreadTaskRunner* callback_runner,
+    const net::CompletionCallback& callback) {
+  bool deleted_well = true;
+  for (std::vector<uint64>::const_iterator it = key_hashes->begin(),
+       end = key_hashes->end(); it != end; ++it)
+    deleted_well &= DeleteFilesForEntry(path,
+                                        ConvertEntryHashKeyToHexString((*it)));
+  int result = deleted_well ? net::OK : net::ERR_FAILED;
+  if (!callback.is_null())
+    callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 void SimpleSynchronousEntry::Close() {
@@ -301,8 +333,7 @@ int SimpleSynchronousEntry::InitializeForCreate() {
 
 void SimpleSynchronousEntry::Doom() {
   // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
-  DoomEntry(path_, key_,
-            scoped_refptr<SingleThreadTaskRunner>(), net::CompletionCallback());
+  DeleteFilesForEntry(path_, GetEntryHashKeyAsHexString(key_));
 }
 
 }  // namespace disk_cache

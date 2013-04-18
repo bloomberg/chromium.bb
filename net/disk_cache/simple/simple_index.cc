@@ -91,6 +91,12 @@ SimpleIndex::SimpleIndex(
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+  // Fail all callbacks waiting for the index to come up.
+  for (CallbackList::iterator it = to_run_when_initialized_.begin(),
+       end = to_run_when_initialized_.end(); it != end; ++it) {
+    it->Run(net::ERR_ABORTED);
+  }
 }
 
 void SimpleIndex::Initialize() {
@@ -103,6 +109,41 @@ void SimpleIndex::Initialize() {
                                         io_thread_,
                                         merge_callback),
                              true);
+}
+
+int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (initialized_)
+    io_thread_->PostTask(FROM_HERE, base::Bind(task, net::OK));
+  else
+    to_run_when_initialized_.push_back(task);
+  return net::ERR_IO_PENDING;
+}
+
+scoped_ptr<std::vector<uint64> > SimpleIndex::RemoveEntriesBetween(
+    const base::Time initial_time, const base::Time end_time) {
+  DCHECK_EQ(true, initialized_);
+  const base::Time extended_end_time =
+      end_time.is_null() ? base::Time::Max() : end_time;
+  DCHECK(extended_end_time >= initial_time);
+  scoped_ptr<std::vector<uint64> > ret_hashes(new std::vector<uint64>());
+  for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
+       it != end;) {
+    EntryMetadata metadata = it->second;
+    base::Time entry_time = metadata.GetLastUsedTime();
+    if (initial_time <= entry_time && entry_time < extended_end_time) {
+      ret_hashes->push_back(metadata.GetHashKey());
+      entries_set_.erase(it++);
+    } else {
+      it++;
+    }
+  }
+  return ret_hashes.Pass();
+}
+
+int32 SimpleIndex::GetEntryCount() const {
+  // TODO(pasko): return a meaningful initial estimate before initialized.
+  return entries_set_.size();
 }
 
 void SimpleIndex::Insert(const std::string& key) {
@@ -313,6 +354,13 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   // much the merge.
   if (force_index_flush)
     WriteToDisk();
+
+  // Run all callbacks waiting for the index to come up.
+  for (CallbackList::iterator it = to_run_when_initialized_.begin(),
+       end = to_run_when_initialized_.end(); it != end; ++it) {
+    io_thread_->PostTask(FROM_HERE, base::Bind((*it), net::OK));
+  }
+  to_run_when_initialized_.clear();
 }
 
 void SimpleIndex::WriteToDisk() {

@@ -5,8 +5,9 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 
-#include <map>
+#include <list>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -18,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
 class Pickle;
@@ -104,6 +106,20 @@ class NET_EXPORT_PRIVATE SimpleIndex
   static void InsertInEntrySet(const EntryMetadata& entry_metadata,
                                EntrySet* entry_set);
 
+  // Executes the |callback| when the index is ready. Allows multiple callbacks.
+  int ExecuteWhenReady(const net::CompletionCallback& callback);
+
+  // Takes out entries from the index that have last accessed time matching the
+  // range between |initial_time| and |end_time| where open intervals are
+  // possible according to the definition given in |DoomEntriesBetween()| in the
+  // disk cache backend interface. Returns the set of hashes taken out.
+  scoped_ptr<std::vector<uint64> > RemoveEntriesBetween(
+      const base::Time initial_time,
+      const base::Time end_time);
+
+  // Returns number of indexed entries.
+  int32 GetEntryCount() const;
+
  private:
   typedef base::Callback<void(scoped_ptr<EntrySet>, bool force_index_flush)>
       IndexCompletionCallback;
@@ -148,6 +164,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // has been a while since last time we wrote.
   base::Time last_write_to_disk_;
   base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
+
+  typedef std::list<net::CompletionCallback> CallbackList;
+  CallbackList to_run_when_initialized_;
 };
 
 }  // namespace disk_cache

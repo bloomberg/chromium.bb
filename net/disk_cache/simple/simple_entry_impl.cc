@@ -39,22 +39,22 @@ int SimpleEntryImpl::OpenEntry(SimpleIndex* index,
                                const std::string& key,
                                Entry** entry,
                                const CompletionCallback& callback) {
-  // TODO(gavinp): More closely unify the last_used_ in the
-  // SimpleSynchronousEntry  and the SimpleIndex.
-  if (!index || index->UseIfExists(key)) {
-    scoped_refptr<SimpleEntryImpl> new_entry =
-        new SimpleEntryImpl(index, path, key);
-    SynchronousCreationCallback sync_creation_callback =
-        base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                   new_entry, entry, callback);
-    WorkerPool::PostTask(FROM_HERE,
-                         base::Bind(&SimpleSynchronousEntry::OpenEntry, path,
-                                    key, MessageLoopProxy::current(),
-                                    sync_creation_callback),
-                         true);
-    return net::ERR_IO_PENDING;
-  }
-  return net::ERR_FAILED;
+  // If entry is not known to the index, initiate fast failover to the network.
+  if (index && !index->Has(key))
+    return net::ERR_FAILED;
+
+  // Go down to the disk to find the entry.
+  scoped_refptr<SimpleEntryImpl> new_entry =
+      new SimpleEntryImpl(index, path, key);
+  SynchronousCreationCallback sync_creation_callback =
+      base::Bind(&SimpleEntryImpl::CreationOperationComplete,
+                 new_entry, entry, callback);
+  WorkerPool::PostTask(FROM_HERE,
+                       base::Bind(&SimpleSynchronousEntry::OpenEntry, path,
+                                  key, MessageLoopProxy::current(),
+                                  sync_creation_callback),
+                       true);
+  return net::ERR_IO_PENDING;
 }
 
 // static
