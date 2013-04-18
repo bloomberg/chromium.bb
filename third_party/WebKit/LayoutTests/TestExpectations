@@ -176,12 +176,6 @@ crbug.com/89468 webkit.org/b/82122 css3/selectors3/xml/css3-modsel-d2.xml [ Fail
 crbug.com/89468 webkit.org/b/82122 css3/selectors3/xml/css3-modsel-d3.xml [ Failure ImageOnlyFailure ]
 crbug.com/89468 webkit.org/b/82122 css3/selectors3/xml/css3-modsel-d4.xml [ Failure ImageOnlyFailure ]
 
-# Chrome does not support WebArchives yet.
-crbug.com/10395 webarchive
-crbug.com/10395 svg/webarchive
-crbug.com/10395 svg/custom/image-with-prefix-in-webarchive.svg
-crbug.com/10395 http/tests/webarchive
-
 # This will soon be fixed after implementing webkitLineDash for V8.
 webkit.org/b/63933 fast/canvas/canvas-webkitLineDash.html [ Failure ]
 webkit.org/b/63933 fast/canvas/canvas-webkitLineDash-invalid.html [ Failure ]
