@@ -1269,6 +1269,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
   },
   {
+    "enable-websocket-experimental-implementation",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebSocket)
+  },
+  {
     "max-tiles-for-interest-area",
     IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME,
     IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION,

@@ -6532,6 +6532,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION" desc="Description for the flag to enable experimantal form filling feature">
         Enable experimental form filling. Enables a collection of experimental features that make form filling easier.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_NAME" desc="Name of the flag that enables experimental WebSocket implementation in chrome/net">
+        Enable experimental WebSocket implementation
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_DESCRIPTION" desc="Description for the flag to enable experimental WebSocket implementation in chrome/net">
+        Use the explemental WebSocket implementation.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_NAME" desc="Title for the flag to enable using production Online Wallet.">
         Enable Online Wallet production service
       </message>
