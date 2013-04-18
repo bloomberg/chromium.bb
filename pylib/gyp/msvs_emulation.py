@@ -725,9 +725,11 @@ def _FormatAsEnvironmentBlock(envvar_dict):
   return block
 
 def _ExtractCLPath(output_of_where):
-  """Gets the path to cl.exe based on the output of `where`."""
+  """Gets the path to cl.exe based on the output of `set && where`."""
   # Take the first line, as that's the first found in the PATH.
-  return output_of_where.strip().splitlines()[0].strip()
+  for line in output_of_where.strip().splitlines():
+    if line.startswith('LOC:'):
+      return line[4:].strip()
 
 def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   """It's not sufficient to have the absolute path to the compiler, linker,
@@ -764,7 +766,7 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
     # Find cl.exe location for this architecture.
     args = vs.SetupScript(arch)
     args.extend(('&&',
-      'for', '%i', 'in', '(cl.exe)', 'do', '@echo', '%~$PATH:i'))
+      'for', '%i', 'in', '(cl.exe)', 'do', '@echo', 'LOC:%~$PATH:i'))
     popen = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE)
     output, _ = popen.communicate()
     cl_paths[arch] = _ExtractCLPath(output)
