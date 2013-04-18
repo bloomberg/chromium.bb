@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: The 'X-WebKit-CSP' header is deprecated. Please consider using the unprefixed 'Content-Security-Policy' header instead.
+CONSOLE MESSAGE: line 9: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src http://127.0.0.1:*".
+
+This test passes if it doesn't alert fail, and a deprecation warning is presented in the console.

@@ -1461,6 +1461,9 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
             UseCounter::observe(document->domWindow(), getUseCounterType(type));
     }
 
+    if (type == PrefixedReport || type == PrefixedEnforce)
+        reportDeprecatedHeader(type);
+
     // RFC2616, section 4.2 specifies that headers appearing multiple times can
     // be combined with a comma. Walk the header string, and parse each comma
     // separated chunk as a separate header.
@@ -1799,6 +1802,12 @@ void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
         message = policyURIMessage;
 
     logToConsole(message);
+}
+
+void ContentSecurityPolicy::reportDeprecatedHeader(HeaderType type) const
+{
+    ASSERT(type == PrefixedEnforce || type == PrefixedReport);
+    logToConsole(makeString("The '", type == PrefixedEnforce ? "X-WebKit-CSP" : "X-WebKit-CSP-Report-Only", "' header is deprecated. Please consider using the unprefixed '", type == PrefixedEnforce ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only", "' header instead."));
 }
 
 void ContentSecurityPolicy::reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression) const
