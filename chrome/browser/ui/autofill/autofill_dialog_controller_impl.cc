@@ -797,7 +797,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
       return scoped_ptr<DataModelWrapper>(
           new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
     }
-    // TODO(dbeam): should SECTION_EMAIL get here?
+    // TODO(dbeam): should SECTION_EMAIL get here? http://crbug.com/223923
     return scoped_ptr<DataModelWrapper>(
         new WalletAddressWrapper(wallet_items_->addresses()[index]));
   }
@@ -1431,7 +1431,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   legal_documents_text_.clear();
   legal_document_link_ranges_.clear();
 
-  // TODO(dbeam): verify all items support kCartCurrency?
+  // TODO(dbeam): verify items support kCartCurrency? http://crbug.com/232952
   wallet_items_ = wallet_items.Pass();
   OnWalletOrSigninUpdate();
 }
@@ -1439,7 +1439,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 void AutofillDialogControllerImpl::OnDidSaveAddress(
     const std::string& address_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
-  // TODO(dbeam): handle required actions.
+  // TODO(dbeam): handle required actions. http://crbug.com/163508
   active_address_id_ = address_id;
   GetFullWallet();
 }
@@ -1449,7 +1449,7 @@ void AutofillDialogControllerImpl::OnDidSaveInstrument(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
-  // TODO(dbeam): handle required actions.
+  // TODO(dbeam): handle required actions. http://crbug.com/163508
   active_instrument_id_ = instrument_id;
   GetFullWallet();
 }
@@ -1460,7 +1460,7 @@ void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
-  // TODO(dbeam): handle required actions.
+  // TODO(dbeam): handle required actions. http://crbug.com/163508
   active_instrument_id_ = instrument_id;
   active_address_id_ = address_id;
   GetFullWallet();
@@ -1471,7 +1471,7 @@ void AutofillDialogControllerImpl::OnDidUpdateAddress(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
-  // TODO(dbeam): Handle this callback.
+  // TODO(dbeam): Handle this callback. http://crbug.com/163508
   NOTIMPLEMENTED() << " address_id=" << address_id;
 }
 
@@ -1480,12 +1480,12 @@ void AutofillDialogControllerImpl::OnDidUpdateInstrument(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
-  // TODO(dbeam): handle required actions.
+  // TODO(dbeam): handle required actions. http://crbug.com/163508
 }
 
 void AutofillDialogControllerImpl::OnWalletError(
     wallet::WalletClient::ErrorType error_type) {
-  // TODO(dbeam): Do something with |error_type|.
+  // TODO(dbeam): Do something with |error_type|. http://crbug.com/164410
   DisableWallet();
 }
 
@@ -1637,7 +1637,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<wallet::Address*>& addresses =
         wallet_items_->addresses();
     for (size_t i = 0; i < addresses.size(); ++i) {
-      // TODO(dbeam): respect wallet_items_->default_instrument_id().
+      // TODO(dbeam): respect the default instrument ID. http://crbug.com/232954
       suggested_shipping_.AddKeyedItemWithSublabel(
           base::IntToString(i),
           addresses[i]->DisplayName(),
@@ -1648,7 +1648,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
           wallet_items_->instruments();
       for (size_t i = 0; i < instruments.size(); ++i) {
-        // TODO(dbeam): respect wallet_items_->default_address_id().
+        // TODO(dbeam): respect the default address ID. http://crbug.com/232954
         suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
             base::IntToString(i),
             instruments[i]->DisplayName(),
@@ -1865,9 +1865,9 @@ void AutofillDialogControllerImpl::HidePopup() {
 
 void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   // TODO(dbeam): Add a CHECK or otherwise strong guarantee that the ToS have
-  // been accepted prior to calling into this method.  Also, ensure that the UI
+  // been accepted prior to calling into this method. Also, ensure that the UI
   // contains a clear indication to the user as to what data will be collected.
-  // Until then, this code should not be called.
+  // Until then, this code should not be called. http://crbug.com/173505
 
   int64 gaia_id = 0;
   bool success =
@@ -1965,6 +1965,7 @@ void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
 
 void AutofillDialogControllerImpl::SubmitWithWallet() {
   // TODO(dbeam): disallow interacting with the dialog while submitting.
+  // http://crbug.com/230932
 
   active_instrument_id_.clear();
   active_address_id_.clear();
@@ -1980,7 +1981,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
           wallet_items_->instruments()[billing->checked_item()];
       active_instrument_id_ = active_instrument->object_id();
 
-      // TODO(dbeam): does re-using instrument address IDs work?
+      // TODO(dbeam): save this as a shipping address. http://crbug.com/225442
       if (ShouldUseBillingForShipping())
         active_address_id_ = active_instrument->address().object_id();
     }
