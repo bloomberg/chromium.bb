@@ -126,7 +126,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
   @_DependencyMockCtx
   def UpdateDefaultVersion(self, inst, *_args, **_kwargs):
     inst._SetDefaultVersion(self.VERSION)
-    return self.VERSION
+    return self.VERSION, True
 
   @_DependencyMockCtx
   def _UpdateTarball(self, inst, *args, **kwargs):
@@ -221,6 +221,54 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.sdk = cros_chrome_sdk.SDKFetcher(
         os.path.join(self.tempdir, 'cache'), self.BOARD)
 
+  def SetUpDefaultVersion(self, current, target, newest):
+    self.PatchObject(cros_chrome_sdk.SDKFetcher, 'GetDefaultVersion',
+                     return_value=current)
+    self.PatchObject(cros_chrome_sdk.SDKFetcher, '_GetRepoCheckoutVersion',
+                     return_value=target)
+    self.PatchObject(cros_chrome_sdk.SDKFetcher, '_GetNewestManifestVersion',
+                     return_value=newest)
+    return self.sdk.UpdateDefaultVersion()
+
+  def testUpdateDefaultVersionNormal(self):
+    """Updating default version with no cached default version."""
+    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
+    target, updated = self.SetUpDefaultVersion(None, self.VERSION, '3544.0.0')
+    self.assertEquals(target, self.VERSION)
+    self.assertEquals(updated, True)
+
+  def testUpdateDefaultVersionTooNew(self):
+    """Version in chromeos_version.sh isn't uploaded yet."""
+    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
+    target, updated = self.SetUpDefaultVersion(None, '3543.10.0', self.VERSION)
+    self.assertEquals(target, self.VERSION)
+    self.assertEquals(updated, True)
+
+  def testUpdateDefaultVersionNoUpdate(self):
+    """Nothing to update because the target version did not change."""
+    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
+    target, updated = self.SetUpDefaultVersion(self.VERSION, self.VERSION,
+                                               None)
+    self.assertEquals(target, self.VERSION)
+    self.assertEquals(updated, False)
+
+  def testUpdateDefaultChromeVersion(self):
+    """We pick up the right LKGM version from the Chrome tree."""
+    gclient_root = os.path.join(self.tempdir, 'gclient_root')
+    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
+    self.PatchObject(gclient, 'FindGclientCheckoutRoot',
+                     return_value=gclient_root)
+
+    lkgm_file = os.path.join(gclient_root, 'src', constants.PATH_TO_CHROME_LKGM)
+    osutils.Touch(lkgm_file, makedirs=True)
+    osutils.WriteFile(lkgm_file, self.VERSION)
+    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
+    self.sdk.UpdateDefaultVersion()
+    self.assertEquals(self.sdk.GetDefaultVersion(),
+                      self.VERSION)
+    # pylint: disable=E1101
+    self.assertTrue(gclient.FindGclientCheckoutRoot.called)
+
   def testFullVersion(self):
     """Test full version calculation."""
     def RaiseException(*_args, **_kwargs):
@@ -260,28 +308,13 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(cros_chrome_sdk.SDKError, self.sdk.GetFullVersion,
                       self.VERSION)
 
-  def testChromeVersion(self):
-    """We pick up the right LKGM version from the Chrome tree."""
-    gclient_root = os.path.join(self.tempdir, 'gclient_root')
-    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
-    self.PatchObject(gclient, 'FindGclientCheckoutRoot',
-                     return_value=gclient_root)
 
-    lkgm_file = os.path.join(gclient_root, 'src', constants.PATH_TO_CHROME_LKGM)
-    osutils.Touch(lkgm_file, makedirs=True)
-    osutils.WriteFile(lkgm_file, self.VERSION)
-    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
-    self.sdk.UpdateDefaultVersion()
-    self.assertEquals(self.sdk.GetDefaultVersion(),
-                      self.VERSION)
-    # pylint: disable=E1101
-    self.assertTrue(gclient.FindGclientCheckoutRoot.called)
 
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.VERSION
     self.assertNotEquals(self.VERSION, self.sdk_mock.VERSION)
-    self.assertEquals(self.sdk.GetDefaultVersion(), self.sdk_mock.VERSION)
+    self.assertEquals(self.sdk.GetDefaultVersion(), None)
 
   def testDefaultEnvGoodBoard(self):
     """We use the version in the environment if board matches."""
@@ -289,6 +322,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     os.environ[sdk_version_env] = self.VERSION
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
     self.assertEquals(self.sdk.GetDefaultVersion(), self.VERSION)
+
 
 
 if __name__ == '__main__':

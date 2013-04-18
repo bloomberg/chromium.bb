@@ -8,12 +8,14 @@ import contextlib
 import json
 import logging
 import os
+import distutils.version
 
 from chromite import cros
 from chromite.lib import cache
 from chromite.lib import chrome_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import stats
@@ -117,7 +119,8 @@ class SDKFetcher(object):
     Returns:
       Version number in the format '3929.0.0'.
     """
-    version_file = '%s/LATEST-master' % self.gs_base
+    branch = git.GetChromiteTrackingBranch()
+    version_file = '%s/LATEST-%s' % (self.gs_base, branch)
     full_version = self.gs_ctx.Cat(version_file).output
     assert full_version.startswith('R')
     return full_version.split('-')[1]
@@ -127,7 +130,7 @@ class SDKFetcher(object):
 
     If we are in an existing SDK shell, use the SDK version of the shell.
     Otherwise, use what we defaulted to last time.  If there was no last time,
-    use the result of UpdateDefaultVersion().
+    returns None.
     """
     if os.environ.get(self.SDK_BOARD_ENV) == self.board:
       sdk_version = os.environ.get(self.SDK_VERSION_ENV)
@@ -142,7 +145,7 @@ class SDKFetcher(object):
           version = version.split('-')[1]
         return version
       else:
-        return self.UpdateDefaultVersion()
+        return None
 
   def _SetDefaultVersion(self, version):
     """Set the new default version."""
@@ -153,17 +156,29 @@ class SDKFetcher(object):
     """Update the version that we default to using.
 
     Returns:
-      Version number in the format '3929.0.0'.
+      A tuple of the form (version, updated), where |version| is the
+      version number in the format '3929.0.0', and |updated| indicates
+      whether the version was indeed updated.
     """
     checkout = commandline.DetermineCheckout(os.getcwd())
+    current = self.GetDefaultVersion() or '0'
     if checkout.chrome_src_dir:
       target = self._GetChromeLKGM(checkout.chrome_src_dir)
     elif checkout.type == commandline.CHECKOUT_TYPE_REPO:
       target = self._GetRepoCheckoutVersion(checkout.root)
+      if target != current:
+        lv_cls = distutils.version.LooseVersion
+        if lv_cls(target) > lv_cls(current):
+          # Hit the network for the newest uploaded version for the branch.
+          newest = self._GetNewestManifestVersion()
+          # The SDK for the version of the checkout has not been uploaded yet,
+          # so fall back to the latest uploaded SDK.
+          if lv_cls(target) > lv_cls(newest):
+            target = newest
     else:
       target = self._GetNewestManifestVersion()
     self._SetDefaultVersion(target)
-    return target
+    return target, target != current
 
   def GetFullVersion(self, version):
     """Add the release branch to a ChromeOS platform version.
@@ -225,7 +240,8 @@ class SDKFetcher(object):
       gs_ctx: GSContext object.
       components: A list of specific components(tarballs) to prepare.
       version: The version to prepare.  If not set, uses the version returned by
-        GetDefaultVersion().
+        GetDefaultVersion().  If there is no default version set (this is the
+        first time we are being executed), then we update the default version.
 
     Yields: An SDKFetcher.SDKContext namedtuple object.  The attributes of the
       object are:
@@ -237,6 +253,8 @@ class SDKFetcher(object):
     """
     if version is None:
       version = self.GetDefaultVersion()
+      if version is None:
+        version, _ = self.UpdateDefaultVersion()
     components = list(components)
 
     key_map = {}
@@ -553,7 +571,7 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     prepare_version = self.options.version
     if not prepare_version:
-      prepare_version = self.sdk.UpdateDefaultVersion()
+      prepare_version, _ = self.sdk.UpdateDefaultVersion()
 
     components = [self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR]
     if not self.options.chroot:
