@@ -28,8 +28,8 @@
 #ifndef Yarr_h
 #define Yarr_h
 
-#include "YarrInterpreter.h"
-#include "YarrPattern.h"
+#include "yarr/YarrInterpreter.h"
+#include "yarr/YarrPattern.h"
 
 namespace JSC { namespace Yarr {
 

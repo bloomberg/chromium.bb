@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "YarrPattern.h"
+#include "yarr/YarrPattern.h"
 
-#include "Yarr.h"
-#include "YarrCanonicalizeUCS2.h"
-#include "YarrParser.h"
+#include "yarr/Yarr.h"
+#include "yarr/YarrCanonicalizeUCS2.h"
+#include "yarr/YarrParser.h"
 #include <wtf/Vector.h>
 
 using namespace WTF;

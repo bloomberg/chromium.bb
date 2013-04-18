@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "YarrSyntaxChecker.h"
+#include "yarr/YarrSyntaxChecker.h"
 
-#include "YarrParser.h"
+#include "yarr/YarrParser.h"
 
 namespace JSC { namespace Yarr {
 

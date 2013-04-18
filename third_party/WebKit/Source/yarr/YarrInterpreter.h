@@ -26,7 +26,7 @@
 #ifndef YarrInterpreter_h
 #define YarrInterpreter_h
 
-#include "YarrPattern.h"
+#include "yarr/YarrPattern.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/unicode/Unicode.h>
 

@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "YarrInterpreter.h"
+#include "yarr/YarrInterpreter.h"
 
-#include "Yarr.h"
-#include "YarrCanonicalizeUCS2.h"
+#include "yarr/Yarr.h"
+#include "yarr/YarrCanonicalizeUCS2.h"
 #include <wtf/BumpPointerAllocator.h>
 #include <wtf/DataLog.h>
 #include <wtf/text/CString.h>
