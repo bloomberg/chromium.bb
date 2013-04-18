@@ -1671,6 +1671,17 @@
    fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
 }
 {
+   bug_32623
+   Memcheck:Leak
+   ...
+   fun:ssl3_HandleHandshakeMessage
+   fun:ssl3_HandleHandshake
+   fun:ssl3_HandleRecord
+   fun:ssl3_GatherCompleteHandshake
+   fun:SSL_ForceHandshake
+   fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
+}
+{
    bug_32624_b
    Memcheck:Leak
    fun:malloc
@@ -7037,4 +7048,10 @@
    fun:_ZN3net17QuicStreamFactory3Job9DoConnectEv
    fun:_ZN3net17QuicStreamFactory3Job6DoLoopEi
    fun:_ZN3net17QuicStreamFactory3Job12OnIOCompleteEi
+}
+{
+   bug_233128
+   Memcheck:Leak
+   ...
+   fun:_ZN10extensions51WebstoreInlineInstallerTest_DomainVerification_Test8TestBodyEv
 }

@@ -1885,3 +1885,9 @@
    fun:net::QuicStreamFactory::CreateSession
    fun:net::QuicStreamFactory::Job::DoConnect
 }
+{
+   bug_233128
+   Heapcheck:Leak
+   ...
+   fun:extensions::WebstoreInlineInstallerTest_DomainVerification_Test::TestBody
+}
