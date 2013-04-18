@@ -64,15 +64,17 @@ echo @@@BUILD_STEP leakcheck@@@
     buildbot=memcheck run_under_extra_args=--leak-check=full \
     "$@" run_leak_test
 
-echo "@@@BUILD_STEP tsan(untrusted)@@@"
-./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    buildbot=tsan run_under_extra_args= "$@" tsan_bot_tests
-
-echo "@@@BUILD_STEP tsan(trusted)@@@"
-./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    buildbot=tsan-trusted run_under_extra_args= "$@" tsan_bot_tests
-
+# Both the untrusted and trusted tsan tests started failing:
+# https://code.google.com/p/nativeclient/issues/detail?id=3396
 if [[ "$TOOLCHAIN" != glibc ]]; then
+
+  echo "@@@BUILD_STEP tsan(untrusted)@@@"
+  ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
+      buildbot=tsan run_under_extra_args= "$@" tsan_bot_tests
+
+  echo "@@@BUILD_STEP tsan(trusted)@@@"
+  ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
+      buildbot=tsan-trusted run_under_extra_args= "$@" tsan_bot_tests
 
   echo "@@@BUILD_STEP tsan(trusted, hybrid, RV)@@@"
   # The first RaceVerifier invocation may fail.
