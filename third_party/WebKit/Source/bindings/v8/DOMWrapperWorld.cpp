@@ -97,25 +97,6 @@ bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context
     return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info);
 }
 
-template<>
-void WeakHandleListener<DOMWrapperWorld>::callback(v8::Isolate* isolate, v8::Persistent<v8::Value> object, DOMWrapperWorld* world)
-{
-    object.Dispose(isolate);
-    object.Clear();
-    world->deref();
-}
-
-void DOMWrapperWorld::makeContextWeak(v8::Handle<v8::Context> context)
-{
-    ASSERT(isIsolatedWorld());
-    ASSERT(isolatedWorld(context) == this);
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Persistent<v8::Context> persistent = v8::Persistent<v8::Context>::New(isolate, context);
-    WeakHandleListener<DOMWrapperWorld>::makeWeak(isolate, persistent, this);
-    // Matching deref is in weak callback.
-    this->ref();
-}
-
 void DOMWrapperWorld::setIsolatedWorldField(v8::Handle<v8::Context> context)
 {
     context->SetAlignedPointerInEmbedderData(v8ContextIsolatedWorld, isMainWorld() ? 0 : this);

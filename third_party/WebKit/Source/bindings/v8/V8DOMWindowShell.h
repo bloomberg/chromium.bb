@@ -78,8 +78,6 @@ public:
 
     DOMWrapperWorld* world() { return m_world.get(); }
 
-    void destroyIsolatedShell();
-
 private:
     V8DOMWindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 

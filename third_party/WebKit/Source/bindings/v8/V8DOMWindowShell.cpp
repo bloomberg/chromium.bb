@@ -93,19 +93,6 @@ V8DOMWindowShell::V8DOMWindowShell(Frame* frame, PassRefPtr<DOMWrapperWorld> wor
 {
 }
 
-void V8DOMWindowShell::destroyIsolatedShell()
-{
-    ASSERT(m_world->isIsolatedWorld());
-
-    if (m_context.isEmpty())
-        return;
-
-    v8::HandleScope handleScope;
-    m_world->makeContextWeak(m_context.get());
-    disposeContext();
-    m_global.clear();
-}
-
 void V8DOMWindowShell::disposeContext()
 {
     m_perContextData.clear();

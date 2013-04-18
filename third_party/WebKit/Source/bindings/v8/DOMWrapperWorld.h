@@ -57,7 +57,6 @@ public:
     static bool isIsolatedWorldId(int worldId) { return worldId > mainWorldId; }
     static void getAllWorlds(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
-    void makeContextWeak(v8::Handle<v8::Context>);
     void setIsolatedWorldField(v8::Handle<v8::Context>);
 
     static DOMWrapperWorld* isolatedWorld(v8::Handle<v8::Context> context)
