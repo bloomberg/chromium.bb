@@ -79,8 +79,8 @@ class Reporter(Plugin):
         failures=len(result.failures)
         errors=len(result.errors)
         total=result.testsRun
-        sPercent = round((total-failures-errors+0.0)/total*100,2)
-        self.res.append("Ran {total} tests ({sPercent}% success), with {failures} failures and {errors} errors.\n".format(total=total, sPercent=sPercent, failures=failures, errors=errors))
+        percent_string = " ({percent}% success)".format(percent=round((total-failures-errors+0.0)/total*100,2)) if total > 0 else ""
+        self.res.append("Ran {total} tests{percent_string}, with {failures} failures and {errors} errors.\n".format(total=total, percent_string=percent_string, failures=failures, errors=errors))
         self.stream.write("\n".join(self.res))
 
 ### End of nosetest plugin for controlling the output format. ###
