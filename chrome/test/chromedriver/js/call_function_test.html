@@ -4,13 +4,21 @@
 <script src='call_function.js'></script>
 <script>
 
+function clearCache() {
+  getPageCache().cache_ = {};
+}
+
 function testCallFunctionNoArgs() {
+  clearCache();
+
   var result = callFunction(function() { return 1; }, []);
   assertEquals(0, result.status);
   assertEquals(1, result.value);
 }
 
 function testCallFunctionThrows() {
+  clearCache();
+
   var result = callFunction(function() { throw new Error('fake error'); }, []);
   assertEquals(StatusCode.UNKNOWN_ERROR, result.status);
   assertEquals('fake error', result.value);
@@ -26,120 +34,129 @@ function testCallFunctionThrows() {
 }
 
 function testCallFunctionArgs() {
+  clearCache();
+
   function func(primitive, elem) {
     return [primitive, elem.querySelector('div')];
   }
-  var cache = getPageCache();
-  var result = callFunction(func, [1, cache.wrap(document)]);
+  var result = callFunction(func, [1, wrap(document)]);
   assertEquals(0, result.status);
   assertEquals(1, result.value[0]);
-  assertEquals(document.querySelector('div'), cache.unwrap(result.value[1]));
+  var cache = getPageCache();
+  assertEquals(document.querySelector('div'), unwrap(result.value[1], cache));
 }
 
 function testCallFunctionArgsUnwrappedReturn() {
+  clearCache();
+
   function func(elem) {
     return elem.querySelector('div');
   }
-  var cache = getPageCache();
-  var result = callFunction(func, [cache.wrap(document)], true);
+  var result = callFunction(func, [wrap(document)], true);
   assertEquals(document.querySelector('div'), result);
 }
 
 function testCacheWrap() {
-  var cache = new Cache();
-  assertEquals(1, cache.wrap(1));
-  assertEquals(1, cache.unwrap(1));
-  assertEquals("1", cache.wrap("1"));
-  assertEquals("1", cache.unwrap("1"));
-  assertEquals(false, cache.wrap(false));
-  assertEquals(false, cache.unwrap(false));
-  assertEquals(null, cache.wrap(null));
-  assertEquals(null, cache.unwrap(null));
-  assertEquals(undefined, cache.wrap(undefined));
-  assertEquals(undefined, cache.unwrap(undefined));
-  function func() {}
-  assertEquals(func, cache.wrap(func));
-  assertEquals(func, cache.unwrap(func));
+  clearCache();
 
+  assertEquals(1, wrap(1));
+  assertEquals(1, unwrap(1));
+  assertEquals("1", wrap("1"));
+  assertEquals("1", unwrap("1"));
+  assertEquals(false, wrap(false));
+  assertEquals(false, unwrap(false));
+  assertEquals(null, wrap(null));
+  assertEquals(null, unwrap(null));
+  assertEquals(undefined, wrap(undefined));
+  assertEquals(undefined, unwrap(undefined));
+  function func() {}
+  assertEquals(func, wrap(func));
+  assertEquals(func, unwrap(func));
+
+  var cache = getPageCache();
   var arr = [1, new Array(1, new Object({a: 1, b: {a: 1, b: {}, c: 3}}), 3)];
   var originalJson = JSON.stringify(arr);
-  arr[1][1].b.b[ELEMENT_KEY] = cache.nextId_.toString();
+  arr[1][1].b.b[ELEMENT_KEY] = cache.idPrefix_ + ':' + cache.nextId_;
   var wrappedJson = JSON.stringify(arr);
   arr[1][1].b.b = document;
-  assertEquals(wrappedJson, JSON.stringify(cache.wrap(arr)));
-  var unwrapped = cache.unwrap(JSON.parse(wrappedJson));
+  assertEquals(wrappedJson, JSON.stringify(wrap(arr)));
+  var unwrapped = unwrap(JSON.parse(wrappedJson), cache);
   assertEquals(document, unwrapped[1][1].b.b);
   unwrapped[1][1].b.b = {};
   assertEquals(originalJson, JSON.stringify(unwrapped));
 }
 
 function testCacheDoubleWrap() {
-  var cache = new Cache();
-  assertEquals(cache.wrap(document)[ELEMENT_KEY],
-               cache.wrap(document)[ELEMENT_KEY]);
+  clearCache();
+
+  assertEquals(wrap(document)[ELEMENT_KEY], wrap(document)[ELEMENT_KEY]);
 }
 
 function testCacheUnwrapThrows() {
+  clearCache();
+
   try {
-    var cache = new Cache();
     var wrapped = {};
     wrapped[ELEMENT_KEY] = '1';
-    cache.unwrap(wrapped);
+    unwrap(wrapped, getPageCache());
+    assert(false);
   } catch (e) {
-    return;
   }
-  assert(false);
 }
 
 function testClearStale() {
+  clearCache();
+
   var doc = document;
   var div = doc.querySelector('div');
   var span = doc.querySelector('span');
 
-  var cache = new Cache();
-  var wrappedDoc = cache.wrap(doc);
-  var wrappedDiv = cache.wrap(div);
-  var wrappedSpan = cache.wrap(span);
+  var wrappedDoc = wrap(doc);
+  var wrappedDiv = wrap(div);
+  var wrappedSpan = wrap(span);
 
+  var cache = getPageCache();
   cache.clearStale();
-  assertEquals(doc, cache.unwrap(wrappedDoc));
-  assertEquals(div, cache.unwrap(wrappedDiv));
-  assertEquals(span, cache.unwrap(wrappedSpan));
+  assertEquals(doc, unwrap(wrappedDoc, cache));
+  assertEquals(div, unwrap(wrappedDiv, cache));
+  assertEquals(span, unwrap(wrappedSpan, cache));
 
   div.removeChild(span);
   cache.clearStale();
-  assertEquals(doc, cache.unwrap(wrappedDoc));
-  assertEquals(div, cache.unwrap(wrappedDiv));
+  assertEquals(doc, unwrap(wrappedDoc, cache));
+  assertEquals(div, unwrap(wrappedDiv, cache));
   try {
-    cache.unwrap(wrappedSpan);
+    unwrap(wrappedSpan, cache);
+    assert(false);
   } catch (e) {
-    return;
   }
-  assert(false);
 }
 
 function testCacheQuerySelector() {
-  var cache = new Cache();
+  clearCache();
+
+  var cache = getPageCache();
   assertEquals(document.querySelector('div'),
-               cache.unwrap(cache.wrap(document.querySelector('div'))));
+               unwrap(wrap(document.querySelector('div')), cache));
   assertEquals(document.querySelectorAll('div')[0],
-               cache.unwrap(cache.wrap(document.querySelectorAll('div')))[0]);
+               unwrap(wrap(document.querySelectorAll('div')), cache)[0]);
 }
 
 function testCacheStaleRef() {
-  var cache = new Cache();
+  clearCache();
+
+  var cache = getPageCache();
   var img = document.createElement('img');
   document.body.appendChild(img);
-  var wrappedImg = cache.wrap(img);
+  var wrappedImg = wrap(img);
   document.body.removeChild(img);
   cache.clearStale();
   try {
-    cache.unwrap(wrappedImg);
+    unwrap(wrappedImg, cache);
+    assert(false);
   } catch (e) {
     assertEquals(StatusCode.STALE_ELEMENT_REFERENCE, e.code);
-    return;
   }
-  assert(false);
 }
 
 </script>

@@ -35,6 +35,7 @@ var ELEMENT_KEY = 'ELEMENT';
 function Cache() {
   this.cache_ = {};
   this.nextId_ = 1;
+  this.idPrefix_ = Math.random().toString();
 }
 
 Cache.prototype = {
@@ -45,12 +46,12 @@ Cache.prototype = {
    * @param {!Object} item The item to store in the cache.
    * @return {number} The ID for the cached item.
    */
-  storeItem_: function(item) {
+  storeItem: function(item) {
     for (var i in this.cache_) {
       if (item == this.cache_[i])
         return i;
     }
-    var id = this.nextId_.toString();
+    var id = this.idPrefix_  + ':' + this.nextId_;
     this.cache_[id] = item;
     this.nextId_++;
     return id;
@@ -62,7 +63,7 @@ Cache.prototype = {
    * @param {number} id The ID for the cached item to retrieve.
    * @return {!Object} The retrieved item.
    */
-  retrieveItem_: function(id) {
+  retrieveItem: function(id) {
     var item = this.cache_[id];
     if (item)
       return item;
@@ -86,63 +87,67 @@ Cache.prototype = {
       if (!node)
         delete this.cache_[id];
     }
-  },
-
-  /**
-   * Wraps the given value to be transmitted remotely by converting
-   * appropriate objects to cached object IDs.
-   *
-   * @param {*} value The value to wrap.
-   * @return {*} The wrapped value.
-   */
-  wrap: function(value) {
-    if (typeof(value) == 'object' && value != null) {
-      var nodeType = value['nodeType'];
-      if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT) {
-        var wrapped = {};
-        wrapped[ELEMENT_KEY] = this.storeItem_(value);
-        return wrapped;
-      }
-
-      var obj = (typeof(value.length) == 'number') ? [] : {};
-      for (var prop in value)
-        obj[prop] = this.wrap(value[prop]);
-      return obj;
-    }
-    return value;
-  },
-
-  /**
-   * Unwraps the given value by converting from object IDs to the cached
-   * objects.
-   *
-   * @param {*} value The value to unwrap.
-   * @return {*} The unwrapped value.
-   */
-  unwrap: function(value) {
-    if (typeof(value) == 'object' && value != null) {
-      if (ELEMENT_KEY in value)
-        return this.retrieveItem_(value[ELEMENT_KEY]);
-
-      var obj = (typeof(value.length) == 'number') ? [] : {};
-      for (var prop in value)
-        obj[prop] = this.unwrap(value[prop]);
-      return obj;
-    }
-    return value;
   }
 };
 
 /**
  * Returns the global object cache for the page.
+ * @param {Document=} opt_doc The document whose cache to retrieve. Defaults to
+ *     the current document.
  * @return {!Cache} The page's object cache.
  */
-function getPageCache() {
+function getPageCache(opt_doc) {
+  var doc = opt_doc || document;
   // We use the same key as selenium's javascript/atoms/inject.js.
   var key = '$wdc_';
-  if (!(key in document))
-    document[key] = new Cache();
-  return document[key];
+  if (!(key in doc))
+    doc[key] = new Cache();
+  return doc[key];
+}
+
+/**
+ * Wraps the given value to be transmitted remotely by converting
+ * appropriate objects to cached object IDs.
+ *
+ * @param {*} value The value to wrap.
+ * @return {*} The wrapped value.
+ */
+function wrap(value) {
+  if (typeof(value) == 'object' && value != null) {
+    var nodeType = value['nodeType'];
+    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT) {
+      var wrapped = {};
+      wrapped[ELEMENT_KEY] = getPageCache(value.ownerDocument).storeItem(value);
+      return wrapped;
+    }
+
+    var obj = (typeof(value.length) == 'number') ? [] : {};
+    for (var prop in value)
+      obj[prop] = wrap(value[prop]);
+    return obj;
+  }
+  return value;
+}
+
+/**
+ * Unwraps the given value by converting from object IDs to the cached
+ * objects.
+ *
+ * @param {*} value The value to unwrap.
+ * @param {Cache} cache The cache to retrieve wrapped elements from.
+ * @return {*} The unwrapped value.
+ */
+function unwrap(value, cache) {
+  if (typeof(value) == 'object' && value != null) {
+    if (ELEMENT_KEY in value)
+      return cache.retrieveItem(value[ELEMENT_KEY]);
+
+    var obj = (typeof(value.length) == 'number') ? [] : {};
+    for (var prop in value)
+      obj[prop] = unwrap(value[prop], cache);
+    return obj;
+  }
+  return value;
 }
 
 /**
@@ -168,11 +173,11 @@ function callFunction(func, args, opt_unwrappedReturn) {
   cache.clearStale();
 
   if (opt_unwrappedReturn)
-    return func.apply(null, cache.unwrap(args));
+    return func.apply(null, unwrap(args, cache));
 
   var status = 0;
   try {
-    var returnValue = cache.wrap(func.apply(null, cache.unwrap(args)));
+    var returnValue = wrap(func.apply(null, unwrap(args, cache)));
   } catch (error) {
     status = error.code || StatusCode.UNKNOWN_ERROR;
     var returnValue = error.message;
