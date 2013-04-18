@@ -759,17 +759,24 @@ bind_input_method(struct wl_client *client,
 					NULL,
 					id, input_method);
 
-	if (input_method->input_method_binding == NULL) {
-		resource->destroy = unbind_input_method;
-		input_method->input_method_binding = resource;
-
-		text_backend->input_method.binding = resource;
+	if (input_method->input_method_binding != NULL) {
+		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "interface object already bound");
+		wl_resource_destroy(resource);
 		return;
 	}
 
-	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
-			       "interface object already bound");
-	wl_resource_destroy(resource);
+	if (text_backend->input_method.client != client) {
+		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "permission to bind desktop_shell denied");
+		wl_resource_destroy(resource);
+		return;
+	}
+
+	resource->destroy = unbind_input_method;
+	input_method->input_method_binding = resource;
+
+	text_backend->input_method.binding = resource;
 }
 
 static void
