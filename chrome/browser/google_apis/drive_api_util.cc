@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/drive_api_util.h"
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "chrome/browser/google_apis/drive_switches.h"
 
 namespace google_apis {
@@ -16,4 +17,16 @@ bool IsDriveV2ApiEnabled() {
 }
 
 }  // namespace util
+
+namespace drive {
+namespace util {
+
+std::string EscapeQueryStringValue(const std::string& str) {
+  std::string result;
+  ReplaceChars(str, "'", "\\'", &result);
+  return result;
+}
+
+}  // namespace util
+}  // namespace drive
 }  // namespace google_apis

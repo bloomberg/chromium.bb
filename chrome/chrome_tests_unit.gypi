@@ -804,6 +804,7 @@
         'browser/google_apis/drive_api_operations_unittest.cc',
         'browser/google_apis/drive_api_parser_unittest.cc',
         'browser/google_apis/drive_api_url_generator_unittest.cc',
+        'browser/google_apis/drive_api_util_unittest.cc',
         'browser/google_apis/drive_uploader_unittest.cc',
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
         'browser/google_apis/gdata_wapi_operations_unittest.cc',

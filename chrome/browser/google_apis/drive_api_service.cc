@@ -17,6 +17,7 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_runner.h"
@@ -201,14 +202,6 @@ void ParseResourceEntryForUploadRangeAndRun(
   callback.Run(response, entry.Pass());
 }
 
-// It is necessary to escape ' to \' in the query's string value.
-// See also: https://developers.google.com/drive/search-parameters
-std::string EscapeQueryStringValue(const std::string& str) {
-  std::string result;
-  ReplaceChars(str, "'", "\\'", &result);
-  return result;
-}
-
 // The resource ID for the root directory for Drive API is defined in the spec:
 // https://developers.google.com/drive/folder
 const char kDriveApiRootDirectoryResourceId[] = "root";
@@ -327,7 +320,8 @@ void DriveAPIService::GetResourceListInDirectory(
           url_generator_,
           base::StringPrintf(
               "'%s' in parents and trashed = false",
-              EscapeQueryStringValue(directory_resource_id).c_str()),
+              drive::util::EscapeQueryStringValue(
+                  directory_resource_id).c_str()),
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
@@ -363,7 +357,8 @@ void DriveAPIService::SearchInDirectory(
           base::StringPrintf(
               "%s and '%s' in parents and trashed = false",
               search_query.c_str(),
-              EscapeQueryStringValue(directory_resource_id).c_str()),
+              drive::util::EscapeQueryStringValue(
+                  directory_resource_id).c_str()),
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
