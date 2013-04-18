@@ -2451,8 +2451,14 @@ void FrameView::autoSizeIfEnabled()
     if (!documentView || !documentElement)
         return;
 
-    // Start from the minimum height and allow it to grow.
-    resize(frameRect().width(), m_minAutoSize.height());
+    RenderBox* documentRenderBox = documentElement->renderBox();
+    if (!documentRenderBox)
+        return;
+
+    // If this is the first time we run autosize, start from small height and
+    // allow it to grow.
+    if (!m_didRunAutosize)
+        resize(frameRect().width(), m_minAutoSize.height());
 
     IntSize size = frameRect().size();
 
@@ -2462,7 +2468,7 @@ void FrameView::autoSizeIfEnabled()
         // Update various sizes including contentsSize, scrollHeight, etc.
         document->updateLayoutIgnorePendingStylesheets();
         int width = documentView->minPreferredLogicalWidth();
-        int height = documentView->documentRect().height();
+        int height = documentRenderBox->scrollHeight();
         IntSize newSize(width, height);
 
         // Check to see if a scrollbar is needed for a given dimension and
