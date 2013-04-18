@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/value_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/admin_policy.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -222,6 +223,10 @@ const char kPrefGeometryCache[] = "geometry_cache";
 
 // Key for what version chrome was last time the extension prefs were loaded.
 const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
+
+// Key for the path of the directory of the file last chosen by the user in
+// response to a chrome.fileSystem.chooseEntry() call.
+const char kLastChooseEntryDirectory[] = "last_choose_file_directory";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
@@ -2158,6 +2163,25 @@ void ExtensionPrefs::SetGeometryCache(
     const std::string& extension_id,
     scoped_ptr<base::DictionaryValue> cache) {
   UpdateExtensionPref(extension_id, kPrefGeometryCache, cache.release());
+}
+
+bool ExtensionPrefs::GetLastChooseEntryDirectory(
+    const std::string& extension_id, base::FilePath* result) const {
+  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  if (!dictionary)
+    return false;
+
+  const base::Value* value;
+  if (!dictionary->Get(kLastChooseEntryDirectory, &value))
+    return false;
+
+  return base::GetValueAsFilePath(*value, result);
+}
+
+void ExtensionPrefs::SetLastChooseEntryDirectory(
+    const std::string& extension_id, const base::FilePath& value) {
+  UpdateExtensionPref(extension_id, kLastChooseEntryDirectory,
+                      base::CreateFilePathValue(value));
 }
 
 ExtensionPrefs::ExtensionPrefs(

@@ -501,6 +501,13 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void SetGeometryCache(const std::string& extension_id,
                         scoped_ptr<base::DictionaryValue> cache);
 
+  // The path of the directory containing the last file chosen by the user in
+  // response to a chrome.fileSystem.chooseEntry() call for this extension.
+  bool GetLastChooseEntryDirectory(const std::string& extension_id,
+                                   base::FilePath* result) const;
+  void SetLastChooseEntryDirectory(const std::string& extension_id,
+                                   const base::FilePath& value);
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.

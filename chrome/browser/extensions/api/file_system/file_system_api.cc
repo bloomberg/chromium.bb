@@ -13,12 +13,16 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -133,6 +137,7 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
 #endif  // defined(OS_MACOSX)
 
 bool g_skip_picker_for_test = false;
+bool g_use_suggested_path_for_test = false;
 base::FilePath* g_path_to_be_picked_for_test;
 
 bool GetFilePathOfFileEntry(const std::string& filesystem_name,
@@ -401,8 +406,7 @@ class FileSystemChooseEntryFunction::FilePicker
              const ui::SelectFileDialog::FileTypeInfo& file_type_info,
              ui::SelectFileDialog::Type picker_type,
              EntryType entry_type)
-      : suggested_name_(suggested_name),
-        entry_type_(entry_type),
+      : entry_type_(entry_type),
         function_(function) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
@@ -411,7 +415,13 @@ class FileSystemChooseEntryFunction::FilePicker
         NULL;
 
     if (g_skip_picker_for_test) {
-      if (g_path_to_be_picked_for_test) {
+      if (g_use_suggested_path_for_test) {
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+            base::Bind(
+                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
+                base::Unretained(this), suggested_name, 1,
+                static_cast<void*>(NULL)));
+      } else if (g_path_to_be_picked_for_test) {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
             base::Bind(
                 &FileSystemChooseEntryFunction::FilePicker::FileSelected,
@@ -468,8 +478,6 @@ class FileSystemChooseEntryFunction::FilePicker
     delete this;
   }
 
-  base::FilePath suggested_name_;
-
   EntryType entry_type_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -478,8 +486,7 @@ class FileSystemChooseEntryFunction::FilePicker
   DISALLOW_COPY_AND_ASSIGN(FilePicker);
 };
 
-bool FileSystemChooseEntryFunction::ShowPicker(
-    const base::FilePath& suggested_name,
+void FileSystemChooseEntryFunction::ShowPicker(
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
     EntryType entry_type) {
@@ -496,7 +503,8 @@ bool FileSystemChooseEntryFunction::ShowPicker(
         render_view_host());
     if (!shell_window) {
       error_ = kInvalidCallingPage;
-      return false;
+      SendResponse(false);
+      return;
     }
     web_contents = shell_window->web_contents();
   } else {
@@ -506,21 +514,29 @@ bool FileSystemChooseEntryFunction::ShowPicker(
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
-  new FilePicker(this, web_contents, suggested_name, file_type_info,
+  new FilePicker(this, web_contents, initial_path_, file_type_info,
                  picker_type, entry_type);
-  return true;
 }
 
 // static
 void FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
     base::FilePath* path) {
   g_skip_picker_for_test = true;
+  g_use_suggested_path_for_test = false;
   g_path_to_be_picked_for_test = path;
+}
+
+// static
+void FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest() {
+  g_skip_picker_for_test = true;
+  g_use_suggested_path_for_test = true;
+  g_path_to_be_picked_for_test = NULL;
 }
 
 // static
 void FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest() {
   g_skip_picker_for_test = true;
+  g_use_suggested_path_for_test = false;
   g_path_to_be_picked_for_test = NULL;
 }
 
@@ -539,8 +555,27 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
       name, fileapi::kFileSystemTypeNativeLocal, path);
 }
 
+void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(
+    const base::FilePath& suggested_name,
+    const base::FilePath& previous_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!previous_path.empty() && file_util::DirectoryExists(previous_path)) {
+    initial_path_ = previous_path.Append(suggested_name);
+  } else {
+    base::FilePath documents_dir;
+    if (PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir)) {
+      initial_path_ = documents_dir.Append(suggested_name);
+    } else {
+      initial_path_ = suggested_name;
+    }
+  }
+}
+
 void FileSystemChooseEntryFunction::FileSelected(const base::FilePath& path,
-                                                EntryType entry_type) {
+                                                 EntryType entry_type) {
+  extensions::ExtensionSystem::Get(profile())->extension_service()->
+      extension_prefs()->SetLastChooseEntryDirectory(
+          GetExtension()->id(), path.DirName());
   if (entry_type == WRITABLE) {
     CheckWritableFile(path);
     return;
@@ -648,7 +683,22 @@ bool FileSystemChooseEntryFunction::RunImpl() {
   }
 
   file_type_info.support_drive = true;
-  return ShowPicker(suggested_name, file_type_info, picker_type, entry_type);
+
+  base::FilePath previous_path;
+  extensions::ExtensionSystem::Get(profile())->extension_service()->
+      extension_prefs()->GetLastChooseEntryDirectory(
+          GetExtension()->id(), &previous_path);
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &FileSystemChooseEntryFunction::SetInitialPathOnFileThread, this,
+          suggested_name, previous_path),
+      base::Bind(
+          &FileSystemChooseEntryFunction::ShowPicker, this, file_type_info,
+          picker_type, entry_type));
+  return true;
 }
 
 }  // namespace extensions
