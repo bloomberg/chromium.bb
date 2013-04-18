@@ -1348,7 +1348,7 @@ void DriveFileSystem::GetMetadata(
 
   DriveFileSystemMetadata metadata;
   metadata.loaded = change_list_loader_->loaded();
-  metadata.refreshing = change_list_loader_->refreshing();
+  metadata.refreshing = change_list_loader_->IsRefreshing();
 
   // Metadata related to delta update.
   metadata.last_update_check_time = last_update_check_time_;

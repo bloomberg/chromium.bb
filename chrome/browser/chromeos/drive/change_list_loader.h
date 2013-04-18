@@ -104,25 +104,44 @@ class ChangeListLoader {
                       const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
-  bool refreshing() const { return refreshing_; }
+  bool IsRefreshing() const;
 
  private:
-  // Initiates the change list loading from the server if the local
-  // changestamp is older than the server changestamp.
-  // See the comment at Load() for |directory_fetch_info| parameter.
-  // |callback| must not be null.
+  // Implementation of LoadIfNeeded and CheckForUpdates. Start metadata loading
+  // of |directory_fetch_info|, and calls |callback| when it's done. If there is
+  // already a loading job in-flight for |directory_fetch_info|, just append
+  // the |callback| to the callback queue of the already running job.
+  void Load(const DirectoryFetchInfo& directory_fetch_info,
+            const FileOperationCallback& callback);
+
+  // Part of Load(). DoInitialLoad() is called if it is the first time to Load.
+  // Otherwise DoUpdateLoad() is used. The difference of two cases are:
+  // - When we could load from cache, DoInitialLoad runs callback immediately
+  //   and further operations (check changestamp and load from server if needed)
+  //   in background.
+  // - Even when |directory_fetch_info| is set, DoInitialLoad runs change list
+  //   loading after directory loading is finished.
+  void DoInitialLoad(const DirectoryFetchInfo& directory_fetch_info,
+                     int64 local_changestamp);
+  void DoUpdateLoad(const DirectoryFetchInfo& directory_fetch_info,
+                    int64 local_changestamp);
+
+  // Part of Load().
+  // Initiates the change list loading from the server when |local_changestamp|
+  // is older than the server changestamp. If |directory_fetch_info| is set,
+  // do directory loading before change list loading.
   void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                              const FileOperationCallback& callback);
+                              int64 local_changestamp);
 
-  // Checks the local changestamp. |callback| must not be null.
-  void CheckLocalChangestamp(const GetChangestampCallback& callback);
-
-  // Part of Load(). Called after checking the local changestamp completes.
-  void LoadAfterCheckLocalChangestamp(
+  // Part of Load().
+  // Checks the directory's changestamp and |last_known_remote_changestamp_|,
+  // and load the feed from server if it is old. Runs |callback| when it's done.
+  void CheckChangestampAndLoadDirectoryIfNeeed(
       const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      int64 local_changestamp);
+      int64 local_changestamp,
+      const FileOperationCallback& callback);
 
+  // Part of LoadChangeListFromServer().
   // Callback to fetch all the resource list response from the server.
   // After all the resource list are fetched, |callback|
   // will be invoked with the collected change lists.
@@ -184,40 +203,28 @@ class ChangeListLoader {
       DriveFileError error,
       const base::FilePath& directory_path);
 
-  // Part of LoadFromServerIfNeeded(). Called when
-  // DriveScheduler::GetAboutResource() is complete. This method calls
-  // CompareChangestampsAndLoadIfNeeded() to make a decision about whether or
-  // not to fetch the change list.
+  // Part of LoadFromServerIfNeeded(). Called when GetAboutResource is complete.
   void LoadFromServerIfNeededAfterGetAbout(
       const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
+      int64 local_changestamp,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Compares the largetst_change_id in |about_resource| and |local_changestamp|
-  // and triggers LoadFromServer if necessary.
-  void CompareChangestampsAndLoadIfNeeded(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      int64 local_changestamp);
-
+  // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
   // resource list if |start_changestamp| is zero. For full update, the
   // largest_change_id and root_folder_id from |about_resource| will be used.
-  // |callback| must not be null.
   void LoadChangeListFromServer(
       scoped_ptr<google_apis::AboutResource> about_resource,
-      int64 start_changestamp,
-      const FileOperationCallback& callback);
+      int64 start_changestamp);
 
+  // Part of LoadFromServerIfNeeded().
   // Starts loading the change list from the server. Called after the
   // directory contents are "fast-fetch"ed.
-  void StartLoadChangeListFromServer(
+  void LoadChangeListFromServerAfterLoadDirectory(
     const DirectoryFetchInfo& directory_fetch_info,
     scoped_ptr<google_apis::AboutResource> about_resource,
     int64 start_changestamp,
-    const FileOperationCallback& callback,
     DriveFileError error);
 
   // Callback for handling response from |DriveAPIService::GetAppList|.
@@ -234,15 +241,11 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
-  // Callback for handling feed content fetching while searching for file info.
-  // This callback is invoked after async feed fetch operation that was
-  // invoked by StartDirectoryRefresh() completes. This callback will update
-  // the content of the refreshed directory object and continue initially
-  // started FindEntryByPath() request.
+  // Part of LoadChangeListFromServer().
+  // Applies the change list loaded from the server to local metadata storage.
   void UpdateMetadataFromFeedAfterLoadFromServer(
       scoped_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_feed,
-      const FileOperationCallback& callback,
       ScopedVector<ChangeList> change_lists,
       DriveFileError error);
 
@@ -251,36 +254,18 @@ class ChangeListLoader {
       bool should_notify,
       const base::Closure& update_finished_callback);
 
-  // Callback for UpdateFromFeed.
-  void OnUpdateFromFeed(bool is_initial_load,
-                        const FileOperationCallback& load_finished_callback);
+  // Part of LoadChangeListFromServer().
+  // Called when UpdateMetadataFromFeedAfterLoadFromServer is finished.
+  void OnUpdateFromFeed();
 
   // This function should be called when the change list load is complete.
-  // Runs |callback| with |error|, and flushes the pending callbacks.
-  void OnChangeListLoadComplete(const FileOperationCallback& callback,
-                                DriveFileError error);
+  // Flushes the callbacks for change list loading and all directory loading.
+  void OnChangeListLoadComplete(DriveFileError error);
 
-  // This function should be called when the change list load is complete.
-  // Runs |callback| with |error|, and flushes the pending callbacks.
+  // This function should be called when the directory load is complete.
+  // Flushes the callbacks waiting for the directory to be loaded.
   void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
-                               const FileOperationCallback& callback,
                                DriveFileError error);
-
-  // Schedules |callback| to run when it's ready (i.e. the change list
-  // loading is complete or the directory specified by |directory_fetch_info|
-  // is loaded). |directory_fetch_info| can be empty if the callback is not
-  // interested in a particular directory.
-  // |callback| must not be null.
-  void ScheduleRun(const DirectoryFetchInfo& directory_fetch_info,
-                   const FileOperationCallback& callback);
-
-  // Flushes the feed loading callbacks added via ScheduleRun(), by scheduling
-  // to run all of them with the given error code.
-  void FlushPendingLoadCallback(DriveFileError error);
-
-  // Processes tasks that match the resource ID.
-  void ProcessPendingLoadCallbackForDirectory(const std::string& resource_id,
-                                              DriveFileError error);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
@@ -292,7 +277,6 @@ class ChangeListLoader {
   LoadCallbackMap pending_load_callback_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
-  bool refreshing_;
   int64 last_known_remote_changestamp_;
 
   // True if the file system feed is loaded from the cache or from the server.
