@@ -247,8 +247,9 @@ class GSContext(object):
             raise GSContextPreconditionFailed(e)
           if 'code=NoSuchKey' in error:
             raise GSNoSuchKey(e)
-        if error.startswith('InvalidUriError:'):
-          # If the file does not exist, InvalidUriError is returned.
+        # If the file does not exist, one of the following errors occurs.
+        if (error.startswith('InvalidUriError:') or
+            error.startswith('CommandException: No URIs matched')):
           raise GSNoSuchKey(e)
       raise
 
