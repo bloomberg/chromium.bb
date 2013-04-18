@@ -68,8 +68,6 @@ class DriveSchedulerTest : public testing::Test {
 
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         fake_drive_service_.get()));
-
-    scheduler_->Initialize();
     scheduler_->SetDisableThrottling(true);
   }
 

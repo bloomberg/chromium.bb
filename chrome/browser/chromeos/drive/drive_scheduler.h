@@ -32,10 +32,6 @@ class DriveScheduler
                  google_apis::DriveServiceInterface* drive_service);
   virtual ~DriveScheduler();
 
-  // Initializes the object. This function should be called before any
-  // other functions.
-  void Initialize();
-
   // JobListInterface overrides.
   virtual std::vector<JobInfo> GetJobInfoList() OVERRIDE;
   virtual void AddObserver(JobListObserver* observer) OVERRIDE;
@@ -404,9 +400,6 @@ class DriveScheduler
   scoped_ptr<google_apis::DriveUploaderInterface> uploader_;
 
   Profile* profile_;
-
-  // Whether this instance is initialized or not.
-  bool initialized_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

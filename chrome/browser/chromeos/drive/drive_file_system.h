@@ -57,6 +57,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
+                  DriveScheduler* scheduler,
                   DriveWebAppsRegistry* webapps_registry,
                   DriveResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
@@ -451,15 +452,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;
 
-  // The cache owned by DriveSystemService.
+  // Sub components owned by DriveSystemService.
   DriveCache* cache_;
-
-  // The document service owned by DriveSystemService.
   google_apis::DriveServiceInterface* drive_service_;
-
-  // The webapps registry owned by DriveSystemService.
+  DriveScheduler* scheduler_;
   DriveWebAppsRegistry* webapps_registry_;
-
   DriveResourceMetadata* resource_metadata_;
 
   // Time of the last update check.
@@ -484,8 +481,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   file_system::DriveOperations drive_operations_;
-
-  scoped_ptr<DriveScheduler> scheduler_;
 
   // Polling interval for checking updates in seconds.
   int polling_interval_sec_;

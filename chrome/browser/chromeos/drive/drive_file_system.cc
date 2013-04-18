@@ -211,18 +211,19 @@ DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
     google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
     DriveResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
       drive_service_(drive_service),
+      scheduler_(scheduler),
       webapps_registry_(webapps_registry),
       resource_metadata_(resource_metadata),
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      scheduler_(new DriveScheduler(profile, drive_service)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -239,7 +240,7 @@ void DriveFileSystem::Initialize() {
   SetupChangeListLoader();
 
   // Allocate the drive operation handlers.
-  drive_operations_.Init(scheduler_.get(),
+  drive_operations_.Init(scheduler_,
                          this,  // DriveFileSystemInterface
                          cache_,
                          resource_metadata_,
@@ -248,8 +249,6 @@ void DriveFileSystem::Initialize() {
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
-
-  scheduler_->Initialize();
 
   InitializePreferenceObserver();
 }
@@ -265,7 +264,7 @@ void DriveFileSystem::ReloadAfterReset() {
 
 void DriveFileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new ChangeListLoader(resource_metadata_,
-                                                 scheduler_.get(),
+                                                 scheduler_,
                                                  webapps_registry_));
   change_list_loader_->AddObserver(this);
 }

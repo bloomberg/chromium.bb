@@ -54,17 +54,17 @@ DriveScheduler::DriveScheduler(
       drive_service_(drive_service),
       uploader_(new google_apis::DriveUploader(drive_service)),
       profile_(profile),
-      initialized_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (int i = 0; i < NUM_QUEUES; ++i) {
     jobs_running_[i] = 0;
   }
+
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
 DriveScheduler::~DriveScheduler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(initialized_);
 
   size_t num_pending_jobs = 0;
   size_t num_running_jobs = 0;
@@ -78,18 +78,6 @@ DriveScheduler::~DriveScheduler() {
     STLDeleteElements(&queue_[i]);
   }
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-}
-
-void DriveScheduler::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Initialize() may be called more than once for the lifetime when the
-  // file system is remounted.
-  if (initialized_)
-    return;
-
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  initialized_ = true;
 }
 
 std::vector<JobInfo> DriveScheduler::GetJobInfoList() {

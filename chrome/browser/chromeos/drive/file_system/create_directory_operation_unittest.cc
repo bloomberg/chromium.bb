@@ -57,7 +57,6 @@ class CreateDirectoryOperationTest
 
     scheduler_.reset(
         new DriveScheduler(profile_.get(), fake_drive_service_.get()));
-    scheduler_->Initialize();
 
     DriveWebAppsRegistry drive_web_apps_registry;
     ChangeListLoader change_list_loader(

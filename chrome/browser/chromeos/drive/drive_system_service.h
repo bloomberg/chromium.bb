@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "sync/notifier/invalidation_handler.h"
@@ -39,6 +40,7 @@ class DrivePrefetcher;
 class DriveResourceMetadata;
 class EventLogger;
 class FileWriteHelper;
+class JobListInterface;
 class StaleCacheFilesRemover;
 
 // Interface for classes that need to observe events from DriveSystemService.
@@ -96,6 +98,7 @@ class DriveSystemService : public ProfileKeyedService,
   DriveDownloadHandler* download_handler() { return download_handler_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
   EventLogger* event_logger() { return event_logger_.get(); }
+  JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the
   // file system. |callback| is called with true when this operation is done
@@ -163,6 +166,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<EventLogger> event_logger_;
   scoped_ptr<DriveCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
+  scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
