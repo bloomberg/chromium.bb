@@ -52,7 +52,7 @@ enum AutoscrollType {
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
 class AutoscrollController {
 public:
-    AutoscrollController();
+    explicit AutoscrollController(Frame*);
     RenderBox* autoscrollRenderer() const;
     bool autoscrollInProgress() const;
     bool panScrollInProgress() const;
@@ -64,7 +64,6 @@ public:
     void didPanScrollStart();
     void didPanScrollStop();
     void handleMouseReleaseEvent(const PlatformMouseEvent&);
-    void setPanScrollInProgress(bool);
     void startPanScrolling(RenderBox*, const IntPoint&);
 #endif
 
@@ -80,8 +79,10 @@ private:
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;
+    Frame* m_frame;
 #if ENABLE(PAN_SCROLLING)
     IntPoint m_panScrollStartPos;
+    bool m_panScrollInProgress;
 #endif
 };
 

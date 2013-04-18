@@ -1,0 +1,75 @@
+<html>
+<head>
+<script>
+var MIDDLE_BUTTON = 1;
+
+function $(id) { return document.getElementById(id); }
+
+function doTest() {
+    var scrollable = document.body;
+    for (var i = 0; i < 20; ++i) {
+      var line = document.createElement('div');
+      line.innerHTML = "line " + i;
+      scrollable.appendChild(line);
+    }
+
+    if (!window.eventSender)
+        return;
+
+    var iframe = window.parent.document.getElementById('iframe');
+    var offsetLeft = iframe.offsetLeft;
+    var offsetTop = iframe.offsetTop;
+
+    eventSender.mouseMoveTo(offsetLeft + 5, offsetTop + 5);
+    eventSender.mouseDown(MIDDLE_BUTTON);
+    eventSender.mouseUp(MIDDLE_BUTTON);
+    eventSender.mouseMoveTo(offsetLeft + 5, offsetTop + 50);
+
+    var retryCount = 0;
+    function checkScrolled() {
+      if (scrollable.scrollTop > 0) {
+        window.parent.testDone('SUCCEEDED');
+        return;
+      }
+      ++retryCount;
+      if (retryCount > 10) {
+        window.parent.testDone('FAILED');
+        return;
+      }
+      window.setTimeout(checkScrolled, 50);
+    }
+    checkScrolled();
+}
+
+function prepare() {
+    var iframe = document.createElement('iframe');
+    iframe.id = 'iframe';
+    iframe.width = 640;
+    iframe.height = 100;
+    iframe.src = location.href + '?test';
+    document.body.appendChild(iframe);
+
+    if (!window.testRunner)
+      return;
+
+    testRunner.dumpAsText(false);
+    testRunner.waitUntilDone();
+}
+
+function start() {
+    if (location.href.indexOf('?') < 0)
+      prepare();
+    else
+      doTest();
+}
+
+function testDone(message) {
+    $('result').textContent = message;
+    testRunner.notifyDone();
+}
+</script>
+</head>
+<body onload="start()">
+<div id="result">You should run this test in DRT.</div>
+</body>
+</html>

@@ -300,7 +300,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_mouseDownWasSingleClickInSelection(false)
     , m_selectionInitiationState(HaveNotStartedSelection)
     , m_hoverTimer(this, &EventHandler::hoverTimerFired)
-    , m_autoscrollController(adoptPtr(new AutoscrollController))
+    , m_autoscrollController(adoptPtr(new AutoscrollController(frame)))
     , m_mouseDownMayStartAutoscroll(false)
     , m_mouseDownWasInSubframe(false)
     , m_fakeMouseMoveEventTimer(this, &EventHandler::fakeMouseMoveEventTimerFired)
@@ -1163,7 +1163,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     if (!page)
         return NoCursorChange;
 #if ENABLE(PAN_SCROLLING)
-    if (page->mainFrame()->eventHandler()->panScrollInProgress())
+    if (panScrollInProgress())
         return NoCursorChange;
 #endif
 
@@ -1434,7 +1434,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 #if ENABLE(PAN_SCROLLING)
     // We store whether pan scrolling is in progress before calling stopAutoscrollTimer()
     // because it will set m_autoscrollType to NoAutoscroll on return.
-    bool isPanScrollInProgress = m_frame->page() && m_frame->page()->mainFrame()->eventHandler()->panScrollInProgress();
+    bool isPanScrollInProgress = panScrollInProgress();
     stopAutoscrollTimer();
     if (isPanScrollInProgress) {
         // We invalidate the click when exiting pan scrolling so that we don't inadvertently navigate
@@ -3002,15 +3002,13 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
         capsLockStateMayHaveChanged();
 
 #if ENABLE(PAN_SCROLLING)
-    if (Page* page = m_frame->page()) {
-        if (page->mainFrame()->eventHandler()->panScrollInProgress()) {
-            // If a key is pressed while the panScroll is in progress then we want to stop
-            if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown) 
-                stopAutoscrollTimer();
+    if (panScrollInProgress()) {
+        // If a key is pressed while the panScroll is in progress then we want to stop
+        if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)
+            stopAutoscrollTimer();
 
-            // If we were in panscroll mode, we swallow the key event
-            return true;
-        }
+        // If we were in panscroll mode, we swallow the key event
+        return true;
     }
 #endif
 
