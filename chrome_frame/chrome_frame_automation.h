@@ -111,15 +111,13 @@ class ChromeFrameLaunchParams :  // NOLINT
                           const std::wstring& profile_name,
                           const std::wstring& language,
                           bool incognito, bool widget_mode,
-                          bool route_all_top_level_navigations,
-                          bool send_shutdown_delay_switch)
+                          bool route_all_top_level_navigations)
     : launch_timeout_(kCommandExecutionTimeout), url_(url),
       referrer_(referrer), profile_path_(profile_path),
       profile_name_(profile_name), language_(language),
       version_check_(true), incognito_mode_(incognito),
       is_widget_mode_(widget_mode),
-      route_all_top_level_navigations_(route_all_top_level_navigations),
-      send_shutdown_delay_switch_(send_shutdown_delay_switch) {
+      route_all_top_level_navigations_(route_all_top_level_navigations) {
   }
 
   ~ChromeFrameLaunchParams() {
@@ -186,10 +184,6 @@ class ChromeFrameLaunchParams :  // NOLINT
     return route_all_top_level_navigations_;
   }
 
-  bool send_shutdown_delay_switch() const {
-    return send_shutdown_delay_switch_;
-  }
-
  protected:
   int launch_timeout_;
   GURL url_;
@@ -201,7 +195,6 @@ class ChromeFrameLaunchParams :  // NOLINT
   bool incognito_mode_;
   bool is_widget_mode_;
   bool route_all_top_level_navigations_;
-  bool send_shutdown_delay_switch_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameLaunchParams);
@@ -378,10 +371,6 @@ class ChromeFrameAutomationClient
     return use_chrome_network_;
   }
 
-  bool send_shutdown_delay_switch() const {
-    return send_shutdown_delay_switch_;
-  }
-
 #ifdef UNIT_TEST
   void set_proxy_factory(ProxyFactory* factory) {
     proxy_factory_ = factory;
@@ -439,8 +428,6 @@ class ChromeFrameAutomationClient
   }
 
  private:
-  void InitializeFieldTrials();
-
   void OnMessageReceivedUIThread(const IPC::Message& msg);
   void OnChannelErrorUIThread();
 
@@ -524,10 +511,6 @@ class ChromeFrameAutomationClient
   // in this page. This typically applies to hosts which would render the new
   // page without chrome frame. Defaults to false.
   bool route_all_top_level_navigations_;
-
-  // Set to true if Chrome Frame should tell Chrome to delay shutdown after
-  // we break a connection. Currently used only as part of a field trial.
-  bool send_shutdown_delay_switch_;
 
   friend class BeginNavigateContext;
   friend class CreateExternalTabContext;

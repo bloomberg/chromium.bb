@@ -49,7 +49,7 @@ class AutomationMockDelegate
     GURL empty;
     scoped_refptr<ChromeFrameLaunchParams> clp(
         new ChromeFrameLaunchParams(empty, empty, profile_path, profile_name,
-            language, incognito, is_widget_mode, false, false));
+            language, incognito, is_widget_mode, false));
     clp->set_launch_timeout(launch_timeout);
     clp->set_version_check(perform_version_check);
     automation_client_->Initialize(this, clp);

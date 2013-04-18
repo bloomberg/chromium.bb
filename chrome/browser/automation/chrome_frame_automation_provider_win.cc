@@ -4,10 +4,6 @@
 
 #include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
 
-#include <algorithm>
-
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,8 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-
-const int kMaxChromeShutdownDelaySeconds = 60*60;
 
 ChromeFrameAutomationProvider::ChromeFrameAutomationProvider(Profile* profile)
     : AutomationProvider(profile) {
@@ -27,38 +21,8 @@ ChromeFrameAutomationProvider::ChromeFrameAutomationProvider(Profile* profile)
 
 ChromeFrameAutomationProvider::~ChromeFrameAutomationProvider() {
   DCHECK(g_browser_process);
-  if (g_browser_process) {
-    CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-
-    CommandLine::StringType shutdown_delay(
-        cmd_line.GetSwitchValueNative(switches::kChromeFrameShutdownDelay));
-    if (!shutdown_delay.empty()) {
-      VLOG(1) << "ChromeFrameAutomationProvider: "
-                 "Scheduling ReleaseBrowserProcess.";
-
-      // Grab the specified shutdown delay.
-      int shutdown_delay_seconds = 0;
-      base::StringToInt(shutdown_delay, &shutdown_delay_seconds);
-
-      // Clamp to reasonable values.
-      shutdown_delay_seconds = std::max(0, shutdown_delay_seconds);
-      shutdown_delay_seconds = std::min(shutdown_delay_seconds,
-                                        kMaxChromeShutdownDelaySeconds);
-
-      // We have Chrome Frame defer Chrome shutdown for a time to improve
-      // intra-page load times.
-      // Note that we are tracking the perf impact of this under
-      // http://crbug.com/98506
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ChromeFrameAutomationProvider::ReleaseBrowserProcess),
-          base::TimeDelta::FromSeconds(shutdown_delay_seconds));
-    } else {
-      VLOG(1) << "ChromeFrameAutomationProvider: "
-                 "Releasing browser module with no delay.";
-      g_browser_process->ReleaseModule();
-    }
-  }
+  if (g_browser_process)
+    g_browser_process->ReleaseModule();
 }
 
 bool ChromeFrameAutomationProvider::OnMessageReceived(
@@ -119,12 +83,4 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
   }
 
   return is_valid_message;
-}
-
-// static
-void ChromeFrameAutomationProvider::ReleaseBrowserProcess() {
-  if (g_browser_process) {
-    VLOG(1) << "ChromeFrameAutomationProvider: Releasing browser process.";
-    g_browser_process->ReleaseModule();
-  }
 }

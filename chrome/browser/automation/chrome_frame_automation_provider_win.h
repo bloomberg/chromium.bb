@@ -33,10 +33,6 @@ class ChromeFrameAutomationProvider : public AutomationProvider {
   // Returns true if the message received is a valid chrome frame message.
   bool IsValidMessage(uint32 type);
 
-  // Called to release an instance's ref count on the global BrowserProcess
-  // instance.
-  static void ReleaseBrowserProcess();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameAutomationProvider);
 };

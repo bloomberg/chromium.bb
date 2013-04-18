@@ -40,7 +40,7 @@ ChromeFrameLaunchParams* ProxyFactoryTest::MakeLaunchParams(
   ChromeFrameLaunchParams* params =
       new ChromeFrameLaunchParams(empty, empty, profile_path,
                                   profile_path.BaseName().value(), L"", false,
-                                  false, false, false);
+                                  false, false);
   params->set_launch_timeout(0);
   params->set_version_check(false);
   return params;

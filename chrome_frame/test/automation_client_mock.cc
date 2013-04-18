@@ -137,7 +137,7 @@ void CFACWithChrome::SetUp() {
   GURL empty;
   launch_params_ = new ChromeFrameLaunchParams(
       empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
-      false, false, false, false);
+      false, false, false);
   launch_params_->set_version_check(false);
   launch_params_->set_launch_timeout(kSaneAutomationTimeoutMs);
 }
@@ -266,7 +266,7 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   GURL empty;
   scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
       empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
-      false, false, false, false));
+      false, false, false));
   clp->set_launch_timeout(timeout);
   clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
@@ -299,7 +299,7 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   GURL empty;
   scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
       empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
-      false, false, false, false));
+      false, false, false));
   clp->set_launch_timeout(timeout_);
   clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
@@ -343,7 +343,7 @@ TEST_F(CFACMockTest, OnChannelError) {
   GURL empty;
   scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
       empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
-      false, false, false, false));
+      false, false, false));
   clp->set_launch_timeout(1);  // Unneeded timeout, but can't be 0.
   clp->set_version_check(false);
 
@@ -463,7 +463,7 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   scoped_refptr<ChromeFrameLaunchParams> launch_params(
       new ChromeFrameLaunchParams(
           GURL("http://www.nonexistent.com"), empty, profile_path_,
-          profile_path_.BaseName().value(), L"", false, false, false, false));
+          profile_path_.BaseName().value(), L"", false, false, false));
   launch_params->set_launch_timeout(timeout);
   launch_params->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, launch_params));

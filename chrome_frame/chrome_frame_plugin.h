@@ -82,8 +82,7 @@ END_MSG_MAP()
     base::FilePath actual_profile_name = profile_path.BaseName();
     launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
         actual_profile_name.value(), SimpleResourceLoader::GetLanguage(),
-        incognito_mode, is_widget_mode, route_all_top_level_navigations,
-        automation_client_->send_shutdown_delay_switch());
+        incognito_mode, is_widget_mode, route_all_top_level_navigations);
     return automation_client_->Initialize(this, launch_params_);
   }
 
