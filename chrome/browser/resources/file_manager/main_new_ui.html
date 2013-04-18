@@ -195,13 +195,28 @@
       <menuitem command="#drive-clear-local-cache"></menuitem>
       <menuitem command="#drive-reload"></menuitem>
       <hr>
-      <div id="volume-space-info" disabled>
-        <span id="volume-space-info-label"></span>
-        <div><div id="volume-space-info-bar"></div></div>
+      <div>
+        View
       </div>
+      <menuitem class="menuitem-button left" id="detail-view"
+              i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
+      </menuitem>
+      <menuitem class="menuitem-button right" id="thumbnail-view"
+              i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
+      </menuitem>
+      <hr>
       <menuitem command="#drive-buy-more-space"></menuitem>
       <menuitem command="#drive-go-to-drive"></menuitem>
       <menuitem command="#volume-help"></menuitem>
+      <hr>
+      <div id="volume-space-info">
+        <div id="volume-space-info-contents">
+          <span id="volume-space-info-label"></span>
+          <div class="progress-bar">
+            <div class="progress-track" id="volume-space-info-bar"></div>
+          </div>
+        </div>
+      </div>
     </menu>
 
     <menu id="tasks-menu" class="chrome-menu">

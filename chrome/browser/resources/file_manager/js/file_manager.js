@@ -575,6 +575,10 @@ DialogType.isModal = function(type) {
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
+    if (util.platform.newUI()) {
+      this.detailViewButton_.checkable = true;
+      this.thumbnailViewButton_.checkable = true;
+    }
   };
 
   /**
@@ -794,6 +798,18 @@ DialogType.isModal = function(type) {
     this.hostedButton = this.dialogDom_.querySelector('#drive-hosted-settings');
     this.hostedButton.addEventListener('activate', this.onDrivePrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
+
+    if (util.platform.newUI()) {
+      this.detailViewButton_ =
+          this.dialogDom_.querySelector('#detail-view');
+      this.detailViewButton_.addEventListener('activate',
+          this.onDetailViewButtonClick_.bind(this));
+
+      this.thumbnailViewButton_ =
+          this.dialogDom_.querySelector('#thumbnail-view');
+      this.thumbnailViewButton_.addEventListener('activate',
+          this.onThumbnailViewButtonClick_.bind(this));
+    }
 
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.addEventListener('select',
@@ -1107,6 +1123,11 @@ DialogType.isModal = function(type) {
       if (!util.platform.newUI()) {
         this.dialogDom_.querySelector('#detail-view').disabled = true;
         this.dialogDom_.querySelector('#thumbnail-view').disabled = false;
+      } else {
+        this.detailViewButton_.setAttribute('checked', '');
+        this.thumbnailViewButton_.removeAttribute('checked');
+        this.detailViewButton_.setAttribute('disabled', '');
+        this.thumbnailViewButton_.removeAttribute('disabled');
       }
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
@@ -1121,6 +1142,11 @@ DialogType.isModal = function(type) {
       if (!util.platform.newUI()) {
         this.dialogDom_.querySelector('#thumbnail-view').disabled = true;
         this.dialogDom_.querySelector('#detail-view').disabled = false;
+      } else {
+        this.thumbnailViewButton_.setAttribute('checked', '');
+        this.detailViewButton_.removeAttribute('checked');
+        this.thumbnailViewButton_.setAttribute('disabled', '');
+        this.detailViewButton_.removeAttribute('disabled');
       }
     } else {
       throw new Error('Unknown list type: ' + type);

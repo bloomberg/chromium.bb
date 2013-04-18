@@ -713,20 +713,20 @@ body[new-ui] #search-box:focus {
     url('../images/files/ui/2x/search_clear_pressed.png') 2x);
 }
 
-button#detail-view::before {
+body:not([new-ui]) button#detail-view::before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_list_black.png') 1x,
     url('../images/files/ui/2x/view_list_black.png') 2x);
 }
 
-button#thumbnail-view::before {
+body:not([new-ui]) button#thumbnail-view::before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_thumbs_black.png') 1x,
     url('../images/files/ui/2x/view_thumbs_black.png') 2x);
 }
 
-button#detail-view::before,
-button#thumbnail-view::before {
+body:not([new-ui]) button#detail-view::before,
+body:not([new-ui]) button#thumbnail-view::before {
   background-position: center;
   background-repeat: no-repeat;
   bottom: 0;
@@ -738,20 +738,20 @@ button#thumbnail-view::before {
   top: 0;
 }
 
-button#detail-view[disabled]::before,
-button#thumbnail-view[disabled]::before {
+body:not([new-ui]) button#detail-view[disabled]::before,
+body:not([new-ui]) button#thumbnail-view[disabled]::before {
   opacity: 0.75;
 }
 
-button#detail-view:hover::before,
-button#thumbnail-view:hover::before {
+body:not([new-ui]) button#detail-view:hover::before,
+body:not([new-ui]) button#thumbnail-view:hover::before {
   opacity: 1;
 }
 
 
 /* When detail-view is not disabled (thus thumbnail view is disabled), push
    it up a little, to make it's right glowing border visible while focused.*/
-button#detail-view:not([disabled]) {
+body:not([new-ui]) button#detail-view:not([disabled]) {
   z-index: 2;
 }
 
@@ -1661,7 +1661,7 @@ menu.file-context-menu {
   z-index: 4;
 }
 
-menu.chrome-menu {
+body:not([new-ui]) menu.chrome-menu {
   min-width: 200px;
 }
 
@@ -1897,24 +1897,20 @@ body:not([new-ui]) #gear-button span.disclosureindicator {
   display: block;
 }
 
-#downloads-root-context-menu {
+body:not([new-ui]) #downloads-root-context-menu {
   min-width: 250px;
 }
 
-#volume-space-info {
+body:not([new-ui]) #volume-space-info {
   -webkit-box-pack: justify;
   display: -webkit-box;
 }
 
-#volume-space-info-label {
+body:not([new-ui]) #volume-space-info-label {
   display: block;
 }
 
-#volume-space-info-label {
-  display: block;
-}
-
-#volume-space-info > div {
+body:not([new-ui]) #volume-space-info > div {
   -webkit-box-flex: 1;
   border: 1px solid rgb(192, 192, 192);
   display: block;
@@ -1923,7 +1919,7 @@ body:not([new-ui]) #gear-button span.disclosureindicator {
   min-width: 30px;
 }
 
-#volume-space-info-bar[pending] {
+body:not([new-ui]) #volume-space-info-bar[pending] {
   -webkit-animation-duration: 800ms;
   -webkit-animation-iteration-count: infinite;
   -webkit-animation-name: bg;
@@ -1937,12 +1933,23 @@ body:not([new-ui]) #gear-button span.disclosureindicator {
   background-size: 16px 8px;
 }
 
-#volume-space-info-bar {
+body:not([new-ui]) #volume-space-info-bar {
   background-color: rgb(192, 192, 192);
   border: 1px solid rgb(255, 255, 255);
   box-sizing: border-box;
   height: 100%;
   width: 50%;
+}
+
+body[new-ui] #volume-space-info-contents {
+  -webkit-box-align: center;
+  display: -webkit-box;
+}
+
+body[new-ui] #volume-space-info-contents > div {
+  -webkit-box-flex: 1;
+  -webkit-margin-start: 15px;
+  display: -webkit-box;
 }
 
 #list-container .table-header-inner {
@@ -2019,4 +2026,22 @@ list.autocomplete-suggestions:not([hasElementFocus]) > [lead] {
   background-color: rgb(238, 238, 238);
   background-image: none;
   border: 1px solid white;
+}
+
+body[new-ui] #gear-menu > menuitem:not(.menuitem-button) {
+  margin-right: 50px;
+}
+
+/* View buttons in the gear menu. */
+
+body[new-ui] menuitem#detail-view {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/button_list_view.png') 1x,
+    url('../images/files/ui/new-ui/2x/button_list_view.png') 2x);
+}
+
+body[new-ui] menuitem#thumbnail-view {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/button_mosaic_view.png') 1x,
+    url('../images/files/ui/new-ui/2x/button_mosaic_view.png') 2x);
 }

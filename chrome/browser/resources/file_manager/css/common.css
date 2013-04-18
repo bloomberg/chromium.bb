@@ -283,6 +283,14 @@ menu.chrome-menu {
   z-index: 15;
 }
 
+body[new-ui] menu.chrome-menu {
+  -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(255, 255, 255);
+  overflow: hidden;
+  padding: 5px 0;
+}
+
 menu.chrome-menu[hidden] {
   display: block;
   opacity: 0;
@@ -295,7 +303,7 @@ menu.chrome-menu.hide-delayed[hidden] {
   -webkit-transition-property: opacity, visibility;
 }
 
-menu.chrome-menu > :not(hr) {
+body:not([new-ui]) menu.chrome-menu > menuitem {
   background-position: 6px center;
   background-repeat: no-repeat;
   height: 30px;
@@ -304,24 +312,72 @@ menu.chrome-menu > :not(hr) {
   padding-right: 20px;
 }
 
-menu.chrome-menu > :not(hr)[disabled] {
+body[new-ui] menu.chrome-menu > :not(hr) {
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  line-height: 30px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+body[new-ui] menu.chrome-menu > .menuitem-button {
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid rgb(235, 235, 235);
+  height: 42px;
+  margin: -36px -1px -1px 0;
+  min-width: 60px;
+  padding: 0;
+  position: absolute;
+  width: 60px;
+}
+
+body[new-ui] menu.chrome-menu > .menuitem-button[checked] {
+  background-color: rgb(235, 235, 235);
+}
+
+body[new-ui] menu.chrome-menu > .menuitem-button.left {
+  right: 59px;
+}
+
+body[new-ui] menu.chrome-menu > .menuitem-button.right {
+  right: 0;
+}
+
+menu.chrome-menu > menuitem[disabled] {
   background-color: rgb(255, 255, 255);
   color: rgb(153, 153, 153);
 }
 
-menu.chrome-menu > :not(hr):not([disabled])[selected],
-menu.chrome-menu > :not(hr):not([disabled])[selected]:active {
+body[new-ui] menu.chrome-menu > menuitem[disabled] {
+  background-color: rgb(252, 252, 252);
+}
+
+menu.chrome-menu > menuitem:not([disabled])[selected],
+menu.chrome-menu > menuitem:not([disabled])[selected]:active {
   background-color: rgb(241, 241, 241);
   color: rgb(34, 34, 34);
 }
 
-menu.chrome-menu > hr {
+body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected],
+body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected]:active {
+  background-color: rgb(235, 235, 235);
+  color: rgb(34, 34, 34);
+}
+
+body:not([new-ui]) menu.chrome-menu > hr {
   background: rgb(218, 218, 218);
   height: 1px;
   margin: 2px 0;
 }
 
-menu.chrome-menu > :not(hr)[checked] {
+body[new-ui] menu.chrome-menu > hr {
+  background: rgb(235, 235, 235);
+  height: 1px;
+  margin: 5px 0;
+}
+
+menu.chrome-menu > menuitem[checked] {
   background-image: -webkit-image-set(
     url('../images/common/check_no_box.png') 1x,
     url('../images/common/2x/check_no_box.png') 2x);
