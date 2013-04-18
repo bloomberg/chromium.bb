@@ -491,12 +491,11 @@ BOOL InitializeSimulatorUserHome(NSString* userHomePath, NSString* deviceName) {
 
   // Set the device to simulate. Note that the iOS Simulator must not be running
   // for this setting to take effect.
-  NSMutableDictionary* plistDict =
-      [NSMutableDictionary dictionaryWithObject:deviceName
-                                         forKey:@"SimulateDevice"];
-  NSString* plistPath = @"Library/Preferences/com.apple.iphonesimulator.plist";
-  [plistDict writeToFile:[userHomePath stringByAppendingPathComponent:plistPath]
-              atomically:YES];
+  CFStringRef iPhoneSimulatorAppID = CFSTR("com.apple.iphonesimulator");
+  CFPreferencesSetAppValue(CFSTR("SimulateDevice"),
+                           deviceName,
+                           iPhoneSimulatorAppID);
+  CFPreferencesAppSynchronize(iPhoneSimulatorAppID);
 
   // Update the environment to use the specified directory as the user home
   // directory.
