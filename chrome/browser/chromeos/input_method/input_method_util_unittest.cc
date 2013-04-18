@@ -6,11 +6,12 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/input_method_whitelist.h"
-#include "chromeos/ime/mock_input_method_delegate.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,6 +43,10 @@ class InputMethodUtilTest : public testing::Test {
  public:
   InputMethodUtilTest()
       : util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
+    delegate_.set_get_localized_string_callback(
+        base::Bind(&l10n_util::GetStringUTF16));
+    delegate_.set_get_display_language_name_callback(
+        base::Bind(&InputMethodUtilTest::GetDisplayLanguageName));
   }
 
   InputMethodDescriptor GetDesc(const std::string& id,
@@ -55,7 +60,11 @@ class InputMethodUtilTest : public testing::Test {
                                  false);
   }
 
-  MockInputMethodDelegate delegate_;
+  static string16 GetDisplayLanguageName(const std::string& language_code) {
+    return l10n_util::GetDisplayNameForLocale(language_code, "en", true);
+  }
+
+  FakeInputMethodDelegate delegate_;
   InputMethodWhitelist whitelist_;
   TestableInputMethodUtil util_;
 };
@@ -340,11 +349,6 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
   // This used to be "zh" but now we have "zh-CN" in input_methods.h,
   // hence this should be zh-CN now.
   EXPECT_EQ("zh-CN", descriptor->language_code());
-}
-
-TEST_F(InputMethodUtilTest, TestGetLanguageNativeDisplayNameFromCode) {
-  EXPECT_EQ(UTF8ToUTF16("suomi"),
-            InputMethodUtil::GetLanguageNativeDisplayNameFromCode("fi"));
 }
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {

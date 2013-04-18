@@ -17,9 +17,9 @@
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "chromeos/ime/mock_ibus_daemon_controller.h"
-#include "chromeos/ime/mock_input_method_delegate.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -52,7 +52,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
     mock_ibus_input_context_client_ =
         mock_dbus_thread_manager_->mock_ibus_input_context_client();
-    delegate_ = new MockInputMethodDelegate();
+    delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
     controller_ = new MockIBusController;
@@ -113,7 +113,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   }
 
   scoped_ptr<InputMethodManagerImpl> manager_;
-  MockInputMethodDelegate* delegate_;
+  FakeInputMethodDelegate* delegate_;
   MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   MockIBusDaemonController* mock_ibus_daemon_controller_;

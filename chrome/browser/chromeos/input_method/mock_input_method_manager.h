@@ -7,8 +7,8 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/input_method_whitelist.h"
-#include "chromeos/ime/mock_input_method_delegate.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 
 namespace chromeos {
@@ -81,7 +81,7 @@ class MockInputMethodManager : public InputMethodManager {
   std::string current_input_method_id_;
 
   InputMethodWhitelist whitelist_;
-  MockInputMethodDelegate delegate_;  // used by util_
+  FakeInputMethodDelegate delegate_;  // used by util_
   InputMethodUtil util_;
   MockXKeyboard xkeyboard_;
 

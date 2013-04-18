@@ -103,21 +103,6 @@ class InputMethodUtil {
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
 
-  // Converts a language code to a language display name, using the
-  // current application locale. MaybeRewriteLanguageName() is called
-  // internally.
-  // Examples: "fi"    => "Finnish"
-  //           "en-US" => "English (United States)"
-  string16 GetLanguageDisplayNameFromCode(
-      const std::string& language_code);
-
-  // Converts a language code to a language native display name.
-  // MaybeRewriteLanguageName() is called internally.
-  // Examples: "fi"    => "suomi" (rather than Finnish)
-  //           "en-US" => "English (United States)"
-  static string16 GetLanguageNativeDisplayNameFromCode(
-      const std::string& language_code);
-
   // Returns extra language code list associated with |input_method_id|. If
   // there is no associated langauge code, this function returns empty list.
   std::vector<std::string> GetExtraLanguageCodesFromId(

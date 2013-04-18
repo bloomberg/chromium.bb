@@ -18,10 +18,8 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
+// TODO(nona): move this header from this file.
 #include "grit/generated_resources.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
 
@@ -259,29 +257,6 @@ const struct EnglishToResouceId {
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);
 
-// The comparator is used for sorting language codes by their
-// corresponding language names, using the ICU collator.
-struct CompareLanguageCodesByLanguageName
-    : std::binary_function<const std::string&, const std::string&, bool> {
-  CompareLanguageCodesByLanguageName(InputMethodUtil* util,
-                                     icu::Collator* collator)
-      : util_(util), collator_(collator) {
-  }
-
-  // Calling GetLanguageDisplayNameFromCode() in the comparator is not
-  // efficient, but acceptable as the function is cheap, and the language
-  // list is short (about 60 at most).
-  bool operator()(const std::string& s1, const std::string& s2) const {
-    const string16 key1 = util_->GetLanguageDisplayNameFromCode(s1);
-    const string16 key2 = util_->GetLanguageDisplayNameFromCode(s2);
-    return l10n_util::StringComparator<string16>(collator_)(key1, key2);
-  }
-
- private:
-  InputMethodUtil* util_;
-  icu::Collator* collator_;
-};
-
 // The list of language that do not have associated input methods in IBus.
 // For these languages, we associate input methods here.
 const struct ExtraLanguage {
@@ -342,7 +317,7 @@ bool InputMethodUtil::TranslateStringInternal(
     return false;
   }
 
-  *out_string = l10n_util::GetStringUTF16(iter->second);
+  *out_string = delegate_->GetLocalizedString(iter->second);
   return true;
 }
 
@@ -449,7 +424,7 @@ string16 InputMethodUtil::GetInputMethodMediumName(
   for (size_t i = 0; i < kMappingImeIdToMediumLenNameResourceIdLen; ++i) {
     if (kMappingImeIdToMediumLenNameResourceId[i].input_method_id ==
         input_method.id()) {
-      return l10n_util::GetStringUTF16(
+      return delegate_->GetLocalizedString(
           kMappingImeIdToMediumLenNameResourceId[i].resource_id);
     }
   }
@@ -470,7 +445,7 @@ string16 InputMethodUtil::GetInputMethodLongName(
   // keyboard layouts and share the same layout of keyboard (Belgian). We need
   // to show explicitly the language for the layout. For Arabic, Amharic, and
   // Indic languages: they share "Standard Input Method".
-  const string16 standard_input_method_text = l10n_util::GetStringUTF16(
+  const string16 standard_input_method_text = delegate_->GetLocalizedString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
   const std::string language_code = input_method.language_code();
 
@@ -479,8 +454,8 @@ string16 InputMethodUtil::GetInputMethodLongName(
              language_code == "de" ||
              language_code == "fr" ||
              language_code == "nl") {
-    const string16 language_name = l10n_util::GetDisplayNameForLocale(
-        language_code, delegate_->GetActiveLocale(), true);
+    const string16 language_name = delegate_->GetDisplayLanguageName(
+        language_code);
 
     text = language_name + UTF8ToUTF16(" - ") + text;
   }
@@ -494,19 +469,6 @@ const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(
   InputMethodIdToDescriptorMap::const_iterator iter
       = id_to_descriptor_.find(input_method_id);
   return (iter == id_to_descriptor_.end()) ? NULL : &(iter->second);
-}
-
-// static
-string16 InputMethodUtil::GetLanguageDisplayNameFromCode(
-    const std::string& language_code) {
-  return l10n_util::GetDisplayNameForLocale(
-      language_code, delegate_->GetActiveLocale(), true);
-}
-
-// static
-string16 InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
-    const std::string& language_code) {
-  return l10n_util::GetDisplayNameForLocale(language_code, language_code, true);
 }
 
 std::vector<std::string> InputMethodUtil::GetExtraLanguageCodesFromId(

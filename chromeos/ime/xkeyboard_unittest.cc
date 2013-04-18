@@ -11,8 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chromeos/ime/input_method_whitelist.h"
-#include "chromeos/ime/mock_input_method_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <X11/Xlib.h>
@@ -35,7 +33,6 @@ class XKeyboardTest : public testing::Test {
     xkey_.reset();
   }
 
-  InputMethodWhitelist whitelist_;
   scoped_ptr<XKeyboard> xkey_;
 
   MessageLoopForUI message_loop_;

@@ -185,13 +185,11 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
                   *iter) == base_language_codes.end()) {
       continue;
     }
-    input_method::InputMethodUtil* input_method_util =
-        input_method::GetInputMethodManager()->GetInputMethodUtil();
     const string16 display_name =
-        input_method_util->GetLanguageDisplayNameFromCode(*iter);
+        l10n_util::GetDisplayNameForLocale(*iter, app_locale, true);
     const string16 native_display_name =
-        input_method::InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
-            *iter);
+        l10n_util::GetDisplayNameForLocale(*iter, *iter, true);
+
     display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(*iter, native_display_name);

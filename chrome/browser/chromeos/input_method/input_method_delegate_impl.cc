@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace input_method {
@@ -25,12 +26,17 @@ std::string InputMethodDelegateImpl::GetHardwareKeyboardLayout() const {
   return std::string();
 }
 
-std::string InputMethodDelegateImpl::GetActiveLocale() const {
-  if (g_browser_process)
-    return g_browser_process->GetApplicationLocale();
+string16 InputMethodDelegateImpl::GetLocalizedString(int resource_id) const {
+  return l10n_util::GetStringUTF16(resource_id);
+}
 
-  NOTREACHED();
-  return std::string();
+string16 InputMethodDelegateImpl::GetDisplayLanguageName(
+    const std::string& language_code) const {
+  DCHECK(g_browser_process);
+  return l10n_util::GetDisplayNameForLocale(
+      language_code,
+      g_browser_process->GetApplicationLocale(),
+      true);
 }
 
 }  // namespace input_method

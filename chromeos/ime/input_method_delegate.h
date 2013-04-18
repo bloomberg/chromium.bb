@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 namespace chromeos {
 namespace input_method {
@@ -21,8 +22,16 @@ class InputMethodDelegate {
   // Retrieves the hardware keyboard layout ID. May return an empty string if
   // the ID is unknown.
   virtual std::string GetHardwareKeyboardLayout() const = 0;
-  // Retrieves the currently active UI locale.
-  virtual std::string GetActiveLocale() const = 0;
+
+  // Retrieves localized string for |resource_id|.
+  virtual string16 GetLocalizedString(int resource_id) const = 0;
+
+  // Converts a language code to a language display name, using the
+  // current application locale.
+  // Examples: "fi"    => "Finnish"
+  //           "en-US" => "English (United States)"
+  virtual string16 GetDisplayLanguageName(
+      const std::string& language_code) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodDelegate);
