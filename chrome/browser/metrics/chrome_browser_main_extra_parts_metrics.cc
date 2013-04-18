@@ -5,7 +5,6 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -24,8 +23,7 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
+#include "base/version.h"
 #endif
 
 namespace {
@@ -69,23 +67,18 @@ void RecordDefaultBrowserUMAStat() {
 
 void RecordLinuxGlibcVersion() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  std::string glibc_version_string(gnu_get_libc_version());
-  std::vector<std::string> split_glibc_version;
-  base::SplitString(glibc_version_string, '.', &split_glibc_version);
+  Version version(gnu_get_libc_version());
 
   UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-  unsigned glibc_major_version = 0;
-  unsigned glibc_minor_version = 0;
-  if (split_glibc_version.size() == 2 &&
-      base::StringToUint(split_glibc_version[0], &glibc_major_version) &&
-      base::StringToUint(split_glibc_version[1], &glibc_minor_version)) {
+  if (version.IsValid() && version.components().size() == 2) {
     glibc_version_result = UMA_LINUX_GLIBC_UNKNOWN;
+    int glibc_major_version = version.components()[0];
+    int glibc_minor_version = version.components()[1];
     if (glibc_major_version == 2) {
       // A constant to translate glibc 2.x minor versions to their
       // equivalent UMALinuxGlibcVersion values.
-      const unsigned kGlibcMinorVersionTranslationOffset =
-          11 - UMA_LINUX_GLIBC_2_11;
-      unsigned translated_glibc_minor_version =
+      const int kGlibcMinorVersionTranslationOffset = 11 - UMA_LINUX_GLIBC_2_11;
+      int translated_glibc_minor_version =
           glibc_minor_version - kGlibcMinorVersionTranslationOffset;
       if (translated_glibc_minor_version >= UMA_LINUX_GLIBC_2_11 &&
           translated_glibc_minor_version <= UMA_LINUX_GLIBC_2_19) {
