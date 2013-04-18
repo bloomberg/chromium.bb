@@ -426,24 +426,55 @@ AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params) {
+  // Handle basic output with no input channels.
+  if (params.input_channels() == 0) {
+    AudioDeviceID device = kAudioObjectUnknown;
+    GetDefaultOutputDevice(&device);
+    return new AUHALStream(this, params, device);
+  }
+
   // TODO(crogers): support more than stereo input.
-  if (params.input_channels() == 2) {
-    if (HasUnifiedDefaultIO())
-      return new AudioHardwareUnifiedStream(this, params);
-
-    // TODO(crogers): use aggregate devices along with AUHALStream
-    // to get better performance for built-in hardware.
-
-    // kAudioDeviceUnknown translates to "use default" here.
-    return new AudioSynchronizedStream(this,
-                                       params,
-                                       kAudioDeviceUnknown,
-                                       kAudioDeviceUnknown);
+  if (params.input_channels() != 2) {
+    // WebAudio is currently hard-coded to 2 channels so we should not
+    // see this case.
+    NOTREACHED() << "Only stereo input is currently supported!";
+    return NULL;
   }
 
   AudioDeviceID device = kAudioObjectUnknown;
-  GetDefaultOutputDevice(&device);
-  return new AUHALStream(this, params, device);
+  if (HasUnifiedDefaultIO()) {
+    // For I/O, the simplest case is when the default input and output
+    // devices are the same.
+    GetDefaultOutputDevice(&device);
+    LOG(INFO) << "UNIFIED: default input and output devices are identical";
+  } else {
+    // Some audio hardware is presented as separate input and output devices
+    // even though they are really the same physical hardware and
+    // share the same "clock domain" at the lowest levels of the driver.
+    // A common of example of this is the "built-in" audio hardware:
+    //     "Built-in Line Input"
+    //     "Built-in Output"
+    // We would like to use an "aggregate" device for these situations, since
+    // CoreAudio will make the most efficient use of the shared "clock domain"
+    // so we get the lowest latency and use fewer threads.
+    device = aggregate_device_manager_.GetDefaultAggregateDevice();
+    if (device != kAudioObjectUnknown)
+      LOG(INFO) << "Using AGGREGATE audio device";
+  }
+
+  if (device != kAudioObjectUnknown)
+    return new AUHALStream(this, params, device);
+
+  // Fallback to AudioSynchronizedStream which will handle completely
+  // different and arbitrary combinations of input and output devices
+  // even running at different sample-rates.
+  // kAudioDeviceUnknown translates to "use default" here.
+  // TODO(crogers): consider tracking UMA stats on AUHALStream
+  // versus AudioSynchronizedStream.
+  return new AudioSynchronizedStream(this,
+                                     params,
+                                     kAudioDeviceUnknown,
+                                     kAudioDeviceUnknown);
 }
 
 AudioInputStream* AudioManagerMac::MakeLinearInputStream(

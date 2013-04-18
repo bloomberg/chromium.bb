@@ -76,10 +76,12 @@ AUHALStream::AUHALStream(
   // We must have a manager.
   DCHECK(manager_);
 
-  DVLOG(1) << "Input channels: " << input_channels_;
-  DVLOG(1) << "Output channels: " << output_channels_;
-  DVLOG(1) << "Sample rate: " << params_.sample_rate();
-  DVLOG(1) << "Buffer size: " << number_of_frames_;
+  VLOG(1) << "AUHALStream::AUHALStream()";
+  VLOG(1) << "Device: " << device;
+  VLOG(1) << "Input channels: " << input_channels_;
+  VLOG(1) << "Output channels: " << output_channels_;
+  VLOG(1) << "Sample rate: " << params_.sample_rate();
+  VLOG(1) << "Buffer size: " << number_of_frames_;
 }
 
 AUHALStream::~AUHALStream() {

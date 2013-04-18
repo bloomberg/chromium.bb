@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/mac/aggregate_device_manager.h"
 #include "media/audio/mac/audio_device_listener_mac.h"
 
 namespace media {
@@ -74,6 +75,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // so we can intelligently handle device notifications only when necessary.
   int current_sample_rate_;
   AudioDeviceID current_output_device_;
+
+  AggregateDeviceManager aggregate_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };

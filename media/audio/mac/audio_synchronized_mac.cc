@@ -85,6 +85,7 @@ AudioSynchronizedStream::AudioSynchronizedStream(
       is_running_(false),
       hardware_buffer_size_(kHardwareBufferSize),
       channels_(kChannels) {
+  VLOG(1) << "AudioSynchronizedStream::AudioSynchronizedStream()";
 }
 
 AudioSynchronizedStream::~AudioSynchronizedStream() {
