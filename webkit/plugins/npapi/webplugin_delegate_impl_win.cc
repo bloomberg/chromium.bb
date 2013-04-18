@@ -1024,7 +1024,8 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     if (old_message != custom_msg)
       flags |= RDW_UPDATENOW;
 
-    RedrawWindow(hwnd, &invalid_rect.ToRECT(), NULL, flags);
+    RECT rect = invalid_rect.ToRECT();
+    RedrawWindow(hwnd, &rect, NULL, flags);
     result = FALSE;
   } else {
     delegate->is_calling_wndproc = true;
