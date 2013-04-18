@@ -107,7 +107,6 @@
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'source_dir': '<(java_in_dir)/src',
     'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
-    'strip_output_paths': [],
     'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
@@ -137,14 +136,6 @@
       'dependencies': [
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
       ],
-      'variables': {
-        # Add a fake output to force the build to always re-run this step. This
-        # is required because the real inputs are not known at gyp-time and
-        # changing base.so may not trigger changes to dependent libraries.
-        'strip_output_paths': [
-          '<(intermediate_dir)/<(strip_stamp).fake',
-        ],
-      },
     }],
     ['native_lib_target != ""', {
       'variables': {
@@ -154,22 +145,10 @@
       },
       'actions': [
         {
-          'action_name': 'ordered_libraries_<(_target_name)',
-          'message': 'Writing dependency ordered libraries for <(_target_name).',
-          'inputs': [
-            '<(DEPTH)/build/android/gyp/util/build_utils.py',
-            '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
-            '<@(native_libs_paths)',
-          ],
-          'outputs': [
-            '<(ordered_libraries_file)',
-          ],
-          'action': [
-            'python', '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
-            '--input-libraries=<(native_libs_paths)',
-            '--readelf=<(android_readelf)',
-            '--output=<(ordered_libraries_file)',
-          ],
+          'variables': {
+            'input_libraries': ['<@(native_libs_paths)'],
+          },
+          'includes': ['../build/android/write_ordered_libraries.gypi'],
         },
         {
           'action_name': 'native_libraries_template_data_<(_target_name)',
@@ -210,32 +189,16 @@
           ],
         },
         {
-          'action_name': 'strip_native_libraries',
-          'message': 'Stripping libraries for <(_target_name)',
-          'inputs': [
-            '<(DEPTH)/build/android/gyp/util/build_utils.py',
-            '<(DEPTH)/build/android/gyp/strip_library_for_apk.py',
-            '<(ordered_libraries_file)'
-          ],
-          'outputs': [
-            '<(strip_stamp)',
-            '<@(strip_output_paths)',
-          ],
-          'action': [
-            'python', '<(DEPTH)/build/android/gyp/strip_library_for_apk.py',
-            '--android-strip=<(android_strip)',
-            '--android-strip-arg=--strip-unneeded',
-            '--stripped-libraries-dir=<(apk_libraries_dir)',
-            '--libraries-dir=<(SHARED_LIB_DIR)',
-            '--libraries-file=<(ordered_libraries_file)',
-            '--stamp=<(strip_stamp)',
-          ],
+          'variables': {
+            'stripped_libraries_dir': '<(libraries_source_dir)',
+          },
+          'includes': ['../build/android/strip_native_libraries.gypi'],
         },
       ],
       'conditions': [
         ['gyp_managed_install == 1', {
           'variables': {
-            'apk_libraries_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
+            'libraries_source_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
             'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
             'device_library_dir': '/data/local/tmp/chromium/lib.stripped/<(_target_name)',
           },
@@ -244,29 +207,7 @@
           ],
           'actions': [
             {
-              'action_name': 'push_libraries_<(_target_name)',
-              'message': 'Pushing libraries to device for <(_target_name)',
-              'inputs': [
-                '<(DEPTH)/build/android/gyp/util/build_utils.py',
-                '<(DEPTH)/build/android/gyp/util/md5_check.py',
-                '<(DEPTH)/build/android/gyp/push_libraries.py',
-                '<(strip_stamp)',
-              ],
-              'outputs': [
-                '<(push_stamp)',
-                # If a user switches the connected device, new libraries may
-                # need to be pushed even if there have been no changes. To
-                # ensure that the libraries on the device are always
-                # up-to-date, this step should always be triggered.
-                '<(push_stamp).fake',
-              ],
-              'action': [
-                'python', '<(DEPTH)/build/android/gyp/push_libraries.py',
-                '--libraries-dir=<(apk_libraries_dir)',
-                '--device-dir=<(device_library_dir)',
-                '--libraries-json=<(ordered_libraries_file)',
-                '--stamp=<(push_stamp)',
-              ],
+              'includes': ['../build/android/push_libraries.gypi'],
             },
             {
               'action_name': 'create_library_links',
@@ -283,7 +224,7 @@
                 'python', '<(DEPTH)/build/android/gyp/create_device_library_links.py',
                 '--apk=<(final_apk_path)',
                 '--libraries-json=<(ordered_libraries_file)',
-                '--libraries-dir=<(apk_libraries_dir)',
+                '--libraries-dir=<(libraries_source_dir)',
                 '--target-dir=<(device_library_dir)',
                 '--stamp=<(link_stamp)',
               ],
@@ -292,7 +233,7 @@
         }, {
           # gyp_managed_install != 1
           'variables': {
-            'apk_libraries_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
+            'libraries_source_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [ '<(strip_stamp)' ],
           },
         }],

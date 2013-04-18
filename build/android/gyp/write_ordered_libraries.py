@@ -28,15 +28,13 @@ import sys
 
 from util import build_utils
 
-
 _options = None
-_libraries_dir = None
 _library_re = re.compile(
     '.*NEEDED.*Shared library: \[(?P<library_name>[\w/.]+)\]')
 
 
 def FullLibraryPath(library_name):
-  return '%s/%s' % (_libraries_dir, library_name)
+  return '%s/%s' % (_options.libraries_dir, library_name)
 
 
 def IsSystemLibrary(library_name):
@@ -45,20 +43,20 @@ def IsSystemLibrary(library_name):
   return not os.path.exists(FullLibraryPath(library_name))
 
 
-def CallReadElf(library_name):
+def CallReadElf(library_or_executable):
   readelf_cmd = [_options.readelf,
                  '-d',
-                 FullLibraryPath(library_name)]
+                 library_or_executable]
   return build_utils.CheckCallDie(readelf_cmd, suppress_output=True)
 
 
-def GetDependencies(library_name):
-  elf = CallReadElf(library_name)
+def GetDependencies(library_or_executable):
+  elf = CallReadElf(library_or_executable)
   return set(_library_re.findall(elf))
 
 
 def GetNonSystemDependencies(library_name):
-  all_deps = GetDependencies(library_name)
+  all_deps = GetDependencies(FullLibraryPath(library_name))
   return set((lib for lib in all_deps if not IsSystemLibrary(lib)))
 
 
@@ -87,12 +85,20 @@ def GetSortedTransitiveDependencies(libraries):
 
   return sorted_deps
 
+def GetSortedTransitiveDependenciesForExecutable(executable):
+  """Returns all transitive library dependencies in dependency order."""
+  all_deps = GetDependencies(executable)
+  libraries = [lib for lib in all_deps if not IsSystemLibrary(lib)]
+  return GetSortedTransitiveDependencies(libraries)
+
 
 def main(argv):
   parser = optparse.OptionParser()
 
   parser.add_option('--input-libraries',
       help='A list of top-level input libraries.')
+  parser.add_option('--libraries-dir',
+      help='The directory which contains shared libraries.')
   parser.add_option('--readelf', help='Path to the readelf binary.')
   parser.add_option('--output', help='Path to the generated .json file.')
   parser.add_option('--stamp', help='Path to touch on success.')
@@ -101,11 +107,11 @@ def main(argv):
   _options, _ = parser.parse_args()
 
   libraries = build_utils.ParseGypList(_options.input_libraries)
-  global _libraries_dir
-  _libraries_dir = os.path.dirname(libraries[0])
-  libraries = [os.path.basename(lib) for lib in libraries]
-
-  libraries = GetSortedTransitiveDependencies(libraries)
+  if libraries[0].endswith('.so'):
+    libraries = [os.path.basename(lib) for lib in libraries]
+    libraries = GetSortedTransitiveDependencies(libraries)
+  else:
+    libraries = GetSortedTransitiveDependenciesForExecutable(libraries[0])
 
   build_utils.WriteJson(libraries, _options.output, only_if_changed=True)
 
