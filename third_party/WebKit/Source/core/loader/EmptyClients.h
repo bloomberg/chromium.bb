@@ -234,7 +234,7 @@ public:
     virtual Frame* dispatchCreatePage(const NavigationAction&) { return 0; }
     virtual void dispatchShow() { }
 
-    virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>, const String&) OVERRIDE;
+    virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
     virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }

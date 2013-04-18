@@ -42,8 +42,6 @@ class FormState;
 
 typedef void (*NavigationPolicyDecisionFunction)(void* argument,
     const ResourceRequest&, PassRefPtr<FormState>, bool shouldContinue);
-typedef void (*NewWindowPolicyDecisionFunction)(void* argument,
-    const ResourceRequest&, PassRefPtr<FormState>, const String& frameName, const NavigationAction&, bool shouldContinue);
 
 class PolicyCallback {
 public:
@@ -53,14 +51,11 @@ public:
     void clear();
     void set(const ResourceRequest&, PassRefPtr<FormState>,
         NavigationPolicyDecisionFunction, void* argument);
-    void set(const ResourceRequest&, PassRefPtr<FormState>, const String& frameName, const NavigationAction&,
-        NewWindowPolicyDecisionFunction, void* argument);
 
     const ResourceRequest& request() const { return m_request; }
     void clearRequest();
 
     void call(bool shouldContinue);
-    void call(PolicyAction);
     void cancel();
 
 private:
@@ -70,7 +65,6 @@ private:
     NavigationAction m_navigationAction;
 
     NavigationPolicyDecisionFunction m_navigationFunction;
-    NewWindowPolicyDecisionFunction m_newWindowFunction;
     void* m_argument;
 };
 

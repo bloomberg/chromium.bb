@@ -1166,8 +1166,7 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     NavigationAction action(request, newLoadType, isFormSubmission, event);
 
     if (!targetFrame && !frameName.isEmpty()) {
-        policyChecker()->checkNewWindowPolicy(action, FrameLoader::callContinueLoadAfterNewWindowPolicy,
-            request, formState.release(), frameName, this);
+        checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
         return;
     }
 
@@ -1220,18 +1219,10 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     if (!request.frameName().isEmpty()) {
         Frame* frame = findFrameForNavigation(request.frameName());
-        if (frame) {
-            request.setShouldCheckNewWindowPolicy(false);
-            if (frame->loader() != this) {
-                frame->loader()->load(request);
-                return;
-            }
+        if (frame && frame->loader() != this) {
+            frame->loader()->load(request);
+            return;
         }
-    }
-
-    if (request.shouldCheckNewWindowPolicy()) {
-        policyChecker()->checkNewWindowPolicy(NavigationAction(request.resourceRequest(), NavigationTypeOther), FrameLoader::callContinueLoadAfterNewWindowPolicy, request.resourceRequest(), 0, request.frameName(), this);
-        return;
     }
 
     if (!request.hasSubstituteData())
@@ -2422,7 +2413,7 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
         if (Frame* targetFrame = formState ? 0 : findFrameForNavigation(frameName))
             targetFrame->loader()->loadWithNavigationAction(workingResourceRequest, action, lockHistory, loadType, formState.release());
         else
-            policyChecker()->checkNewWindowPolicy(action, FrameLoader::callContinueLoadAfterNewWindowPolicy, workingResourceRequest, formState.release(), frameName, this);
+            checkNewWindowPolicyAndContinue(formState.release(), frameName, action);
     } else {
         // must grab this now, since this load may stop the previous load and clear this flag
         bool isRedirect = m_quickRedirectComing;
@@ -2717,18 +2708,20 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     m_provisionalDocumentLoader->startLoadingMainResource();
 }
 
-void FrameLoader::callContinueLoadAfterNewWindowPolicy(void* argument,
-    const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue)
+void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action)
 {
-    FrameLoader* loader = static_cast<FrameLoader*>(argument);
-    loader->continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue);
-}
-
-void FrameLoader::continueLoadAfterNewWindowPolicy(const ResourceRequest& request,
-    PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue)
-{
-    if (!shouldContinue)
+    if (m_frame->document() && m_frame->document()->isSandboxed(SandboxPopups))
         return;
+
+    if (!DOMWindow::allowPopUp(m_frame))
+        return;
+
+    PolicyAction policy = m_client->policyForNewWindowAction(action, frameName);
+    ASSERT(policy != PolicyIgnore);
+    if (policy == PolicyDownload) {
+        m_client->startDownload(action.resourceRequest());
+        return;
+    }
 
     RefPtr<Frame> frame = m_frame;
     RefPtr<Frame> mainFrame = m_client->dispatchCreatePage(action);
@@ -2744,7 +2737,7 @@ void FrameLoader::continueLoadAfterNewWindowPolicy(const ResourceRequest& reques
         mainFrame->loader()->setOpener(frame.get());
         mainFrame->document()->setReferrerPolicy(frame->document()->referrerPolicy());
     }
-    mainFrame->loader()->loadWithNavigationAction(request, NavigationAction(request), false, FrameLoadTypeStandard, formState);
+    mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), action, false, FrameLoadTypeStandard, formState);
 }
 
 void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& identifier, ResourceError& error)

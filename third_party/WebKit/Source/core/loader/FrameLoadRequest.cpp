@@ -40,7 +40,6 @@ FrameLoadRequest::FrameLoadRequest(Frame* frame, const ResourceRequest& resource
     : m_requester(frame->document()->securityOrigin())
     , m_resourceRequest(resourceRequest)
     , m_lockHistory(false)
-    , m_shouldCheckNewWindowPolicy(false)
     , m_substituteData(substituteData)
 {
 }

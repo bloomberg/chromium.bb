@@ -105,8 +105,9 @@ void EmptyChromeClient::runOpenPanel(Frame*, PassRefPtr<FileChooser>)
 {
 }
 
-void EmptyFrameLoaderClient::dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>, const String&)
+PolicyAction EmptyFrameLoaderClient::policyForNewWindowAction(const NavigationAction&, const String&)
 {
+    return PolicyUse;
 }
 
 void EmptyFrameLoaderClient::dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>)

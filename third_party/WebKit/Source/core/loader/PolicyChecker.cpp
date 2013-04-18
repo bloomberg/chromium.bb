@@ -100,20 +100,6 @@ void PolicyChecker::checkNavigationPolicy(const ResourceRequest& request, Docume
     m_delegateIsDecidingNavigationPolicy = false;
 }
 
-void PolicyChecker::checkNewWindowPolicy(const NavigationAction& action, NewWindowPolicyDecisionFunction function,
-    const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, void* argument)
-{
-    if (m_frame->document() && m_frame->document()->isSandboxed(SandboxPopups))
-        return continueAfterNavigationPolicy(PolicyIgnore);
-
-    if (!DOMWindow::allowPopUp(m_frame))
-        return continueAfterNavigationPolicy(PolicyIgnore);
-
-    m_callback.set(request, formState, frameName, action, function, argument);
-    m_frame->loader()->client()->dispatchDecidePolicyForNewWindowAction(&PolicyChecker::continueAfterNewWindowPolicy,
-        action, request, formState, frameName);
-}
-
 void PolicyChecker::cancelCheck()
 {
     m_callback.clear();
@@ -162,26 +148,6 @@ void PolicyChecker::continueAfterNavigationPolicy(PolicyAction policy)
     }
 
     callback.call(shouldContinue);
-}
-
-void PolicyChecker::continueAfterNewWindowPolicy(PolicyAction policy)
-{
-    PolicyCallback callback = m_callback;
-    m_callback.clear();
-
-    switch (policy) {
-        case PolicyIgnore:
-            callback.clearRequest();
-            break;
-        case PolicyDownload:
-            m_frame->loader()->client()->startDownload(callback.request());
-            callback.clearRequest();
-            break;
-        case PolicyUse:
-            break;
-    }
-
-    callback.call(policy == PolicyUse);
 }
 
 void PolicyChecker::handleUnimplementablePolicy(const ResourceError& error)

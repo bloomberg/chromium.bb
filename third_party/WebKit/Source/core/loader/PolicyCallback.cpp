@@ -40,7 +40,6 @@ namespace WebCore {
 
 PolicyCallback::PolicyCallback()
     : m_navigationFunction(0)
-    , m_newWindowFunction(0)
     , m_argument(0)
 {
 }
@@ -53,7 +52,6 @@ void PolicyCallback::clear()
 {
     clearRequest();
     m_navigationFunction = 0;
-    m_newWindowFunction = 0;
 }
 
 void PolicyCallback::set(const ResourceRequest& request, PassRefPtr<FormState> formState,
@@ -64,20 +62,6 @@ void PolicyCallback::set(const ResourceRequest& request, PassRefPtr<FormState> f
     m_frameName = String();
 
     m_navigationFunction = function;
-    m_newWindowFunction = 0;
-    m_argument = argument;
-}
-
-void PolicyCallback::set(const ResourceRequest& request, PassRefPtr<FormState> formState,
-    const String& frameName, const NavigationAction& navigationAction, NewWindowPolicyDecisionFunction function, void* argument)
-{
-    m_request = request;
-    m_formState = formState;
-    m_frameName = frameName;
-    m_navigationAction = navigationAction;
-
-    m_navigationFunction = 0;
-    m_newWindowFunction = function;
     m_argument = argument;
 }
 
@@ -85,14 +69,6 @@ void PolicyCallback::call(bool shouldContinue)
 {
     if (m_navigationFunction)
         m_navigationFunction(m_argument, m_request, m_formState.get(), shouldContinue);
-    if (m_newWindowFunction)
-        m_newWindowFunction(m_argument, m_request, m_formState.get(), m_frameName, m_navigationAction, shouldContinue);
-}
-
-void PolicyCallback::call(PolicyAction action)
-{
-    ASSERT(!m_navigationFunction);
-    ASSERT(!m_newWindowFunction);
 }
 
 void PolicyCallback::clearRequest()
@@ -107,8 +83,6 @@ void PolicyCallback::cancel()
     clearRequest();
     if (m_navigationFunction)
         m_navigationFunction(m_argument, m_request, m_formState.get(), false);
-    if (m_newWindowFunction)
-        m_newWindowFunction(m_argument, m_request, m_formState.get(), m_frameName, m_navigationAction, false);
 }
 
 } // namespace WebCore

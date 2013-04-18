@@ -845,35 +845,29 @@ void FrameLoaderClientImpl::dispatchShow()
         webView->client()->show(webView->initialNavigationPolicy());
 }
 
-void FrameLoaderClientImpl::dispatchDecidePolicyForNewWindowAction(
-    FramePolicyFunction function,
+PolicyAction FrameLoaderClientImpl::policyForNewWindowAction(
     const NavigationAction& action,
-    const ResourceRequest& request,
-    PassRefPtr<FormState> formState,
     const String& frameName)
 {
     WebNavigationPolicy navigationPolicy;
     if (!actionSpecifiesNavigationPolicy(action, &navigationPolicy))
         navigationPolicy = WebNavigationPolicyNewForegroundTab;
 
-    PolicyAction policyAction;
     if (navigationPolicy == WebNavigationPolicyDownload)
-        policyAction = PolicyDownload;
-    else {
-        policyAction = PolicyUse;
+        return PolicyDownload;
 
-        // Remember the disposition for when dispatchCreatePage is called.  It is
-        // unfortunate that WebCore does not provide us with any context when
-        // creating or showing the new window that would allow us to avoid having
-        // to keep this state.
-        m_nextNavigationPolicy = navigationPolicy;
+    // Remember the disposition for when dispatchCreatePage is called.  It is
+    // unfortunate that WebCore does not provide us with any context when
+    // creating or showing the new window that would allow us to avoid having
+    // to keep this state.
+    m_nextNavigationPolicy = navigationPolicy;
 
-        // Store the disposition on the opener ChromeClientImpl so that we can pass
-        // it to WebViewClient::createView.
-        ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome()->client());
-        chromeClient->setNewWindowNavigationPolicy(navigationPolicy);
-    }
-    (m_webFrame->frame()->loader()->policyChecker()->*function)(policyAction);
+    // Store the disposition on the opener ChromeClientImpl so that we can pass
+    // it to WebViewClient::createView.
+    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome()->client());
+    chromeClient->setNewWindowNavigationPolicy(navigationPolicy);
+
+    return PolicyUse;
 }
 
 void FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction(
