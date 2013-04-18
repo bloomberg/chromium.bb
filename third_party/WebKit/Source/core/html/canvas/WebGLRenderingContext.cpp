@@ -476,8 +476,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 
     // Create the DrawingBuffer and initialize the platform layer.
     DrawingBuffer::PreserveDrawingBuffer preserve = m_attributes.preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    DrawingBuffer::AlphaRequirement alpha = m_attributes.alpha ? DrawingBuffer::Alpha : DrawingBuffer::Opaque;
-    m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve, alpha);
+    m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve);
 
     if (m_drawingBuffer)
         m_drawingBuffer->bind();
@@ -5874,8 +5873,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     if (m_drawingBuffer) {
         m_drawingBuffer->discardResources();
         DrawingBuffer::PreserveDrawingBuffer preserve = m_attributes.preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-        DrawingBuffer::AlphaRequirement alpha = m_attributes.alpha ? DrawingBuffer::Alpha : DrawingBuffer::Opaque;
-        m_drawingBuffer = DrawingBuffer::create(context.get(), m_drawingBuffer->size(), preserve, alpha);
+        m_drawingBuffer = DrawingBuffer::create(context.get(), m_drawingBuffer->size(), preserve);
         m_drawingBuffer->bind();
     }
 

@@ -37,6 +37,7 @@
 #include "PlatformLayer.h"
 
 #include <public/WebExternalTextureLayerClient.h>
+#include <public/WebExternalTextureMailbox.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -53,19 +54,18 @@ class ImageData;
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a PlatformLayer for compositing.
 class DrawingBuffer : public RefCounted<DrawingBuffer>, public WebKit::WebExternalTextureLayerClient  {
+    struct MailboxInfo : public RefCounted<MailboxInfo> {
+        WebKit::WebExternalTextureMailbox mailbox;
+        unsigned textureId;
+        IntSize size;
+    };
 public:
     enum PreserveDrawingBuffer {
         Preserve,
         Discard
     };
 
-    enum AlphaRequirement {
-        Alpha,
-        Opaque
-    };
-
-    static PassRefPtr<DrawingBuffer> create(GraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, AlphaRequirement);
-    friend class GraphicsContext3D;
+    static PassRefPtr<DrawingBuffer> create(GraphicsContext3D*, const IntSize&, PreserveDrawingBuffer);
 
     ~DrawingBuffer();
 
@@ -77,16 +77,6 @@ public:
     bool reset(const IntSize&);
     void bind();
     IntSize size() const { return m_size; }
-    Platform3DObject colorBuffer() const { return m_colorBuffer; }
-
-    // Clear all resources from this object, as well as context. Called when context is destroyed
-    // to prevent invalid accesses to the resources.
-    void clear();
-
-    // Create the depth/stencil and multisample buffers, if needed.
-    void createSecondaryBuffers();
-    
-    void resizeDepthStencil(int sampleCount);
 
     // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound
     void commit(long x = 0, long y = 0, long width = -1, long height = -1);
@@ -104,9 +94,6 @@ public:
     // restore the binding when needed.
     void setFramebufferBinding(Platform3DObject fbo) { m_framebufferBinding = fbo; }
 
-    // Bind to the m_framebufferBinding if it's not 0.
-    void restoreFramebufferBinding();
-
     // Track the currently active texture unit. Texture unit 0 is used as host for a scratch
     // texture.
     void setActiveTextureUnit(GC3Dint textureUnit) { m_activeTextureUnit = textureUnit; }
@@ -115,8 +102,6 @@ public:
 
     Platform3DObject framebuffer() const;
 
-    PassRefPtr<ImageData> paintRenderingResultsToImageData();
-
     // Immediately releases ownership of all resources. Call upon loss of the
     // graphics context to prevent freeing invalid resources.
     void discardResources();
@@ -124,30 +109,44 @@ public:
     void markContentsChanged() { m_contentsChanged = true; }
 
     PlatformLayer* platformLayer();
-    void prepareBackBuffer();
-    bool requiresCopyFromBackToFrontBuffer() const;
-    unsigned frontColorBuffer() const;
     void paintCompositedResultsToCanvas(ImageBuffer*);
-    void clearPlatformLayer();
-
-    GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
 
     // WebExternalTextureLayerClient implementation.
     virtual unsigned prepareTexture(WebKit::WebTextureUpdater& updater) OVERRIDE;
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE { return false; }
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE { }
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE;
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
 
 private:
     DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
-                  bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, AlphaRequirement);
+                  bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer);
 
     void initialize(const IntSize&);
 
     bool checkBufferIntegrity();
 
+    void prepareBackBuffer();
+    bool requiresCopyFromBackToFrontBuffer() const;
+    Platform3DObject frontColorBuffer() const;
+    Platform3DObject colorBuffer() const { return m_colorBuffer; }
+
+    // Create the depth/stencil and multisample buffers, if needed.
+    void createSecondaryBuffers();
+    void resizeDepthStencil(int sampleCount);
+
+    // Clear all resources from this object, as well as context. Called when context is destroyed
+    // to prevent invalid accesses to the resources.
+    void clear();
+
+    // Bind to the m_framebufferBinding if it's not 0.
+    void restoreFramebufferBinding();
+
+    void clearPlatformLayer();
+
+    PassRefPtr<MailboxInfo> getRecycledMailbox();
+    PassRefPtr<MailboxInfo> createNewMailbox(unsigned);
+
     PreserveDrawingBuffer m_preserveDrawingBuffer;
-    AlphaRequirement m_alpha;
     bool m_scissorEnabled;
     Platform3DObject m_texture2DBinding;
     Platform3DObject m_framebufferBinding;
@@ -177,6 +176,12 @@ private:
     bool m_contentsChanged;
 
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
+
+    // All of the mailboxes that this DrawingBuffer has ever created.
+    Vector<RefPtr<MailboxInfo> > m_textureMailboxes;
+    // Mailboxes that were released by the compositor and can be used again by this DrawingBuffer.
+    Vector<RefPtr<MailboxInfo> > m_recycledMailboxes;
+    RefPtr<MailboxInfo> m_lastColorBuffer;
 };
 
 } // namespace WebCore

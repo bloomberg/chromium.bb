@@ -45,6 +45,8 @@
 #include <public/WebExternalTextureLayer.h>
 #include <public/WebGraphicsContext3D.h>
 
+#define USES_MAILBOX 0
+
 using namespace std;
 
 namespace WebCore {
@@ -72,14 +74,33 @@ static unsigned generateColorTexture(GraphicsContext3D* context, const IntSize& 
     return offscreenColorTexture;
 }
 
+class ScopedTextureUnit0BindingRestorer {
+public:
+    ScopedTextureUnit0BindingRestorer(GraphicsContext3D* context, GC3Denum activeTextureUnit, Platform3DObject textureUnitZeroId)
+        : m_context(context)
+        , m_oldActiveTextureUnit(activeTextureUnit)
+        , m_oldTextureUnitZeroId(textureUnitZeroId)
+    {
+        m_context->activeTexture(GraphicsContext3D::TEXTURE0);
+    }
+    ~ScopedTextureUnit0BindingRestorer()
+    {
+        m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_oldTextureUnitZeroId);
+        m_context->activeTexture(m_oldActiveTextureUnit);
+    }
+
+private:
+    GraphicsContext3D* m_context;
+    GC3Denum m_oldActiveTextureUnit;
+    Platform3DObject m_oldTextureUnitZeroId;
+};
+
 DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
                              const IntSize& size,
                              bool multisampleExtensionSupported,
                              bool packedDepthStencilExtensionSupported,
-                             PreserveDrawingBuffer preserve,
-                             AlphaRequirement alpha)
+                             PreserveDrawingBuffer preserve)
     : m_preserveDrawingBuffer(preserve)
-    , m_alpha(alpha)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
     , m_framebufferBinding(0)
@@ -91,6 +112,7 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
     , m_fbo(0)
     , m_colorBuffer(0)
     , m_frontColorBuffer(0)
+    , m_separateFrontTexture(false)
     , m_depthStencilBuffer(0)
     , m_depthBuffer(0)
     , m_stencilBuffer(0)
@@ -100,10 +122,11 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
-
+#if !USES_MAILBOX
     // We need a separate front and back textures if ...
     m_separateFrontTexture = m_preserveDrawingBuffer == Preserve // ... we have to preserve contents after compositing, which is done with a copy or ...
                              || WebKit::Platform::current()->isThreadedCompositingEnabled(); // ... if we're in threaded mode and need to double buffer.
+#endif // USES_MAILBOX
     initialize(size);
 }
 
@@ -122,8 +145,8 @@ unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
 {
     prepareBackBuffer();
 
-    graphicsContext3D()->flush();
-    graphicsContext3D()->markLayerComposited();
+    m_context->flush();
+    m_context->markLayerComposited();
 
     unsigned textureId = frontColorBuffer();
     if (requiresCopyFromBackToFrontBuffer())
@@ -134,7 +157,113 @@ unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
 
 WebKit::WebGraphicsContext3D* DrawingBuffer::context()
 {
-    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(graphicsContext3D());
+    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get());
+}
+
+bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
+{
+    if (!m_contentsChanged)
+        return false;
+
+    m_context->makeContextCurrent();
+
+    // Resolve the multisampled buffer into the texture referenced by m_lastColorBuffer mailbox.
+    if (multisample())
+        commit();
+
+    // We must restore the texture binding since creating new textures,
+    // consuming and producing mailboxes changes it.
+    ScopedTextureUnit0BindingRestorer restorer(m_context.get(), m_activeTextureUnit, m_texture2DBinding);
+
+    // First try to recycle an old buffer.
+    RefPtr<MailboxInfo> nextFrontColorBuffer = getRecycledMailbox();
+
+    // No buffer available to recycle, create a new one.
+    if (!nextFrontColorBuffer) {
+        unsigned newColorBuffer = generateColorTexture(m_context.get(), m_size);
+        // Bad things happened, abandon ship.
+        if (!newColorBuffer)
+            return false;
+
+        nextFrontColorBuffer = createNewMailbox(newColorBuffer);
+    }
+
+    if (m_preserveDrawingBuffer == Discard) {
+        m_colorBuffer = nextFrontColorBuffer->textureId;
+        swap(nextFrontColorBuffer, m_lastColorBuffer);
+        // It appears safe to overwrite the context's framebuffer binding in the Discard case since there will always be a
+        // WebGLRenderingContext::clearIfComposited() call made before the next draw call which restores the framebuffer binding.
+        // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore
+        // it after attaching the new back buffer here.
+        m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
+        m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
+    } else {
+        Extensions3D* extensions = m_context->getExtensions();
+        extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_colorBuffer, nextFrontColorBuffer->textureId, 0, GraphicsContext3D::RGBA);
+    }
+
+    if (multisample() && !m_framebufferBinding)
+        bind();
+    else
+        restoreFramebufferBinding();
+
+    m_contentsChanged = false;
+
+    context()->bindTexture(GraphicsContext3D::TEXTURE_2D, nextFrontColorBuffer->textureId);
+    context()->produceTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, nextFrontColorBuffer->mailbox.name);
+    context()->flush();
+    m_context->markLayerComposited();
+
+    *outMailbox = nextFrontColorBuffer->mailbox;
+    m_frontColorBuffer = nextFrontColorBuffer->textureId;
+    return true;
+}
+
+void DrawingBuffer::mailboxReleased(const WebKit::WebExternalTextureMailbox& mailbox)
+{
+    for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
+         RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
+         if (!memcmp(mailboxInfo->mailbox.name, mailbox.name, sizeof(mailbox.name))) {
+             mailboxInfo->mailbox.syncPoint = mailbox.syncPoint;
+             m_recycledMailboxes.append(mailboxInfo.release());
+             return;
+         }
+     }
+     ASSERT_NOT_REACHED();
+}
+
+PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::getRecycledMailbox()
+{
+    if (m_recycledMailboxes.isEmpty())
+        return PassRefPtr<MailboxInfo>();
+
+    RefPtr<MailboxInfo> mailboxInfo = m_recycledMailboxes.last().release();
+    m_recycledMailboxes.removeLast();
+
+    if (mailboxInfo->mailbox.syncPoint) {
+        context()->waitSyncPoint(mailboxInfo->mailbox.syncPoint);
+        mailboxInfo->mailbox.syncPoint = 0;
+    }
+
+    context()->bindTexture(GraphicsContext3D::TEXTURE_2D, mailboxInfo->textureId);
+    context()->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, mailboxInfo->mailbox.name);
+
+    if (mailboxInfo->size != m_size) {
+        m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, m_size.width(), m_size.height(), 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
+        mailboxInfo->size = m_size;
+    }
+
+    return mailboxInfo.release();
+}
+
+PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned textureId)
+{
+    RefPtr<MailboxInfo> returnMailbox = adoptRef(new MailboxInfo());
+    context()->genMailboxCHROMIUM(returnMailbox->mailbox.name);
+    returnMailbox->textureId = textureId;
+    returnMailbox->size = m_size;
+    m_textureMailboxes.append(returnMailbox);
+    return returnMailbox.release();
 }
 
 void DrawingBuffer::initialize(const IntSize& size)
@@ -146,6 +275,9 @@ void DrawingBuffer::initialize(const IntSize& size)
 
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
     m_colorBuffer = generateColorTexture(m_context.get(), size);
+#if USES_MAILBOX
+    m_lastColorBuffer = createNewMailbox(m_colorBuffer);
+#endif // USES_MAILBOX
     m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
     createSecondaryBuffers();
     if (!reset(size)) {
@@ -200,9 +332,13 @@ Platform3DObject DrawingBuffer::framebuffer() const
 PlatformLayer* DrawingBuffer::platformLayer()
 {
     if (!m_layer){
+#if USES_MAILBOX
+        m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
+#else
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+#endif // USES_MAILBOX
 
-        GraphicsContext3D::Attributes attributes = graphicsContext3D()->getContextAttributes();
+        GraphicsContext3D::Attributes attributes = m_context->getContextAttributes();
         m_layer->setOpaque(!attributes.alpha);
         m_layer->setPremultipliedAlpha(attributes.premultipliedAlpha);
         GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
@@ -216,6 +352,18 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     if (!m_context->makeContextCurrent() || m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)
         return;
 
+    Extensions3D* extensions = m_context->getExtensions();
+#if USES_MAILBOX
+    // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
+    // We have to make a copy of it here and bind that copy instead.
+    unsigned sourceTexture = generateColorTexture(m_context.get(), m_size);
+    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GraphicsContext3D::RGBA);
+#else
+    // FIXME: Re-examine general correctness of this code beacause m_colorBuffer may contain a stale copy of the data
+    // that was sent to the compositor at some point in the past.
+    unsigned sourceTexture = frontColorBuffer();
+#endif // USES_MAILBOX
+
     // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
     // FIXME: The WebGLRenderingContext tracks the current framebuffer binding, it would be slightly more efficient to use this value
     // rather than querying it off of the context.
@@ -224,11 +372,13 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 
     Platform3DObject framebuffer = m_context->createFramebuffer();
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, framebuffer);
-    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, frontColorBuffer(), 0);
+    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, sourceTexture, 0);
 
-    Extensions3D* extensions = m_context->getExtensions();
     extensions->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_context->getContextAttributes().premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
+#if USES_MAILBOX
+    m_context->deleteTexture(sourceTexture);
+#endif // USES_MAILBOX
 
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, previousFramebuffer);
 }
@@ -236,12 +386,12 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 void DrawingBuffer::clearPlatformLayer()
 {
     if (m_layer)
-        m_layer->setTextureId(0);
+        m_layer->clearTexture();
 
     m_context->flush();
 }
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, AlphaRequirement alpha)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve)
 {
     Extensions3D* extensions = context->getExtensions();
     bool multisampleSupported = extensions->maySupportMultisampling()
@@ -256,7 +406,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, cons
     bool packedDepthStencilSupported = extensions->supports("GL_OES_packed_depth_stencil");
     if (packedDepthStencilSupported)
         extensions->ensureEnabled("GL_OES_packed_depth_stencil");
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve, alpha));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve));
     return (drawingBuffer->m_context) ? drawingBuffer.release() : 0;
 }
 
@@ -274,6 +424,7 @@ void DrawingBuffer::clear()
         m_size = IntSize();
     }
 
+#if !USES_MAILBOX
     if (m_colorBuffer) {
         m_context->deleteTexture(m_colorBuffer);
         m_colorBuffer = 0;
@@ -283,6 +434,14 @@ void DrawingBuffer::clear()
         m_context->deleteTexture(m_frontColorBuffer);
         m_frontColorBuffer = 0;
     }
+#else
+    for (size_t i = 0; i < m_textureMailboxes.size(); i++)
+         m_context->deleteTexture(m_textureMailboxes[i]->textureId);
+
+    m_lastColorBuffer.clear();
+    m_recycledMailboxes.clear();
+    m_textureMailboxes.clear();
+#endif // USES_MAILBOX
 
     if (m_multisampleColorBuffer) {
         m_context->deleteRenderbuffer(m_multisampleColorBuffer);
@@ -485,15 +644,15 @@ bool DrawingBuffer::reset(const IntSize& newSize)
 
             m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_colorBuffer);
             m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, internalColorFormat, m_size.width(), m_size.height(), 0, colorFormat, GraphicsContext3D::UNSIGNED_BYTE, 0);
+            if (m_lastColorBuffer)
+                m_lastColorBuffer->size = m_size;
 
             m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
-
             // resize the front color buffer
             if (m_separateFrontTexture) {
                 m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer);
                 m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, internalColorFormat, m_size.width(), m_size.height(), 0, colorFormat, GraphicsContext3D::UNSIGNED_BYTE, 0);
             }
-
             m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0);
 
             if (!multisample())
@@ -588,11 +747,6 @@ bool DrawingBuffer::multisample() const
     return m_context && m_context->getContextAttributes().antialias && m_multisampleExtensionSupported;
 }
 
-PassRefPtr<ImageData> DrawingBuffer::paintRenderingResultsToImageData()
-{
-    return m_context->paintRenderingResultsToImageData(this);
-}
-
 void DrawingBuffer::discardResources()
 {
     m_colorBuffer = 0;
@@ -606,6 +760,10 @@ void DrawingBuffer::discardResources()
 
     m_multisampleFBO = 0;
     m_fbo = 0;
+
+    m_lastColorBuffer.clear();
+    m_recycledMailboxes.clear();
+    m_textureMailboxes.clear();
 }
 
 void DrawingBuffer::bind()
