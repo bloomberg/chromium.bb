@@ -307,6 +307,12 @@ printing/page-rule-in-media-query.html [ WontFix ]
 webkit.org/b/98579 compositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 webkit.org/b/98579 virtual/softwarecompositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 
+# Tests for frameset flattening which is not used by Chromium.
+fast/frames/flattening [ WontFix ]
+fast/text-autosizing/narrow-iframe-flattened.html [ WontFix ]
+http/tests/misc/iframe-flattening-3level-nesting-with-blocking-resource.html [ WontFix ]
+plugins/frameset-with-plugin-frame.html [ WontFix ]
+
 # Chromium's video codecs don't support alpha information encoded in the video
 # data, so this test is not applicable.
 compositing/video/video-background-color.html [ WontFix ]

@@ -1324,6 +1324,8 @@
             'rendering/RenderFlowThread.h',
             'rendering/RenderFrame.cpp',
             'rendering/RenderFrame.h',
+            'rendering/RenderFrameBase.cpp',
+            'rendering/RenderFrameBase.h',
             'rendering/RenderFrameSet.cpp',
             'rendering/RenderFrameSet.h',
             'rendering/RenderFullScreen.cpp',
