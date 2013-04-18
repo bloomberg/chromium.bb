@@ -84,6 +84,11 @@ bool GLSurface::Resize(const gfx::Size& size) {
   return false;
 }
 
+bool GLSurface::Recreate() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GLSurface::DeferDraws() {
   return false;
 }
@@ -145,6 +150,13 @@ VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
 
+bool GLSurface::RecreateOnMakeCurrent() {
+  return false;
+}
+
+void GLSurface::SetRecreateOnMakeCurrent(bool recreate) {
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -183,6 +195,10 @@ void GLSurfaceAdapter::Destroy() {
 
 bool GLSurfaceAdapter::Resize(const gfx::Size& size) {
   return surface_->Resize(size);
+}
+
+bool GLSurfaceAdapter::Recreate() {
+  return surface_->Recreate();
 }
 
 bool GLSurfaceAdapter::DeferDraws() {
@@ -247,6 +263,14 @@ unsigned GLSurfaceAdapter::GetFormat() {
 
 VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
   return surface_->GetVSyncProvider();
+}
+
+bool GLSurfaceAdapter::RecreateOnMakeCurrent() {
+  return surface_->RecreateOnMakeCurrent();
+}
+
+void GLSurfaceAdapter::SetRecreateOnMakeCurrent(bool recreate) {
+  surface_->SetRecreateOnMakeCurrent(recreate);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

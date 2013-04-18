@@ -112,12 +112,48 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  if (!RecreateSurfaceIfNeeded(surface))
+    return false;
+
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
     return false;
   }
 
   SetRealGLApi();
+  return true;
+}
+
+bool GLContextEGL::RecreateSurfaceIfNeeded(GLSurface* surface) {
+  if (!surface || !surface->RecreateOnMakeCurrent())
+    return true;
+
+  // This is specifically needed for Vivante GPU's on Android.
+  // A native view surface will not be configured correctly
+  // unless we do all of the following steps after making the
+  // surface current.
+  GLint fbo = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+  eglMakeCurrent(display_,
+                 EGL_NO_SURFACE,
+                 EGL_NO_SURFACE,
+                 EGL_NO_CONTEXT);
+  if (!surface->Recreate()) {
+    LOG(ERROR) << "Failed to recreate surface";
+    return false;
+  }
+  if (!eglMakeCurrent(display_,
+                      surface->GetHandle(),
+                      surface->GetHandle(),
+                      context_)) {
+    LOG(ERROR) << "eglMakeCurrent failed with error "
+               << GetLastEGLErrorString();
+    return false;
+  }
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER, fbo);
   return true;
 }
 

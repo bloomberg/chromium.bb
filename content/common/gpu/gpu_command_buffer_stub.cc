@@ -507,6 +507,18 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
+  // TODO(epenner): If we can initialize the feature-info earlier,
+  // this code can be removed and done only during surface creation.
+  // This code is only needed for the very first surface, which is
+  // created before the ContextGroup is initialized.
+  if (context_group_->feature_info()->workarounds()
+      .makecurrent_recreates_surfaces) {
+    // This only works with virtual contexts!
+    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableVirtualGLContexts));
+    surface_->SetRecreateOnMakeCurrent(true);
+  }
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {
     decoder_->set_log_commands(true);

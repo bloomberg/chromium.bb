@@ -60,6 +60,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual bool Recreate() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
@@ -67,6 +68,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
+  virtual bool RecreateOnMakeCurrent() OVERRIDE;
+  virtual void SetRecreateOnMakeCurrent(bool recreate) OVERRIDE;
 
  protected:
   virtual ~NativeViewGLSurfaceEGL();
@@ -77,6 +80,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
   EGLConfig config_;
+  bool recreate_on_make_current_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
 

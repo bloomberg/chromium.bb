@@ -28,6 +28,8 @@
          exit_on_context_lost)                        \
   GPU_OP(FLUSH_ON_CONTEXT_SWITCH,                     \
          flush_on_context_switch)                     \
+  GPU_OP(MAKECURRENT_RECREATES_SURFACES,              \
+         makecurrent_recreates_surfaces)              \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,        \
          max_cube_map_texture_size_limit_1024)        \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,        \

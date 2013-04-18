@@ -399,16 +399,28 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (was_current)
     current_context->ReleaseCurrent(this);
 
-  Destroy();
-
-  if (!Initialize()) {
-    LOG(ERROR) << "Failed to resize pbuffer.";
-    return false;
-  }
+  Recreate();
 
   if (was_current)
     return current_context->MakeCurrent(this);
   return true;
+}
+
+bool NativeViewGLSurfaceEGL::Recreate() {
+  Destroy();
+  if (!Initialize()) {
+    LOG(ERROR) << "Failed to create surface.";
+    return false;
+  }
+  return true;
+}
+
+bool NativeViewGLSurfaceEGL::RecreateOnMakeCurrent() {
+  return recreate_on_make_current_;
+}
+
+void NativeViewGLSurfaceEGL::SetRecreateOnMakeCurrent(bool recreate) {
+  recreate_on_make_current_ = recreate;
 }
 
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {

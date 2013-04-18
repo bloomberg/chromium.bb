@@ -36,6 +36,8 @@ class GLContextEGL : public GLContext {
   virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
   virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
 
+  bool RecreateSurfaceIfNeeded(GLSurface* surface);
+
  protected:
   virtual ~GLContextEGL();
 

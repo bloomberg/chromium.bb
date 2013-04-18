@@ -29,6 +29,15 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   if (!initialize_success)
     return scoped_refptr<gfx::GLSurface>();
 
+  if (stub->decoder()
+          ->GetContextGroup()
+          ->feature_info()
+          ->workarounds()
+          .makecurrent_recreates_surfaces) {
+    static_cast<gfx::NativeViewGLSurfaceEGL*>
+        (surface.get())->SetRecreateOnMakeCurrent(true);
+  }
+
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
       manager, stub, surface.get(), false));
 }

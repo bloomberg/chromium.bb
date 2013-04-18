@@ -39,6 +39,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool Resize(const gfx::Size& size);
 
+  // Recreate the surface without changing the size.
+  virtual bool Recreate();
+
   // Unschedule the GpuScheduler and return true to abort the processing of
   // a GL draw call to this surface and defer it until the GpuScheduler is
   // rescheduled.
@@ -102,6 +105,11 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // of screen refresh. If unavailable, returns NULL.
   virtual VSyncProvider* GetVSyncProvider();
 
+  // Certain surfaces need to be destroyed and recreated
+  // every time they are made the current surface.
+  virtual bool RecreateOnMakeCurrent();
+  virtual void SetRecreateOnMakeCurrent(bool recreate);
+
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
       bool software,
@@ -137,6 +145,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual bool Recreate() OVERRIDE;
   virtual bool DeferDraws() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
@@ -153,6 +162,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetConfig() OVERRIDE;
   virtual unsigned GetFormat() OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
+  virtual bool RecreateOnMakeCurrent() OVERRIDE;
+  virtual void SetRecreateOnMakeCurrent(bool recreate) OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
 
