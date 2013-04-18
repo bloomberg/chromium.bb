@@ -5,11 +5,66 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_STREAM_READER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_STREAM_READER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "net/base/completion_callback.h"
 #include "webkit/blob/file_stream_reader.h"
 
-namespace drive {
+namespace net {
+class FileStream;
+class IOBuffer;
+}  // namespace net
 
+namespace drive {
+namespace internal {
+
+// An interface to dispatch the reading operation. If the file is locally
+// cached, LocalReaderProxy defined below will be used. Otherwise (i.e. the
+// file is being downloaded from the server), NetworkReaderProxy will be used.
+class ReaderProxy {
+ public:
+  virtual ~ReaderProxy() {}
+
+  // Called from DriveFileStreamReader::Read method.
+  virtual int Read(net::IOBuffer* buffer, int buffer_length,
+                   const net::CompletionCallback& callback) = 0;
+
+  // Called when the data from the server is received.
+  virtual void OnGetContent(scoped_ptr<std::string> data) = 0;
+
+  // Called when an error is found, during the network downloading.
+  virtual void OnError(DriveFileError error) = 0;
+};
+
+// The read operation implementation for the locally cached files.
+class LocalReaderProxy : public ReaderProxy {
+ public:
+  // The |file_stream| should be the instance which is already opened.
+  // This class takes its ownership.
+  explicit LocalReaderProxy(scoped_ptr<net::FileStream> file_stream);
+  virtual ~LocalReaderProxy();
+
+  // ReaderProxy overrides.
+  virtual int Read(net::IOBuffer* buffer, int buffer_length,
+                   const net::CompletionCallback& callback) OVERRIDE;
+  virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
+  virtual void OnError(DriveFileError error) OVERRIDE;
+
+ private:
+  scoped_ptr<net::FileStream> file_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalReaderProxy);
+};
+
+// TODO(hidehiko): implement the NetworkReaderProxy.
+
+}  // namespace internal
+
+// TODO(hidehiko): Simplify the interface by getting rid of
+// webkit_blob::FileStreamReader inheritance.
 class DriveFileStreamReader : public webkit_blob::FileStreamReader {
  public:
   DriveFileStreamReader();
