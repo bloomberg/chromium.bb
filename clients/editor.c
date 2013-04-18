@@ -327,6 +327,9 @@ text_input_keysym(void *data,
 	if (key == XKB_KEY_BackSpace) {
 		const char *start, *end;
 
+		if (state != WL_KEYBOARD_KEY_STATE_RELEASED)
+			return;
+
 		text_entry_commit_and_reset(entry);
 
 		start = utf8_prev_char(entry->text, entry->text + entry->cursor);
