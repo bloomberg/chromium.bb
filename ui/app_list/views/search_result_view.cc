@@ -203,7 +203,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   text_bounds.set_x(GetMirroredXWithWidthInView(text_bounds.x(),
                                                 text_bounds.width()));
 
-  if (title_text_.get() && details_text_.get()) {
+  if (title_text_ && details_text_) {
     gfx::Size title_size(text_bounds.width(),
                          title_text_->GetStringSize().height());
     gfx::Size details_size(text_bounds.width(),
@@ -219,7 +219,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     details_text_->SetDisplayRect(gfx::Rect(gfx::Point(text_bounds.x(), y),
                                             details_size));
     details_text_->Draw(canvas);
-  } else if (title_text_.get()) {
+  } else if (title_text_) {
     gfx::Size title_size(text_bounds.width(),
                          title_text_->GetStringSize().height());
     gfx::Rect centered_title_rect(text_bounds);

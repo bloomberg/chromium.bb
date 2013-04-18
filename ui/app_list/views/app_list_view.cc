@@ -128,7 +128,7 @@ void AppListView::ShowWhenReady() {
 void AppListView::Close() {
   app_list_main_view_->Close();
 
-  if (delegate_.get())
+  if (delegate_)
     delegate_->Dismiss();
   else
     GetWidget()->Close();
@@ -163,7 +163,7 @@ views::View* AppListView::GetInitiallyFocusedView() {
 }
 
 gfx::ImageSkia AppListView::GetWindowIcon() {
-  if (delegate_.get())
+  if (delegate_)
     return delegate_->GetWindowIcon();
 
   return gfx::ImageSkia();
@@ -197,7 +197,7 @@ void AppListView::Layout() {
 
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
   BubbleDelegateView::OnWidgetDestroying(widget);
-  if (delegate_.get() && widget == GetWidget())
+  if (delegate_ && widget == GetWidget())
     delegate_->ViewClosing();
 }
 
@@ -205,7 +205,7 @@ void AppListView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   // Do not called inherited function as the bubble delegate auto close
   // functionality is not used.
-  if (delegate_.get() && widget == GetWidget())
+  if (delegate_ && widget == GetWidget())
     delegate_->ViewActivationChanged(active);
 }
 
