@@ -2448,6 +2448,86 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('long int a : 30;', errmsg)
         self.assert_lint('int a = 1 ? 0 : 30;', '')
 
+    # A mixture of unsigned and bool bitfields in a class will generate a warning.
+    def test_mixing_unsigned_bool_bitfields(self):
+        def errmsg(bool_bitfields, unsigned_bitfields, name):
+            bool_list = ', '.join(bool_bitfields)
+            unsigned_list = ', '.join(unsigned_bitfields)
+            return ('The class %s contains mixed unsigned and bool bitfields, '
+                    'which will pack into separate words on the MSVC compiler.\n'
+                    'Bool bitfields are [%s].\nUnsigned bitfields are [%s].\n'
+                    'Consider converting bool bitfields to unsigned.  [runtime/bitfields] [5]'
+                    % (name, bool_list, unsigned_list))
+
+        def build_test_case(bitfields, name, will_warn, extra_warnings=[]):
+            bool_bitfields = []
+            unsigned_bitfields = []
+            test_string = 'class %s {\n' % (name,)
+            line = 2
+            for bitfield in bitfields:
+                test_string += '    %s %s : %d;\n' % bitfield
+                if bitfield[0] == 'bool':
+                    bool_bitfields.append('%d: %s' % (line, bitfield[1]))
+                elif bitfield[0].startswith('unsigned'):
+                    unsigned_bitfields.append('%d: %s' % (line, bitfield[1]))
+                line += 1
+            test_string += '}\n'
+            error = ''
+            if will_warn:
+                error = errmsg(bool_bitfields, unsigned_bitfields, name)
+            if extra_warnings and error:
+                error = extra_warnings + [error]
+            self.assert_multi_line_lint(test_string, error)
+
+        build_test_case([('bool', 'm_boolMember', 4), ('unsigned', 'm_unsignedMember', 3)],
+                        'MyClass', True)
+        build_test_case([('bool', 'm_boolMember', 4), ('bool', 'm_anotherBool', 3)],
+                        'MyClass', False)
+        build_test_case([('unsigned', 'm_unsignedMember', 4), ('unsigned', 'm_anotherUnsigned', 3)],
+                        'MyClass', False)
+
+        build_test_case([('bool', 'm_boolMember', 4), ('bool', 'm_anotherbool', 3),
+                         ('bool', 'm_moreBool', 1), ('bool', 'm_lastBool', 1),
+                         ('unsigned int', 'm_tokenUnsigned', 4)],
+                        'MyClass', True, ['Omit int when using unsigned  [runtime/unsigned] [1]'])
+
+        self.assert_multi_line_lint('class NoProblemsHere {\n'
+                                    '    bool m_boolMember;\n'
+                                    '    unsigned m_unsignedMember;\n'
+                                    '    unsigned m_bitField1 : 1;\n'
+                                    '    unsigned m_bitField4 : 4;\n'
+                                    '}\n', '')
+
+    # Bitfields which are not declared unsigned or bool will generate a warning.
+    def test_unsigned_bool_bitfields(self):
+        def errmsg(member, name, bit_type):
+            return ('Member %s of class %s defined as a bitfield of type %s. '
+                    'Please declare all bitfields as unsigned.  [runtime/bitfields] [4]'
+                    % (member, name, bit_type))
+
+        def warning_bitfield_test(member, name, bit_type, bits):
+            self.assert_multi_line_lint('class %s {\n%s %s: %d;\n}\n'
+                                        % (name, bit_type, member, bits),
+                                        errmsg(member, name, bit_type))
+
+        def safe_bitfield_test(member, name, bit_type, bits):
+            self.assert_multi_line_lint('class %s {\n%s %s: %d;\n}\n'
+                                        % (name, bit_type, member, bits),
+                                        '')
+
+        warning_bitfield_test('a', 'A', 'int32_t', 25)
+        warning_bitfield_test('m_someField', 'SomeClass', 'signed', 4)
+        warning_bitfield_test('m_someField', 'SomeClass', 'SomeEnum', 2)
+
+        safe_bitfield_test('a', 'A', 'unsigned', 22)
+        safe_bitfield_test('m_someField', 'SomeClass', 'bool', 1)
+        safe_bitfield_test('m_someField', 'SomeClass', 'unsigned', 2)
+
+        # Declarations in 'Expected' or 'SameSizeAs' classes are OK.
+        warning_bitfield_test('m_bitfields', 'SomeClass', 'int32_t', 32)
+        safe_bitfield_test('m_bitfields', 'ExpectedSomeClass', 'int32_t', 32)
+        safe_bitfield_test('m_bitfields', 'SameSizeAsSomeClass', 'int32_t', 32)
+
 class CleansedLinesTest(unittest.TestCase):
     def test_init(self):
         lines = ['Line 1',

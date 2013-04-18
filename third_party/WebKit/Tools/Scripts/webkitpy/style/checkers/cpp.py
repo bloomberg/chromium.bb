@@ -1124,6 +1124,8 @@ class _ClassInfo(object):
         self.virtual_method_line_number = None
         self.has_virtual_destructor = False
         self.brace_depth = 0
+        self.unsigned_bitfields = []
+        self.bool_bitfields = []
 
 
 class _ClassState(object):
@@ -1400,9 +1402,42 @@ def check_for_non_standard_constructs(clean_lines, line_number,
                   'The class %s probably needs a virtual destructor due to '
                   'having virtual method(s), one declared at line %d.'
                   % (classinfo.name, classinfo.virtual_method_line_number))
+        # Look for mixed bool and unsigned bitfields.
+        if (classinfo.bool_bitfields and classinfo.unsigned_bitfields):
+            bool_list = ', '.join(classinfo.bool_bitfields)
+            unsigned_list = ', '.join(classinfo.unsigned_bitfields)
+            error(classinfo.line_number, 'runtime/bitfields', 5,
+                  'The class %s contains mixed unsigned and bool bitfields, '
+                  'which will pack into separate words on the MSVC compiler.\n'
+                  'Bool bitfields are [%s].\nUnsigned bitfields are [%s].\n'
+                  'Consider converting bool bitfields to unsigned.'
+                  % (classinfo.name, bool_list, unsigned_list))
     else:
         classinfo.brace_depth = brace_depth
 
+    well_typed_bitfield = False;
+    # Look for bool <name> : 1 declarations.
+    args = search(r'\bbool\s+(\S*)\s*:\s*\d+\s*;', line)
+    if args:
+        classinfo.bool_bitfields.append('%d: %s' % (line_number, args.group(1)))
+        well_typed_bitfield = True;
+
+    # Look for unsigned <name> : n declarations.
+    args = search(r'\bunsigned\s+(?:int\s+)?(\S+)\s*:\s*\d+\s*;', line)
+    if args:
+        classinfo.unsigned_bitfields.append('%d: %s' % (line_number, args.group(1)))
+        well_typed_bitfield = True;
+
+    # Look for other bitfield declarations. We don't care about those in
+    # size-matching structs.
+    if not (well_typed_bitfield or classinfo.name.startswith('SameSizeAs') or
+            classinfo.name.startswith('Expected')):
+        args = match(r'\s*(\S+)\s+(\S+)\s*:\s*\d+\s*;', line)
+        if args:
+            error(line_number, 'runtime/bitfields', 4,
+                  'Member %s of class %s defined as a bitfield of type %s. '
+                  'Please declare all bitfields as unsigned.'
+                  % (args.group(2), classinfo.name, args.group(1)))
 
 def check_spacing_for_function_call(line, line_number, error):
     """Checks for the correctness of various spacing around function calls.
