@@ -67,13 +67,17 @@ public:
 
     void clear()
     {
-        for (typename MapType::iterator it = m_map.begin(); it != m_map.end(); ++it) {
-            v8::Persistent<v8::Object> wrapper = it->value;
-            toWrapperTypeInfo(wrapper)->derefObject(it->key);
-            wrapper.Dispose(m_isolate);
-            wrapper.Clear();
+        while (!m_map.isEmpty()) {
+            // Swap out m_map on each iteration to ensure any wrappers added due to side effects of the loop are cleared.
+            MapType map;
+            map.swap(m_map);
+            for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
+                v8::Persistent<v8::Object> wrapper = it->value;
+                toWrapperTypeInfo(wrapper)->derefObject(it->key);
+                wrapper.Dispose(m_isolate);
+                wrapper.Clear();
+            }
         }
-        m_map.clear();
     }
 
     void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
