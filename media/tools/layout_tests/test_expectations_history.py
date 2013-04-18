@@ -12,14 +12,15 @@ import sys
 import time
 import pysvn
 
-# Default Webkit SVN location for chromium test expectation file.
+TEST_EXPECTATIONS_ROOT = 'http://src.chromium.org/blink/trunk/'
+# A map from earliest revision to path.
 # TODO(imasaki): support multiple test expectation files.
-DEFAULT_TEST_EXPECTATION_LOCATION = (
-    'http://svn.webkit.org/repository/webkit/trunk/'
-    'LayoutTests/platform/chromium/TestExpectations')
-LEGACY_TEST_EXPECTATION_LOCATION = (
-    'http://svn.webkit.org/repository/webkit/trunk/'
-    'LayoutTests/platform/chromium/test_expectations.txt')
+TEST_EXPECTATIONS_LOCATIONS = {
+    148348: 'LayoutTests/TestExpectations',
+    119317: 'LayoutTests/platform/chromium/TestExpectations',
+    0: 'LayoutTests/platform/chromium/test_expectations.txt'}
+TEST_EXPECTATIONS_DEFAULT_PATH = (
+    TEST_EXPECTATIONS_ROOT + TEST_EXPECTATIONS_LOCATIONS[148348])
 
 class TestExpectationsHistory(object):
   """A class to represent history of the test expectation file.
@@ -31,8 +32,14 @@ class TestExpectationsHistory(object):
   """
 
   @staticmethod
+  def GetTestExpectationsPathForRevision(revision):
+    for i in sorted(TEST_EXPECTATIONS_LOCATIONS.keys(), reverse=True):
+      if revision >= i:
+        return TEST_EXPECTATIONS_ROOT + TEST_EXPECTATIONS_LOCATIONS[i]
+
+  @staticmethod
   def GetDiffBetweenTimes(start, end, testname_list,
-                          te_location=DEFAULT_TEST_EXPECTATION_LOCATION):
+                          te_location=TEST_EXPECTATIONS_DEFAULT_PATH):
     """Get difference between time period for the specified test names.
 
     Given the time period, this method first gets the revision number. Then,
@@ -87,13 +94,10 @@ class TestExpectationsHistory(object):
       new_rev = logs[i + 1].revision.number
       # Parsing the actual diff.
 
-      # test_expectations.txt was renamed to TestExpectations at r119317.
-      new_path = DEFAULT_TEST_EXPECTATION_LOCATION
-      if new_rev < 119317:
-        new_path = LEGACY_TEST_EXPECTATION_LOCATION
-      old_path = DEFAULT_TEST_EXPECTATION_LOCATION
-      if old_rev < 119317:
-        old_path = LEGACY_TEST_EXPECTATION_LOCATION
+      new_path = TestExpectationsHistory.GetTestExpectationsPathForRevision(
+          new_rev);
+      old_path = TestExpectationsHistory.GetTestExpectationsPathForRevision(
+          old_rev);
 
       text = client.diff('/tmp',
                          url_or_path=old_path,

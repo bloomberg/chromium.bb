@@ -8,11 +8,10 @@ import urllib2
 
 from webkitpy.layout_tests.models.test_expectations import *
 
-# Default Webkit SVN location for chromium test expectation file.
+# Default location for chromium test expectation file.
 # TODO(imasaki): support multiple test expectations files.
-DEFAULT_TEST_EXPECTATION_LOCATION = (
-    'http://svn.webkit.org/repository/webkit/trunk/'
-    'LayoutTests/platform/chromium/TestExpectations')
+DEFAULT_TEST_EXPECTATIONS_LOCATION = (
+    'http://src.chromium.org/blink/trunk/LayoutTests/TestExpectations')
 
 # The following is from test expectation syntax. The detail can be found in
 # http://www.chromium.org/developers/testing/webkit-layout-tests#TOC-Test-Expectations
@@ -51,7 +50,7 @@ class TestExpectations(object):
    'Platforms': ['SNOWLEOPARD', 'ANDROID'], 'TIMEOUT': True, 'PASS': True}]}
   """
 
-  def __init__(self, url=DEFAULT_TEST_EXPECTATION_LOCATION):
+  def __init__(self, url=DEFAULT_TEST_EXPECTATIONS_LOCATION):
     """Read the test expectation file from the specified URL and parse it.
 
     Args:

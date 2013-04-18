@@ -5,7 +5,7 @@
 
 from datetime import datetime
 
-import time
+import calendar
 import unittest
 
 
@@ -33,11 +33,14 @@ class TestTestExpectationsHistory(unittest.TestCase):
         return True
     return False
 
+  # These tests use the following commit.
+  # commit 235788e3a4fc71342a5c9fefe67ce9537706ce35
+  # Author: rniwa@webkit.org
+  # Date:   Sat Aug 20 06:19:11 2011 +0000
+
   def testGetDiffBetweenTimes(self):
-    t = (2011, 8, 20, 0, 0, 0, 0, 0, 0)
-    ctime = time.mktime(t)
-    t = (2011, 8, 19, 0, 0, 0, 0, 0, 0)
-    ptime = time.mktime(t)
+    ptime = calendar.timegm((2011, 8, 20, 0, 0, 0, 0, 0, 0))
+    ctime = calendar.timegm((2011, 8, 21, 0, 0, 0, 0, 0, 0))
     testname = 'fast/css/getComputedStyle/computed-style-without-renderer.html'
     testname_list = [testname]
     result_list = TestExpectationsHistory.GetDiffBetweenTimes(
@@ -45,10 +48,8 @@ class TestTestExpectationsHistory(unittest.TestCase):
     self.assertTrue(self.AssertTestName(result_list, testname))
 
   def testGetDiffBetweenTimesOnly1Diff(self):
-    ptime = datetime.strptime('2011-08-19-23', '%Y-%m-%d-%H')
-    ptime = time.mktime(ptime.timetuple())
-    ctime = datetime.strptime('2011-08-20-00', '%Y-%m-%d-%H')
-    ctime = time.mktime(ctime.timetuple())
+    ptime = calendar.timegm((2011, 8, 20, 6, 0, 0, 0, 0, 0))
+    ctime = calendar.timegm((2011, 8, 20, 7, 0, 0, 0, 0, 0))
     testname = 'fast/css/getComputedStyle/computed-style-without-renderer.html'
     testname_list = [testname]
     result_list = TestExpectationsHistory.GetDiffBetweenTimes(
@@ -56,10 +57,8 @@ class TestTestExpectationsHistory(unittest.TestCase):
     self.assertTrue(self.AssertTestName(result_list, testname))
 
   def testGetDiffBetweenTimesOnly1DiffWithGobackSeveralDays(self):
-    ptime = datetime.strptime('2011-09-11-18', '%Y-%m-%d-%H')
-    ptime = time.mktime(ptime.timetuple())
-    ctime = datetime.strptime('2011-09-11-19', '%Y-%m-%d-%H')
-    ctime = time.mktime(ctime.timetuple())
+    ptime = calendar.timegm((2011, 9, 12, 1, 0, 0, 0, 0, 0))
+    ctime = calendar.timegm((2011, 9, 12, 2, 0, 0, 0, 0, 0))
     testname = 'media/video-zoom-controls.html'
     testname_list = [testname]
     result_list = TestExpectationsHistory.GetDiffBetweenTimes(

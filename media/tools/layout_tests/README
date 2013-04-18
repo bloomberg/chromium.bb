@@ -59,8 +59,8 @@ getting layout test names from Webkit SVN as well as test description.
 ** TestExpectations:
 
 A class to model the content of test expectation file for analysis.
-The raw test expectation file can be found in
-|DEFAULT_TEST_EXPECTATION_LOCATION|.  It is necessary to parse this
+The location of the test expectations file can be found in
+|TEST_EXPECTATIONS_LOCATIONS|. It is necessary to parse this
 file and store meaningful information for the analysis (joining with
 existing layout tests using a test name).  Instance variable
 |all_test_expectation_info| is used.  A test name such as
