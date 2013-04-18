@@ -66,6 +66,7 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/ui except for:
         # * tests and mocks.
+        'browser/ui/accelerator_utils.h',
         'browser/ui/active_tab_tracker.cc',
         'browser/ui/active_tab_tracker.h',
         'browser/ui/alternate_error_tab_observer.cc',
@@ -329,6 +330,7 @@
         'browser/ui/chrome_select_file_policy.h',
         'browser/ui/chrome_style.cc',
         'browser/ui/chrome_style.h',
+        'browser/ui/cocoa/accelerator_utils_cocoa.mm',
         'browser/ui/cocoa/about_ipc_controller.h',
         'browser/ui/cocoa/about_ipc_controller.mm',
         'browser/ui/cocoa/about_ipc_dialog.h',
@@ -912,6 +914,7 @@
         'browser/ui/global_error/global_error_service.h',
         'browser/ui/global_error/global_error_service_factory.cc',
         'browser/ui/global_error/global_error_service_factory.h',
+        'browser/ui/gtk/accelerator_utils_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
         'browser/ui/gtk/action_box_button_gtk.cc',
@@ -1351,8 +1354,8 @@
         'browser/ui/sync/one_click_signin_infobar_delegate.h',
         'browser/ui/sync/one_click_signin_sync_starter.cc',
         'browser/ui/sync/one_click_signin_sync_starter.h',
-	'browser/ui/sync/profile_signin_confirmation_helper.cc',
-	'browser/ui/sync/profile_signin_confirmation_helper.h',
+        'browser/ui/sync/profile_signin_confirmation_helper.cc',
+        'browser/ui/sync/profile_signin_confirmation_helper.h',
         'browser/ui/sync/signin_histogram.h',
         'browser/ui/sync/tab_contents_synced_tab_delegate.cc',
         'browser/ui/sync/tab_contents_synced_tab_delegate.h',
@@ -1427,6 +1430,8 @@
         'browser/ui/unload_controller.h',
         'browser/ui/user_data_dir_dialog.h',
         'browser/ui/view_ids.h',
+        'browser/ui/views/accelerator_utils_aura.cc',
+        'browser/ui/views/accelerator_utils_views.cc',
         'browser/ui/views/about_ipc_dialog.cc',
         'browser/ui/views/about_ipc_dialog.h',
         'browser/ui/views/accessibility/accessibility_event_router_views.cc',

@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/pref_names.h"
@@ -233,49 +232,37 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
 
   extensions::CommandMap::const_iterator iter = commands->begin();
   for (; iter != commands->end(); ++iter) {
-    if (!chrome::IsChromeAccelerator(
-        iter->second.accelerator(), profile_)) {
-      AddKeybindingPref(iter->second.accelerator(),
-                        extension->id(),
-                        iter->second.command_name(),
-                        false);  // Overwriting not allowed.
-    }
+    AddKeybindingPref(iter->second.accelerator(),
+                      extension->id(),
+                      iter->second.command_name(),
+                      false);  // Overwriting not allowed.
   }
 
   const extensions::Command* browser_action_command =
       CommandsInfo::GetBrowserActionCommand(extension);
   if (browser_action_command) {
-    if (!chrome::IsChromeAccelerator(
-        browser_action_command->accelerator(), profile_)) {
-      AddKeybindingPref(browser_action_command->accelerator(),
-                        extension->id(),
-                        browser_action_command->command_name(),
-                        false);  // Overwriting not allowed.
-    }
+    AddKeybindingPref(browser_action_command->accelerator(),
+                      extension->id(),
+                      browser_action_command->command_name(),
+                      false);  // Overwriting not allowed.
   }
 
   const extensions::Command* page_action_command =
       CommandsInfo::GetPageActionCommand(extension);
   if (page_action_command) {
-    if (!chrome::IsChromeAccelerator(
-        page_action_command->accelerator(), profile_)) {
-      AddKeybindingPref(page_action_command->accelerator(),
-                        extension->id(),
-                        page_action_command->command_name(),
-                        false);  // Overwriting not allowed.
-    }
+    AddKeybindingPref(page_action_command->accelerator(),
+                      extension->id(),
+                      page_action_command->command_name(),
+                      false);  // Overwriting not allowed.
   }
 
   const extensions::Command* script_badge_command =
       CommandsInfo::GetScriptBadgeCommand(extension);
   if (script_badge_command) {
-    if (!chrome::IsChromeAccelerator(
-        script_badge_command->accelerator(), profile_)) {
-      AddKeybindingPref(script_badge_command->accelerator(),
-                        extension->id(),
-                        script_badge_command->command_name(),
-                        false);  // Overwriting not allowed.
-    }
+    AddKeybindingPref(script_badge_command->accelerator(),
+                      extension->id(),
+                      script_badge_command->command_name(),
+                      false);  // Overwriting not allowed.
   }
 }
 
