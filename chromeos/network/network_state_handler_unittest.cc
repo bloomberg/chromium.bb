@@ -130,6 +130,8 @@ class NetworkStateHandlerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::InitializeWithStub();
+    SetupNetworkStateHandler();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -188,8 +190,6 @@ class NetworkStateHandlerTest : public testing::Test {
 };
 
 TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
-  SetupNetworkStateHandler();
-  message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
   // Ensure that the network list is the expected size.
   const size_t kNumShillManagerClientStubImplServices = 4;
@@ -212,8 +212,6 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
-  SetupNetworkStateHandler();
-  message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
   // Enable a technology.
   EXPECT_NE(NetworkStateHandler::TECHNOLOGY_ENABLED,
@@ -233,9 +231,36 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
 }
 
-TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
-  SetupNetworkStateHandler();
+TEST_F(NetworkStateHandlerTest, TechnologyState) {
+  ShillManagerClient::TestInterface* manager_test =
+      DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+
+  manager_test->AddTechnology(flimflam::kTypeWimax, false);
   message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_AVAILABLE,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+
+  manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, true);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+
+  manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, false);
+  network_state_handler_->SetTechnologyEnabled(
+      flimflam::kTypeWimax, true, network_handler::ErrorCallback());
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+
+  manager_test->RemoveTechnology(flimflam::kTypeWimax);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
+            network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+}
+
+TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   // Set a service property.
   const std::string eth0 = "stub_ethernet";
   EXPECT_EQ("", network_state_handler_->GetNetworkState(eth0)->security());
@@ -252,8 +277,6 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
-  SetupNetworkStateHandler();
-  message_loop_.RunUntilIdle();
   // Change a network state.
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
@@ -274,9 +297,6 @@ TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
-  SetupNetworkStateHandler();
-  message_loop_.RunUntilIdle();
-
   ShillManagerClient::TestInterface* manager_test =
       DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
   ASSERT_TRUE(manager_test);

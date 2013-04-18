@@ -143,7 +143,7 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
   else if (shill_property_handler_->IsTechnologyAvailable(technology))
     state = TECHNOLOGY_AVAILABLE;
   else
-    state = TECHNOLOGY_UNINITIALIZED;
+    state = TECHNOLOGY_UNAVAILABLE;
   VLOG(2) << "GetTechnologyState: " << type << " = " << state;
   return state;
 }

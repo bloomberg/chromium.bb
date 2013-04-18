@@ -385,6 +385,23 @@ void ShillManagerClientStub::RemoveTechnology(const std::string& type) {
   }
 }
 
+void ShillManagerClientStub::SetTechnologyInitializing(const std::string& type,
+                                                       bool initializing) {
+  if (initializing) {
+    if (GetListProperty(shill::kUninitializedTechnologiesProperty)->
+        AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+      CallNotifyObserversPropertyChanged(
+          shill::kUninitializedTechnologiesProperty, 0);
+    }
+  } else {
+    if (GetListProperty(shill::kUninitializedTechnologiesProperty)->Remove(
+            base::StringValue(type), NULL)) {
+      CallNotifyObserversPropertyChanged(
+          shill::kUninitializedTechnologiesProperty, 0);
+    }
+  }
+}
+
 void ShillManagerClientStub::ClearProperties() {
   stub_properties_.Clear();
 }

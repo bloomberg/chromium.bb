@@ -50,6 +50,8 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual void ClearServices() = 0;
     virtual void AddTechnology(const std::string& type, bool enabled) = 0;
     virtual void RemoveTechnology(const std::string& type) = 0;
+    virtual void SetTechnologyInitializing(const std::string& type,
+                                           bool initializing) = 0;
     virtual void AddGeoNetwork(const std::string& technology,
                                const base::DictionaryValue& network) = 0;
 
