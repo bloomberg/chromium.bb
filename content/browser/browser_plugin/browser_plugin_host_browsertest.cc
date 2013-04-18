@@ -1283,7 +1283,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
             test_embedder()->last_rvh_at_position_response());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
+// Flaky on Win Aura Tests (1) bot.  See http://crbug.com/233087.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_ChangeWindowName DISABLED_ChangeWindowName
+#else
+#define MAYBE_ChangeWindowName ChangeWindowName
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_ChangeWindowName) {
   const char kEmbedderURL[] = "files/browser_plugin_naming_embedder.html";
   const char* kGuestURL = "files/browser_plugin_naming_guest.html";
   StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
