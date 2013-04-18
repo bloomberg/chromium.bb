@@ -6,16 +6,15 @@
 //
 // Usage:
 //
-// ./out/Release/dump_file_system [options] <profile dir> [origin]...
+// ./out/Release/dump_file_system [options] <filesystem dir> [origin]...
 //
 // If no origin is specified, this dumps all origins in the profile dir.
 //
 // Available options:
 //
-// -t      : dumps temporary files instead of persistent.
-// -s      : dumps syncable files instead of persistent.
-// -u user : uses the specified user name instead of "Default".
-// -l      : more information will be displayed.
+// -t : dumps temporary files instead of persistent.
+// -s : dumps syncable files instead of persistent.
+// -l : more information will be displayed.
 //
 // The format of -l option is:
 //
@@ -57,8 +56,9 @@ void ShowMessageAndExit(const std::string& msg) {
 }
 
 void ShowUsageAndExit(const std::string& arg0) {
-  ShowMessageAndExit("Usage: " + arg0 +
-                     " [-l] [-t] [-s] [-u user] <profile dir> [origin]...");
+  ShowMessageAndExit(
+      "Usage: " + arg0 +
+      " [-l] [-t] [-s] <filesystem dir> [origin]...");
 }
 
 }  // namespace
@@ -73,17 +73,13 @@ static void DumpDirectoryTree(const std::string& origin_name,
   printf("=== ORIGIN %s %s ===\n",
          origin_name.c_str(), FilePathToString(origin_dir).c_str());
 
-  if (!file_util::DirectoryExists(origin_dir)) {
-    ShowMessageAndExit(FilePathToString(origin_dir) +
-                       " is not a filesystem origin directory");
-  }
+  if (!file_util::DirectoryExists(origin_dir))
+    return;
 
   FileSystemDirectoryDatabase directory_db(origin_dir);
   FileSystemDirectoryDatabase::FileId root_id;
-  if (!directory_db.GetFileWithPath(StringToFilePath("/"), &root_id)) {
-    ShowMessageAndExit(FilePathToString(origin_dir) +
-                       " does not have the root directory");
-  }
+  if (!directory_db.GetFileWithPath(StringToFilePath("/"), &root_id))
+    return;
 
   std::stack<std::pair<FileSystemDirectoryDatabase::FileId,
                        std::string> > paths;
@@ -184,12 +180,6 @@ int main(int argc, char* argv[]) {
       g_opt_fs_type = fileapi::kFileSystemTypeSyncable;
       argc--;
       argv++;
-    } else if (std::string(argv[1]) == "-u") {
-      if (argc < 3)
-        ShowUsageAndExit(arg0);
-      username = argv[2];
-      argc -= 2;
-      argv += 2;
     } else {
       break;
     }
@@ -198,16 +188,7 @@ int main(int argc, char* argv[]) {
   if (argc < 2)
     ShowUsageAndExit(arg0);
 
-  const base::FilePath profile_dir(fileapi::StringToFilePath(argv[1]));
-  if (!file_util::DirectoryExists(profile_dir)) {
-    ShowMessageAndExit(fileapi::FilePathToString(profile_dir) +
-                       " is not a directory");
-  }
-
-  const base::FilePath file_system_dir(
-      profile_dir.Append(fileapi::StringToFilePath(username)).Append(
-          base::FilePath(
-              fileapi::SandboxMountPointProvider::kFileSystemDirectory)));
+  const base::FilePath file_system_dir = fileapi::StringToFilePath(argv[1]);
   if (!file_util::DirectoryExists(file_system_dir)) {
     ShowMessageAndExit(fileapi::FilePathToString(file_system_dir) +
                        " is not a filesystem directory");
