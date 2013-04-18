@@ -1293,6 +1293,11 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     frame()->editor()->replaceSelectionWithText(text, false, false);
 }
 
+void WebFrameImpl::removeSpellingMarkers()
+{
+    frame()->document()->markers()->removeMarkers(DocumentMarker::Spelling | DocumentMarker::Grammar);
+}
+
 bool WebFrameImpl::hasSelection() const
 {
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame());

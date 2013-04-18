@@ -2575,6 +2575,37 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, RemoveSpellingMarkers)
+{
+    registerMockedHttpURLLoad("spell.html");
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "spell.html");
+    SpellCheckClient spellcheck;
+    m_webView->setSpellCheckClient(&spellcheck);
+
+    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    frame->frame()->settings()->setAsynchronousSpellCheckingEnabled(true);
+    frame->frame()->settings()->setUnifiedTextCheckerEnabled(true);
+    frame->frame()->settings()->setEditingBehaviorType(WebCore::EditingWindowsBehavior);
+
+    element->focus();
+    document->execCommand("InsertText", false, "_wellcome_.");
+
+    frame->removeSpellingMarkers();
+
+    const int allTextBeginOffset = 0;
+    const int allTextLength = 11;
+    frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
+    RefPtr<Range> selectionRange = frame->frame()->selection()->toNormalizedRange();
+
+    EXPECT_EQ(0U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {
 public:
     TestAccessInitialDocumentWebFrameClient() : m_didAccessInitialDocument(false)

@@ -179,6 +179,7 @@ public:
     virtual bool isContinuousSpellCheckingEnabled() const;
     virtual void requestTextChecking(const WebElement&);
     virtual void replaceMisspelledRange(const WebString&);
+    virtual void removeSpellingMarkers();
     virtual bool hasSelection() const;
     virtual WebRange selectionRange() const;
     virtual WebString selectionAsText() const;
