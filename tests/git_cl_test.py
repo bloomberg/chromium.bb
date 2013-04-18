@@ -331,7 +331,7 @@ class TestGitCl(TestCase):
     def RunEditor(desc, _):
       self.assertEquals(
           '# Enter a description of the change.\n'
-          '# This will displayed on the codereview site.\n'
+          '# This will be displayed on the codereview site.\n'
           '# The first line will also be used as the subject of the review.\n' +
           expected_description,
           desc)

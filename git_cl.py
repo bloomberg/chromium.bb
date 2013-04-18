@@ -838,7 +838,7 @@ class ChangeDescription(object):
     """Asks the user to update the description."""
     self._description = (
       '# Enter a description of the change.\n'
-      '# This will displayed on the codereview site.\n'
+      '# This will be displayed on the codereview site.\n'
       '# The first line will also be used as the subject of the review.\n'
     ) + self._description
 
