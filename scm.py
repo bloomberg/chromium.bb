@@ -803,8 +803,7 @@ class SVN(object):
   @staticmethod
   def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
     """Grabs the diff data."""
-    command = ["diff", "--diff-cmd", "diff", "--config-dir", bogus_dir,
-               filename]
+    command = ["diff", "--config-dir", bogus_dir, filename]
     if revision:
       command.extend(['--revision', revision])
     data = None
@@ -916,8 +915,7 @@ class SVN(object):
               # revision the file was deleted.
               srcinfo = {'Revision': rev}
             if (srcinfo.get('Revision') != rev and
-                SVN.Capture(['diff', '--diff-cmd', 'diff', '-r',
-                             '%d:head' % rev, srcurl], cwd)):
+                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl], cwd)):
               metaheaders.append("#$ svn cp -r %d %s %s "
                                  "### WARNING: note non-trunk copy\n" %
                                  (rev, src, filename))
