@@ -819,11 +819,12 @@ cr.define('ntp', function() {
         'chrome://touch-icon/size/' + iconSize + '@1x/' + item.url;
     listItem.appendChild(createDiv('icon', iconUrl));
     trackImageLoad(iconUrl);
-    var title = createElement('span', {
+    var title = createElement('div', {
       textContent: item.title,
-      className: 'title'
+      className: 'title session_title'
     });
     listItem.appendChild(title);
+
     listItem.addEventListener('click', function(evt) {
       var clickCallback =
           opt_clickCallback ? opt_clickCallback : itemShortcutClickHandler;
@@ -857,11 +858,11 @@ cr.define('ntp', function() {
     var icon = createDiv('session-icon ' + item.iconStyle);
     sessionOuterDiv.appendChild(icon);
 
-    var titleContainer = createElement('span', 'title');
+    var titleContainer = createElement('div', 'title');
     sessionOuterDiv.appendChild(titleContainer);
 
     // Extra container to allow title & last-sync time to stack vertically.
-    var sessionInnerDiv = createDiv(null);
+    var sessionInnerDiv = createDiv('session_container');
     titleContainer.appendChild(sessionInnerDiv);
 
     var title = createDiv('session-name');

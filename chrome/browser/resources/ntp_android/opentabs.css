@@ -40,13 +40,31 @@
   background-repeat: no-repeat;
   background-size: 24px;
   height: 48px;
-  left: 0;
   position: absolute;
   width: 48px;
 }
 
+html[dir='ltr'] .list-item .icon {
+  left: 0;
+}
+
+html[dir='rtl'] .list-item .icon {
+  right: 0;
+}
+
 .list-item .title {
   -webkit-box-align: center;
+  color: #4c4c4c;
+  display: -webkit-box;
+  font-size: 16px;
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+html[dir='ltr'] .list-item .title {
   -webkit-mask-image: -webkit-gradient(
     linear,
     left center,
@@ -56,16 +74,31 @@
     color-stop(0.95, rgba(0,0,0,0)),
     to(rgba(0,0,0,0))
   );
-  color: #4c4c4c;
-  display: -webkit-box;
-  font-size: 16px;
-  height: 100%;
   left: 50px;
-  overflow: hidden;
-  position: absolute;
   right: 0;
-  top: 0;
-  white-space: nowrap;
+}
+
+html[dir='rtl'] .list-item .title {
+  -webkit-mask-image: -webkit-gradient(
+    linear,
+    left center,
+    right center,
+    from(rgba(0,0,0,0)),
+    color-stop(0.15, rgba(0,0,0,1)),
+    color-stop(0.05, rgba(0,0,0,0)),
+    to(rgba(0,0,0,1))
+  );
+  left: 0;
+  right: 50px;
+}
+
+.list-item .session_container {
+  width: 100%;
+}
+
+.list-item .session_title {
+  display: inline-block;
+  line-height: 50px;
 }
 
 .session-header .list-item {
@@ -97,33 +130,64 @@
   height: 13px;
   margin-top: -6.5px;
   position: absolute;
-  right: 18.5px;
   top: 50%;
   width: 14px;
+}
+
+html[dir='ltr'] .expando {
+  right: 18.5px;
+}
+
+html[dir='rtl'] .expando {
+  left: 18.5px;
 }
 
 .expando.open {
   background-image: url(images/disclosure_open_mdpi.png);
 }
 
+html[dir='rtl'] .expando.open {
+  -webkit-transform: scaleX(-1);
+}
+
 .expando.closed {
   background-image: url(images/disclosure_closed_mdpi.png);
+}
+
+html[dir='rtl'] .expando.closed {
+  -webkit-transform: scaleX(-1);
 }
 
 .session-icon.laptop {
   background-image: url(../../../../ui/webui/resources/images/laptop.png);
 }
 
+html[dir='rtl'] .session-icon.laptop {
+  -webkit-transform: scaleX(-1);
+}
+
 .session-icon.tablet {
   background-image: url(../../../../ui/webui/resources/images/tablet.png);
+}
+
+html[dir='rtl'] .session-icon.tablet {
+  -webkit-transform: scaleX(-1);
 }
 
 .session-icon.phone {
   background-image: url(../../../../ui/webui/resources/images/phone.png);
 }
 
+html[dir='rtl'] .session-icon.phone {
+  -webkit-transform: scaleX(-1);
+}
+
 .session-icon.documents {
   background-image: url(images/sent_mdpi.png);
+}
+
+html[dir='rtl'] .session-icon.documents {
+  -webkit-transform: scaleX(-1);
 }
 
 @media screen and (-webkit-min-device-pixel-ratio: 1.5) {
