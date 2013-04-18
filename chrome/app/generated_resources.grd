@@ -12139,6 +12139,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FLAGS_FILE_MANAGER_LEGACY_DESCRIPTION" desc="Description of about:flag option to launch the Files app in the legacy mode.">
         Run Files app as an extension instead of a platform app.
       </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_NEW_UI_NAME" desc="Name of about:flag option to launch the Files app with the new experimental ui.">
+        Files.app's new UI
+      </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_NEW_UI_DESCRIPTION" desc="Description of about:flag option to launch the Files app with the new experimental ui.">
+        Run Files app with the new experimental user interface.
+      </message>
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>

@@ -1032,6 +1032,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kFileManagerLegacy),
   },
   {
+    "file-manager-new-ui",
+    IDS_FLAGS_FILE_MANAGER_NEW_UI_NAME,
+    IDS_FLAGS_FILE_MANAGER_NEW_UI_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kFileManagerNewUI),
+  },
+  {
     "disable-launcher-per-display",
     IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_NAME,
     IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,
