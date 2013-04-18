@@ -2039,7 +2039,7 @@ void BrowserView::Init() {
 
   contents_container_ = new views::WebView(browser_->profile());
   contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
-  contents_ = new ContentsContainer(contents_container_);
+  contents_ = new ContentsContainer(contents_container_, this);
 
   overlay_controller_.reset(
       new InstantOverlayControllerViews(browser(), contents_));

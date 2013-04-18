@@ -78,8 +78,10 @@ class ShadowView : public views::View {
 
 }  // namespace
 
-ContentsContainer::ContentsContainer(views::WebView* active)
+ContentsContainer::ContentsContainer(views::WebView* active,
+                                     views::View* browser_view)
     : active_(active),
+      browser_view_(browser_view),
       overlay_(NULL),
       overlay_web_contents_(NULL),
       draw_drop_shadow_(false),
@@ -170,6 +172,17 @@ void ContentsContainer::SetOverlay(views::WebView* overlay,
 #endif  // !defined(OS_WIN)
   }
 
+  // If |overlay_|'s height has shrunk and |active_top_margin_| was used to
+  // preserve |active_|'s origin in BrowserViewLayout::Layout(), we need to re-
+  // determine if its origin still needs to be preserved.  The origin is
+  // preserved if overlay is taller than total height of hidden bookmark and
+  // info bars.  In this case, force a re-layout of BrowserView.
+  bool layout_browser_view = false;
+  if (overlay_ && active_top_margin_ > 0 && units == INSTANT_SIZE_PIXELS &&
+      height > 0 && height < overlay_height_) {
+    layout_browser_view = true;
+  }
+
   overlay_height_ = height;
   overlay_height_units_ = units;
   draw_drop_shadow_ = draw_drop_shadow;
@@ -198,7 +211,10 @@ void ContentsContainer::SetOverlay(views::WebView* overlay,
     shadow_view_.reset();
   }
 
-  Layout();
+  if (layout_browser_view)
+    browser_view_->Layout();  // This will trigger |this| Layout.
+  else
+    Layout();
 }
 
 void ContentsContainer::MaybeStackOverlayAtTop() {

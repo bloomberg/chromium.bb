@@ -32,7 +32,7 @@ class ContentsContainer : public views::View,
   // Internal class name
   static const char kViewClassName[];
 
-  explicit ContentsContainer(views::WebView* active);
+  ContentsContainer(views::WebView* active, views::View* browser_view);
   virtual ~ContentsContainer();
 
   // Makes the overlay view the active view and nulls out the old active view.
@@ -96,6 +96,7 @@ class ContentsContainer : public views::View,
                        const content::NotificationDetails& details) OVERRIDE;
 
   views::WebView* active_;
+  views::View* browser_view_;
   views::WebView* overlay_;
   scoped_ptr<views::View> shadow_view_;
   content::WebContents* overlay_web_contents_;

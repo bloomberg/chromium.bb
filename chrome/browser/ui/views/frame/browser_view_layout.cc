@@ -352,6 +352,10 @@ void BrowserViewLayout::Layout(views::View* host) {
   // Now set the contents to display at their previous origin if we just hid the
   // bookmark and/or infobars.
   if (active_top_margin == 0 && !old_contents_origin.IsOrigin()) {
+    // Retrieve the overlay height again since it may have changed in layouts
+    // triggered in LayoutTabContents().
+    overlay_height = contents_container_->overlay_height();
+    // Get the new origin of contents.
     gfx::Point new_contents_origin(contents->bounds().origin());
     views::View::ConvertPointToTarget(contents->parent(), browser_view_,
                                       &new_contents_origin);
