@@ -42,7 +42,7 @@
         Sets the plain surrounding text around the input position. Cursor is the
         byte index within the surrounding text. Anchor is the byte index of the
         selection anchor within the surrounding text. If there is no selected
-        text anchor is the same as cursor.
+        text anchor then it is the same as cursor.
       </description>
       <arg name="text" type="string"/>
       <arg name="cursor" type="uint"/>
@@ -70,9 +70,9 @@
     </request>
     <request name="reset">
       <description summary="reset">
-        Should be called by an editor widget when the input state should
-        be reseted, for example after the text was changed outside of the
-        normal input method flow.
+        Should be called by an editor widget when the input state should be
+        reset, for example after the text was changed outside of the normal
+        input method flow.
       </description>
       <arg name="serial" type="uint"/>
     </request>
@@ -84,7 +84,8 @@
     </request>
     <enum name="content_hint">
       <description summary="content hint">
-        Content hint is a bitmask to allow to modify the behavior of the text input
+        Content hint is a bitmask to allow to modify the behavior of the text
+        input.
       </description>
       <entry name="none" value="0x0" summary="no special behaviour"/>
       <entry name="default" value="0x7" summary="auto completion, correction and capitalization"/>
@@ -94,7 +95,7 @@
       <entry name="auto_capitalization" value="0x4" summary="switch to uppercase letters at the start of a sentence"/>
       <entry name="lowercase" value="0x8" summary="prefer lowercase letters"/>
       <entry name="uppercase" value="0x10" summary="prefer uppercase letters"/>
-      <entry name="titlecase" value="0x20" summary="prefer casing for titles and headings (can be language dependend)"/>
+      <entry name="titlecase" value="0x20" summary="prefer casing for titles and headings (can be language dependent)"/>
       <entry name="hidden_text" value="0x40" summary="characters should be hidden"/>
       <entry name="sensitive_data" value="0x80" summary="typed text should not be stored"/>
       <entry name="latin" value="0x100" summary="just latin characters should be entered"/>
@@ -102,10 +103,11 @@
     </enum>
     <enum name="content_purpose">
       <description summary="content purpose">
-        The content purpose allows to specify the primary purpose of a text input.
+        The content purpose allows to specify the primary purpose of a text
+        input.
 
-	This allows an input method to show special purpose input panels with extra 
-	characters or to disallow some characters.
+        This allows an input method to show special purpose input panels with
+        extra characters or to disallow some characters.
       </description>
       <entry name="normal" value="0" summary="default input, allowing all characters"/>
       <entry name="alpha" value="1" summary="allow only alphabetic characters"/>
@@ -164,10 +166,10 @@
     </request>
     <event name="commit_string">
       <description summary="commit">
-        Notify when text should be inserted into the editor widget. The text
-        to commit could be either just a single character after a key press
-        or the result of some composing (pre-edit). It also sets the new
-        cursor position (as byte index) relative to the inserted text.
+        Notify when text should be inserted into the editor widget. The text to
+        commit could be either just a single character after a key press or the
+        result of some composing (pre-edit). It also sets the new cursor
+        position (as byte index) relative to the beginning of inserted text.
 
         Any previously set composing text should be removed.
       </description>
@@ -191,7 +193,7 @@
       <description summary="delete surrounding text">
         Notify when the text around the current cursor position should be
         deleted. Index is relative to the current cursor (as byte index).
-        Length is the length of deleted text (as bytes).
+        Length is the length of deleted text (in bytes).
       </description>
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
@@ -254,9 +256,9 @@
         Notify when a key event was sent. Key events should not be used
         for normal text input operations, which should be done with
         commit_string, delete_surrounfing_text, etc. The key event follows
-        the wl_keyboard key event convention. State is a XKB keysym, state a
+        the wl_keyboard key event convention. Sym is a XKB keysym, state a
         wl_keyboard key_state. Modifiers are a mask for effective modifiers
-        (where the modfier indices are set by the modifiers_map event)
+        (where the modifier indices are set by the modifiers_map event)
       </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
@@ -312,7 +314,7 @@
 
   <interface name="text_model_factory" version="1">
     <description summary="text model factory">
-      A factory for text models. This object is a singleton global.
+      A factory for text models. This object is a global singleton.
     </description>
     <request name="create_text_model">
       <description summary="create text model">

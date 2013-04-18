@@ -37,20 +37,32 @@
     <request name="destroy" type="destructor"/>
     <request name="commit_string">
       <description summary="commit string">
-        Send the commit string text to the applications text model.
+        Send the commit string text to the applications text model and
+        set the cursor at index (as byte index) relative to the
+        beginning of inserted text.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
     </request>
     <request name="preedit_string">
       <description summary="pre-edit string">
-        Send the pre-edit string text to the applications text model.
+        Send the pre-edit string text to the applications text model. The commit
+        text can be used to replace the preedit text on reset (for example on
+        unfocus).
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
       <arg name="commit" type="string"/>
     </request>
     <request name="preedit_styling">
+      <description summary="pre-edit styling">
+        Sets styling information on composing text. The style is applied for
+        length (in bytes) characters from index relative to the beginning of the
+        composing text (as byte index). Multiple styles can be applied to a
+        composing text.
+
+        This request should be sent before sending preedit_string request.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
@@ -60,6 +72,8 @@
       <description summary="pre-edit cursor">
         Sets the cursor position inside the composing text (as byte index)
         relative to the start of the composing text.
+
+        This request should be sent before sending preedit_string request.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
@@ -79,11 +93,10 @@
     </request>
     <request name="keysym">
       <description summary="keysym">
-        Notify when a key event was sent. Key events should not be used
-        for normal text input operations, which should be done with
-        commit_string, delete_surrounfing_text, etc. The key event follows
-        the wl_keyboard key event convention. State is a XKB keysym, state a
-        wl_keyboard key_state.
+        Notify when a key event was sent. Key events should not be used for
+        normal text input operations, which should be done with commit_string,
+        delete_surrounfing_text, etc. The key event follows the wl_keyboard key
+        event convention. Sym is a XKB keysym, state a wl_keyboard key_state.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
@@ -94,9 +107,9 @@
     <request name="grab_keyboard">
       <description summary="grab hardware keyboard">
         Allows an input method to receive hardware keyboard input and process
-        key events to generate text events (with pre-edit) over the. This allows
-        input methods which compose multiple key events for inputting text
-        like it is done for CJK languages.
+        key events to generate text events (with pre-edit) over the wire. This
+        allows input methods which compose multiple key events for inputting
+        text like it is done for CJK languages.
       </description>
        <arg name="keyboard" type="new_id" interface="wl_keyboard"/>
     </request>
@@ -124,9 +137,10 @@
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the
-        position within the surrounding text. Anchor is the position of the
-        selection anchor within the surrounding text. If there is no selected
-        text anchor is the same as cursor.
+        position in bytes within the surrounding text relative to the beginning
+        of the text. Anchor is the position in bytes of the selection anchor
+        within the surrounding text relative to the beginning of the text. If
+        there is no selected text anchor is the same as cursor.
       </description>
       <arg name="text" type="string"/>
       <arg name="cursor" type="uint"/>
