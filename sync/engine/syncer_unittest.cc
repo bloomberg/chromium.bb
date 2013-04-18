@@ -181,24 +181,15 @@ class SyncerTest : public testing::Test,
     return new SyncSession(context_.get(), this, source_info);
   }
 
-
-  void SyncShareAsDelegate(SyncSessionJob::Purpose purpose) {
-    SyncerStep start;
-    SyncerStep end;
-    SyncSessionJob::GetSyncerStepsForPurpose(purpose, &start, &end);
-
-    session_.reset(MakeSession());
-    EXPECT_TRUE(syncer_->SyncShare(session_.get(), start, end));
-  }
-
   void SyncShareNudge() {
     session_.reset(MakeSession());
-    SyncShareAsDelegate(SyncSessionJob::NUDGE);
+    EXPECT_TRUE(syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END));
   }
 
   void SyncShareConfigure() {
     session_.reset(MakeSession());
-    SyncShareAsDelegate(SyncSessionJob::CONFIGURATION);
+    EXPECT_TRUE(
+        syncer_->SyncShare(session_.get(), DOWNLOAD_UPDATES, APPLY_UPDATES));
   }
 
   virtual void SetUp() {

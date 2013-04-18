@@ -724,7 +724,7 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+      TimeDelta::FromMicroseconds(1), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
   PumpLoop();
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);

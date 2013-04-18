@@ -140,20 +140,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
       protocol_error.error_description);
 }
 
-// Trigger an auth error and make sure the sync client detects it when
-// trying to commit.
+// Trigger an auth error and make sure the sync client displays a warning in the
+// UI.
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
-  SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
-
+  ASSERT_TRUE(SetupClients());
   TriggerAuthError();
 
-  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
-  SetTitle(0, node2, L"new_title2");
-  ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
+  ASSERT_FALSE(GetClient(0)->SetupSync());
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetClient(0)->service()->GetAuthError().state());
 }

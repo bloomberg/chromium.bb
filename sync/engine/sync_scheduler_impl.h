@@ -22,17 +22,21 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/nudge_source.h"
 #include "sync/engine/sync_scheduler.h"
-#include "sync/engine/sync_session_job.h"
 #include "sync/engine/syncer.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/sessions/nudge_tracker.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
 
 namespace syncer {
 
 class BackoffDelayProvider;
+
+namespace sessions {
+struct ModelNeutralState;
+}
 
 class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
     : public SyncScheduler,
@@ -83,15 +87,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
 
  private:
-  enum JobProcessDecision {
-    // Indicates we should continue with the current job.
-    CONTINUE,
-    // Indicates that we should save it to be processed later.
-    SAVE,
-    // Indicates we should drop this job.
-    DROP,
-  };
-
   enum JobPriority {
     // Non-canary jobs respect exponential backoff.
     NORMAL_PRIORITY,
@@ -99,10 +94,18 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
     CANARY_PRIORITY
   };
 
+  enum PollAdjustType {
+    // Restart the poll interval.
+    FORCE_RESET,
+    // Restart the poll interval only if its length has changed.
+    UPDATE_INTERVAL,
+  };
+
   friend class SyncSchedulerTest;
   friend class SyncSchedulerWhiteboxTest;
   friend class SyncerTest;
 
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, NoNudgesInConfigureMode);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       DropNudgeWhileExponentialBackOff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, SaveNudge);
@@ -145,57 +148,37 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   static const char* GetModeString(Mode mode);
 
-  static const char* GetDecisionString(JobProcessDecision decision);
-
-  // Invoke the syncer to perform a non-POLL job.
-  bool DoSyncSessionJobImpl(scoped_ptr<SyncSessionJob> job,
-                            JobPriority priority);
-
   // Invoke the syncer to perform a nudge job.
   void DoNudgeSyncSessionJob(JobPriority priority);
 
   // Invoke the syncer to perform a configuration job.
   bool DoConfigurationSyncSessionJob(JobPriority priority);
 
-  // Returns whether or not it's safe to run a poll job at this time.
-  bool ShouldPoll();
+  // Helper function for Do{Nudge,Configuration}SyncSessionJob.
+  void HandleFailure(
+      const sessions::ModelNeutralState& model_neutral_state);
 
   // Invoke the Syncer to perform a poll job.
   void DoPollSyncSessionJob();
 
-  // Called after the Syncer has performed the sync represented by |job|, to
-  // reset our state.  |exited_prematurely| is true if the Syncer did not
-  // cycle from job.start_step() to job.end_step(), likely because the
-  // scheduler was forced to quit the job mid-way through.
-  bool FinishSyncSessionJob(SyncSessionJob* job,
-                            bool exited_prematurely,
-                            sessions::SyncSession* session);
-
-  // Helper to schedule retries of a failed configure or nudge job.
-  void ScheduleNextSync(scoped_ptr<SyncSessionJob> finished_job,
-                        sessions::SyncSession* session);
-
-  // Helper to configure polling intervals. Used by Start and ScheduleNextSync.
-  void AdjustPolling(const SyncSessionJob* old_job);
+  // Adjusts the poll timer to account for new poll interval, and possibly
+  // resets the poll interval, depedning on the flag's value.
+  void AdjustPolling(PollAdjustType type);
 
   // Helper to restart waiting with |wait_interval_|'s timer.
   void RestartWaiting();
 
-  // Helper to ScheduleNextSync in case of consecutive sync errors.
-  void HandleContinuationError(scoped_ptr<SyncSessionJob> old_job,
-                               sessions::SyncSession* session);
+  // Helper to adjust our wait interval when we expereince a transient failure.
+  void UpdateExponentialBackoff(
+      const sessions::ModelNeutralState& model_neutral_state);
 
-  // Decide whether we should CONTINUE, SAVE or DROP the job.
-  JobProcessDecision DecideOnJob(const SyncSessionJob& job,
-                                 JobPriority priority);
+  // Determines if we're allowed to contact the server right now.
+  bool CanRunJobNow(JobPriority priority);
 
-  // Decide on whether to CONTINUE, SAVE or DROP the job when we are in
-  // backoff mode.
-  JobProcessDecision DecideWhileInWaitInterval(const SyncSessionJob& job,
-                                               JobPriority priority);
+  // Determines if we're allowed to contact the server right now.
+  bool CanRunNudgeJobNow(JobPriority priority);
 
-  // 'Impl' here refers to real implementation of public functions, running on
-  // |thread_|.
+  // 'Impl' here refers to real implementation of public functions.
   void StopImpl(const base::Closure& callback);
 
   // If the scheduler's current state supports it, this will create a job based
@@ -230,9 +213,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
 
-  // Called once the first time thread_ is started to broadcast an initial
-  // session snapshot containing data like initial_sync_ended.  Important when
-  // the client starts up and does not need to perform an initial sync.
+  // Called as we are started to broadcast an initial session snapshot
+  // containing data like initial_sync_ended.  Important when the client starts
+  // up and does not need to perform an initial sync.
   void SendInitialSnapshot();
 
   // This is used for histogramming and analysis of ScheduleNudge* APIs.
@@ -280,13 +263,15 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // The event that will wake us up.
   base::OneShotTimer<SyncSchedulerImpl> pending_wakeup_timer_;
 
-  // Pending configure job storage.  Note that
-  // (mode_ != CONFIGURATION_MODE) \implies !pending_configure_job_.
-  scoped_ptr<SyncSessionJob> pending_configure_job_;
+  // Storage for variables related to an in-progress configure request.  Note
+  // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.
+  scoped_ptr<ConfigurationParams> pending_configure_params_;
 
-  // Pending nudge job storage.  These jobs can exist in CONFIGURATION_MODE, but
-  // they will be run only in NORMAL_MODE.
-  scoped_ptr<SyncSessionJob> pending_nudge_job_;
+  // If we have a nudge pending to run soon, it will be listed here.
+  base::TimeTicks scheduled_nudge_time_;
+
+  // Keeps track of work that the syncer needs to handle.
+  sessions::NudgeTracker nudge_tracker_;
 
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;

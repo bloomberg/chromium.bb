@@ -195,6 +195,10 @@ class ProfileSyncServiceHarness
   // Gets the |auto_start_enabled_| variable from the |service_|.
   bool AutoStartEnabled();
 
+  // Returns true if a status change took place, false on timeout.
+  bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
+                                    const std::string& reason);
+
  private:
   friend class StateChangeTimeoutEvent;
 
@@ -285,10 +289,6 @@ class ProfileSyncServiceHarness
   // Finite state machine for controlling state.  Returns true only if a state
   // change has taken place.
   bool RunStateChangeMachine();
-
-  // Returns true if a status change took place, false on timeout.
-  bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
-                                    const std::string& reason);
 
   // A helper for implementing IsDataSynced() and IsFullySynced().
   bool IsDataSyncedImpl(
