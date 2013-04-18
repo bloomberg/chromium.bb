@@ -35,7 +35,7 @@ var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
  * appears in Chrome, which will run either the OK or failed callback as a
  * a result. To see which callback was called, use obtainGetUserMediaResult().
  *
- * @param{string} constraints Defines what to be requested, with mandatory
+ * @param {string} constraints Defines what to be requested, with mandatory
  *     and optional constraints defined. The contents of this parameter depends
  *     on the WebRTC version. This should be JavaScript code that we eval().
  */
@@ -58,10 +58,11 @@ function getUserMedia(constraints) {
 }
 
 /**
- * Must be called after calling getUserMedia. Returns not-called-yet if we have
- * not yet been called back by WebRTC. Otherwise it returns either ok-got-stream
- * or failed-with-error-x (where x is the error code from the error callback)
- * depending on which callback got called by WebRTC.
+ * Must be called after calling getUserMedia.
+ * @return {string} Returns not-called-yet if we have not yet been called back
+ *     by WebRTC. Otherwise it returns either ok-got-stream or
+ *     failed-with-error-x (where x is the error code from the error
+ *     callback) depending on which callback got called by WebRTC.
  */
 function obtainGetUserMediaResult() {
   returnToTest(gRequestWebcamAndMicrophoneResult);
@@ -84,7 +85,7 @@ function stopLocalStream() {
 
 /**
  * Adds the current local media stream to a peer connection.
- * @param{RTCPeerConnection} peerConnection
+ * @param {RTCPeerConnection} peerConnection
  */
 function addLocalStreamToPeerConnection(peerConnection) {
   if (gLocalStream == null)
@@ -101,7 +102,7 @@ function addLocalStreamToPeerConnection(peerConnection) {
 
 /**
  * Removes the local stream from the peer connection.
- * @param{rtcpeerconnection} peerconnection
+ * @param {rtcpeerconnection} peerConnection
  */
 function removeLocalStreamFromPeerConnection(peerConnection) {
   if (gLocalStream == null)
@@ -116,7 +117,7 @@ function removeLocalStreamFromPeerConnection(peerConnection) {
 }
 
 /**
- * Returns the current local stream - |gLocalStream|.
+ * @return {string} Returns the current local stream - |gLocalStream|.
  */
 function getLocalStream() {
   return gLocalStream;
@@ -134,25 +135,53 @@ function getUserMediaOkCallback_(stream) {
   videoTag.src = webkitURL.createObjectURL(stream);
 
   // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
-  // videoTag.onloadedmetadata = updateVideoTagSize_('local-view');
+  // videoTag.onloadedmetadata = displayVideoSize_(videoTag);.
   // Use setTimeout as a workaround for now.
-  setTimeout(function() {updateVideoTagSize_('local-view')}, 500);
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
+  setTimeout(function() {displayVideoSize_(videoTag);}, 500);
 }
 
 /**
  * @private
  * @param {string} videoTagId The ID of the video tag to update.
+ * @param {string} width The width of the video to update the video tag, if
+ *     width or height is 0, size will be taken from videoTag.videoWidth.
+ * @param {string} height The height of the video to update the video tag, if
+ *     width or height is 0 size will be taken from the videoTag.videoHeight.
  */
-function updateVideoTagSize_(videoTagId) {
+function updateVideoTagSize_(videoTagId, width, height) {
   var videoTag = $(videoTagId);
-  // Don't update if sizes are 0 (happens for Chrome M23).
-  if (videoTag.videoWidth > 0 && videoTag.videoHeight > 0) {
-    debug('Set video tag "' + videoTagId + '" width and height to ' +
-      videoTag.videoWidth + 'x' + videoTag.videoHeight);
-    videoTag.width = videoTag.videoWidth;
-    videoTag.height = videoTag.videoHeight;
+  if (width > 0 || height > 0) {
+    videoTag.width = width;
+    videoTag.height = height;
   }
+  else {
+    if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
+      videoTag.width = videoTag.videoWidth;
+      videoTag.height = videoTag.videoHeight;
+    }
+    else {
+      return debug('"' + videoTagId + '" video stream size is 0, skipping ' +
+                   'resize');
+    }
+  }
+  debug('Set video tag "' + videoTagId + '" size to ' + videoTag.width + 'x' +
+        videoTag.height);
+  displayVideoSize_(videoTag);
+}
+
+/**
+ * @private
+ * @param {string} videoTag The ID of the video tag + stream to
+ *     write the size to a HTML tag based on id.
+ */
+function displayVideoSize_(videoTag) {
+  if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
+    $(videoTag.id + '-stream-size').innerHTML = '(stream size: ' +
+                                                videoTag.videoWidth + 'x' +
+                                                videoTag.videoHeight + ')';
+  }
+  $(videoTag.id + '-size').innerHTML = videoTag.width + 'x' + videoTag.height;
 }
 
 /**
@@ -162,6 +191,7 @@ function updateVideoTagSize_(videoTagId) {
 function getUserMediaFailedCallback_(error) {
   debug('GetUserMedia FAILED: Maybe the camera is in use by another process?');
   gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.code;
+  debug(gRequestWebcamAndMicrophoneResult);
 }
 
 $ = function(id) {

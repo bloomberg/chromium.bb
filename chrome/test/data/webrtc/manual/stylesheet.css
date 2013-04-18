@@ -14,11 +14,11 @@ h1, h2, h3 {
 }
 
 a {
-  text-decoration:none;
+  text-decoration: none;
 }
 
 pre {
-  background-color: #e2e2e2;
+  background-color: #eee;
   margin-right: 20px;
 }
 
@@ -46,17 +46,30 @@ input[type=checkbox] {
   top: 2px;
 }
 
-video {
-  border:1px solid #ccc;
+.video-area {
+  background: #eee;
+  border:1px solid #aaa;
+}
+
+.inline-contents {
+  display: inline;
+}
+
+#getusermedia-input {
+  width: 100%;
+}
+
+#getusermedia-constraints {
+  width: 40%;
 }
 
 #wrapper {
-  margin:0px auto;
-  padding:5px;
+  margin: 0px auto;
+  padding: 5px;
 }
 
 #container {
-  overflow: hidden;
+  overflow: auto;
   width: 100%;
 }
 
@@ -70,6 +83,6 @@ video {
 }
 
 #right-half {
-  width: 50%;
-  margin-left: 50%;
+  width: 49%;
+  margin-left: 51%;
 }

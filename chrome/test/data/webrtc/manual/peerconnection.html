@@ -2,45 +2,67 @@
 <html>
 <head>
   <title>WebRTC PeerConnection Manual Test</title>
-  <script type="text/javascript" src="../test_functions.js"></script>
-  <script type="text/javascript" src="../message_handling.js"></script>
-  <script type="text/javascript" src="../getusermedia.js"></script>
-  <script type="text/javascript" src="../jsep01_call.js"></script>
-  <script type="text/javascript" src="peerconnection.js"></script>
-  <link rel="StyleSheet" type="text/css" href="stylesheet.css">
+  <script src="../test_functions.js"></script>
+  <script src="../message_handling.js"></script>
+  <script src="../getusermedia.js"></script>
+  <script src="../jsep01_call.js"></script>
+  <script src="peerconnection.js"></script>
+  <link rel="StyleSheet" href="stylesheet.css">
   <meta charset="utf-8">
 </head>
 <body>
 
 <div id="wrapper">
-  <div>
+  <div id="getusermedia-input">
     GetUserMedia <a href="http://goo.gl/V7cZg">MediaStreamConstraints</a>:
-    <input type="text" id="getusermedia-constraints" size="30">
+    <input type="text" id="getusermedia-constraints">
     Audio<input type="checkbox" id="audio" checked
         onclick="updateGetUserMediaConstraints();"/>
     Video<input type="checkbox" id="video" checked
         onclick="updateGetUserMediaConstraints();"/>
+    Screen capture<input type="checkbox" id="screencapture"
+        onclick="updateGetUserMediaConstraints();"/>
     <button id="re-request" onclick="getUserMediaFromHere();">
-        Request GetUserMedia</button>
+        Request GetUserMedia</button><br/>
     Use <a href="constraints.html">constraints.html</a> to create more
-    advanced constraints (then paste them into the box to the left).
+        advanced constraints (then paste them into the Constraints box above).
+    <a href="peerconnection-help.html" target="_blank">Help</a>
+    <br/>
   </div>
-  <a href="peerconnection-help.html" target="_blank">How does this page work?
-      </a>
+
   <div id="container">
 
     <div id="left-half">
-      <h2>Local Preview</h2>
-      <video width="320" height="240" id="local-view" autoplay="autoplay">
-          </video><br/>
+
+        <div>
+          <h2>Local Preview</h2>
+          <video width="320" height="240" id="local-view" autoplay="autoplay"
+              class="video-area"</video><br/>
+        </div>
+
+        <div>
+          <div>
+            Size: <div id="local-view-size" class="inline-contents"></div>
+            <div id="local-view-stream-size" class="inline-contents">(stream
+                size: N/A)</div><br/>
+          </div>
+          <div>
+            Resize: <button onclick="updateVideoTagSize_('local-view')"> To
+                stream size</button>
+            <button onclick="updateVideoTagSize_('local-view', 320, 240);">
+                320x240</button>
+            <button onclick="updateVideoTagSize_('local-view', 640, 480);">
+                640x480</button>
+          </div>
+        </div>
+
       <h2>Send on data channel</h2>
       <input type="text" id="data-channel-send" size="10" />
       <button onclick="sendDataFromHere();">Send data</button><br>
 
       <h2>Settings</h2>
-      Server [<a href="" onclick="showServerHelp()">?</a>]:
-      <input type="text" id="server" size="30"
-          value="http://localhost:8888" />
+      Server [<a href="" onclick="showServerHelp();">?</a>]:
+      <input type="text" id="server" size="30" value="http://localhost:8888" />
       Peer ID: <input type="text" id="peer-id" size="10" />
       <button id="connect" onclick="connectFromHere();">Connect</button><br/>
       PeerConnection <a href="http://goo.gl/xVi12">createOffer MediaConstraints:
@@ -77,22 +99,45 @@
       <input type="text" id="dtmf-tones-duration" size="10" value="100" />
       gap(ms):
       <input type="text" id="dtmf-tones-gap" size="10" value="50" />
-      <button onclick="insertDtmfFromHere();">Send</button><br/>   
+      <button onclick="insertDtmfFromHere();">Send</button><br/>
       Options:
       <input type="checkbox" id="force-opus" onclick="forceOpusChanged();"/>
-          Force Opus in Outgoing SDP<br/>
+      Force Opus in Outgoing SDP<br/>
       <button onclick="clearLog();">Clear Logs</button>
+
       <h2>Messages</h2>
       <pre id="messages"></pre>
     </div>
+
     <div id="right-half">
-      <h2>Remote Video</h2>
-      <video width="320" height="240" id="remote-view" autoplay="autoplay">
-          </video><br/>
+
+      <div>
+        <h2>Remote Video</h2>
+          <video width="320" height="240" id="remote-view" autoplay="autoplay"
+              class="video-area"></video><br/>
+      </div>
+
+      <div>
+        <div>
+          Size: <div id="remote-view-size" class="inline-contents"></div>
+          <div id="remote-view-stream-size" class="inline-contents">(stream size
+              :N/A)</div><br/>
+        </div>
+        <div>
+          Resize: <button onclick="updateVideoTagSize_('remote-view')"> To
+              stream size</button>
+          <button onclick="updateVideoTagSize_('remote-view', 320, 240);">
+              320x240</button>
+          <button onclick="updateVideoTagSize_('remote-view', 640, 480);">
+              640x480</button>
+        </div>
+      </div>
+
       <h2>Received on data channel</h2>
       <textarea id="data-channel-receive" rows="7" cols="40" disabled="true">
           </textarea>
-      <h2>Sent DTMF tones</h2>      
+
+      <h2>Sent DTMF tones</h2>
       <textarea id="dtmf-tones-sent" rows="7" cols="40" disabled="true">
           </textarea>
 

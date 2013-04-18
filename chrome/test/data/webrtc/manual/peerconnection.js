@@ -123,9 +123,18 @@ function forceOpusChanged() {
  */
 function updateGetUserMediaConstraints() {
   var constraints = {
-     audio: $('audio').checked,
-     video: $('video').checked
+    audio: $('audio').checked,
+    video: $('video').checked
   };
+  if ($('screencapture').checked) {
+    var constraints = {
+      audio: $('audio').checked,
+      video: {mandatory: {chromeMediaSource: 'screen'}}
+    };
+    if ($('audio').checked == true)
+      debug('Audio for screencapture is not implemented as of M28, please ' +
+            'try to set audio = false prior requesting screencapture');
+  }
   $('getusermedia-constraints').value =
       JSON.stringify(constraints, null, ' ');
 }
@@ -166,6 +175,8 @@ window.onload = function() {
   doNotAutoAddLocalStreamWhenCalled();
   hookupDataChannelCallbacks_();
   hookupDtmfSenderCallback_();
+  displayVideoSize_($('local-view'));
+  displayVideoSize_($('remote-view'));
 };
 
 /**

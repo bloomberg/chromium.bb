@@ -5,7 +5,7 @@
  */
 
 /** @private */
-var gTransformOutgoingSdp = function(sdp) { return sdp; }
+var gTransformOutgoingSdp = function(sdp) { return sdp; };
 
 /** @private */
 var gCreateAnswerConstraints = {};
@@ -31,7 +31,7 @@ var gDtmfOnToneChange = function(tone) {};
 /**
  * Sets the transform to apply just before setting the local description and
  * sending to the peer.
- * @param{function} transformFunction A function which takes one SDP string as
+ * @param {function} transformFunction A function which takes one SDP string as
  *     argument and returns the modified SDP string.
  */
 function setOutgoingSdpTransform(transformFunction) {
@@ -40,7 +40,7 @@ function setOutgoingSdpTransform(transformFunction) {
 
 /**
  * Sets the MediaConstraints to be used for PeerConnection createAnswer() calls.
- * @param{string} mediaConstraints The constraints, as defined in the
+ * @param {string} mediaConstraints The constraints, as defined in the
  *     PeerConnection JS API spec.
  */
 function setCreateAnswerConstraints(mediaConstraints) {
@@ -49,7 +49,7 @@ function setCreateAnswerConstraints(mediaConstraints) {
 
 /**
  * Sets the MediaConstraints to be used for PeerConnection createOffer() calls.
- * @param{string} mediaConstraints The constraints, as defined in the
+ * @param {string} mediaConstraints The constraints, as defined in the
  *     PeerConnection JS API spec.
  */
 function setCreateOfferConstraints(mediaConstraints) {
@@ -59,9 +59,10 @@ function setCreateOfferConstraints(mediaConstraints) {
 /**
  * Sets the callback functions that will receive DataChannel readyState updates
  * and received data.
- * @param{function} status_callback The function that will receive a string with
+ * @param {function} status_callback The function that will receive a string
+ * with
  *     the current DataChannel readyState.
- * @param{function} data_callback The function that will a string with data
+ * @param {function} data_callback The function that will a string with data
  *     received from the remote peer.
  */
 function setDataCallbacks(status_callback, data_callback) {
@@ -71,7 +72,7 @@ function setDataCallbacks(status_callback, data_callback) {
 
 /**
  * Sends data on an active DataChannel.
- * @param{string} data The string that will be sent to the remote peer.
+ * @param {string} data The string that will be sent to the remote peer.
  */
 function sendDataOnChannel(data) {
   if (gDataChannel == null)
@@ -81,7 +82,7 @@ function sendDataOnChannel(data) {
 
 /**
  * Sets the callback function that will receive DTMF sender ontonechange events.
- * @param{function} ontonechange The function that will receive a string with
+ * @param {function} ontonechange The function that will receive a string with
  *     the tone that has just begun playout.
  */
 function setOnToneChange(ontonechange) {
@@ -90,7 +91,7 @@ function setOnToneChange(ontonechange) {
 
 /**
  * Inserts DTMF tones on an active DTMF sender.
- * @param{string} data The string that will be sent to the remote peer.
+ * @param {string} data The string that will be sent to the remote peer.
  */
 function insertDtmf(tones, duration, interToneGap) {
   if (gDtmfSender == null)
@@ -110,7 +111,7 @@ function handleMessage(peerConnection, message) {
         session_description,
         function() { success_('setRemoteDescription'); },
         function() { failure_('setRemoteDescription'); });
-    if (session_description.type == "offer") {
+    if (session_description.type == 'offer') {
       debug('createAnswer with constraints: ' +
             JSON.stringify(gCreateAnswerConstraints, null, ' '));
       peerConnection.createAnswer(
@@ -124,15 +125,15 @@ function handleMessage(peerConnection, message) {
     peerConnection.addIceCandidate(candidate);
     return;
   }
-  addTestFailure("unknown message received");
+  addTestFailure('unknown message received');
   return;
 }
 
 function createPeerConnection(stun_server) {
-  servers = {iceServers:[{url:"stun:" + stun_server}]};
+  servers = {iceServers: [{url: 'stun:' + stun_server}]};
   try {
     peerConnection = new webkitRTCPeerConnection(
-        servers, { optional:[ { RtpDataChannels: true } ]});
+        servers, { optional: [{ RtpDataChannels: true }]});
   } catch (exception) {
     throw failTest('Failed to create peer connection: ' + exception);
   }
@@ -148,7 +149,7 @@ function setupCall(peerConnection) {
         JSON.stringify(gCreateOfferConstraints, null, ' '));
   peerConnection.createOffer(
       setLocalAndSendMessage_,
-      function () { failure_('createOffer'); },
+      function() { failure_('createOffer'); },
       gCreateOfferConstraints);
 }
 
@@ -161,7 +162,7 @@ function createDataChannel(peerConnection, label) {
     throw failTest('Creating DataChannel, but we already have one.');
   }
 
-  gDataChannel = peerConnection.createDataChannel(label, { reliable : false });
+  gDataChannel = peerConnection.createDataChannel(label, { reliable: false });
   debug('DataChannel with label ' + gDataChannel.label + ' initiated locally.');
   hookupDataChannelEvents();
 }
@@ -209,7 +210,7 @@ function setLocalAndSendMessage_(session_description) {
     session_description,
     function() { success_('setLocalDescription'); },
     function() { failure_('setLocalDescription'); });
-  debug("Sending SDP message:\n" + session_description.sdp);
+  debug('Sending SDP message:\n' + session_description.sdp);
   sendToPeer(gRemotePeerId, JSON.stringify(session_description));
 }
 
@@ -220,15 +221,16 @@ function addStreamCallback_(event) {
   videoTag.src = webkitURL.createObjectURL(event.stream);
 
   // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
-  // videoTag.onloadedmetadata = updateVideoTagSize_('remote-view');
+  // videoTag.onloadedmetadata = displayVideoSize_(videoTag);
   // Use setTimeout as a workaround for now.
-  setTimeout(function() {updateVideoTagSize_('remote-view')}, 500);
+  // Displays the remote video size for both the video element and the stream.
+  setTimeout(function() {displayVideoSize_(videoTag);}, 500);
 }
 
 /** @private */
 function removeStreamCallback_(event) {
   debug('Call ended.');
-  document.getElementById("remote-view").src = '';
+  document.getElementById('remote-view').src = '';
 }
 
 /** @private */
