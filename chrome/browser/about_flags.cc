@@ -663,13 +663,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
   {
-    "enable-spdy31",
-    IDS_FLAGS_ENABLE_SPDY31_NAME,
-    IDS_FLAGS_ENABLE_SPDY31_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSpdy31)
-  },
-  {
     "enable-spdy4a1",
     IDS_FLAGS_ENABLE_SPDY4A1_NAME,
     IDS_FLAGS_ENABLE_SPDY4A1_DESCRIPTION,

@@ -661,15 +661,15 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     EnableSpdy(spdy_mode);
   } else if (command_line.HasSwitch(switches::kEnableSpdy4a1)) {
     net::HttpStreamFactory::EnableNpnSpdy4a1();
-  } else if (command_line.HasSwitch(switches::kEnableSpdy31)) {
-    net::HttpStreamFactory::EnableNpnSpdy31();
+  } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
   } else if (command_line.HasSwitch(switches::kEnableNpn)) {
     net::HttpStreamFactory::EnableNpnSpdy();
   } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
     net::HttpStreamFactory::EnableNpnHttpOnly();
   } else {
-    // Use SPDY/3 by default.
-    net::HttpStreamFactory::EnableNpnSpdy3();
+    // Use SPDY/3.1 by default.
+    net::HttpStreamFactory::EnableNpnSpdy31();
   }
 
   // TODO(rch): Make the client socket factory a per-network session
