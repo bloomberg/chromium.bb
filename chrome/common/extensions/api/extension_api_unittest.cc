@@ -172,10 +172,14 @@ TEST(ExtensionAPI, APIFeatures) {
     { "test2.foo", true, Feature::CONTENT_SCRIPT_CONTEXT, GURL() },
     { "test3", false, Feature::WEB_PAGE_CONTEXT, GURL("http://google.com") },
     { "test3.foo", true, Feature::WEB_PAGE_CONTEXT, GURL("http://google.com") },
-    { "test3.foo", true, Feature::BLESSED_EXTENSION_CONTEXT, GURL() },
-    { "test4", true, Feature::BLESSED_EXTENSION_CONTEXT, GURL() },
-    { "test4.foo", false, Feature::BLESSED_EXTENSION_CONTEXT, GURL() },
-    { "test4.foo", false, Feature::UNBLESSED_EXTENSION_CONTEXT, GURL() },
+    { "test3.foo", true, Feature::BLESSED_EXTENSION_CONTEXT,
+        GURL("http://bad.com") },
+    { "test4", true, Feature::BLESSED_EXTENSION_CONTEXT,
+        GURL("http://bad.com") },
+    { "test4.foo", false, Feature::BLESSED_EXTENSION_CONTEXT,
+        GURL("http://bad.com") },
+    { "test4.foo", false, Feature::UNBLESSED_EXTENSION_CONTEXT,
+        GURL("http://bad.com") },
     { "test4.foo.foo", true, Feature::CONTENT_SCRIPT_CONTEXT, GURL() },
     { "test5", true, Feature::WEB_PAGE_CONTEXT, GURL("http://foo.com") },
     { "test5", false, Feature::WEB_PAGE_CONTEXT, GURL("http://bar.com") },
@@ -380,11 +384,12 @@ TEST_F(ExtensionAPITest, URLMatching) {
   EXPECT_TRUE(MatchesURL(api.get(), "app", "https://blah.net"));
   EXPECT_TRUE(MatchesURL(api.get(), "app", "file://somefile.html"));
 
-  // But not internal URLs (for chrome-extension:// the app API is injected by
-  // GetSchemasForExtension).
+  // But not internal URLs.
   EXPECT_FALSE(MatchesURL(api.get(), "app", "about:flags"));
   EXPECT_FALSE(MatchesURL(api.get(), "app", "chrome://flags"));
-  EXPECT_FALSE(MatchesURL(api.get(), "app",
+
+  // "app" should be available to chrome-extension URLs.
+  EXPECT_TRUE(MatchesURL(api.get(), "app",
                           "chrome-extension://fakeextension"));
 
   // "storage" API (for example) isn't available to any URLs.
