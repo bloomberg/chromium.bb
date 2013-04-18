@@ -700,6 +700,9 @@ text_entry_commit_and_reset(struct text_entry *entry)
 		text_entry_insert_at_cursor(entry, commit, 0, 0);
 		free(commit);
 	}
+
+	entry->serial++;
+	text_model_reset(entry->model, entry->serial);
 }
 
 static void
@@ -762,10 +765,6 @@ text_entry_set_cursor_position(struct text_entry *entry,
 				 x * PANGO_SCALE, y * PANGO_SCALE,
 				 &index, &trailing);
 	entry->cursor = index + trailing;
-
-	entry->serial++;
-
-	text_model_reset(entry->model, entry->serial);
 
 	text_entry_update_layout(entry);
 
