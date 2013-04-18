@@ -341,25 +341,28 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
 // Serialize XML document which has all 5 built-in entities. After
 // finishing serialization, the serialized contents should be same
 // with original XML document.
-// Disabled because of crbug.com/227030
-TEST_F(DomSerializerTests, DISABLED_SerializeXMLDocWithBuiltInEntities) {
+TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
   base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
-  page_file_path = page_file_path.AppendASCII("note.xml");
+  page_file_path = page_file_path.AppendASCII("note.html");
+  base::FilePath xml_file_path = data_dir_;
+  xml_file_path = xml_file_path.AppendASCII("dom_serializer");
+  xml_file_path = xml_file_path.AppendASCII("note.xml");
   // Read original contents for later comparison.
   std::string original_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(page_file_path, &original_contents));
+  ASSERT_TRUE(file_util::ReadFileToString(xml_file_path, &original_contents));
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
+  GURL xml_file_url = net::FilePathToFileURL(xml_file_path);
   ASSERT_TRUE(file_url.SchemeIsFile());
   // Load the test file.
   LoadPageFromURL(file_url);
   // Do serialization.
-  SerializeDomForURL(file_url, false);
+  SerializeDomForURL(xml_file_url, false);
   // Compare the serialized contents with original contents.
-  ASSERT_TRUE(HasSerializedFrame(file_url));
+  ASSERT_TRUE(HasSerializedFrame(xml_file_url));
   const std::string& serialized_contents =
-      GetSerializedContentForFrame(file_url);
+      GetSerializedContentForFrame(xml_file_url);
   ASSERT_EQ(original_contents, serialized_contents);
 }
 
