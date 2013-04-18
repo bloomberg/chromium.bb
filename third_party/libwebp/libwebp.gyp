@@ -162,7 +162,13 @@
           },
           'link_settings': {
             'libraries': [
-              '-lwebp',
+              # Check for presence of webpdemux library, use it if present.
+              '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
+              '--code "int main() { return 0; }" '
+              '--run-linker '
+              '--on-success "-lwebp -lwebpdemux" '
+              '--on-failure "-lwebp" '
+              '-- -lwebpdemux)',
             ],
           },
         }
