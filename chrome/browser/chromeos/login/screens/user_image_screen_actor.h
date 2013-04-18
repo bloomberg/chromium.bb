@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_USER_IMAGE_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_USER_IMAGE_SCREEN_ACTOR_H_
 
+#include <string>
+
 class SkBitmap;
 
 namespace gfx {
@@ -22,14 +24,22 @@ class UserImageScreenActor {
     virtual ~Delegate() {}
 
     // Called when user accepts photo as login user image.
-    virtual void OnPhotoTaken(const gfx::ImageSkia& image) = 0;
-    // Called when user accepts Profile image as login user image.
-    virtual void OnProfileImageSelected() = 0;
-    // Called when user accepts one of the default images as login user
-    // image.
-    virtual void OnDefaultImageSelected(int index) = 0;
+    virtual void OnPhotoTaken(const std::string& raw_data) = 0;
+    // Called to check camera presence.
+    virtual void CheckCameraPresence() = 0;
+    // Called when user selects some image
+    virtual void OnImageSelected(const std::string& image_url,
+                                 const std::string& image_type) = 0;
+    // Called when user accepts currently selected image
+    virtual void OnImageAccepted() = 0;
+
     // Called when actor is destroyed so there's no dead reference to it.
     virtual void OnActorDestroyed(UserImageScreenActor* actor) = 0;
+
+    virtual bool profile_picture_absent() = 0;
+    virtual int selected_image() = 0;
+    virtual std::string profile_picture_data_url() = 0;
+
   };
 
   virtual ~UserImageScreenActor() {}
@@ -49,17 +59,17 @@ class UserImageScreenActor {
   // Selects image with the index specified.
   virtual void SelectImage(int index) = 0;
 
-  // Starts camera presence check.
-  virtual void CheckCameraPresence() = 0;
+  // Sends profile image as a data URL to the page.
+  virtual void SendProfileImage(const std::string& data_url) = 0;
+
+  // Indicates that there is no custom profile image for the user.
+  virtual void OnProfileImageAbsent() = 0;
 
   // Enables or disables profile picture.
   virtual void SetProfilePictureEnabled(bool enabled) = 0;
 
-  // Inserts profile image in the list for user to select.
-  virtual void AddProfileImage(const gfx::ImageSkia& image) {}
-
-  // Indicates that there is no custom profile image for the user.
-  virtual void OnProfileImageAbsent() {}
+  // Sends result of camera check
+  virtual void SetCameraPresent(bool enabled) = 0;
 };
 
 }  // namespace chromeos
