@@ -2419,9 +2419,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
                                           'brett@example.com']),
                            reviewers=set(['john@example.com',
                                           'ben@example.com']),
-                           uncovered_files=set(['foo/xyz.cc']),
+                           uncovered_files=set(['foo/xyz.cc', 'foo/bar.cc']),
                            expected_output='Missing LGTM from an OWNER '
-                                           'for these files:\n    foo/xyz.cc\n',
+                                           'for these files:\n'
+                                           '    foo/bar.cc\n'
+                                           '    foo/xyz.cc\n',
                            author_counts_as_owner=False)
 
   def testCannedCheckOwners_TBR(self):
