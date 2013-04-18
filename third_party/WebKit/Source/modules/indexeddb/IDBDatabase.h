@@ -121,7 +121,7 @@ private:
     IDBDatabaseMetadata m_metadata;
     RefPtr<IDBDatabaseBackendInterface> m_backend;
     RefPtr<IDBTransaction> m_versionChangeTransaction;
-    typedef HashMap<int64_t, IDBTransaction*> TransactionMap;
+    typedef HashMap<int64_t, RefPtr<IDBTransaction> > TransactionMap;
     TransactionMap m_transactions;
 
     bool m_closePending;

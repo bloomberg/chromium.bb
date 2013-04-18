@@ -154,8 +154,10 @@ void IDBRequest::markEarlyDeath()
 {
     ASSERT(m_readyState == PENDING);
     m_readyState = EarlyDeath;
-    if (m_transaction)
+    if (m_transaction) {
         m_transaction->unregisterRequest(this);
+        m_transaction.clear();
+    }
 }
 
 void IDBRequest::abort()
