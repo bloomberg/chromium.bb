@@ -35,6 +35,7 @@
 #include "Frame.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
+#include "ScriptController.h"
 #include "ScriptDebugListener.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"

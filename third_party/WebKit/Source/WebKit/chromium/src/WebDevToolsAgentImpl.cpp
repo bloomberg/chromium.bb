@@ -50,6 +50,7 @@
 #include "ResourceError.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
+#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8Utilities.h"
 #include "WebDataSource.h"

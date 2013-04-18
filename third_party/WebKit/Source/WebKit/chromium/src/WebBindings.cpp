@@ -38,6 +38,7 @@
 #include "npruntime_impl.h"
 #include "npruntime_priv.h"
 #include "Range.h"
+#include "ScriptController.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8DOMWrapper.h"

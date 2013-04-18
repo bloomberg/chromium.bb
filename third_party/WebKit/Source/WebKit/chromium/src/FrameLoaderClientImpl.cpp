@@ -58,6 +58,7 @@
 #if ENABLE(MEDIA_STREAM)
 #include "RTCPeerConnectionHandlerChromium.h"
 #endif
+#include "ScriptController.h"
 #include "Settings.h"
 #include "SocketStreamHandleInternal.h"
 #include "UserGestureIndicator.h"

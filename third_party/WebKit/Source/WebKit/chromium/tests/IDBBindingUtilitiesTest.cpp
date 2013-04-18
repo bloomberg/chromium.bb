@@ -30,6 +30,7 @@
 #include "IDBBindingUtilities.h"
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
+#include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8PerIsolateData.h"
 #include "V8Utilities.h"

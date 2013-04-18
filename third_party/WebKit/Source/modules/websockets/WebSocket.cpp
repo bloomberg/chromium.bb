@@ -48,6 +48,7 @@
 #include "MainThreadWebSocketChannel.h"
 #include "MessageEvent.h"
 #include "ScriptCallStack.h"
+#include "ScriptController.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "WebSocketChannel.h"

@@ -65,6 +65,7 @@
 #include "Page.h"
 #include "PlatformGestureEvent.h"
 #include "RenderBox.h"
+#include "ScriptController.h"
 #include "ScrollAnimator.h"
 #include "ScrollView.h"
 #include "ScrollbarTheme.h"

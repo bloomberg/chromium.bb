@@ -62,6 +62,7 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
+#include "ScriptController.h"
 #include "SecurityOrigin.h"
 
 #include <wtf/Vector.h>
