@@ -158,17 +158,19 @@ cr.define('print_preview', function() {
         localStrings.getString('printToPDF'),
         false /*isRecent*/,
         print_preview.Destination.ConnectionStatus.ONLINE);
-    dest.capabilities = new print_preview.ChromiumCapabilities(
-        false /*hasCopiesCapability*/,
-        '1' /*defaultCopiesStr*/,
-        false /*hasCollateCapability*/,
-        false /*defaultIsCollateEnabled*/,
-        false /*hasDuplexCapability*/,
-        false /*defaultIsDuplexEnabled*/,
-        true /*hasOrientationCapability*/,
-        false /*defaultIsLandscapeEnabled*/,
-        true /*hasColorCapability*/,
-        true /*defaultIsColorEnabled*/);
+    dest.capabilities = {
+      version: '1.0',
+      printer: {
+        page_orientation: {
+          option: [
+            {type: 'AUTO', is_default: true},
+            {type: 'PORTRAIT'},
+            {type: 'LANDSCAPE'}
+          ]
+        },
+        color: { option: [{type: 'STANDARD_COLOR', is_default: true}] }
+      }
+    };
     return dest;
   };
 

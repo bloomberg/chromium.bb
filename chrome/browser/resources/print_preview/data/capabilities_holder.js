@@ -6,31 +6,25 @@ cr.define('print_preview', function() {
   'use strict';
 
   /**
-   * Mutable reference to a capabilities object.
+   * Mutable reference to a CDD object.
    * @constructor
    */
   function CapabilitiesHolder() {
     /**
      * Reference to the capabilities object.
-     * @type {print_preview.ChromiumCapabilities}
+     * @type {print_preview.Cdd}
      * @private
      */
     this.capabilities_ = null;
   };
 
   CapabilitiesHolder.prototype = {
-    /**
-     * @return {print_preview.ChromiumCapabilities} The instance held by the
-     *     holder.
-     */
+    /** @return {print_preview.Cdd} The instance held by the holder. */
     get: function() {
       return this.capabilities_;
     },
 
-    /**
-     * @param {!print_preview.ChromiumCapabilities} New instance to put into the
-     *     holder.
-     */
+    /** @param {!print_preview.Cdd} New instance to put into the holder. */
     set: function(capabilities) {
       this.capabilities_ = capabilities;
     }

@@ -89,7 +89,7 @@ cr.define('cloudprint', function() {
         connectionStatus,
         optionalParams);
     if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES)) {
-      cloudDest.capabilities = new print_preview.CloudCapabilities(
+      cloudDest.capabilities = /*@type {!print_preview.Cdd}*/ (
           json[CloudDestinationParser.Field_.CAPABILITIES]);
     }
     return cloudDest;

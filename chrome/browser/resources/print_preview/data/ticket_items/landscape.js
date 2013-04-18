@@ -45,18 +45,36 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
+      var cdd = this.capabilitiesHolder_.get();
+      var hasAutoOrPortraitOption = false;
+      var hasLandscapeOption = false;
+      if (cdd && cdd.printer && cdd.printer.page_orientation) {
+        cdd.printer.page_orientation.option.forEach(function(option) {
+          hasAutoOrPortraitOption = hasAutoOrPortraitOption ||
+              option.type == 'AUTO' ||
+              option.type == 'PORTRAIT';
+          hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
+        });
+      }
       // TODO(rltoscano): Technically, the print destination can still change
       // the orientation of the print out (at least for cloud printers) if the
       // document is not modifiable. But the preview wouldn't update in this
       // case so it would be a bad user experience.
       return this.documentInfo_.isModifiable &&
           !this.documentInfo_.hasCssMediaStyles &&
-          this.capabilitiesHolder_.get().hasOrientationCapability;
+          hasAutoOrPortraitOption &&
+          hasLandscapeOption;
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.capabilitiesHolder_.get().defaultIsLandscapeEnabled;
+      var cdd = this.capabilitiesHolder_.get();
+      var defaultOptions =
+          cdd.printer.page_orientation.option.filter(function(option) {
+            return option.is_default;
+          });
+      return defaultOptions.length == 0 ?
+          false : defaultOptions[0].type == 'LANDSCAPE';
     },
 
     /** @override */

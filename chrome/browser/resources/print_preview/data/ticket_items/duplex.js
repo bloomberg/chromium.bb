@@ -36,12 +36,27 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.capabilitiesHolder_.get().hasDuplexCapability;
+      var cdd = this.capabilitiesHolder_.get();
+      if (!cdd || !cdd.printer || !cdd.printer.duplex) {
+        return false;
+      }
+      var hasLongEdgeOption = false;
+      var hasSimplexOption = false;
+      cdd.printer.duplex.option.forEach(function(option) {
+        hasLongEdgeOption = hasLongEdgeOption || option.type == 'LONG_EDGE';
+        hasSimplexOption = hasSimplexOption || option.type == 'NO_DUPLEX';
+      });
+      return hasLongEdgeOption && hasSimplexOption;
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.capabilitiesHolder_.get().defaultIsDuplexEnabled;
+      var cdd = this.capabilitiesHolder_.get();
+      var defaultOptions = cdd.printer.duplex.option.filter(function(option) {
+        return option.is_default;
+      });
+      return defaultOptions.length == 0 ? false :
+                                          defaultOptions[0].type == 'LONG_EDGE';
     },
 
     /** @override */

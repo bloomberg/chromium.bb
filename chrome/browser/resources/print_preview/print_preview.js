@@ -873,8 +873,6 @@ cr.define('print_preview', function() {
 <include src="data/destination.js"/>
 <include src="data/local_parsers.js"/>
 <include src="data/cloud_parsers.js"/>
-<include src="data/chromium_capabilities.js"/>
-<include src="data/cloud_capabilities.js"/>
 <include src="data/destination_store.js"/>
 <include src="data/margins.js"/>
 <include src="data/document_info.js"/>

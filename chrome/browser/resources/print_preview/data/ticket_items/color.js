@@ -45,28 +45,59 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.capabilitiesHolder_.get().hasColorCapability &&
-          (!this.destinationStore_.selectedDestination ||
-              this.destinationStore_.selectedDestination.id !=
-                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
+      var cdd = this.capabilitiesHolder_.get();
+      if (!cdd || !cdd.printer || !cdd.printer.color) {
+        return false;
+      }
+      var hasStandardColor = false;
+      var hasStandardMonochrome = false;
+      cdd.printer.color.option.forEach(function(option) {
+        hasStandardColor = hasStandardColor || option.type == 'STANDARD_COLOR';
+        hasStandardMonochrome = hasStandardMonochrome ||
+                                option.type == 'STANDARD_MONOCHROME';
+      });
+      return hasStandardColor && hasStandardMonochrome;
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.capabilitiesHolder_.get().defaultIsColorEnabled;
+      var cdd = this.capabilitiesHolder_.get();
+      var defaultOption = this.getDefaultColorOption_(cdd.printer.color.option);
+      return defaultOption && defaultOption.type == 'STANDARD_COLOR';
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
+      var cdd = this.capabilitiesHolder_.get();
+      var defaultOption = null;
+      if (cdd && cdd.printer && cdd.printer.color) {
+        defaultOption = this.getDefaultColorOption_(cdd.printer.color.option);
+      }
+
+      // TODO(rltoscano): Get rid of this check based on destination ID. These
+      // destinations should really update their CDDs to have only one color
+      // option that has type 'STANDARD_COLOR'.
       var dest = this.destinationStore_.selectedDestination;
       if (!dest) {
         return false;
       }
       return dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
-          dest.id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
           dest.id == print_preview.Destination.GooglePromotedId.FEDEX ||
           dest.type == print_preview.Destination.Type.MOBILE ||
-          this.capabilitiesHolder_.get().defaultIsColorEnabled;
+          defaultOption && defaultOption.type == 'STANDARD_COLOR';
+    },
+
+    /**
+     * @param options {!Array.<!Object.<{type: string=, is_default: boolean=}>>
+     * @return {Object.<{type: string=, is_default: boolean=}>} Default color
+     *     option of the given list.
+     * @private
+     */
+    getDefaultColorOption_: function(options) {
+      var defaultOptions = options.filter(function(option) {
+        return option.is_default;
+      });
+      return (defaultOptions.length == 0) ? null : defaultOptions[0];
     }
   };
 

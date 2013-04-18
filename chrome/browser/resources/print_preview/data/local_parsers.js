@@ -31,36 +31,55 @@ cr.define('print_preview', function() {
    * Parses local print capabilities.
    * @param {!Object} settingsInfo Object that describes local print
    *     capabilities.
-   * @return {!print_preview.ChromiumCapabilities} Parsed local print
-   *     capabilities.
+   * @return {!print_preview.Cdd} Parsed local print capabilities.
    */
   LocalCapabilitiesParser.parse = function(settingsInfo) {
-    var hasColorCapability = !settingsInfo['disableColorOption'] || false;
-    var defaultIsColorEnabled = settingsInfo['setColorAsDefault'] || false;
+    var cdd = {
+      version: '1.0',
+      printer: {
+        collate: {default: true}
+      }
+    };
 
-    var hasDuplexCapability = false;
-    var defaultIsDuplexEnabled = false;
-    // On Windows, some printers don't specify their duplex values in the
-    // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
-    // hide the two sided option in preview tab UI.
-    // Ref bug: http://crbug.com/89204
-    if (hasDuplexCapability =
-        settingsInfo['printerDefaultDuplexValue'] !=
-        print_preview.NativeLayer.DuplexMode.UNKNOWN_DUPLEX_MODE) {
-      defaultIsDuplexEnabled = settingsInfo['setDuplexAsDefault'] || false;
+    if (!settingsInfo['disableColorOption']) {
+      cdd.printer.color = {
+        option: [
+          {
+            type: 'STANDARD_COLOR',
+            is_default: !!settingsInfo['setColorAsDefault']
+          },
+          {
+            type: 'STANDARD_MONOCHROME',
+            is_default: !settingsInfo['setColorAsDefault']
+          }
+        ]
+      }
     }
 
-    return new print_preview.ChromiumCapabilities(
-        !settingsInfo['disableCopiesOption'] /*hasCopiesCapability*/,
-        '1' /*defaultCopiesStr*/,
-        true /*hasCollateCapability*/,
-        true /*defaultIsCollateEnabled*/,
-        hasDuplexCapability,
-        defaultIsDuplexEnabled,
-        !settingsInfo['disableLandscapeOption'] /*hasOrientationCapability*/,
-        false /*defaultIsLandscapeEnabled*/,
-        hasColorCapability,
-        defaultIsColorEnabled);
+    if (!settingsInfo['disableCopiesOption']) {
+      cdd.printer.copies = {default: 1};
+    }
+
+    if (settingsInfo['printerDefaultDuplexValue'] !=
+        print_preview.NativeLayer.DuplexMode.UNKNOWN_DUPLEX_MODE) {
+      cdd.printer.duplex = {
+        option: [
+          {type: 'NO_DUPLEX', is_default: !settingsInfo['setDuplexAsDefault']},
+          {type: 'LONG_EDGE', is_default: !!settingsInfo['setDuplexAsDefault']}
+        ]
+      };
+    }
+
+    if (!settingsInfo['disableLandscapeOption']) {
+      cdd.printer.page_orientation = {
+        option: [
+          {type: 'PORTRAIT', is_default: true},
+          {type: 'LANDSCAPE'}
+        ]
+      };
+    }
+
+    return cdd;
   };
 
   // Export

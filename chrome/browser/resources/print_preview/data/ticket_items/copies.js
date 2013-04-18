@@ -44,7 +44,8 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.capabilitiesHolder_.get().hasCopiesCapability;
+      var cdd = this.capabilitiesHolder_.get();
+      return cdd && cdd.printer && cdd.printer.copies;
     },
 
     /** @return {number} The number of copies indicated by the ticket item. */
@@ -54,7 +55,8 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.capabilitiesHolder_.get().defaultCopiesStr;
+      var cdd = this.capabilitiesHolder_.get();
+      return (cdd.printer.copies.default || 1) + '';
     },
 
     /** @override */

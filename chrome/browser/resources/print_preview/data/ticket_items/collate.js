@@ -36,12 +36,14 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.capabilitiesHolder_.get().hasCollateCapability;
+      var cdd = this.capabilitiesHolder_.get();
+      return cdd && cdd.printer && cdd.printer.collate;
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.capabilitiesHolder_.get().defaultIsCollateEnabled;
+      var cdd = this.capabilitiesHolder_.get();
+      return !!cdd.printer.collate.default;
     },
 
     /** @override */

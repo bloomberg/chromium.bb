@@ -69,7 +69,7 @@ cr.define('print_preview', function() {
 
     /**
      * Print capabilities of the destination.
-     * @type {print_preview.ChromiumCapabilities}
+     * @type {print_preview.Cdd}
      * @private
      */
     this.capabilities_ = null;
@@ -251,17 +251,14 @@ cr.define('print_preview', function() {
       return this.tags_.slice(0);
     },
 
-    /**
-     * @return {print_preview.ChromiumCapabilities} Print capabilities of the
-     *     destination.
-     */
+    /** @return {print_preview.Cdd} Print capabilities of the destination. */
     get capabilities() {
       return this.capabilities_;
     },
 
     /**
-     * @param {!print_preview.ChromiumCapabilities} capabilities Print
-     *     capabilities of the destination.
+     * @param {!print_preview.Cdd} capabilities Print capabilities of the
+     *     destination.
      */
     set capabilities(capabilities) {
       this.capabilities_ = capabilities;
@@ -342,8 +339,36 @@ cr.define('print_preview', function() {
     }
   };
 
+  /**
+   * The CDD (Cloud Device Description) describes the capabilities of a print
+   * destination.
+   *
+   * @typedef {{
+   *   version: string,
+   *   printer: {
+   *     vendor_capability: !Array.<{Object}>,
+   *     collate: {default: boolean=}=,
+   *     color: {
+   *       option: !Array.<{
+   *         type: string=,
+   *         vendor_id: string=,
+   *         custom_display_name: string=,
+   *         is_default: boolean=
+   *       }>
+   *     }=,
+   *     copies: {default: number=, max: number=}=,
+   *     duplex: {option: !Array.<{type: string=, is_default: boolean=}>}=,
+   *     page_orientation: {
+   *       option: !Array.<{type: string=, is_default: boolean=}>
+   *     }=
+   *   }
+   * }}
+   */
+  var Cdd = Object;
+
   // Export
   return {
-    Destination: Destination
+    Destination: Destination,
+    Cdd: Cdd
   };
 });

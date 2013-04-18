@@ -121,7 +121,7 @@ cr.define('cloudprint', function() {
       var params = [
         new HttpParam('connection_status', 'ALL'),
         new HttpParam('client', 'chrome'),
-        new HttpParam('use_cdd', 'true'),
+        new HttpParam('use_cdd', 'true')
       ];
       if (isRecent) {
         params.push(new HttpParam('q', '^recent'));
@@ -206,8 +206,43 @@ cr.define('cloudprint', function() {
       assert(destination.capabilities,
              'Trying to create a Google Cloud Print print ticket for a ' +
                  'destination with no print capabilities');
-      return JSON.stringify(
-          destination.capabilities.createCjt(printTicketStore));
+      var pts = printTicketStore; // For brevity.
+      var cjt = {
+        version: '1.0',
+        print: {}
+      };
+      if (pts.hasCollateCapability()) {
+        cjt.print.collate = {collate: pts.isCollateEnabled()};
+      }
+      if (pts.hasColorCapability()) {
+        var colorType =
+            pts.isColorEnabled() ? 'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
+        // Find option with this colorType to read its vendor_id.
+        var selectedOptions = destination.capabilities.printer.color.option.
+            filter(function(option) {
+              return option.type == colorType;
+            });
+        if (selectedOptions.length == 0) {
+          console.error('Could not find correct color option');
+        } else {
+          cjt.print.color = {type: colorType};
+          if (selectedOptions[0].hasOwnProperty('vendor_id')) {
+            cjt.print.color.vendor_id = selectedOptions[0].vendor_id;
+          }
+        }
+      }
+      if (pts.hasCopiesCapability()) {
+        cjt.print.copies = {copies: pts.getCopies()};
+      }
+      if (pts.hasDuplexCapability()) {
+        cjt.print.duplex =
+            {type: pts.isDuplexEnabled() ? 'LONG_EDGE' : 'NO_DUPLEX'};
+      }
+      if (pts.hasOrientationCapability()) {
+        cjt.print.page_orientation =
+          {type: pts.isLandscapeEnabled() ? 'LANDSCAPE' : 'PORTRAIT'};
+      }
+      return JSON.stringify(cjt);
     },
 
     /**
