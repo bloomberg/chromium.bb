@@ -8,6 +8,8 @@
  * URLs.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0
 };
@@ -116,6 +118,7 @@ interface PPB_URLLoader {
    * @return <code>PP_TRUE</code> if the upload progress is available,
    * <code>PP_FALSE</code> if it is not available.
    */
+  [always_set_output_parameters]
   PP_Bool GetUploadProgress(
       [in] PP_Resource loader,
       [out] int64_t bytes_sent,
@@ -140,6 +143,7 @@ interface PPB_URLLoader {
    * @return <code>PP_TRUE</code> if the download progress is available,
    * <code>PP_FALSE</code> if it is not available.
    */
+  [always_set_output_parameters]
   PP_Bool GetDownloadProgress(
       [in] PP_Resource loader,
       [out] int64_t bytes_received,

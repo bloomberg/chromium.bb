@@ -214,6 +214,30 @@ def _MakeCreateMemberBody(interface, member, args):
   return body
 
 
+def _GetOutputParams(member, release):
+  """Returns output parameters (and their types) for a member function.
+
+  Args:
+    member - IDLNode for the member function
+    release - Release to get output parameters for
+  Returns:
+    A list of name strings for all output parameters of the member
+    function.
+  """
+  out_params = []
+  callnode = member.GetOneOf('Callspec')
+  if callnode:
+    cgen = CGen()
+    for param in callnode.GetListOf('Param'):
+      mode = cgen.GetParamMode(param)
+      if mode == 'out':
+        # We use the 'store' mode when getting the parameter type, since we
+        # need to call sizeof() for memset().
+        _, pname, _, _ = cgen.GetComponents(param, release, 'store')
+        out_params.append(pname)
+  return out_params
+
+
 def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
                           include_version, meta):
   """Returns the body of a typical function.
@@ -253,42 +277,40 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
                                        call_arglist)
 
   handle_errors = not (member.GetProperty('report_errors') == 'False')
+  out_params = _GetOutputParams(member, release)
   if is_callback_func:
+    # TODO(teravest): Reduce code duplication below.
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, args[len(args) - 1][1], meta)
-    body += 'if (enter.failed())\n'
     value = member.GetProperty('on_failure')
     if value is None:
       value = 'enter.retval()'
-    body += '  return %s;\n' % value
-    body += 'return enter.SetResult(%s);' % invocation
+    if member.GetProperty('always_set_output_parameters'):
+      body += 'if (enter.failed()) {\n'
+      for param in out_params:
+        body += '  memset(%s, 0, sizeof(*%s));\n' % (param, param)
+      body += '  return %s;\n' % value
+      body += '}\n'
+      body += 'return enter.SetResult(%s);' % invocation
+      meta.AddBuiltinInclude('string.h')
+    else:
+      body += 'if (enter.failed())\n'
+      body += '  return %s;\n' % value
+      body += 'return enter.SetResult(%s);' % invocation
   elif rtype == 'void':
-    # On failure, zero out all output parameters.
-    out_params = []
-    callnode = member.GetOneOf('Callspec')
-    if callnode:
-      cgen = CGen()
-      for param in callnode.GetListOf('Param'):
-        mode = cgen.GetParamMode(param)
-        if mode == 'out':
-          # We use the 'store' mode when getting the parameter type, since we
-          # need to call sizeof() for memset().
-          ptype, pname, _, _ = cgen.GetComponents(param, release, 'store')
-          out_params.append((pname, ptype))
-
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, None, meta)
-    if not out_params:
-      body += 'if (enter.succeeded())\n'
-      body += '  %s;' % invocation
-    else:
+    if member.GetProperty('always_set_output_parameters'):
       body += 'if (enter.succeeded()) {\n'
       body += '  %s;\n' % invocation
       body += '  return;\n'
       body += '}'
       for param in out_params:
-        body += '\nmemset(%s, 0, sizeof(%s));' % param
+        body += '\nmemset(%s, 0, sizeof(*%s));' % (param, param)
       meta.AddBuiltinInclude('string.h')
+    else:
+      body += 'if (enter.succeeded())\n'
+      body += '  %s;' % invocation
 
   else:
     value = member.GetProperty('on_failure')
@@ -299,9 +321,18 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
 
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, None, meta)
-    body += 'if (enter.failed())\n'
-    body += '  return %s;\n' % value
-    body += 'return %s;' % invocation
+    if member.GetProperty('always_set_output_parameters'):
+      body += 'if (enter.failed()) {\n'
+      for param in out_params:
+        body += '  memset(%s, 0, sizeof(*%s));\n' % (param, param)
+      body += '  return %s;\n' % value
+      body += '}\n'
+      body += 'return %s;' % invocation
+      meta.AddBuiltinInclude('string.h')
+    else:
+      body += 'if (enter.failed())\n'
+      body += '  return %s;\n' % value
+      body += 'return %s;' % invocation
   return body
 
 

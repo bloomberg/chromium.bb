@@ -112,7 +112,7 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GrantUniversalAccess() OVERRIDE;
-  virtual void SetStatusCallback(
+  virtual void RegisterStatusCallback(
       PP_URLLoaderTrusted_StatusCallback cb) OVERRIDE;
   virtual bool GetResponseInfoData(URLResponseInfoData* data) OVERRIDE;
 
@@ -324,7 +324,7 @@ void URLLoader::GrantUniversalAccess() {
           API_ID_PPB_URL_LOADER, host_resource()));
 }
 
-void URLLoader::SetStatusCallback(
+void URLLoader::RegisterStatusCallback(
     PP_URLLoaderTrusted_StatusCallback cb) {
   // Not implemented in the proxied version, this is for implementing the
   // proxy itself in the host.
@@ -467,7 +467,7 @@ void PPB_URLLoader_Proxy::PrepareURLLoaderForSendingToPlugin(
   // callback before sending any URLLoader to the plugin.
   EnterResourceNoLock<PPB_URLLoader_API> enter(resource, false);
   if (enter.succeeded())
-    enter.object()->SetStatusCallback(&UpdateResourceLoadStatus);
+    enter.object()->RegisterStatusCallback(&UpdateResourceLoadStatus);
   else
     NOTREACHED();  // Only called internally, resource should be valid.
 }

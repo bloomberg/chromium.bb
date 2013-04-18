@@ -61,7 +61,7 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GrantUniversalAccess() OVERRIDE;
-  virtual void SetStatusCallback(
+  virtual void RegisterStatusCallback(
       PP_URLLoaderTrusted_StatusCallback cb) OVERRIDE;
   virtual bool GetResponseInfoData(
       ::ppapi::URLResponseInfoData* data) OVERRIDE;

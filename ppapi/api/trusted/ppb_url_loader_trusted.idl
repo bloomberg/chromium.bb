@@ -5,6 +5,8 @@
 
 /* URL loader trusted interfaces. */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 0.3
 };
