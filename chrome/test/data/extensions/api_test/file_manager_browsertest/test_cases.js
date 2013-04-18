@@ -173,3 +173,26 @@ testcase.openSidebarRecent = function() {
         });
   });
 };
+
+/**
+ * Tests autocomplete with a query 'hello'. This test is only available for
+ * Drive.
+ */
+testcase.autocomplete = function() {
+  var EXPECTED_AUTOCOMPLETE_LIST = [
+    '\'hello\' - search Drive\n',
+    'hello.txt\n',
+  ];
+
+  var onAutocompleteListShown = chrome.test.callbackPass(
+      function(autocompleteList) {
+        chrome.test.assertEq(EXPECTED_AUTOCOMPLETE_LIST, autocompleteList);
+      });
+
+  setupAndWaitUntilReady('/drive/root', function(appId, list) {
+    callRemoteTestUtil('performAutocompleteAndWait',
+                       appId,
+                       ['hello', EXPECTED_AUTOCOMPLETE_LIST.length],
+                       onAutocompleteListShown);
+  });
+};

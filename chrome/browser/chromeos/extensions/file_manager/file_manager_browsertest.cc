@@ -707,4 +707,12 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
+  ResultCatcher catcher;
+  StartTest("autocomplete");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 }  // namespace

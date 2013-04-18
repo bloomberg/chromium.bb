@@ -108,6 +108,60 @@ test.util.waitForFileListChange = function(
 };
 
 /**
+ * Returns an array of items on the file manager's autocomplete list.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {Array.<string>} Array of items.
+ */
+test.util.getAutocompleteList = function(contentWindow) {
+  var list = contentWindow.document.querySelector('#autocomplete-list');
+  var lines = list.querySelectorAll('li');
+  var items = [];
+  for (var j = 0; j < lines.length; ++j) {
+    var line = lines[j];
+    items.push(line.innerText);
+  }
+  return items;
+};
+
+/**
+ * Performs autocomplete with the given query and waits until at least
+ * |numExpectedItems| items are shown, including the first item which
+ * always looks like "'<query>' - search Drive".
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} query Query used for autocomplete.
+ * @param {number} numExpectedItems number of items to be shown.
+ * @param {function(Array.<string>)} callback Change callback.
+ */
+test.util.performAutocompleteAndWait = function(
+    contentWindow, query, numExpectedItems, callback) {
+  // Dispatch a 'focus' event to the search box so that the autocomplete list
+  // is attached to the search box. Note that calling searchBox.focus() won't
+  // dispatch a 'focus' event.
+  var searchBox = contentWindow.document.querySelector('#search-box');
+  var focusEvent = contentWindow.document.createEvent('Event');
+  focusEvent.initEvent('focus', true /* bubbles */, true /* cancelable */);
+  searchBox.dispatchEvent(focusEvent);
+
+  // Change the value of the search box and dispatch an 'input' event so that
+  // the autocomplete query is processed.
+  searchBox.value = query;
+  var inputEvent = contentWindow.document.createEvent('Event');
+  inputEvent.initEvent('input', true /* bubbles */, true /* cancelable */);
+  searchBox.dispatchEvent(inputEvent);
+
+  function helper() {
+    var items = test.util.getAutocompleteList(contentWindow);
+    if (items.length >= numExpectedItems)
+      callback(items);
+    else
+      window.setTimeout(helper, 50);
+  }
+  helper();
+};
+
+/**
  * Waits until a dialog with an OK button is shown and accepts it.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -249,6 +303,10 @@ test.util.registerRemoteTestUtils = function() {
         case 'getFileList':
           sendResponse(test.util.getFileList(contentWindow));
           return false;
+        case 'performAutocompleteAndWait':
+          test.util.performAutocompleteAndWait(
+              contentWindow, request.args[0], request.args[1], sendResponse);
+          return true;
         case 'waitForFileListChange':
           test.util.waitForFileListChange(
               contentWindow, request.args[0], sendResponse);
