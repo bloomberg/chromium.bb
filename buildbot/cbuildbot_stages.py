@@ -1607,7 +1607,7 @@ class VMTestStage(ArchivingStage):
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self.bot_archive_root)
 
-      if test_type == constants.FULL_AU_TEST_TYPE:
+      if self._build_config['build_type'] == constants.CANARY_TYPE:
         commands.RunDevModeTest(
             self._build_root, self._current_board, self.GetImageDirSymlink())
 

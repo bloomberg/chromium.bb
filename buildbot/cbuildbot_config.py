@@ -476,11 +476,25 @@ class HWTestConfig(object):
 
   DEFAULT_HW_TEST = 'bvt'
   DEFAULT_HW_TEST_TIMEOUT = 60 * 130
+  # Number of tests running in parallel in the AU suite.
+  AU_TESTS_NUM = 2
 
   @classmethod
   def DefaultList(cls, **dargs):
     """Returns the default list of tests with overrides for optional args."""
-    return [cls(cls.DEFAULT_HW_TEST, **dargs)]
+    # Set the number of machines for the au suite. If we are confined with the
+    # number of duts in the lab, only give 1 dut to the AU suite.
+    if (dargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
+        constants.HWTEST_DEFAULT_NUM):
+      au_dict = dict(num=cls.AU_TESTS_NUM)
+    else:
+      au_dict = dict(num=1)
+
+    au_dargs = dargs.copy()
+    au_dargs.update(au_dict)
+    # BVT + AU suite.
+    return [cls(cls.DEFAULT_HW_TEST, **dargs),
+            cls(constants.HWTEST_AU_SUITE, **au_dargs)]
 
   @classmethod
   def DefaultListCQ(cls, **dargs):
@@ -1153,9 +1167,8 @@ _release = full.derive(official, internal,
     'https://commondatastorage.googleapis.com/chromeos-dev-installer',
   dev_installer_prebuilts=True,
   git_sync=False,
-  vm_tests=constants.FULL_AU_TEST_TYPE,
-  hw_tests=(HWTestConfig.DefaultList() +
-            [HWTestConfig(constants.HWTEST_AU_SUITE, num=2)]),
+  vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  hw_tests=HWTestConfig.DefaultList(),
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
@@ -1416,7 +1429,7 @@ def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
 
-  usage = "usage: %prog [options]"
+  usage = "usage: %prog [options] [config1 ... configN]"
   parser = optparse.OptionParser(usage=usage)
 
   parser.add_option('-c', '--compare', action='store', type='string',
@@ -1428,7 +1441,7 @@ def main(argv=None):
   parser.add_option('--for-buildbot', action='store_true', default=False,
                     help="Include the display position in json data.")
 
-  options = parser.parse_args(argv)[0]
+  options, configs = parser.parse_args(argv)
 
   if options.compare and options.dump:
     parser.error('Cannot run with --load and --dump at the same time!')
@@ -1441,6 +1454,14 @@ def main(argv=None):
     convert = _InjectDisplayPosition
 
   my_config = convert(config)
+
+  # If configs specified, only dump/load those.
+  if configs:
+    temp_config = dict()
+    for c in configs:
+      temp_config[c] = my_config[c]
+
+    my_config = temp_config
 
   if options.dump:
     print json.dumps(my_config, cls=_JSONEncoder)
