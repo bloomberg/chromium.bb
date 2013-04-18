@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "description": "I specify an options_page but it should be ignored.",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "options_page": "options.html"
+}

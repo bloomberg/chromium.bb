@@ -237,7 +237,7 @@
   "options_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "packaged_app", "hosted_app"
     ]
   },
   "oauth2": {
