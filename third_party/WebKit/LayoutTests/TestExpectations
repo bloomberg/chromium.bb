@@ -2434,7 +2434,7 @@ webkit.org/b/92027 [ SnowLeopard Debug ] fast/performance/performance-now-timest
 webkit.org/b/92288 [ SnowLeopard Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
 webkit.org/b/99333 [ Lion Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
 
-webkit.org/b/92570 [ Win Debug ] inspector/debugger/dom-breakpoints.html [ Pass Timeout ]
+webkit.org/b/92570 [ Mac Win Debug ] inspector/debugger/dom-breakpoints.html [ Pass Timeout Failure ]
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-network-received-data.html [ Failure Pass Timeout ]
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-start-time.html [ Failure Pass Timeout ]
 
