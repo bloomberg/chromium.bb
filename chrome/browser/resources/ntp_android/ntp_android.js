@@ -1330,7 +1330,8 @@ cr.define('ntp', function() {
 
     // Set the position of the title.
     if (titleWidth < containerWidth) {
-      title.style.left = '0px';
+      // left-align on LTR and right-align on RTL.
+      title.style.left = '';
     } else {
       title.style.left = boundedScrollPosition + 'px';
     }
