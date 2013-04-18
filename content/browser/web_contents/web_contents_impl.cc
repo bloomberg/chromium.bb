@@ -1239,12 +1239,20 @@ void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 bool WebContentsImpl::PreHandleWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
+#if !defined(OS_MACOSX)
+  // On platforms other than Mac, control+mousewheel changes zoom. On Mac, this
+  // isn't done for two reasons:
+  //   -the OS already has a gesture to do this through pinch-zoom
+  //   -if a user starts an inertial scroll, let's go, and presses control
+  //      (i.e. control+tab) then the OS's buffered scroll events will come in
+  //      with control key set which isn't what the user wants
   if (delegate_ &&
       event.wheelTicksY &&
       (event.modifiers & WebKit::WebInputEvent::ControlKey)) {
     delegate_->ContentsZoomChange(event.wheelTicksY > 0);
     return true;
   }
+#endif
 
   return false;
 }
