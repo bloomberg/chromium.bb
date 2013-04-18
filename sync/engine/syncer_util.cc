@@ -630,8 +630,8 @@ VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
   // Move the old one aside and start over.  It's too tricky to get the old one
   // back into a state that would pass CheckTreeInvariants().
   if (target->Get(IS_DEL)) {
-    DCHECK(target->Get(UNIQUE_CLIENT_TAG).empty())
-        << "Doing move-aside undeletion on client-tagged item.";
+    if (target->Get(UNIQUE_CLIENT_TAG).empty())
+      LOG(WARNING) << "Doing move-aside undeletion on client-tagged item.";
     target->Put(ID, trans->directory()->NextId());
     target->Put(UNIQUE_CLIENT_TAG, std::string());
     target->Put(BASE_VERSION, CHANGES_VERSION);
