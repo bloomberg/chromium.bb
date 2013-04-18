@@ -19,13 +19,23 @@
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_util.h"
 
+namespace {
+
+// How many seconds we delay writing the index to disk since the last cache
+// operation has happened.
+const int kWriteToDiskDelaySecs = 20;
+
+// WriteToDisk at lest every 5 minutes.
+const int kMaxWriteToDiskDelaySecs = 300;
+
+}  // namespace
+
 namespace disk_cache {
 
 EntryMetadata::EntryMetadata() : hash_key_(0),
                                  last_used_time_(0),
                                  entry_size_(0) {
 }
-
 
 EntryMetadata::EntryMetadata(uint64 hash_key,
                              base::Time last_used_time,
@@ -76,7 +86,8 @@ SimpleIndex::SimpleIndex(
       initialized_(false),
       index_filename_(path.AppendASCII("simple-index")),
       cache_thread_(cache_thread),
-      io_thread_(io_thread) {}
+      io_thread_(io_thread) {
+}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -104,6 +115,7 @@ void SimpleIndex::Insert(const std::string& key) {
                    &entries_set_);
   if (!initialized_)
     removed_entries_.erase(hash_key);
+  PostponeWritingToDisk();
 }
 
 void SimpleIndex::Remove(const std::string& key) {
@@ -114,6 +126,7 @@ void SimpleIndex::Remove(const std::string& key) {
 
   if (!initialized_)
     removed_entries_.insert(hash_key);
+  PostponeWritingToDisk();
 }
 
 bool SimpleIndex::Has(const std::string& key) const {
@@ -132,6 +145,7 @@ bool SimpleIndex::UseIfExists(const std::string& key) {
     // If not initialized, always return true, forcing it to go to the disk.
     return !initialized_;
   it->second.SetLastUsedTime(base::Time::Now());
+  PostponeWritingToDisk();
   return true;
 }
 
@@ -145,7 +159,7 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   cache_size_ -= it->second.GetEntrySize();
   cache_size_ += entry_size;
   it->second.SetEntrySize(entry_size);
-
+  PostponeWritingToDisk();
   return true;
 }
 
@@ -158,6 +172,23 @@ void SimpleIndex::InsertInEntrySet(
       std::make_pair(entry_metadata.GetHashKey(), entry_metadata));
 }
 
+void SimpleIndex::PostponeWritingToDisk() {
+  const base::TimeDelta file_age = base::Time::Now() - last_write_to_disk_;
+  if (file_age > base::TimeDelta::FromSeconds(kMaxWriteToDiskDelaySecs) &&
+      write_to_disk_timer_.IsRunning()) {
+    // If the index file is too old and there is a timer programmed to run a
+    // WriteToDisk soon, we don't postpone it, so we always WriteToDisk
+    // approximately every kMaxWriteToDiskDelaySecs.
+    return;
+  }
+
+  // If the timer is already active, Start() will just Reset it, postponing it.
+  write_to_disk_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kWriteToDiskDelaySecs),
+      base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr()));
+}
+
 // static
 void SimpleIndex::LoadFromDisk(
     const base::FilePath& index_filename,
@@ -166,12 +197,18 @@ void SimpleIndex::LoadFromDisk(
   scoped_ptr<EntrySet> index_file_entries =
       SimpleIndexFile::LoadFromDisk(index_filename);
 
-  if (!index_file_entries.get())
-      index_file_entries = SimpleIndex::RestoreFromDisk(index_filename);
+  bool force_index_flush = false;
+  if (!index_file_entries.get()) {
+    index_file_entries = SimpleIndex::RestoreFromDisk(index_filename);
+    // When we restore from disk we write the merged index file to disk right
+    // away, this might save us from having to restore again next time.
+    force_index_flush = true;
+  }
 
   io_thread->PostTask(FROM_HERE,
                       base::Bind(completion_callback,
-                                 base::Passed(&index_file_entries)));
+                                 base::Passed(&index_file_entries),
+                                 force_index_flush));
 }
 
 // static
@@ -241,8 +278,8 @@ void SimpleIndex::WriteToDiskInternal(const base::FilePath& index_filename,
   SimpleIndexFile::WriteToDisk(index_filename, *pickle);
 }
 
-void SimpleIndex::MergeInitializingSet(
-    scoped_ptr<EntrySet> index_file_entries) {
+void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
+                                       bool force_index_flush) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // First, remove the entries that are in the |removed_entries_| from both
   // sets.
@@ -268,12 +305,21 @@ void SimpleIndex::MergeInitializingSet(
       cache_size_ += it->second.GetEntrySize();
     }
   }
-
+  last_write_to_disk_ = base::Time::Now();
   initialized_ = true;
+  removed_entries_.clear();
+
+  // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow down
+  // much the merge.
+  if (force_index_flush)
+    WriteToDisk();
 }
 
 void SimpleIndex::WriteToDisk() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (!initialized_)
+    return;
+  last_write_to_disk_ = base::Time::Now();
   SimpleIndexFile::IndexMetadata index_metadata(entries_set_.size(),
                                                 cache_size_);
   scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(index_metadata,

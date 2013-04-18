@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "net/base/net_export.h"
 
 class Pickle;
@@ -104,7 +105,10 @@ class NET_EXPORT_PRIVATE SimpleIndex
                                EntrySet* entry_set);
 
  private:
-  typedef base::Callback<void(scoped_ptr<EntrySet>)> IndexCompletionCallback;
+  typedef base::Callback<void(scoped_ptr<EntrySet>, bool force_index_flush)>
+      IndexCompletionCallback;
+
+  void PostponeWritingToDisk();
 
   static void LoadFromDisk(
       const base::FilePath& index_filename,
@@ -119,7 +123,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
                                   scoped_ptr<Pickle> pickle);
 
   // Must run on IO Thread.
-  void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries);
+  void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
+                            bool force_index_flush);
 
   EntrySet entries_set_;
   uint64 cache_size_;  // Total cache storage size in bytes.
@@ -137,6 +142,12 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
+
+  // Timestamp of the last time we wrote the index to disk.
+  // PostponeWritingToDisk() may give up postponing and allow the write if it
+  // has been a while since last time we wrote.
+  base::Time last_write_to_disk_;
+  base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
 };
 
 }  // namespace disk_cache
