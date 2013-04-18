@@ -19,8 +19,9 @@
         generateShapeOutsideOnFloat(
             "float-right", stylesheet.sheet,
             {
-                'shapeCenterX': 25, 'shapeCenterY': 50,
-                'shapeRadiusX': 50, 'shapeRadiusY': 100
+                'shapeX': 25, 'shapeY': 50,
+                'shapeWidth': 75, 'shapeHeight': 100,
+                'shapeRadiusX': 20, 'shapeRadiusY': 20
             },
             'right',
             10
@@ -38,7 +39,7 @@
 </head>
 <body>
   <h1><a href="https://bugs.webkit.org/show_bug.cgi?id=98676">Bug 112587</a> - [CSS Exclusions] [CSS Exclusions] shape outside segments not properly calculated for ellipses</h1>
-  <h2>The vertical black lines in the following box should wrap around the rounded rectangle on the left and the ellipse on the right</h2>
+  <h2>The vertical black lines in the following box should wrap around the rounded rectangles on the left and on the right</h2>
 <div class="container">
     <div id="float-left">
     </div>
@@ -63,7 +64,7 @@
     X X X X X X X X X X
     X X X X X X X X X X
     X X X X X X X X X X
-    X X X X X X X
+    X X X X X X X X X
   </div>
 </body>
 </html>
