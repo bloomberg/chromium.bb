@@ -10,6 +10,52 @@
 var filelist = {};
 
 /**
+ * Custom column model for advanced auto-resizing.
+ *
+ * @param {Array.<cr.ui.table.TableColumn>} tableColumns Table columns.
+ * @extends {cr.ui.table.TableColumnModel}
+ * @constructor
+ */
+function FileTableColumnModel(tableColumns) {
+  cr.ui.table.TableColumnModel.call(this, tableColumns);
+}
+
+/**
+ * Inherits from cr.ui.Table.
+ */
+FileTableColumnModel.prototype.__proto__ =
+    cr.ui.table.TableColumnModel.prototype;
+
+/**
+ * Normalizes widths to make their sum 100%. Uses the proportional approach
+ * with some additional constraints.
+ *
+ * @param {number} contentWidth Target width.
+ * @override
+ */
+FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
+  var fixedWidth = 0;
+  var flexibleWidth = 0;
+
+  // Some columns have fixed width.
+  for (var index = 0; index < this.size; index++) {
+    var column = this.columns_[index];
+    if (column.id == 'selection')
+      fixedWidth += column.width;
+    else
+      flexibleWidth += column.width;
+  }
+
+  var factor = (contentWidth - fixedWidth) / flexibleWidth;
+  for (var index = 0; index < this.size; index++) {
+    var column = this.columns_[index];
+    if (column.id == 'selection')
+      continue;
+    column.width = column.width * factor;
+  }
+};
+
+/**
  * File list Table View.
  * @constructor
  */
@@ -36,19 +82,16 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   self.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
   var columns = [
-        new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                    fullPage ? 386 : 324),
-        new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                    fullPage ? 100 : 92, true),
-        new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                    fullPage ? 160 : 160),
-        new cr.ui.table.TableColumn('modificationTime',
-                                    str('DATE_COLUMN_LABEL'),
-                                    fullPage ? 150 : 210),
-        new cr.ui.table.TableColumn('offline',
-                                    str('OFFLINE_COLUMN_LABEL'),
-                                    130)
-    ];
+    new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
+                                fullPage ? 386 : 324),
+    new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
+                                fullPage ? 100 : 92, true),
+    new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
+                                fullPage ? 160 : 160),
+    new cr.ui.table.TableColumn('modificationTime',
+                                str('DATE_COLUMN_LABEL'),
+                                fullPage ? 150 : 210)
+  ];
 
   columns[0].renderFunction = self.renderName_.bind(self);
   columns[1].renderFunction = self.renderSize_.bind(self);
@@ -56,14 +99,31 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   columns[2].renderFunction = self.renderType_.bind(self);
   columns[3].renderFunction = self.renderDate_.bind(self);
   columns[3].defaultOrder = 'desc';
-  columns[4].renderFunction = self.renderOffline_.bind(self);
 
-  columns[0].headerRenderFunction =
-      self.renderNameColumnHeader_.bind(self, columns[0].name);
+  var tableColumnModelClass;
+  if (util.platform.newUI()) {
+    tableColumnModelClass = FileTableColumnModel;
+    columns.push(new cr.ui.table.TableColumn('selection',
+                                             '',
+                                             50, true));
+    columns[4].renderFunction = self.renderSelection_.bind(self);
+    columns[4].headerRenderFunction =
+        self.renderSelectionColumnHeader_.bind(self);
+  } else {
+    tableColumnModelClass = cr.ui.table.TableColumnModel;
+    columns.push(new cr.ui.table.TableColumn('offline',
+                                             str('OFFLINE_COLUMN_LABEL'),
+                                             130));
+    columns[4].renderFunction = self.renderOffline_.bind(self);
+    columns[0].headerRenderFunction =
+        self.renderNameColumnHeader_.bind(self, columns[0].name);
+  }
 
-  var columnModel = Object.create(cr.ui.table.TableColumnModel.prototype, {
+  var columnModel = Object.create(tableColumnModelClass.prototype, {
     size: {
       get: function() {
+        if (util.platform.newUI())
+          return this.totalSize;
         return this.showOfflineColumn ? this.totalSize : this.totalSize - 1;
       }
     },
@@ -79,11 +139,15 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       value: false
     }
   });
-  cr.ui.table.TableColumnModel.call(columnModel, columns);
+
+  tableColumnModelClass.call(columnModel, columns);
   self.columnModel = columnModel;
   self.setDateTimeFormat(true);
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
+
+  if (util.platform.newUI())
+    ScrollBar.createVertical(self, self.list);
 
   var handleSelectionChange = function() {
     var selectAll = self.querySelector('#select-all-checkbox');
@@ -178,15 +242,39 @@ FileTable.prototype.setupCompareFunctions = function(dataModel) {
  */
 FileTable.prototype.renderName_ = function(entry, columnId, table) {
   var label = this.ownerDocument.createElement('div');
-  if (this.selectionModel.multiple) {
-    var checkBox = this.ownerDocument.createElement('INPUT');
-    filelist.decorateSelectionCheckbox(checkBox, entry, this.list);
-    label.appendChild(checkBox);
+  if (!util.platform.newUI()) {
+    if (this.selectionModel.multiple) {
+      var checkBox = this.ownerDocument.createElement('input');
+      filelist.decorateSelectionCheckbox(checkBox, entry, this.list);
+      label.appendChild(checkBox);
+    }
   }
   label.appendChild(this.renderIconType_(entry, columnId, table));
   label.entry = entry;
   label.className = 'detail-name';
   label.appendChild(filelist.renderFileNameLabel(this.ownerDocument, entry));
+  return label;
+};
+
+/**
+ * Render the Selection column of the detail table.
+ *
+ * Invoked by cr.ui.Table when a file needs to be rendered.
+ *
+ * @param {Entry} entry The Entry object to render.
+ * @param {string} columnId The id of the column to be rendered.
+ * @param {cr.ui.Table} table The table doing the rendering.
+ * @return {HTMLDivElement} Created element.
+ * @private
+ */
+FileTable.prototype.renderSelection_ = function(entry, columnId, table) {
+  var label = this.ownerDocument.createElement('div');
+  label.className = 'selection-label';
+  if (this.selectionModel.multiple) {
+    var checkBox = this.ownerDocument.createElement('input');
+    filelist.decorateSelectionCheckbox(checkBox, entry, this.list);
+    label.appendChild(checkBox);
+  }
   return label;
 };
 
@@ -328,7 +416,7 @@ FileTable.prototype.renderOffline_ = function(entry, columnId, table) {
   if (entry.isDirectory)
     return div;
 
-  var checkbox = this.ownerDocument.createElement('INPUT');
+  var checkbox = this.ownerDocument.createElement('input');
   filelist.decorateCheckbox(checkbox);
   checkbox.classList.add('pin');
 
@@ -495,9 +583,9 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
  * @private
  */
 FileTable.prototype.renderNameColumnHeader_ = function(name) {
-  if (!this.selectionModel.multiple) {
+  if (!this.selectionModel.multiple)
     return this.ownerDocument.createTextNode(name);
-  }
+
   var input = this.ownerDocument.createElement('input');
   input.setAttribute('type', 'checkbox');
   input.setAttribute('tabindex', -1);
@@ -517,6 +605,37 @@ FileTable.prototype.renderNameColumnHeader_ = function(name) {
   var fragment = this.ownerDocument.createDocumentFragment();
   fragment.appendChild(input);
   fragment.appendChild(this.ownerDocument.createTextNode(name));
+  return fragment;
+};
+
+/**
+ * Renders the selection column header.
+ * @param {string} name Localized column name.
+ * @return {HTMLLiElement} Created element.
+ * @private
+ */
+FileTable.prototype.renderSelectionColumnHeader_ = function(name) {
+  if (!this.selectionModel.multiple)
+    return this.ownerDocument.createTextNode('');
+
+  var input = this.ownerDocument.createElement('input');
+  input.setAttribute('type', 'checkbox');
+  input.setAttribute('tabindex', -1);
+  input.id = 'select-all-checkbox';
+  input.className = 'common';
+
+  this.updateSelectAllCheckboxState_(input);
+
+  input.addEventListener('click', function(event) {
+    if (input.checked)
+      this.selectionModel.selectAll();
+    else
+      this.selectionModel.unselectAll();
+    event.stopPropagation();
+  }.bind(this));
+
+  var fragment = this.ownerDocument.createDocumentFragment();
+  fragment.appendChild(input);
   return fragment;
 };
 

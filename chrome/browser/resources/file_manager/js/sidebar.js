@@ -416,6 +416,9 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   this.privateOnDirectoryChangedBound_ = this.onDirectoryChanged_.bind(this);
   chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
       this.privateOnDirectoryChangedBound_);
+
+  if (util.platform.newUI())
+    ScrollBar.createVertical(this.parentNode, this);
 };
 
 /**

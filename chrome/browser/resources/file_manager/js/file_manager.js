@@ -886,10 +886,11 @@ DialogType.isModal = function(type) {
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
 
-    // Initialize the new header.
+    // Initialize the new header and arrange the file list.
     if (util.platform.newUI()) {
       this.dialogDom_.querySelector('#app-name').innerText =
           chrome.runtime.getManifest().name;
+      this.table_.normalizeColumns();
     }
   };
 
@@ -1323,6 +1324,8 @@ DialogType.isModal = function(type) {
       }, 0);
     } else {
       this.table_.redraw();
+      if (util.platform.newUI())
+        this.table_.normalizeColumns();
     }
 
     if (!util.platform.newUI())
@@ -1684,6 +1687,8 @@ DialogType.isModal = function(type) {
    *     the table layout.
    */
   FileManager.prototype.shouldShowOfflineColumn = function() {
+    if (util.platform.newUI())
+      return false;
     return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
   };
 

@@ -87,6 +87,7 @@
 //<include src="file_tasks.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="file_type.js"/>
+//<include src="scrollbar.js"/>
 //<include src="sidebar.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>

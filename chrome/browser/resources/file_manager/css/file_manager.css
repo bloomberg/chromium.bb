@@ -28,7 +28,7 @@ body {
 
 body.loaded {
   /* Do not use display:none because list will calculate metrics incorrectly. */
-  /*display: -webkit-box;*/
+  /* display: -webkit-box;*/
   opacity: 1;
 }
 
@@ -39,16 +39,43 @@ body.loaded {
 }
 
 body[new-ui] ::-webkit-scrollbar {
-  height: 8px;
+  height: 0;
+  width: 0;
+}
+
+/* TODO(mtomasz): Flip scrollbars to the opposite side for RTL languages. */
+body[new-ui] .scrollbar-vertical {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 10px;
+  z-index: 1000;
+}
+
+body[new-ui] .scrollbar-button {
+  -webkit-transition: opacity 100ms;
+  background-color: black;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+  height: 50%;
+  margin-right: 2px;
+  opacity: 0;
+  position: absolute;
   width: 8px;
 }
 
-body[new-ui] ::-webkit-scrollbar-track {
-  padding: 5px;
+body[new-ui] :hover > .scrollbar-vertical > .scrollbar-button {
+  opacity: 0.3;
 }
 
-body[new-ui] ::-webkit-scrollbar-thumb {
-  background-color: rgb(180, 180, 180);
+body[new-ui] .scrollbar-vertical > .scrollbar-button:hover {
+  opacity: 0.4;
+}
+
+body[new-ui] .scrollbar-vertical > .scrollbar-button.pressed {
+  opacity: 0.5;
 }
 
 #butter-bar-container {
@@ -992,63 +1019,64 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container list > *,
 #list-container grid > *,
 #default-actions-list > * {
+  background-color: transparent;
   background-image: none;
   border-radius: 0;
 }
 
-#list-container list > [selected],
-#list-container grid > [selected],
-#default-actions-list > [selected] {
+#list-container list > li[selected],
+#list-container grid > li[selected],
+#default-actions-list > li[selected] {
   background-color: #dedede;
 }
 
-body[new-ui] #list-container list > [selected],
-body[new-ui] #list-container grid > [selected],
-body[new-ui] #default-actions-list > [selected] {
+body[new-ui] #list-container list > li[selected],
+body[new-ui] #list-container grid > li[selected],
+body[new-ui] #default-actions-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
 
-#list-container list:focus > [selected],
-#list-container grid:focus > [selected],
-#default-actions-list:focus > [selected] {
+#list-container list:focus > li[selected],
+#list-container grid:focus > li[selected],
+#default-actions-list:focus > li[selected] {
   background-color: rgb(203, 219, 241);
 }
 
-body[new-ui] #list-container list:focus > [selected],
-body[new-ui] #list-container grid:focus > [selected],
-body[new-ui] #default-actions-list:focus > [selected] {
+body[new-ui] #list-container list:focus > li[selected],
+body[new-ui] #list-container grid:focus > li[selected],
+body[new-ui] #default-actions-list:focus > li[selected] {
   background-color: rgb(77, 144, 254);
 }
 
-#list-container list > .accepts[selected],
-#list-container grid > .accepts[selected],
-#list-container list > [selected]:hover,
-#list-container grid > [selected]:hover,
-#default-actions-list > [selected]:hover {
+#list-container list > li.accepts[selected],
+#list-container grid > li.accepts[selected],
+#list-container list > li[selected]:hover,
+#list-container grid > li[selected]:hover,
+#default-actions-list > li[selected]:hover {
   background-color: rgb(193, 211, 236);
 }
 
-body[new-ui] #list-container list > .accepts[selected],
-body[new-ui] #list-container grid > .accepts[selected],
-body[new-ui] #list-container list > [selected]:hover,
-body[new-ui] #list-container grid > [selected]:hover,
-body[new-ui] #default-actions-list > [selected]:hover {
+body[new-ui] #list-container list > li.accepts[selected],
+body[new-ui] #list-container grid > li.accepts[selected],
+body[new-ui] #list-container list > li[selected]:hover,
+body[new-ui] #list-container grid > li[selected]:hover,
+body[new-ui] #default-actions-list > li[selected]:hover {
   background-color: rgb(215, 215, 215);
 }
 
-body[new-ui] #list-container list:focus > .accepts[selected],
-body[new-ui] #list-container grid:focus > .accepts[selected],
-body[new-ui] #list-container list:focus > [selected]:hover,
-body[new-ui] #list-container grid:focus > [selected]:hover,
-body[new-ui] #default-actions-list:focus > [selected]:hover {
+body[new-ui] #list-container list:focus > li.accepts[selected],
+body[new-ui] #list-container grid:focus > li.accepts[selected],
+body[new-ui] #list-container list:focus > li[selected]:hover,
+body[new-ui] #list-container grid:focus > li[selected]:hover,
+body[new-ui] #default-actions-list:focus > li[selected]:hover {
   background-color: rgb(48, 125, 254);
 }
 
-#list-container list > .accepts,
-#list-container grid > .accepts,
-#list-container list > :hover,
-#list-container grid > :hover,
-#default-actions-list > :hover {
+#list-container list > li.accepts,
+#list-container grid > li.accepts,
+#list-container list > li:hover,
+#list-container grid > li:hover,
+#default-actions-list > li:hover {
   background-color: #f1f1f1;
 }
 
@@ -1058,9 +1086,9 @@ body[new-ui] #default-actions-list:focus > [selected]:hover {
   background-color: transparent;
 }
 
-#directory-tree .tree-item.accepts > .tree-row,
-#list-container list > .accepts,
-#list-container grid > .accepts {
+#directory-tree .tree-item.accepts > li.tree-row,
+#list-container list > li.accepts,
+#list-container grid > li.accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;
 }
 
@@ -1070,6 +1098,10 @@ body[new-ui] #default-actions-list:focus > [selected]:hover {
   }
   50% {
   }
+}
+
+.table-row-cell .selection-label {
+  -webkit-margin-end: 10px;
 }
 
 .table-row-cell .filename-label,
@@ -1251,9 +1283,7 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
 }
 
 body[new-ui] .table-header-splitter {
-  -webkit-border-start: none;
-  height: 40px;
-  width: 10px;
+  display: none;
 }
 
 /* Container for a table header. */
@@ -1355,6 +1385,12 @@ body[new-ui] #list-container list:focus > [selected] .detail-name {
   vertical-align: middle;
 }
 
+body[new-ui] #select-all-checkbox {
+  -webkit-margin-end: 13px;
+  -webkit-margin-start: 3px;
+  vertical-align: middle;
+}
+
 #list-container li.table-row:hover .file-checkbox,
 #list-container li.table-row:hover .pin,
 #list-container li.thumbnail-item:hover .file-checkbox {
@@ -1365,6 +1401,10 @@ body[new-ui] #list-container list:focus > [selected] .detail-name {
 #list-container li.table-row[selected] .pin,
 #list-container li.thumbnail-item[selected] .file-checkbox {
   opacity: 1.0 !important;
+}
+
+body[new-ui] #list-container list:focus li.table-row[selected] .file-checkbox {
+  -webkit-filter: contrast(300%) invert(100%);
 }
 
 #list-container li.table-row,
