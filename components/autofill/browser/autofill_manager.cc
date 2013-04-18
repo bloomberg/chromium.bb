@@ -879,7 +879,8 @@ void AutofillManager::OnLoadedServerPredictions(
                                     page_meta_data.get(),
                                     *metric_logger_);
 
-  autocheckout_manager_.OnLoadedPageMetaData(page_meta_data.Pass());
+  if (!GetAutocheckoutURLPrefix().empty())
+    autocheckout_manager_.OnLoadedPageMetaData(page_meta_data.Pass());
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   SendAutofillTypePredictions(form_structures_.get());

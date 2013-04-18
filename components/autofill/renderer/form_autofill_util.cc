@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/field_trial.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/common/autofill_switches.h"
@@ -75,14 +76,18 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
   return IsAutofillableInputElement(input_element) || IsSelectElement(element);
 }
 
+bool IsAutocheckoutEnabled() {
+  return base::FieldTrialList::FindFullName("Autocheckout") == "Yes" ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalFormFilling);
+}
+
 // Check whether the given field satisfies the REQUIRE_AUTOCOMPLETE requirement.
 // When Autocheckout is enabled, this requirement is enforced in the browser
 // process rather than in the renderer process, and hence all fields are
 // considered to satisfy this requirement.
 bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
-  return input_element.autoComplete() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalFormFilling);
+  return input_element.autoComplete() || IsAutocheckoutEnabled();
 }
 
 // Appends |suffix| to |prefix| so that any intermediary whitespace is collapsed
