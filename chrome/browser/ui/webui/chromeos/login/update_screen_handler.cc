@@ -78,28 +78,24 @@ void UpdateScreenHandler::PrepareToShow() {
 }
 
 void UpdateScreenHandler::ShowManualRebootInfo() {
-  StringValue message(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
-  CallJS("cr.ui.Oobe.setUpdateMessage", message);
+  CallJS("cr.ui.Oobe.setUpdateMessage",
+         l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
 }
 
 void UpdateScreenHandler::SetProgress(int progress) {
-  base::FundamentalValue progress_value(progress);
-  CallJS("cr.ui.Oobe.setUpdateProgress", progress_value);
+  CallJS("cr.ui.Oobe.setUpdateProgress", progress);
 }
 
 void UpdateScreenHandler::ShowEstimatedTimeLeft(bool visible) {
-  base::FundamentalValue visible_value(visible);
-  CallJS("cr.ui.Oobe.showEstimatedTimeLeft", visible_value);
+  CallJS("cr.ui.Oobe.showEstimatedTimeLeft", visible);
 }
 
 void UpdateScreenHandler::SetEstimatedTimeLeft(const base::TimeDelta& time) {
-  base::FundamentalValue seconds_value(time.InSecondsF());
-  CallJS("cr.ui.Oobe.setEstimatedTimeLeft", seconds_value);
+  CallJS("cr.ui.Oobe.setEstimatedTimeLeft", time.InSecondsF());
 }
 
 void UpdateScreenHandler::ShowProgressMessage(bool visible) {
-  base::FundamentalValue visible_value(visible);
-  CallJS("cr.ui.Oobe.showProgressMessage", visible_value);
+  CallJS("cr.ui.Oobe.showProgressMessage", visible);
 }
 
 void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
@@ -130,8 +126,7 @@ void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
 }
 
 void UpdateScreenHandler::ShowCurtain(bool visible) {
-  base::FundamentalValue visible_value(visible);
-  CallJS("cr.ui.Oobe.showUpdateCurtain", visible_value);
+  CallJS("cr.ui.Oobe.showUpdateCurtain", visible);
 }
 
 void UpdateScreenHandler::RegisterMessages() {

@@ -780,8 +780,7 @@ void SigninScreenHandler::HandleGetUsers() {
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  base::FundamentalValue force_online(false);
-  CallJS("cr.ui.Oobe.resetSigninUI", force_online);
+  CallJS("cr.ui.Oobe.resetSigninUI", false);
 }
 
 void SigninScreenHandler::ClearUserPodPassword() {
@@ -789,8 +788,7 @@ void SigninScreenHandler::ClearUserPodPassword() {
 }
 
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
-  base::StringValue username_value(username);
-  CallJS("cr.ui.Oobe.onLoginSuccess", username_value);
+  CallJS("cr.ui.Oobe.onLoginSuccess", username);
 }
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
@@ -798,11 +796,8 @@ void SigninScreenHandler::OnUserRemoved(const std::string& username) {
 }
 
 void SigninScreenHandler::OnUserImageChanged(const User& user) {
-  if (!page_is_ready())
-    return;
-
-  base::StringValue user_email(user.email());
-  CallJS("login.AccountPickerScreen.updateUserImage", user_email);
+  if (page_is_ready())
+    CallJS("login.AccountPickerScreen.updateUserImage", user.email());
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
@@ -829,11 +824,8 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
-  CallJS("cr.ui.Oobe.showSignInError",
-         base::FundamentalValue(login_attempts),
-         base::StringValue(error_text),
-         base::StringValue(help_link_text),
-         base::FundamentalValue(static_cast<int>(help_topic_id)));
+  CallJS("cr.ui.Oobe.showSignInError", login_attempts, error_text,
+         help_link_text, static_cast<int>(help_topic_id));
 }
 
 void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
@@ -848,21 +840,18 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 }
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {
-  base::StringValue email_value(email);
-  CallJS("cr.ui.Oobe.showSigninUI", email_value);
+  CallJS("cr.ui.Oobe.showSigninUI", email);
 }
 
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);
-  base::StringValue email_value(email_);
-  CallJS("cr.ui.Oobe.showSigninUI", email_value);
-  CallJS("login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
+  CallJS("cr.ui.Oobe.showSigninUI", email_);
+  CallJS("login.AccountPickerScreen.updateUserGaiaNeeded", email_);
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
-  base::FundamentalValue showError(show_password_error);
-  CallJS("cr.ui.Oobe.showPasswordChangedScreen", showError);
+  CallJS("cr.ui.Oobe.showPasswordChangedScreen", show_password_error);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
@@ -888,10 +877,8 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
 }
 
 void SigninScreenHandler::OnCapsLockChange(bool enabled) {
-  if (page_is_ready()) {
-    base::FundamentalValue capsLockState(enabled);
-    CallJS("login.AccountPickerScreen.setCapsLockState", capsLockState);
-  }
+  if (page_is_ready())
+    CallJS("login.AccountPickerScreen.setCapsLockState", enabled);
 }
 
 void SigninScreenHandler::Observe(int type,
@@ -1045,8 +1032,8 @@ void SigninScreenHandler::UpdateAuthExtension() {
 }
 
 void SigninScreenHandler::UpdateAddButtonStatus() {
-  base::FundamentalValue disabled(AllWhitelistedUsersPresent());
-  CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
+  CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus",
+         AllWhitelistedUsersPresent());
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
@@ -1263,10 +1250,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
     }
   }
 
-  base::FundamentalValue animated_value(animated);
-  base::FundamentalValue guest_value(delegate_->IsShowGuest());
-  CallJS("login.AccountPickerScreen.loadUsers",
-         users_list, animated_value, guest_value);
+  CallJS("login.AccountPickerScreen.loadUsers", users_list, animated,
+         delegate_->IsShowGuest());
 }
 
 void SigninScreenHandler::HandleAccountPickerReady() {

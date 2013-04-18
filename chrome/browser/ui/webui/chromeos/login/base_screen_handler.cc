@@ -74,32 +74,6 @@ void BaseScreenHandler::CallJS(const std::string& method) {
   web_ui()->CallJavascriptFunction(method);
 }
 
-void BaseScreenHandler::CallJS(const std::string& method,
-                               const base::Value& arg1) {
-  web_ui()->CallJavascriptFunction(method, arg1);
-}
-
-void BaseScreenHandler::CallJS(const std::string& method,
-                               const base::Value& arg1,
-                               const base::Value& arg2) {
-  web_ui()->CallJavascriptFunction(method, arg1, arg2);
-}
-
-void BaseScreenHandler::CallJS(const std::string& method,
-                               const base::Value& arg1,
-                               const base::Value& arg2,
-                               const base::Value& arg3) {
-  web_ui()->CallJavascriptFunction(method, arg1, arg2, arg3);
-}
-
-void BaseScreenHandler::CallJS(const std::string& method,
-                               const base::Value& arg1,
-                               const base::Value& arg2,
-                               const base::Value& arg3,
-                               const base::Value& arg4) {
-  web_ui()->CallJavascriptFunction(method, arg1, arg2, arg3, arg4);
-}
-
 void BaseScreenHandler::ShowScreen(const char* screen_name,
                                    const base::DictionaryValue* data) {
   if (!web_ui())

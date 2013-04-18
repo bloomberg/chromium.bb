@@ -63,6 +63,31 @@ inline bool GetArg<string16>(const base::ListValue* args,
   return args->GetString(index, out_value);
 }
 
+inline base::FundamentalValue MakeValue(bool v) {
+  return base::FundamentalValue(v);
+}
+
+inline base::FundamentalValue MakeValue(int v) {
+  return base::FundamentalValue(v);
+}
+
+inline base::FundamentalValue MakeValue(double v) {
+  return base::FundamentalValue(v);
+}
+
+inline base::StringValue MakeValue(const std::string& v) {
+  return base::StringValue(v);
+}
+
+inline base::StringValue MakeValue(const string16& v) {
+  return base::StringValue(v);
+}
+
+template<typename T>
+inline const T& MakeValue(const T& v) {
+  return v;
+}
+
 inline void CallbackWrapper0(base::Callback<void()> callback,
                              const base::ListValue* args) {
   DCHECK(args);

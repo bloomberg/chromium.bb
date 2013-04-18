@@ -92,20 +92,40 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
 
   // Shortcut for calling JS methods on WebUI side.
   void CallJS(const std::string& method);
+
+  template<typename A1>
+  void CallJS(const std::string& method, const A1& arg1) {
+    web_ui()->CallJavascriptFunction(method, MakeValue(arg1));
+  }
+
+  template<typename A1, typename A2>
+  void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
+    web_ui()->CallJavascriptFunction(method, MakeValue(arg1), MakeValue(arg2));
+  }
+
+  template<typename A1, typename A2, typename A3>
   void CallJS(const std::string& method,
-              const base::Value& arg1);
+              const A1& arg1,
+              const A2& arg2,
+              const A3& arg3) {
+    web_ui()->CallJavascriptFunction(method,
+                                     MakeValue(arg1),
+                                     MakeValue(arg2),
+                                     MakeValue(arg3));
+  }
+
+  template<typename A1, typename A2, typename A3, typename A4>
   void CallJS(const std::string& method,
-              const base::Value& arg1,
-              const base::Value& arg2);
-  void CallJS(const std::string& method,
-              const base::Value& arg1,
-              const base::Value& arg2,
-              const base::Value& arg3);
-  void CallJS(const std::string& method,
-              const base::Value& arg1,
-              const base::Value& arg2,
-              const base::Value& arg3,
-              const base::Value& arg4);
+              const A1& arg1,
+              const A2& arg2,
+              const A3& arg3,
+              const A4& arg4) {
+    web_ui()->CallJavascriptFunction(method,
+                                     MakeValue(arg1),
+                                     MakeValue(arg2),
+                                     MakeValue(arg3),
+                                     MakeValue(arg4));
+  }
 
   // Shortcut methods for adding WebUI callbacks.
   template<typename T>

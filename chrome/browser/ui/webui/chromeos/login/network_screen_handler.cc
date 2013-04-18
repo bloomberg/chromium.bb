@@ -67,7 +67,7 @@ void NetworkScreenHandler::Hide() {
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
-  CallJS("oobe.NetworkScreen.showError", base::StringValue(message));
+  CallJS("oobe.NetworkScreen.showError", message);
 }
 
 void NetworkScreenHandler::ClearErrors() {
@@ -89,10 +89,8 @@ void NetworkScreenHandler::ShowConnectingStatus(
 
 void NetworkScreenHandler::EnableContinue(bool enabled) {
   is_continue_enabled_ = enabled;
-  if (!page_is_ready())
-    return;
-
-  CallJS("cr.ui.Oobe.enableContinueButton", base::FundamentalValue(enabled));
+  if (page_is_ready())
+    CallJS("cr.ui.Oobe.enableContinueButton", enabled);
 }
 
 // NetworkScreenHandler, BaseScreenHandler implementation: --------------------

@@ -412,9 +412,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry() {
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
-  base::StringValue step_value(step);
-  CallJS("oobe.OAuthEnrollmentScreen.showStep",
-         step_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showStep", std::string(step));
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
@@ -426,16 +424,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowErrorMessage(
     const std::string& message,
     bool retry) {
   RevokeTokens();
-
-  base::StringValue message_value(message);
-  base::FundamentalValue retry_value(retry);
-  CallJS("oobe.OAuthEnrollmentScreen.showError", message_value, retry_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showError", message, retry);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowWorking(int message_id) {
-  const std::string message(l10n_util::GetStringUTF8(message_id));
-  base::StringValue message_value(message);
-  CallJS("oobe.OAuthEnrollmentScreen.showWorking", message_value);
+  CallJS("oobe.OAuthEnrollmentScreen.showWorking",
+         l10n_util::GetStringUTF16(message_id));
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {

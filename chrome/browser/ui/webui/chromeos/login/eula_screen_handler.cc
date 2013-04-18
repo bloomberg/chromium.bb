@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -83,14 +82,13 @@ void EulaScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
     return;
 
-  base::FundamentalValue checked(delegate_->IsUsageStatsEnabled());
-  CallJS("cr.ui.Oobe.setUsageStats", checked);
+  CallJS("cr.ui.Oobe.setUsageStats", delegate_->IsUsageStatsEnabled());
 
   // This OEM EULA is a file:// URL which we're unable to load in iframe.
   // Instead if it's defined we use chrome://terms/oem that will load same file.
   if (!delegate_->GetOemEulaUrl().is_empty()) {
-    StringValue oem_eula_url(chrome::kChromeUITermsOemURL);
-    CallJS("cr.ui.Oobe.setOemEulaUrl", oem_eula_url);
+    CallJS("cr.ui.Oobe.setOemEulaUrl",
+           std::string(chrome::kChromeUITermsOemURL));
   }
 
   if (show_on_init_) {
@@ -107,8 +105,7 @@ void EulaScreenHandler::RegisterMessages() {
 }
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
-  StringValue tpm_password_value(tpm_password);
-  CallJS("cr.ui.Oobe.setTpmPassword", tpm_password_value);
+  CallJS("cr.ui.Oobe.setTpmPassword", tpm_password);
 }
 
 void EulaScreenHandler::HandleOnExit(bool accepted, bool usage_stats_enabled) {

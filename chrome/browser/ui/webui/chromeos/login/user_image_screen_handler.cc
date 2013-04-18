@@ -99,11 +99,8 @@ void UserImageScreenHandler::PrepareToShow() {
 
 void UserImageScreenHandler::SelectImage(int index) {
   selected_image_ = index;
-  if (page_is_ready()) {
-    base::StringValue image_url(GetDefaultImageUrl(index));
-    CallJS("oobe.UserImageScreen.setSelectedImage",
-           image_url);
-  }
+  if (page_is_ready())
+    CallJS("oobe.UserImageScreen.setSelectedImage", GetDefaultImageUrl(index));
 }
 
 void UserImageScreenHandler::CheckCameraPresence() {
@@ -130,10 +127,8 @@ void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
 }
 
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
-  if (page_is_ready()) {
-    base::StringValue data_url_value(data_url);
-    CallJS("oobe.UserImageScreen.setProfileImage", data_url_value);
-  }
+  if (page_is_ready())
+    CallJS("oobe.UserImageScreen.setProfileImage", data_url);
 }
 
 void UserImageScreenHandler::OnProfileImageAbsent() {
@@ -239,9 +234,8 @@ void UserImageScreenHandler::HandleScreenShown() {
 }
 
 void UserImageScreenHandler::OnCameraPresenceCheckDone() {
-  base::FundamentalValue present_value(
-      CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
-  CallJS("oobe.UserImageScreen.setCameraPresent", present_value);
+  CallJS("oobe.UserImageScreen.setCameraPresent",
+         CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
 }
 
 void UserImageScreenHandler::OnImageDecoded(const ImageDecoder* decoder,
@@ -257,8 +251,7 @@ void UserImageScreenHandler::OnDecodeImageFailed(const ImageDecoder* decoder) {
 }
 
 void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
-  base::FundamentalValue present_value(enabled);
-  CallJS("oobe.UserImageScreen.setProfilePictureEnabled", present_value);
+  CallJS("oobe.UserImageScreen.setProfilePictureEnabled", enabled);
 }
 
 }  // namespace chromeos

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -156,10 +155,8 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     should_show_version = false;
   }
-  base::FundamentalValue show_version(should_show_version);
-  CallJS("cr.ui.Oobe.showVersion", show_version);
-  base::FundamentalValue show_value(show_oobe_ui_);
-  CallJS("cr.ui.Oobe.showOobeUI", show_value);
+  CallJS("cr.ui.Oobe.showVersion", should_show_version);
+  CallJS("cr.ui.Oobe.showOobeUI", show_oobe_ui_);
 }
 
 void CoreOobeHandler::OnOSVersionLabelTextUpdated(
@@ -174,15 +171,12 @@ void CoreOobeHandler::OnBootTimesLabelTextUpdated(
 
 void CoreOobeHandler::OnEnterpriseInfoUpdated(
     const std::string& message_text) {
-  base::StringValue message_text_vaue(UTF8ToUTF16(message_text));
-  CallJS("cr.ui.Oobe.setEnterpriseInfo", message_text_vaue);
+  CallJS("cr.ui.Oobe.setEnterpriseInfo", message_text);
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
-  base::StringValue id_value(UTF8ToUTF16(id));
-  base::StringValue text_value(UTF8ToUTF16(text));
-  CallJS("cr.ui.Oobe.setLabelText", id_value, text_value);
+  CallJS("cr.ui.Oobe.setLabelText", id, text);
 }
 
 void CoreOobeHandler::Observe(int type,
@@ -199,4 +193,3 @@ void CoreOobeHandler::Observe(int type,
 }
 
 }  // namespace chromeos
-

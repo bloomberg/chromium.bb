@@ -155,9 +155,8 @@ void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
     const string16& message,
     bool recoverable) {
-  CallJS("login.LocallyManagedUserCreationScreen.showErrorMessage",
-         base::StringValue(message),
-         base::FundamentalValue(recoverable));
+  CallJS("login.LocallyManagedUserCreationScreen.showErrorMessage", message,
+         recoverable);
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
@@ -186,13 +185,11 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
   if (NULL != UserManager::Get()->
           FindLocallyManagedUser(CollapseWhitespace(name, true))) {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
-           base::StringValue(name),
-           base::StringValue(l10n_util::GetStringFUTF16(
+           name, l10n_util::GetStringFUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-               name)));
+               name));
   } else {
-    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameOk",
-           base::StringValue(name));
+    CallJS("login.LocallyManagedUserCreationScreen.managedUserNameOk", name);
   }
 }
 
@@ -204,18 +201,17 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
   const string16 new_user_name = CollapseWhitespace(new_raw_user_name, true);
   if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
-           base::StringValue(new_user_name),
-           base::StringValue(l10n_util::GetStringFUTF16(
+           new_user_name, l10n_util::GetStringFUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-               new_user_name)));
+               new_user_name));
     return;
   }
 
   // TODO(antrim): Any other password checks here?
   if (new_user_password.length() == 0) {
     CallJS("login.LocallyManagedUserCreationScreen.showPasswordError",
-           base::StringValue(l10n_util::GetStringUTF16(
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
+           l10n_util::GetStringUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT));
     return;
   }
 

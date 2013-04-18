@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
@@ -88,28 +87,22 @@ void ErrorScreenHandler::HideCaptivePortal() {
 
 void ErrorScreenHandler::SetUIState(ErrorScreen::UIState ui_state) {
   ui_state_ = ui_state;
-  base::FundamentalValue ui_state_value(static_cast<int>(ui_state));
-  CallJS("login.ErrorMessageScreen.setUIState", ui_state_value);
+  CallJS("login.ErrorMessageScreen.setUIState", static_cast<int>(ui_state_));
 }
 
 void ErrorScreenHandler::SetErrorState(ErrorScreen::ErrorState error_state,
                                        const std::string& network) {
   error_state_ = error_state;
-  base::FundamentalValue error_state_value(static_cast<int>(error_state));
-  base::StringValue network_value(network);
   CallJS("login.ErrorMessageScreen.setErrorState",
-         error_state_value,
-         network_value);
+         static_cast<int>(error_state_), network);
 }
 
 void ErrorScreenHandler::AllowGuestSignin(bool allowed) {
-  base::FundamentalValue allowed_value(allowed);
-  CallJS("login.ErrorMessageScreen.allowGuestSignin", allowed_value);
+  CallJS("login.ErrorMessageScreen.allowGuestSignin", allowed);
 }
 
 void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
-  base::FundamentalValue allowed_value(allowed);
-  CallJS("login.ErrorMessageScreen.allowOfflineLogin", allowed_value);
+  CallJS("login.ErrorMessageScreen.allowOfflineLogin", allowed);
 }
 
 void ErrorScreenHandler::NetworkErrorShown() {

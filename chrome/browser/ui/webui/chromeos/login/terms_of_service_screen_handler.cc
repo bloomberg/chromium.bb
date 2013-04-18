@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 
-#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -94,11 +93,8 @@ void TermsOfServiceScreenHandler::Initialize() {
 }
 
 void TermsOfServiceScreenHandler::UpdateDomainInUI() {
-  if (!page_is_ready())
-    return;
-
-  base::StringValue domain(domain_);
-  CallJS("cr.ui.Oobe.setTermsOfServiceDomain", domain);
+  if (page_is_ready())
+    CallJS("cr.ui.Oobe.setTermsOfServiceDomain", domain_);
 }
 
 void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
@@ -109,13 +105,10 @@ void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
   // Terms of Service has completed and the UI should be updated. Otherwise, the
   // download is still in progress and the UI will be updated when the
   // OnLoadError() or the OnLoadSuccess() callback is called.
-  if (load_error_) {
-    web_ui()->CallJavascriptFunction("cr.ui.Oobe.setTermsOfServiceLoadError");
-  } else if (!terms_of_service_.empty()) {
-    base::StringValue terms_of_service(terms_of_service_);
-    web_ui()->CallJavascriptFunction("cr.ui.Oobe.setTermsOfService",
-                                     terms_of_service);
-  }
+  if (load_error_)
+    CallJS("cr.ui.Oobe.setTermsOfServiceLoadError");
+  else if (!terms_of_service_.empty())
+    CallJS("cr.ui.Oobe.setTermsOfService", terms_of_service_);
 }
 
 void TermsOfServiceScreenHandler::HandleBack() {
