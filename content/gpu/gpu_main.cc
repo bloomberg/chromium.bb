@@ -54,7 +54,12 @@ const int kGpuTimeout = 10000;
 
 namespace content {
 namespace {
-void WarmUpSandbox(const GPUInfo&, bool);
+void WarmUpSandbox();
+#if defined(OS_LINUX)
+bool StartSandboxLinux(const GPUInfo&, GpuWatchdogThread*, bool);
+#elif defined(OS_WIN)
+bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
+#endif
 }
 
 // Main function for starting the Gpu process.
@@ -170,12 +175,26 @@ int GpuMain(const MainFunctionParams& parameters) {
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
   GetContentClient()->SetGpuInfo(gpu_info);
 
-  // We need to track that information for the WarmUpSandbox function.
+  // Warm up resources that don't need access to GPUInfo.
+  WarmUpSandbox();
+
+#if defined(OS_LINUX)
+  bool initialized_sandbox = false;
   bool initialized_gl_context = false;
+  bool should_initialize_gl_context = false;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  // On Chrome OS ARM, GPU driver userspace creates threads when initializing
+  // a GL context, so start the sandbox early.
+  gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get(),
+                                         should_initialize_gl_context);
+  initialized_sandbox = true;
+#endif
+#endif  // defined(OS_LINUX)
+
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
     // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
-    // purpose. However, on Mac we don't actually use them. As documented in
+    // purposes. However, on Mac we don't actually use them. As documented in
     // crbug.com/222934, due to some driver issues, glGetString could take
     // multiple seconds to finish, which in turn cause the GPU process to crash.
     // By skipping the following code on Mac, we don't really lose anything,
@@ -186,10 +205,9 @@ int GpuMain(const MainFunctionParams& parameters) {
       VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
     GetContentClient()->SetGpuInfo(gpu_info);
 
-    // We know that CollectGraphicsInfo will initialize a GLContext.
+#if defined(OS_LINUX)
     initialized_gl_context = true;
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
         gpu_info.driver_vendor == "NVIDIA") {
       base::ThreadRestrictions::AssertIOAllowed();
@@ -199,8 +217,9 @@ int GpuMain(const MainFunctionParams& parameters) {
         dead_on_arrival = true;
       }
     }
-#endif  // OS_CHROMEOS
-#endif  // OS_MACOSX
+#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
   } else {
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
     gpu_info.gpu_accessible = false;
@@ -222,47 +241,15 @@ int GpuMain(const MainFunctionParams& parameters) {
     watchdog_thread = NULL;
   }
 
-  {
-    const bool should_initialize_gl_context = !initialized_gl_context &&
-                                              !dead_on_arrival;
-    // Warm up the current process before enabling the sandbox.
-    WarmUpSandbox(gpu_info, should_initialize_gl_context);
-  }
-
 #if defined(OS_LINUX)
-  {
-    TRACE_EVENT0("gpu", "Initialize sandbox");
-    bool do_init_sandbox = true;
+  should_initialize_gl_context = !initialized_gl_context &&
+                                 !dead_on_arrival;
 
-#if defined(OS_CHROMEOS) && defined(NDEBUG)
-    // On Chrome OS and when not on a debug build, initialize
-    // the GPU process' sandbox only for Intel GPUs.
-    do_init_sandbox = gpu_info.gpu.vendor_id == 0x8086;   // Intel GPU.
-#endif
-
-    if (do_init_sandbox) {
-      if (watchdog_thread)
-        watchdog_thread->Stop();
-      gpu_info.sandboxed = LinuxSandbox::InitializeSandbox();
-      if (watchdog_thread)
-        watchdog_thread->Start();
-    }
-  }
-#endif
-
-#if defined(OS_WIN)
-  {
-    TRACE_EVENT0("gpu", "Lower token");
-    // For windows, if the target_services interface is not zero, the process
-    // is sandboxed and we must call LowerToken() before rendering untrusted
-    // content.
-    sandbox::TargetServices* target_services =
-        parameters.sandbox_info->target_services;
-    if (target_services) {
-      target_services->LowerToken();
-      gpu_info.sandboxed = true;
-    }
-  }
+  if (!initialized_sandbox)
+    gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get(),
+                                           should_initialize_gl_context);
+#elif defined(OS_WIN)
+  gpu_info.sandboxed = StartSandboxWindows(parameters.sandbox_info);
 #endif
 
   GpuProcess gpu_process;
@@ -315,8 +302,7 @@ void CreateDummyGlContext() {
 }
 #endif
 
-void WarmUpSandbox(const GPUInfo& gpu_info,
-                   bool should_initialize_gl_context) {
+void WarmUpSandbox() {
   {
     TRACE_EVENT0("gpu", "Warm up rand");
     // Warm up the random subsystem, which needs to be done pre-sandbox on all
@@ -342,17 +328,6 @@ void WarmUpSandbox(const GPUInfo& gpu_info,
   VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
 
-#if defined(OS_LINUX)
-  // We special case Optimus since the vendor_id we see may not be Nvidia.
-  bool uses_nvidia_driver = (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA.
-                             gpu_info.driver_vendor == "NVIDIA") ||
-                            gpu_info.optimus;
-  if (uses_nvidia_driver && should_initialize_gl_context) {
-    // We need this on Nvidia to pre-open /dev/nvidiactl and /dev/nvidia0.
-    CreateDummyGlContext();
-  }
-#endif
-
 #if defined(OS_WIN)
   {
     TRACE_EVENT0("gpu", "Preload setupapi.dll");
@@ -367,6 +342,57 @@ void WarmUpSandbox(const GPUInfo& gpu_info,
   }
 #endif
 }
+
+#if defined(OS_LINUX)
+void WarmUpSandboxNvidia(const GPUInfo& gpu_info,
+                         bool should_initialize_gl_context) {
+  // We special case Optimus since the vendor_id we see may not be Nvidia.
+  bool uses_nvidia_driver = (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA.
+                             gpu_info.driver_vendor == "NVIDIA") ||
+                            gpu_info.optimus;
+  if (uses_nvidia_driver && should_initialize_gl_context) {
+    // We need this on Nvidia to pre-open /dev/nvidiactl and /dev/nvidia0.
+    CreateDummyGlContext();
+  }
+}
+
+bool StartSandboxLinux(const GPUInfo& gpu_info,
+                       GpuWatchdogThread* watchdog_thread,
+                       bool should_initialize_gl_context) {
+  TRACE_EVENT0("gpu", "Initialize sandbox");
+
+  bool res = false;
+
+  WarmUpSandboxNvidia(gpu_info, should_initialize_gl_context);
+
+  if (watchdog_thread)
+    watchdog_thread->Stop();
+  // LinuxSandbox::InitializeSandbox() must always be called
+  // with only one thread.
+  res = LinuxSandbox::InitializeSandbox();
+  if (watchdog_thread)
+    watchdog_thread->Start();
+
+  return res;
+}
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_WIN)
+bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo* sandbox_info) {
+  TRACE_EVENT0("gpu", "Lower token");
+
+  // For Windows, if the target_services interface is not zero, the process
+  // is sandboxed and we must call LowerToken() before rendering untrusted
+  // content.
+  sandbox::TargetServices* target_services = sandbox_info->target_services;
+  if (target_services) {
+    target_services->LowerToken();
+    return true;
+  }
+
+  return false;
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace.
 
