@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "BatteryStatus.h"
+#include "modules/battery/BatteryStatus.h"
 
 #if ENABLE(BATTERY_STATUS)
 

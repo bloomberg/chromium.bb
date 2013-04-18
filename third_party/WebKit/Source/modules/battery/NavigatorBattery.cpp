@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "NavigatorBattery.h"
+#include "modules/battery/NavigatorBattery.h"
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "BatteryController.h"
-#include "BatteryManager.h"
-#include "Navigator.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/Navigator.h"
+#include "modules/battery/BatteryController.h"
+#include "modules/battery/BatteryManager.h"
 
 namespace WebCore {
 

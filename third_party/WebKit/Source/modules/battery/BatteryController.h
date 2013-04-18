@@ -23,8 +23,8 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "BatteryManager.h"
-#include "Page.h"
+#include "core/page/Page.h"
+#include "modules/battery/BatteryManager.h"
 
 namespace WebCore {
 
