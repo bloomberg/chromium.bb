@@ -219,12 +219,12 @@ text_model_reset(struct wl_client *client,
 }
 
 static void
-text_model_set_micro_focus(struct wl_client *client,
-			   struct wl_resource *resource,
-			   int32_t x,
-			   int32_t y,
-			   int32_t width,
-			   int32_t height)
+text_model_set_cursor_rectangle(struct wl_client *client,
+				struct wl_resource *resource,
+				int32_t x,
+				int32_t y,
+				int32_t width,
+				int32_t height)
 {
 }
 
@@ -317,17 +317,17 @@ text_model_set_preferred_language(struct wl_client *client,
 }
 
 static const struct text_model_interface text_model_implementation = {
-	text_model_set_surrounding_text,
 	text_model_activate,
 	text_model_deactivate,
-	text_model_reset,
-	text_model_set_micro_focus,
-	text_model_set_content_type,
-	text_model_invoke_action,
-	text_model_commit_state,
 	text_model_show_input_panel,
 	text_model_hide_input_panel,
-	text_model_set_preferred_language
+	text_model_reset,
+	text_model_set_surrounding_text,
+	text_model_set_content_type,
+	text_model_set_cursor_rectangle,
+	text_model_set_preferred_language,
+	text_model_commit_state,
+	text_model_invoke_action
 };
 
 static void text_model_factory_create_text_model(struct wl_client *client,

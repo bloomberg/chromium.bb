@@ -428,17 +428,17 @@ text_model_text_direction(void *data,
 }
 
 static const struct text_model_listener text_model_listener = {
-	text_model_commit_string,
-	text_model_preedit_string,
-	text_model_delete_surrounding_text,
-	text_model_cursor_position,
-	text_model_preedit_styling,
-	text_model_preedit_cursor,
-	text_model_modifiers_map,
-	text_model_keysym,
 	text_model_enter,
 	text_model_leave,
+	text_model_modifiers_map,
 	text_model_input_panel_state,
+	text_model_preedit_string,
+	text_model_preedit_styling,
+	text_model_preedit_cursor,
+	text_model_commit_string,
+	text_model_cursor_position,
+	text_model_delete_surrounding_text,
+	text_model_keysym,
 	text_model_language,
 	text_model_text_direction
 };

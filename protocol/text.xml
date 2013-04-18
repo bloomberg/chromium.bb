@@ -37,17 +37,6 @@
       removes the need for applications to directly process hardware key events
       and compose text out of them.
     </description>
-    <request name="set_surrounding_text">
-      <description summary="sets the surrounding text">
-        Sets the plain surrounding text around the input position. Cursor is the
-        byte index within the surrounding text. Anchor is the byte index of the
-        selection anchor within the surrounding text. If there is no selected
-        text anchor then it is the same as cursor.
-      </description>
-      <arg name="text" type="string"/>
-      <arg name="cursor" type="uint"/>
-      <arg name="anchor" type="uint"/>
-    </request>
     <request name="activate">
       <description summary="request activation">
         Requests the model to be activated (typically when the text entry gets
@@ -68,6 +57,16 @@
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
+    <request name="show_input_panel">
+      <description summary="show input panels">
+        Requests input panels (virtual keyboard) to show.
+      </description>
+    </request>
+    <request name="hide_input_panel">
+      <description summary="hide input panels">
+        Requests input panels (virtual keyboard) to hide.
+      </description>
+    </request>
     <request name="reset">
       <description summary="reset">
         Should be called by an editor widget when the input state should be
@@ -76,11 +75,16 @@
       </description>
       <arg name="serial" type="uint"/>
     </request>
-    <request name="set_cursor_rectangle">
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+    <request name="set_surrounding_text">
+      <description summary="sets the surrounding text">
+        Sets the plain surrounding text around the input position. Cursor is the
+        byte index within the surrounding text. Anchor is the byte index of the
+        selection anchor within the surrounding text. If there is no selected
+        text anchor then it is the same as cursor.
+      </description>
+      <arg name="text" type="string"/>
+      <arg name="cursor" type="uint"/>
+      <arg name="anchor" type="uint"/>
     </request>
     <enum name="content_hint">
       <description summary="content hint">
@@ -136,21 +140,11 @@
       <arg name="hint" type="uint"/>
       <arg name="purpose" type="uint"/>
     </request>
-    <request name="invoke_action">
-      <arg name="button" type="uint"/>
-      <arg name="index" type="uint"/>
-    </request>
-    <request name="commit_state">
-    </request>
-    <request name="show_input_panel">
-      <description summary="show input panels">
-        Requests input panels (virtual keyboard) to show.
-      </description>
-    </request>
-    <request name="hide_input_panel">
-      <description summary="hide input panels">
-        Requests input panels (virtual keyboard) to hide.
-      </description>
+    <request name="set_cursor_rectangle">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
     </request>
     <request name="set_preferred_language">
       <description summary="sets preferred language">
@@ -164,17 +158,39 @@
       </description>
       <arg name="language" type="string"/>
     </request>
-    <event name="commit_string">
-      <description summary="commit">
-        Notify when text should be inserted into the editor widget. The text to
-        commit could be either just a single character after a key press or the
-        result of some composing (pre-edit). It also sets the new cursor
-        position (as byte index) relative to the beginning of inserted text.
-
-        Any previously set composing text should be removed.
+    <request name="commit_state">
+    </request>
+    <request name="invoke_action">
+      <arg name="button" type="uint"/>
+      <arg name="index" type="uint"/>
+    </request>
+    <event name="enter">
+      <description summary="enter event">
+        Notify the model when it is activated. Typically in response to an
+        activate request.
       </description>
-      <arg name="serial" type="uint"/>
-      <arg name="text" type="string"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+    <event name="leave">
+      <description summary="leave event">
+        Notify the model when it is deactivated. Either in response to a
+        deactivate request or when the assigned surface lost focus or was
+        destroyed.
+      </description>
+    </event>
+    <event name="modifiers_map">
+      <description summary="modifiers map">
+        Transfer an array of 0-terminated modifiers names. The position in
+        the array is the index of the modifier as used in the modifiers
+        bitmask in the keysym event.
+      </description>
+      <arg name="map" type="array"/>
+    </event>
+    <event name="input_panel_state">
+      <description summary="state of the input panel">
+        Notify when the visibility state of the input panel changed.
+      </description>
+      <arg name="state" type="uint"/>
     </event>
     <event name="preedit_string">
       <description summary="pre-edit">
@@ -188,25 +204,6 @@
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
       <arg name="commit" type="string"/>
-    </event>
-    <event name="delete_surrounding_text">
-      <description summary="delete surrounding text">
-        Notify when the text around the current cursor position should be
-        deleted. Index is relative to the current cursor (as byte index).
-        Length is the length of deleted text (in bytes).
-      </description>
-      <arg name="serial" type="uint"/>
-      <arg name="index" type="int"/>
-      <arg name="length" type="uint"/>
-    </event>
-    <event name="cursor_position">
-      <description summary="set cursor to new position">
-        Notify when the cursor or anchor position should be modified. It
-        should take effect after the next commit_string event.
-      </description>
-      <arg name="serial" type="uint"/>
-      <arg name="index" type="int"/>
-      <arg name="anchor" type="int"/>
     </event>
     <enum name="preedit_style">
       <entry name="default" value="1"/>
@@ -243,13 +240,36 @@
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
     </event>
-    <event name="modifiers_map">
-      <description summary="modifiers map">
-        Transfer an array of 0-terminated modifiers names. The position in
-        the array is the index of the modifier as used in the modifiers
-        bitmask in the keysym event.
+    <event name="commit_string">
+      <description summary="commit">
+        Notify when text should be inserted into the editor widget. The text to
+        commit could be either just a single character after a key press or the
+        result of some composing (pre-edit). It also sets the new cursor
+        position (as byte index) relative to the beginning of inserted text.
+
+        Any previously set composing text should be removed.
       </description>
-      <arg name="map" type="array"/>
+      <arg name="serial" type="uint"/>
+      <arg name="text" type="string"/>
+    </event>
+    <event name="cursor_position">
+      <description summary="set cursor to new position">
+        Notify when the cursor or anchor position should be modified. It
+        should take effect after the next commit_string event.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="index" type="int"/>
+      <arg name="anchor" type="int"/>
+    </event>
+    <event name="delete_surrounding_text">
+      <description summary="delete surrounding text">
+        Notify when the text around the current cursor position should be
+        deleted. Index is relative to the current cursor (as byte index).
+        Length is the length of deleted text (in bytes).
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="index" type="int"/>
+      <arg name="length" type="uint"/>
     </event>
     <event name="keysym">
       <description summary="keysym">
@@ -265,26 +285,6 @@
       <arg name="sym" type="uint"/>
       <arg name="state" type="uint"/>
       <arg name="modifiers" type="uint"/>
-    </event>
-    <event name="enter">
-      <description summary="enter event">
-        Notify the model when it is activated. Typically in response to an
-        activate request.
-      </description>
-      <arg name="surface" type="object" interface="wl_surface"/>
-    </event>
-    <event name="leave">
-      <description summary="leave event">
-        Notify the model when it is deactivated. Either in response to a
-        deactivate request or when the assigned surface lost focus or was
-        destroyed.
-      </description>
-    </event>
-    <event name="input_panel_state">
-      <description summary="state of the input panel">
-        Notify when the visibility state of the input panel changed.
-      </description>
-      <arg name="state" type="uint"/>
     </event>
     <event name="language">
       <description summary="language">
