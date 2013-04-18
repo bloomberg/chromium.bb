@@ -36,26 +36,6 @@ namespace net {
 
 namespace test_spdy3 {
 
-// NOTE: In GCC, on a Mac, this can't be in an anonymous namespace!
-// This struct holds information used to construct spdy control and data frames.
-//
-// TODO(akalin): Combine this struct with
-// test_spdy2::SpdyHeaderInfo. (This only adds the |credential_slot|
-// field).
-struct SpdyHeaderInfo {
-  SpdyFrameType kind;
-  SpdyStreamId id;
-  SpdyStreamId assoc_id;
-  SpdyPriority priority;
-  size_t credential_slot;
-  SpdyControlFlags control_flags;
-  bool compressed;
-  SpdyRstStreamStatus status;
-  const char* data;
-  uint32 data_length;
-  SpdyDataFlags data_flags;
-};
-
 // An ECSignatureCreator that returns deterministic signatures.
 class MockECSignatureCreator : public crypto::ECSignatureCreator {
  public:

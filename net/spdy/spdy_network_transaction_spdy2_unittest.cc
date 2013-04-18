@@ -1497,6 +1497,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Put) {
     1,                      // Stream ID
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_FIN,       // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -1524,6 +1525,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Put) {
     1,                      // Stream ID
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -1567,6 +1569,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Head) {
     1,                      // Stream ID
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_FIN,       // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -1594,6 +1597,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Head) {
     1,                      // Stream ID
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -3310,6 +3314,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SynReplyHeadersVary) {
     1,                                      // Stream ID
     0,                                      // Associated Stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
     RST_STREAM_INVALID,                     // Status
@@ -3477,6 +3482,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, InvalidSynReply) {
     1,                      // Stream ID
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -4190,6 +4196,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SettingsSaved) {
     1,                                      // Stream ID
     0,                                      // Associated Stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
     RST_STREAM_INVALID,                     // Status
@@ -4296,6 +4303,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, SettingsPlayback) {
     1,                                      // Stream ID
     0,                                      // Associated Stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
     RST_STREAM_INVALID,                     // Status

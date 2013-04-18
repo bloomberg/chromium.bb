@@ -247,6 +247,7 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
     associated_stream_id,         // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(request_priority, 2),
                                   // Priority
+    kSpdyCredentialSlotUnused,
     flags,                        // Control Flags
     compressed,                   // Compressed
     RST_STREAM_INVALID,           // Status
@@ -276,6 +277,7 @@ SpdyFrame* ConstructSpdyGet(const char* const url,
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(request_priority, 2),
                             // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_FIN,       // Control Flags
     compressed,             // Compressed
     RST_STREAM_INVALID,     // Status
@@ -537,6 +539,7 @@ SpdyFrame* ConstructSpdyPost(const char* url,
     0,                      // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),
                             // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,      // Control Flags
     false,                  // Compressed
     RST_STREAM_INVALID,     // Status
@@ -821,6 +824,7 @@ const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type) {
     1,                            // Stream ID
     0,                            // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, 2),  // Priority
+    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_FIN,       // Control Flags
     false,                        // Compressed
     RST_STREAM_INVALID,           // Status

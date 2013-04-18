@@ -30,21 +30,6 @@ namespace net {
 
 namespace test_spdy2 {
 
-// NOTE: In GCC, on a Mac, this can't be in an anonymous namespace!
-// This struct holds information used to construct spdy control and data frames.
-struct SpdyHeaderInfo {
-  SpdyFrameType kind;
-  SpdyStreamId id;
-  SpdyStreamId assoc_id;
-  SpdyPriority priority;
-  SpdyControlFlags control_flags;
-  bool compressed;
-  SpdyRstStreamStatus status;
-  const char* data;
-  uint32 data_length;
-  SpdyDataFlags data_flags;
-};
-
 // Constructs a HeaderBlock for a GET request for the given URL.
 scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url);
 

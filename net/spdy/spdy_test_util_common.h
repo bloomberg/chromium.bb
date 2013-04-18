@@ -143,6 +143,23 @@ class StreamReleaserCallback : public TestCompletionCallbackBase {
   scoped_refptr<SpdyStream> first_stream_;
 };
 
+const size_t kSpdyCredentialSlotUnused = 0;
+
+// This struct holds information used to construct spdy control and data frames.
+struct SpdyHeaderInfo {
+  SpdyFrameType kind;
+  SpdyStreamId id;
+  SpdyStreamId assoc_id;
+  SpdyPriority priority;
+  size_t credential_slot;  // SPDY3 only
+  SpdyControlFlags control_flags;
+  bool compressed;
+  SpdyRstStreamStatus status;
+  const char* data;
+  uint32 data_length;
+  SpdyDataFlags data_flags;
+};
+
 }  // namespace net
 
 #endif  // NET_SPDY_SPDY_TEST_UTIL_COMMON_H_
