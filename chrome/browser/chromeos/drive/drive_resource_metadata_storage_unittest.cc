@@ -272,6 +272,9 @@ TEST_F(DriveResourceMetadataStorageTest, CheckValidity) {
   const std::string key3 = "boo";
   const std::string name3 = "piyo";
 
+  // Empty storage is valid.
+  EXPECT_TRUE(CheckValidity());
+
   // Put entry with key1.
   DriveEntryProto entry;
   entry.set_resource_id(key1);
@@ -290,20 +293,44 @@ TEST_F(DriveResourceMetadataStorageTest, CheckValidity) {
   storage_->PutChild(key1, name2, key2);
   EXPECT_TRUE(CheckValidity());
 
-  // Add parent-child relationship between key1 and key3.
-  storage_->PutChild(key1, name3, key3);
+  // Add parent-child relationship between key2 and key3.
+  storage_->PutChild(key2, name3, key3);
   EXPECT_FALSE(CheckValidity());  // key3 is not stored in the storage.
 
-  // Put entry with key3 under key1.
+  // Put entry with key3 under key2.
   entry.set_resource_id(key3);
-  entry.set_parent_resource_id(key1);
+  entry.set_parent_resource_id(key2);
   entry.set_base_name(name3);
   storage_->PutEntry(entry);
   EXPECT_TRUE(CheckValidity());
 
   // Parent-child relationship with wrong name.
-  storage_->PutChild(key1, name2, key3);
+  storage_->RemoveChild(key2, name3);
   EXPECT_FALSE(CheckValidity());
+  storage_->PutChild(key2, name2, key3);
+  EXPECT_FALSE(CheckValidity());
+
+  // Fix up the relationship between key2 and key3.
+  storage_->RemoveChild(key2, name2);
+  EXPECT_FALSE(CheckValidity());
+  storage_->PutChild(key2, name3, key3);
+  EXPECT_TRUE(CheckValidity());
+
+  // Remove key2.
+  storage_->RemoveChild(key1, name2);
+  EXPECT_FALSE(CheckValidity());
+  storage_->RemoveEntry(key2);
+  EXPECT_FALSE(CheckValidity());
+
+  // Remove key3.
+  storage_->RemoveChild(key2, name3);
+  EXPECT_FALSE(CheckValidity());
+  storage_->RemoveEntry(key3);
+  EXPECT_TRUE(CheckValidity());
+
+  // Remove key1.
+  storage_->RemoveEntry(key1);
+  EXPECT_TRUE(CheckValidity());
 }
 
 }  // namespace drive

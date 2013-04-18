@@ -450,6 +450,7 @@ bool DriveResourceMetadataStorageDB::CheckValidity() {
   // Check all entires.
   size_t num_checked_child_map_entries = 0;
   DriveEntryProto entry;
+  std::string serialized_parent_entry;
   std::string child_resource_id;
   for (it->Next(); it->Valid(); it->Next()) {
     // Check if stored data is broken.
@@ -459,9 +460,19 @@ bool DriveResourceMetadataStorageDB::CheckValidity() {
       return false;
     }
 
-    // Check if parent-child relationship is stored correctly.
     if (!entry.parent_resource_id().empty()) {
-      leveldb::Status status = child_map_->Get(
+      // Check if the parent entry is stored.
+      leveldb::Status status = resource_map_->Get(
+          options,
+          leveldb::Slice(entry.parent_resource_id()),
+          &serialized_parent_entry);
+      if (!status.ok()) {
+        DLOG(ERROR) << "Can't get parent entry. status = " << status.ToString();
+        return false;
+      }
+
+      // Check if parent-child relationship is stored correctly.
+      status = child_map_->Get(
           options,
           leveldb::Slice(GetChildMapKey(entry.parent_resource_id(),
                                         entry.base_name())),
