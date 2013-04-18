@@ -1771,6 +1771,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
       kContentSize,
       fake_service_.GetRootResourceId(),
       kTitle,
+      false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   message_loop_.RunUntilIdle();
 
@@ -1807,6 +1808,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
       kContentSize,
       fake_service_.GetRootResourceId(),
       kTitle,
+      false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   message_loop_.RunUntilIdle();
 
@@ -1844,6 +1846,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
       kContentSize,
       kParentResourceId,
       kTitle,
+      false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   message_loop_.RunUntilIdle();
 
@@ -1876,6 +1879,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
       kContentSize,
       kParentResourceId,
       kTitle,
+      false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   message_loop_.RunUntilIdle();
 
@@ -1899,11 +1903,51 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
       kContentSize,
       fake_service_.GetRootResourceId(),
       kTitle,
+      false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
+}
+
+TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  const std::string kContentType = "text/plain";
+  const int64 kContentSize = 123;
+  const std::string kTitle = "new file";
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewFile(
+      kContentType,
+      kContentSize,
+      fake_service_.GetRootResourceId(),
+      kTitle,
+      true,  // shared_with_me
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_TRUE(resource_entry->is_file());
+  EXPECT_EQ(kContentType, resource_entry->content_mime_type());
+  EXPECT_EQ(kContentSize, resource_entry->file_size());
+  EXPECT_EQ("resource_id_1", resource_entry->resource_id());
+  EXPECT_EQ(kTitle, resource_entry->title());
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(),
+                        fake_service_.GetRootResourceId()));
+  ASSERT_EQ(1U, resource_entry->labels().size());
+  EXPECT_EQ("shared-with-me", resource_entry->labels()[0]);
+  // Should be incremented as a new directory was created.
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {

@@ -25,7 +25,8 @@ var EXPECTED_FILES_BEFORE_DRIVE = [
   ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
   ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
   ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
-  ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM']
+  ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
+  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
 ].sort();
 
 /**
@@ -74,6 +75,7 @@ var EXPECTED_FILES_IN_RECENT = [
   ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
   ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
+  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
 ].sort();
 
 /**
@@ -85,6 +87,17 @@ var EXPECTED_FILES_IN_RECENT = [
  */
 var EXPECTED_FILES_IN_OFFLINE = [
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
+  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
+];
+
+/**
+ * Expected files shown in "Shared with me", which should be the entries labeled
+ * with "shared-with-me".
+ * @type {Array.<Array.<string>>}
+ * @const
+ */
+var EXPECTED_FILES_IN_SHARED_WITH_ME = [
+  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
 ];
 
 /**
@@ -225,6 +238,31 @@ testcase.openSidebarOffline = function() {
     // Use the icon for a click target.
     callRemoteTestUtil(
         'fakeMouseClick', appId, ['[volume-type-icon=drive_offline]'],
+        function(result) {
+          chrome.test.assertFalse(!result);
+          callRemoteTestUtil(
+              'waitForFileListChange',
+              appId,
+              [getExpectedFilesBefore(true /* isDrive */).length],
+              onFileListChange);
+        });
+  });
+};
+
+/**
+ * Tests opening the "Shared with me" on the sidebar navigation by clicking the
+ * icon, and checks contents of the file list. Only the entries labeled with
+ * "shared-with-me" should be shown.
+ */
+testcase.openSidebarSharedWithMe = function() {
+  var onFileListChange = chrome.test.callbackPass(function(actualFilesAfter) {
+    chrome.test.assertEq(EXPECTED_FILES_IN_SHARED_WITH_ME, actualFilesAfter);
+  });
+
+  setupAndWaitUntilReady('/drive/root/', function(appId) {
+    // Use the icon for a click target.
+    callRemoteTestUtil(
+        'fakeMouseClick', appId, ['[volume-type-icon=drive_shared_with_me]'],
         function(result) {
           chrome.test.assertFalse(!result);
           callRemoteTestUtil(

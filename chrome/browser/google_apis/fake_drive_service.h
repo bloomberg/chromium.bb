@@ -188,6 +188,7 @@ class FakeDriveService : public DriveServiceInterface {
                   int64 content_length,
                   const std::string& parent_resource_id,
                   const std::string& title,
+                  bool shared_with_me,
                   const GetResourceEntryCallback& callback);
 
   // Sets the last modified time for an entry specified by |resource_id|.
@@ -225,6 +226,7 @@ class FakeDriveService : public DriveServiceInterface {
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
+    bool shared_with_me,
     const std::string& entry_kind);
 
   // Core implementation of GetResourceList.

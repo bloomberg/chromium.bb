@@ -765,6 +765,7 @@ void FakeDriveService::AddNewDirectory(
                                                        0,  // content_length
                                                        parent_resource_id,
                                                        directory_name,
+                                                       false,  // shared_with_me
                                                        "folder");
   if (!new_entry) {
     scoped_ptr<ResourceEntry> null;
@@ -803,6 +804,7 @@ void FakeDriveService::InitiateUploadNewFile(
                                                        0,  // content_length
                                                        parent_resource_id,
                                                        title,
+                                                       false,  // shared_with_me
                                                        "file");
   if (!new_entry) {
     MessageLoop::current()->PostTask(
@@ -981,6 +983,7 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
                                   int64 content_length,
                                   const std::string& parent_resource_id,
                                   const std::string& title,
+                                  bool shared_with_me,
                                   const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1006,6 +1009,7 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
                                                        content_length,
                                                        parent_resource_id,
                                                        title,
+                                                       shared_with_me,
                                                        entry_kind);
   if (!new_entry) {
     scoped_ptr<ResourceEntry> null;
@@ -1157,6 +1161,7 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
+    bool shared_with_me,
     const std::string& entry_kind) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1193,6 +1198,15 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
                       entry_kind);
   categories->Append(category);
   new_entry->Set("category", categories);
+  if (shared_with_me) {
+    base::DictionaryValue* shared_with_me_label = new base::DictionaryValue;
+    shared_with_me_label->SetString("label", "shared-with-me");
+    shared_with_me_label->SetString("scheme",
+                                    "http://schemas.google.com/g/2005/labels");
+    shared_with_me_label->SetString(
+        "term", "http://schemas.google.com/g/2005/labels#shared");
+    categories->Append(shared_with_me_label);
+  }
 
   // Add "content" which sets the content URL.
   base::DictionaryValue* content = new base::DictionaryValue;

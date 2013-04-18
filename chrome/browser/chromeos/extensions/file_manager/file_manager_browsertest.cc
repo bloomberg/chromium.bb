@@ -469,6 +469,7 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase,
   virtual void CreateTestFileWithMimeType(const std::string& name,
                                           const std::string& mime_type,
                                           int64 length,
+                                          bool shared_with_me,
                                           const std::string& modification_time);
 
   // Waits until a notification for a directory change is received.
@@ -509,13 +510,18 @@ void FileManagerBrowserDriveTest::CreateTestFile(
     const std::string& name,
     int64 length,
     const std::string& modification_time) {
-  CreateTestFileWithMimeType(name, "text/plain", length, modification_time);
+  CreateTestFileWithMimeType(name,
+                             "text/plain",
+                             length,
+                             false,  // shared_with_me
+                             modification_time);
 }
 
 void FileManagerBrowserDriveTest::CreateTestFileWithMimeType(
     const std::string& name,
     const std::string& mime_type,
     int64 length,
+    bool shared_with_me,
     const std::string& modification_time) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> resource_entry;
@@ -524,6 +530,7 @@ void FileManagerBrowserDriveTest::CreateTestFileWithMimeType(
       length,
       fake_drive_service_->GetRootResourceId(),
       name,
+      shared_with_me,
       google_apis::test_util::CreateCopyResultCallback(&error,
                                                        &resource_entry));
   MessageLoop::current()->RunUntilIdle();
@@ -671,11 +678,16 @@ FileManagerBrowserDriveTest::CreateDriveSystemService(Profile* profile) {
 
   // For testing Drive, create more entries with Drive specific attributes.
   // TODO(haruki): Add a case for an entry cached by DriveCache.
-  // TODO(haruki): Add a case for a shared-with-me entry.
   CreateTestFileWithMimeType("Test Document",
                              "application/vnd.google-apps.document",
                              0,
+                             false,  // shared_with_me
                              "10 Apr 2013 16:20:00");
+  CreateTestFileWithMimeType("Test Shared Document",
+                             "application/vnd.google-apps.document",
+                             0,
+                             true,  // shared_with_me
+                             "20 Mar 2013 22:40:00");
 
   system_service_ = new drive::DriveSystemService(profile,
                                                   fake_drive_service_,
@@ -730,19 +742,27 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-
-  ResultCatcher catcher;
-  StartTest("autocomplete");
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
 
   ResultCatcher catcher;
   StartTest("openSidebarOffline");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
+  ResultCatcher catcher;
+  StartTest("openSidebarSharedWithMe");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
+  ResultCatcher catcher;
+  StartTest("autocomplete");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
