@@ -475,6 +475,9 @@ void RenderText::SelectWord() {
     return;
 
   size_t selection_start = cursor_pos;
+  if (selection_start == text().length() && selection_start != 0)
+    --selection_start;
+
   for (; selection_start != 0; --selection_start) {
     if (iter.IsStartOfWord(selection_start) ||
         iter.IsEndOfWord(selection_start))

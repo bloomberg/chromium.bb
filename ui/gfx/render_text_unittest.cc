@@ -1108,6 +1108,26 @@ TEST_F(RenderTextTest, CaretWidth) {
   EXPECT_GE(render_text->GetUpdatedCursorBounds().width(), 1);
 }
 
+// Make sure the last word is selected when the cursor is at text.length().
+TEST_F(RenderTextTest, LastWordSelected) {
+  const std::string kTestURL1 = "http://www.google.com";
+  const std::string kTestURL2 = "http://www.google.com/something/";
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+
+  render_text->SetText(ASCIIToUTF16(kTestURL1));
+  render_text->SetCursorPosition(kTestURL1.length());
+  render_text->SelectWord();
+  EXPECT_EQ(ui::Range(kTestURL1.length() - 3, kTestURL1.length()),
+            render_text->selection());
+
+  render_text->SetText(ASCIIToUTF16(kTestURL2));
+  render_text->SetCursorPosition(kTestURL2.length());
+  render_text->SelectWord();
+  EXPECT_EQ(ui::Range(kTestURL2.length() - 1, kTestURL2.length()),
+            render_text->selection());
+}
+
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
