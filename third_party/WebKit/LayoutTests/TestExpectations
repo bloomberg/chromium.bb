@@ -3155,8 +3155,6 @@ crbug.com/230771 fast/forms/file/selected-files-from-history-state.html [ Failur
 crbug.com/230771 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
 crbug.com/230771 fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
-crbug.com/232253 fast/forms/form-request-autocomplete.html [ Pass Timeout ]
-
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
 webkit.org/b/109954 css3/line-break [ Skip ]

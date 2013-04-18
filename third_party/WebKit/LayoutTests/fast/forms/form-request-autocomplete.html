@@ -6,7 +6,7 @@
 jsTestIsAsync = true;
 
 var numErrors = 0;
-var numErrorsExpected = 0;
+var numErrorsExpected = 4;
 
 function runTests()
 {
@@ -37,20 +37,18 @@ function checkForEnumerableProperties(form)
 
 function checkParsedAttributes()
 {
-    numErrorsExpected += 1;
-
     var form = document.forms[0];
     checkForEnumerableProperties(form);
 
-    // Currently Chrome just immediately dispatches an error.
-    form.onautocompleteerror = errorWithReason('disabled');
+    // Inline [onautocompleteerror] and addEventListener() should both work.
+    form.addEventListener('autocompleteerror', errorWithReason('disabled'));
+
+    // Note that in the HTML, autocomplete="off" which should always dispatch an error.
     form.requestAutocomplete();
 }
 
 function checkDynamicAttributes()
 {
-    numErrorsExpected += 1;
-
     var form = document.createElement('form');
     checkForEnumerableProperties(form);
 
@@ -61,8 +59,6 @@ function checkDynamicAttributes()
 
 function checkNonUserGesture()
 {
-    numErrorsExpected += 1;
-
     var form = document.createElement('form');
     checkForEnumerableProperties(form);
     form.onautocompleteerror = errorWithReason('disabled');
