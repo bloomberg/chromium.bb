@@ -1627,7 +1627,7 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
     case CSSPrimitiveValue::CSS_TURN:
         b = (unitflags & FAngle);
         break;
-#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
+#if ENABLE(RESOLUTION_MEDIA_QUERY)
     case CSSPrimitiveValue::CSS_DPPX:
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
@@ -1655,7 +1655,7 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveNumericValue(CSSP
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
     }
 
-#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
+#if ENABLE(RESOLUTION_MEDIA_QUERY)
     ASSERT((value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
         || (value->unit >= CSSPrimitiveValue::CSS_TURN && value->unit <= CSSPrimitiveValue::CSS_CHS)
         || (value->unit >= CSSPrimitiveValue::CSS_VW && value->unit <= CSSPrimitiveValue::CSS_VMAX)
@@ -1712,7 +1712,7 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::parseValidPrimitive(int identifi
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_VW && value->unit <= CSSPrimitiveValue::CSS_VMAX)
         return createPrimitiveNumericValue(value);
-#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
+#if ENABLE(RESOLUTION_MEDIA_QUERY)
     if (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM)
         return createPrimitiveNumericValue(value);
 #endif
@@ -2851,14 +2851,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 #if ENABLE(CSS_IMAGE_ORIENTATION)
     case CSSPropertyImageOrientation:
         validPrimitive = !id && validUnit(value, FAngle);
-        break;
-#endif
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    case CSSPropertyImageResolution:
-        parsedValue = parseImageResolution(m_valueList.get());
-        if (!parsedValue)
-            return false;
-        m_valueList->next();
         break;
 #endif
     case CSSPropertyBorderBottomStyle:
@@ -7645,37 +7637,6 @@ bool CSSParser::parseCanvas(CSSParserValueList* valueList, RefPtr<CSSValue>& can
     return true;
 }
 
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-PassRefPtr<CSSValue> CSSParser::parseImageResolution(CSSParserValueList* valueList)
-{
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    bool haveResolution = false;
-    bool haveFromImage = false;
-    bool haveSnap = false;
-
-    CSSParserValue* value = valueList->current();
-    while (value) {
-        if (!haveFromImage && value->id == CSSValueFromImage) {
-            list->append(cssValuePool().createIdentifierValue(value->id));
-            haveFromImage = true;
-        } else if (!haveSnap && value->id == CSSValueSnap) {
-            list->append(cssValuePool().createIdentifierValue(value->id));
-            haveSnap = true;
-        } else if (!haveResolution && validUnit(value, FResolution | FNonNeg) && value->fValue > 0) {
-            list->append(createPrimitiveNumericValue(value));
-            haveResolution = true;
-        } else
-            return 0;
-        value = m_valueList->next();
-    }
-    if (!list->length())
-        return 0;
-    if (!haveFromImage && !haveResolution)
-        return 0;
-    return list.release();
-}
-#endif
-
 #if ENABLE(CSS_IMAGE_SET)
 PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
 {
@@ -9956,7 +9917,7 @@ inline void CSSParser::detectNumberToken(CharacterType* type, int length)
     case 'd':
         if (length == 3 && isASCIIAlphaCaselessEqual(type[1], 'e') && isASCIIAlphaCaselessEqual(type[2], 'g'))
             m_token = DEGS;
-#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
+#if ENABLE(RESOLUTION_MEDIA_QUERY)
         else if (length > 2 && isASCIIAlphaCaselessEqual(type[1], 'p')) {
             if (length == 4) {
                 // There is a discussion about the name of this unit on www-style.

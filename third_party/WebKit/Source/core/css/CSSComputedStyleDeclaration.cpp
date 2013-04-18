@@ -142,9 +142,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyImageOrientation,
 #endif
     CSSPropertyImageRendering,
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    CSSPropertyImageResolution,
-#endif
     CSSPropertyLeft,
     CSSPropertyLetterSpacing,
     CSSPropertyLineHeight,
@@ -1974,10 +1971,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 #endif
         case CSSPropertyImageRendering:
             return CSSPrimitiveValue::create(style->imageRendering());
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-        case CSSPropertyImageResolution:
-            return cssValuePool().createValue(style->imageResolution(), CSSPrimitiveValue::CSS_DPPX);
-#endif
         case CSSPropertyLeft:
             return getPositionOffsetValue(style.get(), CSSPropertyLeft, renderer, m_node->document()->renderView());
         case CSSPropertyLetterSpacing:

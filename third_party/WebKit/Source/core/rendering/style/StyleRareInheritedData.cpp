@@ -48,10 +48,6 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     unsigned unsigneds[1];
     short hyphenationShorts[3];
 
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    float imageResolutionFloats;
-#endif
-
 #if ENABLE(TOUCH_EVENTS)
     Color touchColors;
 #endif
@@ -97,10 +93,6 @@ StyleRareInheritedData::StyleRareInheritedData()
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     , useTouchOverflowScrolling(RenderStyle::initialUseTouchOverflowScrolling())
 #endif
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    , m_imageResolutionSource(RenderStyle::initialImageResolutionSource())
-    , m_imageResolutionSnap(RenderStyle::initialImageResolutionSnap())
-#endif
 #if ENABLE(CSS3_TEXT)
     , m_textAlignLast(RenderStyle::initialTextAlignLast())
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
@@ -111,9 +103,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , hyphenationLimitLines(-1)
     , m_lineGrid(RenderStyle::initialLineGrid())
     , m_tabSize(RenderStyle::initialTabSize())
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    , m_imageResolution(RenderStyle::initialImageResolution())
-#endif
 #if ENABLE(TOUCH_EVENTS)
     , tapHighlightColor(RenderStyle::initialTapHighlightColor())
 #endif    
@@ -167,10 +156,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     , useTouchOverflowScrolling(o.useTouchOverflowScrolling)
 #endif
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    , m_imageResolutionSource(o.m_imageResolutionSource)
-    , m_imageResolutionSnap(o.m_imageResolutionSnap)
-#endif
 #if ENABLE(CSS3_TEXT)
     , m_textAlignLast(o.m_textAlignLast)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
@@ -184,9 +169,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
     , m_lineGrid(o.m_lineGrid)
     , m_tabSize(o.m_tabSize)
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    , m_imageResolution(o.m_imageResolution)
-#endif
 #if ENABLE(TOUCH_EVENTS)
     , tapHighlightColor(o.tapHighlightColor)
 #endif
@@ -262,11 +244,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_imageOrientation == o.m_imageOrientation
 #endif
         && m_imageRendering == o.m_imageRendering
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-        && m_imageResolutionSource == o.m_imageResolutionSource
-        && m_imageResolutionSnap == o.m_imageResolutionSnap
-        && m_imageResolution == o.m_imageResolution
-#endif
 #if ENABLE(CSS3_TEXT)
         && m_textAlignLast == o.m_textAlignLast
         && m_textUnderlinePosition == o.m_textUnderlinePosition

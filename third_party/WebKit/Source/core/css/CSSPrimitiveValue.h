@@ -138,7 +138,7 @@ public:
         UTime,
         UFrequency,
         UViewportPercentageLength,
-#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
+#if ENABLE(RESOLUTION_MEDIA_QUERY)
         UResolution,
 #endif
         UOther

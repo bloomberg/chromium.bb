@@ -986,11 +986,6 @@ saturation
 color
 luminosity
 
-#if defined(ENABLE_CSS_IMAGE_RESOLUTION) && ENABLE_CSS_IMAGE_RESOLUTION
-from-image
-snap
-#endif
-
 // overflow
 -webkit-paged-x
 -webkit-paged-y

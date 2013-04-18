@@ -1969,55 +1969,6 @@ public:
 };
 #endif
 
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-class ApplyPropertyImageResolution {
-public:
-    static void applyInheritValue(CSSPropertyID propertyID, StyleResolver* styleResolver)
-    {
-        ApplyPropertyDefaultBase<ImageResolutionSource, &RenderStyle::imageResolutionSource, ImageResolutionSource, &RenderStyle::setImageResolutionSource, ImageResolutionSource, &RenderStyle::initialImageResolutionSource>::applyInheritValue(propertyID, styleResolver);
-        ApplyPropertyDefaultBase<ImageResolutionSnap, &RenderStyle::imageResolutionSnap, ImageResolutionSnap, &RenderStyle::setImageResolutionSnap, ImageResolutionSnap, &RenderStyle::initialImageResolutionSnap>::applyInheritValue(propertyID, styleResolver);
-        ApplyPropertyDefaultBase<float, &RenderStyle::imageResolution, float, &RenderStyle::setImageResolution, float, &RenderStyle::initialImageResolution>::applyInheritValue(propertyID, styleResolver);
-    }
-
-    static void applyInitialValue(CSSPropertyID propertyID, StyleResolver* styleResolver)
-    {
-        ApplyPropertyDefaultBase<ImageResolutionSource, &RenderStyle::imageResolutionSource, ImageResolutionSource, &RenderStyle::setImageResolutionSource, ImageResolutionSource, &RenderStyle::initialImageResolutionSource>::applyInitialValue(propertyID, styleResolver);
-        ApplyPropertyDefaultBase<ImageResolutionSnap, &RenderStyle::imageResolutionSnap, ImageResolutionSnap, &RenderStyle::setImageResolutionSnap, ImageResolutionSnap, &RenderStyle::initialImageResolutionSnap>::applyInitialValue(propertyID, styleResolver);
-        ApplyPropertyDefaultBase<float, &RenderStyle::imageResolution, float, &RenderStyle::setImageResolution, float, &RenderStyle::initialImageResolution>::applyInitialValue(propertyID, styleResolver);
-    }
-
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, CSSValue* value)
-    {
-        if (!value->isValueList())
-            return;
-        CSSValueList* valueList = static_cast<CSSValueList*>(value);
-        ImageResolutionSource source = RenderStyle::initialImageResolutionSource();
-        ImageResolutionSnap snap = RenderStyle::initialImageResolutionSnap();
-        double resolution = RenderStyle::initialImageResolution();
-        for (size_t i = 0; i < valueList->length(); i++) {
-            CSSValue* item = valueList->itemWithoutBoundsCheck(i);
-            if (!item->isPrimitiveValue())
-                continue;
-            CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(item);
-            if (primitiveValue->getIdent() == CSSValueFromImage)
-                source = ImageResolutionFromImage;
-            else if (primitiveValue->getIdent() == CSSValueSnap)
-                snap = ImageResolutionSnapPixels;
-            else
-                resolution = primitiveValue->getDoubleValue(CSSPrimitiveValue::CSS_DPPX);
-        }
-        styleResolver->style()->setImageResolutionSource(source);
-        styleResolver->style()->setImageResolutionSnap(snap);
-        styleResolver->style()->setImageResolution(resolution);
-    }
-
-    static PropertyHandler createHandler()
-    {
-        return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue);
-    }
-};
-#endif
-
 class ApplyPropertyTextIndent {
 public:
     static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver)
@@ -2138,9 +2089,6 @@ StyleBuilder::StyleBuilder()
     setPropertyHandler(CSSPropertyImageOrientation, ApplyPropertyDefault<ImageOrientationEnum, &RenderStyle::imageOrientation, ImageOrientationEnum, &RenderStyle::setImageOrientation, ImageOrientationEnum, &RenderStyle::initialImageOrientation>::createHandler());
 #endif
     setPropertyHandler(CSSPropertyImageRendering, ApplyPropertyDefault<EImageRendering, &RenderStyle::imageRendering, EImageRendering, &RenderStyle::setImageRendering, EImageRendering, &RenderStyle::initialImageRendering>::createHandler());
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    setPropertyHandler(CSSPropertyImageResolution, ApplyPropertyImageResolution::createHandler());
-#endif
     setPropertyHandler(CSSPropertyLeft, ApplyPropertyLength<&RenderStyle::left, &RenderStyle::setLeft, &RenderStyle::initialOffset, AutoEnabled>::createHandler());
     setPropertyHandler(CSSPropertyLetterSpacing, ApplyPropertyComputeLength<int, &RenderStyle::letterSpacing, &RenderStyle::setLetterSpacing, &RenderStyle::initialLetterWordSpacing, NormalEnabled, ThicknessDisabled, SVGZoomEnabled>::createHandler());
     setPropertyHandler(CSSPropertyLineHeight, ApplyPropertyLineHeight::createHandler());

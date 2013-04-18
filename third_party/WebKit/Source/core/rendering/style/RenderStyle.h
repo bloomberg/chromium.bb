@@ -930,12 +930,6 @@ public:
 
     EImageRendering imageRendering() const { return static_cast<EImageRendering>(rareInheritedData->m_imageRendering); }
 
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    ImageResolutionSource imageResolutionSource() const { return static_cast<ImageResolutionSource>(rareInheritedData->m_imageResolutionSource); }
-    ImageResolutionSnap imageResolutionSnap() const { return static_cast<ImageResolutionSnap>(rareInheritedData->m_imageResolutionSnap); }
-    float imageResolution() const { return rareInheritedData->m_imageResolution; }
-#endif
-    
     ESpeak speak() const { return static_cast<ESpeak>(rareInheritedData->speak); }
 
 #if ENABLE(CSS_FILTERS)
@@ -1118,12 +1112,6 @@ public:
 #endif
 
     void setImageRendering(EImageRendering v) { SET_VAR(rareInheritedData, m_imageRendering, v); }
-
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    void setImageResolutionSource(ImageResolutionSource v) { SET_VAR(rareInheritedData, m_imageResolutionSource, v); }
-    void setImageResolutionSnap(ImageResolutionSnap v) { SET_VAR(rareInheritedData, m_imageResolutionSnap, v); }
-    void setImageResolution(float f) { SET_VAR(rareInheritedData, m_imageResolution, f); }
-#endif
 
     void setWhiteSpace(EWhiteSpace v) { inherited_flags._white_space = v; }
 

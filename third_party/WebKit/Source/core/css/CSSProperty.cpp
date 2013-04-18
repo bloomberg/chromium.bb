@@ -269,9 +269,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyImageOrientation:
 #endif
     case CSSPropertyImageRendering:
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    case CSSPropertyImageResolution:
-#endif
     case CSSPropertyLetterSpacing:
     case CSSPropertyLineHeight:
     case CSSPropertyListStyle:

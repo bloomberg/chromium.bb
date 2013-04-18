@@ -110,10 +110,6 @@
 #define ENABLE_CSS_IMAGE_ORIENTATION 0
 #endif
 
-#if !defined(ENABLE_CSS_IMAGE_RESOLUTION)
-#define ENABLE_CSS_IMAGE_RESOLUTION 0
-#endif
-
 #if !defined(ENABLE_CSS_IMAGE_SET)
 #define ENABLE_CSS_IMAGE_SET 0
 #endif

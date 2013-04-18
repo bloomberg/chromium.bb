@@ -111,10 +111,6 @@ public:
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     unsigned useTouchOverflowScrolling: 1;
 #endif
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    unsigned m_imageResolutionSource : 1; // ImageResolutionSource
-    unsigned m_imageResolutionSnap : 1; // ImageResolutionSnap
-#endif
 #if ENABLE(CSS3_TEXT)
     unsigned m_textAlignLast : 3; // TextAlignLast
     unsigned m_textUnderlinePosition : 3; // TextUnderlinePosition
@@ -133,10 +129,6 @@ public:
 
     AtomicString m_lineGrid;
     unsigned m_tabSize;
-
-#if ENABLE(CSS_IMAGE_RESOLUTION)
-    float m_imageResolution;
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
     Color tapHighlightColor;
