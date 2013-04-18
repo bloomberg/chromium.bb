@@ -91,6 +91,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // no dimmer active, the function will return -1.
   int GetDimmingAlphaForTest();
 
+  // A function to test the bounds of the dimming bar. Returns gfx::Rect() if
+  // the dimmer is inactive.
+  gfx::Rect GetDimmerBoundsForTest();
+
   // Disable dimming animations for running tests.
   void DisableDimmingAnimationsForTest();
 

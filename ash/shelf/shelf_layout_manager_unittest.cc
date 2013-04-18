@@ -99,6 +99,11 @@ class ShelfDragCallback {
     EXPECT_EQ(not_visible_bounds_.bottom(), shelf_bounds.bottom());
     EXPECT_EQ(visible_bounds_.bottom(), shelf_bounds.bottom());
 
+    // if the shelf is being dimmed test dimmer bounds as well.
+    if (GetShelfWidget()->GetDimsShelf())
+      EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
+                GetShelfWidget()->GetDimmerBoundsForTest());
+
     // The shelf should never be smaller than the hidden state.
     EXPECT_GE(shelf_bounds.height(), not_visible_bounds_.height());
 
@@ -996,6 +1001,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
+            GetShelfWidget()->GetWindowBoundsInScreen());
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
@@ -1039,6 +1046,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());

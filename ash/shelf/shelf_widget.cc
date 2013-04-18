@@ -277,6 +277,10 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // no dimmer active, the function will return -1.
   int GetDimmingAlphaForTest();
 
+  // A function to test the bounds of the dimming bar. Returns gfx::Rect() if
+  // the dimmer is inactive.
+  gfx::Rect GetDimmerBoundsForTest();
+
   // Disable dimming animations for running tests. This needs to be called
   // prior to the creation of of the |dimmer_|.
   void disable_dimming_animations_for_test() {
@@ -410,6 +414,12 @@ int ShelfWidget::DelegateView::GetDimmingAlphaForTest() {
   if (GetDimmed())
     return dimmer_view_->get_dimming_alpha_for_test();
   return -1;
+}
+
+gfx::Rect ShelfWidget::DelegateView::GetDimmerBoundsForTest() {
+  if (GetDimmed())
+    return dimmer_view_->GetBoundsInScreen();
+  return gfx::Rect();
 }
 
 void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
@@ -554,6 +564,12 @@ int ShelfWidget::GetDimmingAlphaForTest() {
   if (delegate_view_)
     return delegate_view_->GetDimmingAlphaForTest();
   return -1;
+}
+
+gfx::Rect ShelfWidget::GetDimmerBoundsForTest() {
+  if (delegate_view_)
+    return delegate_view_->GetDimmerBoundsForTest();
+  return gfx::Rect();
 }
 
 void ShelfWidget::DisableDimmingAnimationsForTest() {

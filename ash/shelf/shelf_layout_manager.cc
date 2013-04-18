@@ -442,6 +442,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     UpdateVisibilityState();
     gesture_drag_status_ = GESTURE_DRAG_NONE;
   }
+  LayoutShelf();
 }
 
 void ShelfLayoutManager::CancelGestureDrag() {
