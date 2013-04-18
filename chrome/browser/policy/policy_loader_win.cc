@@ -31,6 +31,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
 #include "chrome/common/json_schema/json_schema_constants.h"
@@ -510,6 +511,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   for (size_t i = 0; i < arraysize(kScopes); ++i) {
     PolicyScope scope = kScopes[i].scope;
+    PolicyLoadStatusSample status;
     base::DictionaryValue gpo_dict;
 
     HANDLE policy_lock =
@@ -517,7 +519,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     if (policy_lock == NULL)
       PLOG(ERROR) << "EnterCriticalPolicySection";
 
-    if (!ReadPolicyFromGPO(scope, &gpo_dict)) {
+    if (!ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
       VLOG(1) << "Failed to read GPO files for " << scope
               << " falling back to registry.";
       ReadRegistry(kScopes[i].hive, chrome_policy_key_, &gpo_dict);
@@ -572,7 +574,8 @@ void PolicyLoaderWin::BuildChromePolicySchema() {
 }
 
 bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
-                                   base::DictionaryValue* policy) {
+                                   base::DictionaryValue* policy,
+                                   PolicyLoadStatusSample* status) {
   // The following deals with the minor annoyance that Wow64 FS redirection
   // might need to be turned off: This is the case if running as a 32-bit
   // process on a 64-bit system, in which case Wow64 FS redirection redirects
@@ -580,22 +583,27 @@ bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
   // %WINDIR%/SysWOW64/GroupPolicy, but the file is actually in the
   // system-native directory.
   if (file_util::PathExists(preg_file)) {
-    return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy);
+    return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy, status);
   } else {
     // Try with redirection switched off.
     ScopedDisableWow64Redirection redirection_disable;
-    if (redirection_disable.is_active() && file_util::PathExists(preg_file))
-      return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy);
+    if (redirection_disable.is_active() && file_util::PathExists(preg_file)) {
+      status->Add(POLICY_LOAD_STATUS_WOW64_REDIRECTION_DISABLED);
+      return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy,
+                                   status);
+    }
   }
 
   // Report the error.
   LOG(ERROR) << "PReg file doesn't exist: " << preg_file.value();
+  status->Add(POLICY_LOAD_STATUS_MISSING);
   return false;
 }
 
 bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
                                     PGROUP_POLICY_OBJECT policy_object_list,
-                                    base::DictionaryValue* policy) {
+                                    base::DictionaryValue* policy,
+                                    PolicyLoadStatusSample* status) {
   base::DictionaryValue parsed_policy;
   base::DictionaryValue forced_policy;
   for (GROUP_POLICY_OBJECT* policy_object = policy_object_list;
@@ -607,6 +615,7 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
       // UNC path: Assume this is an AD-managed machine, which updates the
       // registry via GPO's standard registry CSE periodically. Fall back to
       // reading from the registry in this case.
+      status->Add(POLICY_LOAD_STATUS_INACCCESSIBLE);
       return false;
     }
 
@@ -614,7 +623,7 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
         base::FilePath(policy_object->lpFileSysPath).Append(kPRegFileName));
     if (policy_object->dwOptions & GPO_FLAG_FORCE) {
       base::DictionaryValue new_forced_policy;
-      if (!ReadPRegFile(preg_file_path, &new_forced_policy))
+      if (!ReadPRegFile(preg_file_path, &new_forced_policy, status))
         return false;
 
       // Merge with existing forced policy, giving precedence to the existing
@@ -622,7 +631,7 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
       new_forced_policy.MergeDictionary(&forced_policy);
       forced_policy.Swap(&new_forced_policy);
     } else {
-      if (!ReadPRegFile(preg_file_path, &parsed_policy))
+      if (!ReadPRegFile(preg_file_path, &parsed_policy, status))
         return false;
     }
   }
@@ -636,19 +645,26 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
 
 
 bool PolicyLoaderWin::ReadPolicyFromGPO(PolicyScope scope,
-                                        base::DictionaryValue* policy) {
+                                        base::DictionaryValue* policy,
+                                        PolicyLoadStatusSample* status) {
   PGROUP_POLICY_OBJECT policy_object_list = NULL;
   DWORD flags = scope == POLICY_SCOPE_MACHINE ? GPO_LIST_FLAG_MACHINE : 0;
   if (gpo_provider_->GetAppliedGPOList(
           flags, NULL, NULL, &kRegistrySettingsCSEGUID,
           &policy_object_list) != ERROR_SUCCESS) {
     PLOG(ERROR) << "GetAppliedGPOList scope " << scope;
+    status->Add(POLICY_LOAD_STATUS_QUERY_FAILED);
     return false;
   }
 
-  bool result = LoadGPOPolicy(scope, policy_object_list, policy);
-  if (!gpo_provider_->FreeGPOList(policy_object_list))
-    LOG(WARNING) << "FreeGPOList";
+  bool result = true;
+  if (policy_object_list) {
+    result = LoadGPOPolicy(scope, policy_object_list, policy, status);
+    if (!gpo_provider_->FreeGPOList(policy_object_list))
+      LOG(WARNING) << "FreeGPOList";
+  } else {
+    status->Add(POLICY_LOAD_STATUS_NO_POLICY);
+  }
 
   return result;
 }

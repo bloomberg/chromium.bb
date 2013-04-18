@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
@@ -99,6 +100,8 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   PolicyMap& chrome_policy =
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
+  PolicyLoadStatusSample status;
+  bool policy_present = false;
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
     base::mac::ScopedCFTypeRef<CFStringRef> name(
@@ -107,6 +110,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
         preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
     if (!value.get())
       continue;
+    policy_present = true;
     bool forced =
         preferences_->AppValueIsForced(name, kCFPreferencesCurrentApplication);
     PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
@@ -115,7 +119,12 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     base::Value* policy = CreateValueFromProperty(value);
     if (policy)
       chrome_policy.Set(current->name, level, POLICY_SCOPE_USER, policy);
+    else
+      status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
   }
+
+  if (!policy_present)
+    status.Add(POLICY_LOAD_STATUS_NO_POLICY);
 
   return bundle.Pass();
 }

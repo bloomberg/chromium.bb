@@ -1307,6 +1307,8 @@
         'browser/policy/policy_bundle.h',
         'browser/policy/policy_error_map.cc',
         'browser/policy/policy_error_map.h',
+        'browser/policy/policy_load_status.cc',
+        'browser/policy/policy_load_status.h',
         'browser/policy/policy_loader_mac.cc',
         'browser/policy/policy_loader_mac.h',
         'browser/policy/policy_loader_win.cc',

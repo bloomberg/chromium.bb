@@ -21,6 +21,9 @@ class FilePath;
 }
 
 namespace policy {
+
+class PolicyLoadStatusSample;
+
 namespace preg_parser {
 
 // The magic header in PReg files: ASCII "PReg" + version (0x0001).
@@ -31,7 +34,8 @@ extern const char kPRegFileHeader[8];
 // everything else gets ignored.
 bool ReadFile(const base::FilePath& file_path,
               const string16& root,
-              base::DictionaryValue* dict);
+              base::DictionaryValue* dict,
+              PolicyLoadStatusSample* status);
 
 }  // namespace preg_parser
 }  // namespace policy

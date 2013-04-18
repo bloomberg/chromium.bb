@@ -20,6 +20,7 @@
 namespace policy {
 
 class AppliedGPOListProvider;
+class PolicyLoadStatusSample;
 class PolicyMap;
 struct PolicyDefinitionList;
 
@@ -63,7 +64,8 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   // Reads Chrome Policy from a PReg file at the given path and stores the
   // result in |policy|.
   bool ReadPRegFile(const base::FilePath& preg_file,
-                    base::DictionaryValue* policy);
+                    base::DictionaryValue* policy,
+                    PolicyLoadStatusSample *status);
 
   // Loads and parses GPO policy in |policy_object_list| for scope |scope|. If
   // successful, stores the result in |policy| and returns true. Returns false
@@ -71,12 +73,15 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   // back to reading the registry.
   bool LoadGPOPolicy(PolicyScope scope,
                      PGROUP_POLICY_OBJECT policy_object_list,
-                     base::DictionaryValue* policy);
+                     base::DictionaryValue* policy,
+                     PolicyLoadStatusSample *status);
 
   // Queries Windows for applied group policy and writes the result to |policy|.
   // This is the preferred way to obtain GPO data, there are reports of abuse
   // of the registry GPO keys by 3rd-party software.
-  bool ReadPolicyFromGPO(PolicyScope scope, base::DictionaryValue* policy);
+  bool ReadPolicyFromGPO(PolicyScope scope,
+                         base::DictionaryValue* policy,
+                         PolicyLoadStatusSample *status);
 
   // Parses Chrome policy from |gpo_dict| for the given |scope| and |level| and
   // merges it into |chrome_policy_map|.

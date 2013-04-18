@@ -20,6 +20,7 @@
 #include "base/sys_byteorder.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/policy/policy_load_status.h"
 
 namespace policy {
 namespace preg_parser {
@@ -215,16 +216,19 @@ void HandleRecord(const string16& key_name,
 
 bool ReadFile(const base::FilePath& file_path,
               const string16& root,
-              base::DictionaryValue* dict) {
+              base::DictionaryValue* dict,
+              PolicyLoadStatusSample* status) {
   base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file_path) || !mapped_file.IsValid()) {
     PLOG(ERROR) << "Failed to map " << file_path.value();
+    status->Add(POLICY_LOAD_STATUS_READ_ERROR);
     return false;
   }
 
   if (mapped_file.length() > kMaxPRegFileSize) {
     LOG(ERROR) << "PReg file " << file_path.value() << " too large: "
                << mapped_file.length();
+    status->Add(POLICY_LOAD_STATUS_TOO_BIG);
     return false;
   }
 
@@ -233,6 +237,7 @@ bool ReadFile(const base::FilePath& file_path,
   if (mapped_file.length() < kHeaderSize ||
       memcmp(kPRegFileHeader, mapped_file.data(), kHeaderSize) != 0) {
     LOG(ERROR) << "Bad policy file " << file_path.value();
+    status->Add(POLICY_LOAD_STATUS_PARSE_ERROR);
     return false;
   }
 
@@ -296,6 +301,7 @@ bool ReadFile(const base::FilePath& file_path,
 
   LOG(ERROR) << "Error parsing " << file_path.value() << " at offset "
              << reinterpret_cast<const uint8*>(cursor - 1) - mapped_file.data();
+  status->Add(POLICY_LOAD_STATUS_PARSE_ERROR);
   return false;
 }
 

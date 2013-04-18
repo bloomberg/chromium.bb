@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,8 +36,9 @@ TEST(PRegParserWinTest, TestParseFile) {
 
   // Run the parser.
   base::FilePath test_file(test_data_dir.AppendASCII("policy/registry.pol"));
+  PolicyLoadStatusSample status;
   ASSERT_TRUE(preg_parser::ReadFile(
-      test_file, L"SOFTWARE\\Policies\\Chromium", &dict));
+      test_file, L"SOFTWARE\\Policies\\Chromium", &dict, &status));
 
   // Build the expected output dictionary.
   base::DictionaryValue expected;
