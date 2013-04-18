@@ -155,7 +155,6 @@ contribution_areas = [
     _Area('V8 Bindings', [_Intersection('bindings', 'v8')]),
     _Area('Web Inspector / Developer Tools', ['inspector']),
     _Area('Web Timing', ['PerformanceNavigation', 'PerformanceTiming']),  # more tokens?
-    _Area('WebArchive'),
     _Area('WebCore Icon Database', ['icon']),
     _Area('WebGL', ['webgl']),
     _Area('WebKit Websites', ['websites']),

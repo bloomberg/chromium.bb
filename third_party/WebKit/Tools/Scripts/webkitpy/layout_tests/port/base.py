@@ -407,7 +407,7 @@ class Port(object):
 
     def baseline_extensions(self):
         """Returns a tuple of all of the non-reftest baseline extensions we use. The extensions include the leading '.'."""
-        return ('.wav', '.webarchive', '.txt', '.png')
+        return ('.wav', '.txt', '.png')
 
     def expected_baselines(self, test_name, suffix, all_baselines=False):
         """Given a test name, finds where the baseline results are located.
@@ -524,9 +524,7 @@ class Port(object):
         # baselines as a binary string, too.
         baseline_path = self.expected_filename(test_name, '.txt')
         if not self._filesystem.exists(baseline_path):
-            baseline_path = self.expected_filename(test_name, '.webarchive')
-            if not self._filesystem.exists(baseline_path):
-                return None
+            return None
         text = self._filesystem.read_binary_file(baseline_path)
         return text.replace("\r\n", "\n")
 

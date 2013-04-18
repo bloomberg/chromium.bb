@@ -356,7 +356,7 @@ class Printer(object):
             self._print_default(' base: %s' % base)
             self._print_default(' args: %s' % args)
 
-        for extension in ('.txt', '.png', '.wav', '.webarchive'):
+        for extension in ('.txt', '.png', '.wav'):
             self._print_baseline(test_name, extension)
 
         self._print_default('  exp: %s' % exp_str)
