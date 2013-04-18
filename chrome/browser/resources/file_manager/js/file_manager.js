@@ -1144,6 +1144,7 @@ DialogType.isModal = function(type) {
     // on ChromeOS.
     list.setAttribute('role', 'listbox');
     list.addEventListener('click', this.onDetailClick_.bind(this));
+    list.id = 'file-list';
   };
 
   /**

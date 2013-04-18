@@ -191,7 +191,7 @@ test.util.selectFile = function(contentWindow, filename) {
   var table = contentWindow.document.querySelector('#detail-table');
   var rows = table.querySelectorAll('li');
   for (var index = 0; index < rows.length; ++index) {
-    test.util.fakeKeyDown(contentWindow, 'Down', false);
+    test.util.fakeKeyDown(contentWindow, '#file-list', 'Down', false);
     var selection = test.util.getSelectedFiles(contentWindow);
     if (selection.length === 1 && selection[0] === filename)
       return true;
@@ -201,30 +201,14 @@ test.util.selectFile = function(contentWindow, filename) {
 };
 
 /**
- * Sends a fake key event with the given |keyIdentifier| and optional |ctrl|
- * modifier to the file manager.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} keyIdentifier Identifier of the emulated key.
- * @param {boolean} ctrl Whether CTRL should be pressed, or not.
- */
-test.util.fakeKeyDown = function(contentWindow, keyIdentifier, ctrl) {
-  var event = new KeyboardEvent(
-      'keydown',
-      { bubbles: true, keyIdentifier: keyIdentifier, ctrlKey: ctrl });
-  var detailTable = contentWindow.document.querySelector('#detail-table');
-  detailTable.querySelector('list').dispatchEvent(event);
-};
-
-/**
- * Sends a fake mouse click event to the element specified by |targetQuery|.
+ * Sends an event to the element specified by |targetQuery|.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
- * @return {boolean} True if file got selected, false otherwise.
+ * @param {Event} event Event to be sent.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
  */
-test.util.fakeMouseClick = function(contentWindow, targetQuery) {
-  var event = new MouseEvent('click', { bubbles: true });
+test.util.sendEvent = function(contentWindow, targetQuery, event) {
   var target = contentWindow.document.querySelector(targetQuery);
   if (target) {
     target.dispatchEvent(event);
@@ -233,6 +217,36 @@ test.util.fakeMouseClick = function(contentWindow, targetQuery) {
     console.error('Target element for ' + targetQuery + ' not found.');
     return false;
   }
+};
+
+/**
+ * Sends a fake key event to the element specified by |targetQuery| with the
+ * given |keyIdentifier| and optional |ctrl| modifier to the file manager.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string} keyIdentifier Identifier of the emulated key.
+ * @param {boolean} ctrl Whether CTRL should be pressed, or not.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeKeyDown = function(
+    contentWindow, targetQuery, keyIdentifier, ctrl) {
+  var event = new KeyboardEvent(
+      'keydown',
+      { bubbles: true, keyIdentifier: keyIdentifier, ctrlKey: ctrl });
+  return test.util.sendEvent(contentWindow, targetQuery, event);
+};
+
+/**
+ * Sends a fake mouse click event to the element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeMouseClick = function(contentWindow, targetQuery) {
+  var event = new MouseEvent('click', { bubbles: true });
+  return test.util.sendEvent(contentWindow, targetQuery, event);
 };
 
 /**
@@ -246,8 +260,9 @@ test.util.fakeMouseClick = function(contentWindow, targetQuery) {
 test.util.copyFile = function(contentWindow, filename) {
   if (!test.util.selectFile(contentWindow, filename))
     return false;
-  test.util.fakeKeyDown(contentWindow, 'U+0043', true);  // Ctrl+C
-  test.util.fakeKeyDown(contentWindow, 'U+0056', true);  // Ctrl+V
+  // Ctrl+C and Ctrl+V
+  test.util.fakeKeyDown(contentWindow, '#file-list', 'U+0043', true);
+  test.util.fakeKeyDown(contentWindow, '#file-list', 'U+0056', true);
   return true;
 };
 
@@ -262,7 +277,8 @@ test.util.copyFile = function(contentWindow, filename) {
 test.util.deleteFile = function(contentWindow, filename) {
   if (!test.util.selectFile(contentWindow, filename))
     return false;
-  test.util.fakeKeyDown(contentWindow, 'U+007F', false);  // Delete
+  // Delete
+  test.util.fakeKeyDown(contentWindow, '#file-list', 'U+007F', false);
   return true;
 };
 
@@ -318,8 +334,10 @@ test.util.registerRemoteTestUtils = function() {
           test.util.sendResponse(selectFile(contentWindow, request.args[0]));
           return false;
         case 'fakeKeyDown':
-          test.util.fakeKeyDown(
-              contentWindow, request.args[0], request.request[1]);
+          sendResponse(test.util.fakeKeyDown(contentWindow,
+                                             request.args[0],
+                                             request.args[1],
+                                             request.args[2]));
           return false;
         case 'fakeMouseClick':
           sendResponse(test.util.fakeMouseClick(
