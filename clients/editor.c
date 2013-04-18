@@ -56,6 +56,8 @@ struct text_entry {
 	struct {
 		int32_t cursor;
 		int32_t anchor;
+		uint32_t delete_index;
+		uint32_t delete_length;
 	} pending_commit;
 	struct text_input *text_input;
 	PangoLayout *layout;
@@ -113,6 +115,17 @@ utf8_next_char(const char *p)
 	return NULL;
 }
 
+static uint32_t
+utf8_characters(const char *p)
+{
+	uint32_t offset;
+
+	for (offset = 0; *p != 0; offset++)
+		p = utf8_next_char(p);
+
+	return offset;
+}
+
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
@@ -148,6 +161,13 @@ text_input_commit_string(void *data,
 	text_entry_reset_preedit(entry);
 
 	text_entry_delete_selected_text(entry);
+
+	if (entry->pending_commit.delete_length) {
+		text_entry_delete_text(entry,
+				       entry->pending_commit.delete_index,
+				       entry->pending_commit.delete_length);
+	}
+
 	text_entry_insert_at_cursor(entry, text,
 				    entry->pending_commit.cursor,
 				    entry->pending_commit.anchor);
@@ -186,28 +206,24 @@ text_input_delete_surrounding_text(void *data,
 				   uint32_t length)
 {
 	struct text_entry *entry = data;
-	uint32_t cursor_index = index + entry->cursor;
-	const char *start, *end;
+	uint32_t text_length;
 
-	if (cursor_index > strlen(entry->text)) {
+	entry->pending_commit.delete_index = entry->cursor + index;
+	entry->pending_commit.delete_length = length;
+
+	text_length = utf8_characters(entry->text);
+
+	if (entry->pending_commit.delete_index > text_length) {
 		fprintf(stderr, "Invalid cursor index %d\n", index);
+		entry->pending_commit.delete_length = 0;
 		return;
 	}
 
-	if (cursor_index + length > strlen(entry->text)) {
+	if (entry->pending_commit.delete_index + length > text_length) {
 		fprintf(stderr, "Invalid length %d\n", length);
+		entry->pending_commit.delete_length = 0;
 		return;
 	}
-
-	if (length == 0)
-		return;
-
-	start = utf8_start_char(entry->text, entry->text + cursor_index);
-	end = utf8_end_char(entry->text + cursor_index + length);
-
-	text_entry_delete_text(entry,
-			       start - entry->text,
-			       end - start);
 }
 
 static void

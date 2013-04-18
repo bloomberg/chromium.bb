@@ -447,6 +447,9 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
 				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
 									     -1, 1);
+				input_method_context_commit_string(keyboard->keyboard->context,
+								   keyboard->keyboard->serial,
+								   "");
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
 				virtual_keyboard_send_preedit(keyboard->keyboard, -1);
