@@ -2,74 +2,197 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-// A macro, so that the IsRequestorURLInVerifiedSite calls are inside of the
-// the test, which is marked as a friend of WebstoreStandaloneInstaller.
-#define IsVerified(requestor_url, verified_site) \
-  WebstoreInlineInstaller::IsRequestorURLInVerifiedSite( \
-      GURL(requestor_url), verified_site)
+namespace {
 
-TEST(WebstoreInlineInstallerTest, DomainVerification) {
+// Wraps WebstoreInlineInstaller to provide access to domain verification
+// methods for testing.
+class TestWebstoreInlineInstaller : public WebstoreInlineInstaller {
+ public:
+  explicit TestWebstoreInlineInstaller(content::WebContents* contents,
+                                       const std::string& requestor_url);
+
+  bool TestCheckRequestorPermitted(const base::DictionaryValue& webstore_data) {
+    std::string error;
+    return CheckRequestorPermitted(webstore_data, &error);
+  }
+
+ protected:
+  virtual ~TestWebstoreInlineInstaller();
+};
+
+void TestInstallerCallback(bool success, const std::string& error) {}
+
+TestWebstoreInlineInstaller::TestWebstoreInlineInstaller(
+    content::WebContents* contents,
+    const std::string& requestor_url)
+    : WebstoreInlineInstaller(contents,
+                              "",
+                              GURL(requestor_url),
+                              base::Bind(&TestInstallerCallback)) {
+}
+
+TestWebstoreInlineInstaller::~TestWebstoreInlineInstaller() {}
+
+// We inherit from ChromeRenderViewHostTestHarness only for
+// CreateTestWebContents, because we need a mock WebContents to support the
+// underlying WebstoreInlineInstaller in each test case.
+class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
+ public:
+  bool TestSingleVerifiedSite(const std::string& requestor_url,
+                              const std::string& verified_site);
+
+  bool TestMultipleVerifiedSites(
+      const std::string& requestor_url,
+      const std::vector<std::string>& verified_sites);
+
+ protected:
+  WebstoreInlineInstallerTest()
+      : thread_(content::BrowserThread::UI, &message_loop_) {}
+
+  content::TestBrowserThread thread_;
+};
+
+// Simulates a test against the verified site string from a Webstore item's
+// "verified_site" manifest entry.
+bool WebstoreInlineInstallerTest::TestSingleVerifiedSite(
+    const std::string& requestor_url,
+    const std::string& verified_site) {
+  base::DictionaryValue webstore_data;
+  webstore_data.SetString("verified_site", verified_site);
+
+  scoped_refptr<TestWebstoreInlineInstaller> installer =
+    new TestWebstoreInlineInstaller(CreateTestWebContents(), requestor_url);
+  return installer->TestCheckRequestorPermitted(webstore_data);
+}
+
+// Simulates a test against a list of verified site strings from a Webstore
+// item's "verified_sites" manifest entry.
+bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
+    const std::string& requestor_url,
+    const std::vector<std::string>& verified_sites) {
+  base::ListValue* sites = new base::ListValue();
+  for (std::vector<std::string>::const_iterator it = verified_sites.begin();
+       it != verified_sites.end(); ++it) {
+    sites->Append(new base::StringValue(*it));
+  }
+  base::DictionaryValue webstore_data;
+  webstore_data.Set("verified_sites", sites);
+
+  scoped_refptr<TestWebstoreInlineInstaller> installer =
+    new TestWebstoreInlineInstaller(CreateTestWebContents(), requestor_url);
+  return installer->TestCheckRequestorPermitted(webstore_data);
+}
+
+} // namespace
+
+TEST_F(WebstoreInlineInstallerTest, DomainVerification) {
   // Exact domain match.
-  EXPECT_TRUE(IsVerified("http://example.com", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com", "example.com"));
 
   // The HTTPS scheme is allowed.
-  EXPECT_TRUE(IsVerified("https://example.com", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("https://example.com", "example.com"));
 
   // The file: scheme is not allowed.
-  EXPECT_FALSE(IsVerified("file:///example.com", "example.com"));
+  EXPECT_FALSE(TestSingleVerifiedSite("file:///example.com", "example.com"));
 
   // Trailing slash in URL.
-  EXPECT_TRUE(IsVerified("http://example.com/", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com/", "example.com"));
 
   // Page on the domain.
-  EXPECT_TRUE(IsVerified("http://example.com/page.html", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com/page.html",
+                                     "example.com"));
 
   // Page on a subdomain.
-  EXPECT_TRUE(IsVerified("http://sub.example.com/page.html", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://sub.example.com/page.html",
+                                     "example.com"));
 
   // Root domain when only a subdomain is verified.
-  EXPECT_FALSE(IsVerified("http://example.com/", "sub.example.com"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com/",
+                                      "sub.example.com"));
 
   // Different subdomain when only a subdomain is verified.
-  EXPECT_FALSE(IsVerified("http://www.example.com/", "sub.example.com"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://www.example.com/",
+                                      "sub.example.com"));
 
   // Port matches.
-  EXPECT_TRUE(IsVerified("http://example.com:123/", "example.com:123"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com:123/",
+                                     "example.com:123"));
 
   // Port doesn't match.
-  EXPECT_FALSE(IsVerified("http://example.com:456/", "example.com:123"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com:456/",
+                                      "example.com:123"));
 
   // Port is missing in the requestor URL.
-  EXPECT_FALSE(IsVerified("http://example.com/", "example.com:123"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com/",
+                                      "example.com:123"));
 
   // Port is missing in the verified site (any port matches).
-  EXPECT_TRUE(IsVerified("http://example.com:123/", "example.com"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com:123/", "example.com"));
 
   // Path matches.
-  EXPECT_TRUE(IsVerified("http://example.com/path", "example.com/path"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com/path",
+                                     "example.com/path"));
 
   // Path doesn't match.
-  EXPECT_FALSE(IsVerified("http://example.com/foo", "example.com/path"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com/foo",
+                                      "example.com/path"));
 
   // Path is missing.
-  EXPECT_FALSE(IsVerified("http://example.com", "example.com/path"));
+  EXPECT_FALSE(TestSingleVerifiedSite("http://example.com",
+                                      "example.com/path"));
 
   // Path matches (with trailing slash).
-  EXPECT_TRUE(IsVerified("http://example.com/path/", "example.com/path"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com/path/",
+                                     "example.com/path"));
 
   // Path matches (is a file under the path).
-  EXPECT_TRUE(IsVerified(
-      "http://example.com/path/page.html", "example.com/path"));
+  EXPECT_TRUE(TestSingleVerifiedSite("http://example.com/path/page.html",
+                                     "example.com/path"));
 
   // Path and port match.
-  EXPECT_TRUE(IsVerified(
+  EXPECT_TRUE(TestSingleVerifiedSite(
       "http://example.com:123/path/page.html", "example.com:123/path"));
+
+  std::vector<std::string> verified_sites;
+  verified_sites.push_back("foo.example.com");
+  verified_sites.push_back("bar.example.com:123");
+  verified_sites.push_back("example.com/unicorns");
+
+  // Test valid examples against the site list.
+
+  EXPECT_TRUE(TestMultipleVerifiedSites("http://foo.example.com",
+                                        verified_sites));
+
+  EXPECT_TRUE(TestMultipleVerifiedSites("http://bar.example.com:123",
+                                        verified_sites));
+
+  EXPECT_TRUE(TestMultipleVerifiedSites(
+      "http://cooking.example.com/unicorns/bacon.html", verified_sites));
+
+  // Test invalid examples against the site list.
+
+  EXPECT_FALSE(TestMultipleVerifiedSites("http://example.com",
+                                         verified_sites));
+
+  EXPECT_FALSE(TestMultipleVerifiedSites("file://foo.example.com",
+                                         verified_sites));
+
+  EXPECT_FALSE(TestMultipleVerifiedSites("http://baz.example.com",
+                                         verified_sites));
+
+  EXPECT_FALSE(TestMultipleVerifiedSites("http://bar.example.com:456",
+                                         verified_sites));
 }
 
 }  // namespace extensions

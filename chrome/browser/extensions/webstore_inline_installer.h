@@ -38,7 +38,6 @@ class WebstoreInlineInstaller
 
  protected:
   friend class base::RefCountedThreadSafe<WebstoreInlineInstaller>;
-  FRIEND_TEST_ALL_PREFIXES(WebstoreInlineInstallerTest, DomainVerification);
 
   virtual ~WebstoreInlineInstaller();
 
@@ -62,7 +61,7 @@ class WebstoreInlineInstaller
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
-  // Checks whether the install is initiated by a page in the verified site
+  // Checks whether the install is initiated by a page in a verified site
   // (which is at least a domain, but can also have a port or a path).
   static bool IsRequestorURLInVerifiedSite(const GURL& requestor_url,
                                            const std::string& verified_site);
