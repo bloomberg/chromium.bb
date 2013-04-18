@@ -110,6 +110,15 @@ void NotificationList::UpdateNotificationMessage(
                        (*iter)->extension_id(),
                        optional_fields));
   notification->CopyState(*iter);
+
+  // Handles priority promotion. If the notification is already dismissed but
+  // the updated notification has higher priority, it should re-appear as a
+  // toast.
+  if ((*iter)->priority() < notification->priority()) {
+    notification->set_is_read(false);
+    notification->set_shown_as_popup(false);
+  }
+
   // Do not use EraseNotification and PushNotification, since we don't want to
   // change unread counts nor to update is_read/shown_as_popup states.
   Notification *old = *iter;
@@ -333,11 +342,11 @@ void NotificationList::PushNotification(scoped_ptr<Notification> notification) {
     EraseNotification(iter);
   }
   // Add the notification to the the list and mark it unread and unshown.
-  if (!message_center_visible_ && !state_inherited) {
+  if (!state_inherited) {
     // TODO(mukai): needs to distinguish if a notification is dismissed by
     // the quiet mode or user operation.
     notification->set_is_read(quiet_mode_);
-    notification->set_shown_as_popup(quiet_mode_);
+    notification->set_shown_as_popup(message_center_visible_ || quiet_mode_);
     if (!quiet_mode_ && notification->priority() > MIN_PRIORITY)
         ++unread_count_;
   }

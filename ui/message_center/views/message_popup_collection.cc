@@ -39,10 +39,7 @@ class ToastContentsView : public views::WidgetDelegateView {
     // remains. This is hacky but easier to keep the consistency.
     set_background(views::Background::CreateSolidBackground(0, 0, 0, 0));
 
-    int seconds = kAutocloseDefaultDelaySeconds;
-    if (notification->priority() > DEFAULT_PRIORITY)
-      seconds = kAutocloseHighPriorityDelaySeconds;
-    delay_ = base::TimeDelta::FromSeconds(seconds);
+    ResetTimeout(notification->priority());
 
     // Creates the timer only when it does the timeout (i.e. not never-timeout).
     if (!notification->never_timeout())
@@ -78,6 +75,13 @@ class ToastContentsView : public views::WidgetDelegateView {
     Layout();
   }
 
+  void ResetTimeout(int priority) {
+    int seconds = kAutocloseDefaultDelaySeconds;
+    if (priority > DEFAULT_PRIORITY)
+      seconds = kAutocloseHighPriorityDelaySeconds;
+    timeout_ = base::TimeDelta::FromSeconds(seconds);
+  }
+
   void SuspendTimer() {
     if (timer_.get())
       timer_->Stop();
@@ -87,8 +91,8 @@ class ToastContentsView : public views::WidgetDelegateView {
     if (!timer_.get())
       return;
 
-    delay_ -= base::Time::Now() - start_time_;
-    if (delay_ < base::TimeDelta())
+    passed_ += base::Time::Now() - start_time_;
+    if (timeout_ <= passed_)
       GetWidget()->Close();
     else
       StartTimer();
@@ -100,7 +104,7 @@ class ToastContentsView : public views::WidgetDelegateView {
 
     start_time_ = base::Time::Now();
     timer_->Start(FROM_HERE,
-                  delay_,
+                  timeout_ - passed_,
                   base::Bind(&views::Widget::Close,
                              base::Unretained(GetWidget())));
   }
@@ -149,7 +153,8 @@ class ToastContentsView : public views::WidgetDelegateView {
 
  private:
   std::string id_;
-  base::TimeDelta delay_;
+  base::TimeDelta timeout_;
+  base::TimeDelta passed_;
   base::Time start_time_;
   scoped_ptr<base::OneShotTimer<views::Widget> > timer_;
   base::WeakPtr<MessagePopupCollection> collection_;
@@ -257,15 +262,22 @@ void MessagePopupCollection::CloseAllWidgets() {
 
 void MessagePopupCollection::OnWidgetDestroying(views::Widget* widget) {
   widget->RemoveObserver(this);
+  widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
+
+  bool widget_went_empty = widgets_.empty();
   for (ToastContainer::iterator iter = toasts_.begin();
        iter != toasts_.end(); ++iter) {
     if (iter->second->GetWidget() == widget) {
-      message_center_->MarkSinglePopupAsShown(iter->first, false);
+      std::string id = iter->first;
       toasts_.erase(iter);
+      message_center_->MarkSinglePopupAsShown(id, false);
       break;
     }
   }
-  widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
+  // MarkSinglePopupAsShown can delete this if there are no longer
+  // any toasts.
+  if (widget_went_empty)
+    return;
   RepositionWidgets();
   UpdateWidgets();
 }
@@ -386,6 +398,8 @@ void MessagePopupCollection::OnNotificationUpdated(
     MessageView* view = NotificationView::Create(
         *(*iter), message_center_, true);
     toast_iter->second->SetContents(view);
+    toast_iter->second->ResetTimeout((*iter)->priority());
+    toast_iter->second->RestartTimer();
     updated = true;
   }
 

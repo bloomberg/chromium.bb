@@ -228,6 +228,8 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
+  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                    OnNotificationUpdated(id));
 }
 
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {

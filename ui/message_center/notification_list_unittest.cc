@@ -42,9 +42,10 @@ class NotificationListTest : public testing::Test {
   }
 
   // Utility methods of AddNotification.
-  std::string AddPriorityNotification(int priority) {
+  std::string AddPriorityNotification(NotificationPriority priority) {
     base::DictionaryValue optional;
-    optional.SetInteger(message_center::kPriorityKey, priority);
+    optional.SetInteger(message_center::kPriorityKey,
+                        static_cast<int>(priority));
     return AddNotification(&optional);
   }
   void SetupTimestampKey(const base::Time& time,
@@ -229,14 +230,14 @@ TEST_F(NotificationListTest, Priority) {
   notification_list()->SetMessageCenterVisible(true, NULL);
   notification_list()->SetMessageCenterVisible(false, NULL);
   EXPECT_EQ(0u, notification_list()->unread_count());
-  AddPriorityNotification(-1);
+  AddPriorityNotification(LOW_PRIORITY);
   EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 2,
             notification_list()->NotificationCount());
   EXPECT_EQ(1u, notification_list()->unread_count());
   EXPECT_EQ(0u, GetPopupCounts());
 
   // Minimum priority: doesn't update the unread count.
-  AddPriorityNotification(-2);
+  AddPriorityNotification(MIN_PRIORITY);
   EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 3,
             notification_list()->NotificationCount());
   EXPECT_EQ(1u, notification_list()->unread_count());
@@ -247,11 +248,11 @@ TEST_F(NotificationListTest, Priority) {
   // Higher priority: no limits to the number of popups.
   for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications * 2;
        ++i) {
-    AddPriorityNotification(1);
+    AddPriorityNotification(HIGH_PRIORITY);
   }
   for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications * 2;
        ++i) {
-    AddPriorityNotification(2);
+    AddPriorityNotification(MAX_PRIORITY);
   }
   EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications * 4,
             notification_list()->NotificationCount());
@@ -263,14 +264,14 @@ TEST_F(NotificationListTest, HasPopupsWithPriority) {
   ASSERT_EQ(0u, notification_list()->NotificationCount());
   ASSERT_EQ(0u, notification_list()->unread_count());
 
-  AddPriorityNotification(-2);
-  AddPriorityNotification(2);
+  AddPriorityNotification(MIN_PRIORITY);
+  AddPriorityNotification(MAX_PRIORITY);
 
   EXPECT_EQ(1u, GetPopupCounts());
 }
 
 TEST_F(NotificationListTest, PriorityPromotion) {
-  std::string id0 = AddPriorityNotification(-1);
+  std::string id0 = AddPriorityNotification(LOW_PRIORITY);
   std::string replaced = id0 + "_replaced";
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   EXPECT_EQ(0u, GetPopupCounts());
@@ -287,6 +288,59 @@ TEST_F(NotificationListTest, PriorityPromotion) {
   EXPECT_EQ(UTF8ToUTF16("newtitle"), (*notifications.begin())->title());
   EXPECT_EQ(UTF8ToUTF16("newbody"), (*notifications.begin())->message());
   EXPECT_EQ(1, (*notifications.begin())->priority());
+}
+
+TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
+  std::string id0 = AddPriorityNotification(LOW_PRIORITY);
+  std::string id1 = AddPriorityNotification(DEFAULT_PRIORITY);
+  EXPECT_EQ(1u, GetPopupCounts());
+  notification_list()->MarkSinglePopupAsShown(id1, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  // id0 promoted to LOW->DEFAULT, it'll appear as toast (popup).
+  base::DictionaryValue priority_default;
+  priority_default.SetInteger(message_center::kPriorityKey,
+                              static_cast<int>(DEFAULT_PRIORITY));
+  notification_list()->UpdateNotificationMessage(
+      id0, id0, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
+      &priority_default);
+  EXPECT_EQ(1u, GetPopupCounts());
+  notification_list()->MarkSinglePopupAsShown(id0, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  // update with no promotion change for id0, it won't appear as a toast.
+  notification_list()->UpdateNotificationMessage(
+      id0, id0, UTF8ToUTF16("newtitle2"), UTF8ToUTF16("newbody2"),
+      NULL);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  // id1 promoted to DEFAULT->HIGH, it'll appear as toast (popup).
+  base::DictionaryValue priority_high;
+  priority_high.SetInteger(message_center::kPriorityKey,
+                           static_cast<int>(HIGH_PRIORITY));
+  notification_list()->UpdateNotificationMessage(
+      id1, id1, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
+      &priority_high);
+  EXPECT_EQ(1u, GetPopupCounts());
+  notification_list()->MarkSinglePopupAsShown(id1, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  // id1 promoted to HIGH->MAX, it'll appear as toast again.
+  base::DictionaryValue priority_max;
+  priority_max.SetInteger(message_center::kPriorityKey,
+                          static_cast<int>(MAX_PRIORITY));
+  notification_list()->UpdateNotificationMessage(
+      id1, id1, UTF8ToUTF16("newtitle2"), UTF8ToUTF16("newbody2"),
+      &priority_max);
+  EXPECT_EQ(1u, GetPopupCounts());
+  notification_list()->MarkSinglePopupAsShown(id1, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  // id1 demoted to MAX->DEFAULT, no appearing as toast.
+  notification_list()->UpdateNotificationMessage(
+      id1, id1, UTF8ToUTF16("newtitle3"), UTF8ToUTF16("newbody3"),
+      &priority_default);
+  EXPECT_EQ(0u, GetPopupCounts());
 }
 
 TEST_F(NotificationListTest, NotificationOrderAndPriority) {
@@ -422,8 +476,8 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
 TEST_F(NotificationListTest, QuietMode) {
   notification_list()->SetQuietMode(true);
   AddNotification(NULL);
-  AddPriorityNotification(1);
-  AddPriorityNotification(2);
+  AddPriorityNotification(HIGH_PRIORITY);
+  AddPriorityNotification(MAX_PRIORITY);
   EXPECT_EQ(3u, notification_list()->NotificationCount());
   EXPECT_EQ(0u, GetPopupCounts());
   // TODO(mukai): fix here when notification_list distinguish dismiss by quiet

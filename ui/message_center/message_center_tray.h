@@ -82,7 +82,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
-  void OnMessageCenterChanged(bool new_notification);
+  void OnMessageCenterChanged();
   void NotifyMessageCenterTrayChanged();
 
   // |message_center_| is a weak pointer that must live longer than

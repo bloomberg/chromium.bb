@@ -116,34 +116,34 @@ ui::MenuModel* MessageCenterTray::CreateQuietModeMenu() {
 
 void MessageCenterTray::OnNotificationAdded(
     const std::string& notification_id) {
-  OnMessageCenterChanged(true);
+  OnMessageCenterChanged();
 }
 
 void MessageCenterTray::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
-  OnMessageCenterChanged(false);
+  OnMessageCenterChanged();
 }
 
 void MessageCenterTray::OnNotificationUpdated(
     const std::string& notification_id) {
-  OnMessageCenterChanged(false);
+  OnMessageCenterChanged();
 }
 
 void MessageCenterTray::OnNotificationClicked(
     const std::string& notification_id) {
   if (popups_visible_)
-    OnMessageCenterChanged(false);
+    OnMessageCenterChanged();
 }
 
 void MessageCenterTray::OnNotificationButtonClicked(
     const std::string& notification_id,
     int button_index) {
   if (popups_visible_)
-    OnMessageCenterChanged(false);
+    OnMessageCenterChanged();
 }
 
-void MessageCenterTray::OnMessageCenterChanged(bool new_notification) {
+void MessageCenterTray::OnMessageCenterChanged() {
   if (message_center_visible_) {
     if (message_center_->NotificationCount() == 0)
       HideMessageCenterBubble();
@@ -151,14 +151,13 @@ void MessageCenterTray::OnMessageCenterChanged(bool new_notification) {
       delegate_->UpdateMessageCenter();
   }
   if (popups_visible_) {
-    if (message_center_->NotificationCount() == 0)
-      HidePopupBubble();
-    else
+    if (message_center_->HasPopupNotifications())
       delegate_->UpdatePopups();
-  }
-
-  if (new_notification)
+    else
+      HidePopupBubble();
+  } else if (message_center_->HasPopupNotifications()) {
     ShowPopupBubble();
+  }
 
   NotifyMessageCenterTrayChanged();
 }
