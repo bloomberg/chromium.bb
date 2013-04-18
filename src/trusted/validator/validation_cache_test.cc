@@ -245,6 +245,94 @@ TEST_F(ValidationCachingInterfaceTests, Metadata) {
   EXPECT_EQ(true, context.query_destroyed);
 }
 
+extern "C" {
+  extern int SerializeNaClDescMetadata(
+      uint8_t known_file,
+      const char *file_name,
+      uint32_t file_name_length,
+      uint8_t **buffer,
+      uint32_t *buffer_length);
+
+  extern int DeserializeNaClDescMetadata(
+      uint8_t *buffer,
+      uint32_t buffer_length,
+      uint8_t *known_file,
+      char **file_name,
+      uint32_t *file_name_length);
+}
+
+class ValidationCachingSerializationTests : public ::testing::Test {
+ protected:
+  uint8_t *buffer;
+  uint32_t buffer_length;
+  uint8_t known_file;
+  char *file_name;
+  uint32_t file_name_length;
+
+  void SetUp() {
+    buffer = 0;
+    buffer_length = 0;
+    known_file = 0;
+    file_name = 0;
+    file_name_length = 0;
+  }
+};
+
+TEST_F(ValidationCachingSerializationTests, NormalSimple) {
+  EXPECT_EQ(0, SerializeNaClDescMetadata(0, "foo", 3, &buffer, &buffer_length));
+  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &known_file,
+                                           &file_name, &file_name_length));
+  free(buffer);
+
+  EXPECT_EQ((uint8_t) 0, known_file);
+  EXPECT_EQ((uint32_t) 0, file_name_length);
+  EXPECT_EQ(NULL, file_name);
+}
+
+TEST_F(ValidationCachingSerializationTests, NormalOperationFull) {
+  EXPECT_EQ(0, SerializeNaClDescMetadata(1, "foo", 3, &buffer, &buffer_length));
+  EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &known_file,
+                                           &file_name, &file_name_length));
+  free(buffer);
+
+  EXPECT_EQ((uint8_t) 1, known_file);
+  EXPECT_EQ((uint32_t) 3, file_name_length);
+  EXPECT_EQ(0, memcmp("foo", file_name, file_name_length));
+  free(file_name);
+}
+
+TEST_F(ValidationCachingSerializationTests, BadSizeSimple) {
+  EXPECT_EQ(0, SerializeNaClDescMetadata(0, NULL, 0, &buffer, &buffer_length));
+  for (uint32_t i = -1; i <= buffer_length + 4; i++) {
+    /* The only case that is OK. */
+    if (i == buffer_length)
+      continue;
+
+    /* Wrong number of bytes, fail. */
+    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &known_file,
+                                             &file_name, &file_name_length));
+  }
+  free(buffer);
+}
+
+TEST_F(ValidationCachingSerializationTests, BadSizeFull) {
+  EXPECT_EQ(0, SerializeNaClDescMetadata(1, "foo", 3, &buffer, &buffer_length));
+  for (uint32_t i = -1; i <= buffer_length + 4; i++) {
+    /* The only case that is OK. */
+    if (i == buffer_length)
+      continue;
+
+    /* Wrong number of bytes, fail. */
+    EXPECT_EQ(1, DeserializeNaClDescMetadata(buffer, i, &known_file,
+                                             &file_name, &file_name_length));
+    /* Paranoia. */
+    EXPECT_EQ(0, known_file);
+    /* Make sure we don't leak on failure. */
+    EXPECT_EQ(NULL, file_name);
+  }
+  free(buffer);
+}
+
 // Test driver function.
 int main(int argc, char *argv[]) {
   // The IllegalInst test touches the log mutex deep inside the validator.

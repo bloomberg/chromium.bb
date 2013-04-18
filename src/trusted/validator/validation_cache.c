@@ -88,6 +88,99 @@ void MetadataDtor(struct NaClValidationMetadata *metadata) {
   memset(metadata, 0, sizeof(*metadata));
 }
 
+static void Serialize(uint8_t *buffer, const void *value, size_t size,
+                      uint32_t *offset) {
+  if (buffer != NULL)
+    memcpy(&buffer[*offset], value, size);
+  *offset += (uint32_t) size;
+}
+
+static void SerializeNaClDescMetadataInternal(
+    uint8_t known_file,
+    const char *file_name,
+    uint32_t file_name_length,
+    uint8_t *buffer,
+    uint32_t *offset) {
+  *offset = 0;
+  Serialize(buffer, &known_file, sizeof(known_file), offset);
+  if (known_file) {
+    Serialize(buffer, &file_name_length, sizeof(file_name_length), offset);
+    Serialize(buffer, file_name, file_name_length, offset);
+  }
+}
+
+int SerializeNaClDescMetadata(
+    uint8_t known_file,
+    const char *file_name,
+    uint32_t file_name_length,
+    uint8_t **buffer,
+    uint32_t *buffer_length) {
+
+  *buffer = NULL;
+
+  /* Calculate the buffer size. */
+  SerializeNaClDescMetadataInternal(known_file, file_name, file_name_length,
+                                    NULL, buffer_length);
+
+  /* Allocate the buffer. */
+  *buffer = malloc(*buffer_length);
+  if (NULL == buffer)
+    return 1;
+
+  /* Fill the buffer. */
+  SerializeNaClDescMetadataInternal(known_file, file_name, file_name_length,
+                                    *buffer, buffer_length);
+  return 0;
+}
+
+static int Deserialize(uint8_t *buffer, uint32_t buffer_length, void *value,
+                       size_t size, uint32_t *offset) {
+  if (*offset + size > buffer_length)
+    return 1;
+  memcpy(value, &buffer[*offset], size);
+  *offset += (uint32_t) size;
+  return 0;
+}
+
+int DeserializeNaClDescMetadata(
+    uint8_t *buffer,
+    uint32_t buffer_length,
+    uint8_t *known_file,
+    char **file_name,
+    uint32_t *file_name_length) {
+
+  uint32_t offset = 0;
+  *file_name = NULL;
+
+  if (Deserialize(buffer, buffer_length, known_file, sizeof(*known_file),
+                  &offset))
+    goto on_error;
+
+  if (*known_file) {
+    if (Deserialize(buffer, buffer_length, file_name_length,
+                    sizeof(*file_name_length), &offset))
+      goto on_error;
+    *file_name = malloc(*file_name_length);
+    if (NULL == *file_name)
+      goto on_error;
+    if (Deserialize(buffer, buffer_length, *file_name, *file_name_length,
+                    &offset))
+      goto on_error;
+  }
+
+  /* Entire buffer consumed? */
+  if (offset != buffer_length)
+    goto on_error;
+  return 0;
+
+ on_error:
+  *known_file = 0;
+  free(*file_name);
+  *file_name = NULL;
+  *file_name_length = 0;
+  return 1;
+}
+
 void AddCodeIdentity(uint8_t *data,
                      size_t size,
                      const struct NaClValidationMetadata *metadata,
