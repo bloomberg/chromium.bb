@@ -473,6 +473,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     flags);
     }
   }
+
+  if (policy.has_variations_parameter()) {
+    if (policy.variations_parameter().has_parameter()) {
+      policies->Set(key::kDeviceVariationsRestrictParameter,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(
+                        policy.variations_parameter().parameter()));
+    }
+  }
 }
 
 }  // namespace

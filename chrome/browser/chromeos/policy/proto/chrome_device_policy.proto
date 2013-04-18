@@ -273,6 +273,12 @@ message UptimeLimitProto {
   optional int64 uptime_limit = 1;
 }
 
+message VariationsParameterProto {
+  // The string for the restrict parameter to be appended to the Variations URL
+  // when pinging the Variations server.
+  optional string parameter = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -298,4 +304,5 @@ message ChromeDeviceSettingsProto {
   optional AllowRedeemChromeOsRegistrationOffersProto allow_redeem_offers = 22;
   optional StartUpFlagsProto start_up_flags = 23;
   optional UptimeLimitProto uptime_limit = 24;
+  optional VariationsParameterProto variations_parameter = 25;
 }

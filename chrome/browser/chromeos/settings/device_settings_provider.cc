@@ -67,6 +67,7 @@ const char* kKnownSettings[] = {
   kStatsReportingPref,
   kSystemTimezonePolicy,
   kStartUpFlags,
+  kVariationsRestrictParameter,
 };
 
 // Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
@@ -352,6 +353,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kScreenSaverTimeout
     //   kStartUpUrls
     //   kSystemTimezonePolicy
+    //   kVariationsRestrictParameter
 
     LOG(FATAL) << "Device setting " << prop << " is read-only.";
   }
@@ -617,6 +619,12 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
     new_values_cache->SetBoolean(
         kAllowRedeemChromeOsRegistrationOffers,
         !g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
+  }
+
+  if (policy.has_variations_parameter()) {
+    new_values_cache->SetString(
+        kVariationsRestrictParameter,
+        policy.variations_parameter().parameter());
   }
 }
 

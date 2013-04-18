@@ -116,4 +116,8 @@ const char kKioskAutoLaunch[] = "cros.kiosk.auto_launch";
 const char kKioskDisableBailoutShortcut[] =
     "cros.kiosk.disable_bailout_shortcut";
 
+// A string pref for the restrict parameter to be appended to the Variations URL
+// when pinging the Variations server.
+const char kVariationsRestrictParameter[] =
+    "cros.variations_restrict_parameter";
 }  // namespace chromeos

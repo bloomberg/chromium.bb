@@ -59,6 +59,7 @@ extern const char kKioskApps[];
 extern const char kKioskAutoLaunch[];
 extern const char kKioskDisableBailoutShortcut[];
 
+extern const char kVariationsRestrictParameter[];
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

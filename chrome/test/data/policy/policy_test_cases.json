@@ -1849,6 +1849,9 @@
   "DeviceStartUpFlags": {
   },
 
+  "DeviceVariationsRestrictParameter" : {
+  },
+
   "UptimeLimit": {
   },
 
