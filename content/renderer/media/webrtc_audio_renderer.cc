@@ -123,6 +123,17 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
       RenderThreadImpl::current()->GetAudioHardwareConfig();
   int sample_rate = hardware_config->GetOutputSampleRate();
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
+
+  // WebRTC does not yet support higher rates than 96000 on the client side
+  // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
+  // we change the rate to 48000 instead. The consequence is that the native
+  // layer will be opened up at 192kHz but WebRTC will provide data at 48kHz
+  // which will then be resampled by the audio converted on the browser side
+  // to match the native audio layer.
+  if (sample_rate == 192000) {
+    DVLOG(1) << "Resampling from 48000 to 192000 is required";
+    sample_rate = 48000;
+  }
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate",
                             sample_rate, media::kUnexpectedAudioSampleRate);
 
