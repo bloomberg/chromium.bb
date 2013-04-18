@@ -114,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   BasicTest(CreateIncognitoBrowser(), GetTestURL());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedFakeClickOnAnchor) {
+// http://crbug.com/233404
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, 
+                       DISABLED_PopupBlockedFakeClickOnAnchor) {
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(kTestDir),
       base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor.html"))));
