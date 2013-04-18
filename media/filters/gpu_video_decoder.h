@@ -105,11 +105,6 @@ class MEDIA_EXPORT GpuVideoDecoder
  private:
   enum State {
     kNormal,
-    // Avoid the use of "flush" in these enums because the term is overloaded:
-    // Filter::Flush() means drop pending data on the floor, but
-    // VideoDecodeAccelerator::Flush() means drain pending data (Filter::Flush()
-    // actually corresponds to VideoDecodeAccelerator::Reset(), confusingly
-    // enough).
     kDrainingDecoder,
     kDecoderDrained,
   };
@@ -133,7 +128,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   void EnqueueFrameAndTriggerFrameDelivery(
       const scoped_refptr<VideoFrame>& frame);
 
-  // Indicate the picturebuffer can be reused by the decoder.
+  // Indicate the picture buffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
   void RecordBufferData(

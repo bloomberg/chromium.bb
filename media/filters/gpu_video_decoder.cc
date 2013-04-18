@@ -195,8 +195,6 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
     return;
   }
 
-  // VideoRendererBase::Flush() can't complete while it has a pending read to
-  // us, so we fulfill such a read here.
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 
