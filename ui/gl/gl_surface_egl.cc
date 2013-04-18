@@ -221,7 +221,8 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false),
-      config_(NULL) {
+      config_(NULL),
+      recreate_on_make_current_(false) {
   software_ = software;
 #if defined(OS_ANDROID)
   if (window)
