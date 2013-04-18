@@ -232,7 +232,8 @@ void BookmarkModel::Shutdown() {
   loaded_signal_.Signal();
 }
 
-void BookmarkModel::Load() {
+void BookmarkModel::Load(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   if (store_.get()) {
     // If the store is non-null, it means Load was already invoked. Load should
     // only be invoked once.
@@ -249,7 +250,7 @@ void BookmarkModel::Load() {
                  content::Source<Profile>(profile_));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
-  store_ = new BookmarkStorage(profile_, this, profile_->GetIOTaskRunner());
+  store_ = new BookmarkStorage(profile_, this, task_runner);
   store_->LoadBookmarks(CreateLoadDetails());
 }
 

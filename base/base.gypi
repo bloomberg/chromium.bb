@@ -137,6 +137,8 @@
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
           'debug/trace_event_win.cc',
+          'deferred_sequenced_task_runner.cc',
+          'deferred_sequenced_task_runner.h',
           'environment.cc',
           'environment.h',
           'file_descriptor_posix.h',

@@ -211,10 +211,14 @@ class ProfileManager : public base::NonThreadSafe,
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();
 
-  // Register and add testing profile to the ProfileManager. Use ONLY in tests.
+  // Registers and adds testing profile to the ProfileManager.
   // This allows the creation of Profiles outside of the standard creation path
-  // for testing. If |addToCache|, add to ProfileInfoCache as well.
-  void RegisterTestingProfile(Profile* profile, bool addToCache);
+  // for testing. If |addToCache|, adds to ProfileInfoCache as well.
+  // If |start_deferred_task_runners|, starts the deferred task runners.
+  // Use ONLY in tests.
+  void RegisterTestingProfile(Profile* profile,
+                              bool addToCache,
+                              bool start_deferred_task_runners);
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 

@@ -392,7 +392,7 @@ void TestingProfile::DestroyTopSites() {
 
 static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
-  bookmark_model->Load();
+  bookmark_model->Load(profile->GetIOTaskRunner());
   return bookmark_model;
 }
 

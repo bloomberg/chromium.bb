@@ -4,11 +4,14 @@
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/startup_task_runner_service.h"
+#include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
@@ -38,7 +41,8 @@ BookmarkModelFactory::~BookmarkModelFactory() {}
 ProfileKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
-  bookmark_model->Load();
+  bookmark_model->Load(StartupTaskRunnerServiceFactory::GetForProfile(profile)->
+      GetBookmarkTaskRunner());
   return bookmark_model;
 }
 

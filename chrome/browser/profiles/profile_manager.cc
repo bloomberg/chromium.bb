@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
@@ -25,6 +26,8 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/startup_task_runner_service.h"
+#include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -847,6 +850,9 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // initializing the managed flag if necessary).
   ManagedUserServiceFactory::GetForProfile(profile)->Init();
 #endif
+  // Start the deferred task runners once the profile is loaded.
+  StartupTaskRunnerServiceFactory::GetForProfile(profile)->
+      StartDeferredTaskRunners();
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
@@ -1173,11 +1179,16 @@ ProfileManagerWithoutInit::ProfileManagerWithoutInit(
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,
-                                            bool add_to_cache) {
+                                            bool add_to_cache,
+                                            bool start_deferred_task_runners) {
   RegisterProfile(profile, true);
   if (add_to_cache) {
     InitProfileUserPrefs(profile);
     AddProfileToCache(profile);
+  }
+  if (start_deferred_task_runners) {
+    StartupTaskRunnerServiceFactory::GetForProfile(profile)->
+        StartDeferredTaskRunners();
   }
 }
 

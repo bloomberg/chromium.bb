@@ -25,7 +25,7 @@ void CreateTestingProfile() {
     CHECK(file_util::CreateDirectory(path));
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
-  profile_manager->RegisterTestingProfile(profile, true);
+  profile_manager->RegisterTestingProfile(profile, true, false);
 
   EXPECT_EQ(2u, profile_manager->GetNumberOfProfiles());
 }

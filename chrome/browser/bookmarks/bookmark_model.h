@@ -33,6 +33,10 @@ class BookmarkModelObserver;
 class BookmarkStorage;
 class Profile;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace bookmark_utils {
 struct TitleMatch;
 }
@@ -236,7 +240,8 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Loads the bookmarks. This is called upon creation of the
   // BookmarkModel. You need not invoke this directly.
-  void Load();
+  // All load operations will be executed on |task_runner|.
+  void Load(const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Returns true if the model finished loading.
   // This is virtual so it can be mocked.

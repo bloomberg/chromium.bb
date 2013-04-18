@@ -463,6 +463,7 @@
         'debug/trace_event_unittest.cc',
         'debug/trace_event_unittest.h',
         'debug/trace_event_win_unittest.cc',
+        'deferred_sequenced_task_runner_unittest.cc',
         'environment_unittest.cc',
         'file_util_unittest.cc',
         'file_version_info_unittest.cc',

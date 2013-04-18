@@ -231,7 +231,9 @@ Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
 
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
-  g_browser_process->profile_manager()->RegisterTestingProfile(profile, true);
+  g_browser_process->profile_manager()->RegisterTestingProfile(profile,
+                                                               true,
+                                                               true);
   return profile;
 }
 
