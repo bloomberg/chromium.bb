@@ -102,11 +102,7 @@ IndexedDBLayoutTest.BasicTests
 IndexedDBLayoutTest.IndexTests
 
 # http://crbug.com/233118
-FileSystemLayoutTest.DirectoryEntryToUri
-FileSystemLayoutTest.FileWriterAbortContinue
-FileSystemLayoutTest.ReadDirectory
-FileSystemLayoutTest.WorkersFileWriterSyncTruncateExtend
-FileSystemLayoutTest.WorkersFileWriterGcBlob
+FileSystemLayoutTest.*
 IndexedDBBrowserTest.CallbackAccounting
 IndexedDBBrowserTest.TransactionGetTest
 IndexedDBLayoutTest.IndexTests
