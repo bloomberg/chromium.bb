@@ -31,17 +31,12 @@
 #include "ActiveDOMObject.h"
 #include "ConsoleTypes.h"
 #include "KURL.h"
-#include "ScriptCallStack.h"
-#include "ScriptState.h"
 #include "SecurityContext.h"
 #include "Supplementable.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Threading.h>
-#include <wtf/text/StringHash.h>
 
 namespace WebCore {
 
@@ -53,6 +48,8 @@ class EventQueue;
 class EventTarget;
 class MessagePort;
 class PublicURLManager;
+class ScriptCallStack;
+class ScriptState;
 
 class ScriptExecutionContext : public SecurityContext, public Supplementable<ScriptExecutionContext> {
 public:
