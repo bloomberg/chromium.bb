@@ -3145,3 +3145,4 @@ crbug.com/231721 [ XP Release ] svg/custom/invisible-text-after-scrolling.xhtml 
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 
 crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Pass Failure ]
+crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
