@@ -203,17 +203,18 @@ void ChromeBrowserFieldTrials::SetUpSimpleCacheFieldTrial() {
   if (parsed_command_line_.HasSwitch(switches::kUseSimpleCacheBackend)) {
     const std::string opt_value = parsed_command_line_.GetSwitchValueASCII(
         switches::kUseSimpleCacheBackend);
-    if (LowerCaseEqualsASCII(opt_value, "off")) {
-      // This is the default.
-      return;
-    }
     const base::FieldTrial::Probability kDivisor = 100;
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial("SimpleCacheTrial", kDivisor,
-                                                   "No", 2013, 12, 31, NULL));
+                                                   "ExperimentNo", 2013, 12, 31,
+                                                   NULL));
     trial->UseOneTimeRandomization();
+    if (LowerCaseEqualsASCII(opt_value, "off")) {
+      trial->AppendGroup("ExplicitNo", kDivisor);
+      return;
+    }
     if (LowerCaseEqualsASCII(opt_value, "on")) {
-      trial->AppendGroup("Yes", 100);
+      trial->AppendGroup("ExplicitYes", kDivisor);
       return;
     }
 #if defined(OS_ANDROID)
@@ -221,8 +222,8 @@ void ChromeBrowserFieldTrials::SetUpSimpleCacheFieldTrial() {
       // TODO(pasko): Make this the default on Android when the simple cache
       // adds a few more necessary features. Also adjust the probability.
       const base::FieldTrial::Probability kSimpleCacheProbability = 1;
-      trial->AppendGroup("Yes", kSimpleCacheProbability);
-      trial->AppendGroup("Control", kSimpleCacheProbability);
+      trial->AppendGroup("ExperimentYes", kSimpleCacheProbability);
+      trial->AppendGroup("ExperimentControl", kSimpleCacheProbability);
       trial->group();
     }
 #endif

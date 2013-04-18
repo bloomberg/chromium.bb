@@ -79,7 +79,9 @@ int CacheCreator::Run() {
   // TODO(pasko): The two caches should never coexist on disk. Each individual
   // cache backend should fail to initialize if it observes the index that does
   // not belong to it.
-  if (base::FieldTrialList::FindFullName("SimpleCacheTrial") == "Yes") {
+  const std::string experiment_name =
+      base::FieldTrialList::FindFullName("SimpleCacheTrial");
+  if (experiment_name == "ExplicitYes" || experiment_name == "ExperimentYes") {
     // TODO(gavinp,pasko): While simple backend development proceeds, we're only
     // testing it against net::DISK_CACHE. Turn it on for more cache types as
     // appropriate.
