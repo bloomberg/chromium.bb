@@ -39,14 +39,11 @@ const size_t kRowHeight = 24;
 // The vertical height of a separator in pixels.
 const size_t kSeparatorHeight = 1;
 
-// The amount of minimum padding between the Autofill name and subtext in
-// pixels.
-const size_t kNamePadding = 15;
-
 // The maximum amount of characters to display from either the name or subtext.
 const size_t kMaxTextLength = 15;
 
 #if !defined(OS_ANDROID)
+const size_t kNamePadding = AutofillPopupView::kNamePadding;
 const size_t kIconPadding = AutofillPopupView::kIconPadding;
 const size_t kEndPadding = AutofillPopupView::kEndPadding;
 const size_t kAutofillIconWidth = AutofillPopupView::kAutofillIconWidth;
@@ -501,7 +498,10 @@ int AutofillPopupControllerImpl::GetDesiredPopupHeight() const {
 }
 
 int AutofillPopupControllerImpl::RowWidthWithoutText(int row) const {
-  int row_size = kEndPadding + kNamePadding;
+  int row_size = kEndPadding;
+
+  if (!subtexts_[row].empty())
+    row_size += kNamePadding;
 
   // Add the Autofill icon size, if required.
   if (!icons_[row].empty())

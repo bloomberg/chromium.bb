@@ -7,6 +7,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
@@ -108,6 +109,9 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
   const gfx::Font& subtext_font() const {
     return AutofillPopupControllerImpl::subtext_font();
+  }
+  int RowWidthWithoutText(int row) const {
+    return AutofillPopupControllerImpl::RowWidthWithoutText(row);
   }
 #endif
   int GetDesiredPopupWidth() const {
@@ -284,6 +288,38 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
   // Make sure previous skips the unselectable separator.
   autofill_popup_controller_->SelectPreviousLine();
   EXPECT_EQ(0, autofill_popup_controller_->selected_line());
+}
+
+TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
+  std::vector<string16> names(4);
+  std::vector<string16> subtexts(4);
+  std::vector<string16> icons(4);
+  std::vector<int> ids(4);
+
+  // Set up some visible display so the text values are kept.
+  gfx::Display display(0, gfx::Rect(0, 0, 100, 100));
+  autofill_popup_controller_->set_display(display);
+
+  // Give elements 1 and 3 subtexts and elements 2 and 3 icons, to ensure
+  // all combinations of subtexts and icons.
+  subtexts[1] = ASCIIToUTF16("x");
+  subtexts[3] = ASCIIToUTF16("x");
+  icons[2] = ASCIIToUTF16("x");
+  icons[3] = ASCIIToUTF16("x");
+  autofill_popup_controller_->Show(names, subtexts, icons, ids);
+
+  int base_size = AutofillPopupView::kEndPadding * 2;
+  int subtext_increase = AutofillPopupView::kNamePadding;
+  int icon_increase = AutofillPopupView::kIconPadding +
+      AutofillPopupView::kAutofillIconWidth;
+
+  EXPECT_EQ(base_size, autofill_popup_controller_->RowWidthWithoutText(0));
+  EXPECT_EQ(base_size + subtext_increase,
+            autofill_popup_controller_->RowWidthWithoutText(1));
+  EXPECT_EQ(base_size + icon_increase,
+            autofill_popup_controller_->RowWidthWithoutText(2));
+  EXPECT_EQ(base_size + subtext_increase + icon_increase,
+            autofill_popup_controller_->RowWidthWithoutText(3));
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {

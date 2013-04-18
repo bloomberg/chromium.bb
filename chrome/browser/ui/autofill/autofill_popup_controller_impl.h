@@ -132,6 +132,11 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // Calculates the desired height of the popup based on its contents.
   int GetDesiredPopupHeight() const;
+
+  // Calculate the width of the row, excluding all the text. This provides
+  // the size of the row that won't be reducible (since all the text can be
+  // elided if there isn't enough space).
+  int RowWidthWithoutText(int row) const;
 #endif
 
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
@@ -139,11 +144,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
  private:
   const gfx::Rect RoundedElementBounds() const;
 #if !defined(OS_ANDROID)
-  // Calculate the width of the row, excluding all the text. This provides
-  // the size of the row that won't be reducible (since all the text can be
-  // elided if there isn't enough space).
-  int RowWidthWithoutText(int row) const;
-
   // Calculates and sets the bounds of the popup, including placing it properly
   // to prevent it from going off the screen.
   void UpdatePopupBounds();
