@@ -174,6 +174,15 @@ static const V8DOMConfiguration::BatchedMethod V8TestEventTargetMethods[] = {
     {"removeEventListener", TestEventTargetV8Internal::removeEventListenerMethodCallback, 0},
 };
 
+v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+{
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestEventTarget* collection = toNative(info.Holder());
+    RefPtr<Node> element = collection->item(index);
+    if (!element)
+        return v8Undefined();
+    return toV8(element.release(), info.Holder(), info.GetIsolate());
+}
 v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -211,7 +220,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    setCollectionIndexedGetter<TestEventTarget, Node>(desc);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestEventTarget::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestEventTarget>);
     desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, 0, 0, 0, 0);
     desc->InstanceTemplate()->MarkAsUndetectable();
 

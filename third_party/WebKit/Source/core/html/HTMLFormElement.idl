@@ -19,7 +19,6 @@
  */
 
 [
-    IndexedGetter,
     CustomIndexedGetter,
     CustomNamedGetter
 ] interface HTMLFormElement : HTMLElement {

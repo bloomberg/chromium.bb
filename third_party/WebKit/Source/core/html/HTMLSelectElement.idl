@@ -19,7 +19,6 @@
  */
 
 [
-    IndexedGetter,
     CustomIndexedSetter,
     CustomIndexedGetter,
     SkipVTableValidation
