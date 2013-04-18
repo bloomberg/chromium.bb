@@ -28,7 +28,7 @@ namespace base {
 // IMPORTANT NOTE:
 //
 // Many of these tests have failure modes where they'll hang forever. These
-// tests should not be flaky, and hangling indicates a type of failure. Do not
+// tests should not be flaky, and hanging indicates a type of failure. Do not
 // mark as flaky if they're hanging, it's likely an actual bug.
 
 namespace {
@@ -781,7 +781,7 @@ TEST_F(SequencedWorkerPoolTest, FlushForTesting) {
                  true));
 
   // We expect all except the delayed task to have been run. We verify all
-  // closures have been deleted deleted by looking at the refcount of the
+  // closures have been deleted by looking at the refcount of the
   // tracker.
   EXPECT_FALSE(tracker()->HasOneRef());
   pool()->FlushForTesting();
@@ -796,6 +796,18 @@ TEST_F(SequencedWorkerPoolTest, FlushForTesting) {
   // Should be fine to call after shutdown too.
   pool()->Shutdown();
   pool()->FlushForTesting();
+}
+
+TEST(SequencedWorkerPoolRefPtrTest, ShutsDownCleanWithContinueOnShutdown) {
+  MessageLoop loop;
+  scoped_refptr<SequencedWorkerPool> pool(new SequencedWorkerPool(3, "Pool"));
+  scoped_refptr<SequencedTaskRunner> task_runner =
+      pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool->GetSequenceToken(),
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
+  // Upon test exit, should shut down without hanging.
+  pool->Shutdown();
 }
 
 class SequencedWorkerPoolTaskRunnerTestDelegate {

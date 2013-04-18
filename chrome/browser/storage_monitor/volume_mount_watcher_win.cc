@@ -373,6 +373,7 @@ void VolumeMountWatcherWin::SetNotifications(
 
 VolumeMountWatcherWin::~VolumeMountWatcherWin() {
   weak_factory_.InvalidateWeakPtrs();
+  device_info_worker_pool_->Shutdown();
 }
 
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(

@@ -57,10 +57,10 @@ class SequencedTaskRunner;
 // These will be executed in an unspecified order. The order of execution
 // between tasks with different sequence tokens is also unspecified.
 //
-// This class is designed to be leaked on shutdown to allow the
-// CONTINUE_ON_SHUTDOWN behavior to be implemented. To enforce the
-// BLOCK_SHUTDOWN behavior, you must call Shutdown() which will wait until
-// the necessary tasks have completed.
+// This class may be leaked on shutdown to facilitate fast shutdown. The
+// expected usage, however, is to call Shutdown(), which correctly accounts
+// for CONTINUE_ON_SHUTDOWN behavior and is required for BLOCK_SHUTDOWN
+// behavior.
 //
 // Implementation note: This does not use a base::WorkerPool since that does
 // not enforce shutdown semantics or allow us to specify how many worker

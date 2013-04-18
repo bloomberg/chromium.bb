@@ -199,7 +199,6 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
-  storage_monitor_.reset(chrome::StorageMonitorWin::Create());
 }
 
 void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
@@ -217,10 +216,16 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
   }
 }
 
-void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
-  ChromeBrowserMainParts::PreMainMessageLoopRun();
+void ChromeBrowserMainPartsWin::PreProfileInit() {
+  storage_monitor_.reset(chrome::StorageMonitorWin::Create());
 
+  ChromeBrowserMainParts::PreProfileInit();
+}
+
+void ChromeBrowserMainPartsWin::PostProfileInit() {
   storage_monitor_->Init();
+
+  ChromeBrowserMainParts::PostProfileInit();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
