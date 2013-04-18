@@ -36,6 +36,7 @@
 #include "ClipboardUtilitiesChromium.h"
 #include "Document.h"
 #include "DocumentFragment.h"
+#include "Editor.h"
 #include "Element.h"
 #include "Frame.h"
 #include "HTMLNames.h"

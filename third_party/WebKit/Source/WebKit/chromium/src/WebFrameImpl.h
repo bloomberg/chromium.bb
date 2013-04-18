@@ -33,6 +33,7 @@
 
 #include "WebFrame.h"
 
+#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameDestructionObserver.h"
 #include "FrameLoaderClientImpl.h"

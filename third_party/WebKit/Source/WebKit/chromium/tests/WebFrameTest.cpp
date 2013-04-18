@@ -35,6 +35,7 @@
 #include "DocumentMarkerController.h"
 #include "FloatRect.h"
 #include "Frame.h"
+#include "FrameSelection.h"
 #include "FrameTestHelpers.h"
 #include "FrameView.h"
 #include "PlatformContextSkia.h"

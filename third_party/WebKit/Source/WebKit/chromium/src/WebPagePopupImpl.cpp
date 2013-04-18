@@ -36,6 +36,7 @@
 #include "DOMWindowPagePopup.h"
 #include "DocumentLoader.h"
 #include "EmptyClients.h"
+#include "EventHandler.h"
 #include "FocusController.h"
 #include "FrameView.h"
 #include "Page.h"

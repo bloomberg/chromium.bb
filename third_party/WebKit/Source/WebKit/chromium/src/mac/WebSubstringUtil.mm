@@ -39,6 +39,7 @@
 #include "Element.h"
 #include "Font.h"
 #include "Frame.h"
+#include "FrameSelection.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
 #include "Node.h"

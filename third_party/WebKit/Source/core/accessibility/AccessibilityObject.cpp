@@ -31,6 +31,8 @@
 
 #include "AXObjectCache.h"
 #include "AccessibilityTable.h"
+#include "FrameSelection.h"
+#include "Editor.h"
 #include "LocalizedStrings.h"
 #include "NodeTraversal.h"
 #include "RenderListItem.h"
@@ -39,6 +41,7 @@
 #include "RenderedPosition.h"
 #include "TextCheckerClient.h"
 #include "TextCheckingHelper.h"
+#include "UserGestureIndicator.h"
 #include "VisibleUnits.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>

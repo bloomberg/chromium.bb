@@ -31,6 +31,7 @@
 #include "config.h"
 #include "PageWidgetDelegate.h"
 
+#include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "PageOverlayList.h"

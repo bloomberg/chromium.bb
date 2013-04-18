@@ -34,6 +34,7 @@
 #include "AccessibilitySVGRoot.h"
 #include "AccessibilitySpinButton.h"
 #include "AccessibilityTable.h"
+#include "FrameSelection.h"
 #include "HTMLFormElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLLabelElement.h"

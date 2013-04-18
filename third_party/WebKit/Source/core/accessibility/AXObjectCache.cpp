@@ -58,6 +58,7 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
+#include "Editor.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "HTMLAreaElement.h"
@@ -65,9 +66,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLLabelElement.h"
 #include "HTMLNames.h"
-#if ENABLE(VIDEO)
-#include "MediaControlElements.h"
-#endif
 #include "Page.h"
 #include "RenderListBox.h"
 #include "RenderMenuList.h"
@@ -78,8 +76,11 @@
 #include "RenderTableRow.h"
 #include "RenderView.h"
 #include "ScrollView.h"
-
 #include <wtf/PassRefPtr.h>
+
+#if ENABLE(VIDEO)
+#include "MediaControlElements.h"
+#endif
 
 namespace WebCore {
 

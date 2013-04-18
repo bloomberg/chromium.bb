@@ -34,6 +34,7 @@
 #include "Chrome.h"
 #include "ChromeClientImpl.h"
 #include "ClipboardChromium.h"
+#include "EventHandler.h"
 #include "ScrollbarGroup.h"
 #include "WebCursorInfo.h"
 #include "WebDataSourceImpl.h"

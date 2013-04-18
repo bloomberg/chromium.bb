@@ -36,6 +36,7 @@
 #include "Chrome.h"
 #include "Document.h"
 #include "DocumentLoader.h"
+#include "EventHandler.h"
 #include "FormState.h"
 #include "FrameLoadRequest.h"
 #include "FrameLoader.h"

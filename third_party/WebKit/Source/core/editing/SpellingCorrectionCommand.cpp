@@ -29,6 +29,7 @@
 #include "AlternativeTextController.h"
 #include "Document.h"
 #include "DocumentFragment.h"
+#include "Editor.h"
 #include "Frame.h"
 #include "InsertTextCommand.h"
 #include "SetSelectionCommand.h"

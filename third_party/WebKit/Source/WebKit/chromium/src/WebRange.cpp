@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "Element.h"
 #include "Frame.h"
+#include "FrameSelection.h"
 #include "FrameView.h"
 #include "Range.h"
 #include "ShadowRoot.h"

@@ -33,6 +33,7 @@
 #include "EventNames.h"
 #include "UseCounter.h"
 #include "Frame.h"
+#include "FrameSelection.h"
 #include "HTMLBRElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"

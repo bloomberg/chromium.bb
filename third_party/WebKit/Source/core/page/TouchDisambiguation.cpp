@@ -34,6 +34,7 @@
 
 #include "Document.h"
 #include "Element.h"
+#include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"

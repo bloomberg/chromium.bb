@@ -35,6 +35,7 @@
 #include "DataTransferItemList.h"
 #include "Document.h"
 #include "DragData.h"
+#include "Editor.h"
 #include "Element.h"
 #include "ExceptionCode.h"
 #include "File.h"

@@ -33,6 +33,7 @@
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DocumentMarkerController.h"
+#include "Editor.h"
 #include "EditorInsertAction.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
