@@ -37,6 +37,7 @@
 #include "ResourceLoader.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
+#include "SharedBuffer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryObjectInfo.h>
