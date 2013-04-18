@@ -462,7 +462,8 @@
                   '|chrome/browser/resources/options/language'\
                   '|chrome/browser/ui/webui/options/'\
                   'chromeos/.*(language|keyboard)'\
-                  '|chrome/browser/ui/webui/options/language'
+                  '|chrome/browser/ui/webui/options/language'\
+                  '|chromeos/ime/*'
     },
     'tools': {
       'filepath': 'tools/',
@@ -684,8 +685,10 @@
     'tests': [],
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
-                  'yusukes+watch@chromium.org'],
-    'textinput_chromeos': ['yusukes+watch@chromium.org'],
+                  'yusukes+watch@chromium.org',
+                  'nona+watch@chromium.org'],
+    'textinput_chromeos': ['yusukes+watch@chromium.org',
+                           'nona+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org',
                     'dhollowa+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
