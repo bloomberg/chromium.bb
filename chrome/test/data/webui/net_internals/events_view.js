@@ -154,11 +154,14 @@ TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
     {text: 'type:URL_REQUEST', matches: [true, true] },
     {text: 'type:SOCKET,URL_REQUEST', matches: [true, true] },
     {text: 'type:SOCKET', matches: [false, false] },
+    {text: '-type:PONY', matches: [true, true] },
+    {text: '-type:URL_REQUEST', matches: [false, false] },
     {text: 'id:31,32', matches: [true, false] },
+    {text: '-id:31,32', matches: [false, true] },
     {text: 'id:32,56,', matches: [false, true] },
-    {text: 'is:-active', matches: [true, false] },
+    {text: '-is:active', matches: [true, false] },
     {text: 'is:active', matches: [false, true] },
-    {text: 'is:-error', matches: [true, true] },
+    {text: '-is:error', matches: [true, true] },
     {text: 'is:error', matches: [false, false] },
     // Partial match of source type.
     {text: 'URL_REQ', matches: [true, true] },
@@ -176,12 +179,13 @@ TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
     { text: '\\"\\"\\"\\"', matches: [false, false] },
     { text: '"Host: www.google.com"', matches: [true, false], },
     { text: 'Connection:" keep-alive"', matches: [true, false], },
+    { text: '-Connection:" keep-alive"', matches: [false, true], },
     { text: '"Host: GET"', matches: [false, false] },
     // Make sure sorting has no effect on filters.  Sort by ID so order is
     // preserved.
     { text: 'sort:"id"', matches: [true, true] },
-    // Sorting by unrecognized methods should do a text match.
-    { text: 'sort:"shoe size"', matches: [false, false] },
+    { text: '-sort:"shoe size"', matches: [true, true] },
+    { text: '"-sort:shoe size"', matches: [false, false] },
   ];
 
   for (var filter1 = 0; filter1 < testFilters.length; ++filter1) {

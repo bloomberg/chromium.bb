@@ -178,45 +178,34 @@ var EventsView = (function() {
       var lastComparisonFunction = this.comparisonFunction_;
       var lastDoSortBackwards = this.doSortBackwards_;
 
-      this.pickSortFunction_(filterText);
+      var filterParser = new SourceFilterParser(filterText);
+      this.currentFilter_ = filterParser.filter;
+
+      this.pickSortFunction_(filterParser.sort);
 
       if (lastComparisonFunction != this.comparisonFunction_ ||
           lastDoSortBackwards != this.doSortBackwards_) {
         this.sort_();
       }
 
-      var oldFilter = this.currentFilter_;
-      this.currentFilter_ = createFilter_(filterText);
-
-      // No need to filter again if filters match.
-      if (oldFilter &&
-          JSON.stringify(oldFilter) == JSON.stringify(this.currentFilter_)) {
-        return;
-      }
-
       // Iterate through all of the rows and see if they match the filter.
       for (var id in this.sourceIdToRowMap_) {
         var entry = this.sourceIdToRowMap_[id];
-        entry.setIsMatchedByFilter(entry.matchesFilter(this.currentFilter_));
+        entry.setIsMatchedByFilter(this.currentFilter_(entry.getSourceEntry()));
       }
     },
 
     /**
-     * Parse any "sort:" directives, and update |comparisonFunction_| and
-     * |doSortBackwards_| as needed.  Note only the last valid sort directive
-     * is used.
+     * Given a "sort" object with "method" and "backwards" keys, looks up and
+     * sets |comparisonFunction_| and |doSortBackwards_|.  If the ID does not
+     * correspond to a sort function, defaults to sorting by ID.
      */
-    pickSortFunction_: function(filterText) {
-      this.comparisonFunction_ = compareSourceId_;
-      this.doSortBackwards_ = false;
-
-      var filterList = parseFilter_(filterText);
-      for (var i = 0; i < filterList.length; ++i) {
-        var sort = parseSortDirective_(filterList[i].parsed);
-        if (sort != null) {
-          this.comparisonFunction_ = sort.comparisonFunction;
-          this.doSortBackwards_ = sort.backwards;
-        }
+    pickSortFunction_: function(sort) {
+      this.doSortBackwards_ = sort.backwards;
+      this.comparisonFunction_ = COMPARISON_FUNCTION_TABLE[sort.method];
+      if (!this.comparisonFunction_) {
+        this.doSortBackwards_ = false;
+        this.comparisonFunction_ = compareSourceId_;
       }
     },
 
@@ -405,20 +394,17 @@ var EventsView = (function() {
      */
     toggleSortMethod_: function(sortMethod) {
       // Get old filter text and remove old sort directives, if any.
-      var filterList = parseFilter_(this.getFilterText_());
-      var filterText = '';
-      for (var i = 0; i < filterList.length; ++i) {
-        if (parseSortDirective_(filterList[i].parsed) == null)
-          filterText += filterList[i].original;
-      }
+      var filterParser = new SourceFilterParser(this.getFilterText_());
+      var filterText = filterParser.filterTextWithoutSort;
+
+      filterText = 'sort:' + sortMethod + ' ' + filterText;
 
       // If already using specified sortMethod, sort backwards.
       if (!this.doSortBackwards_ &&
           COMPARISON_FUNCTION_TABLE[sortMethod] == this.comparisonFunction_) {
-        sortMethod = '-' + sortMethod;
+        filterText = '-' + filterText;
       }
 
-      filterText = 'sort:' + sortMethod + ' ' + filterText;
       this.setFilterText_(filterText.trim());
     },
 
@@ -578,161 +564,6 @@ var EventsView = (function() {
     if (compareResult != 0)
       return compareResult;
     return compareSourceId_(source1, source2);
-  }
-
-  /**
-   * Parses a single "sort:" directive, and returns a dictionary containing
-   * the sort function and direction.  Returns null on failure, including
-   * the case when no such sort function exists.
-   */
-
-  function parseSortDirective_(filterElement) {
-    var match = /^sort:(-?)(.*)$/.exec(filterElement);
-    if (!match || !COMPARISON_FUNCTION_TABLE[match[2]])
-      return null;
-    return {
-      comparisonFunction: COMPARISON_FUNCTION_TABLE[match[2]],
-      backwards: (match[1] == '-'),
-    };
-  }
-
-  /**
-   * Parses an "is:" directive, and updates |filter| accordingly.
-   *
-   * Returns true on success, and false if |filterElement| is not an "is:"
-   * directive.
-   */
-  function parseRestrictDirective_(filterElement, filter) {
-    var match = /^is:(-?)(.*)$/.exec(filterElement);
-    if (!match)
-      return false;
-    if (match[2] == 'active') {
-      if (match[1] == '-') {
-        filter.isInactive = true;
-      } else {
-        filter.isActive = true;
-      }
-      return true;
-    }
-    if (match[2] == 'error') {
-      if (match[1] == '-') {
-        filter.isNotError = true;
-      } else {
-        filter.isError = true;
-      }
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Parses all directives that take arbitrary strings as input,
-   * and updates |filter| accordingly.  Directives of these types
-   * are stored as lists.
-   *
-   * Returns true on success, and false if |filterElement| is not a
-   * recognized directive.
-   */
-  function parseStringDirective_(filterElement, filter) {
-    var directives = ['type', 'id'];
-    for (var i = 0; i < directives.length; ++i) {
-      var directive = directives[i];
-      var match = RegExp('^' + directive + ':(.*)$').exec(filterElement);
-      if (!match)
-        continue;
-
-      // Split parameters around commas and remove empty elements.
-      var parameters = match[1].split(',');
-      parameters = parameters.filter(function(string) {
-        return string.length > 0;
-      });
-
-      // If there's already a matching filter, take the intersection.
-      // This behavior primarily exists for tests.  It is not correct
-      // when one of the 'type' filters is a partial match.
-      if (filter[directive]) {
-        parameters = parameters.filter(function(string) {
-          return filter[directive].indexOf(string) != -1;
-        });
-      }
-
-      filter[directive] = parameters;
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Takes in the text of a filter and returns a list of {parsed, original}
-   * pairs that correspond to substrings of the filter before and after
-   * filtering.  This function is used both to parse filters and to remove
-   * the sort rule from a filter.  Extra whitespace other than a single
-   * character after each element is ignored.  Parsed strings are all
-   * lowercase.
-   */
-  function parseFilter_(filterText) {
-    filterText = filterText.toLowerCase();
-
-    // Assemble a list of quoted and unquoted strings in the filter.
-    var filterList = [];
-    var position = 0;
-    while (position < filterText.length) {
-      var inQuote = false;
-      var filterElement = '';
-      var startPosition = position;
-      while (position < filterText.length) {
-        var nextCharacter = filterText[position];
-        ++position;
-        if (nextCharacter == '\\' &&
-            position < filterText.length) {
-          // If there's a backslash, skip the backslash and add the next
-          // character to the element.
-          filterElement += filterText[position];
-          ++position;
-          continue;
-        } else if (nextCharacter == '"') {
-          // If there's an unescaped quote character, toggle |inQuote| without
-          // modifying the element.
-          inQuote = !inQuote;
-        } else if (!inQuote && /\s/.test(nextCharacter)) {
-          // If not in a quote and have a whitespace character, that's the
-          // end of the element.
-          break;
-        } else {
-          // Otherwise, add the next character to the element.
-          filterElement += nextCharacter;
-        }
-      }
-
-      if (filterElement.length > 0) {
-        var filter = {
-          parsed: filterElement,
-          original: filterText.substring(startPosition, position),
-        };
-        filterList.push(filter);
-      }
-    }
-    return filterList;
-  }
-
-  /**
-   * Converts |filterText| into an object representing the filter.
-   */
-  function createFilter_(filterText) {
-    var filter = {};
-    var filterList = parseFilter_(filterText);
-
-    for (var i = 0; i < filterList.length; ++i) {
-      if (parseSortDirective_(filterList[i].parsed) ||
-          parseRestrictDirective_(filterList[i].parsed, filter) ||
-          parseStringDirective_(filterList[i].parsed, filter)) {
-        continue;
-      }
-      if (filter.textFilters == undefined)
-        filter.textFilters = [];
-      filter.textFilters.push(filterList[i].parsed);
-    }
-    return filter;
   }
 
   return EventsView;

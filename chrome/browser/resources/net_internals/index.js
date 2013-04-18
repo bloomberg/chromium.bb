@@ -25,6 +25,7 @@
 <include src="halted_status_view.js"/>
 <include src="status_view.js"/>
 <include src="dns_view.js"/>
+<include src="source_filter_parser.js"/>
 <include src="source_row.js"/>
 <include src="events_view.js"/>
 <include src="details_view.js"/>

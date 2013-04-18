@@ -114,5 +114,7 @@ table.styled-table,
  * Styling for elements that show a help window on mouse over.
  */
 .mouse-over-help-hover {
+  color: blue;
   cursor: help;
+  font-weight: bold;
 }
