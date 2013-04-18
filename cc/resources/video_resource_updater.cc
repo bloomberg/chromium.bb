@@ -324,6 +324,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 
   external_resources.hardware_resource =
       resource_provider_->CreateResourceFromExternalTexture(
+          video_frame->texture_target(),
           video_frame->texture_id());
 
   TextureMailbox::ReleaseCallback callback_to_return_resource =

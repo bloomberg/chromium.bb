@@ -68,7 +68,9 @@ void TextureLayerImpl::WillDraw(ResourceProvider* resource_provider) {
     return;
   DCHECK(!external_texture_resource_);
   external_texture_resource_ =
-      resource_provider->CreateResourceFromExternalTexture(texture_id_);
+      resource_provider->CreateResourceFromExternalTexture(
+          GL_TEXTURE_2D,
+          texture_id_);
 }
 
 void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,

@@ -235,21 +235,23 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
   return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::
-    CreateResourceFromExternalTexture(unsigned texture_id) {
+ResourceProvider::ResourceId
+ResourceProvider::CreateResourceFromExternalTexture(
+    unsigned texture_target,
+    unsigned texture_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   DCHECK(context3d);
-  GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, texture_id));
+  GLC(context3d, context3d->bindTexture(texture_target, texture_id));
   GLC(context3d, context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+      texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
   GLC(context3d, context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+      texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
   GLC(context3d, context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+      texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   GLC(context3d, context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+      texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
   ResourceId id = next_id_++;
   Resource resource(texture_id, gfx::Size(), 0, GL_LINEAR);

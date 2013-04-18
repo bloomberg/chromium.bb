@@ -99,7 +99,9 @@ class CC_EXPORT ResourceProvider {
 
   ResourceId CreateBitmap(gfx::Size size);
   // Wraps an external texture into a GL resource.
-  ResourceId CreateResourceFromExternalTexture(unsigned texture_id);
+  ResourceId CreateResourceFromExternalTexture(
+      unsigned texture_target,
+      unsigned texture_id);
 
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(const TextureMailbox& mailbox);

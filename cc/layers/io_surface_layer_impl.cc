@@ -77,6 +77,7 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
       io_surface_texture_id_ = context3d->createTexture();
       io_surface_resource_id_ =
           resource_provider->CreateResourceFromExternalTexture(
+              GL_TEXTURE_RECTANGLE_ARB,
               io_surface_texture_id_);
     }
 
