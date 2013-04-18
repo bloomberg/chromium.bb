@@ -387,13 +387,6 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 	    strlen(keyboard->preedit_string) == 0)
 		return;
 
-	input_method_context_preedit_cursor(keyboard->context,
-					    keyboard->serial,
-					    0);
-	input_method_context_preedit_string(keyboard->context,
-					    keyboard->serial,
-					    "",
-					    "");
 	input_method_context_cursor_position(keyboard->context,
 					     0, 0);
 	input_method_context_commit_string(keyboard->context,
@@ -585,13 +578,6 @@ handle_reset(void *data,
 	fprintf(stderr, "Reset pre-edit buffer\n");
 
 	if (strlen(keyboard->preedit_string)) {
-		input_method_context_preedit_cursor(context,
-						    serial,
-						    0);
-		input_method_context_preedit_string(context,
-						    serial,
-						    "",
-						    "");
 		free(keyboard->preedit_string);
 		keyboard->preedit_string = strdup("");
 	}
@@ -797,8 +783,6 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	input_panel_surface_set_toplevel(ips,
 					 output_get_wl_output(output),
 					 INPUT_PANEL_SURFACE_POSITION_CENTER_BOTTOM);
-
-	fprintf(stderr, "%s, %p\n", __FUNCTION__, output_get_wl_output(output));
 }
 
 int
