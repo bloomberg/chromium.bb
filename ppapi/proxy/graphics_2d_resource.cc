@@ -93,7 +93,7 @@ void Graphics2DResource::ReplaceContents(PP_Resource image_data) {
         "Graphics2DResource.PaintImageData: Bad image resource.");
     return;
   }
-  enter_image.object()->SetUsedInReplaceContents();
+  enter_image.object()->SetIsCandidateForReuse();
 
   Post(RENDERER, PpapiHostMsg_Graphics2D_ReplaceContents(
       image_object->host_resource()));

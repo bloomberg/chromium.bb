@@ -43,39 +43,37 @@ namespace {
 // How ImageData re-use works
 // --------------------------
 //
-// When a plugin does ReplaceContents, it transfers the ImageData to the system
-// for use as the backing store for the instance. When animating plugins (like
-// video) re-creating image datas for each frame and mapping the memory has a
-// high overhead. So we try to re-use these when possible.
+// When animating plugins (like video), re-creating image datas for each frame
+// and mapping the memory has a high overhead. So we try to re-use these when
+// possible.
 //
-// 1. Plugin does ReplaceContents and Flush and the proxy queues up an
-//    asynchronous request to the renderer.
+// 1. Plugin makes an asynchronous call that transfers an ImageData to the
+//    implementation of some API.
 // 2. Plugin frees its ImageData reference. If it doesn't do this we can't
 //    re-use it.
 // 3. When the last plugin ref of an ImageData is released, we don't actually
 //    delete it. Instead we put it on a queue where we hold onto it in the
 //    plugin process for a short period of time.
-// 4. When the Flush for the Graphics2D.ReplaceContents is executed, the proxy
-//    will request the old ImageData. This is the one that's being replaced by
-//    the new contents so is being abandoned, and without our caching system it
-//    would get deleted at this point.
+// 4. The API implementation that received the ImageData finishes using it.
+//    Without our caching system it would get deleted at this point.
 // 5. The proxy in the renderer will send NotifyUnusedImageData back to the
 //    plugin process. We check if the given resource is in the queue and mark
 //    it as usable.
 // 6. When the plugin requests a new image data, we check our queue and if there
 //    is a usable ImageData of the right size and format, we'll return it
-//    instead of making a new one. Since when you're doing full frame
-//    animations, generally the size doesn't change so cache hits should be
-//    high.
+//    instead of making a new one. It's important that caching is only requested
+//    when the size is unlikely to change, so cache hits are high.
 //
 // Some notes:
 //
-//  - We only re-use image datas when the plugin does ReplaceContents on them.
-//    Theoretically we could re-use them in other cases but the lifetime
+//  - We only re-use image data when the plugin and host are rapidly exchanging
+//    them and the size is likely to remain constant. It should be clear that
+//    the plugin is promising that it's done with the image.
+//
+//  - Theoretically we could re-use them in other cases but the lifetime
 //    becomes more difficult to manage. The plugin could have used an ImageData
 //    in an arbitrary number of queued up PaintImageData calls which we would
-//    have to check. By doing ReplaceContents, the plugin is promising that it's
-//    done with the image, so this is a good signal.
+//    have to check.
 //
 //  - If a flush takes a long time or there are many released image datas
 //    accumulating in our queue such that some are deleted, we will have
@@ -314,7 +312,7 @@ ImageData::ImageData(const HostResource& resource,
                      ImageHandle handle)
     : Resource(OBJECT_IS_PROXY, resource),
       desc_(desc),
-      used_in_replace_contents_(false) {
+      is_candidate_for_reuse_(false) {
 #if defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
@@ -331,7 +329,7 @@ ImageData::ImageData(const HostResource& resource,
       shm_(handle, false /* read_only */),
       size_(desc.size.width * desc.size.height * 4),
       map_count_(0),
-      used_in_replace_contents_(false) {
+      is_candidate_for_reuse_(false) {
 }
 #endif  // else, !defined(OS_NACL)
 
@@ -346,7 +344,7 @@ void ImageData::LastPluginRefWasDeleted() {
   // The plugin no longer needs this ImageData, add it to our cache if it's
   // been used in a ReplaceContents. These are the ImageDatas that the renderer
   // will send back ImageDataUsable messages for.
-  if (used_in_replace_contents_)
+  if (is_candidate_for_reuse_)
     ImageDataCache::GetInstance()->Add(this);
 }
 
@@ -413,12 +411,12 @@ SkCanvas* ImageData::GetCanvas() {
 #endif
 }
 
-void ImageData::SetUsedInReplaceContents() {
-  used_in_replace_contents_ = true;
+void ImageData::SetIsCandidateForReuse() {
+  is_candidate_for_reuse_ = true;
 }
 
 void ImageData::RecycleToPlugin(bool zero_contents) {
-  used_in_replace_contents_ = false;
+  is_candidate_for_reuse_ = false;
   if (zero_contents) {
     void* data = Map();
     memset(data, 0, desc_.stride * desc_.size.height);

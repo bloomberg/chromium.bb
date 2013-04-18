@@ -43,10 +43,12 @@ class PPB_ImageData_API {
   //   * Within untrusted code (which does not have skia).
   virtual SkCanvas* GetCanvas() = 0;
 
-  // Sets whether this image was used in a ReplaceContents call. If the
-  // current implementation supports image data recycling (only supported
-  // out-of-process then it will be marked for potential re-use.
-  virtual void SetUsedInReplaceContents() = 0;
+  // Signal that this image is a good candidate for reuse. Call this from APIs
+  // that receive ImageData resources of a fixed size and where the plugin will
+  // release its reference to the ImageData. If the current implementation
+  // supports image data reuse (only supported out-of-process) then the
+  // ImageData will be marked and potentially cached for re-use.
+  virtual void SetIsCandidateForReuse() = 0;
 };
 
 }  // namespace thunk

@@ -64,7 +64,7 @@ class PPAPI_PROXY_EXPORT ImageData
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
   virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
-  virtual void SetUsedInReplaceContents() OVERRIDE;
+  virtual void SetIsCandidateForReuse() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
 
@@ -91,9 +91,8 @@ class PPAPI_PROXY_EXPORT ImageData
   scoped_ptr<SkCanvas> mapped_canvas_;
 #endif
 
-  // Set to true when this ImageData has been used in a call to
-  // Graphics2D.ReplaceContents. This is used to signal that it can be cached.
-  bool used_in_replace_contents_;
+  // Set to true when this ImageData is a good candidate for reuse.
+  bool is_candidate_for_reuse_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageData);
 };

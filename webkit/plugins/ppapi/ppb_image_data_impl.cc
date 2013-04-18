@@ -128,7 +128,7 @@ SkCanvas* PPB_ImageData_Impl::GetCanvas() {
   return backend_->GetCanvas();
 }
 
-void PPB_ImageData_Impl::SetUsedInReplaceContents() {
+void PPB_ImageData_Impl::SetIsCandidateForReuse() {
   // Nothing to do since we don't support image data re-use in-process.
 }
 
