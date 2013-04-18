@@ -31,7 +31,6 @@
 // http://bugs.webkit.org/show_bug.cgi?id=5446
 
 [
-    Conditional=XSLT,
     Constructor,
     ImplementationLacksVTable
 ] interface XSLTProcessor {

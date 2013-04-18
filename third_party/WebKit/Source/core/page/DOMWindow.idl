@@ -560,7 +560,7 @@
     attribute XMLHttpRequestConstructor XMLHttpRequest; // Usable with the new operator
     attribute XMLHttpRequestUploadConstructor XMLHttpRequestUpload;
     attribute XMLHttpRequestExceptionConstructor XMLHttpRequestException;
-    [Conditional=XSLT] attribute XSLTProcessorConstructor XSLTProcessor; // Usable with the new operator
+    attribute XSLTProcessorConstructor XSLTProcessor; // Usable with the new operator
 
 #if defined(ENABLE_CHANNEL_MESSAGING) && ENABLE_CHANNEL_MESSAGING
     attribute MessagePortConstructor MessagePort;

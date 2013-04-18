@@ -322,10 +322,6 @@
 #define ENABLE_XHR_TIMEOUT 0
 #endif
 
-#if !defined(ENABLE_XSLT)
-#define ENABLE_XSLT 1
-#endif
-
 /* Asserts, invariants for macro definitions */
 
 #if ENABLE(SVG_FONTS) && !ENABLE(SVG)
