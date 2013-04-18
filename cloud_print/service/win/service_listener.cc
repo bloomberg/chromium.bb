@@ -37,7 +37,7 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
                         GetCurrentUserName());
   environment.SetString(SetupListener::kChromePathJsonValueName,
                         chrome_launcher_support::GetAnyChromePath().value());
-  if (file_util::DirectoryExists(user_data_dir)) {
+  if (file_util::CreateDirectory(user_data_dir)) {
     base::FilePath temp_file;
     if (file_util::CreateTemporaryFileInDir(user_data_dir, &temp_file)) {
       DCHECK(file_util::PathExists(temp_file));
