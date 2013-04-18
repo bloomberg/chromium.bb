@@ -448,6 +448,25 @@ void AutofillMetrics::LogAutocheckoutDuration(
   LogUMAHistogramLongTimes("Autocheckout.FlowDuration." + suffix, duration);
 }
 
+void AutofillMetrics::LogAutocheckoutWhitelistDownloadDuration(
+    const base::TimeDelta& duration,
+    AutocheckoutWhitelistDownloadStatus status) const {
+  std::string suffix;
+  switch (status) {
+    case AUTOCHECKOUT_WHITELIST_DOWNLOAD_FAILED:
+      suffix = "Failed";
+      break;
+
+    case AUTOCHECKOUT_WHITELIST_DOWNLOAD_SUCCEEDED:
+      suffix = "Succeeded";
+      break;
+  }
+
+  LogUMAHistogramTimes("Autocheckout.WhitelistDownloadDuration", duration);
+  LogUMAHistogramTimes(
+      "Autocheckout.WhitelistDownloadDuration." + suffix, duration);
+}
+
 void AutofillMetrics::LogDeveloperEngagementMetric(
     DeveloperEngagementMetric metric) const {
   DCHECK_LT(metric, NUM_DEVELOPER_ENGAGEMENT_METRICS);

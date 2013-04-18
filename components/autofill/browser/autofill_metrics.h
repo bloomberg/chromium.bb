@@ -350,6 +350,12 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
+  // The success or failure of downloading Autocheckout whitelist file.
+  enum AutocheckoutWhitelistDownloadStatus {
+    AUTOCHECKOUT_WHITELIST_DOWNLOAD_FAILED,
+    AUTOCHECKOUT_WHITELIST_DOWNLOAD_SUCCEEDED,
+  };
+
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
@@ -434,6 +440,11 @@ class AutofillMetrics {
   virtual void LogAutocheckoutDuration(
       const base::TimeDelta& duration,
       AutocheckoutCompletionStatus status) const;
+
+  // Logs the time taken to download Autocheckout whitelist file.
+  virtual void LogAutocheckoutWhitelistDownloadDuration(
+      const base::TimeDelta& duration,
+      AutocheckoutWhitelistDownloadStatus status) const;
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.

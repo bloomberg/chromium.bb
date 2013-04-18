@@ -76,8 +76,14 @@ void WhitelistManager::StartDownloadTimer(size_t interval_seconds) {
                         &WhitelistManager::TriggerDownload);
 }
 
+const AutofillMetrics& WhitelistManager::GetMetricLogger() const {
+  return metrics_logger_;
+}
+
 void WhitelistManager::TriggerDownload() {
   callback_is_pending_ = true;
+
+  request_started_timestamp_ = base::Time::Now();
 
   request_.reset(net::URLFetcher::Create(
       0, GURL(kWhitelistUrl), net::URLFetcher::GET, this));
@@ -100,11 +106,19 @@ void WhitelistManager::OnURLFetchComplete(
   scoped_ptr<net::URLFetcher> old_request = request_.Pass();
   DCHECK_EQ(source, old_request.get());
 
+  AutofillMetrics::AutocheckoutWhitelistDownloadStatus status;
+  base::TimeDelta duration = base::Time::Now() - request_started_timestamp_;
+
   if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
     BuildWhitelist(data);
+    status = AutofillMetrics::AUTOCHECKOUT_WHITELIST_DOWNLOAD_SUCCEEDED;
+  } else {
+    status = AutofillMetrics::AUTOCHECKOUT_WHITELIST_DOWNLOAD_FAILED;
   }
+
+  GetMetricLogger().LogAutocheckoutWhitelistDownloadDuration(duration, status);
 
   ScheduleDownload(kDownloadIntervalSeconds);
 }

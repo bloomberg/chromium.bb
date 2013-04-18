@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/timer.h"
+#include "components/autofill/browser/autofill_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -49,6 +50,10 @@ class WhitelistManager : public net::URLFetcherDelegate {
   // as a separate method for mocking out in tests.
   virtual void StartDownloadTimer(size_t interval_seconds);
 
+  // Returns the |AutofillMetrics| instance that should be used for logging
+  // Autocheckout whitelist file downloading.
+  virtual const AutofillMetrics& GetMetricLogger() const;
+
   // Timer callback indicating it's time to download whitelist from server.
   void TriggerDownload();
 
@@ -82,6 +87,12 @@ class WhitelistManager : public net::URLFetcherDelegate {
 
   // State of the kBypassAutocheckoutWhitelist flag.
   const bool bypass_autocheckout_whitelist_;
+
+  // Logger for UMA metrics.
+  AutofillMetrics metrics_logger_;
+
+  // When the whitelist download started. Used to track download latency.
+  base::Time request_started_timestamp_;
 
   // The request object.
   scoped_ptr<net::URLFetcher> request_;

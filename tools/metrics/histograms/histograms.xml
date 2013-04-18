@@ -159,6 +159,26 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Autocheckout.WhitelistDownloadDuration" units="ms">
+  <summary>
+    Measures time taken to download the Autocheckout whitelist file.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.WhitelistDownloadDuration.Failed" units="ms">
+  <summary>
+    Measures time taken to download the Autocheckout whitelist file in case the
+    download was failed.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.WhitelistDownloadDuration.Succeeded" units="ms">
+  <summary>
+    Measures time taken to download the Autocheckout whitelist file in case the
+    download was succeeded.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.AddressSuggestionsCount">
   <summary>
     The number of address suggestions shown in the Autofill popup.
