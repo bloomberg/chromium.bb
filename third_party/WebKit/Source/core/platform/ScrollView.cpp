@@ -446,14 +446,16 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
                 newHasVerticalScrollbar = false;
         }
 
-        // If we ever turn one scrollbar off, always turn the other one off too.  Never ever
-        // try to both gain/lose a scrollbar in the same pass.
-        if (!newHasHorizontalScrollbar && hasHorizontalScrollbar && vScroll != ScrollbarAlwaysOn)
-            newHasVerticalScrollbar = false;
-        if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
-            newHasHorizontalScrollbar = false;
-
         bool scrollbarIsOverlay = ScrollbarTheme::theme()->usesOverlayScrollbars();
+        if (!scrollbarIsOverlay) {
+            // If we ever turn one scrollbar off, always turn the other one off too.  Never ever
+            // try to both gain/lose a scrollbar in the same pass.
+            if (!newHasHorizontalScrollbar && hasHorizontalScrollbar && vScroll != ScrollbarAlwaysOn)
+                newHasVerticalScrollbar = false;
+            if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
+                newHasHorizontalScrollbar = false;
+        }
+
         if (hasHorizontalScrollbar != newHasHorizontalScrollbar && (hasHorizontalScrollbar || !avoidScrollbarCreation())) {
             if (!scrollbarIsOverlay)
                 sendContentResizedNotification = true;
