@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/pnacl_file_host.h"
+#include "chrome/browser/nacl_host/nacl_file_host.h"
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -13,7 +13,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using pnacl_file_host::PnaclCanOpenFile;
+using nacl_file_host::PnaclCanOpenFile;
 
 // Try to pass a few funny filenames with a dummy pnacl directory set.
 TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {

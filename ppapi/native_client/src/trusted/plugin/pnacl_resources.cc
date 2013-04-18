@@ -41,7 +41,7 @@ bool PnaclUrls::IsPnaclComponent(const nacl::string& full_url) {
 }
 
 // Convert a URL to a filename accepted by GetReadonlyPnaclFd.
-// Must be kept in sync with pnacl_file_host.cc.
+// Must be kept in sync with chrome/browser/nacl_host/nacl_file_host.
 nacl::string PnaclUrls::PnaclComponentURLToFilename(
     const nacl::string& full_url) {
   // strip componentID.

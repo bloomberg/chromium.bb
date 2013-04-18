@@ -20,9 +20,9 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_infobar.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/browser/nacl_host/pnacl_file_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -267,12 +267,12 @@ void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(
     const std::string& filename, IPC::Message* reply_msg) {
   // This posts a task to another thread, but the renderer will
   // block until the reply is sent.
-  pnacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
+  nacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
 }
 
 void ChromeRenderMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
-  pnacl_file_host::CreateTemporaryFile(this, reply_msg);
+  nacl_file_host::CreateTemporaryFile(this, reply_msg);
 }
 
 void ChromeRenderMessageFilter::OnNaClErrorStatus(int render_view_id,

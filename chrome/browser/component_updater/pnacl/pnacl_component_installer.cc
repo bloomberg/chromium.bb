@@ -49,7 +49,7 @@ const char kPnaclManifestNamePrefix[] = "PNaCl";
 
 // Sanitize characters from Pnacl Arch value so that they can be used
 // in path names.  This should only be characters in the set: [a-z0-9_].
-// Keep in sync with chrome/browser/nacl_host/pnacl_file_host.
+// Keep in sync with chrome/browser/nacl_host/nacl_file_host.
 std::string SanitizeForPath(const std::string& input) {
   std::string result;
   ReplaceChars(input, "-", "_", &result);

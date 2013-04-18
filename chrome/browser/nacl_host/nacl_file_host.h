@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_PNACL_FILE_HOST_H_
-#define CHROME_BROWSER_NACL_HOST_PNACL_FILE_HOST_H_
+#ifndef CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_
+#define CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_
 
 #include <string>
 
@@ -17,9 +17,9 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
-// Opens Pnacl Files in the Browser process, on behalf of the NaCl plugin.
+// Opens NaCl Files in the Browser process, on behalf of the NaCl plugin.
 
-namespace pnacl_file_host {
+namespace nacl_file_host {
 
 // Open a Pnacl file (readonly) on behalf of the NaCl plugin.
 void GetReadonlyPnaclFd(ChromeRenderMessageFilter* chrome_render_message_filter,
@@ -37,6 +37,6 @@ void CreateTemporaryFile(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     IPC::Message* reply_msg);
 
-}  // namespace pnacl_file_host
+}  // namespace nacl_file_host
 
-#endif  // CHROME_BROWSER_NACL_HOST_PNACL_FILE_HOST_H_
+#endif  // CHROME_BROWSER_NACL_HOST_NACL_FILE_HOST_H_

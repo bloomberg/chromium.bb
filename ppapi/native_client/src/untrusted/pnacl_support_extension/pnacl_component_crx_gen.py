@@ -482,7 +482,7 @@ def BuildExtensionStyle(version_quad, lib_overrides, options):
 ######################################################################
 
 def UseWhitelistedChars(orig_basename, arch):
-  """ Make the filename match the pattern expected by pnacl_file_host.
+  """ Make the filename match the pattern expected by nacl_file_host.
 
   Currently, this assumes there is prefix "pnacl_public_" and
   that the allowed chars are in the set [a-zA-Z0-9_].
@@ -499,7 +499,7 @@ def CopyFlattenDirsAndPrefix(src_dir, arch, dest_dir):
   """ Copy files from src_dir to dest_dir.
 
   When copying, also rename the files such that they match the white-listing
-  pattern in chrome/browser/nacl_host/pnacl_file_host.cc.
+  pattern in chrome/browser/nacl_host/nacl_file_host.cc.
   """
   for (root, dirs, files) in os.walk(src_dir, followlinks=True):
     for f in files:

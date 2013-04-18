@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/pnacl_file_host.h"
+#include "chrome/browser/nacl_host/nacl_file_host.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -57,7 +57,7 @@ void DoOpenPnaclFile(
   base::FilePath full_filepath;
 
   // Do some validation.
-  if (!pnacl_file_host::PnaclCanOpenFile(filename, &full_filepath)) {
+  if (!nacl_file_host::PnaclCanOpenFile(filename, &full_filepath)) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
     return;
   }
@@ -125,7 +125,7 @@ void DoCreateTemporaryFile(
 
 }  // namespace
 
-namespace pnacl_file_host {
+namespace nacl_file_host {
 
 void GetReadonlyPnaclFd(
     ChromeRenderMessageFilter* chrome_render_message_filter,
@@ -186,4 +186,4 @@ void CreateTemporaryFile(
   }
 }
 
-}  // namespace pnacl_file_host
+}  // namespace nacl_file_host
