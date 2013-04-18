@@ -128,17 +128,21 @@ const CGFloat kLabelInset = 49.0;
   // into the xib, and this gives a little more space to visually match.
   CGFloat yOffset = kLinkSpacing;
 
-  // Since drawing happens bottom-up, start with the "New User" link.
-  NSButton* newButton = [self configureNewUserButton:yOffset];
-  [contentView addSubview:newButton];
-  yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
+  if (model_->ShouldShowAddNewProfileLink()) {
+    // Since drawing happens bottom-up, start with the "New User" link.
+    NSButton* newButton = [self configureNewUserButton:yOffset];
+    [contentView addSubview:newButton];
+    yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
 
-  NSBox* separator = [self separatorWithFrame:
-      NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
-  [separator setAutoresizingMask:NSViewWidthSizable];
-  [contentView addSubview:separator];
+    NSBox* separator = [self separatorWithFrame:
+        NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
+    [separator setAutoresizingMask:NSViewWidthSizable];
+    [contentView addSubview:separator];
 
-  yOffset += NSHeight([separator frame]);
+    yOffset += NSHeight([separator frame]);
+  } else {
+    yOffset = 7;
+  }
 
   // Loop over the profiles in reverse, constructing the menu items.
   CGFloat widthAdjust = 0;

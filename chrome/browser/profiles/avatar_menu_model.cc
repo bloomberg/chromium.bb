@@ -169,13 +169,10 @@ const AvatarMenuModel::Item& AvatarMenuModel::GetItemAt(size_t index) {
 
 bool AvatarMenuModel::ShouldShowAddNewProfileLink() const {
 #if defined(ENABLE_MANAGED_USERS)
-  Profile* active_profile = NULL;
   if (!browser_)
-    active_profile = ProfileManager::GetLastUsedProfile();
-  else
-    active_profile = browser_->profile();
+    return true;
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-      active_profile);
+      browser_->profile());
   return !service->ProfileIsManaged();
 #endif
   return true;
