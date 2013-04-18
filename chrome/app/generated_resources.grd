@@ -9144,12 +9144,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
-      <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, we use this as a header above a short set of instructions.">
-        Reload this webpage.
-      </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, this is displayed below a short header.">
-        Press the reload button to resubmit the data needed to load the page.
-      </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it.">
         Disable your extensions and then reload this webpage.
       </message>
@@ -9685,7 +9679,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
-        This webpage requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.
+        This webpage requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>
 
       <message name="IDS_ERRORPAGES_APP_WARNING" desc="The error message displayed when the browser can not reach the requested page from an app.">
