@@ -42,6 +42,7 @@
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
+#include "SharedBuffer.h"
 #include "ResourceLoader.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>

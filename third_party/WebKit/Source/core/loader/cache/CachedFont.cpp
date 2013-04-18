@@ -33,6 +33,7 @@
 #include "FontCustomPlatformData.h"
 #include "FontPlatformData.h"
 #include "MemoryCache.h"
+#include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/Vector.h>
