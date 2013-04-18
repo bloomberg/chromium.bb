@@ -11,12 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "components/autofill/browser/autofill_manager_delegate.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
-
-class AutofillMetrics;
-class PrefService;
 
 namespace autofill {
 
@@ -93,70 +89,6 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   int checked_item_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsMenuModel);
-};
-
-// A delegate interface to allow the AccountChooserModel to inform its owner
-// of changes.
-class AccountChooserModelDelegate {
- public:
-  virtual ~AccountChooserModelDelegate();
-
-  // Called when the active account has changed.
-  virtual void AccountChoiceChanged() = 0;
-};
-
-// A menu model for the account chooser. This allows users to switch between
-// using Wallet and local Autofill. TODO(estade): this should support multiple
-// Wallet accounts.
-class AccountChooserModel : public ui::SimpleMenuModel,
-                            public ui::SimpleMenuModel::Delegate {
- public:
-  AccountChooserModel(AccountChooserModelDelegate* delegate,
-                      PrefService* prefs,
-                      const AutofillMetrics& metric_logger,
-                      DialogType dialog_type);
-  virtual ~AccountChooserModel();
-
-  // ui::SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-
-  // Should be called when the Wallet server returns an error.
-  void SetHadWalletError();
-
-  // Should be called when the Online Wallet sign-in attempt has failed.
-  void SetHadWalletSigninError();
-
-  bool had_wallet_error() const { return had_wallet_error_; }
-
-  bool WalletIsSelected() const;
-
-  int checked_item() const { return checked_item_; }
-
-  // Command IDs of the items in this menu. For now, we only support a single
-  // account, so there's only one wallet item.
-  static const int kWalletItemId;
-  static const int kAutofillItemId;
-
- private:
-  AccountChooserModelDelegate* account_delegate_;
-
-  // The command id of the currently active item.
-  int checked_item_;
-
-  // Whether there has been a Wallet error while the owning dialog has been
-  // open.
-  bool had_wallet_error_;
-
-  // For logging UMA metrics.
-  const AutofillMetrics& metric_logger_;
-  const DialogType dialog_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountChooserModel);
 };
 
 // A model for possible months in the Gregorian calendar.

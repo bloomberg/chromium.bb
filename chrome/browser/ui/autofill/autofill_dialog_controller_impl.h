@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "chrome/browser/ui/autofill/account_chooser_model.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
@@ -204,18 +205,16 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // AccountChooserModelDelegate implementation.
   virtual void AccountChoiceChanged() OVERRIDE;
+  virtual void UpdateAccountChooserView() OVERRIDE;
 
   // wallet::WalletSigninHelperDelegate implementation.
-  virtual void OnPassiveSigninSuccess(
-      const std::string& auth_username) OVERRIDE;
+  virtual void OnPassiveSigninSuccess(const std::string& username) OVERRIDE;
   virtual void OnPassiveSigninFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnAutomaticSigninSuccess(
-      const std::string& auth_username) OVERRIDE;
+  virtual void OnAutomaticSigninSuccess(const std::string& username) OVERRIDE;
   virtual void OnAutomaticSigninFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnUserNameFetchSuccess(
-      const std::string& auth_username) OVERRIDE;
+  virtual void OnUserNameFetchSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserNameFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
@@ -273,6 +272,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Starts fetching the wallet items from Online Wallet.
   void GetWalletItems();
+
+  // Handles the SignedInState() on Wallet or sign-in state update.
+  // Triggers the user name fetch and the passive/automatic sign-in.
+  void SignedInStateUpdated();
 
   // Refreshes the model on Wallet or sign-in state update.
   void OnWalletOrSigninUpdate();
@@ -449,12 +452,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The sign-in helper to fetch the user info and perform passive sign-in.
   // The helper is set only during fetch/sign-in, and NULL otherwise.
   scoped_ptr<wallet::WalletSigninHelper> signin_helper_;
-
-  // The user account name (email).
-  // Valid only if PayingWithWallet() and SigninState() == SIGNED_IN.
-  // Set whenever the sign-in helper fetches the user info.
-  // TODO(aruslan): this should be removed (AccountChooser should deal with it).
-  std::string current_username_;
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;

@@ -142,6 +142,23 @@ class TestWalletClient : public wallet::WalletClient {
   DISALLOW_COPY_AND_ASSIGN(TestWalletClient);
 };
 
+// Bring over command-ids from AccountChooserModel.
+class TestAccountChooserModel : public AccountChooserModel {
+ public:
+  TestAccountChooserModel(AccountChooserModelDelegate* delegate,
+                          PrefService* prefs,
+                          const AutofillMetrics& metric_logger)
+      : AccountChooserModel(delegate, prefs, metric_logger,
+                            DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {}
+  virtual ~TestAccountChooserModel() {}
+
+  using AccountChooserModel::kActiveWalletItemId;
+  using AccountChooserModel::kAutofillItemId;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAccountChooserModel);
+};
+
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:
   TestAutofillDialogController(
@@ -280,9 +297,10 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
   void SetUpWallet() {
-    controller()->MenuModelForAccountChooser()->ActivatedAt(
-        AccountChooserModel::kWalletItemId);
     controller()->OnUserNameFetchSuccess("user@example.com");
+    ui::MenuModel* account_model = controller()->MenuModelForAccountChooser();
+    ASSERT_TRUE(account_model);
+    account_model->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
   }
 
   TestAutofillDialogController* controller() { return controller_; }
@@ -629,8 +647,8 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
   ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
   ASSERT_TRUE(account_menu);
   ASSERT_GE(2, account_menu->GetItemCount());
-  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
-  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  account_menu->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
+  account_menu->ActivatedAt(TestAccountChooserModel::kAutofillItemId);
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -678,8 +696,8 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
   ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
   ASSERT_TRUE(account_menu);
   ASSERT_GE(2, account_menu->GetItemCount());
-  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
-  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  account_menu->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
+  account_menu->ActivatedAt(TestAccountChooserModel::kAutofillItemId);
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -725,12 +743,13 @@ TEST_F(AutofillDialogControllerTest, WalletDetailsExplanation) {
 
   // Switch to using Autofill, no explanatory message should show.
   ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
-  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  ASSERT_TRUE(account_menu);
+  account_menu->ActivatedAt(TestAccountChooserModel::kAutofillItemId);
   EXPECT_TRUE(NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).empty());
 
   // Switch to Wallet, pretend this isn't first run. No message should show.
-  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
+  account_menu->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
   controller()->set_is_first_run(false);
   EXPECT_TRUE(NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).empty());
@@ -761,7 +780,8 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInWallet) {
 
   // Using Autofill on second run, show an interactive, unchecked checkbox.
   ui::MenuModel* account_model = controller()->MenuModelForAccountChooser();
-  account_model->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  ASSERT_TRUE(account_model);
+  account_model->ActivatedAt(TestAccountChooserModel::kAutofillItemId);
   controller()->set_is_first_run(false);
 
   notifications =
@@ -771,7 +791,7 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInWallet) {
   EXPECT_TRUE(notifications.front().interactive());
 
   // Notifications shouldn't be interactive while submitting.
-  account_model->ActivatedAt(AccountChooserModel::kWalletItemId);
+  account_model->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
   controller()->OnAccept();
   EXPECT_FALSE(NotificationsOfType(
       DialogNotification::WALLET_USAGE_CONFIRMATION).front().interactive());

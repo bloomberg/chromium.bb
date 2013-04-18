@@ -192,7 +192,7 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
   }
 }
 
-// Returns the containing window for the given |web_contents|.  The containing
+// Returns the containing window for the given |web_contents|. The containing
 // window might be a browser window for a Chrome tab, or it might be a shell
 // window for a platform app.
 BaseWindow* GetBaseWindowForWebContents(
@@ -466,11 +466,12 @@ bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
 }
 
 string16 AutofillDialogControllerImpl::AccountChooserText() const {
+  // TODO(aruslan): this should be l10n "Not using Google Wallet".
   if (!account_chooser_model_.WalletIsSelected())
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
 
   if (SignedInState() == SIGNED_IN)
-    return UTF8ToUTF16(current_username_);
+    return account_chooser_model_.active_wallet_account_name();
 
   // In this case, the account chooser should be showing the signin link.
   return string16();
@@ -535,11 +536,14 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   GetWalletClient()->GetWalletItems(source_url_);
 }
 
-void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
+void AutofillDialogControllerImpl::SignedInStateUpdated() {
+  if (!account_chooser_model_.WalletIsSelected())
+    return;
+
   switch (SignedInState()) {
     case SIGNED_IN:
       // Start fetching the user name if we don't know it yet.
-      if (current_username_.empty()) {
+      if (account_chooser_model_.active_wallet_account_name().empty()) {
         signin_helper_.reset(new wallet::WalletSigninHelper(
             this, profile_->GetRequestContext()));
         signin_helper_->StartUserNameFetch();
@@ -547,24 +551,29 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
       break;
 
     case REQUIRES_SIGN_IN:
-      // TODO(aruslan): automatic sign-in?
+      // Switch to the local account and refresh the dialog.
+      OnWalletSigninError();
       break;
 
     case REQUIRES_PASSIVE_SIGN_IN:
       // Attempt to passively sign in the user.
-      current_username_.clear();
+      DCHECK(!signin_helper_);
+      account_chooser_model_.ClearActiveWalletAccountName();
       signin_helper_.reset(new wallet::WalletSigninHelper(
-          this, profile_->GetRequestContext()));
+          this,
+          profile_->GetRequestContext()));
       signin_helper_->StartPassiveSignin();
       break;
 
     case REQUIRES_RESPONSE:
       break;
   }
+}
 
+void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
+  SignedInStateUpdated();
   SuggestionsUpdated();
-  view_->UpdateAccountChooser();
-  view_->UpdateNotificationArea();
+  UpdateAccountChooserView();
 
   // On the first successful response, compute the initial user state metric.
   if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
@@ -573,7 +582,6 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
   signin_helper_.reset();
-  current_username_.clear();
   account_chooser_model_.SetHadWalletSigninError();
   GetWalletClient()->CancelRequests();
 }
@@ -669,12 +677,15 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
 }
 
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
-  // When paying with wallet, but not signed in, there is no menu, just a
-  // sign in link.
-  if (account_chooser_model_.WalletIsSelected() && SignedInState() != SIGNED_IN)
-    return NULL;
+  // If there were unrecoverable Wallet errors, or if there are choices other
+  // than "Pay without the wallet", show the full menu.
+  if (account_chooser_model_.had_wallet_error() ||
+      account_chooser_model_.HasAccountsToChoose()) {
+    return &account_chooser_model_;
+  }
 
-  return &account_chooser_model_;
+  // Otherwise, there is no menu, just a sign in link.
+  return NULL;
 }
 
 gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
@@ -684,8 +695,10 @@ gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
   }
 
   gfx::Image icon;
-  account_chooser_model_.GetIconAt(account_chooser_model_.checked_item(),
-                                   &icon);
+  account_chooser_model_.GetIconAt(
+      account_chooser_model_.GetIndexOfCommandId(
+          account_chooser_model_.checked_item()),
+      &icon);
   return icon;
 }
 
@@ -797,9 +810,14 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
       return scoped_ptr<DataModelWrapper>(
           new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
     }
+
+    if (section == SECTION_SHIPPING) {
+      return scoped_ptr<DataModelWrapper>(
+          new WalletAddressWrapper(wallet_items_->addresses()[index]));
+    }
+
     // TODO(dbeam): should SECTION_EMAIL get here? http://crbug.com/223923
-    return scoped_ptr<DataModelWrapper>(
-        new WalletAddressWrapper(wallet_items_->addresses()[index]));
+    return scoped_ptr<DataModelWrapper>();
   }
 
   if (section == SECTION_CC) {
@@ -1166,6 +1184,7 @@ std::vector<DialogNotification>
 }
 
 void AutofillDialogControllerImpl::StartSignInFlow() {
+  DCHECK(!IsPayingWithWallet());
   DCHECK(registrar_.IsEmpty());
 
   content::Source<content::NavigationController> source(view_->ShowSignIn());
@@ -1184,9 +1203,10 @@ void AutofillDialogControllerImpl::EndSignInFlow() {
 void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
     DialogNotification::Type type, bool checked) {
   if (type == DialogNotification::WALLET_USAGE_CONFIRMATION) {
-    int command = checked ? AccountChooserModel::kWalletItemId :
-                            AccountChooserModel::kAutofillItemId;
-    account_chooser_model_.ExecuteCommand(command, 0);
+    if (checked)
+      account_chooser_model_.SelectActiveWalletAccount();
+    else
+      account_chooser_model_.SelectUseAutofill();
   }
 }
 
@@ -1321,8 +1341,14 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     EndSignInFlow();
-    if (account_chooser_model_.WalletIsSelected())
+
+    if (account_chooser_model_.WalletIsSelected()) {
       GetWalletItems();
+    } else {
+      // The sign-in flow means that the user implicitly switched the account
+      // to the Wallet. This will trigger AccountChoiceChanged.
+      account_chooser_model_.SelectActiveWalletAccount();
+    }
   }
 }
 
@@ -1386,28 +1412,29 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
     const std::string& username) {
-  current_username_ = username;
+  const string16 username16 = UTF8ToUTF16(username);
   signin_helper_.reset();
+  account_chooser_model_.SetActiveWalletAccountName(username16);
   GetWalletItems();
 }
 
 void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
     const std::string& username) {
-  current_username_ = username;
+  const string16 username16 = UTF8ToUTF16(username);
   signin_helper_.reset();
+  account_chooser_model_.SetActiveWalletAccountName(username16);
   OnWalletOrSigninUpdate();
 }
 
 void AutofillDialogControllerImpl::OnAutomaticSigninSuccess(
     const std::string& username) {
-  // TODO(aruslan): automatic sign-in.
   NOTIMPLEMENTED();
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninFailure(
     const GoogleServiceAuthError& error) {
   // TODO(aruslan): report an error.
-  LOG(ERROR) << "failed to passively sign-in: " << error.ToString();
+  LOG(ERROR) << "failed to passively sign in: " << error.ToString();
   OnWalletSigninError();
 }
 
@@ -1420,14 +1447,14 @@ void AutofillDialogControllerImpl::OnUserNameFetchFailure(
 
 void AutofillDialogControllerImpl::OnAutomaticSigninFailure(
     const GoogleServiceAuthError& error) {
-  // TODO(aruslan): automatic sign-in failure.
-  NOTIMPLEMENTED();
+  // TODO(aruslan): report an error.
+  LOG(ERROR) << "failed to automatically sign in: " << error.ToString();
+  OnWalletSigninError();
 }
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
   DCHECK(account_chooser_model_.WalletIsSelected());
-
   legal_documents_text_.clear();
   legal_document_link_ranges_.clear();
 
@@ -1504,6 +1531,9 @@ void AutofillDialogControllerImpl::OnPersonalDataChanged() {
   SuggestionsUpdated();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AccountChooserModelDelegate implementation.
+
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
   // Whenever the user changes the account, all manual inputs should be reset.
   ResetManualInputForSection(SECTION_EMAIL);
@@ -1517,11 +1547,28 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
 
   SetIsSubmitting(false);
 
-  if (account_chooser_model_.WalletIsSelected() && !wallet_items_)
-    GetWalletItems();
+  if (!signin_helper_ && account_chooser_model_.WalletIsSelected()) {
+    if (account_chooser_model_.IsActiveWalletAccountSelected()) {
+      // If the user has chosen an already active Wallet account, and we don't
+      // have the Wallet items, an attempt to fetch the Wallet data is made to
+      // see if the user is still signed in. This will trigger a passive sign-in
+      // if required.
+      if (!wallet_items_)
+        GetWalletItems();
+      else
+        SignedInStateUpdated();
+    } else {
+      // TODO(aruslan): trigger the automatic sign-in process.
+      LOG(ERROR) << "failed to initiate an automatic sign-in";
+      OnWalletSigninError();
+    }
+  }
 
   SuggestionsUpdated();
+  UpdateAccountChooserView();
+}
 
+void AutofillDialogControllerImpl::UpdateAccountChooserView() {
   if (view_) {
     view_->UpdateAccountChooser();
     view_->UpdateNotificationArea();
@@ -1615,7 +1662,6 @@ bool AutofillDialogControllerImpl::IsFirstRun() const {
 
 void AutofillDialogControllerImpl::DisableWallet() {
   signin_helper_.reset();
-  current_username_.clear();
   account_chooser_model_.SetHadWalletError();
   GetWalletClient()->CancelRequests();
   wallet_items_.reset();
@@ -1632,7 +1678,11 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   HidePopup();
 
   if (IsPayingWithWallet()) {
-    // TODO(estade): fill in the email address.
+    if (!account_chooser_model_.active_wallet_account_name().empty()) {
+      suggested_email_.AddKeyedItem(
+          base::IntToString(0),
+          account_chooser_model_.active_wallet_account_name());
+    }
 
     const std::vector<wallet::Address*>& addresses =
         wallet_items_->addresses();
@@ -2166,7 +2216,7 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
 AutofillMetrics::DialogInitialUserStateMetric
     AutofillDialogControllerImpl::GetInitialUserState() const {
   // Consider a user to be an Autofill user if the user has any credit cards
-  // or addresses saved.  Check that the item count is greater than 1 because
+  // or addresses saved. Check that the item count is greater than 1 because
   // an "empty" menu still has the "add new" menu item.
   const bool has_autofill_profiles =
       suggested_cc_.GetItemCount() > 1 ||
