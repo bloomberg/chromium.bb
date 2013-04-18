@@ -96,7 +96,7 @@ void CreateIconAndSetRelaunchDetails(
      NOTREACHED();
      return;
   }
-  command_line.SetProgram(CommandLine::ForCurrentProcess()->GetProgram());
+  command_line.SetProgram(chrome_exe);
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
       shortcut_info.title, hwnd);
 
