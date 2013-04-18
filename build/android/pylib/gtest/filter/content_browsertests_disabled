@@ -103,8 +103,7 @@ IndexedDBLayoutTest.IndexTests
 
 # http://crbug.com/233118
 FileSystemLayoutTest.*
-IndexedDBBrowserTest.CallbackAccounting
-IndexedDBBrowserTest.TransactionGetTest
+IndexedDBBrowserTest.*
 IndexedDBLayoutTest.IndexTests
 IndexedDBLayoutTest.RegressionTests
 IndexedDBLayoutTest.TransactionTests
