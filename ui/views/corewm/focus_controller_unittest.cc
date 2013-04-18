@@ -298,6 +298,9 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   virtual void ActivateWindowDirect(aura::Window* window) = 0;
   virtual void DeactivateWindowDirect(aura::Window* window) = 0;
 
+  // Input events do not change focus if the window can not be focused.
+  virtual bool IsInputEvent() = 0;
+
   void FocusWindowById(int id) {
     aura::Window* window = root_window()->GetChildById(id);
     DCHECK(window);
@@ -436,7 +439,10 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     test_focus_rules()->set_focus_restriction(root_window()->GetChildById(211));
     FocusWindowById(12);
-    EXPECT_EQ(211, GetFocusedWindowId());
+    // Input events leave focus unchanged; direct API calls will change focus
+    // to the restricted window.
+    int focused_window = IsInputEvent() ? 11 : 211;
+    EXPECT_EQ(focused_window, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
     FocusWindowById(12);
@@ -451,9 +457,11 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     test_focus_rules()->set_focus_restriction(w3);
 
     ActivateWindowById(2);
-    // FocusRules restricts focus and activation to 3.
-    EXPECT_EQ(3, GetActiveWindowId());
-    EXPECT_EQ(3, GetFocusedWindowId());
+    // Input events leave activation unchanged; direct API calls will activate
+    // the restricted window.
+    int active_window = IsInputEvent() ? 1 : 3;
+    EXPECT_EQ(active_window, GetActiveWindowId());
+    EXPECT_EQ(active_window, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
     ActivateWindowById(2);
@@ -573,6 +581,7 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
   virtual void DeactivateWindowDirect(aura::Window* window) OVERRIDE {
     DeactivateWindow(window);
   }
+  virtual bool IsInputEvent() OVERRIDE { return false; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerApiTest);
 };
@@ -598,6 +607,7 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
     aura::test::EventGenerator generator(root_window(), next_activatable);
     generator.ClickLeftButton();
   }
+  virtual bool IsInputEvent() OVERRIDE { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerMouseEventTest);
 };
@@ -622,6 +632,7 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
     aura::test::EventGenerator generator(root_window(), next_activatable);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
+  virtual bool IsInputEvent() OVERRIDE { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerGestureEventTest);
 };
