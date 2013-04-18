@@ -109,6 +109,11 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabas
 void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBackend, const IDBDatabaseMetadata& metadata)
 {
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
+    if (m_contextStopped || !scriptExecutionContext()) {
+        RefPtr<IDBDatabaseBackendInterface> db = prpBackend;
+        db->close(m_databaseCallbacks);
+        return;
+    }
     if (!shouldEnqueueEvent())
         return;
 

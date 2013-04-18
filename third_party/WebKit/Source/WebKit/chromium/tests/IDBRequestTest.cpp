@@ -32,7 +32,9 @@
 #include "Frame.h"
 #include "FrameTestHelpers.h"
 #include "IDBCursorBackendInterface.h"
-#include "IDBDatabaseBackendImpl.h"
+#include "IDBDatabaseBackendInterface.h"
+#include "IDBDatabaseCallbacksImpl.h"
+#include "IDBOpenDBRequest.h"
 #include "IDBTransactionCoordinator.h"
 #include "ScriptController.h"
 #include "WebFrame.h"
@@ -86,7 +88,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     IDBTransaction* transaction = 0;
     RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
-    request->stop();
+    scriptExecutionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
     request->onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "Description goes here."));
@@ -115,6 +117,80 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
     // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
     // Ensure an assertion is not raised.
     request->onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "Description goes here."));
+}
+
+class MockIDBDatabaseBackendInterface : public IDBDatabaseBackendInterface {
+public:
+    static PassRefPtr<MockIDBDatabaseBackendInterface> create()
+    {
+        return adoptRef(new MockIDBDatabaseBackendInterface());
+    }
+    virtual ~MockIDBDatabaseBackendInterface()
+    {
+        EXPECT_TRUE(m_closeCalled);
+    }
+
+    virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) OVERRIDE { }
+    virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) OVERRIDE { }
+    virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode) OVERRIDE { }
+    virtual void close(PassRefPtr<IDBDatabaseCallbacks>) OVERRIDE
+    {
+        m_closeCalled = true;
+    }
+
+    virtual void commit(int64_t transactionId) OVERRIDE { }
+    virtual void abort(int64_t transactionId) OVERRIDE { }
+    virtual void abort(int64_t transactionId, PassRefPtr<IDBDatabaseError>) OVERRIDE { }
+
+    virtual void createIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId, const String& name, const IDBKeyPath&, bool unique, bool multiEntry) OVERRIDE { }
+    virtual void deleteIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId) OVERRIDE { }
+
+    virtual void get(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, bool keyOnly, PassRefPtr<IDBCallbacks>) OVERRIDE { }
+    virtual void put(int64_t transactionId, int64_t objectStoreId, PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey>, PutMode, PassRefPtr<IDBCallbacks>, const Vector<int64_t>& indexIds, const Vector<IndexKeys>&) OVERRIDE { }
+    virtual void setIndexKeys(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBKey>, const Vector<int64_t>& indexIds, const Vector<IndexKeys>&) OVERRIDE { }
+    virtual void setIndexesReady(int64_t transactionId, int64_t objectStoreId, const Vector<int64_t>& indexIds) OVERRIDE { }
+    virtual void openCursor(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, bool keyOnly, TaskType, PassRefPtr<IDBCallbacks>) OVERRIDE { }
+    virtual void count(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange>, PassRefPtr<IDBCallbacks>) OVERRIDE { }
+    virtual void deleteRange(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBKeyRange>, PassRefPtr<IDBCallbacks>) OVERRIDE { }
+    virtual void clear(int64_t transactionId, int64_t objectStoreId, PassRefPtr<IDBCallbacks>) OVERRIDE { }
+
+private:
+    MockIDBDatabaseBackendInterface()
+        : m_closeCalled(false)
+    {
+    }
+
+    bool m_closeCalled;
+};
+
+TEST_F(IDBRequestTest, ConnectionsAfterStopping)
+{
+    v8::HandleScope handleScope;
+    v8::Context::Scope scope(context());
+
+    const int64_t transactionId = 1234;
+    const int64_t version = 1;
+    const int64_t oldVersion = 0;
+    const IDBDatabaseMetadata metadata;
+    RefPtr<IDBDatabaseCallbacksImpl> callbacks = IDBDatabaseCallbacksImpl::create();
+
+    {
+        RefPtr<MockIDBDatabaseBackendInterface> interface = MockIDBDatabaseBackendInterface::create();
+        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(scriptExecutionContext(), callbacks, transactionId, version);
+        EXPECT_EQ(request->readyState(), "pending");
+
+        scriptExecutionContext()->stopActiveDOMObjects();
+        request->onUpgradeNeeded(oldVersion, interface, metadata);
+    }
+
+    {
+        RefPtr<MockIDBDatabaseBackendInterface> interface = MockIDBDatabaseBackendInterface::create();
+        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(scriptExecutionContext(), callbacks, transactionId, version);
+        EXPECT_EQ(request->readyState(), "pending");
+
+        scriptExecutionContext()->stopActiveDOMObjects();
+        request->onSuccess(interface, metadata);;
+    }
 }
 
 } // namespace
