@@ -2710,6 +2710,14 @@
           },
         },
         'conditions': [
+          # Don't warn about the "typedef 'foo' locally defined but not used"
+          # for gcc 4.8.
+          # TODO: remove this flag once all builds work. See crbug.com/227506
+          [ 'gcc_version>=48', {
+            'cflags': [
+              '-Wno-unused-local-typedefs',
+            ],
+          }],
           ['target_arch=="ia32"', {
             'target_conditions': [
               ['_toolset=="target"', {
