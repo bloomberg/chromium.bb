@@ -111,7 +111,7 @@ public:
 #ifndef NDEBUG
     void showTreeForThis() const;
     void showLineTreeForThis() const;
-    
+
     virtual void showBox(int = 0) const;
     virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const;
     virtual const char* boxName() const;
