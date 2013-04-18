@@ -19,6 +19,7 @@ function WallpaperManager(dialogDom) {
   this.document_ = dialogDom.ownerDocument;
   this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL');
   this.selectedCategory = null;
+  this.selectedItem_ = null;
   this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
@@ -460,9 +461,23 @@ function WallpaperManager(dialogDom) {
     this.wallpaperGrid_ = $('wallpaper-grid');
     wallpapers.WallpaperThumbnailsGrid.decorate(this.wallpaperGrid_);
 
-    this.wallpaperGrid_.addEventListener('change',
-        this.onThumbnailSelectionChanged_.bind(this));
+    this.wallpaperGrid_.addEventListener('change', this.onChange_.bind(this));
     this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
+  };
+
+  /**
+   * Handles change event dispatched by wallpaper grid.
+   */
+  WallpaperManager.prototype.onChange_ = function() {
+    // splice may dispatch a change event because the position of selected
+    // element changing. But the actual selected element may not change after
+    // splice. Check if the new selected element equals to the previous selected
+    // element before continuing. Otherwise, wallpaper may reset to previous one
+    // as described in http://crbug.com/229036.
+    if (this.selectedItem_ == this.wallpaperGrid_.selectedItem)
+      return;
+    this.selectedItem_ = this.wallpaperGrid_.selectedItem;
+    this.onSelectedItemChanged_();
   };
 
   /**
@@ -617,28 +632,28 @@ function WallpaperManager(dialogDom) {
   };
 
   /**
-   * Handles click on a different thumbnail in wallpaper grid.
+   * Handles changing of selectedItem in wallpaper manager.
    */
-  WallpaperManager.prototype.onThumbnailSelectionChanged_ = function() {
-    var selectedItem = this.wallpaperGrid_.selectedItem;
-    if (selectedItem && selectedItem.source == 'ADDNEW')
+  WallpaperManager.prototype.onSelectedItemChanged_ = function() {
+    this.setWallpaperAttribution_(this.selectedItem_);
+
+    if (!this.selectedItem_ || this.selectedItem_.source == 'ADDNEW')
       return;
 
-    if (selectedItem && selectedItem.baseURL &&
-        !this.wallpaperGrid_.inProgramSelection) {
-      if (selectedItem.source == wallpapers.WallpaperSourceEnum.Custom) {
+    if (this.selectedItem_.baseURL && !this.wallpaperGrid_.inProgramSelection) {
+      if (this.selectedItem_.source == wallpapers.WallpaperSourceEnum.Custom) {
         var items = {};
-        var key = selectedItem.baseURL;
+        var key = this.selectedItem_.baseURL;
         var self = this;
         this.storage_.get(key, function(items) {
-          selectedItem.layout = items[key] ? items[key] : 'CENTER_CROPPED';
-          self.setSelectedWallpaper_(selectedItem);
+          self.selectedItem_.layout =
+              items[key] ? items[key] : 'CENTER_CROPPED';
+          self.setSelectedWallpaper_(self.selectedItem_);
         });
       } else {
-        this.setSelectedWallpaper_(selectedItem);
+        this.setSelectedWallpaper_(this.selectedItem_);
       }
     }
-    this.setWallpaperAttribution_(selectedItem);
   };
 
   /**
@@ -766,13 +781,13 @@ function WallpaperManager(dialogDom) {
                   source: wallpapers.WallpaperSourceEnum.Custom,
                   availableOffline: true
                 };
+                self.wallpaperGrid_.dataModel.splice(0, 0, wallpaperInfo);
+                self.wallpaperGrid_.selectedItem = wallpaperInfo;
+                self.wallpaperGrid_.activeItem = wallpaperInfo;
                 self.currentWallpaper_ = fileName;
                 var items = {};
                 items[self.currentWallpaper_] = layout;
                 self.storage_.set(items, function() {});
-                self.wallpaperGrid_.dataModel.splice(0, 0, wallpaperInfo);
-                self.wallpaperGrid_.selectedItem = wallpaperInfo;
-                self.wallpaperGrid_.activeItem = wallpaperInfo;
               };
 
               fileWriter.onerror = errorHandler;
