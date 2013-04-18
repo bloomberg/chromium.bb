@@ -266,8 +266,4 @@ void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
   rwhi->Send(new ViewMsg_Paste(rwhi->GetRoutingID()));
 }
 
-void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {
-  java_ime_adapter_.reset();
-}
-
 }  // namespace content

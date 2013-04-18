@@ -51,7 +51,6 @@ class ImeAdapterAndroid {
   void Cut(JNIEnv*, jobject);
   void Copy(JNIEnv*, jobject);
   void Paste(JNIEnv*, jobject);
-  void ResetImeAdapter(JNIEnv*, jobject);
 
   // Called from native -> java
   void CancelComposition();
