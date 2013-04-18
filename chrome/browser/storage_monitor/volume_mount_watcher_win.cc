@@ -38,6 +38,7 @@ enum DeviceType {
 // reports that some floppy drives don't report as DRIVE_REMOVABLE.
 DeviceType GetDeviceType(const string16& mount_point) {
   UINT drive_type = GetDriveType(mount_point.c_str());
+  VLOG(1) << "Getting drive type for " << mount_point << " is " << drive_type;
   if (drive_type == DRIVE_FIXED || drive_type == DRIVE_REMOTE ||
       drive_type == DRIVE_RAMDISK) {
     return FIXED;
@@ -52,6 +53,7 @@ DeviceType GetDeviceType(const string16& mount_point) {
   if (!QueryDosDevice(device.c_str(), WriteInto(&device_path, kMaxPathBufLen),
                       kMaxPathBufLen))
     return REMOVABLE;
+  VLOG(1) << "Got device path " << device_path;
   return device_path.find(L"Floppy") == string16::npos ? REMOVABLE : FLOPPY;
 }
 
@@ -122,19 +124,19 @@ bool GetDeviceDetails(const base::FilePath& device_path,
       return false;
     }
     *unique_id = UTF16ToUTF8(guid);
+    VLOG(1) << "guid=" << guid;
   }
 
   // If we're adding a floppy drive, return without querying any more
   // drive metadata -- it will cause the floppy drive to seek.
   if (device_type == FLOPPY) {
     DCHECK(!unique_id || !unique_id->empty());
+    VLOG(1) << "Returning floppy";
     return true;
   }
 
-
   if (total_size_in_bytes)
     *total_size_in_bytes = GetVolumeSize(mount_point);
-
 
   if (name) {
     // NOTE: experimentally, this function returns false if there is no volume
@@ -236,6 +238,7 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < removable_devices.size(); i++) {
+    VLOG(1) << "Adding device " << removable_devices[i].value();
     if (ContainsKey(pending_device_checks_, removable_devices[i]))
       continue;
     pending_device_checks_.insert(removable_devices[i]);
