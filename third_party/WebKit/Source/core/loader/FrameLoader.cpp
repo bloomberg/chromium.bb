@@ -85,7 +85,6 @@
 #include "PageTransitionEvent.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
-#include "PolicyChecker.h"
 #include "ProgressTracker.h"
 #include "ResourceHandle.h"
 #include "ResourceRequest.h"
@@ -204,7 +203,6 @@ private:
 FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
-    , m_policyChecker(frame)
     , m_history(frame)
     , m_notifer(frame)
     , m_subframeLoader(frame)
@@ -1170,8 +1168,6 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         return;
     }
 
-    RefPtr<DocumentLoader> oldDocumentLoader = m_documentLoader;
-
     bool sameURL = shouldTreatURLAsSameAsCurrent(newURL);
     const String& httpMethod = request.httpMethod();
     
@@ -1179,11 +1175,8 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
     // exactly the same so pages with '#' links and DHTML side effects
     // work properly.
     if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, newLoadType, newURL)) {
-        oldDocumentLoader->setTriggeringAction(action);
-        policyChecker()->stopCheck();
-        policyChecker()->setLoadType(newLoadType);
-        policyChecker()->checkNavigationPolicy(request, oldDocumentLoader.get(), formState.release(),
-            callContinueFragmentScrollAfterNavigationPolicy, this);
+        m_loadType = newLoadType;
+        checkNavigationPolicyAndContinueFragmentScroll(action);
     } else {
         // must grab this now, since this load may stop the previous load and clear this flag
         bool isRedirect = m_quickRedirectComing;
@@ -1297,45 +1290,24 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
     if (m_frame->document())
         m_previousURL = m_frame->document()->url();
 
-    policyChecker()->setLoadType(type);
+    m_loadType = type;
     RefPtr<FormState> formState = prpFormState;
     bool isFormSubmission = formState;
 
     const KURL& newURL = loader->request().url();
     const String& httpMethod = loader->request().httpMethod();
 
-    if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, policyChecker()->loadType(), newURL)) {
-        RefPtr<DocumentLoader> oldDocumentLoader = m_documentLoader;
-        NavigationAction action(loader->request(), policyChecker()->loadType(), isFormSubmission);
-
-        oldDocumentLoader->setTriggeringAction(action);
-        policyChecker()->stopCheck();
-        policyChecker()->checkNavigationPolicy(loader->request(), oldDocumentLoader.get(), formState,
-            callContinueFragmentScrollAfterNavigationPolicy, this);
-    } else {
+    if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, type, newURL))
+        checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(loader->request(), type, isFormSubmission));
+    else {
         if (Frame* parent = m_frame->tree()->parent())
             loader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
 
-        policyChecker()->stopCheck();
         setPolicyDocumentLoader(loader);
         if (loader->triggeringAction().isEmpty())
-            loader->setTriggeringAction(NavigationAction(loader->request(), policyChecker()->loadType(), isFormSubmission));
+            loader->setTriggeringAction(NavigationAction(loader->request(), type, isFormSubmission));
 
-        if (Element* ownerElement = m_frame->ownerElement()) {
-            // We skip dispatching the beforeload event if we've already
-            // committed a real document load because the event would leak
-            // subsequent activity by the frame which the parent frame isn't
-            // supposed to learn. For example, if the child frame navigated to
-            // a new URL, the parent frame shouldn't learn the URL.
-            if (!m_stateMachine.committedFirstRealDocumentLoad()
-                && !ownerElement->dispatchBeforeLoadEvent(loader->request().url().string())) {
-                continueLoadAfterNavigationPolicy(loader->request(), formState, false);
-                return;
-            }
-        }
-
-        policyChecker()->checkNavigationPolicy(loader->request(), loader, formState,
-            callContinueLoadAfterNavigationPolicy, this);
+        checkNavigationPolicyAndContinueLoad(formState);
     }
 }
 
@@ -1374,7 +1346,7 @@ bool FrameLoader::shouldReloadToHandleUnreachableURL(DocumentLoader* docLoader)
     if (unreachableURL.isEmpty())
         return false;
 
-    if (!isBackForwardLoadType(policyChecker()->loadType()))
+    if (!isBackForwardLoadType(m_loadType))
         return false;
 
     // We only treat unreachableURLs specially during the delegate callbacks
@@ -1383,9 +1355,7 @@ bool FrameLoader::shouldReloadToHandleUnreachableURL(DocumentLoader* docLoader)
     // case handles malformed URLs and unknown schemes. Loading alternate content
     // at other times behaves like a standard load.
     DocumentLoader* compareDocumentLoader = 0;
-    if (policyChecker()->delegateIsDecidingNavigationPolicy() || policyChecker()->delegateIsHandlingUnimplementablePolicy())
-        compareDocumentLoader = m_policyDocumentLoader.get();
-    else if (m_delegateIsHandlingProvisionalLoadError)
+    if (m_delegateIsHandlingProvisionalLoadError)
         compareDocumentLoader = m_provisionalDocumentLoader.get();
 
     return compareDocumentLoader && unreachableURL == compareDocumentLoader->request().url();
@@ -1482,8 +1452,6 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
     RefPtr<Frame> protect(m_frame);
 
     m_inStopAllLoaders = true;
-
-    policyChecker()->stopCheck();
 
     // If no new load is in progress, we should clear the provisional item from history
     // before we call stopLoading.
@@ -2500,18 +2468,13 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         checkLoadComplete();
 }
 
-void FrameLoader::callContinueFragmentScrollAfterNavigationPolicy(void* argument,
-    const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue)
-{
-    FrameLoader* loader = static_cast<FrameLoader*>(argument);
-    loader->continueFragmentScrollAfterNavigationPolicy(request, shouldContinue);
-}
-
-void FrameLoader::continueFragmentScrollAfterNavigationPolicy(const ResourceRequest& request, bool shouldContinue)
+void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action)
 {
     m_quickRedirectComing = false;
+    m_documentLoader->setTriggeringAction(action);
 
-    if (!shouldContinue)
+    const ResourceRequest& request = action.resourceRequest();
+    if (!m_documentLoader->shouldContinueForNavigationPolicy(request))
         return;
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
@@ -2520,7 +2483,7 @@ void FrameLoader::continueFragmentScrollAfterNavigationPolicy(const ResourceRequ
         setProvisionalDocumentLoader(0);
     }
 
-    bool isRedirect = m_quickRedirectComing || policyChecker()->loadType() == FrameLoadTypeRedirectWithLockedBackForwardList;    
+    bool isRedirect = m_quickRedirectComing || m_loadType == FrameLoadTypeRedirectWithLockedBackForwardList;
     loadInSameDocument(request.url(), 0, !isRedirect);
 }
 
@@ -2558,13 +2521,6 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
 
     if (boundaryFrame)
         boundaryFrame->view()->setSafeToPropagateScrollToParent(true);
-}
-
-void FrameLoader::callContinueLoadAfterNavigationPolicy(void* argument,
-    const ResourceRequest& request, PassRefPtr<FormState> formState, bool shouldContinue)
-{
-    FrameLoader* loader = static_cast<FrameLoader*>(argument);
-    loader->continueLoadAfterNavigationPolicy(request, formState, shouldContinue);
 }
 
 bool FrameLoader::shouldClose()
@@ -2626,7 +2582,7 @@ bool FrameLoader::fireBeforeUnloadEvent(Chrome* chrome)
     return chrome->runBeforeUnloadConfirmPanel(text, m_frame);
 }
 
-void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, PassRefPtr<FormState> formState, bool shouldContinue)
+void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState)
 {
     // If we loaded an alternate page to replace an unreachableURL, we'll get in here with a
     // nil policyDataSource because loading the alternate page will have passed
@@ -2637,6 +2593,17 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     RefPtr<Frame> protect(m_frame);
 
     bool isTargetItem = history()->provisionalItem() ? history()->provisionalItem()->isTargetItem() : false;
+
+    bool shouldContinue = false;
+    if (m_stateMachine.committedFirstRealDocumentLoad() || !m_frame->ownerElement()
+        || m_frame->ownerElement()->dispatchBeforeLoadEvent(m_policyDocumentLoader->request().url().string())) {
+        // We skip dispatching the beforeload event if we've already
+        // committed a real document load because the event would leak
+        // subsequent activity by the frame which the parent frame isn't
+        // supposed to learn. For example, if the child frame navigated to
+        // a new URL, the parent frame shouldn't learn the URL.
+        shouldContinue = m_policyDocumentLoader->shouldContinueForNavigationPolicy(m_policyDocumentLoader->request());
+    }
 
     // Two reasons we can't continue:
     //    1) Navigation policy delegate said we can't so request is nil. A primary case of this 
@@ -2655,7 +2622,7 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
         // If the navigation request came from the back/forward menu, and we punt on it, we have the 
         // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity, 
         // we only do this when punting a navigation for the target frame or top-level frame.  
-        if ((isTargetItem || isLoadingMainFrame()) && isBackForwardLoadType(policyChecker()->loadType())) {
+        if ((isTargetItem || isLoadingMainFrame()) && isBackForwardLoadType(m_loadType)) {
             if (Page* page = m_frame->page()) {
                 Frame* mainFrame = page->mainFrame();
                 if (HistoryItem* resetItem = mainFrame->loader()->history()->currentItem())
@@ -2665,7 +2632,6 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
         return;
     }
 
-    FrameLoadType type = policyChecker()->loadType();
     // A new navigation is in progress, so don't clear the history's provisional item.
     stopAllLoaders(ShouldNotClearProvisionalItem);
     
@@ -2680,12 +2646,11 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     }
 
     setProvisionalDocumentLoader(m_policyDocumentLoader.get());
-    m_loadType = type;
     setState(FrameStateProvisional);
 
     setPolicyDocumentLoader(0);
 
-    if (isBackForwardLoadType(type) && history()->provisionalItem()->isInPageCache()) {
+    if (isBackForwardLoadType(m_loadType) && history()->provisionalItem()->isInPageCache()) {
         loadProvisionalItemFromCachedPage();
         return;
     }

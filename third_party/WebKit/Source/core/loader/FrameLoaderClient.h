@@ -69,7 +69,6 @@ namespace WebCore {
     class Page;
     class ProtectionSpace;
     class PluginView;
-    class PolicyChecker;
     class ResourceError;
     class ResourceHandle;
     class ResourceRequest;
@@ -83,8 +82,6 @@ namespace WebCore {
     class StringWithDirection;
     class SubstituteData;
     class Widget;
-
-    typedef void (PolicyChecker::*FramePolicyFunction)(PolicyAction);
 
     class FrameLoaderClient {
     public:
@@ -127,7 +124,7 @@ namespace WebCore {
         virtual void dispatchShow() = 0;
 
         virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String& frameName) = 0;
-        virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) = 0;
+        virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) = 0;
 
         virtual void dispatchUnableToImplementPolicy(const ResourceError&) = 0;
 

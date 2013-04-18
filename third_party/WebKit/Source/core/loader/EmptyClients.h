@@ -235,7 +235,7 @@ public:
     virtual void dispatchShow() { }
 
     virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
-    virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) OVERRIDE;
+    virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }
 

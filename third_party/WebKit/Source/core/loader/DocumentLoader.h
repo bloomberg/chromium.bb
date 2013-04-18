@@ -137,8 +137,10 @@ namespace WebCore {
 #endif
         void cancelPendingSubstituteLoad(ResourceLoader*);
 
+        bool shouldContinueForNavigationPolicy(const ResourceRequest&);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
+
         void setOverrideEncoding(const String& encoding) { m_overrideEncoding = encoding; }
         void setLastCheckedRequest(const ResourceRequest& request) { m_lastCheckedRequest = request; }
         const ResourceRequest& lastCheckedRequest()  { return m_lastCheckedRequest; }
@@ -225,9 +227,6 @@ namespace WebCore {
 
         bool isMultipartReplacingLoad() const;
         bool isPostOrRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
-
-        static void callContinueAfterNavigationPolicy(void*, const ResourceRequest&, PassRefPtr<FormState>, bool shouldContinue);
-        void continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue);
 
         bool shouldContinueForResponse() const;
         void stopLoadingForPolicyChange();

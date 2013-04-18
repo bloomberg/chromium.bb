@@ -110,8 +110,9 @@ PolicyAction EmptyFrameLoaderClient::policyForNewWindowAction(const NavigationAc
     return PolicyUse;
 }
 
-void EmptyFrameLoaderClient::dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>)
+PolicyAction EmptyFrameLoaderClient::decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&)
 {
+    return PolicyUse;
 }
 
 void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(PassRefPtr<FormState>)

@@ -870,12 +870,9 @@ PolicyAction FrameLoaderClientImpl::policyForNewWindowAction(
     return PolicyUse;
 }
 
-void FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction(
-    FramePolicyFunction function,
+PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
     const NavigationAction& action,
-    const ResourceRequest& request,
-    PassRefPtr<FormState> formState) {
-    PolicyAction policyAction = PolicyIgnore;
+    const ResourceRequest& request) {
 
     // It is valid for this function to be invoked in code paths where the
     // webview is closed.
@@ -904,19 +901,16 @@ void FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction(
         }
 
         if (navigationPolicy == WebNavigationPolicyCurrentTab)
-            policyAction = PolicyUse;
+            return PolicyUse;
         else if (navigationPolicy == WebNavigationPolicyDownload)
-            policyAction = PolicyDownload;
-        else {
-            if (navigationPolicy != WebNavigationPolicyIgnore) {
+            return PolicyDownload;
+        else if (navigationPolicy != WebNavigationPolicyIgnore) {
                 WrappedResourceRequest webreq(request);
                 m_webFrame->client()->loadURLExternally(m_webFrame, webreq, navigationPolicy);
-            }
-            policyAction = PolicyIgnore;
         }
     }
 
-    (m_webFrame->frame()->loader()->policyChecker()->*function)(policyAction);
+    return PolicyIgnore;
 }
 
 void FrameLoaderClientImpl::dispatchUnableToImplementPolicy(const ResourceError& error)

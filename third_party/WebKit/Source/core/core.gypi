@@ -1039,8 +1039,6 @@
             'loader/NavigationScheduler.cpp',
             'loader/PingLoader.cpp',
             'loader/PingLoader.h',
-            'loader/PolicyCallback.cpp',
-            'loader/PolicyChecker.cpp',
             'loader/Prerenderer.cpp',
             'loader/Prerenderer.h',
             'loader/PrerendererClient.cpp',

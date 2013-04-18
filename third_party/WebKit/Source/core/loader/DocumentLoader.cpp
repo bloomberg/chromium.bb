@@ -410,6 +410,45 @@ void DocumentLoader::handleSubstituteDataLoadSoon()
         handleSubstituteDataLoadNow(0);
 }
 
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request)
+{
+    NavigationAction action = triggeringAction();
+    if (action.isEmpty()) {
+        action = NavigationAction(request, NavigationTypeOther);
+        setTriggeringAction(action);
+    }
+
+    // Don't ask more than once for the same request or if we are loading an empty URL.
+    // This avoids confusion on the part of the client.
+    if (equalIgnoringHeaderFields(request, lastCheckedRequest()) || (!request.isNull() && request.url().isEmpty())) {
+        setLastCheckedRequest(request);
+        return true;
+    }
+
+    // We are always willing to show alternate content for unreachable URLs;
+    // treat it like a reload so it maintains the right state for b/f list.
+    if (m_substituteData.isValid() && !m_substituteData.failingURL().isEmpty()) {
+        if (isBackForwardLoadType(frameLoader()->loadType()))
+            frameLoader()->setLoadType(FrameLoadTypeReload);
+        return true;
+    }
+
+    // If we're loading content into a subframe, check against the parent's Content Security Policy
+    // and kill the load if that check fails.
+    if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
+        return false;
+
+    setLastCheckedRequest(request);
+
+    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(action, request);
+    if (policy == PolicyDownload) {
+        ResourceRequest mutableRequest(request);
+        frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);
+        frameLoader()->client()->startDownload(mutableRequest);
+    }
+    return policy == PolicyUse;
+}
+
 void DocumentLoader::redirectReceived(CachedResource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT_UNUSED(resource, resource == m_mainResource);
@@ -464,51 +503,40 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     setRequest(newRequest);
 
-    if (!redirectResponse.isNull()) {
-        // We checked application cache for initial URL, now we need to check it for redirected one.
-        ASSERT(!m_substituteData.isValid());
-        m_applicationCacheHost->maybeLoadMainResourceForRedirect(newRequest, m_substituteData);
-        if (m_substituteData.isValid())
-            m_identifierForLoadWithoutResourceLoader = mainResourceLoader()->identifier();
-    }
+    if (redirectResponse.isNull())
+        return;
 
-    // FIXME: Ideally we'd stop the I/O until we hear back from the navigation policy delegate
-    // listener. But there's no way to do that in practice. So instead we cancel later if the
-    // listener tells us to. In practice that means the navigation policy needs to be decided
-    // synchronously for these redirect cases.
-    if (!redirectResponse.isNull())
-        frameLoader()->policyChecker()->checkNavigationPolicy(newRequest, callContinueAfterNavigationPolicy, this);
-}
+    // We checked application cache for initial URL, now we need to check it for redirected one.
+    ASSERT(!m_substituteData.isValid());
+    m_applicationCacheHost->maybeLoadMainResourceForRedirect(newRequest, m_substituteData);
+    if (m_substituteData.isValid())
+        m_identifierForLoadWithoutResourceLoader = mainResourceLoader()->identifier();
 
-void DocumentLoader::callContinueAfterNavigationPolicy(void* argument, const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue)
-{
-    static_cast<DocumentLoader*>(argument)->continueAfterNavigationPolicy(request, shouldContinue);
-}
-
-void DocumentLoader::continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue)
-{
-    if (!shouldContinue)
+    if (!shouldContinueForNavigationPolicy(newRequest)) {
         stopLoadingForPolicyChange();
-    else if (m_substituteData.isValid()) {
-        // A redirect resulted in loading substitute data.
-        ASSERT(timing()->redirectCount());
-
-        // We need to remove our reference to the CachedResource in favor of a SubstituteData load.
-        // This will probably trigger the cancellation of the CachedResource's underlying ResourceLoader, though there is a
-        // small chance that the resource is being loaded by a different Frame, preventing the ResourceLoader from being cancelled.
-        // If the ResourceLoader is indeed cancelled, it would normally send resource load callbacks.
-        // However, from an API perspective, this isn't a cancellation. Therefore, sever our relationship with the network load,
-        // but prevent the ResourceLoader from sending ResourceLoadNotifier callbacks.
-        RefPtr<ResourceLoader> resourceLoader = mainResourceLoader();
-        ASSERT(resourceLoader->shouldSendResourceLoadCallbacks());
-        resourceLoader->setSendCallbackPolicy(DoNotSendCallbacks);
-        if (m_mainResource) {
-            m_mainResource->removeClient(this);
-            m_mainResource = 0;
-        }
-        resourceLoader->setSendCallbackPolicy(SendCallbacks);
-        handleSubstituteDataLoadSoon();
+        return;
     }
+
+    if (!m_substituteData.isValid())
+        return;
+    // A redirect resulted in loading substitute data.
+    ASSERT(timing()->redirectCount());
+
+    // We need to remove our reference to the CachedResource in favor of a SubstituteData load.
+    // This will probably trigger the cancellation of the CachedResource's underlying ResourceLoader, though there is a
+    // small chance that the resource is being loaded by a different Frame, preventing the ResourceLoader from being cancelled.
+    // If the ResourceLoader is indeed cancelled, it would normally send resource load callbacks.
+    // However, from an API perspective, this isn't a cancellation. Therefore, sever our relationship with the network load,
+    // but prevent the ResourceLoader from sending ResourceLoadNotifier callbacks.
+    RefPtr<ResourceLoader> resourceLoader = mainResourceLoader();
+    ASSERT(resourceLoader->shouldSendResourceLoadCallbacks());
+    resourceLoader->setSendCallbackPolicy(DoNotSendCallbacks);
+    if (m_mainResource) {
+        m_mainResource->removeClient(this);
+        m_mainResource = 0;
+    }
+    resourceLoader->setSendCallbackPolicy(SendCallbacks);
+    handleSubstituteDataLoadSoon();
 }
 
 bool DocumentLoader::shouldContinueForResponse() const
