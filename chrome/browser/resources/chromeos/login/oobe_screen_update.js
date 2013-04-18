@@ -14,9 +14,6 @@ cr.define('oobe', function() {
    */
   var UpdateScreen = cr.ui.define('div');
 
-  /** @const */ var ELLIPSIS = ['', '.', '..', '...'];
-  /** @const */ var ELLIPSIS_ANIMATION_TIMEOUT_MS = 1000;
-
   /**
    * Registers with Oobe.
    */
@@ -33,28 +30,12 @@ cr.define('oobe', function() {
     decorate: function() {
     },
 
-    onBeforeShow: function(data) {
-      UpdateScreen.startEllipsisAnimation();
-    },
-
-    onBeforeHide: function() {
-      UpdateScreen.stopEllipsisAnimation();
-    },
-
     /**
      * Header text of the screen.
      * @type {string}
      */
     get header() {
       return loadTimeData.getString('updateScreenTitle');
-    },
-
-    /**
-     * Buttons in oobe wizard's button strip.
-     * @type {array} Array of Buttons.
-     */
-    get buttons() {
-      return null;
     },
 
     /**
@@ -70,43 +51,11 @@ cr.define('oobe', function() {
     },
   };
 
-  var ellipsisAnimationActive = false;
-
-  /**
-   * Updates number of dots in the ellipsis.
-   *
-   * @private
-   * @param {number} count Number of dots that should be shown.
-   */
-  function updateEllipsisAnimation_(count) {
-    $('update-checking-ellipsis').textContent = ELLIPSIS[count];
-    if (ellipsisAnimationActive) {
-      window.setTimeout(function() {
-          updateEllipsisAnimation_((count + 1) % ELLIPSIS.length);
-        }, ELLIPSIS_ANIMATION_TIMEOUT_MS);
-    }
-  };
-
   /**
    * Makes 'press Escape to cancel update' hint visible.
    */
   UpdateScreen.enableUpdateCancel = function() {
     $('update-cancel-hint').hidden = false;
-  };
-
-  /**
-   * Starts animation for tail ellipses in "Checking for update..." label.
-   */
-  UpdateScreen.startEllipsisAnimation = function() {
-    ellipsisAnimationActive = true;
-    updateEllipsisAnimation_(0);
-  };
-
-  /**
-   * Stops animation for tail ellipses in "Checking for update..." label.
-   */
-  UpdateScreen.stopEllipsisAnimation = function() {
-    ellipsisAnimationActive = false;
   };
 
   return {

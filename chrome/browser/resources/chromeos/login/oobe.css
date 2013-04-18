@@ -711,8 +711,23 @@ html[dir=rtl] .step-extra-controls {
   right: 49px;
 }
 
-#update-screen-curtain p {
-  text-align: center;
+.throbber {
+  -webkit-animation: throbber-animation 1s steps(36) infinite;
+  -webkit-margin-before: 2px;
+  -webkit-margin-end: 4px;
+  background-image: url(chrome://theme/IDR_CROS_DEFAULT_THROBBER);
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}
+
+@-webkit-keyframes throbber-animation {
+  from {
+    background-position: 0;
+  }
+  to {
+    background-position: -576px;
+  }
 }
 
 #update #update-screen-curtain {
@@ -728,25 +743,13 @@ html[dir=rtl] .step-extra-controls {
 }
 
 #update #update-screen-curtain {
-  margin: 45px 45px;
+  margin: 45px 35px;
 }
 
 #update-screen-main {
-  margin: 45px 45px;
+  margin: 45px 35px;
   min-height: 114px;
   text-align: center;
-}
-
-#update #update-checking-ellipsis {
-  width: 16px;
-}
-
-html[dir=ltr] #update #update-checking-ellipsis {
-  text-align: left;
-}
-
-html[dir=rtl] #update #update-checking-ellipsis {
-  text-align: right;
 }
 
 #update #update-cancel-hint {
@@ -761,7 +764,7 @@ html[dir=rtl] #update #update-checking-ellipsis {
 }
 
 #update #checking-updates-label {
-  -webkit-margin-after: 34px;
+  -webkit-margin-after: 90px;
 }
 
 #update #update-bottom-label {
