@@ -261,8 +261,8 @@ text_model_invoke_action(struct wl_client *client,
 }
 
 static void
-text_model_commit(struct wl_client *client,
-		  struct wl_resource *resource)
+text_model_commit_state(struct wl_client *client,
+			struct wl_resource *resource)
 {
 	struct text_model *text_model = resource->data;
 	struct input_method *input_method, *next;
@@ -324,7 +324,7 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_set_micro_focus,
 	text_model_set_content_type,
 	text_model_invoke_action,
-	text_model_commit,
+	text_model_commit_state,
 	text_model_show_input_panel,
 	text_model_hide_input_panel,
 	text_model_set_preferred_language

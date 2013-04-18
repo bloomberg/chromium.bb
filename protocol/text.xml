@@ -140,7 +140,7 @@
       <arg name="button" type="uint"/>
       <arg name="index" type="uint"/>
     </request>
-    <request name="commit">
+    <request name="commit_state">
     </request>
     <request name="show_input_panel">
       <description summary="show input panels">

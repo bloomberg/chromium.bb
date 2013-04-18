@@ -640,7 +640,7 @@ text_entry_update(struct text_entry *entry)
 		text_model_set_preferred_language(entry->model,
 						  entry->preferred_language);
 
-	text_model_commit(entry->model);
+	text_model_commit_state(entry->model);
 }
 
 static void
