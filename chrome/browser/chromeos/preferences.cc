@@ -370,6 +370,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
                                    prefs, callback);
   select_file_last_directory_.Init(prefs::kSelectFileLastDirectory,
                                    prefs, callback);
+  save_file_default_directory_.Init(prefs::kSaveFileDefaultDirectory,
+                                    prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
@@ -607,6 +609,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     // TODO(haruki): Remove this when migration completes. crbug.com/229304.
     if (drive::util::NeedsNamespaceMigration(pref_path)) {
       prefs_->SetFilePath(prefs::kSelectFileLastDirectory,
+                          drive::util::ConvertToMyDriveNamespace(pref_path));
+    }
+  }
+  if (!pref_name || *pref_name == prefs::kSaveFileDefaultDirectory) {
+    const base::FilePath pref_path = save_file_default_directory_.GetValue();
+    // This pref can contain a Drive path, which needs to be updated due to
+    // namespaces introduced by crbug.com/174233.
+    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
+    if (drive::util::NeedsNamespaceMigration(pref_path)) {
+      prefs_->SetFilePath(prefs::kSaveFileDefaultDirectory,
                           drive::util::ConvertToMyDriveNamespace(pref_path));
     }
   }
