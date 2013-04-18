@@ -6,6 +6,7 @@ package org.chromium.ui.gfx;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -47,22 +48,33 @@ public class DeviceDisplayInfo {
       return getMetrics().widthPixels;
   }
 
+  @SuppressWarnings("deprecation")
+  private int getPixelFormat() {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+          return getDisplay().getPixelFormat();
+      }
+      // JellyBean MR1 and later always uses RGBA_8888.
+      return PixelFormat.RGBA_8888;
+  }
+
   /**
    * @return Bits per pixel.
    */
   @CalledByNative
   public int getBitsPerPixel() {
+      int format = getPixelFormat();
       PixelFormat info = new PixelFormat();
-      PixelFormat.getPixelFormatInfo(getDisplay().getPixelFormat(), info);
+      PixelFormat.getPixelFormatInfo(format, info);
       return info.bitsPerPixel;
   }
 
   /**
    * @return Bits per component.
    */
+  @SuppressWarnings("deprecation")
   @CalledByNative
   public int getBitsPerComponent() {
-      int format = getDisplay().getPixelFormat();
+      int format = getPixelFormat();
       switch (format) {
       case PixelFormat.RGBA_4444:
           return 4;
