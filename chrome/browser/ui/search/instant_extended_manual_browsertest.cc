@@ -84,9 +84,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
   bool PressBackspaceAndWaitForOverlayToShow() {
     InstantTestModelObserver observer(
         instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-    bool result = PressBackspace();
-    observer.WaitForDesiredOverlayState();
-    return result;
+    return PressBackspace() && observer.WaitForExpectedOverlayState();
   }
 
   void PressEnterAndWaitForNavigation() {
@@ -166,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Type "face" and expect Google to set gray text for "book" to suggest
   // [facebook], the query.
-  SetOmniboxTextAndWaitForOverlayToShow("face");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("face"));
   EXPECT_EQ(ASCIIToUTF16("face"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("book"), GetGrayText());
 
@@ -190,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Type "fan" and expect Google to set gray text to "dango" to suggest
   // [fandango], the query.
-  SetOmniboxTextAndWaitForOverlayToShow("fan");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("fan"));
   EXPECT_EQ(ASCIIToUTF16("fan"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("dango"), GetGrayText());
 
@@ -215,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Type "facebook.c" and expect Google to set blue text to "om" to suggest
   // http://www.facebook.com/, the URL.
-  SetOmniboxTextAndWaitForOverlayToShow("facebook.c");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("facebook.c"));
   EXPECT_EQ(ASCIIToUTF16("facebook.com"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("om"), GetBlueText());
   bool selected = false;
@@ -245,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Type "facebook.com/" and expect Google to set blue text to "login.php" to
   // suggest http://www.facebook.com/login.php, the URL.
-  SetOmniboxTextAndWaitForOverlayToShow("facebook.com/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("facebook.com/"));
   EXPECT_EQ(ASCIIToUTF16("facebook.com/login.php"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("login.php"), GetBlueText());
   bool selected = false;
@@ -276,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Type "a.cop" and expect Google to set gray text to "land" to suggest the
   // query [a.copland].
-  SetOmniboxTextAndWaitForOverlayToShow("a.cop");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("a.cop"));
   EXPECT_EQ(ASCIIToUTF16("a.cop"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("land"), GetGrayText());
 
@@ -303,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "e.co/" and expect the top suggestion to be the URL "e.co/".
-  SetOmniboxTextAndWaitForOverlayToShow("e.co/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("e.co/"));
   EXPECT_EQ(ASCIIToUTF16("e.co/"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
   EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
@@ -333,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
 
   // Type "www.facebook.com" and expect the top suggestion to be the URL
   // facebook.com.
-  SetOmniboxTextAndWaitForOverlayToShow("www.facebook.com");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("www.facebook.com"));
   EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
   bool selected = false;
@@ -345,8 +343,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
+// TODO: http://crbug.com/232088
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_TypeAutocompletedURLAndPressEnter) {
+                       DISABLED_TypeAutocompletedURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -365,8 +364,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_PasteURLAndPressEnter) {
+                       DISABLED_PasteURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   omnibox()->model()->on_paste();
   SetOmniboxText("www.facebook.com");
   omnibox()->OnAfterPossibleChange();
-  observer.WaitForDesiredOverlayState();
+  ASSERT_TRUE(observer.WaitForExpectedOverlayState());
   EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
   EXPECT_EQ(string16(), GetBlueText());
   bool selected = false;

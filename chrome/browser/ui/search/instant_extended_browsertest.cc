@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // Typing in the omnibox should show the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 }
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Typing in the omnibox should show the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/"));
 
   // Create an event listener that opens the top suggestion in a new tab.
   EXPECT_TRUE(ExecuteScript(
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Get a committed tab to work with.
   content::WebContents* instant_tab = instant()->GetOverlayContents();
-  SetOmniboxTextAndWaitForOverlayToShow("committed");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("committed"));
   browser()->window()->GetLocationBar()->AcceptInput();
 
   // Put focus back into the omnibox, type, and wait for some gray text.
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
   EXPECT_TRUE(ExecuteScript("suggestion = 'santa claus';"));
 
   // Set the text, and wait for suggestions to show up.
-  SetOmniboxTextAndWaitForOverlayToShow("santa");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("santa"));
   EXPECT_EQ(ASCIIToUTF16("santa"), omnibox()->GetText());
 
   // Test that the current suggestion is correctly set.
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
   EXPECT_TRUE(ExecuteScript("suggestion = 'johnny depp';"));
 
   // Set the text, and wait for suggestions to show up.
-  SetOmniboxTextAndWaitForOverlayToShow("johnny");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("johnny"));
   EXPECT_EQ(ASCIIToUTF16("johnny"), omnibox()->GetText());
 
   // Test that the current suggestion is correctly set.
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       content::NotificationService::AllSources());
 
   // Do a search and commit it.
-  SetOmniboxTextAndWaitForOverlayToShow("hello k");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello k"));
   EXPECT_EQ(ASCIIToUTF16("hello k"), omnibox()->GetText());
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // Tell the page to send a URL suggestion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
                             "behavior = 1;"));
-  SetOmniboxTextAndWaitForOverlayToShow("exa");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("exa"));
   EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
 
   // Now send a search suggestion and see that Navigation suggestion is no
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
-  SetOmniboxTextAndWaitForOverlayToShow("hello");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello"));
   EXPECT_EQ("hello", GetOmniboxText());
 
   SendDownArrow();
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       content::NotificationService::AllSources());
 
   // Do a search and commit it.
-  SetOmniboxTextAndWaitForOverlayToShow("hello k");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello k"));
   EXPECT_EQ(ASCIIToUTF16("hello k"), omnibox()->GetText());
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsAndHitEscape) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
-  SetOmniboxTextAndWaitForOverlayToShow("hello");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello"));
   EXPECT_EQ("hello", GetOmniboxText());
 
   SendDownArrow();
@@ -536,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PressEscapeWithBlueText) {
   EXPECT_TRUE(ExecuteScript("suggestion = 'chimichanga.com';"
                             "behavior = 1;"));
 
-  SetOmniboxTextAndWaitForOverlayToShow("chimi");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("chimi"));
 
   EXPECT_EQ(ASCIIToUTF16("chimichanga.com"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("changa.com"), GetBlueText());
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PressEscapeWithGrayText) {
   EXPECT_TRUE(ExecuteScript("suggestion = 'cowabunga';"
                             "behavior = 2;"));
 
-  SetOmniboxTextAndWaitForOverlayToShow("cowa");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("cowa"));
 
   EXPECT_EQ(ASCIIToUTF16("cowa"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
@@ -831,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
 
   // Type a query and hit enter to get a results page.  The overlay becomes the
   // active tab.
-  SetOmniboxTextAndWaitForOverlayToShow("hello");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello"));
   EXPECT_EQ("hello", GetOmniboxText());
   browser()->window()->GetLocationBar()->AcceptInput();
   content::WebContents* first_active_tab =
@@ -847,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
 
   // Show and commit the new overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("hello again");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("hello again"));
   EXPECT_EQ("hello again", GetOmniboxText());
   browser()->window()->GetLocationBar()->AcceptInput();
   content::WebContents* second_active_tab =
@@ -868,7 +868,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   // Do not set gray text that is not a suffix of the query.
   EXPECT_TRUE(ExecuteScript("suggestion = 'potato';"
                             "behavior = 2;"));
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   // Do not set blue text that is not a valid URL completion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'this is not a url!';"
                             "behavior = 1;"));
-  SetOmniboxTextAndWaitForOverlayToShow("this is");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("this is"));
   EXPECT_EQ(ASCIIToUTF16("this is"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 
@@ -887,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   // First set up some blue text completion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com';"
                             "behavior = 1;"));
-  SetOmniboxTextAndWaitForOverlayToShow("http://www.ex");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://www.ex"));
   EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16("ample.com"), GetBlueText());
 
@@ -902,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
 
   // Ignore an out-of-date blue text suggestion. (Simulates a laggy
   // SetSuggestion IPC by directly calling into InstantController.)
-  SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/"));
   instant()->SetSuggestions(
       instant()->overlay()->contents(),
       std::vector<InstantSuggestion>(
@@ -920,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   // TODO(samarth): uncomment after fixing crbug.com/191656.
   // Use an out-of-date blue text suggestion, if the text typed by the user is
   // contained in the suggestion.
-  // SetOmniboxTextAndWaitForOverlayToShow("ex");
+  // ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("ex"));
   // instant()->SetSuggestions(
   //     instant()->overlay()->contents(),
   //     std::vector<InstantSuggestion>(
@@ -956,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // Tell the page to send a URL suggestion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
                             "behavior = 1;"));
-  SetOmniboxTextAndWaitForOverlayToShow("exa");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("exa"));
   EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
   SetOmniboxText("exam");
   EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnPreview) {
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
   // Typing in the omnibox shows the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   content::WebContents* preview = instant()->GetOverlayContents();
   ASSERT_NE(static_cast<content::WebContents*>(NULL), preview);
@@ -1156,7 +1156,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnResults) {
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
   // Typing in the omnibox shows the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   content::WebContents* preview = instant()->GetOverlayContents();
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   // Commit the search by pressing Enter.
@@ -1226,7 +1226,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
 
   // Typing in the omnibox should show the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(instant()->IsOverlayingSearchResults());
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 
@@ -1321,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntrySet) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllSources());
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
 
@@ -1366,7 +1366,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_TransientEntryRemoved) {
       ));
 
   // Commit the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   browser()->window()->GetLocationBar()->AcceptInput();
   observer.Wait();
 
@@ -1468,7 +1468,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AutocompleteProvidersDone) {
   EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ(0, on_native_suggestions_calls_);
 
-  SetOmniboxTextAndWaitForOverlayToShow("railroad");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("railroad"));
 
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
   EXPECT_TRUE(UpdateSearchState(overlay));
@@ -1531,7 +1531,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // The overlay showing will trigger top bars in 1st tab to be hidden, but keep
   // 2nd tab's visible.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/"));
   EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
   EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
 
@@ -1549,7 +1549,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Type in omnibox to trigger full-height overlay, which will trigger its top
   // bars to be hidden, but keep 2nd tab's visible.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
   EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
 
@@ -1594,7 +1594,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TemporaryTextResetWhenPopupClosed) {
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Show the overlay and arrow-down to a suggestion (this sets temporary text).
-  SetOmniboxTextAndWaitForOverlayToShow("juju");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("juju"));
   SendDownArrow();
 
   EXPECT_TRUE(HasTemporaryText());
@@ -1626,7 +1626,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Show the overlay and arrow-down to a suggestion (this sets temporary text).
-  SetOmniboxTextAndWaitForOverlayToShow("thangam");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("thangam"));
   SendDownArrow();
   EXPECT_TRUE(HasTemporaryText());
 
@@ -1653,7 +1653,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DeniesUnexpectedSuggestions) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
-  SetOmniboxTextAndWaitForOverlayToShow("chip");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("chip"));
   SendDownArrow();
 
   EXPECT_EQ("result 1", GetOmniboxText());
@@ -1675,7 +1675,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EmptyAutocompleteResults) {
 
   // Type a URL, so that there's at least one autocomplete result (a "URL what
   // you typed" match).
-  SetOmniboxTextAndWaitForOverlayToShow("http://upsamina/");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("http://upsamina/"));
 
   content::WebContents* overlay = instant()->GetOverlayContents();
 

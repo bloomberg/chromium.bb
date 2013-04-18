@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 
   // Doing a search should also use the same preloaded page.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   EXPECT_EQ(overlay, instant()->GetOverlayContents());
 }
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   // Typing "query" into the omnibox causes one or more onchange events. The
   // page suggested "query suggestion" is inline autocompleted into the omnibox,
   // causing another onchange event.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
   int min_onchangecalls = 2;
 
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
 
   // Stash a reference to the overlay, so we can refer to it after commit.
   content::WebContents* overlay = instant()->GetOverlayContents();
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
 
   // Type a query into the omnibox. This should cause an onresize() event, with
   // a valid (non-zero) height.
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
 
   EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_EQ(1, onresizecalls_);
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   EXPECT_TRUE(ExecuteScript("behavior = 'now'"));
 
   // Type a query, causing the hardcoded "query suggestion" to be returned.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   // Get what's showing in the omnibox, and what's highlighted.
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
   EXPECT_TRUE(ExecuteScript("behavior = 'never'"));
 
   // Type a query, causing the hardcoded "query suggestion" to be returned.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   // Get what's showing in the omnibox, and what's highlighted.
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsValidObject) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'query completion' } ]"));
 
   // Type a query, causing "query completion" to be returned as the suggestion.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query completion"), omnibox()->GetText());
 }
 
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsInvalidObject) {
   EXPECT_TRUE(ExecuteScript("suggestion = { value: 'query completion' }"));
 
   // Type a query, but expect no suggestion.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 }
 
@@ -361,19 +361,19 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
   FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = {}"));
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 
   omnibox()->RevertAll();
 
   EXPECT_TRUE(ExecuteScript("suggestion = []"));
-  SetOmniboxTextAndWaitForOverlayToShow("query sugg");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query sugg"));
   EXPECT_EQ(ASCIIToUTF16("query sugg"), omnibox()->GetText());
 
   omnibox()->RevertAll();
 
   EXPECT_TRUE(ExecuteScript("suggestion = [{}]"));
-  SetOmniboxTextAndWaitForOverlayToShow("query suggest");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query suggest"));
   EXPECT_EQ(ASCIIToUTF16("query suggest"), omnibox()->GetText());
 }
 
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SearchSuggestionIsNotDiscarded) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantSupport();
 
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
   SetOmniboxText("query sugg");
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
@@ -450,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   min_onchangecalls = onchangecalls_;
 
   // Type a search. Instant should show.
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
   ++min_onchangecalls;
 
   EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
@@ -472,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   min_onchangecalls = onchangecalls_;
 
   // Type the same search as before.
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
   min_onchangecalls++;
 
   EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type a query. This causes the overlay to be shown.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(overlay);
@@ -602,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   EXPECT_TRUE(CheckVisibilityIs(overlay, false));
 
   // Type a query and wait for Instant to show.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
   EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 
@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   EXPECT_TRUE(CheckVisibilityIs(overlay, false));
 
   // Typing a query should show the overlay again.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
   EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
   ui_test_utils::WaitForHistoryToLoad(history);
 
   // Perform a search.
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
 
   // Commit the search.
   browser()->window()->GetLocationBar()->AcceptInput();
@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
 
   Browser* previous_window = browser();
   EXPECT_TRUE(instant()->IsOverlayingSearchResults());
@@ -745,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
                                     SearchMode::MODE_DEFAULT);
   chrome::NewEmptyWindow(browser()->profile(),
                          chrome::HOST_DESKTOP_TYPE_NATIVE);
-  observer.WaitForDesiredOverlayState();
+  ASSERT_TRUE(observer.WaitForExpectedOverlayState());
 
   // Even though we just created a new Browser object (for the new window), the
   // browser() accessor should still give us the first window's Browser object.
@@ -763,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   FocusOmniboxAndWaitForInstantSupport();
 
   // The overlay is refreshed only after all three conditions above are met.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   instant()->overlay_->is_stale_ = true;
   instant()->ReloadOverlayIfStale();
   EXPECT_TRUE(instant()->overlay_->supports_instant());
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   EXPECT_FALSE(instant()->overlay_->supports_instant());
 
   // Try with a different ordering.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
   instant()->overlay_->is_stale_ = true;
   instant()->ReloadOverlayIfStale();
   EXPECT_TRUE(instant()->overlay_->supports_instant());
@@ -794,42 +794,42 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'INSTANT' } ]"));
 
-  SetOmniboxTextAndWaitForOverlayToShow("in");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("in"));
   EXPECT_EQ(ASCIIToUTF16("instant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow("IN");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("IN"));
   EXPECT_EQ(ASCIIToUTF16("INSTANT"), omnibox()->GetText());
 
   // U+0130 == LATIN CAPITAL LETTER I WITH DOT ABOVE
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u0130NSTANT' } ]"));
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow("i");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("i"));
   EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow("I");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("I"));
   EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"i\u0307"));
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"i\u0307")));
   EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"I\u0307"));
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"I\u0307")));
   EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"\u0130"));
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"\u0130")));
   EXPECT_EQ(WideToUTF16(L"\u0130NSTANT"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow("in");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("in"));
   EXPECT_EQ(ASCIIToUTF16("in"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow("IN");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("IN"));
   EXPECT_EQ(ASCIIToUTF16("IN"), omnibox()->GetText());
 
   // Check that a d with a dot above and below it is completed regardless of
@@ -839,7 +839,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u1e0d\\u0307oh' } ]"));
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"\u1e0b\u0323"));
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow(
+      WideToUTF8(L"\u1e0b\u0323")));
   EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
 
@@ -865,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
-  SetOmniboxTextAndWaitForOverlayToShow("search");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("search"));
 
   // Stash a reference to the overlay, so we can refer to it after commit.
   content::WebContents* overlay = instant()->GetOverlayContents();
@@ -936,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'instant' } ];"
                             "behavior = 'never';"));
 
-  SetOmniboxTextAndWaitForOverlayToShow("in");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("in"));
   EXPECT_EQ(ASCIIToUTF16("stant"), GetGrayText());
 
   SetOmniboxText("ins");
@@ -955,14 +956,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type partial query, get suggestion to show.
-  SetOmniboxTextAndWaitForOverlayToShow("q");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("q"));
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 
   // Kill the Instant renderer and wait for Instant support again.
   KillInstantRenderView();
   FocusOmniboxAndWaitForInstantSupport();
 
-  SetOmniboxTextAndWaitForOverlayToShow("qu");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("qu"));
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 }
 
@@ -986,7 +987,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
       overlay->GetRenderProcessHost()->GetID()));
 
   // Search and commit the search by pressing Alt-Enter.
-  SetOmniboxTextAndWaitForOverlayToShow("tractor");
+  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("tractor"));
   omnibox()->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
 
   // The committed search results page should also live inside the

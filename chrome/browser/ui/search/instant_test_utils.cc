@@ -33,9 +33,10 @@ std::string WrapScript(const std::string& script) {
 
 InstantTestModelObserver::InstantTestModelObserver(
     InstantOverlayModel* model,
-    SearchMode::Type desired_mode_type)
+    SearchMode::Type expected_mode_type)
     : model_(model),
-      desired_mode_type_(desired_mode_type) {
+      expected_mode_type_(expected_mode_type),
+      observed_mode_type_(static_cast<SearchMode::Type>(-1)) {
   model_->AddObserver(this);
 }
 
@@ -43,14 +44,16 @@ InstantTestModelObserver::~InstantTestModelObserver() {
   model_->RemoveObserver(this);
 }
 
-void InstantTestModelObserver::WaitForDesiredOverlayState() {
+bool InstantTestModelObserver::WaitForExpectedOverlayState() {
   run_loop_.Run();
+  return observed_mode_type_ == expected_mode_type_;
 }
 
 void InstantTestModelObserver::OverlayStateChanged(
     const InstantOverlayModel& model) {
-  if (model.mode().mode == desired_mode_type_)
-    run_loop_.Quit();
+  observed_mode_type_ = model.mode().mode;
+  EXPECT_EQ(expected_mode_type_, observed_mode_type_);
+  run_loop_.Quit();
 }
 
 // InstantTestBase -----------------------------------------------------------
@@ -140,12 +143,12 @@ void InstantTestBase::SetOmniboxText(const std::string& text) {
   omnibox()->SetUserText(UTF8ToUTF16(text));
 }
 
-void InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
+bool InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
     const std::string& text) {
   InstantTestModelObserver observer(
       instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
   SetOmniboxText(text);
-  observer.WaitForDesiredOverlayState();
+  return observer.WaitForExpectedOverlayState();
 }
 
 void InstantTestBase::SetOmniboxTextAndWaitForSuggestion(

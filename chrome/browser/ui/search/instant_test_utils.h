@@ -32,17 +32,20 @@ class WebContents;
 class InstantTestModelObserver : public InstantOverlayModelObserver {
  public:
   InstantTestModelObserver(InstantOverlayModel* model,
-                           SearchMode::Type desired_mode_type);
-  ~InstantTestModelObserver();
+                           SearchMode::Type expected_mode_type);
+  virtual ~InstantTestModelObserver();
 
-  void WaitForDesiredOverlayState();
+  // Returns true if the |expected_mode_type_| was observed in
+  // OverlayStateChanged.
+  bool WaitForExpectedOverlayState();
 
   // Overridden from InstantOverlayModelObserver:
   virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
 
  private:
   InstantOverlayModel* const model_;
-  const SearchMode::Type desired_mode_type_;
+  const SearchMode::Type expected_mode_type_;
+  SearchMode::Type observed_mode_type_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTestModelObserver);
@@ -89,7 +92,7 @@ class InstantTestBase {
   void FocusOmniboxAndWaitForInstantExtendedSupport();
 
   void SetOmniboxText(const std::string& text);
-  void SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
+  bool SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
   void SetOmniboxTextAndWaitForSuggestion(const std::string& text);
 
   bool GetBoolFromJS(content::WebContents* contents,
