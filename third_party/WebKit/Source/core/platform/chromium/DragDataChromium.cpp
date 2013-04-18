@@ -40,6 +40,7 @@
 #include "KURL.h"
 #include "NotImplemented.h"
 #include "markup.h"
+#include "Range.h"
 #include <wtf/text/WTFString.h>
 
 #include <public/Platform.h>

@@ -32,9 +32,11 @@
 
 #include "Color.h"
 #include "Element.h"
+#include "EventHandler.h"
 #include "FrameView.h"
 #include "HTMLSelectElement.h"
 #include "KeyboardCodes.h"
+#include "PlatformMouseEvent.h"
 #include "PopupContainer.h"
 #include "PopupMenu.h"
 #include "PopupMenuChromium.h"
