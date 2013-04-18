@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: The 'X-WebKit-CSP' header is deprecated. Please consider using the unprefixed 'Content-Security-Policy' header instead.
 Tests that adding a new rule does not crash the renderer and modifying an inline style does not report errors when forbidden by Content-Security-Policy.
 
 Text
