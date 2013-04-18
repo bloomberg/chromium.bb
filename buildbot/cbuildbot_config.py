@@ -494,7 +494,7 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
                timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
-               file_bugs=True):
+               file_bugs=False):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
