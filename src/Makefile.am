@@ -19,11 +19,11 @@ libwayland_util_la_SOURCES =			\
 	wayland-private.h
 
 libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
+libwayland_server_la_LDFLAGS = -version-info 1:0:1
 libwayland_server_la_SOURCES =			\
 	wayland-protocol.c			\
 	wayland-server.c			\
 	wayland-shm.c				\
-	data-device.c				\
 	event-loop.c
 
 libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
