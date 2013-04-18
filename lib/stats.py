@@ -174,7 +174,8 @@ def UploadContext():
     # parallel.RunParallelTasks, because with RunParallelTasks, both the
     # uploader and the subcommand are treated as background tasks, and the
     # subcommand will lose responsiveness, since its output will be buffered.
-    with parallel.BackgroundTaskRunner(StatsUploader.Upload) as queue:
+    with parallel.BackgroundTaskRunner(
+        StatsUploader.Upload, processes=1) as queue:
       yield queue
   except parallel.BackgroundFailure:
     # Display unexpected errors, but don't propagate the error.
