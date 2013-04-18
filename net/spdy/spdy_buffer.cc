@@ -41,7 +41,7 @@ SpdyBuffer::SpdyBuffer(const char* data, size_t size) :
 
 SpdyBuffer::~SpdyBuffer() {
   if (GetRemainingSize() > 0)
-    Consume(GetRemainingSize());
+    ConsumeHelper(GetRemainingSize(), DISCARD);
 }
 
 const char* SpdyBuffer::GetRemainingData() const {
@@ -57,17 +57,22 @@ void SpdyBuffer::AddConsumeCallback(const ConsumeCallback& consume_callback) {
 }
 
 void SpdyBuffer::Consume(size_t consume_size) {
-  DCHECK_GE(consume_size, 1u);
-  DCHECK_LE(consume_size, GetRemainingSize());
-  offset_ += consume_size;
-  for (std::vector<ConsumeCallback>::const_iterator it =
-           consume_callbacks_.begin(); it != consume_callbacks_.end(); ++it) {
-    it->Run(consume_size);
-  }
+  ConsumeHelper(consume_size, CONSUME);
 };
 
 IOBuffer* SpdyBuffer::GetIOBufferForRemainingData() {
   return new WrappedIOBuffer(GetRemainingData());
 }
+
+void SpdyBuffer::ConsumeHelper(size_t consume_size,
+                               ConsumeSource consume_source) {
+  DCHECK_GE(consume_size, 1u);
+  DCHECK_LE(consume_size, GetRemainingSize());
+  offset_ += consume_size;
+  for (std::vector<ConsumeCallback>::const_iterator it =
+           consume_callbacks_.begin(); it != consume_callbacks_.end(); ++it) {
+    it->Run(consume_size, consume_source);
+  }
+};
 
 }  // namespace net

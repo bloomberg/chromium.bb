@@ -2103,34 +2103,6 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
-// SpdySession::IncreaseRecvWindowSize should be callable even if
-// session flow control isn't turned on, but it should have no effect.
-TEST_F(SpdySessionSpdy3Test, IncreaseRecvWindowSize) {
-  session_deps_.host_resolver->set_synchronous_mode(true);
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, 0, 0)  // EOF
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  CreateNetworkSession();
-  scoped_refptr<SpdySession> session = GetSession(pair_);
-  InitializeSession(
-      http_session_.get(), session.get(), test_host_port_pair_);
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM,
-            session->flow_control_state());
-
-  EXPECT_EQ(0, session->session_recv_window_size_);
-  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
-
-  session->IncreaseRecvWindowSize(100);
-  EXPECT_EQ(0, session->session_recv_window_size_);
-  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
-}
-
 // SpdySession::{Increase,Decrease}RecvWindowSize should properly
 // adjust the session receive window size when the "enable_spdy_31"
 // flag is set. In addition, SpdySession::IncreaseRecvWindowSize
@@ -2376,6 +2348,87 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoReceiveLeaks31) {
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }
 
+// Send data back and forth but close the stream before its data frame
+// can be written to the socket. The send window should then increase
+// to its original value, i.e. we shouldn't "leak" send window bytes.
+TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoSendLeaks31) {
+  const char kStreamUrl[] = "http://www.google.com/";
+
+  session_deps_.enable_spdy_31 = true;
+
+  const int32 msg_data_size = 100;
+  const std::string msg_data(msg_data_size, 'a');
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, msg_data_size, MEDIUM, NULL, 0));
+  MockWrite writes[] = {
+    CreateMockWrite(*initial_window_update, 0),
+    CreateMockWrite(*req, 1),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 2),
+    MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  GURL url(kStreamUrl);
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+  EXPECT_EQ(0u, stream->stream_id());
+
+  test::StreamDelegateSendImmediate delegate(
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), msg_data);
+  stream->SetDelegate(&delegate);
+
+  stream->set_spdy_headers(
+      ConstructPostHeaderBlock(url.spec(), msg_data_size));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
+
+  data.RunFor(2);
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
+
+  data.RunFor(1);
+
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
+            session->session_send_window_size_);
+
+  // Closing the stream should increase the session's send window.
+  stream->Close();
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
+
+  EXPECT_EQ(OK, delegate.WaitForClose());
+}
+
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
@@ -2488,8 +2541,9 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
 
   EXPECT_EQ(msg_data, delegate.TakeReceivedData());
 
-  // Draining the delegate's read queue should increase our receive
-  // window.
+  // Draining the delegate's read queue should increase the session's
+  // receive window.
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
@@ -2497,6 +2551,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
 
   EXPECT_EQ(OK, delegate.WaitForClose());
 
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
   EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }

@@ -458,13 +458,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation4);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, IncreaseRecvWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustRecvWindowSize31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustSendWindowSize31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
                            SessionFlowControlInactiveStream31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
                            SessionFlowControlNoReceiveLeaks31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
+                           SessionFlowControlNoSendLeaks31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
 
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
@@ -652,13 +653,58 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       bool fin,
       const SpdyHeaderBlock& headers) OVERRIDE;
 
-  // If session flow control is turned on, called by OnWindowUpdate()
-  // (which is in turn called by the framer) to increase this
-  // session's send window size by |delta_window_size| from a
-  // WINDOW_UPDATE frome, which must be at least 1. If
-  // |delta_window_size| would cause this session's send window size
-  // to overflow, does nothing.
+  // Called when bytes are consumed from a SpdyBuffer for a DATA frame
+  // that is to be written or is being written. Increases the send
+  // window size accordingly if some or all of the SpdyBuffer is being
+  // discarded.
+  //
+  // If session flow control is turned off, this must not be called.
+  void OnWriteBufferConsumed(size_t frame_payload_size,
+                             size_t consume_size,
+                             SpdyBuffer::ConsumeSource consume_source);
+
+  // Called by OnWindowUpdate() (which is in turn called by the
+  // framer) to increase this session's send window size by
+  // |delta_window_size| from a WINDOW_UPDATE frome, which must be at
+  // least 1. If |delta_window_size| would cause this session's send
+  // window size to overflow, does nothing.
+  //
+  // If session flow control is turned off, this must not be called.
   void IncreaseSendWindowSize(int32 delta_window_size);
+
+  // If session flow control is turned on, called by CreateDataFrame()
+  // (which is in turn called by a stream) to decrease this session's
+  // send window size by |delta_window_size|, which must be at least 1
+  // and at most kMaxSpdyFrameChunkSize.  |delta_window_size| must not
+  // cause this session's send window size to go negative.
+  //
+  // If session flow control is turned off, this must not be called.
+  void DecreaseSendWindowSize(int32 delta_window_size);
+
+  // Called when bytes are consumed by the delegate from a SpdyBuffer
+  // containing received data. Increases the receive window size
+  // accordingly.
+  //
+  // If session flow control is turned off, this must not be called.
+  void OnReadBufferConsumed(size_t consume_size,
+                            SpdyBuffer::ConsumeSource consume_source);
+
+  // Called by OnReadBufferConsume to increase this session's receive
+  // window size by |delta_window_size|, which must be at least 1 and
+  // must not cause this session's receive window size to overflow,
+  // possibly also sending a WINDOW_UPDATE frame. Also called during
+  // initialization to set the initial receive window size.
+  //
+  // If session flow control is turned off, this must not be called.
+  void IncreaseRecvWindowSize(int32 delta_window_size);
+
+  // Called by OnStreamFrameData (which is in turn called by the
+  // framer) to decrease this session's receive window size by
+  // |delta_window_size|, which must be at least 1 and must not cause
+  // this session's receive window size to go negative.
+  //
+  // If session flow control is turned off, this must not be called.
+  void DecreaseRecvWindowSize(int32 delta_window_size);
 
   // Queue a send-stalled stream for possibly resuming once we're not
   // send-stalled anymore.
@@ -671,29 +717,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Returns the next stream to possibly resume, or 0 if the queue is
   // empty.
   SpdyStreamId PopStreamToPossiblyResume();
-
-  // If session flow control is turned on, called by CreateDataFrame()
-  // (which is in turn called by a stream) to decrease this session's
-  // send window size by |delta_window_size|, which must be at least 1
-  // and at most kMaxSpdyFrameChunkSize.  |delta_window_size| must not
-  // cause this session's send window size to go negative.
-  void DecreaseSendWindowSize(int32 delta_window_size);
-
-  // Called by SpdyBuffers (via ConsumeCallbacks) to increase this
-  // session's receive window size by |delta_window_size|, which must
-  // be at least 1 and must not cause this session's receive window
-  // size to overflow, possibly also sending a WINDOW_UPDATE
-  // frame. Also called during initialization to set the initial
-  // receive window size. Does nothing if session flow control is
-  // turned off.
-  void IncreaseRecvWindowSize(size_t delta_window_size);
-
-  // If session flow control is turned on, called by OnStreamFrameData
-  // (which is in turn called by the framer) to decrease this
-  // session's receive window size by |delta_window_size|, which must
-  // be at least 1 and must not cause this session's receive window
-  // size to go negative.
-  void DecreaseRecvWindowSize(int32 delta_window_size);
 
   // --------------------------
   // Helper methods for testing

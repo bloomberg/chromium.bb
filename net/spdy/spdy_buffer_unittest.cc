@@ -54,7 +54,11 @@ TEST_F(SpdyBufferTest, DataConstructor) {
   EXPECT_EQ(std::string(kData, kDataSize), BufferToString(buffer));
 }
 
-void IncrementBy(size_t* x, size_t delta) {
+void IncrementBy(size_t* x,
+                 SpdyBuffer::ConsumeSource expected_consume_source,
+                 size_t delta,
+                 SpdyBuffer::ConsumeSource consume_source) {
+  EXPECT_EQ(expected_consume_source, consume_source);
   *x += delta;
 }
 
@@ -66,8 +70,10 @@ TEST_F(SpdyBufferTest, Consume) {
 
   size_t x1 = 0;
   size_t x2 = 0;
-  buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x1));
-  buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x2));
+  buffer.AddConsumeCallback(
+      base::Bind(&IncrementBy, &x1, SpdyBuffer::CONSUME));
+  buffer.AddConsumeCallback(
+      base::Bind(&IncrementBy, &x2, SpdyBuffer::CONSUME));
 
   EXPECT_EQ(std::string(kData, kDataSize), BufferToString(buffer));
 
@@ -89,7 +95,8 @@ TEST_F(SpdyBufferTest, ConsumeOnDestruction) {
 
   {
     SpdyBuffer buffer(kData, kDataSize);
-    buffer.AddConsumeCallback(base::Bind(&IncrementBy, &x));
+    buffer.AddConsumeCallback(
+        base::Bind(&IncrementBy, &x, SpdyBuffer::DISCARD));
   }
 
   EXPECT_EQ(kDataSize, x);

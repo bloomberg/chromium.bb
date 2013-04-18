@@ -256,14 +256,31 @@ void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
   PossiblyResumeIfSendStalled();
 }
 
+void SpdyStream::OnWriteBufferConsumed(
+    size_t frame_payload_size,
+    size_t consume_size,
+    SpdyBuffer::ConsumeSource consume_source) {
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
+  if (consume_source == SpdyBuffer::DISCARD) {
+    // If we're discarding a frame or part of it, increase the send
+    // window by the number of discarded bytes. (Although if we're
+    // discarding part of a frame, it's probably because of a write
+    // error and we'll be tearing down the stream soon.)
+    size_t remaining_payload_bytes = std::min(consume_size, frame_payload_size);
+    DCHECK_GT(remaining_payload_bytes, 0u);
+    IncreaseSendWindowSize(static_cast<int32>(remaining_payload_bytes));
+  }
+  // For consumed bytes, the send window is increased when we receive
+  // a WINDOW_UPDATE frame.
+}
+
 void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
+  DCHECK_GE(delta_window_size, 1);
 
   // Ignore late WINDOW_UPDATEs.
   if (closed())
     return;
-
-  DCHECK_GE(delta_window_size, 1);
 
   if (send_window_size_ > 0) {
     // Check for overflow.
@@ -296,7 +313,7 @@ void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
 
   // We only call this method when sending a frame. Therefore,
   // |delta_window_size| should be within the valid frame size range.
-  DCHECK_GE(delta_window_size, 0);
+  DCHECK_GE(delta_window_size, 1);
   DCHECK_LE(delta_window_size, kMaxSpdyFrameChunkSize);
 
   // |send_window_size_| should have been at least |delta_window_size| for
@@ -309,6 +326,68 @@ void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
       NetLog::TYPE_SPDY_STREAM_UPDATE_SEND_WINDOW,
       base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
                  stream_id_, -delta_window_size, send_window_size_));
+}
+
+void SpdyStream::OnReadBufferConsumed(
+    size_t consume_size,
+    SpdyBuffer::ConsumeSource consume_source) {
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
+  DCHECK_GE(consume_size, 1u);
+  DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
+  IncreaseRecvWindowSize(static_cast<int32>(consume_size));
+}
+
+void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
+
+  // By the time a read is processed by the delegate, this stream may
+  // already be inactive.
+  if (!session_->IsStreamActive(stream_id_))
+    return;
+
+  DCHECK_GE(unacked_recv_window_bytes_, 0);
+  DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
+  DCHECK_GE(delta_window_size, 1);
+  // Check for overflow.
+  DCHECK_LE(delta_window_size, kint32max - recv_window_size_);
+
+  recv_window_size_ += delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
+                 stream_id_, delta_window_size, recv_window_size_));
+
+  unacked_recv_window_bytes_ += delta_window_size;
+  if (unacked_recv_window_bytes_ >
+      session_->stream_initial_recv_window_size() / 2) {
+    session_->SendStreamWindowUpdate(
+        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
+    unacked_recv_window_bytes_ = 0;
+  }
+}
+
+void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
+  DCHECK(session_->IsStreamActive(stream_id_));
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
+  DCHECK_GE(delta_window_size, 1);
+
+  // Since we never decrease the initial window size,
+  // |delta_window_size| should never cause |recv_window_size_| to go
+  // negative. If we do, it's a client-side bug, so we use
+  // PROTOCOL_ERROR for lack of a better error code.
+  if (delta_window_size > recv_window_size_) {
+    session_->ResetStream(
+        stream_id_, RST_STREAM_PROTOCOL_ERROR,
+        "Invalid delta_window_size for DecreaseRecvWindowSize");
+    NOTREACHED();
+    return;
+  }
+
+  recv_window_size_ -= delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
+                 stream_id_, -delta_window_size, recv_window_size_));
 }
 
 int SpdyStream::GetPeerAddress(IPEndPoint* address) const {
@@ -456,7 +535,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
     DecreaseRecvWindowSize(static_cast<int32>(length));
     buffer->AddConsumeCallback(
-        base::Bind(&SpdyStream::IncreaseRecvWindowSize,
+        base::Bind(&SpdyStream::OnReadBufferConsumed,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -568,6 +647,22 @@ void SpdyStream::QueueStreamData(IOBuffer* data,
   // We'll get called again by PossiblyResumeIfSendStalled().
   if (!data_buffer)
     return;
+
+  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
+    DCHECK_GE(data_buffer->GetRemainingSize(),
+              session_->GetDataFrameMinimumSize());
+    size_t payload_size =
+        data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
+    DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
+    DecreaseSendWindowSize(static_cast<int32>(payload_size));
+    // This currently isn't strictly needed, since write frames are
+    // discarded only if the stream is about to be closed. But have it
+    // here anyway just in case this changes.
+    data_buffer->AddConsumeCallback(
+        base::Bind(&SpdyStream::OnWriteBufferConsumed,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   payload_size));
+  }
 
   session_->EnqueueStreamWrite(
       this, DATA,
@@ -887,61 +982,6 @@ void SpdyStream::UpdateHistograms() {
 
   UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
   UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);
-}
-
-void SpdyStream::IncreaseRecvWindowSize(size_t delta_window_size) {
-  if (session_->flow_control_state() < SpdySession::FLOW_CONTROL_STREAM)
-    return;
-
-  // By the time a read is processed by the delegate, this stream may
-  // already be inactive.
-  if (!session_->IsStreamActive(stream_id_))
-    return;
-
-  DCHECK_GE(unacked_recv_window_bytes_, 0);
-  DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
-  DCHECK_GE(delta_window_size, 1u);
-  // Check for overflow.
-  DCHECK_LE(delta_window_size,
-            static_cast<size_t>(kint32max - recv_window_size_));
-
-  recv_window_size_ += delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
-                 stream_id_, delta_window_size, recv_window_size_));
-
-  unacked_recv_window_bytes_ += delta_window_size;
-  if (unacked_recv_window_bytes_ >
-      session_->stream_initial_recv_window_size() / 2) {
-    session_->SendStreamWindowUpdate(
-        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
-    unacked_recv_window_bytes_ = 0;
-  }
-}
-
-void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
-  DCHECK(session_->IsStreamActive(stream_id_));
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
-  DCHECK_GE(delta_window_size, 1);
-
-  // Since we never decrease the initial window size,
-  // |delta_window_size| should never cause |recv_window_size_| to go
-  // negative. If we do, it's a client-side bug, so we use
-  // PROTOCOL_ERROR for lack of a better error code.
-  if (delta_window_size > recv_window_size_) {
-    session_->ResetStream(
-        stream_id_, RST_STREAM_PROTOCOL_ERROR,
-        "Invalid delta_window_size for DecreaseRecvWindowSize");
-    NOTREACHED();
-    return;
-  }
-
-  recv_window_size_ -= delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
-                 stream_id_, -delta_window_size, recv_window_size_));
 }
 
 }  // namespace net

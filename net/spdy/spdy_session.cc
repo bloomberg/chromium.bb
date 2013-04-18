@@ -794,9 +794,6 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
       len = new_len;
       flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
     }
-    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION)
-      DecreaseSendWindowSize(static_cast<int32>(len));
-    stream->DecreaseSendWindowSize(static_cast<int32>(len));
   }
 
   if (net_log().IsLoggingAllEvents()) {
@@ -816,7 +813,17 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
       buffered_spdy_framer_->CreateDataFrame(
           stream_id, data->data(), static_cast<uint32>(len), flags));
 
-  return scoped_ptr<SpdyBuffer>(new SpdyBuffer(frame.Pass()));
+  scoped_ptr<SpdyBuffer> data_buffer(new SpdyBuffer(frame.Pass()));
+
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+    DecreaseSendWindowSize(static_cast<int32>(len));
+    data_buffer->AddConsumeCallback(
+        base::Bind(&SpdySession::OnWriteBufferConsumed,
+                   weak_factory_.GetWeakPtr(),
+                   static_cast<size_t>(len)));
+  }
+
+  return data_buffer.Pass();
 }
 
 void SpdySession::CloseStream(SpdyStreamId stream_id, int status) {
@@ -1447,7 +1454,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
     if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
       DecreaseRecvWindowSize(static_cast<int32>(len));
       buffer->AddConsumeCallback(
-          base::Bind(&SpdySession::IncreaseRecvWindowSize,
+          base::Bind(&SpdySession::OnReadBufferConsumed,
                      weak_factory_.GetWeakPtr()));
     }
   } else {
@@ -2186,9 +2193,26 @@ SSLClientSocket* SpdySession::GetSSLClientSocket() const {
   return ssl_socket;
 }
 
+void SpdySession::OnWriteBufferConsumed(
+    size_t frame_payload_size,
+    size_t consume_size,
+    SpdyBuffer::ConsumeSource consume_source) {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+  if (consume_source == SpdyBuffer::DISCARD) {
+    // If we're discarding a frame or part of it, increase the send
+    // window by the number of discarded bytes. (Although if we're
+    // discarding part of a frame, it's probably because of a write
+    // error and we'll be tearing down the session soon.)
+    size_t remaining_payload_bytes = std::min(consume_size, frame_payload_size);
+    DCHECK_GT(remaining_payload_bytes, 0u);
+    IncreaseSendWindowSize(static_cast<int32>(remaining_payload_bytes));
+  }
+  // For consumed bytes, the send window is increased when we receive
+  // a WINDOW_UPDATE frame.
+}
+
 void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
   DCHECK_GE(delta_window_size, 1);
 
   // Check for overflow.
@@ -2212,6 +2236,80 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
 
   DCHECK(!IsSendStalled());
   ResumeSendStalledStreams();
+}
+
+void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+
+  // We only call this method when sending a frame. Therefore,
+  // |delta_window_size| should be within the valid frame size range.
+  DCHECK_GE(delta_window_size, 1);
+  DCHECK_LE(delta_window_size, kMaxSpdyFrameChunkSize);
+
+  // |send_window_size_| should have been at least |delta_window_size| for
+  // this call to happen.
+  DCHECK_GE(session_send_window_size_, delta_window_size);
+
+  session_send_window_size_ -= delta_window_size;
+
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_SESSION_UPDATE_SEND_WINDOW,
+      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
+                 -delta_window_size, session_send_window_size_));
+}
+
+void SpdySession::OnReadBufferConsumed(
+    size_t consume_size,
+    SpdyBuffer::ConsumeSource consume_source) {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+  DCHECK_GE(consume_size, 1u);
+  DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
+  IncreaseRecvWindowSize(static_cast<int32>(consume_size));
+}
+
+void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+  DCHECK_GE(session_unacked_recv_window_bytes_, 0);
+  DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
+  DCHECK_GE(delta_window_size, 1);
+  // Check for overflow.
+  DCHECK_LE(delta_window_size, kint32max - session_recv_window_size_);
+
+  session_recv_window_size_ += delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
+                 delta_window_size, session_recv_window_size_));
+
+  session_unacked_recv_window_bytes_ += delta_window_size;
+  if (session_unacked_recv_window_bytes_ > kSpdySessionInitialWindowSize / 2) {
+    SendWindowUpdateFrame(kSessionFlowControlStreamId,
+                          session_unacked_recv_window_bytes_,
+                          HIGHEST);
+    session_unacked_recv_window_bytes_ = 0;
+  }
+}
+
+void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
+  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
+  DCHECK_GE(delta_window_size, 1);
+
+  // |delta_window_size| should never cause
+  // |session_recv_window_size_| to go negative. If we do, it's a
+  // client-side bug.
+  if (delta_window_size > session_recv_window_size_) {
+    NOTREACHED() << "Received session WINDOW_UPDATE with an "
+                 << "invalid delta_window_size " << delta_window_size;
+    // TODO(akalin): Figure out whether we should instead send a
+    // GOAWAY and close the connection here.
+    return;
+  }
+
+  session_recv_window_size_ -= delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_SESSION_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
+                 -delta_window_size, session_recv_window_size_));
 }
 
 void SpdySession::QueueSendStalledStream(
@@ -2273,74 +2371,6 @@ SpdyStreamId SpdySession::PopStreamToPossiblyResume() {
     }
   }
   return 0;
-}
-
-void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
-  // We only call this method when sending a frame. Therefore,
-  // |delta_window_size| should be within the valid frame size range.
-  DCHECK_GE(delta_window_size, 1);
-  DCHECK_LE(delta_window_size, kMaxSpdyFrameChunkSize);
-
-  // |send_window_size_| should have been at least |delta_window_size| for
-  // this call to happen.
-  DCHECK_GE(session_send_window_size_, delta_window_size);
-
-  session_send_window_size_ -= delta_window_size;
-
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_SESSION_UPDATE_SEND_WINDOW,
-      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
-                 -delta_window_size, session_send_window_size_));
-}
-
-void SpdySession::IncreaseRecvWindowSize(size_t delta_window_size) {
-  if (flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION)
-    return;
-
-  DCHECK_GE(session_unacked_recv_window_bytes_, 0);
-  DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
-  DCHECK_GE(delta_window_size, 1u);
-  // Check for overflow.
-  DCHECK_LE(delta_window_size,
-            static_cast<size_t>(kint32max - session_recv_window_size_));
-
-  session_recv_window_size_ += delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
-                 delta_window_size, session_recv_window_size_));
-
-  session_unacked_recv_window_bytes_ += delta_window_size;
-  if (session_unacked_recv_window_bytes_ > kSpdySessionInitialWindowSize / 2) {
-    SendWindowUpdateFrame(kSessionFlowControlStreamId,
-                          session_unacked_recv_window_bytes_,
-                          HIGHEST);
-    session_unacked_recv_window_bytes_ = 0;
-  }
-}
-
-void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-  DCHECK_GE(delta_window_size, 1);
-
-  // |delta_window_size| should never cause
-  // |session_recv_window_size_| to go negative. If we do, it's a
-  // client-side bug.
-  if (delta_window_size > session_recv_window_size_) {
-    NOTREACHED() << "Received session WINDOW_UPDATE with an "
-                 << "invalid delta_window_size " << delta_window_size;
-    // TODO(akalin): Figure out whether we should instead send a
-    // GOAWAY and close the connection here.
-    return;
-  }
-
-  session_recv_window_size_ -= delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_SESSION_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdySessionWindowUpdateCallback,
-                 -delta_window_size, session_recv_window_size_));
 }
 
 }  // namespace net

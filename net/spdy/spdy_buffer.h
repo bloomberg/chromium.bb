@@ -28,9 +28,21 @@ class SpdyFrame;
 // fact that IOBuffer member functions are not virtual.
 class NET_EXPORT_PRIVATE SpdyBuffer {
  public:
-  // A Callback that gets called whenever Consume() is called with the
-  // number of bytes consumed.
-  typedef base::Callback<void(size_t)> ConsumeCallback;
+  // The source of a call to a ConsumeCallback.
+  enum ConsumeSource {
+    // Called via a call to Consume().
+    CONSUME,
+    // Called via the SpdyBuffer being destroyed.
+    DISCARD
+  };
+
+  // A Callback that gets called when bytes are consumed with the
+  // (non-zero) number of bytes consumed and the source of the
+  // consume. May be called any number of times with CONSUME as the
+  // source followed by at most one call with DISCARD as the
+  // source. The sum of the number of bytes consumed equals the total
+  // size of the buffer.
+  typedef base::Callback<void(size_t, ConsumeSource)> ConsumeCallback;
 
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.
@@ -40,6 +52,8 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   // non-NULL and |size| must be non-zero.
   SpdyBuffer(const char* data, size_t size);
 
+  // If there are bytes remaining in the buffer, triggers a call to
+  // any consume callbacks with a DISCARD source.
   ~SpdyBuffer();
 
   // Returns the remaining (unconsumed) data.
@@ -48,11 +62,10 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   // Returns the number of remaining (unconsumed) bytes.
   size_t GetRemainingSize() const;
 
-  // Add a callback which is called whenever Consume() is called. Used
-  // mainly to update flow control windows. The ConsumeCallback should
-  // not do anything complicated; ideally it should only update a
-  // counter. In particular, it must *not* cause the SpdyBuffer itself
-  // to be destroyed.
+  // Add a callback to be called when bytes are consumed. The
+  // ConsumeCallback should not do anything complicated; ideally it
+  // should only update a counter. In particular, it must *not* cause
+  // the SpdyBuffer itself to be destroyed.
   void AddConsumeCallback(const ConsumeCallback& consume_callback);
 
   // Consume the given number of bytes, which must be positive but not
@@ -66,6 +79,8 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   IOBuffer* GetIOBufferForRemainingData();
 
  private:
+  void ConsumeHelper(size_t consume_size, ConsumeSource consume_source);
+
   const scoped_ptr<SpdyFrame> frame_;
   std::vector<ConsumeCallback> consume_callbacks_;
   size_t offset_;
