@@ -6,10 +6,15 @@
 #define WEBKIT_FILEAPI_COPY_OR_MOVE_FILE_VALIDATOR_H_
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/platform_file.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace fileapi {
+
+class FileSystemURL;
 
 class CopyOrMoveFileValidator {
  public:
