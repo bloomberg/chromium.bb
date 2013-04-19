@@ -42,10 +42,11 @@ def main(args):
   namespace = parser.parse_args(args)
   subcommand = namespace.cros_class(namespace)
   with stats.UploadContext() as queue:
-    cmd_base = subcommand.options.cros_class.command_name
-    cmd_stats = stats.Stats(cmd_line=sys.argv, cmd_base=cmd_base)
-    queue.put([cmd_stats, stats.StatsUploader.URL,
-               subcommand.upload_stats_timeout])
+    if subcommand.upload_stats:
+      cmd_base = subcommand.options.cros_class.command_name
+      cmd_stats = stats.Stats(cmd_line=sys.argv, cmd_base=cmd_base)
+      queue.put([cmd_stats, stats.StatsUploader.URL,
+                 subcommand.upload_stats_timeout])
     # TODO: to make command completion faster, send an interrupt signal to the
     # stats uploader task after the subcommand completes.
     _RunSubCommand(subcommand)
