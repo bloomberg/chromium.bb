@@ -2443,6 +2443,439 @@ other types of suffix sets.
   <summary>The time that a Wi-fi scan takes.</summary>
 </histogram>
 
+<histogram name="NetConnectivity.Pipeline.0.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the first pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.0.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the first pipeline connectivity response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.0.Status" enum="HttpPipelineStatus">
+  <summary>The result of the first pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.1.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the second pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.1.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the second pipeline connectivity
+    response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.1.Status" enum="HttpPipelineStatus">
+  <summary>The result of the second pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.2.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the third pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.2.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the third pipeline connectivity response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.2.Status" enum="HttpPipelineStatus">
+  <summary>The result of the third pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.3.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the fourth pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.3.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the fourth pipeline connectivity
+    response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.3.Status" enum="HttpPipelineStatus">
+  <summary>The result of the fourth pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.4.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the fifth pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.4.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the fifth pipeline connectivity response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.4.Status" enum="HttpPipelineStatus">
+  <summary>The result of the fifth pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.5.NetworkError" enum="NetErrorCodes">
+  <summary>
+    The network error, if any, of the stats pipeline connectivity request.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.5.ResponseCode">
+  <summary>
+    The HTTP response code, if any, of the stats pipeline connectivity response.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.5.Status" enum="HttpPipelineStatus">
+  <summary>The result of the stats pipeline connectivity request.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.AllHTTP11" enum="BooleanSuccess">
+  <summary>
+    True if all requests received by the pipelining test server were HTTP/1.1.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.CanarySuccess" enum="BooleanSuccess">
+  <summary>
+    True if the non-pipelined canary request sent immediately before the
+    pipelining test requests succeeded. Note that if this fails, the rest of the
+    NetConnectivity.Pipeline.* stats are not collected.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.Depth">
+  <summary>
+    The maximum depth of pipelined requests received by the test server.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Pipeline.Success" enum="BooleanSuccess">
+  <summary>True if the entire pipeline connectivity trial passed.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.Sent21">
+  <obsolete>
+    Deprecated 6/25/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP at port 6121 as
+    rapidly as possible, just after successfully sending an UMA upload. Each
+    packet was numbered, as was its ACK sent back by Google. If no packets (of
+    the 21) were ever ACKed, then the port is assumed to be blocked, and no data
+    is recorded in this histogram. If the port is not blocked, then this
+    histogram shows the number of echo responses received from the first
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Sent21.AckReceivedForNthPacket">
+  <obsolete>
+    Deprecated 6/25/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP at port 6121 as
+    rapidly as possible, just after successfully sending an UMA upload. Each
+    packet was numbered, as was its ACK sent back by Google. This histogram
+    records, for each packet number, how often we received an ACK for that
+    packet.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.Sent21.GotAnAck" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 6/25/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP at port 6121 as
+    rapidly as possible, just after successfully sending an UMA upload. If no
+    packets (of the 21) were ever ACKed, then the port is assumed to be blocked.
+    The histogram shows if we ever got an ACK for a packet in our series of 21.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Fail.100B.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 100 bytes of TCP data unsuccessfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Fail.1k.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 1K bytes of TCP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Status"
+    enum="NetConnectivityProtocolStatus">
+  <summary>Status for TCP protocol for echoing</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Status.100B" enum="NetConnectivityStatus">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>Status for echoing 100 bytes of TCP data.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Status.1K" enum="NetConnectivityStatus">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>Status for echoing 1K bytes of TCP data.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Success" units="ms">
+  <summary>The RTT for TCP protocol for echoing</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Success.100B.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 100 bytes of TCP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.TCP.Success.1K.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 1K bytes of TCP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Fail.100B.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 100 bytes of UDP data unsuccessfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Fail.1k.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 1K bytes of UDP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.PacketLoss">
+  <obsolete>
+    Deprecated 6/25/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    Chrome sends 4 UDP packets in a row to test to see if there is a
+    probabalistic dependency in packet loss for consecutive packets.  We record
+    a bit vector of packets received, where the least significant bit is a 1 if
+    the first packet was received, etc.  For example, if packets 1 and 3 are
+    received, but packets 2 and 4 are lost, then we'd record a sample of binary
+    0101B, or 5.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.PacketLoss6">
+  <obsolete>
+    Deprecated 6/25/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    Chrome sends 6 UDP packets in a row to test to see if there is a
+    probabalistic dependency in packet loss for consecutive packets.  We record
+    a bit vector of packets received, where the least significant bit is a 1 if
+    the first packet was received, etc.  For example, if all packets other than
+    packet 2 and 4 are responded to, then we'd have a sample (in binary) of
+    110101B, or 53.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Status"
+    enum="NetConnectivityProtocolStatus">
+  <summary>Status for UDP protocol for echoing</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Status.100B" enum="NetConnectivityStatus">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>Status for echoing 100 bytes of UDP data.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Status.1K" enum="NetConnectivityStatus">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>Status for echoing 1K bytes of UDP data.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Success" units="ms">
+  <summary>The RTT for UDP protocol for echoing</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Success.100B.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 100 bytes of UDP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity.UDP.Success.1K.RTT" units="ms">
+  <obsolete>
+    Deprecated 4/2012. No longer tracked.
+  </obsolete>
+  <summary>The RTT for echoing 1k bytes of UDP data successfully.</summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Send6.PacketsSent">
+  <summary>
+    This histogram records how many packets (out of 6 attempted) were sent via
+    UDP as rapidly as possible, just after successfully sending an UMA upload.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Send6.SeriesAcked">
+  <summary>
+    Chrome sends 6 UDP packets in a row to test to see if there is a
+    probabalistic dependency in packet loss for consecutive packets.  We record
+    a bit vector of packets received, where the least significant bit is a 1 if
+    the first packet was received, etc.  For example, if all packets other than
+    packet 2 and 4 are responded to, then we'd have a sample (in binary) of
+    110101B, or 53.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Sent21">
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP as rapidly as
+    possible, just after successfully sending an UMA upload. Each packet was
+    numbered, as was its ACK sent back by Google. If no packets (of the 21) were
+    ever ACKed, then the port is assumed to be blocked, and no data is recorded
+    in this histogram. If the port is not blocked, then this histogram shows the
+    number of echo responses received from the first
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Sent21.AckReceivedForNthPacket">
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP as rapidly as
+    possible, just after successfully sending an UMA upload. Each packet was
+    numbered, as was its ACK sent back by Google. This histogram records, for
+    each packet number, how often we received an ACK for that packet.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Sent21.GotAnAck" enum="BooleanSuccess">
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP as rapidly as
+    possible, just after successfully sending an UMA upload. If no packets (of
+    the 21) were ever ACKed, then the port is assumed to be blocked. The
+    histogram shows if we ever got an ACK for a packet in our series of 21.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity2.Sent21.PacketsSent">
+  <summary>
+    This histogram records how many packets (out of 21 attempted) were sent via
+    UDP as rapidly as possible, just after successfully sending an UMA upload.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity3">
+  <summary>
+    In this experiment, 21 packets were sent to Google via UDP on port 6121.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.500B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.GotAnAck"
+    enum="BooleanSuccess">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT" units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.6121.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.6121.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.6121.500B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.GotAnAck"
+    enum="BooleanSuccess">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.Success.RTT" units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Send6.PacketsSent">
+  <obsolete>
+    Deprecated 9/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    This histogram records how many packets (out of 6 attempted) were sent via
+    UDP as rapidly as possible, just after successfully sending an UMA upload.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.6121.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.6121.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.6121.500B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.GotAnAck"
+    enum="BooleanSuccess">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.Success.RTT" units="ms">
+  <summary/>
+</histogram>
+
 <histogram name="Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon"
     enum="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon">
   <obsolete>
@@ -4438,6 +4871,19 @@ other types of suffix sets.
   <int value="15" label="Negotiate Secure Server"/>
 </enum>
 
+<enum name="HttpPipelineStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Redirected"/>
+  <int value="2" label="Certificate error"/>
+  <int value="3" label="Bad HTTP response code"/>
+  <int value="4" label="Network error"/>
+  <int value="5" label="Response too large"/>
+  <int value="6" label="Response too small"/>
+  <int value="7" label="Response content mismatch"/>
+  <int value="8" label="Bad HTTP version"/>
+  <int value="9" label="Corrupt stats response"/>
+</enum>
+
 <enum name="HttpSocketType" type="int">
   <int value="0" label="UNUSED">newly connected socket</int>
   <int value="1" label="UNUSED_IDLE">
@@ -4615,6 +5061,43 @@ other types of suffix sets.
   <int value="6" label="javascript"/>
   <int value="7" label="about"/>
   <int value="8" label="chrome"/>
+</enum>
+
+<enum name="NetConnectivityProtocolStatus" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="IP_STRING_PARSE_FAILED"/>
+  <int value="2" label="SOCKET_CREATE_FAILED"/>
+  <int value="3" label="RESOLVE_FAILED"/>
+  <int value="4" label="CONNECT_FAILED"/>
+  <int value="5" label="WRITE_FAILED"/>
+  <int value="6" label="READ_TIMED_OUT"/>
+  <int value="7" label="READ_FAILED"/>
+  <int value="8" label="ZERO_LENGTH_ERROR"/>
+  <int value="9" label="NO_CHECKSUM_ERROR"/>
+  <int value="10" label="NO_KEY_ERROR"/>
+  <int value="11" label="NO_PAYLOAD_SIZE_ERROR"/>
+  <int value="12" label="NO_PAYLOAD_ERROR"/>
+  <int value="13" label="INVALID_KEY_ERROR"/>
+  <int value="14" label="TOO_SHORT_PAYLOAD"/>
+  <int value="15" label="TOO_LONG_PAYLOAD"/>
+  <int value="16" label="INVALID_CHECKSUM"/>
+  <int value="17" label="PATTERN_CHANGED"/>
+  <int value="18" label="INVALID_PACKET_NUMBER"/>
+  <int value="19" label="TOO_MANY_PACKETS"/>
+  <int value="20" label="STATUS_MAX"/>
+</enum>
+
+<enum name="NetConnectivityStatus" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="IP_STRING_PARSE_FAILED"/>
+  <int value="2" label="SOCKET_CREATE_FAILED"/>
+  <int value="3" label="RESOLVE_FAILED"/>
+  <int value="4" label="CONNECT_FAILED"/>
+  <int value="5" label="WRITE_FAILED"/>
+  <int value="6" label="READ_TIMED_OUT"/>
+  <int value="7" label="READ_FAILED"/>
+  <int value="8" label="READ_VERIFY_FAILED"/>
+  <int value="9" label="STATUS_MAX"/>
 </enum>
 
 <enum name="NetErrorCodes" type="int">
@@ -5368,6 +5851,33 @@ other types of suffix sets.
   </affected-histogram>
 </fieldtrial>
 
+<fieldtrial name="HttpPipeliningCompatibility">
+  <group name="disable_test" label="Do nothing"/>
+  <group name="enable_test" label="Test connection for HTTP pipelining"/>
+  <affected-histogram name="NetConnectivity.Pipeline.0.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.0.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.0.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.1.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.1.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.1.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.2.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.2.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.2.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.3.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.3.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.3.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.4.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.4.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.4.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.5.NetworkError"/>
+  <affected-histogram name="NetConnectivity.Pipeline.5.ResponseCode"/>
+  <affected-histogram name="NetConnectivity.Pipeline.5.Status"/>
+  <affected-histogram name="NetConnectivity.Pipeline.AllHTTP11"/>
+  <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
+  <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
+  <affected-histogram name="NetConnectivity.Pipeline.Success"/>
+</fieldtrial>
+
 <fieldtrial name="LateBindingExperiment">
   <group name="disable_late_binding" label="socket late binding is disabled"/>
   <group name="enable_late_binding" label="socket late binding is enabled"/>
@@ -5403,6 +5913,572 @@ other types of suffix sets.
   <group name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>
   <affected-histogram name="LevelDBEnv.TimeTo"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity" separator=".">
+  <group name="53.100B" label="100 bytes of data on port 53."/>
+  <group name="53.100B.NoProxy"
+      label="100 bytes of data on port 53 with no proxy."/>
+  <group name="53.1K" label="1K bytes of data on port 53."/>
+  <group name="53.1K.NoProxy"
+      label="1K bytes of data on port 53 with no proxy."/>
+  <group name="53.100B.RTT" label="100 bytes of data on port 53 successfully."/>
+  <group name="53.100B.RTT.NoProxy"
+      label="100 bytes of data on port 53 successfully with no proxy."/>
+  <group name="53.1K.RTT" label="1K bytes of data on port 53 successfully."/>
+  <group name="53.1K.RTT.NoProxy"
+      label="1K bytes of data on port 53 successfully with no proxy."/>
+  <group name="587.100B" label="100 bytes of data on port 587."/>
+  <group name="587.100B.NoProxy"
+      label="100 bytes of data on port 587 with no proxy."/>
+  <group name="587.1K" label="1K bytes of data on port 587."/>
+  <group name="587.1K.NoProxy"
+      label="1K bytes of data on port 587 with no proxy."/>
+  <group name="587.100B.RTT"
+      label="100 bytes of data on port 587 successfully."/>
+  <group name="587.100B.RTT.NoProxy"
+      label="100 bytes of data on port 587 successfully with no proxy."/>
+  <group name="587.1K.RTT" label="1K bytes of data on port 587 successfully."/>
+  <group name="587.1K.RTT.NoProxy"
+      label="1K bytes of data on port 587 successfully with no proxy."/>
+  <group name="6121.100B" label="100 bytes of data on port 6121."/>
+  <group name="6121.100B.NoProxy"
+      label="100 bytes of data on port 6121 with no proxy."/>
+  <group name="6121.1K" label="1K bytes of data on port 6121."/>
+  <group name="6121.1K.NoProxy"
+      label="1K bytes of data on port 6121 with no proxy."/>
+  <group name="6121.100B.RTT"
+      label="100 bytes of data on port 6121 successfully."/>
+  <group name="6121.100B.RTT.NoProxy"
+      label="100 bytes of data on port 6121 successfully with no proxy."/>
+  <group name="6121.1K.RTT"
+      label="1K bytes of data on port 6121 successfully."/>
+  <group name="6121.1K.RTT.NoProxy"
+      label="1K bytes of data on port 6121 successfully with no proxy."/>
+  <group name="80.100B" label="100 bytes of data on port 80."/>
+  <group name="80.100B.NoProxy"
+      label="100 bytes of data on port 80 with no proxy."/>
+  <group name="80.1K" label="1K bytes of data on port 80."/>
+  <group name="80.1K.NoProxy"
+      label="1K bytes of data on port 80 with no proxy."/>
+  <group name="80.100B.RTT" label="100 bytes of data on port 80 successfully."/>
+  <group name="80.100B.RTT.NoProxy"
+      label="100 bytes of data on port 80 successfully with no proxy."/>
+  <group name="80.1K.RTT" label="1K bytes of data on port 80 successfully."/>
+  <group name="80.1K.RTT.NoProxy"
+      label="1K bytes of data on port 80 successfully with no proxy."/>
+  <group name="8080.100B" label="100 bytes of data on port 8080."/>
+  <group name="8080.100B.NoProxy"
+      label="100 bytes of data on port 8080 with no proxy."/>
+  <group name="8080.1K" label="1K bytes of data on port 8080."/>
+  <group name="8080.1K.NoProxy"
+      label="1K bytes of data on port 8080 with no proxy."/>
+  <group name="8080.100B.RTT"
+      label="100 bytes of data on port 8080 successfully."/>
+  <group name="8080.100B.RTT.NoProxy"
+      label="100 bytes of data on port 8080 successfully with no proxy."/>
+  <group name="8080.1K.RTT"
+      label="1K bytes of data on port 8080 successfully."/>
+  <group name="8080.1K.RTT.NoProxy"
+      label="1K bytes of data on port 8080 successfully with no proxy."/>
+  <affected-histogram name="NetConnectivity.TCP.Status"/>
+  <affected-histogram name="NetConnectivity.TCP.Success"/>
+  <affected-histogram name="NetConnectivity.UDP.PacketLoss"/>
+  <affected-histogram name="NetConnectivity.UDP.PacketLoss6"/>
+  <affected-histogram name="NetConnectivity.UDP.Status"/>
+  <affected-histogram name="NetConnectivity.UDP.Success"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2" separator=".">
+  <group name="AcksReceivedFromFirst2Packets" label="2 packets."/>
+  <group name="AcksReceivedFromFirst3Packets" label="3 packets."/>
+  <group name="AcksReceivedFromFirst4Packets" label="4 packets."/>
+  <group name="AcksReceivedFromFirst5Packets" label="5 packets."/>
+  <group name="AcksReceivedFromFirst6Packets" label="6 packets."/>
+  <group name="AcksReceivedFromFirst7Packets" label="7 packets."/>
+  <group name="AcksReceivedFromFirst8Packets" label="8 packets."/>
+  <group name="AcksReceivedFromFirst9Packets" label="9 packets."/>
+  <group name="AcksReceivedFromFirst10Packets" label="10 packets."/>
+  <group name="AcksReceivedFromFirst11Packets" label="11 packets."/>
+  <group name="AcksReceivedFromFirst12Packets" label="12 packets."/>
+  <group name="AcksReceivedFromFirst13Packets" label="13 packets."/>
+  <group name="AcksReceivedFromFirst14Packets" label="14 packets."/>
+  <group name="AcksReceivedFromFirst15Packets" label="15 packets."/>
+  <group name="AcksReceivedFromFirst16Packets" label="16 packets."/>
+  <group name="AcksReceivedFromFirst17Packets" label="17 packets."/>
+  <group name="AcksReceivedFromFirst18Packets" label="18 packets."/>
+  <group name="AcksReceivedFromFirst19Packets" label="19 packets."/>
+  <group name="AcksReceivedFromFirst20Packets" label="20 packets."/>
+  <group name="AcksReceivedFromFirst21Packets" label="21 packets."/>
+  <affected-histogram name="NetConnectivity.Sent21"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2a" separator=".">
+  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <group name="6121.1K" label="1K bytes of data is sent on port 6121."/>
+  <affected-histogram name="NetConnectivity2.Sent21.AckReceivedForNthPacket"/>
+  <affected-histogram name="NetConnectivity2.Sent21.GotAnAck"/>
+  <affected-histogram name="NetConnectivity2.Sent21.PacketsSent"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2b" separator=".">
+  <group name="AcksReceivedFromFirst2Packets.6121.100B"
+      label="2 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst3Packets.6121.100B"
+      label="3 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst4Packets.6121.100B"
+      label="4 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst5Packets.6121.100B"
+      label="5 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst6Packets.6121.100B"
+      label="6 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst7Packets.6121.100B"
+      label="7 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst8Packets.6121.100B"
+      label="8 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst9Packets.6121.100B"
+      label="9 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst10Packets.6121.100B"
+      label="10 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst11Packets.6121.100B"
+      label="11 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst12Packets.6121.100B"
+      label="12 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst13Packets.6121.100B"
+      label="13 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst14Packets.6121.100B"
+      label="14 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst15Packets.6121.100B"
+      label="15 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst16Packets.6121.100B"
+      label="16 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst17Packets.6121.100B"
+      label="17 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst18Packets.6121.100B"
+      label="18 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst19Packets.6121.100B"
+      label="19 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst20Packets.6121.100B"
+      label="20 packets. 100 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst21Packets.6121.100B"
+      label="21 packets. 100 bytes of data is sent on port 6121."/>
+  <affected-histogram name="NetConnectivity2.Sent21"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2c" separator=".">
+  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <group name="6121.100B.NoProxy"
+      label="100 bytes of data is sent on port 6121 with no proxy."/>
+  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <group name="6121.500B.NoProxy"
+      label="500 bytes of data is sent on port 6121 with no proxy."/>
+  <group name="6121.1K" label="1K bytes of data is sent on port 6121."/>
+  <group name="6121.1K.NoProxy"
+      label="1K bytes of data is sent on port 6121 with no proxy."/>
+  <affected-histogram name="NetConnectivity2.Send6.PacketsSent"/>
+  <affected-histogram name="NetConnectivity2.Send6.SeriesAcked"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2d" separator=".">
+  <group name="AcksReceivedFromFirst2Packets.6121.500B"
+      label="2 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst3Packets.6121.500B"
+      label="3 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst4Packets.6121.500B"
+      label="4 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst5Packets.6121.500B"
+      label="5 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst6Packets.6121.500B"
+      label="6 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst7Packets.6121.500B"
+      label="7 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst8Packets.6121.500B"
+      label="8 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst9Packets.6121.500B"
+      label="9 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst10Packets.6121.500B"
+      label="10 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst11Packets.6121.500B"
+      label="11 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst12Packets.6121.500B"
+      label="12 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst13Packets.6121.500B"
+      label="13 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst14Packets.6121.500B"
+      label="14 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst15Packets.6121.500B"
+      label="15 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst16Packets.6121.500B"
+      label="16 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst17Packets.6121.500B"
+      label="17 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst18Packets.6121.500B"
+      label="18 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst19Packets.6121.500B"
+      label="19 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst20Packets.6121.500B"
+      label="20 packets. 500 bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst21Packets.6121.500B"
+      label="21 packets. 500 bytes of data is sent on port 6121."/>
+  <affected-histogram name="NetConnectivity2.Sent21"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity2e" separator=".">
+  <group name="AcksReceivedFromFirst2Packets.6121.1K"
+      label="2 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst3Packets.6121.1K"
+      label="3 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst4Packets.6121.1K"
+      label="4 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst5Packets.6121.1K"
+      label="5 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst6Packets.6121.1K"
+      label="6 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst7Packets.6121.1K"
+      label="7 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst8Packets.6121.1K"
+      label="8 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst9Packets.6121.1K"
+      label="9 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst10Packets.6121.1K"
+      label="10 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst11Packets.6121.1K"
+      label="11 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst12Packets.6121.1K"
+      label="12 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst13Packets.6121.1K"
+      label="13 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst14Packets.6121.1K"
+      label="14 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst15Packets.6121.1K"
+      label="15 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst16Packets.6121.1K"
+      label="16 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst17Packets.6121.1K"
+      label="17 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst18Packets.6121.1K"
+      label="18 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst19Packets.6121.1K"
+      label="19 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst20Packets.6121.1K"
+      label="20 packets. 1K bytes of data is sent on port 6121."/>
+  <group name="AcksReceivedFromFirst21Packets.6121.1K"
+      label="21 packets. 1K bytes of data is sent on port 6121."/>
+  <affected-histogram name="NetConnectivity2.Sent21"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3a" separator=".">
+  <group name="NonPacedPacket"
+      label="In this histogram results are only shown if at least two packets
+             were ACKed in the Startup Test. Packets were sent as rapidly as
+             possible."/>
+  <group name="PacedPacket"
+      label="In this histogram results are only shown if at least two packets
+             were ACKed in the Startup Test. Packets are sent at equal
+             intervals. The interval is selected to match the bandwidth
+             discovered during the StartPacket test."/>
+  <group name="StartPacket"
+      label="Packets are sent as rapidly as possible, just after successfully
+             sending an UMA upload. Each packet was numbered, as was its ACK
+             sent back by Google. If no packets (of the 21) were ever ACKed,
+             then the port is assumed to be blocked, and no data is recorded
+             in this histogram."/>
+  <affected-histogram name="NetConnectivity3"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3aa" separator=".">
+  <group name="Sent21"
+      label="This histogram shows the number of echo responses received from
+             the first"/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3AckReceivedForNthPacket" separator=".">
+  <group name="Sent21.AckReceivedForNthPacket"
+      label="Each packet was numbered, as was its ACK sent back by Google.
+             This histogram records, for each packet number, how often we
+             received an ACK for that packet."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3AcksReceivedFromFirst" separator=".">
+  <group name="AcksReceivedFromFirst02Packets" label="2 packets."/>
+  <group name="AcksReceivedFromFirst03Packets" label="3 packets."/>
+  <group name="AcksReceivedFromFirst04Packets" label="4 packets."/>
+  <group name="AcksReceivedFromFirst05Packets" label="5 packets."/>
+  <group name="AcksReceivedFromFirst06Packets" label="6 packets."/>
+  <group name="AcksReceivedFromFirst07Packets" label="7 packets."/>
+  <group name="AcksReceivedFromFirst08Packets" label="8 packets."/>
+  <group name="AcksReceivedFromFirst09Packets" label="9 packets."/>
+  <group name="AcksReceivedFromFirst10Packets" label="10 packets."/>
+  <group name="AcksReceivedFromFirst11Packets" label="11 packets."/>
+  <group name="AcksReceivedFromFirst12Packets" label="12 packets."/>
+  <group name="AcksReceivedFromFirst13Packets" label="13 packets."/>
+  <group name="AcksReceivedFromFirst14Packets" label="14 packets."/>
+  <group name="AcksReceivedFromFirst15Packets" label="15 packets."/>
+  <group name="AcksReceivedFromFirst16Packets" label="16 packets."/>
+  <group name="AcksReceivedFromFirst17Packets" label="17 packets."/>
+  <group name="AcksReceivedFromFirst18Packets" label="18 packets."/>
+  <group name="AcksReceivedFromFirst19Packets" label="19 packets."/>
+  <group name="AcksReceivedFromFirst20Packets" label="20 packets."/>
+  <group name="AcksReceivedFromFirst21Packets" label="21 packets."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3GotAnAck" separator=".">
+  <group name="Sent21.GotAnAck"
+      label="The histogram shows if we ever got an ACK for a packet in our
+             series of 21."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3PacketDelay1" separator=".">
+  <group name="Sent21.6121"
+      label="This histogram shows the difference between the time when we
+             have received 1st byte from the server and the last time when we
+             have received data from the server."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3PacketDelay2" separator=".">
+  <group name="100B.PacketDelay" label="100 bytes of data is sent."/>
+  <group name="1200B.PacketDelay" label="1200 bytes of data is sent."/>
+  <group name="500B.PacketDelay" label="500 bytes of data is sent."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.6121"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21.6121"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3PacketRTT" separator=".">
+  <group name="Sent21.Success.RTT" label="The histogram shows the RTT for"/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3Packets" separator=".">
+  <group name="Packet01" label="1st packet."/>
+  <group name="Packet02" label="2nd packet."/>
+  <group name="Packet03" label="3rd packet."/>
+  <group name="Packet10" label="10th packet."/>
+  <group name="Packet20" label="20th packet."/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.Success.RTT"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21.Success.RTT"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3PacketsSent" separator=".">
+  <group name="Sent21.PacketsSent"
+      label="This histogram records how many packets (out of 21 attempted)
+             were sent to the server via UDP."/>
+  <group name="Send6.SeriesAcked"
+      label="Chrome sends 6 UDP packets in a row to test to see if there is a
+             probabalistic dependency in packet loss for consecutive packets.
+             We record a bit vector of packets received, where the least
+             significant bit is a 1 if the first packet was received, etc.
+             For example, if all packets other than packet 2 and 4 are
+             responded to, then we'd have a sample (in binary) of 110101B, or
+             53."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket"/>
+  <affected-histogram name="NetConnectivity3.StartPacket"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3PacketsSentBytes" separator=".">
+  <group name="6121.100B" label="100 bytes of data is sent."/>
+  <group name="6121.500B" label="500 bytes of data is sent."/>
+  <group name="6121.1200B" label="1200 bytes of data is sent."/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AckReceivedForNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.AcksReceivedFromFirst21Packets"/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21.GotAnAck"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.PacketsSent"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT.Packet20"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AckReceivedForNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.AcksReceivedFromFirst21Packets"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.GotAnAck"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.PacketsSent"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity3.PacedPacket.Sent21.Success.RTT.Packet20"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AckReceivedForNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.AcksReceivedFromFirst21Packets"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21.GotAnAck"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21.PacketsSent"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet20"/>
+</fieldtrial>
+
+<fieldtrial name="NetConnectivity3Send6Acked" separator=".">
+  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <group name="6121.100B.NoProxy"
+      label="100 bytes of data is sent on port 6121 with no proxy."/>
+  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <group name="6121.500B.NoProxy"
+      label="500 bytes of data is sent on port 6121 with no proxy."/>
+  <group name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
+  <group name="6121.1200B.NoProxy"
+      label="1200 bytes of data is sent on port 6121 with no proxy."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket.Send6.SeriesAcked"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Send6.SeriesAcked"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Send6.PacketsSent"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Send6.SeriesAcked"/>
 </fieldtrial>
 
 <fieldtrial name="OverlappedReadImpact">
