@@ -538,6 +538,13 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
+      WebKit::WebNavigationPolicy default_policy,
+      bool is_redirect);
+  // DEPRECATED.
+  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& request,
+      WebKit::WebNavigationType type,
       const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy,
       bool is_redirect);

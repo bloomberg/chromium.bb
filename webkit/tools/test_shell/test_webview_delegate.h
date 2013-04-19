@@ -175,6 +175,11 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebNavigationPolicy);
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
+      WebKit::WebNavigationType, WebKit::WebNavigationPolicy default_policy,
+      bool isRedirect);
+  // DEPRECATED
+  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
+      WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationType, const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy, bool isRedirect);
   virtual bool canHandleRequest(

@@ -2863,7 +2863,7 @@ void RenderViewImpl::loadURLExternally(
 
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
-    const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
+    WebNavigationPolicy default_policy, bool is_redirect) {
   if (request.url() != GURL(kSwappedOutURL) &&
       GetContentClient()->renderer()->HandleNavigation(frame, request, type,
                                                        default_policy,
@@ -3056,6 +3056,13 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   }
 
   return default_policy;
+}
+
+WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
+    WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
+    const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
+  return decidePolicyForNavigation(frame, request, type,
+                                   default_policy, is_redirect);
 }
 
 bool RenderViewImpl::canHandleRequest(

@@ -321,7 +321,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       GetMainFrame(),
       request,
       WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyCurrentTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyCurrentTab, policy);
@@ -333,7 +332,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       GetMainFrame(),
       form_request,
       WebKit::WebNavigationTypeFormSubmitted,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyCurrentTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
@@ -344,7 +342,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       GetMainFrame(),
       popup_request,
       WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyNewForegroundTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
@@ -360,7 +357,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       GetMainFrame(),
       request,
       WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyCurrentTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
@@ -371,7 +367,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       GetMainFrame(),
       webui_request,
       WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyCurrentTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
@@ -383,7 +378,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       GetMainFrame(),
       data_request,
       WebKit::WebNavigationTypeFormSubmitted,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyCurrentTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
@@ -400,7 +394,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       new_web_view->mainFrame(),
       popup_request,
       WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNode(),
       WebKit::WebNavigationPolicyNewForegroundTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
