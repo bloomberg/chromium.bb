@@ -70,6 +70,7 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
   cmd = [os.path.abspath(os.path.join(syzygy_dir, _INSTRUMENT_EXE)),
          '--overwrite',
          '--mode=%s' % mode,
+         '--debug-friendly',
          '--input-image=%s' % executable,
          '--input-pdb=%s' % symbol,
          '--output-image=%s' % os.path.abspath(
