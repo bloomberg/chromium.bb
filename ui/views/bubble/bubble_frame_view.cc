@@ -144,7 +144,7 @@ void BubbleFrameView::Layout() {
 }
 
 std::string BubbleFrameView::GetClassName() const {
-  return "ui/views/BubbleFrameView";
+  return "ui/views/bubble/BubbleFrameView";
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
