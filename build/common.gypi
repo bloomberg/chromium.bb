@@ -2928,12 +2928,19 @@
           ['clang==1', {
             'cflags': [
               '-Wheader-hygiene',
-
-              # Don't die on dtoa code that uses a char as an array index.
-              '-Wno-char-subscripts',
-
               # Clang spots more unused functions.
               '-Wno-unused-function',
+              # Don't die on dtoa code that uses a char as an array index.
+              '-Wno-char-subscripts',
+              # Especially needed for gtest macros using enum values from Mac
+              # system headers.
+              # TODO(pkasting): In C++11 this is legal, so this should be
+              # removed when we change to that.  (This is also why we don't
+              # bother fixing all these cases today.)
+              '-Wno-unnamed-type-template-args',
+              # This (rightfully) complains about 'override', which we use
+              # heavily.
+              '-Wno-c++11-extensions',
 
               # Warns on switches on enums that cover all enum values but
               # also contain a default: branch. Chrome is full of that.
@@ -2945,43 +2952,6 @@
             'cflags!': [
               # Clang doesn't seem to know know this flag.
               '-mfpmath=sse',
-            ],
-          }],
-          ['clang==1 and (OS!="android" and asan!=1)', {
-            # Turn on C++11.
-            'cflags': [
-              # This warns on using ints as initializers for floats in
-              # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
-              # which happens in several places in chrome code. Not sure if
-              # this is worth fixing.
-              '-Wno-c++11-narrowing',
-
-              # This warns about code like |"0x%08"NACL_PRIxPTR| -- with C++11
-              # user-defined literals, this is now a string literal with a UD
-              # suffix. However, this is used heavily in NaCl code, so disable
-              # the warning for now.
-              '-Wno-reserved-user-defined-literal',
-            ],
-            'cflags_cc': [
-              # See the comment in the Mac section for what it takes to move
-              # this to -std=c++11.
-              '-std=gnu++11',
-            ],
-          }],
-          ['clang==1 and (OS=="android" or asan==1)', {
-            # Android uses gcc4.4, and clang isn't compatible with gcc4.4's
-            # libstdc++ in C++11 mode. So no C++11 mode for Android yet.
-            # Doesn't work with asan for some reason either: crbug.com/233464
-            'cflags': [
-              # Especially needed for gtest macros using enum values from Mac	
-              # system headers.	
-              # TODO(pkasting): In C++11 this is legal, so this should be	
-              # removed when we change to that.  (This is also why we don't	
-              # bother fixing all these cases today.)	
-              '-Wno-unnamed-type-template-args',	
-              # This (rightfully) complains about 'override', which we use	
-              # heavily.	
-              '-Wno-c++11-extensions',
             ],
           }],
           ['clang==1 and clang_use_chrome_plugins==1', {
@@ -3593,7 +3563,6 @@
                 # Don't die on dtoa code that uses a char as an array index.
                 # This is required solely for base/third_party/dmg_fp/dtoa.cc.
                 '-Wno-char-subscripts',
-
                 # Clang spots more unused functions.
                 '-Wno-unused-function',
 
