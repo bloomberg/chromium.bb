@@ -358,13 +358,14 @@ void SafeBrowsingService::StartOnIOThread() {
   config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
-  config.url_prefix =
-      cmdline->HasSwitch(switches::kSbURLPrefix) ?
-      cmdline->GetSwitchValueASCII(switches::kSbURLPrefix) :
-      kSbDefaultURLPrefix;
-  config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
-  config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
-  config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
+  if (cmdline->HasSwitch(switches::kSbURLPrefix)) {
+    config.url_prefix = cmdline->GetSwitchValueASCII(switches::kSbURLPrefix);
+  } else {
+    config.url_prefix = kSbDefaultURLPrefix;
+    config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
+    config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
+    config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
+  }
 
 #if defined(FULL_SAFE_BROWSING)
   DCHECK(database_manager_);
