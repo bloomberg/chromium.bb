@@ -221,10 +221,6 @@ webkit.org/b/98212 fast/dom/Geolocation/coordinates-interface-attributes.html [ 
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
-# We do not want to support Legacy mac encodings.
-fast/encoding/char-decoding-mac.html [ WontFix ]
-fast/encoding/char-encoding-mac.html [ WontFix ]
-
 # These tests are based on the JSC JavaScript profiler. The V8 JavaScript
 # profiler is in development and will use a different approach than JSC and
 # most likely these tests will always be JSC specific.
@@ -297,33 +293,9 @@ crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ S
 crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
 crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
 
-# These tests try to print a PDF file as the expected result.  I don't think
-# we plan on supporting this anytime soon.
-printing/compositing-layer-printing.html [ WontFix ]
-printing/media-queries-print.html [ WontFix ]
-printing/page-rule-in-media-query.html [ WontFix ]
-
 # Repaint test doesn't seem to work on Chromium.
 webkit.org/b/98579 compositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 webkit.org/b/98579 virtual/softwarecompositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
-
-# Tests for frameset flattening which is not used by Chromium.
-fast/text-autosizing/narrow-iframe-flattened.html [ WontFix ]
-http/tests/misc/iframe-flattening-3level-nesting-with-blocking-resource.html [ WontFix ]
-plugins/frameset-with-plugin-frame.html [ WontFix ]
-
-# Chromium's video codecs don't support alpha information encoded in the video
-# data, so this test is not applicable.
-compositing/video/video-background-color.html [ WontFix ]
-virtual/softwarecompositing/video/video-background-color.html [ WontFix ]
-
-# Chrome uses its quota manager and doesn't respect the 5mb limit.
-storage/indexeddb/database-quota.html [ WontFix ]
-
-# Chromium doesn't use fullscreen-specific media controls
-media/video-controls-fullscreen-volume.html [ WontFix ]
-
-webkit.org/b/96109 editing/pasteboard/paste-global-selection.html [ WontFix ]
 
 # Chromium does not enable HIDDEN_PAGE_DOM_TIMER_THROTTLING
 crbug.com/233066 fast/dom/timer-throttling-hidden-page.html [ Skip ]
@@ -331,15 +303,15 @@ crbug.com/233066 fast/dom/timer-throttling-hidden-page.html [ Skip ]
 # Chromium disabled MATHML
 crbug.com/22554 mathml [ Skip ]
 
-# Chromium disabled iframe viewsource attribute.
-fast/frames/viewsource-attribute.html [ WontFix ]
-fast/frames/viewsource-empty-attribute-value.html [ WontFix ]
-fast/frames/viewsource-linebreak.html [ WontFix ]
-fast/frames/viewsource-link-on-href-value.html [ WontFix ]
-fast/frames/viewsource-on-image-file.html [ WontFix ]
-fast/frames/viewsource-plain-text-tags.html [ WontFix ]
-fast/frames/viewsource-xml.html [ WontFix ]
-http/tests/security/view-source-no-javascript-url.html [ WontFix ]
+# Chromium disabled iframe viewsource attribute.  
+fast/frames/viewsource-attribute.html [ WontFix ] 
+fast/frames/viewsource-empty-attribute-value.html [ WontFix ] 
+fast/frames/viewsource-linebreak.html [ WontFix ] 
+fast/frames/viewsource-link-on-href-value.html [ WontFix ]    
+fast/frames/viewsource-on-image-file.html [ WontFix ] 
+fast/frames/viewsource-plain-text-tags.html [ WontFix ]   
+fast/frames/viewsource-xml.html [ WontFix ]   
+http/tests/security/view-source-no-javascript-url.html [ WontFix ]    
 http/tests/security/view-source-no-refresh.html [ WontFix ]
 
 # INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
@@ -584,15 +556,6 @@ crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 # canplaythrough event is sent too early.
 # Test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Pass Slow ]
-
-# These refer to the webkitHasClosedCaptions / webkitSupportsFullscreen
-# methods on the media elements themselves. We're not going to implement them.
-media/media-captions.html [ WontFix ]
-media/media-fullscreen-inline.html [ WontFix ]
-media/media-fullscreen-not-in-document.html [ WontFix ]
-
-# We don't expose a step button.
-media/audio-delete-while-step-button-clicked.html [ WontFix ]
 
 # We haven't implemented reverse audio/video playback.
 crbug.com/33099 media/video-reverse-play-duration.html [ Skip ]
@@ -873,10 +836,6 @@ crbug.com/30536 [ Win Mac ] http/tests/misc/favicon-as-image.html [ Failure ]
 # Has failed for Chromium since it was first checked in.  (Lighttpd related?)
 crbug.com/10323 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html [ Failure Timeout ]
 
-# We fail to load a file URL with a port number -- how does this work on
-# Windows?
-crbug.com/10342 [ Linux Mac ] fast/loader/file-URL-with-port-number.html [ WontFix ]
-
 # Clipping differences between Chromium platforms. Needs investigation.
 webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ] 
 
@@ -891,9 +850,6 @@ webkit.org/b/80335 fast/js/mozilla/strict/15.4.4.8.html [ Failure ]
 webkit.org/b/80335 fast/js/mozilla/strict/15.4.4.9.html [ Failure ]
 webkit.org/b/80335 fast/js/mozilla/strict/15.4.4.12.html [ Failure ]
 webkit.org/b/80335 fast/js/mozilla/strict/15.4.4.13.html [ Failure ]
-
-# This is JSC-only, preliminary implementation of a ES6 feature - doesn't exist in V8 (yet)
-webkit.org/b/86509 fast/js/names.html [ WontFix ]
 
 # NEW FOR MERGE 36102:37604
 crbug.com/32184 fast/js/arguments.html [ Failure ]
@@ -1242,11 +1198,6 @@ webkit.org/b/42598 http/tests/misc/401-alternative-content.php [ Failure ]
 webkit.org/b/42598 http/tests/xmlhttprequest/failed-auth.html [ Failure Timeout ]
 
 webkit.org/b/42769 http/tests/xmlhttprequest/remember-bad-password.html [ Failure ]
-
-# Application Cache Quotas are N/A to the chromium port.
-webkit.org/b/43459 http/tests/appcache/origin-quota.html [ WontFix ]
-webkit.org/b/43459 http/tests/appcache/origin-quota-continued-download.html [ WontFix ]
-webkit.org/b/43459 http/tests/appcache/origin-quota-continued-download-multiple-manifests.html [ WontFix ]
 
 # Need to support DeviceMotion.
 crbug.com/51416 fast/dom/DeviceMotion/window-property.html [ Failure ]
@@ -1946,9 +1897,6 @@ webkit.org/b/77397 [ Mac Win ] plugins/crash-restoring-plugin-page-from-page-cac
 
 webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure Pass ]
 webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure Pass ]
-
-# Tests Error.stack behavior. We aren't consistent with JSC and do not intend to become so.
-fast/js/stack-trace.html [ WontFix ]
 
 crbug.com/113063 [ Debug ] storage/indexeddb/basics-workers.html [ Crash Pass ]
 
@@ -2792,10 +2740,6 @@ webkit.org/b/106518 [ Lion MountainLion ] virtual/softwarecompositing/iframes/if
 
 webkit.org/b/101539 [ Linux Win ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
-webkit.org/b/90022 fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
-webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
-webkit.org/b/90022 fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
-webkit.org/b/90022 virtual/gpu/fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/101986 [ Linux Win ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 webkit.org/b/101986 [ Linux Win Debug ] virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]

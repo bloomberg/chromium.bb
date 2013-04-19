@@ -60,9 +60,6 @@ fast/spatial-navigation [ WontFix ]
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
 
-# Mac and Win does not have global selection.
-[ Mac Win ] editing/pasteboard/paste-global-selection.html [ WontFix ]
-
 # Chromium does not support PDF content in <img> tags.
 [ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
 [ Win Linux ] virtual/softwarecompositing/images/direct-pdf-image.html [ WontFix ]
