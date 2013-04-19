@@ -128,7 +128,11 @@ FileGrid.decorateThumbnailBox = function(
         new ThumbnailLoader(imageUrl,
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata).
-            load(box, fillMode, opt_imageLoadCallback, onImageLoadError);
+            load(box,
+                 fillMode,
+                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
+                 opt_imageLoadCallback,
+                 onImageLoadError);
       });
 };
 
