@@ -4904,13 +4904,6 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         LayoutRect overflowBox = visualOverflowRect();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedLocation);
-        if (style()->hasBorderRadius()) {
-            LayoutRect borderRect = borderBoxRect();
-            borderRect.moveBy(adjustedLocation);
-            RoundedRect border = style()->getRoundedBorderFor(borderRect, view());
-            if (!locationInContainer.intersects(border))
-                return false;
-        }
         if (!locationInContainer.intersects(overflowBox))
             return false;
     }
@@ -4944,6 +4937,15 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
             return true;
         }
+    }
+
+    // Check if the point is outside radii.
+    if (!isRenderView() && style()->hasBorderRadius()) {
+        LayoutRect borderRect = borderBoxRect();
+        borderRect.moveBy(adjustedLocation);
+        RoundedRect border = style()->getRoundedBorderFor(borderRect, view());
+        if (!locationInContainer.intersects(border))
+            return false;
     }
 
     // Now hit test our background
