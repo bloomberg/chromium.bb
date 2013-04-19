@@ -23,21 +23,20 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialogAccountHelper mAccountHelper;
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid nativeWindow,
-            String useBillingForShippingText, String saveLocallyText) {
+            String saveLocallyText) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
         mAccountHelper = new AutofillDialogAccountHelper(this, nativeWindow.getContext());
 
-        mAutofillDialog = new AutofillDialog(
-                nativeWindow.getContext(), this, useBillingForShippingText, saveLocallyText);
+        mAutofillDialog = new AutofillDialog(nativeWindow.getContext(), this, saveLocallyText);
         mAutofillDialog.show();
     }
 
     @CalledByNative
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
             WindowAndroid nativeWindow,
-            String useBillingForShippingText, String saveLocallyText) {
+            String saveLocallyText) {
         return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, nativeWindow,
-                useBillingForShippingText, saveLocallyText);
+                saveLocallyText);
     }
 
     /**
@@ -96,14 +95,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     @CalledByNative
     private String getCvc() {
         return mAutofillDialog.getCvc();
-    }
-
-    /**
-     * @see AutofillDialog#shouldUseBillingForShipping()
-     */
-    @CalledByNative
-    private boolean shouldUseBillingForShipping() {
-        return mAutofillDialog.shouldUseBillingForShipping();
     }
 
     /**

@@ -37,9 +37,6 @@ AutofillDialogViewAndroid::~AutofillDialogViewAndroid() {}
 
 void AutofillDialogViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> use_billing_for_shipping_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, controller_->UseBillingForShippingText());
   ScopedJavaLocalRef<jstring> save_locally_text =
         base::android::ConvertUTF16ToJavaString(
             env, controller_->SaveLocallyText());
@@ -48,7 +45,6 @@ void AutofillDialogViewAndroid::Show() {
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
           GetWindowAndroid()->GetJavaObject().obj(),
-      use_billing_for_shipping_text.obj(),
       save_locally_text.obj()));
 }
 
@@ -219,12 +215,6 @@ string16 AutofillDialogViewAndroid::GetCvc() {
   return base::android::ConvertJavaStringToUTF16(env, cvc.obj());
 }
 
-bool AutofillDialogViewAndroid::UseBillingForShipping() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_AutofillDialogGlue_shouldUseBillingForShipping(
-      env, java_object_.obj());
-}
-
 bool AutofillDialogViewAndroid::SaveDetailsLocally() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_AutofillDialogGlue_shouldSaveDetailsLocally(env,
@@ -333,6 +323,7 @@ void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
 void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
                                              jint jsection) {
   const DialogSection section = static_cast<DialogSection>(jsection);
+  // TODO(estade): respect |suggestion_state.text_style|.
   const SuggestionState& suggestion_state =
       controller_->SuggestionStateForSection(section);
   if (suggestion_state.text.empty()) {
