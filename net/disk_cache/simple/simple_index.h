@@ -126,6 +126,10 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void PostponeWritingToDisk();
 
+  // Using the mtime of the file and its mtime, detects if the index file is
+  // stale.
+  static bool IsIndexFileStale(const base::FilePath& index_filename);
+
   static void LoadFromDisk(
       const base::FilePath& index_filename,
       base::SingleThreadTaskRunner* io_thread,

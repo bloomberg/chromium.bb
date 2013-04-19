@@ -63,6 +63,13 @@ int SimpleEntryImpl::CreateEntry(SimpleIndex* index,
                                  const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
+  // We insert the entry in the index before creating the entry files in the
+  // SimpleSynchronousEntry, because this way the worse scenario is when we
+  // have the entry in the index but we don't have the created files yet, this
+  // way we never leak files. CreationOperationComplete will remove the entry
+  // from the index if the creation fails.
+  if (index)
+    index->Insert(key);
   scoped_refptr<SimpleEntryImpl> new_entry =
       new SimpleEntryImpl(index, path, key);
   SynchronousCreationCallback sync_creation_callback =
@@ -334,8 +341,6 @@ void SimpleEntryImpl::CreationOperationComplete(
   AddRef();  // Balanced in CloseInternal().
   synchronous_entry_ = sync_entry;
   SetSynchronousData();
-  if (index_)
-    index_->Insert(key_);
   *out_entry = this;
   completion_callback.Run(net::OK);
 }

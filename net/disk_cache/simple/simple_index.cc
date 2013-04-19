@@ -214,6 +214,8 @@ void SimpleIndex::InsertInEntrySet(
 }
 
 void SimpleIndex::PostponeWritingToDisk() {
+  if (!initialized_)
+    return;
   const base::TimeDelta file_age = base::Time::Now() - last_write_to_disk_;
   if (file_age > base::TimeDelta::FromSeconds(kMaxWriteToDiskDelaySecs) &&
       write_to_disk_timer_.IsRunning()) {
@@ -231,15 +233,35 @@ void SimpleIndex::PostponeWritingToDisk() {
 }
 
 // static
+bool SimpleIndex::IsIndexFileStale(const base::FilePath& index_filename) {
+  base::PlatformFileInfo dir_info;
+  base::PlatformFileInfo index_info;
+  if (!file_util::GetFileInfo(index_filename.DirName(), &dir_info))
+    return false;
+  DCHECK(dir_info.is_directory);
+  if (!file_util::GetFileInfo(index_filename, &index_info))
+    return false;
+
+  // Index file last_modified must be equal to the directory last_modified since
+  // the last operation we do is ReplaceFile in the
+  // SimpleIndexFile::WriteToDisk().
+  // If not true, we need to restore the index.
+  return index_info.last_modified >= dir_info.last_modified;
+}
+
+// static
 void SimpleIndex::LoadFromDisk(
     const base::FilePath& index_filename,
     base::SingleThreadTaskRunner* io_thread,
     const IndexCompletionCallback& completion_callback) {
-  scoped_ptr<EntrySet> index_file_entries =
-      SimpleIndexFile::LoadFromDisk(index_filename);
+  // TODO(felipeg): probably could load a stale index and use it for something.
+  scoped_ptr<EntrySet> index_file_entries;
+  // Only load if the index is not stale.
+  if (!SimpleIndex::IsIndexFileStale(index_filename))
+    index_file_entries = SimpleIndexFile::LoadFromDisk(index_filename);
 
   bool force_index_flush = false;
-  if (!index_file_entries.get()) {
+  if (!index_file_entries) {
     index_file_entries = SimpleIndex::RestoreFromDisk(index_filename);
     // When we restore from disk we write the merged index file to disk right
     // away, this might save us from having to restore again next time.
@@ -322,6 +344,7 @@ void SimpleIndex::WriteToDiskInternal(const base::FilePath& index_filename,
 void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
                                        bool force_index_flush) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(index_file_entries);
   // First, remove the entries that are in the |removed_entries_| from both
   // sets.
   for (base::hash_set<uint64>::const_iterator it =
