@@ -29,6 +29,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
@@ -371,6 +372,7 @@ bool InitTable(sql::Connection* db) {
                      "last_access_utc INTEGER NOT NULL, "
                      "has_expires INTEGER NOT NULL DEFAULT 1, "
                      "persistent INTEGER NOT NULL DEFAULT 1)"))
+      // TODO(rogerm): Add priority.
       return false;
   }
 
@@ -661,12 +663,14 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       "SELECT creation_utc, host_key, name, value, path, expires_utc, "
       "secure, httponly, last_access_utc, has_expires, persistent "
       "FROM cookies WHERE host_key = ?"));
+    // TODO(rogerm): Add priority.
   } else {
     smt.Assign(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT creation_utc, host_key, name, value, path, expires_utc, "
       "secure, httponly, last_access_utc, has_expires, persistent "
       "FROM cookies WHERE host_key = ? AND persistent = 1"));
+    // TODO(rogerm): Add priority.
   }
   if (!smt.is_valid()) {
     smt.Clear();  // Disconnect smt_ref from db_.
@@ -692,7 +696,10 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
               Time::FromInternalValue(smt.ColumnInt64(5)),    // expires_utc
               Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
               smt.ColumnInt(6) != 0,                          // secure
-              smt.ColumnInt(7) != 0));                        // httponly
+              smt.ColumnInt(7) != 0,                          // httponly
+              net::COOKIE_PRIORITY_DEFAULT));                 // priority
+      // TODO(rogerm): Change net::COOKIE_PRIORITY_DEFAULT above to
+      // net::StringToCookiePriority(smt.ColumnString(9))?
       DLOG_IF(WARNING,
               cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
       cookies_per_origin_[CookieOrigin(cc->Domain(), cc->IsSecure())]++;
@@ -876,6 +883,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   if (!db_.get() || ops.empty())
     return;
 
+  // TODO(rogerm): Add priority.
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, path, "
       "expires_utc, secure, httponly, last_access_utc, has_expires, "
@@ -918,6 +926,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt64(8, po->cc().LastAccessDate().ToInternalValue());
         add_smt.BindInt(9, po->cc().IsPersistent());
         add_smt.BindInt(10, po->cc().IsPersistent());
+        // TODO(rogerm): Add priority.
         if (!add_smt.Run())
           NOTREACHED() << "Could not add a cookie to the DB.";
         break;

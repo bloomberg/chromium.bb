@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -132,7 +133,7 @@ void SetCookieWithDetailsOnIOThread(
   cookie_monster->SetCookieWithDetailsAsync(
       url, cookie.Name(), cookie.Value(), original_domain,
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
-      cookie.IsHttpOnly(),
+      cookie.IsHttpOnly(), cookie.Priority(),
       base::Bind(&SetCookieCallback, event, success));
 }
 
@@ -325,6 +326,10 @@ void GetCookiesJSON(AutomationProvider* provider,
     cookie_dict->SetBoolean("http_only", cookie.IsHttpOnly());
     if (cookie.IsPersistent())
       cookie_dict->SetDouble("expiry", cookie.ExpiryDate().ToDoubleT());
+    if (cookie.Priority() != net::COOKIE_PRIORITY_DEFAULT) {
+      cookie_dict->SetString("priority",
+                             net::CookiePriorityToString(cookie.Priority()));
+    }
     list->Append(cookie_dict);
   }
   DictionaryValue dict;
@@ -382,6 +387,8 @@ void SetCookieJSON(AutomationProvider* provider,
   bool secure = false;
   double expiry = 0;
   bool http_only = false;
+  net::CookiePriority priority = net::COOKIE_PRIORITY_DEFAULT;
+
   if (!cookie_dict->GetString("name", &name)) {
     reply.SendError("'name' missing or invalid");
     return;
@@ -416,11 +423,19 @@ void SetCookieJSON(AutomationProvider* provider,
     reply.SendError("optional 'http_only' invalid");
     return;
   }
+  if (cookie_dict->HasKey("priority")) {
+    std::string priority_string;
+    if (!cookie_dict->GetString("priority", &priority_string)) {
+      reply.SendError("optional 'priority' invalid");
+      return;
+    }
+    priority = net::StringToCookiePriority(priority_string);
+  }
 
   scoped_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(
           GURL(url), name, value, domain, path, base::Time(),
-          base::Time::FromDoubleT(expiry), secure, http_only));
+          base::Time::FromDoubleT(expiry), secure, http_only, priority));
   if (!cookie.get()) {
     reply.SendError("given 'cookie' parameters are invalid");
     return;

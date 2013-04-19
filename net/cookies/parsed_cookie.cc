@@ -55,6 +55,7 @@ const char kExpiresTokenName[] = "expires";
 const char kMaxAgeTokenName[] = "max-age";
 const char kSecureTokenName[] = "secure";
 const char kHttpOnlyTokenName[] = "httponly";
+const char kPriorityTokenName[] = "priority";
 
 const char kTerminator[] = "\n\r\0";
 const int kTerminatorLen = sizeof(kTerminator) - 1;
@@ -155,7 +156,8 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
       expires_index_(0),
       maxage_index_(0),
       secure_index_(0),
-      httponly_index_(0) {
+      httponly_index_(0),
+      priority_index_(0) {
 
   if (cookie_line.size() > kMaxCookieSize) {
     VLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
@@ -172,6 +174,11 @@ ParsedCookie::~ParsedCookie() {
 
 bool ParsedCookie::IsValid() const {
   return !pairs_.empty();
+}
+
+CookiePriority ParsedCookie::Priority() const {
+  return (priority_index_ == 0) ? COOKIE_PRIORITY_DEFAULT :
+      StringToCookiePriority(pairs_[priority_index_].second);
 }
 
 bool ParsedCookie::SetName(const std::string& name) {
@@ -214,6 +221,10 @@ bool ParsedCookie::SetIsSecure(bool is_secure) {
 
 bool ParsedCookie::SetIsHttpOnly(bool is_http_only) {
   return SetBool(&httponly_index_, kHttpOnlyTokenName, is_http_only);
+}
+
+bool ParsedCookie::SetPriority(const std::string& priority) {
+  return SetString(&priority_index_, kPriorityTokenName, priority);
 }
 
 std::string ParsedCookie::ToCookieLine() const {
@@ -400,6 +411,8 @@ void ParsedCookie::SetupAttributes() {
       secure_index_ = i;
     } else if (pairs_[i].first == kHttpOnlyTokenName) {
       httponly_index_ = i;
+    } else if (pairs_[i].first == kPriorityTokenName) {
+      priority_index_ = i;
     } else {
       /* some attribute we don't know or don't care about. */
     }
@@ -452,7 +465,8 @@ void ParsedCookie::ClearAttributePair(size_t index) {
     return;
 
   size_t* indexes[] = { &path_index_, &domain_index_, &expires_index_,
-                        &maxage_index_, &secure_index_, &httponly_index_ };
+                        &maxage_index_, &secure_index_, &httponly_index_,
+                        &priority_index_ };
   for (size_t i = 0; i < arraysize(indexes); ++i) {
     if (*indexes[i] == index)
       *indexes[i] = 0;

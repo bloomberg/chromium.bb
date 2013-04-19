@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 
 class GURL;
@@ -35,7 +36,8 @@ class NET_EXPORT CanonicalCookie {
                   const base::Time& expiration,
                   const base::Time& last_access,
                   bool secure,
-                  bool httponly);
+                  bool httponly,
+                  CookiePriority priority);
 
   // This constructor does canonicalization but not validation.
   // The result of this constructor should not be relied on in contexts
@@ -65,7 +67,8 @@ class NET_EXPORT CanonicalCookie {
                                  const base::Time& creation,
                                  const base::Time& expiration,
                                  bool secure,
-                                 bool http_only);
+                                 bool http_only,
+                                 CookiePriority priority);
 
   const std::string& Source() const { return source_; }
   const std::string& Name() const { return name_; }
@@ -78,6 +81,7 @@ class NET_EXPORT CanonicalCookie {
   const base::Time& ExpiryDate() const { return expiry_date_; }
   bool IsSecure() const { return secure_; }
   bool IsHttpOnly() const { return httponly_; }
+  CookiePriority Priority() const { return priority_; }
   bool IsDomainCookie() const {
     return !domain_.empty() && domain_[0] == '.'; }
   bool IsHostCookie() const { return !IsDomainCookie(); }
@@ -148,6 +152,7 @@ class NET_EXPORT CanonicalCookie {
   base::Time last_access_date_;
   bool secure_;
   bool httponly_;
+  CookiePriority priority_;
 };
 
 typedef std::vector<CanonicalCookie> CookieList;

@@ -21,6 +21,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,7 +121,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                  const base::Time& creation) {
     store_->AddCookie(
         net::CanonicalCookie(GURL(), name, value, domain, path, creation,
-                             creation, creation, false, false));
+                             creation, creation, false, false,
+                             net::COOKIE_PRIORITY_DEFAULT));
   }
 
   virtual void SetUp() OVERRIDE {
@@ -314,7 +316,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", base::Time::Now(),
-          base::Time(), base::Time::Now(), false, false));
+          base::Time(), base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -340,7 +343,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", base::Time::Now(),
-          base::Time(), base::Time::Now(), false, false));
+          base::Time(), base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -370,13 +374,15 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), kSessionName, "val", "sessioncookie.com", "/",
-          base::Time::Now(), base::Time(), base::Time::Now(), false, false));
+          base::Time::Now(), base::Time(), base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_DEFAULT));
   // Add a persistent cookie.
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), kPersistentName, "val", "sessioncookie.com", "/",
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
-          base::Time::Now(), false, false));
+          base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_DEFAULT));
 
   // Create a store that loads session cookie and test that the the IsPersistent
   // attribute is restored.

@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,7 +117,7 @@ CanonicalCookie BuildCanonicalCookie(const std::string& key,
   return CanonicalCookie(
       GURL(), pc.Name(), pc.Value(), key, cookie_path,
       creation_time, cookie_expires, creation_time,
-      pc.IsSecure(), pc.IsHttpOnly());
+      pc.IsSecure(), pc.IsHttpOnly(), pc.Priority());
 }
 
 void AddCookieToList(
@@ -209,7 +210,8 @@ CookieMonster* CreateMonsterFromStoreForGC(
 
     CanonicalCookie cc(
         GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path",
-        creation_time, expiration_time, last_access_time, false, false);
+        creation_time, expiration_time, last_access_time, false, false,
+        COOKIE_PRIORITY_DEFAULT);
     store->AddCookie(cc);
   }
 

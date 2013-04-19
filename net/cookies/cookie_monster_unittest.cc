@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
 #include "net/cookies/cookie_util.h"
@@ -145,11 +146,14 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                             const std::string& domain,
                             const std::string& path,
                             const base::Time& expiration_time,
-                            bool secure, bool http_only) {
+                            bool secure,
+                            bool http_only,
+                            CookiePriority priority) {
     DCHECK(cm);
     SetCookieCallback callback;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
+        priority,
         base::Bind(&SetCookieCallback::Run, base::Unretained(&callback)));
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
@@ -222,15 +226,18 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
 
     // Domain cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_1,
-                                          "dom_1", "X", ".harvard.edu", "/",
-                                          base::Time(), false, false));
+                                           "dom_1", "X", ".harvard.edu", "/",
+                                           base::Time(), false, false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "dom_2", "X", ".math.harvard.edu",
-                                           "/", base::Time(), false, false));
+                                           "dom_2", "X", ".math.harvard.edu",
+                                           "/", base::Time(), false, false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_3,
-                                          "dom_3", "X",
-                                          ".bourbaki.math.harvard.edu", "/",
-                                          base::Time(), false, false));
+                                           "dom_3", "X",
+                                           ".bourbaki.math.harvard.edu", "/",
+                                           base::Time(), false, false,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     // Host cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
@@ -241,7 +248,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/",
                                            base::Time(),
                                            false,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
                                            url_top_level_domain_plus_2,
                                            "host_2",
@@ -250,7 +258,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/",
                                            base::Time(),
                                            false,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
                                            url_top_level_domain_plus_3,
                                            "host_3",
@@ -259,7 +268,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/",
                                            base::Time(),
                                            false,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     // Http_only cookie
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
@@ -270,13 +280,15 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/",
                                            base::Time(),
                                            false,
-                                           true));
+                                           true,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     // Secure cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
-                                          url_top_level_domain_plus_2_secure,
-                                         "sec_dom", "X", ".math.harvard.edu",
-                                         "/", base::Time(), true, false));
+                                           url_top_level_domain_plus_2_secure,
+                                           "sec_dom", "X", ".math.harvard.edu",
+                                           "/", base::Time(), true, false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
                                            url_top_level_domain_plus_2_secure,
                                            "sec_host",
@@ -285,17 +297,20 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/",
                                            base::Time(),
                                            true,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     // Domain path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "dom_path_1", "X",
-                                          ".math.harvard.edu", "/dir1",
-                                          base::Time(), false, false));
+                                           "dom_path_1", "X",
+                                           ".math.harvard.edu", "/dir1",
+                                           base::Time(), false, false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "dom_path_2", "X",
-                                          ".math.harvard.edu", "/dir1/dir2",
-                                          base::Time(), false, false));
+                                           "dom_path_2", "X",
+                                           ".math.harvard.edu", "/dir1/dir2",
+                                           base::Time(), false, false,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     // Host path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
@@ -306,7 +321,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/dir1",
                                            base::Time(),
                                            false,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
                                            url_top_level_domain_plus_2,
                                            "host_path_2",
@@ -315,7 +331,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                            "/dir1/dir2",
                                            base::Time(),
                                            false,
-                                           false));
+                                           false,
+                                           COOKIE_PRIORITY_DEFAULT));
 
     EXPECT_EQ(13U, this->GetAllCookies(cm).size());
   }
@@ -452,6 +469,18 @@ class MockDeleteCookieCallback
   MOCK_METHOD1(Invoke, void(bool success));
 };
 
+struct CookiesInputInfo {
+  const GURL url;
+  const std::string name;
+  const std::string value;
+  const std::string domain;
+  const std::string path;
+  const base::Time expiration_time;
+  bool secure;
+  bool http_only;
+  CookiePriority priority;
+};
+
 ACTION(QuitCurrentMessageLoop) {
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
@@ -474,11 +503,10 @@ ACTION_P4(DeleteAllCreatedBetweenAction,
   cookie_monster->DeleteAllCreatedBetweenAsync(
       delete_begin, delete_end, callback->AsCallback());
 }
-ACTION_P10(SetCookieWithDetailsAction,
-           cookie_monster, url, name, value, domain, path, expiration_time,
-           secure, http_only, callback) {
+ACTION_P3(SetCookieWithDetailsAction, cookie_monster, cc, callback) {
   cookie_monster->SetCookieWithDetailsAsync(
-      url, name, value, domain, path, expiration_time, secure, http_only,
+      cc.url, cc.name, cc.value, cc.domain, cc.path, cc.expiration_time,
+      cc.secure, cc.http_only, cc.priority,
       callback->AsCallback());
 }
 
@@ -683,16 +711,22 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
 TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
   MockSetCookiesCallback set_cookies_callback;
 
+  CookiesInputInfo cookie_info = {
+    url_google_foo_, "A", "B", std::string(), "/foo",
+    base::Time(), false, false, COOKIE_PRIORITY_DEFAULT
+  };
   BeginWithForDomainKey("google.izzle", SetCookieWithDetailsAction(
-      &cookie_monster(), url_google_foo_, "A", "B", std::string(), "/foo",
-      base::Time(), false, false, &set_cookies_callback));
+      &cookie_monster(), cookie_info, &set_cookies_callback));
 
   WaitForLoadCall();
 
+  CookiesInputInfo cookie_info_exp = {
+    url_google_foo_, "A", "B", std::string(), "/foo",
+    base::Time(), false, false, COOKIE_PRIORITY_DEFAULT
+  };
   EXPECT_CALL(set_cookies_callback, Invoke(true)).WillOnce(
       SetCookieWithDetailsAction(
-          &cookie_monster(), url_google_foo_, "A", "B", std::string(), "/foo",
-          base::Time(), false, false, &set_cookies_callback));
+          &cookie_monster(), cookie_info_exp, &set_cookies_callback));
   EXPECT_CALL(set_cookies_callback, Invoke(true)).WillOnce(
       QuitCurrentMessageLoop());
 
@@ -1384,30 +1418,30 @@ TEST_F(CookieMonsterTest, SetCookieWithDetails) {
 
   EXPECT_TRUE(SetCookieWithDetails(
       cm, url_google_foo_, "A", "B", std::string(), "/foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(SetCookieWithDetails(
       cm, url_google_bar_, "C", "D", "google.izzle", "/bar", base::Time(),
-      false, true));
+      false, true, COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(SetCookieWithDetails(
       cm, url_google_, "E", "F", std::string(), std::string(), base::Time(),
-      true, false));
+      true, false, COOKIE_PRIORITY_DEFAULT));
 
   // Test that malformed attributes fail to set the cookie.
   EXPECT_FALSE(SetCookieWithDetails(
       cm, url_google_foo_, " A", "B", std::string(), "/foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(SetCookieWithDetails(
       cm, url_google_foo_, "A;", "B", std::string(), "/foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(SetCookieWithDetails(
       cm, url_google_foo_, "A=", "B", std::string(), "/foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(SetCookieWithDetails(
       cm, url_google_foo_, "A", "B", "google.ozzzzzzle", "foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(SetCookieWithDetails(
       cm, url_google_foo_, "A=", "B", std::string(), "foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
 
   CookieList cookies = GetAllCookiesForURL(cm, url_google_foo_);
   CookieList::iterator it = cookies.begin();
@@ -1535,11 +1569,14 @@ TEST_F(CookieMonsterTest, UniqueCreationTime) {
   SetCookieWithOptions(cm, url_google_, "setCookieWithOptions3=A", options);
 
   SetCookieWithDetails(cm, url_google_, "setCookieWithDetails1", "A",
-                       ".google.com", "/", Time(), false, false);
+                       ".google.com", "/", Time(), false, false,
+                       COOKIE_PRIORITY_DEFAULT);
   SetCookieWithDetails(cm, url_google_, "setCookieWithDetails2", "A",
-                       ".google.com", "/", Time(), false, false);
+                       ".google.com", "/", Time(), false, false,
+                       COOKIE_PRIORITY_DEFAULT);
   SetCookieWithDetails(cm, url_google_, "setCookieWithDetails3", "A",
-                       ".google.com", "/", Time(), false, false);
+                       ".google.com", "/", Time(), false, false,
+                       COOKIE_PRIORITY_DEFAULT);
 
   // Now we check
   CookieList cookie_list(GetAllCookies(cm));
@@ -1597,24 +1634,15 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
   base::Time new_access_time;
   base::Time expires(base::Time::Now() + base::TimeDelta::FromSeconds(100));
 
-  struct CookiesInputInfo {
-    std::string gurl;
-    std::string name;
-    std::string value;
-    std::string domain;
-    std::string path;
-    base::Time expires;
-    bool secure;
-    bool http_only;
-  };
   const CookiesInputInfo input_info[] = {
-    {"http://a.b.google.com", "a", "1", "", "/path/to/cookie", expires,
-     false, false},
-    {"https://www.google.com", "b", "2", ".google.com", "/path/from/cookie",
-     expires + TimeDelta::FromSeconds(10), true, true},
-    {"https://google.com", "c", "3", "", "/another/path/to/cookie",
+    {GURL("http://a.b.google.com"), "a", "1", "", "/path/to/cookie", expires,
+     false, false, COOKIE_PRIORITY_DEFAULT},
+    {GURL("https://www.google.com"), "b", "2", ".google.com",
+     "/path/from/cookie", expires + TimeDelta::FromSeconds(10),
+     true, true, COOKIE_PRIORITY_DEFAULT},
+    {GURL("https://google.com"), "c", "3", "", "/another/path/to/cookie",
      base::Time::Now() + base::TimeDelta::FromSeconds(100),
-     true, false}
+     true, false, COOKIE_PRIORITY_DEFAULT}
   };
   const int INPUT_DELETE = 1;
 
@@ -1623,13 +1651,13 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
     scoped_refptr<CookieMonster> cmout(new CookieMonster(store, NULL));
     for (const CookiesInputInfo* p = input_info;
          p < &input_info[ARRAYSIZE_UNSAFE(input_info)]; p++) {
-      EXPECT_TRUE(SetCookieWithDetails(cmout, GURL(p->gurl), p->name, p->value,
-                                       p->domain, p->path, p->expires,
-                                       p->secure, p->http_only));
+      EXPECT_TRUE(SetCookieWithDetails(cmout, p->url, p->name, p->value,
+                                       p->domain, p->path, p->expiration_time,
+                                       p->secure, p->http_only, p->priority));
     }
-    DeleteCookie(cmout, GURL(std::string(input_info[INPUT_DELETE].gurl) +
-                             input_info[INPUT_DELETE].path),
-                 input_info[INPUT_DELETE].name);
+    GURL del_url(input_info[INPUT_DELETE].url.Resolve(
+                     input_info[INPUT_DELETE].path).spec());
+    DeleteCookie(cmout, del_url, input_info[INPUT_DELETE].name);
   }
 
   // Create a new cookie monster and make sure that everything is correct
@@ -1647,14 +1675,14 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
 
       EXPECT_EQ(input->name, output->Name());
       EXPECT_EQ(input->value, output->Value());
-      EXPECT_EQ(GURL(input->gurl).host(), output->Domain());
+      EXPECT_EQ(input->url.host(), output->Domain());
       EXPECT_EQ(input->path, output->Path());
       EXPECT_LE(current.ToInternalValue(),
                 output->CreationDate().ToInternalValue());
       EXPECT_EQ(input->secure, output->IsSecure());
       EXPECT_EQ(input->http_only, output->IsHttpOnly());
       EXPECT_TRUE(output->IsPersistent());
-      EXPECT_EQ(input->expires.ToInternalValue(),
+      EXPECT_EQ(input->expiration_time.ToInternalValue(),
                 output->ExpiryDate().ToInternalValue());
     }
   }
@@ -1938,7 +1966,7 @@ TEST_F(CookieMonsterTest, HistogramCheck) {
   ASSERT_TRUE(SetCookieWithDetails(
       cm, GURL("http://fake.a.url"), "a", "b", "a.url", "/",
       base::Time::Now() + base::TimeDelta::FromMinutes(59),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
 
   scoped_ptr<base::HistogramSamples> samples2(
       expired_histogram->SnapshotSamples());
@@ -1995,8 +2023,10 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
     base::Time expiration_time = base::Time();
     bool secure = false;
     bool http_only = false;
+    CookiePriority priority = COOKIE_PRIORITY_DEFAULT;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
+        priority,
         base::Bind(&SetCookieCallback::Run, base::Unretained(callback)));
   }
 
@@ -2115,7 +2145,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckSetCookieWithDetails) {
   EXPECT_TRUE(SetCookieWithDetails(
       cm, url_google_foo_,
       "A", "B", std::string(), "/foo", base::Time(),
-      false, false));
+      false, false, COOKIE_PRIORITY_DEFAULT));
   SetCookieCallback callback(&other_thread_);
   base::Closure task = base::Bind(
       &net::MultiThreadedCookieMonsterTest::SetCookieWithDetailsTask,
@@ -2125,7 +2155,6 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckSetCookieWithDetails) {
   EXPECT_TRUE(callback.did_run());
   EXPECT_TRUE(callback.result());
 }
-
 
 TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllCreatedBetween) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));

@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/error_utils.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -390,6 +391,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                          : false,
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
                                             : false,
+      net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
 }
 

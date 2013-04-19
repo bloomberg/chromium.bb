@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 
 using extensions::api::cookies::Cookie;
 using extensions::api::cookies::CookieStore;
@@ -114,7 +115,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   net::CanonicalCookie canonical_cookie1(
       GURL(), "ABC", "DEF", "www.foobar.com", "/",
       base::Time(), base::Time(), base::Time(),
-      false, false);
+      false, false, net::COOKIE_PRIORITY_DEFAULT);
   scoped_ptr<Cookie> cookie1(
       cookies_helpers::CreateCookie(
           canonical_cookie1, "some cookie store"));
@@ -130,8 +131,9 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("some cookie store", cookie1->store_id);
 
   net::CanonicalCookie canonical_cookie2(
-      GURL(), "ABC", "DEF", ".foobar.com", "/", base::Time(),
-      base::Time::FromDoubleT(10000), base::Time(), false, false);
+      GURL(), "ABC", "DEF", ".foobar.com", "/",
+      base::Time(), base::Time::FromDoubleT(10000), base::Time(),
+      false, false, net::COOKIE_PRIORITY_DEFAULT);
   scoped_ptr<Cookie> cookie2(
       cookies_helpers::CreateCookie(
           canonical_cookie2, "some cookie store"));
@@ -152,14 +154,14 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
   net::CanonicalCookie cookie1(
       GURL(), "ABC", "DEF", "www.foobar.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false);
+      base::Time(), false, false, net::COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ("http://www.foobar.com/",
             cookies_helpers::GetURLFromCanonicalCookie(
                 cookie1).spec());
 
   net::CanonicalCookie cookie2(
       GURL(), "ABC", "DEF", ".helloworld.com", "/", base::Time(), base::Time(),
-      base::Time(), true, false);
+      base::Time(), true, false, net::COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ("https://helloworld.com/",
             cookies_helpers::GetURLFromCanonicalCookie(
                 cookie2).spec());
@@ -204,7 +206,8 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
                                 base::Time(),
                                 base::Time(),
                                 false,
-                                false);
+                                false,
+                                net::COOKIE_PRIORITY_DEFAULT);
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
   }
 }
@@ -219,7 +222,8 @@ TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
                                         base::Time(),
                                         base::Time(),
                                         false,
-                                        false);
+                                        false,
+                                        net::COOKIE_PRIORITY_DEFAULT);
   scoped_ptr<Cookie> cookie(
       cookies_helpers::CreateCookie(
           canonical_cookie, "some cookie store"));

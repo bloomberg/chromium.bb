@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store.h"
 
 class GURL;
@@ -137,7 +138,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const std::string& domain,
                                  const std::string& path,
                                  const base::Time& expiration_time,
-                                 bool secure, bool http_only,
+                                 bool secure,
+                                 bool http_only,
+                                 CookiePriority priority,
                                  const SetCookiesCallback& callback);
 
 
@@ -371,7 +374,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& domain,
                             const std::string& path,
                             const base::Time& expiration_time,
-                            bool secure, bool http_only);
+                            bool secure,
+                            bool http_only,
+                            CookiePriority priority);
 
   CookieList GetAllCookies();
 

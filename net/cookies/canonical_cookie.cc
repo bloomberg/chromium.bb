@@ -113,7 +113,8 @@ CanonicalCookie::CanonicalCookie(
     const GURL& url, const std::string& name, const std::string& value,
     const std::string& domain, const std::string& path,
     const base::Time& creation, const base::Time& expiration,
-    const base::Time& last_access, bool secure, bool httponly)
+    const base::Time& last_access, bool secure, bool httponly,
+    CookiePriority priority)
     : source_(GetCookieSourceFromURL(url)),
       name_(name),
       value_(value),
@@ -123,7 +124,8 @@ CanonicalCookie::CanonicalCookie(
       expiry_date_(expiration),
       last_access_date_(last_access),
       secure_(secure),
-      httponly_(httponly) {
+      httponly_(httponly),
+      priority_(priority) {
 }
 
 CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
@@ -134,7 +136,8 @@ CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
       creation_date_(Time::Now()),
       last_access_date_(Time()),
       secure_(pc.IsSecure()),
-      httponly_(pc.IsHttpOnly()) {
+      httponly_(pc.IsHttpOnly()),
+      priority_(pc.Priority()) {
   if (pc.HasExpires())
     expiry_date_ = CanonExpiration(pc, creation_date_, creation_date_);
 
@@ -239,7 +242,8 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                              cookie_domain, cookie_path, creation_time,
                              cookie_expires, creation_time,
                              parsed_cookie.IsSecure(),
-                             parsed_cookie.IsHttpOnly());
+                             parsed_cookie.IsHttpOnly(),
+                             parsed_cookie.Priority());
 }
 
 CanonicalCookie* CanonicalCookie::Create(const GURL& url,
@@ -250,7 +254,8 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                          const base::Time& creation,
                                          const base::Time& expiration,
                                          bool secure,
-                                         bool http_only) {
+                                         bool http_only,
+                                         CookiePriority priority) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
   std::string parsed_name = ParsedCookie::ParseTokenString(name);
@@ -288,7 +293,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
 
   return new CanonicalCookie(url, parsed_name, parsed_value, cookie_domain,
                              cookie_path, creation, expiration, creation,
-                             secure, http_only);
+                             secure, http_only, priority);
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {

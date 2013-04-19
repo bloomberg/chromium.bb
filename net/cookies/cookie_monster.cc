@@ -382,6 +382,7 @@ class CookieMonster::SetCookieWithDetailsTask
                            const base::Time& expiration_time,
                            bool secure,
                            bool http_only,
+                           CookiePriority priority,
                            const CookieMonster::SetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
         url_(url),
@@ -392,6 +393,7 @@ class CookieMonster::SetCookieWithDetailsTask
         expiration_time_(expiration_time),
         secure_(secure),
         http_only_(http_only),
+        priority_(priority),
         callback_(callback) {
   }
 
@@ -410,6 +412,7 @@ class CookieMonster::SetCookieWithDetailsTask
   base::Time expiration_time_;
   bool secure_;
   bool http_only_;
+  CookiePriority priority_;
   CookieMonster::SetCookiesCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SetCookieWithDetailsTask);
@@ -418,7 +421,7 @@ class CookieMonster::SetCookieWithDetailsTask
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->
       SetCookieWithDetails(url_, name_, value_, domain_, path_,
-                           expiration_time_, secure_, http_only_);
+                           expiration_time_, secure_, http_only_, priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&CookieMonster::SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -776,10 +779,11 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const base::Time& expiration_time,
     bool secure,
     bool http_only,
+    CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task =
       new SetCookieWithDetailsTask(this, url, name, value, domain, path,
-                                   expiration_time, secure, http_only,
+                                   expiration_time, secure, http_only, priority,
                                    callback);
 
   DoCookieTaskForURL(task, url);
@@ -935,7 +939,8 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          const std::string& path,
                                          const base::Time& expiration_time,
                                          bool secure,
-                                         bool http_only) {
+                                         bool http_only,
+                                         CookiePriority priority) {
   base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
@@ -945,10 +950,9 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   last_time_seen_ = creation_time;
 
   scoped_ptr<CanonicalCookie> cc;
-  cc.reset(CanonicalCookie::Create(
-      url, name, value, domain, path,
-      creation_time, expiration_time,
-      secure, http_only));
+  cc.reset(CanonicalCookie::Create(url, name, value, domain, path,
+                                   creation_time, expiration_time,
+                                   secure, http_only, priority));
 
   if (!cc.get())
     return false;
