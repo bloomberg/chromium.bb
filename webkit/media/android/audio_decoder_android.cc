@@ -180,7 +180,7 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
 
   size_t decoded_frames = 0;
   const float kMaxScale = 1.0f / std::numeric_limits<int16_t>::max();
-  const float kMinScale = 1.0f / std::numeric_limits<int16_t>::min();
+  const float kMinScale = -1.0f / std::numeric_limits<int16_t>::min();
 
   for (size_t m = 0; m < number_of_samples; m += number_of_channels) {
     for (size_t k = 0; k < number_of_channels; ++k) {
