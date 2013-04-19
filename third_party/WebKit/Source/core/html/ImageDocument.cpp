@@ -291,7 +291,7 @@ void ImageDocument::restoreImageSize()
     if (!m_imageElement || !m_imageSizeIsKnown)
         return;
     
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), pageZoomFactor(this));
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), 1.0f);
     m_imageElement->setWidth(imageSize.width());
     m_imageElement->setHeight(imageSize.height());
     
