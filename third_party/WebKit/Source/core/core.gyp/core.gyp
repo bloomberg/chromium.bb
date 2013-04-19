@@ -213,7 +213,7 @@
         # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to use /usr/bin/clang once we require Xcode 4.x.
         'preprocessor': '--preprocessor "/usr/bin/gcc -E -P -x c++"'
       }],
-      ['use_x11==1 or OS=="android"', {
+      ['OS=="linux" or OS=="android"', {
         'webcore_include_dirs': [
           '../platform/graphics/harfbuzz',
           '../platform/graphics/harfbuzz/ng',
@@ -1609,7 +1609,7 @@
             ['exclude', 'platform/chromium/ScrollbarThemeChromiumDefault.h'],
           ],
         }],
-        ['use_x11==1 or OS=="android"', {
+        ['OS=="linux" or OS=="android"', {
           'sources/': [
             # Cherry-pick files excluded by the broader regular expressions above.
             ['include', 'platform/graphics/harfbuzz/FontHarfBuzz\\.cpp$'],
@@ -1625,12 +1625,12 @@
           'dependencies': [
             '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
-        }, { # use_x11==0 and OS!="android"
+        }, { # OS!="linux" and OS!="android"
           'sources/': [
             ['exclude', 'Harfbuzz[^/]+\\.(cpp|h)$'],
           ],
         }],
-        ['use_x11!=1', {
+        ['OS!="linux"', {
           'sources/': [
             ['exclude', 'Linux\\.cpp$'],
           ],
@@ -1756,7 +1756,7 @@
             ['exclude', 'platform/graphics/FontPlatformData\\.cpp$'],
           ],
         }],
-        ['use_x11 == 0 and OS != "mac"', {
+        ['OS != "linux" and OS != "mac"', {
           'sources/': [
             ['exclude', 'VDMX[^/]+\\.(cpp|h)$'],
           ],
@@ -1921,7 +1921,7 @@
           # Due to a bug in gcc 4.6 in android NDK, we get warnings about uninitialized variable.
           'cflags': ['-Wno-uninitialized'],
         }],
-        ['use_x11 == 0', {
+        ['OS != "linux"', {
           'sources/': [
             ['exclude', 'Linux\\.cpp$'],
           ],
@@ -1974,7 +1974,7 @@
           # warnings about uninitialized this.
           'cflags': ['-Wno-uninitialized'],
         }],
-        ['use_x11 == 0', {
+        ['OS != "linux"', {
           'sources/': [
             ['exclude', 'Linux\\.cpp$'],
           ],

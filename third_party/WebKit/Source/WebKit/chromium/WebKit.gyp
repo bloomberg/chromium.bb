@@ -652,20 +652,29 @@
                       },
                     },
                 }],
-                ['use_x11 == 1', {
+                ['OS == "linux"', {
                     'dependencies': [
                         '<(DEPTH)/build/linux/system.gyp:fontconfig',
+                    ],
+                    'include_dirs': [
+                        'public/linux',
+                    ],
+                }, {
+                    'sources/': [
+                        ['exclude', '/linux/'],
+                    ],
+                }],
+                ['use_x11 == 1', {
+                    'dependencies': [
                         '<(DEPTH)/build/linux/system.gyp:x11',
                     ],
                     'include_dirs': [
                         'public/x11',
-                        'public/linux',
                     ],
-                }, { # else: use_x11 != 1
+                }, {
                     'sources/': [
                         ['exclude', '/x11/'],
-                        ['exclude', '/linux/'],
-                    ],
+                    ]
                 }],
                 ['toolkit_uses_gtk == 1', {
                     'dependencies': [

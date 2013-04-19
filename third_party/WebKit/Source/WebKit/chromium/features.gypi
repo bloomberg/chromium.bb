@@ -150,7 +150,7 @@
           'ENABLE_WEB_AUDIO=1',
         ],
       }],
-      ['OS=="win" or OS=="android" or use_x11==1', {
+      ['OS=="win" or OS=="android" or OS=="linux"', {
         'feature_defines': [
           'ENABLE_OPENTYPE_VERTICAL=1',
         ],
@@ -161,7 +161,7 @@
           'WTF_USE_SKIA_ON_MAC_CHROMIUM=1',
         ],
       }],
-      ['use_x11==1 or OS=="android"', {
+      ['OS=="linux" or OS=="android"', {
         'feature_defines': [
           'WTF_USE_HARFBUZZ=1',
         ],
