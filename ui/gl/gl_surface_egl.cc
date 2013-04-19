@@ -221,8 +221,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false),
-      config_(NULL),
-      recreate_on_make_current_(false) {
+      config_(NULL) {
   software_ = software;
 #if defined(OS_ANDROID)
   if (window)
@@ -400,28 +399,16 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (was_current)
     current_context->ReleaseCurrent(this);
 
-  Recreate();
+  Destroy();
+
+  if (!Initialize()) {
+    LOG(ERROR) << "Failed to resize pbuffer.";
+    return false;
+  }
 
   if (was_current)
     return current_context->MakeCurrent(this);
   return true;
-}
-
-bool NativeViewGLSurfaceEGL::Recreate() {
-  Destroy();
-  if (!Initialize()) {
-    LOG(ERROR) << "Failed to create surface.";
-    return false;
-  }
-  return true;
-}
-
-bool NativeViewGLSurfaceEGL::RecreateOnMakeCurrent() {
-  return recreate_on_make_current_;
-}
-
-void NativeViewGLSurfaceEGL::SetRecreateOnMakeCurrent(bool recreate) {
-  recreate_on_make_current_ = recreate;
 }
 
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
