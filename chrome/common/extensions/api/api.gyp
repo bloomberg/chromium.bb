@@ -29,6 +29,7 @@
           'bookmarks.json',
           'chromeos_info_private.json',
           'cloud_print_private.json',
+          'command_line_private.json',
           'content_settings.json',
           'context_menus.json',
           'cookies.json',

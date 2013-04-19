@@ -715,6 +715,7 @@ TEST_F(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBookmarkManagerPrivate);
   skip.insert(APIPermission::kChromeosInfoPrivate);
   skip.insert(APIPermission::kCloudPrintPrivate);
+  skip.insert(APIPermission::kCommandLinePrivate);
   skip.insert(APIPermission::kDeveloperPrivate);
   skip.insert(APIPermission::kDial);
   skip.insert(APIPermission::kDownloadsInternal);
