@@ -16,11 +16,7 @@
 #ifndef SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 #define SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 
-#if defined(__cplusplus)
-#include <limits>
-#define SIZE_MAX std::numeric_limits<size_t>::max()
-#endif
-
+#include <stdint.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memcpy
 
@@ -56,8 +52,9 @@ static const char* kSUIDUnsafeEnvironmentVariables[] = {
 // name for a given environment variable.
 static inline char* SandboxSavedEnvironmentVariable(const char* envvar) {
   const size_t envvar_len = strlen(envvar);
+  const size_t kMaxSizeT = (size_t) -1;
 
-  if (envvar_len > SIZE_MAX - 1 -8)
+  if (envvar_len > kMaxSizeT - 1 -8)
     return NULL;
 
   const size_t saved_envvarlen = envvar_len + 1 /* NUL terminator */ +
@@ -72,9 +69,5 @@ static inline char* SandboxSavedEnvironmentVariable(const char* envvar) {
 
   return saved_envvar;
 }
-
-#if defined(__cplusplus)
-#undef SIZE_MAX
-#endif
 
 #endif  // SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
