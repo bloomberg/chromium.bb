@@ -6,6 +6,7 @@
 chrome.commands.onCommand.addListener(function(command) {
   chrome.tabs.executeScript(null, {
     code: "document.body.bgColor='" + command + "'" });
+    chrome.test.notifyPass();
 });
 
 chrome.test.notifyPass();

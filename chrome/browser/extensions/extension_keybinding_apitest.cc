@@ -197,9 +197,11 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
 
 // This test validates that an extension cannot request a shortcut that is
 // already in use by Chrome.
-// Flaky, see http://crbug.com/233372.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, DISABLED_DontOverwriteSystemShortcuts) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_TRUE(RunExtensionTest("keybinding/dont_overwrite_system")) << message_;
 
   ui_test_utils::NavigateToURL(browser(),
@@ -209,8 +211,12 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DISABLED_DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(tab);
 
   // Activate the shortcut (Alt+Shift+F) to make page blue.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_F, false, true, true, false));
+  {
+    ResultCatcher catcher;
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_F, false, true, true, false));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
