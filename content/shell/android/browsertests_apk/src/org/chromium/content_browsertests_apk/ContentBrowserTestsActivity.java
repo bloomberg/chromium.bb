@@ -15,15 +15,15 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.common.ProcessInitException;
-import org.chromium.ui.gfx.ActivityNativeWindow;
 import org.chromium.content_shell.ShellManager;
+import org.chromium.ui.WindowAndroid;
 
 @JNINamespace("content")
 public class ContentBrowserTestsActivity extends Activity {
     private static final String TAG = "ChromeBrowserTestsActivity";
 
     private ShellManager mShellManager;
-    private ActivityNativeWindow mActivityNativeWindow;
+    private WindowAndroid mWindowAndroid;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,8 +40,8 @@ public class ContentBrowserTestsActivity extends Activity {
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.test_activity, null);
         mShellManager = (ShellManager) view.findViewById(R.id.shell_container);
-        mActivityNativeWindow = new ActivityNativeWindow(this);
-        mShellManager.setWindow(mActivityNativeWindow);
+        mWindowAndroid = new WindowAndroid(this);
+        mShellManager.setWindow(mWindowAndroid);
 
         Log.i(TAG, "Running tests");
         runTests();

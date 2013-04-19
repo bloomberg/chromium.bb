@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "window_android.h"
+#include "ui/android/window_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "jni/NativeWindow_jni.h"
+#include "jni/WindowAndroid_jni.h"
 
 namespace ui {
 
@@ -23,8 +23,7 @@ void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
 }
 
 ScopedJavaLocalRef<jobject> WindowAndroid::GetJavaObject() {
-  JNIEnv* env = AttachCurrentThread();
-  return weak_java_window_.get(env);
+  return weak_java_window_.get(AttachCurrentThread());
 }
 
 bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {

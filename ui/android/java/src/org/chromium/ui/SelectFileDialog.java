@@ -19,14 +19,14 @@ import java.util.List;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * A dialog that is triggered from a file input field that allows a user to select a file based on
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-class SelectFileDialog implements NativeWindow.IntentCallback{
+class SelectFileDialog implements WindowAndroid.IntentCallback{
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
     private static final String AUDIO_TYPE = "audio/";
@@ -53,10 +53,10 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
      * Creates and starts an intent based on the passed fileTypes and capture value.
      * @param fileTypes MIME types requested (i.e. "image/*")
      * @param capture The capture value as described in http://www.w3.org/TR/html-media-capture/
-     * @param window The NativeWindow that can show intents
+     * @param window The WindowAndroid that can show intents
      */
     @CalledByNative
-    private void selectFile(String[] fileTypes, String capture, NativeWindow window) {
+    private void selectFile(String[] fileTypes, String capture, WindowAndroid window) {
         mFileTypes = new ArrayList<String>(Arrays.asList(fileTypes));
         mCapture = capture;
 
@@ -140,7 +140,7 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
      * @param results The results of the requested intent.
      */
     @Override
-    public void onIntentCompleted(NativeWindow window, int resultCode,
+    public void onIntentCompleted(WindowAndroid window, int resultCode,
             ContentResolver contentResolver, Intent results) {
         if (resultCode != Activity.RESULT_OK) {
             onFileNotSelected();

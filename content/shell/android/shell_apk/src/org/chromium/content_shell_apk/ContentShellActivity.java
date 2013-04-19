@@ -4,7 +4,6 @@
 
 package org.chromium.content_shell_apk;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +25,7 @@ import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
-import org.chromium.ui.gfx.ActivityNativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * Activity for managing the Content Shell.
@@ -44,7 +43,7 @@ public class ContentShellActivity extends ChromiumActivity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     private ShellManager mShellManager;
-    private ActivityNativeWindow mActivityNativeWindow;
+    private WindowAndroid mWindowAndroid;
     private BroadcastReceiver mReceiver;
 
     @Override
@@ -67,9 +66,9 @@ public class ContentShellActivity extends ChromiumActivity {
 
             setContentView(R.layout.content_shell_activity);
             mShellManager = (ShellManager) findViewById(R.id.shell_container);
-            mActivityNativeWindow = new ActivityNativeWindow(this);
-            mActivityNativeWindow.restoreInstanceState(savedInstanceState);
-            mShellManager.setWindow(mActivityNativeWindow);
+            mWindowAndroid = new WindowAndroid(this);
+            mWindowAndroid.restoreInstanceState(savedInstanceState);
+            mShellManager.setWindow(mWindowAndroid);
             ContentVideoView.registerContentVideoViewContextDelegate(
                     new ActivityContentVideoViewDelegate(this));
 
@@ -99,7 +98,7 @@ public class ContentShellActivity extends ChromiumActivity {
             outState.putString(ACTIVE_SHELL_URL_KEY, activeShell.getContentView().getUrl());
         }
 
-        mActivityNativeWindow.saveInstanceState(outState);
+        mWindowAndroid.saveInstanceState(outState);
     }
 
     private void waitForDebuggerIfNeeded() {
@@ -179,7 +178,7 @@ public class ContentShellActivity extends ChromiumActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mActivityNativeWindow.onActivityResult(requestCode, resultCode, data);
+        mWindowAndroid.onActivityResult(requestCode, resultCode, data);
     }
 
     private static String getUrlFromIntent(Intent intent) {

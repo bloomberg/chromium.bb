@@ -41,6 +41,8 @@
       'sources' : [
         'android/ui_jni_registrar.cc',
         'android/ui_jni_registrar.h',
+        'android/window_android.cc',
+        'android/window_android.h',
         'base/accelerators/accelerator.cc',
         'base/accelerators/accelerator.h',
         'base/accelerators/platform_accelerator.h',
@@ -361,8 +363,6 @@
         'gfx/android/device_display_info.h',
         'gfx/android/java_bitmap.cc',
         'gfx/android/java_bitmap.h',
-        'gfx/android/window_android.cc',
-        'gfx/android/window_android.h',
         'gfx/blit.cc',
         'gfx/blit.h',
         'gfx/break_list.h',
@@ -884,12 +884,12 @@
            'target_name': 'ui_jni_headers',
            'type': 'none',
            'sources': [
+             'android/java/src/org/chromium/ui/Clipboard.java',
              'android/java/src/org/chromium/ui/gfx/BitmapHelper.java',
              'android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java',
-             'android/java/src/org/chromium/ui/gfx/NativeWindow.java',
              'android/java/src/org/chromium/ui/LocalizationUtils.java',
              'android/java/src/org/chromium/ui/SelectFileDialog.java',
-             'android/java/src/org/chromium/ui/Clipboard.java',
+             'android/java/src/org/chromium/ui/WindowAndroid.java',
            ],
            'variables': {
              'jni_gen_package': 'ui',

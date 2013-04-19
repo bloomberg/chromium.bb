@@ -6,21 +6,21 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "ui/android/window_android.h"
 #include "ui/base/clipboard/clipboard_android_initialization.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/android/window_android.h"
 
 namespace ui {
 namespace android {
 
 static base::android::RegistrationMethod kUiRegisteredMethods[] = {
+  { "Clipboard", ui::RegisterClipboardAndroid },
   { "DeviceDisplayInfo", gfx::DeviceDisplayInfo::RegisterDeviceDisplayInfo },
   { "JavaBitmap", gfx::JavaBitmap::RegisterJavaBitmap },
   { "LocalizationUtils", l10n_util::RegisterLocalizationUtil },
-  { "NativeWindow", ui::WindowAndroid::RegisterWindowAndroid },
-  { "Clipboard", ui::RegisterClipboardAndroid },
+  { "WindowAndroid", ui::WindowAndroid::RegisterWindowAndroid },
 };
 
 bool RegisterJni(JNIEnv* env) {

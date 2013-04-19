@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
-import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.ContentVideoView;
@@ -21,7 +20,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
-import org.chromium.ui.gfx.ActivityNativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * The {@link Activity} component of a basic test shell to test Chrome features.
@@ -31,7 +30,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     private static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-testshell-command-line";
 
-    private ActivityNativeWindow mWindow;
+    private WindowAndroid mWindow;
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
 
@@ -56,7 +55,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
             mTabManager.setStartupUrl(startupUrl);
         }
 
-        mWindow = new ActivityNativeWindow(this);
+        mWindow = new WindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
 

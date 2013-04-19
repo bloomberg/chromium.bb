@@ -10,13 +10,11 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
@@ -25,7 +23,7 @@ import java.util.ArrayList;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * The Autofill suggestion popup that lists relevant suggestions.
@@ -46,7 +44,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     private static final int TEXT_PADDING_DP = 30;
 
     private final AutofillPopupDelegate mAutofillCallback;
-    private final NativeWindow mNativeWindow;
+    private final Context mContext;
     private final ContainerViewDelegate mContainerViewDelegate;
     private AnchorView mAnchorView;
     private Rect mAnchorRect;
@@ -124,20 +122,20 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
 
     /**
      * Creates an AutofillWindow with specified parameters.
-     * @param nativeWindow NativeWindow used to get application context.
+     * @param context Application context.
      * @param containerViewDelegate View delegate used to add and remove views.
      * @param autofillCallback A object that handles the calls to the native AutofillPopupView.
      */
-    public AutofillPopup(NativeWindow nativeWindow, ContainerViewDelegate containerViewDelegate,
+    public AutofillPopup(Context context, ContainerViewDelegate containerViewDelegate,
             AutofillPopupDelegate autofillCallback) {
-        super(nativeWindow.getContext());
-        mNativeWindow = nativeWindow;
+        super(context);
+        mContext = context;
         mContainerViewDelegate = containerViewDelegate;
         mAutofillCallback = autofillCallback;
 
         setOnItemClickListener(this);
 
-        mAnchorView = new AnchorView(mNativeWindow.getContext(), this);
+        mAnchorView = new AnchorView(context, this);
         mContainerViewDelegate.addViewToContainerView(mAnchorView);
         setAnchorView(mAnchorView);
     }
@@ -151,7 +149,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      * @param height The height of the anchor view.
      */
     public void setAnchorRect(float x, float y, float width, float height) {
-        float scale = (float) DeviceDisplayInfo.create(mNativeWindow.getContext()).getDIPScale();
+        float scale = (float) DeviceDisplayInfo.create(mContext).getDIPScale();
         mAnchorRect = new Rect(Math.round(x * scale), Math.round(y * scale),
                 Math.round((x + width) * scale), Math.round((y + height) * scale));
         mAnchorRect.offset(0, mContainerViewDelegate.getChildViewOffsetYPix());
@@ -171,7 +169,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
                 cleanedData.add(suggestions[i]);
             }
         }
-        setAdapter(new AutofillListAdapter(mNativeWindow.getContext(), cleanedData));
+        setAdapter(new AutofillListAdapter(mContext, cleanedData));
         // Once the mAnchorRect is resized and placed correctly, it will show the Autofill popup.
         mAnchorView.setSize(mAnchorRect, getDesiredWidth(suggestions));
     }
@@ -201,8 +199,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     private int getDesiredWidth(AutofillSuggestion[] data) {
         if (mNameViewPaint == null || mLabelViewPaint == null) {
             LayoutInflater inflater =
-                    (LayoutInflater) mNativeWindow.getContext().getSystemService(
-                            Context.LAYOUT_INFLATER_SERVICE);
+                    (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View layout = inflater.inflate(R.layout.autofill_text, null);
             TextView nameView = (TextView) layout.findViewById(R.id.autofill_name);
             mNameViewPaint = nameView.getPaint();
@@ -227,7 +224,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         }
         // Adding padding.
         return maxTextWidth + (int) (TEXT_PADDING_DP *
-                mNativeWindow.getContext().getResources().getDisplayMetrics().density);
+                mContext.getResources().getDisplayMetrics().density);
     }
 
     @Override

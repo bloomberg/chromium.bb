@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * TestShell's implementation of a tab. This mirrors how Chrome for Android subclasses
@@ -35,9 +35,9 @@ public class TestShellTab extends TabBase {
     /**
      * @param context  The Context the view is running in.
      * @param url      The URL to start this tab with.
-     * @param window   The NativeWindow should represent this tab.
+     * @param window   The WindowAndroid should represent this tab.
      */
-    public TestShellTab(Context context, String url, NativeWindow window) {
+    public TestShellTab(Context context, String url, WindowAndroid window) {
         super(window);
         init(context);
         loadUrlWithSanitization(url);
@@ -49,10 +49,10 @@ public class TestShellTab extends TabBase {
     private void init(Context context) {
         // Build the WebContents and the ContentView/ContentViewCore
         int nativeWebContentsPtr = ContentViewUtil.createNativeWebContents(false);
-        mContentView = ContentView.newInstance(context, nativeWebContentsPtr, getNativeWindow(),
+        mContentView = ContentView.newInstance(context, nativeWebContentsPtr, getWindowAndroid(),
                 ContentView.PERSONALITY_CHROME);
         mNativeTestShellTab = nativeInit(nativeWebContentsPtr,
-                getNativeWindow().getNativePointer());
+                getWindowAndroid().getNativePointer());
 
         // Build the WebContentsDelegate
         mWebContentsDelegate = new TabBaseChromeWebContentsDelegateAndroid();

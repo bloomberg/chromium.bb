@@ -18,7 +18,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.ui.gfx.ActivityNativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 import java.util.concurrent.TimeUnit;
 
@@ -77,7 +77,7 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
             @Override
             public void run() {
                 int nativeWebContents = ContentViewUtil.createNativeWebContents(false);
-                ActivityNativeWindow nativeWindow = new ActivityNativeWindow(getActivity());
+                WindowAndroid nativeWindow = new WindowAndroid(getActivity());
                 ContentView contentView = ContentView.newInstance(
                         getActivity(), nativeWebContents,
                         nativeWindow, ContentView.PERSONALITY_CHROME);

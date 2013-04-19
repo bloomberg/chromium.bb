@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.gfx;
+package org.chromium.ui;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.SparseArray;
@@ -13,11 +15,16 @@ import android.widget.Toast;
 
 import java.util.HashMap;
 
+import org.chromium.base.JNINamespace;
+
 /**
- * The window that has access to the main activity and is able to create and receive intents,
- * and show error messages.
+ * The window base class that has the minimum functionality.
  */
-public class ActivityNativeWindow extends NativeWindow {
+@JNINamespace("ui")
+public class WindowAndroid {
+
+    // Native pointer to the c++ WindowAndroid object.
+    private int mNativeWindowAndroid = 0;
 
     // Constants used for intent request code bounding.
     private static final int REQUEST_CODE_PREFIX = 1000;
@@ -33,8 +40,7 @@ public class ActivityNativeWindow extends NativeWindow {
     /**
      * @param activity
      */
-    public ActivityNativeWindow(Activity activity) {
-        super(activity);
+    public WindowAndroid(Activity activity) {
         mActivity = activity;
         mOutstandingIntents = new SparseArray<IntentCallback>();
         mIntentErrors = new HashMap<Integer, String>();
@@ -48,7 +54,6 @@ public class ActivityNativeWindow extends NativeWindow {
      * @param error The error string to be show if activity is paused before intent results.
      * @return Whether the intent was shown.
      */
-    @Override
     public boolean showIntent(Intent intent, IntentCallback callback, String error) {
         int requestCode = REQUEST_CODE_PREFIX + mNextRequestCode;
         mNextRequestCode = (mNextRequestCode + 1) % REQUEST_CODE_RANGE_SIZE;
@@ -69,7 +74,6 @@ public class ActivityNativeWindow extends NativeWindow {
      * Displays an error message with a provided error message string.
      * @param error The error message string to be displayed.
      */
-    @Override
     public void showError(String error) {
         if (error != null) {
             Toast.makeText(mActivity, error, Toast.LENGTH_SHORT).show();
@@ -87,15 +91,15 @@ public class ActivityNativeWindow extends NativeWindow {
     /**
      * Broadcasts the given intent to all interested BroadcastReceivers.
      */
-    @Override
     public void sendBroadcast(Intent intent) {
         mActivity.sendBroadcast(intent);
     }
 
     /**
-     * @return Application activity.
+     * TODO(nileshagrawal): Stop returning Activity Context crbug.com/233440.
+     * @return Activity context.
      */
-    public Activity getActivity() {
+    public Context getContext() {
         return mActivity;
     }
 
@@ -148,5 +152,45 @@ public class ActivityNativeWindow extends NativeWindow {
         }
         return false;
     }
+
+    /**
+     * An interface that intent callback objects have to implement.
+     */
+    public interface IntentCallback {
+        /**
+         * Handles the data returned by the requested intent.
+         * @param window A window reference.
+         * @param resultCode Result code of the requested intent.
+         * @param contentResolver An instance of ContentResolver class for accessing returned data.
+         * @param data The data returned by the intent.
+         */
+        public void onIntentCompleted(WindowAndroid window, int resultCode,
+                ContentResolver contentResolver, Intent data);
+    }
+
+    /**
+     * Destroys the c++ WindowAndroid object if one has been created.
+     */
+    public void destroy() {
+        if (mNativeWindowAndroid != 0) {
+            nativeDestroy(mNativeWindowAndroid);
+            mNativeWindowAndroid = 0;
+        }
+    }
+
+    /**
+     * Returns a pointer to the c++ AndroidWindow object and calls the initializer if
+     * the object has not been previously initialized.
+     * @return A pointer to the c++ AndroidWindow.
+     */
+    public int getNativePointer() {
+        if (mNativeWindowAndroid == 0) {
+            mNativeWindowAndroid = nativeInit();
+        }
+        return mNativeWindowAndroid;
+    }
+
+    private native int nativeInit();
+    private native void nativeDestroy(int nativeWindowAndroid);
 
 }

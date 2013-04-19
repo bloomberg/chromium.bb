@@ -43,7 +43,6 @@ import org.chromium.components.navigation_interception.InterceptNavigationDelega
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.net.GURLUtils;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
-import org.chromium.ui.gfx.NativeWindow;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -284,10 +283,8 @@ public class AwContents {
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
-        mContentViewCore.initialize(containerView, internalAccessAdapter,
-                nativeWebContents,
-                new AwNativeWindow(mContainerView.getContext()),
-                isAccessFromFileURLsGrantedByDefault);
+        mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents,
+                null, isAccessFromFileURLsGrantedByDefault);
         mContentViewCore.setContentViewClient(mContentsClient);
         mLayoutSizer = new AwLayoutSizer(new AwLayoutSizerDelegate());
         mContentViewCore.setContentSizeChangeListener(new AwContentStateChangeListener());
@@ -531,8 +528,7 @@ public class AwContents {
         // set it correctly when when we copy the settings from the old ContentViewCore
         // into the new one.
         newCore.initialize(mContainerView, mInternalAccessAdapter,
-                newWebContentsPtr, new AwNativeWindow(mContainerView.getContext()),
-                false);
+                newWebContentsPtr, null, false);
         newCore.setContentViewClient(mContentsClient);
         mContentsClient.installWebContentsObserver(newCore);
 

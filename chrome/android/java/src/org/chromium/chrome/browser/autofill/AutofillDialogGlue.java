@@ -9,7 +9,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.autofill.AutofillDialog.AutofillDialogDelegate;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
 * JNI call glue for AutofillDialog C++ and Java objects.
@@ -22,7 +22,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialog mAutofillDialog;
     private final AutofillDialogAccountHelper mAccountHelper;
 
-    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, NativeWindow nativeWindow,
+    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid nativeWindow,
             String useBillingForShippingText, String saveLocallyText) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
         mAccountHelper = new AutofillDialogAccountHelper(this, nativeWindow.getContext());
@@ -34,7 +34,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @CalledByNative
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
-            NativeWindow nativeWindow,
+            WindowAndroid nativeWindow,
             String useBillingForShippingText, String saveLocallyText) {
         return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, nativeWindow,
                 useBillingForShippingText, saveLocallyText);

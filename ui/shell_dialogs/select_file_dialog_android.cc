@@ -13,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "jni/SelectFileDialog_jni.h"
-#include "ui/gfx/android/window_android.h"
+#include "ui/android/window_android.h"
 
 namespace ui {
 

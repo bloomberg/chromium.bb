@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/AutofillPopupGlue_jni.h"
-#include "ui/gfx/android/window_android.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/rect.h"
 
 using base::android::MethodID;

@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/javascript_message_type.h"
 #include "jni/JavascriptAppModalDialog_jni.h"
-#include "ui/gfx/android/window_android.h"
+#include "ui/android/window_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;

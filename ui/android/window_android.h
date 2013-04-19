@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_ANDROID_WINDOW_ANDROID_H_
-#define UI_GFX_ANDROID_WINDOW_ANDROID_H_
+#ifndef UI_ANDROID_WINDOW_ANDROID_H_
+#define UI_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
 #include "base/android/jni_helper.h"
@@ -33,4 +33,4 @@ class UI_EXPORT WindowAndroid {
 
 }  // namespace ui
 
-#endif  // UI_GFX_ANDROID_WINDOW_ANDROID_H_
+#endif  // UI_ANDROID_WINDOW_ANDROID_H_

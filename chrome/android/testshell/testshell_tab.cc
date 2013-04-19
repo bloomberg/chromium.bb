@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "jni/TestShellTab_jni.h"
-#include "ui/gfx/android/window_android.h"
+#include "ui/android/window_android.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;

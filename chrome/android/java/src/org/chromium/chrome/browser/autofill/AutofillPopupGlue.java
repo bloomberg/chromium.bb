@@ -8,7 +8,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.content.browser.ContainerViewDelegate;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
@@ -18,15 +18,15 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     private final int mNativeAutofillPopup;
     private final AutofillPopup mAutofillPopup;
 
-    public AutofillPopupGlue(int nativeAutofillPopupViewAndroid, NativeWindow nativeWindow,
+    public AutofillPopupGlue(int nativeAutofillPopupViewAndroid, WindowAndroid nativeWindow,
             ContainerViewDelegate containerViewDelegate) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
-        mAutofillPopup = new AutofillPopup(nativeWindow, containerViewDelegate, this);
+        mAutofillPopup = new AutofillPopup(nativeWindow.getContext(), containerViewDelegate, this);
     }
 
     @CalledByNative
     private static AutofillPopupGlue create(int nativeAutofillPopupViewAndroid,
-            NativeWindow nativeWindow, ContainerViewDelegate containerViewDelegate) {
+            WindowAndroid nativeWindow, ContainerViewDelegate containerViewDelegate) {
         return new AutofillPopupGlue(nativeAutofillPopupViewAndroid, nativeWindow,
                 containerViewDelegate);
     }

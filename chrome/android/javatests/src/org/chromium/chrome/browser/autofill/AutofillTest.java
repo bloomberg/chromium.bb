@@ -17,7 +17,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.ui.gfx.ActivityNativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AutofillTest extends ChromiumTestShellTestBase {
 
     private AutofillPopup mAutofillPopup;
-    private ActivityNativeWindow mNativeWindow;
+    private WindowAndroid mWindowAndroid;
     private MockAutofillCallback mMockAutofillCallback;
 
     @Override
@@ -39,14 +39,14 @@ public class AutofillTest extends ChromiumTestShellTestBase {
         waitForActiveShellToBeDoneLoading();
 
         mMockAutofillCallback = new MockAutofillCallback();
-        mNativeWindow = new ActivityNativeWindow(activity);
+        mWindowAndroid = new WindowAndroid(activity);
         final ContainerViewDelegate viewDelegate =
                 activity.getActiveContentView().getContentViewCore().getContainerViewDelegate();
 
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override
             public void run() {
-                mAutofillPopup = new AutofillPopup(mNativeWindow,
+                mAutofillPopup = new AutofillPopup(mWindowAndroid.getContext(),
                         viewDelegate,
                         mMockAutofillCallback);
                 mAutofillPopup.setAnchorRect(50, 500, 500, 50);

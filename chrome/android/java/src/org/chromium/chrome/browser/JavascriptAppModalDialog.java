@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 public class JavascriptAppModalDialog implements DialogInterface.OnClickListener {
     private static final String TAG = JavascriptAppModalDialog.class.getName();
@@ -67,7 +67,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     @CalledByNative
-    void showJavascriptAppModalDialog(NativeWindow window, int nativeDialogPointer) {
+    void showJavascriptAppModalDialog(WindowAndroid window, int nativeDialogPointer) {
         assert window != null;
         Context context = window.getContext();
 

@@ -51,7 +51,7 @@ import org.chromium.content.browser.input.InsertionHandleController;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.TraceEvent;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -454,7 +454,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
      * @param nativeWebContents A pointer to the native web contents.
-     * @param nativeWindow An instance of the NativeWindow.
+     * @param windowAndroid An instance of the WindowAndroid.
      * @param isAccessFromFileURLsGrantedByDefault Default WebSettings configuration.
      */
     // Perform important post-construction set up of the ContentViewCore.
@@ -467,7 +467,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            int nativeWebContents, NativeWindow nativeWindow,
+            int nativeWebContents, WindowAndroid windowAndroid,
             boolean isAccessFromFileURLsGrantedByDefault) {
         // Check whether to use hardware acceleration. This is a bit hacky, and
         // only works if the Context is actually an Activity (as it is in the
@@ -489,8 +489,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
 
         mContainerView = containerView;
+
+        int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
+
         mNativeContentViewCore = nativeInit(mHardwareAccelerated, inputEventsDeliveredAtVSync,
-                nativeWebContents, nativeWindow.getNativePointer());
+                nativeWebContents, windowNativePointer);
         mContentSettings = new ContentSettings(
                 this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
         initializeContainerView(internalDispatcher);

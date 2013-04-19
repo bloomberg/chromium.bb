@@ -45,8 +45,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/android/window_android.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/size_f.h"
@@ -683,6 +683,8 @@ void ContentViewCoreImpl::LoadUrl(
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
+  // This should never be NULL for Chrome, but will be NULL for WebView.
+  DCHECK(window_android_);
   return window_android_;
 }
 

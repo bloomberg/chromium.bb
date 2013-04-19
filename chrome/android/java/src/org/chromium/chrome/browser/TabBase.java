@@ -6,7 +6,7 @@ package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.content.browser.ContentView;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -20,11 +20,11 @@ import org.chromium.ui.gfx.NativeWindow;
  * parent classes.
  */
 public abstract class TabBase {
-    private final NativeWindow mNativeWindow;
+    private final WindowAndroid mWindowAndroid;
     private int mNativeTabAndroid;
 
-    protected TabBase(NativeWindow window) {
-        mNativeWindow = window;
+    protected TabBase(WindowAndroid window) {
+        mWindowAndroid = window;
     }
 
     @CalledByNative
@@ -39,7 +39,7 @@ public abstract class TabBase {
         mNativeTabAndroid = nativePtr;
     }
 
-    protected NativeWindow getNativeWindow() {
-        return mNativeWindow;
+    protected WindowAndroid getWindowAndroid() {
+        return mWindowAndroid;
     }
 }

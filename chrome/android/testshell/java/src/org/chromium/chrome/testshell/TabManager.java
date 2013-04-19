@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * The TabManager hooks together all of the related {@link View}s that are used to represent
@@ -22,7 +22,7 @@ import org.chromium.ui.gfx.NativeWindow;
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
 
-    private NativeWindow mWindow;
+    private WindowAndroid mWindow;
     private ViewGroup mContentViewHolder;
     private ContentViewRenderView mContentViewRenderView;
     private TestShellToolbar mToolbar;
@@ -60,7 +60,7 @@ public class TabManager extends LinearLayout {
     /**
      * @param window The window used to generate all ContentViews.
      */
-    public void setWindow(NativeWindow window) {
+    public void setWindow(WindowAndroid window) {
         mWindow = window;
     }
 

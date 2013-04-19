@@ -24,7 +24,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content.browser.LoadUrlParams;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * Container for the various UI components that make up a shell window.
@@ -50,7 +50,7 @@ public class Shell extends LinearLayout {
     private ClipDrawable mProgressDrawable;
 
     private ContentViewRenderView mContentViewRenderView;
-    private NativeWindow mWindow;
+    private WindowAndroid mWindow;
 
     private boolean mLoading = false;
 
@@ -82,7 +82,7 @@ public class Shell extends LinearLayout {
     /**
      * @param window The owning window for this shell.
      */
-    public void setWindow(NativeWindow window) {
+    public void setWindow(WindowAndroid window) {
         mWindow = window;
     }
 

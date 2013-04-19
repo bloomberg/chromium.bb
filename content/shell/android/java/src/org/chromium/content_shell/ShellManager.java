@@ -13,7 +13,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.ui.gfx.NativeWindow;
+import org.chromium.ui.WindowAndroid;
 
 /**
  * Container and generator of ShellViews.
@@ -23,7 +23,7 @@ public class ShellManager extends FrameLayout {
 
     public static final String DEFAULT_SHELL_URL = "http://www.google.com";
     private static boolean sStartup = true;
-    private NativeWindow mWindow;
+    private WindowAndroid mWindow;
     private Shell mActiveShell;
 
     private String mStartupUrl = DEFAULT_SHELL_URL;
@@ -51,14 +51,14 @@ public class ShellManager extends FrameLayout {
     /**
      * @param window The window used to generate all shells.
      */
-    public void setWindow(NativeWindow window) {
+    public void setWindow(WindowAndroid window) {
         mWindow = window;
     }
 
     /**
      * @return The window used to generate all shells.
      */
-    public NativeWindow getWindow() {
+    public WindowAndroid getWindow() {
         return mWindow;
     }
 
