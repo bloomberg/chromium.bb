@@ -44,6 +44,8 @@
         'bluetooth/bluetooth_init_win.cc',
         'bluetooth/bluetooth_init_win.h',
         'bluetooth/bluetooth_out_of_band_pairing_data.h',
+        'bluetooth/bluetooth_profile.cc',
+        'bluetooth/bluetooth_profile.h',
         'bluetooth/bluetooth_service_record.cc',
         'bluetooth/bluetooth_service_record.h',
         'bluetooth/bluetooth_service_record_chromeos.cc',

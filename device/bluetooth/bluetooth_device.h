@@ -14,6 +14,7 @@
 
 namespace device {
 
+class BluetoothProfile;
 class BluetoothServiceRecord;
 class BluetoothSocket;
 
@@ -317,6 +318,12 @@ class BluetoothDevice {
   // BluetoothAdapter for this device.
   virtual void ConnectToService(const std::string& service_uuid,
                                 const SocketCallback& callback) = 0;
+
+  // Attempts to initiate an outgoing connection to this device for the profile
+  // identified by |profile|, on success the profile's connection callback
+  // wil be called; on failure |error_callback| will be called.
+  virtual void ConnectToProfile(BluetoothProfile* profile,
+                                const ErrorCallback& error_callback) = 0;
 
   // Sets the Out Of Band pairing data for this device to |data|.  Exactly one
   // of |callback| or |error_callback| will be run.

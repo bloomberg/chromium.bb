@@ -257,6 +257,13 @@ void BluetoothDeviceExperimentalChromeOS::ConnectToService(
   callback.Run(scoped_refptr<device::BluetoothSocket>());
 }
 
+void BluetoothDeviceExperimentalChromeOS::ConnectToProfile(
+    device::BluetoothProfile* profile,
+    const ErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+  error_callback.Run();
+}
+
 void BluetoothDeviceExperimentalChromeOS::SetOutOfBandPairingData(
     const device::BluetoothOutOfBandPairingData& data,
     const base::Closure& callback,

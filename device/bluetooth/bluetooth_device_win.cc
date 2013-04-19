@@ -181,6 +181,12 @@ void BluetoothDeviceWin::ConnectToService(
   }
 }
 
+void BluetoothDeviceWin::ConnectToProfile(
+    device::BluetoothProfile* profile,
+    const ErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+}
+
 void BluetoothDeviceWin::SetOutOfBandPairingData(
     const BluetoothOutOfBandPairingData& data,
     const base::Closure& callback,

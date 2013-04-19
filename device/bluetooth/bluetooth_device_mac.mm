@@ -196,6 +196,12 @@ void BluetoothDeviceMac::ConnectToService(
   }
 }
 
+void BluetoothDeviceMac::ConnectToProfile(
+    device::BluetoothProfile* profile,
+    const ErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+}
+
 void BluetoothDeviceMac::SetOutOfBandPairingData(
     const BluetoothOutOfBandPairingData& data,
     const base::Closure& callback,

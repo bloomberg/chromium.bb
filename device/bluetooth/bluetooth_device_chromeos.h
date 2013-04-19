@@ -71,6 +71,9 @@ class BluetoothDeviceChromeOS
   virtual void ConnectToService(
       const std::string& service_uuid,
       const SocketCallback& callback) OVERRIDE;
+  virtual void ConnectToProfile(
+      device::BluetoothProfile* profile,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const device::BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,

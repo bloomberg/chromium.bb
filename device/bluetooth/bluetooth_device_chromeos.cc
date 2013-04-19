@@ -325,6 +325,12 @@ void BluetoothDeviceChromeOS::ConnectToService(const std::string& service_uuid,
           callback));
 }
 
+void BluetoothDeviceChromeOS::ConnectToProfile(
+    device::BluetoothProfile* profile,
+    const ErrorCallback& error_callback) {
+  // TODO(keybuk): implement
+}
+
 void BluetoothDeviceChromeOS::SetOutOfBandPairingData(
     const BluetoothOutOfBandPairingData& data,
     const base::Closure& callback,
