@@ -1717,8 +1717,10 @@ void Document::recalcStyle(StyleChange change)
         WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
         RefPtr<FrameView> frameView = view();
-        if (frameView)
+        if (frameView) {
+            frameView->pauseScheduledEvents();
             frameView->beginDeferredRepaints();
+        }
 
         ASSERT(!renderer() || renderArena());
         if (!renderer() || !renderArena())
@@ -1760,8 +1762,10 @@ void Document::recalcStyle(StyleChange change)
         if (m_styleResolver)
             m_styleSheetCollection->resetCSSFeatureFlags();
 
-        if (frameView)
+        if (frameView) {
+            frameView->resumeScheduledEvents();
             frameView->endDeferredRepaints();
+        }
     }
 
     // If we wanted to call implicitClose() during recalcStyle, do so now that we're finished.

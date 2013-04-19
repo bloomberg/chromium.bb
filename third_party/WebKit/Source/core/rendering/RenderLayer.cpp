@@ -2158,6 +2158,8 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
     // We may end up propagating a scroll event. It is important that we suspend events until 
     // the end of the function since they could delete the layer or the layer's renderer().
     FrameView* frameView = renderer()->document()->view();
+    if (frameView)
+        frameView->pauseScheduledEvents();
 
     bool restrictedByLineClamp = false;
     if (renderer()->parent()) {
@@ -2235,6 +2237,9 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
     
     if (parentLayer)
         parentLayer->scrollRectToVisible(newRect, alignX, alignY);
+
+    if (frameView)
+        frameView->resumeScheduledEvents();
 }
 
 void RenderLayer::updateCompositingLayersAfterScroll()
