@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/cocoa/tracking_area.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 
 @class AnimatableView;
@@ -43,9 +44,19 @@ class PageNavigator;
  @private
   IBOutlet HoverButton* hoverCloseButton_;
 
+  // YES if the download shelf is intended to be displayed. The shelf animates
+  // out when it is closing. During this time, barIsVisible_ is NO although the
+  // shelf is still visible on screen.
   BOOL barIsVisible_;
 
+  // YES if the containing browser window is fullscreen.
   BOOL isFullscreen_;
+
+  // YES if the shelf should be closed when the mouse leaves the shelf.
+  BOOL shouldCloseOnMouseExit_;
+
+  // YES if the mouse is currently over the download shelf.
+  BOOL isMouseInsideView_;
 
   scoped_ptr<DownloadShelf> bridge_;
 
@@ -56,10 +67,8 @@ class PageNavigator;
   // out.
   CGFloat currentShelfHeight_;
 
-  // Used to autoclose the shelf when the mouse is moved off it.  Is non-nil
-  // only when a subsequent mouseExited event can trigger autoclose or when a
-  // subsequent mouseEntered event will cancel autoclose.  Is nil otherwise.
-  scoped_nsobject<NSTrackingArea> trackingArea_;
+  // Used to autoclose the shelf when the mouse is moved off it.
+  ui::ScopedCrTrackingArea trackingArea_;
 
   // The download items we have added to our shelf.
   scoped_nsobject<NSMutableArray> downloadItemControllers_;
@@ -101,6 +110,9 @@ class PageNavigator;
 // Add a new download item to the leftmost position of the download shelf. The
 // item should not have been already added to this shelf.
 - (void)addDownloadItem:(content::DownloadItem*)downloadItem;
+
+// Similar to addDownloadItem above, but adds a DownloadItemController.
+- (void)add:(DownloadItemController*)download;
 
 // Remove a download, possibly via clearing browser data.
 - (void)remove:(DownloadItemController*)download;

@@ -1292,6 +1292,7 @@
         'browser/ui/cocoa/custom_frame_view_unittest.mm',
         'browser/ui/cocoa/download/download_item_button_unittest.mm',
         'browser/ui/cocoa/download/download_item_cell_unittest.mm',
+        'browser/ui/cocoa/download/download_shelf_controller_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_mac_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_view_unittest.mm',
         'browser/ui/cocoa/download/download_util_mac_unittest.mm',
