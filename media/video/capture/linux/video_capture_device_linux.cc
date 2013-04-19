@@ -468,7 +468,9 @@ bool VideoCaptureDeviceLinux::AllocateVideoBuffers() {
       return false;
     }
 
-    buffer_pool_[i].start = mmap(NULL, buffer.length, PROT_READ,
+    // Some devices require mmap() to be called with both READ and WRITE.
+    // See crbug.com/178582.
+    buffer_pool_[i].start = mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
                                  MAP_SHARED, device_fd_, buffer.m.offset);
     if (buffer_pool_[i].start == MAP_FAILED) {
       return false;
