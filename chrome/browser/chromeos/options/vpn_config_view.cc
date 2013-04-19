@@ -911,6 +911,7 @@ void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const base::DictionaryValue* onc =
       network_library->FindOncForNetwork(network->unique_id());
+  VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->unique_id();
 
   property_ui_data->ParseOncProperty(
       network->ui_data(), onc,
