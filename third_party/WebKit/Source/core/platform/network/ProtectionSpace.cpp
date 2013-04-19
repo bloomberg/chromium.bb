@@ -25,12 +25,6 @@
 #include "config.h"
 #include "ProtectionSpace.h"
 
-#if USE(CFNETWORK)
-#include "AuthenticationCF.h"
-#include <CFNetwork/CFURLProtectionSpacePriv.h>
-#include <wtf/RetainPtr.h>
-#endif
-
 namespace WebCore {
 
 // Need to enforce empty, non-null strings due to the pickiness of the String == String operator
@@ -92,15 +86,10 @@ ProtectionSpaceAuthenticationScheme ProtectionSpace::authenticationScheme() cons
 
 bool ProtectionSpace::receivesCredentialSecurely() const
 {
-#if USE(CFNETWORK)
-    RetainPtr<CFURLProtectionSpaceRef> cfSpace(AdoptCF, createCF(*this));
-    return cfSpace && CFURLProtectionSpaceReceivesCredentialSecurely(cfSpace.get());
-#else
-    return (m_serverType == ProtectionSpaceServerHTTPS || 
-            m_serverType == ProtectionSpaceServerFTPS || 
-            m_serverType == ProtectionSpaceProxyHTTPS || 
-            m_authenticationScheme == ProtectionSpaceAuthenticationSchemeHTTPDigest); 
-#endif
+    return (m_serverType == ProtectionSpaceServerHTTPS ||
+            m_serverType == ProtectionSpaceServerFTPS ||
+            m_serverType == ProtectionSpaceProxyHTTPS ||
+            m_authenticationScheme == ProtectionSpaceAuthenticationSchemeHTTPDigest);
 }
 
 bool operator==(const ProtectionSpace& a, const ProtectionSpace& b)

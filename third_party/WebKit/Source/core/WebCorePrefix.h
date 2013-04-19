@@ -132,11 +132,6 @@ _LIBCPP_END_NAMESPACE_STD
 #include <CoreFoundation/CoreFoundation.h>
 
 #if OS(WINDOWS)
-#if USE(CFNETWORK)
-/* Windows doesn't include CFNetwork.h via CoreServices.h, so we do
-   it explicitly here to make Windows more consistent with Mac. */
-#include <CFNetwork/CFNetwork.h>
-#endif
 #include <windows.h>
 #else
 #include <CoreServices/CoreServices.h>

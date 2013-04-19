@@ -66,14 +66,6 @@ typedef struct _NSPoint NSPoint;
 typedef struct _NSRect NSRect;
 #endif
 
-#if USE(CFNETWORK)
-typedef struct OpaqueCFHTTPCookieStorage*  CFHTTPCookieStorageRef;
-typedef struct _CFURLProtectionSpace* CFURLProtectionSpaceRef;
-typedef struct _CFURLCredential* WKCFURLCredentialRef;
-typedef struct _CFURLRequest* CFMutableURLRequestRef;
-typedef const struct _CFURLRequest* CFURLRequestRef;
-#endif
-
 OBJC_CLASS AVAsset;
 OBJC_CLASS CALayer;
 OBJC_CLASS NSArray;
@@ -274,14 +266,6 @@ extern void (*wkSetCFURLResponseMIMEType)(CFURLResponseRef, CFStringRef mimeType
 
 extern void(*wkDestroyRenderingResources)(void);
 
-#if USE(CFNETWORK)
-extern CFHTTPCookieStorageRef (*wkGetDefaultHTTPCookieStorage)();
-extern WKCFURLCredentialRef (*wkCopyCredentialFromCFPersistentStorage)(CFURLProtectionSpaceRef protectionSpace);
-extern void (*wkSetCFURLRequestShouldContentSniff)(CFMutableURLRequestRef, bool);
-extern CFArrayRef (*wkCFURLRequestCopyHTTPRequestBodyParts)(CFURLRequestRef);
-extern void (*wkCFURLRequestSetHTTPRequestBodyParts)(CFMutableURLRequestRef, CFArrayRef bodyParts);
-extern void (*wkSetRequestStorageSession)(CFURLStorageSessionRef, CFMutableURLRequestRef);
-#endif
 extern void (*wkSetMetadataURL)(NSString *urlString, NSString *referrer, NSString *path);
     
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
