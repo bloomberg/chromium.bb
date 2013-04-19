@@ -99,6 +99,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) OVERRIDE;
+  virtual void Pin(const base::FilePath& file_path,
+                   const FileOperationCallback& callback) OVERRIDE;
+  virtual void Unpin(const base::FilePath& file_path,
+                     const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(
@@ -203,12 +207,16 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                    const FileOperationCallback& callback,
                                    DriveFileError result,
                                    scoped_ptr<DriveEntryProto> entry_proto);
-  void DoUploadForCreateBrandNewFile(const base::FilePath& remote_path,
-                                     base::FilePath* local_path,
-                                     const FileOperationCallback& callback);
-  void DidUploadForCreateBrandNewFile(const base::FilePath& local_path,
-                                      const FileOperationCallback& callback,
-                                      DriveFileError result);
+
+  // Used to implement Pin().
+  void PinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
+                                  DriveFileError error,
+                                  scoped_ptr<DriveEntryProto> entry);
+
+  // Used to implement Unpin().
+  void UnpinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
+                                    DriveFileError error,
+                                    scoped_ptr<DriveEntryProto> entry);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.

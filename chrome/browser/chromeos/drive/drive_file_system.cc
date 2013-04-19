@@ -454,6 +454,70 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
                                         callback);
 }
 
+void DriveFileSystem::Pin(const base::FilePath& file_path,
+                          const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  GetEntryInfoByPath(file_path,
+                     base::Bind(&DriveFileSystem::PinAfterGetEntryInfoByPath,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
+}
+
+void DriveFileSystem::PinAfterGetEntryInfoByPath(
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hashimoto): Support pinning directories. crbug.com/127831
+  if (entry && entry->file_info().is_directory())
+    error = DRIVE_FILE_ERROR_NOT_A_FILE;
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+  DCHECK(entry);
+
+  cache_->Pin(entry->resource_id(), entry->file_specific_info().file_md5(),
+              callback);
+}
+
+void DriveFileSystem::Unpin(const base::FilePath& file_path,
+                            const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  GetEntryInfoByPath(file_path,
+                     base::Bind(&DriveFileSystem::UnpinAfterGetEntryInfoByPath,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
+}
+
+void DriveFileSystem::UnpinAfterGetEntryInfoByPath(
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hashimoto): Support pinning directories. crbug.com/127831
+  if (entry && entry->file_info().is_directory())
+    error = DRIVE_FILE_ERROR_NOT_A_FILE;
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+  DCHECK(entry);
+
+  cache_->Unpin(entry->resource_id(), entry->file_specific_info().file_md5(),
+                callback);
+}
+
 void DriveFileSystem::GetFileByPath(const base::FilePath& file_path,
                                     const GetFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

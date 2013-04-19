@@ -77,6 +77,10 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) OVERRIDE;
+  virtual void Pin(const base::FilePath& file_path,
+                   const FileOperationCallback& callback) OVERRIDE;
+  virtual void Unpin(const base::FilePath& file_path,
+                     const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(

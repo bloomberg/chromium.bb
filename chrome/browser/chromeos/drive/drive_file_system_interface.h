@@ -282,6 +282,18 @@ class DriveFileSystemInterface {
                           bool is_exclusive,
                           const FileOperationCallback& callback) = 0;
 
+  // Pins a file at |file_path|.
+  //
+  // |callback| must not be null.
+  virtual void Pin(const base::FilePath& file_path,
+                   const FileOperationCallback& callback) = 0;
+
+  // Unpins a file at |file_path|.
+  //
+  // |callback| must not be null.
+  virtual void Unpin(const base::FilePath& file_path,
+                     const FileOperationCallback& callback) = 0;
+
   // Gets |file_path| from the file system. The file entry represented by
   // |file_path| needs to be present in in-memory representation of the file
   // system in order to be retrieved. If the file is not cached, the file

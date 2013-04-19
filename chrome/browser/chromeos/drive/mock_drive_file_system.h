@@ -66,6 +66,10 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                void(const base::FilePath& file_path,
                     bool is_exclusive,
                     const FileOperationCallback& callback));
+  MOCK_METHOD2(Pin, void(const base::FilePath& file_path,
+                         const FileOperationCallback& callback));
+  MOCK_METHOD2(Unpin, void(const base::FilePath& file_path,
+                           const FileOperationCallback& callback));
   MOCK_METHOD2(GetFileByPath,
                void(const base::FilePath& file_path,
                     const GetFileCallback& callback));

@@ -1532,6 +1532,36 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
 }
 
+TEST_F(DriveFileSystemTest, PinAndUnpin) {
+  ASSERT_TRUE(LoadRootFeedDocument());
+
+  base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+
+  // Get the file info.
+  scoped_ptr<DriveEntryProto> entry(GetEntryInfoByPathSync(file_path));
+  ASSERT_TRUE(entry);
+
+  // Pin the file.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  EXPECT_CALL(*mock_cache_observer_,
+              OnCachePinned(entry->resource_id(),
+                            entry->file_specific_info().file_md5())).Times(1);
+  file_system_->Pin(file_path,
+                    google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
+  // Unpin the file.
+  error = DRIVE_FILE_ERROR_FAILED;
+  EXPECT_CALL(*mock_cache_observer_,
+              OnCacheUnpinned(entry->resource_id(),
+                              entry->file_specific_info().file_md5())).Times(1);
+  file_system_->Unpin(file_path,
+                      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+}
+
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   ASSERT_TRUE(LoadRootFeedDocument());
 

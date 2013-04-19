@@ -114,6 +114,16 @@ void FakeDriveFileSystem::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::Pin(const base::FilePath& file_path,
+                              const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeDriveFileSystem::Unpin(const base::FilePath& file_path,
+                                const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::GetFileByPath(const base::FilePath& file_path,
                                         const GetFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
