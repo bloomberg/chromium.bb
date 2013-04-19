@@ -56,17 +56,9 @@
           'ninja_product_dir':
             '<(DEPTH)/xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
         },
-        # Generation is done via two actions: (1) compiling the executable with
-        # ninja, and (2) copying the executable into a location that is shared
-        # with other projects. These actions are separated into two targets in
-        # order to be able to specify that the second action should not run
-        # until the first action finishes (since the ordering of multiple
-        # actions in one target is defined only by inputs and outputs, and it's
-        # impossible to set correct inputs for the ninja build, so setting all
-        # the inputs and outputs isn't an option).
         'targets': [
           {
-            'target_name': 'compile_iossim',
+            'target_name': 'iossim',
             'type': 'none',
             'variables': {
               # Gyp to rerun
@@ -85,31 +77,6 @@
                   'iossim',
                 ],
                 'message': 'Generating the iossim executable',
-              },
-            ],
-          },
-          {
-            'target_name': 'iossim',
-            'type': 'none',
-            'dependencies': [
-              'compile_iossim',
-            ],
-            'actions': [
-              {
-                'action_name': 'copy iossim',
-                'inputs': [
-                  # TODO(ios): It should be possible to define the input, but
-                  # adding it causes gyp to complain about duplicate id.
-                  # '<(ninja_product_dir)/iossim',
-                ],
-                'outputs': [
-                  '<(DEPTH)/xcodebuild/<(CONFIGURATION_NAME)/iossim',
-                ],
-                'action': [
-                  'cp',
-                  '<(ninja_product_dir)/iossim',
-                  '<(DEPTH)/xcodebuild/<(CONFIGURATION_NAME)/iossim',
-                ],
               },
             ],
           },
