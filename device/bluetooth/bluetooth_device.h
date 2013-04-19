@@ -123,6 +123,22 @@ class BluetoothDevice {
     virtual void DisplayPasskey(BluetoothDevice* device,
                                 uint32 passkey) = 0;
 
+    // This method will be called when the Bluetooth daemon gets a notification
+    // of a key entered on the device |device| while pairing with the device
+    // using a PIN code or a Passkey.
+    //
+    // This method will be called only after DisplayPinCode() or
+    // DisplayPasskey() is called and before the corresponding
+    // DismissDisplayOrConfirm() is called, but is not warranted to be called
+    // on every pairing process that requires a PIN code or a Passkey because
+    // some device may not support this feature.
+    //
+    // The |entered| value describes the number of keys entered so far,
+    // including the last [enter] key. A first call to KeysEntered() with
+    // |entered| as 0 will be sent when the device supports this feature.
+    virtual void KeysEntered(BluetoothDevice* device,
+                             uint32 entered) = 0;
+
     // This method will be called when the Bluetooth daemon requires that the
     // user confirm that the Passkey |passkey| is displayed on the screen
     // of the device |device| so that it may be authenticated. The delegate

@@ -97,6 +97,22 @@ class BluetoothOptionsHandler
 
   // device::BluetoothDevice::PairingDelegate override.
   //
+  // This method will be called when the Bluetooth daemon gets a notification
+  // of a key entered on the device |device| while pairing with the device
+  // using a PIN code or a Passkey.
+  //
+  // The UI will show a visual indication that a given key was pressed in the
+  // same pairing overlay where the PIN code or Passkey is displayed.
+  //
+  // A first call with |entered| as 0 will indicate that this notification
+  // mechanism is supported by the device allowing the UI to display this fact.
+  // A last call with |entered| as the length of the key plus one will indicate
+  // that the [enter] key was pressed.
+  virtual void KeysEntered(device::BluetoothDevice* device,
+                           uint32 entered) OVERRIDE;
+
+  // device::BluetoothDevice::PairingDelegate override.
+  //
   // This method will be called when the Bluetooth daemon requires that the
   // user confirm that the Passkey |passkey| is displayed on the screen
   // of the device |device| so that it may be authenticated, the UI will

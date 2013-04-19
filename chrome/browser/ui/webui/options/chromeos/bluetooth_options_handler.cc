@@ -451,6 +451,13 @@ void BluetoothOptionsHandler::DisplayPasskey(device::BluetoothDevice* device,
   SendDeviceNotification(device, &params);
 }
 
+void BluetoothOptionsHandler::KeysEntered(device::BluetoothDevice* device,
+                                          uint32 entered) {
+  DictionaryValue params;
+  params.SetInteger("entered", entered);
+  SendDeviceNotification(device, &params);
+}
+
 void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
                                              uint32 passkey) {
   DictionaryValue params;

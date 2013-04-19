@@ -274,12 +274,14 @@ cr.define('options', function() {
           'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
       this.clearElement_(passkeyEl);
       var key = String(this.device_.passkey);
-      var progress = this.device_.entered | 0;
+      var progress = this.device_.entered;
       for (var i = 0; i < key.length; i++) {
         var keyEl = document.createElement('span');
         keyEl.textContent = key.charAt(i);
         keyEl.className = keyClass;
-        if (i < progress)
+        if (progress == undefined)
+          keyEl.classList.add('key-pin');
+        else if (i < progress)
           keyEl.classList.add('key-typed');
         passkeyEl.appendChild(keyEl);
       }
@@ -290,6 +292,10 @@ cr.define('options', function() {
         keyEl.textContent = label;
         keyEl.className = keyClass;
         keyEl.id = 'bluetooth-enter-key';
+        if (progress == undefined)
+          keyEl.classList.add('key-pin');
+        else if (progress > key.length)
+          keyEl.classList.add('key-typed');
         passkeyEl.appendChild(keyEl);
       }
       passkeyEl.hidden = false;

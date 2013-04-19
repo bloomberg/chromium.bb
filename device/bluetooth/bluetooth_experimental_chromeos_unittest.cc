@@ -128,8 +128,11 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         request_passkey_count_(0),
         display_pincode_count_(0),
         display_passkey_count_(0),
+        keys_entered_count_(0),
         confirm_passkey_count_(0),
-        dismiss_count_(0) {}
+        dismiss_count_(0),
+        last_passkey_(9999999U),
+        last_entered_(999U) {}
   virtual ~TestPairingDelegate() {}
 
   void RequestPinCode(BluetoothDevice* device) OVERRIDE {
@@ -160,6 +163,14 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
     QuitMessageLoop();
   }
 
+  void KeysEntered(BluetoothDevice* device,
+                   uint32 entered) OVERRIDE {
+    ++call_count_;
+    ++keys_entered_count_;
+    last_entered_ = entered;
+    QuitMessageLoop();
+  }
+
   void ConfirmPasskey(BluetoothDevice* device,
                       uint32 passkey) OVERRIDE {
     ++call_count_;
@@ -179,9 +190,11 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   int request_passkey_count_;
   int display_pincode_count_;
   int display_passkey_count_;
+  int keys_entered_count_;
   int confirm_passkey_count_;
   int dismiss_count_;
   uint32 last_passkey_;
+  uint32 last_entered_;
   std::string last_pincode_;
 
   private:
@@ -1239,7 +1252,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairAppleKeyboard) {
   EXPECT_TRUE(device->IsPaired());
 
   // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
   // Make sure the trusted property has been set to true.
@@ -1274,14 +1286,31 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairMotorolaKeyboard) {
       base::Bind(&BluetoothExperimentalChromeOSTest::ConnectErrorCallback,
                  base::Unretained(this)));
 
-  EXPECT_EQ(1, pairing_delegate.call_count_);
+  // One call for DisplayPasskey() and one for KeysEntered().
+  EXPECT_EQ(2, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.display_passkey_count_);
   EXPECT_EQ(123456U, pairing_delegate.last_passkey_);
+  EXPECT_EQ(1, pairing_delegate.keys_entered_count_);
+  EXPECT_EQ(0U, pairing_delegate.last_entered_);
+
   EXPECT_TRUE(device->IsConnecting());
 
-  // TODO(keybuk): verify we get typing notifications
+  // One call to KeysEntered() for each key, including [enter].
+  for(int i = 1; i <= 7; ++i) {
+    message_loop.Run();
+
+    EXPECT_EQ(2 + i, pairing_delegate.call_count_);
+    EXPECT_EQ(1 + i, pairing_delegate.keys_entered_count_);
+    EXPECT_EQ(static_cast<uint32_t>(i), pairing_delegate.last_entered_);
+  }
 
   message_loop.Run();
+
+  // 8 KeysEntered notifications (0 to 7, inclusive). Two aditional calls for
+  // DisplayPasskey() and DismissDisplayOrConfirm().
+  EXPECT_EQ(10, pairing_delegate.call_count_);
+  EXPECT_EQ(8, pairing_delegate.keys_entered_count_);
+  EXPECT_EQ(7U, pairing_delegate.last_entered_);
 
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1296,7 +1325,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairMotorolaKeyboard) {
   EXPECT_TRUE(device->IsPaired());
 
   // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
   // Make sure the trusted property has been set to true.

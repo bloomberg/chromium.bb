@@ -330,12 +330,10 @@ void BluetoothDeviceExperimentalChromeOS::DisplayPasskey(
   VLOG(1) << object_path_.value() << ": DisplayPasskey: " << passkey
           << " (" << entered << " entered)";
 
-  // TODO(keybuk): disambiguate entered vs display
-  if (entered > 0)
-    return;
-
   DCHECK(pairing_delegate_);
-  pairing_delegate_->DisplayPasskey(this, passkey);
+  if (entered == 0)
+    pairing_delegate_->DisplayPasskey(this, passkey);
+  pairing_delegate_->KeysEntered(this, entered);
 }
 
 void BluetoothDeviceExperimentalChromeOS::RequestConfirmation(
