@@ -575,6 +575,12 @@ void SelectFileDialogImpl::SelectFileImpl(
           base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
                      base::Unretained(listener_)));
       return;
+    } else if (type == SELECT_FOLDER) {
+      aura::HandleSelectFolder(
+          UTF16ToWide(title),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)));
+      return;
     }
   }
   HWND owner = owning_window

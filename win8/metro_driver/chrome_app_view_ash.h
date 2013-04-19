@@ -10,6 +10,7 @@
 #include <windows.ui.input.h>
 #include <windows.ui.viewmanagement.h>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/base/events/event_constants.h"
@@ -22,6 +23,8 @@ namespace IPC {
 
 class OpenFilePickerSession;
 class SaveFilePickerSession;
+class FolderPickerSession;
+class FilePickerSessionBase;
 
 struct MetroViewerHostMsg_SaveAsDialogParams;
 
@@ -45,10 +48,11 @@ class ChromeAppViewAsh
   void OnSetCursor(HCURSOR cursor);
   void OnDisplayFileOpenDialog(const string16& title,
                                const string16& filter,
-                               const string16& default_path,
+                               const base::FilePath& default_path,
                                bool allow_multiple_files);
   void OnDisplayFileSaveAsDialog(
       const MetroViewerHostMsg_SaveAsDialogParams& params);
+  void OnDisplayFolderPicker(const string16& title);
 
   // This function is invoked when the open file operation completes. The
   // result of the operation is passed in along with the OpenFilePickerSession
@@ -63,6 +67,13 @@ class ChromeAppViewAsh
   // the SaveFilePickerSession class.
   void OnSaveFileCompleted(SaveFilePickerSession* save_file_picker,
                            bool success);
+
+  // This function is invoked when the folder picker operation completes. The
+  // result of the operation is passed in along with the FolderPickerSession
+  // instance which is deleted after we read the required information from
+  // the FolderPickerSession class.
+  void OnFolderPickerCompleted(FolderPickerSession* folder_picker,
+                               bool success);
 
  private:
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
@@ -109,6 +120,7 @@ class ChromeAppViewAsh
   EventRegistrationToken visibility_changed_token_;
   EventRegistrationToken accel_keydown_token_;
   EventRegistrationToken accel_keyup_token_;
+  EventRegistrationToken window_activated_token_;
 
   // Keep state about which button is currently down, if any, as PointerMoved
   // events do not contain that state, but Ash's MouseEvents need it.

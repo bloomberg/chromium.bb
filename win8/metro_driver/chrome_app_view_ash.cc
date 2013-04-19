@@ -81,6 +81,8 @@ class ChromeChannelListener : public IPC::Listener {
                           OnDisplayFileOpenDialog)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplayFileSaveAs,
                           OnDisplayFileSaveAsDialog)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplaySelectFolder,
+                          OnDisplayFolderPicker)
       IPC_MESSAGE_UNHANDLED(__debugbreak())
     IPC_END_MESSAGE_MAP()
     return true;
@@ -101,7 +103,7 @@ class ChromeChannelListener : public IPC::Listener {
 
   void OnDisplayFileOpenDialog(const string16& title,
                                const string16& filter,
-                               const string16& default_path,
+                               const base::FilePath& default_path,
                                bool allow_multiple_files) {
     ui_proxy_->PostTask(FROM_HERE,
                         base::Bind(&ChromeAppViewAsh::OnDisplayFileOpenDialog,
@@ -119,6 +121,14 @@ class ChromeChannelListener : public IPC::Listener {
         base::Bind(&ChromeAppViewAsh::OnDisplayFileSaveAsDialog,
                    base::Unretained(app_view_),
                    params));
+  }
+
+  void OnDisplayFolderPicker(const string16& title) {
+    ui_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnDisplayFolderPicker,
+                   base::Unretained(app_view_),
+                   title));
   }
 
   scoped_refptr<base::MessageLoopProxy> ui_proxy_;
@@ -468,22 +478,23 @@ void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
   ::SetCursor(HCURSOR(cursor));
 }
 
-void ChromeAppViewAsh::OnDisplayFileOpenDialog(const string16& title,
-                                               const string16& filter,
-                                               const string16& default_path,
-                                               bool allow_multiple_files) {
+void ChromeAppViewAsh::OnDisplayFileOpenDialog(
+    const string16& title,
+    const string16& filter,
+    const base::FilePath& default_path,
+    bool allow_multiple_files) {
   DVLOG(1) << __FUNCTION__;
 
   // The OpenFilePickerSession instance is deleted when we receive a
   // callback from the OpenFilePickerSession class about the completion of the
   // operation.
-  OpenFilePickerSession* open_file_picker =
+  FilePickerSessionBase* file_picker_ =
       new OpenFilePickerSession(this,
                                 title,
                                 filter,
-                                default_path,
+                                default_path.value(),
                                 allow_multiple_files);
-  open_file_picker->Run();
+  file_picker_->Run();
 }
 
 void ChromeAppViewAsh::OnDisplayFileSaveAsDialog(
@@ -491,11 +502,20 @@ void ChromeAppViewAsh::OnDisplayFileSaveAsDialog(
   DVLOG(1) << __FUNCTION__;
 
   // The SaveFilePickerSession instance is deleted when we receive a
-  // callback from the OpenFilePickerSession class about the completion of the
+  // callback from the SaveFilePickerSession class about the completion of the
   // operation.
-  SaveFilePickerSession* save_file_picker =
+  FilePickerSessionBase* file_picker_ =
       new SaveFilePickerSession(this, params);
-  save_file_picker->Run();
+  file_picker_->Run();
+}
+
+void ChromeAppViewAsh::OnDisplayFolderPicker(const string16& title) {
+  DVLOG(1) << __FUNCTION__;
+  // The FolderPickerSession instance is deleted when we receive a
+  // callback from the FolderPickerSession class about the completion of the
+  // operation.
+  FilePickerSessionBase* file_picker_ = new FolderPickerSession(this, title);
+  file_picker_->Run();
 }
 
 void ChromeAppViewAsh::OnOpenFileCompleted(
@@ -509,7 +529,7 @@ void ChromeAppViewAsh::OnOpenFileCompleted(
           success, open_file_picker->filenames()));
     } else {
       ui_channel_->Send(new MetroViewerHostMsg_FileOpenDone(
-          success, open_file_picker->result()));
+          success, base::FilePath(open_file_picker->result())));
     }
   }
   delete open_file_picker;
@@ -523,10 +543,23 @@ void ChromeAppViewAsh::OnSaveFileCompleted(
   if (ui_channel_) {
     ui_channel_->Send(new MetroViewerHostMsg_FileSaveAsDone(
         success,
-        save_file_picker->result(),
+        base::FilePath(save_file_picker->result()),
         save_file_picker->filter_index()));
   }
   delete save_file_picker;
+}
+
+void ChromeAppViewAsh::OnFolderPickerCompleted(
+    FolderPickerSession* folder_picker,
+    bool success) {
+  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << "Success: " << success;
+  if (ui_channel_) {
+    ui_channel_->Send(new MetroViewerHostMsg_SelectFolderDone(
+        success,
+        base::FilePath(folder_picker->result())));
+  }
+  delete folder_picker;
 }
 
 HRESULT ChromeAppViewAsh::OnActivate(

@@ -38,6 +38,9 @@ typedef base::Callback<void(const std::vector<base::FilePath>&, void*)>
 typedef base::Callback<void(const base::FilePath&, int, void*)>
     SaveFileCompletion;
 
+typedef base::Callback<void(const base::FilePath&, int, void*)>
+    SelectFolderCompletion;
+
 // Handles the open file operation for Metro Chrome Ash. The callback passed in
 // is invoked when we receive the opened file name from the metro viewer.
 AURA_EXPORT void HandleOpenFile(
@@ -65,6 +68,10 @@ AURA_EXPORT void HandleSaveFile(
     const string16& default_extension,
     const SaveFileCompletion& callback);
 
+// Handles the select folder for Metro Chrome Ash. The callback passed in
+// is invoked when we receive the folder name from the metro viewer.
+AURA_EXPORT void HandleSelectFolder(const string16& title,
+                                    const SelectFolderCompletion& callback);
 
 // RootWindowHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
@@ -103,6 +110,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
       const string16& default_extension,
       const SaveFileCompletion& callback);
 
+  void HandleSelectFolder(const string16& title,
+                          const SelectFolderCompletion& callback);
+
  private:
   explicit RemoteRootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RemoteRootWindowHostWin();
@@ -131,12 +141,12 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnTouchUp(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
   void OnTouchMoved(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
   void OnFileSaveAsDone(bool success,
-                        string16 filename,
+                        const base::FilePath& filename,
                         int filter_index);
-  void OnFileOpenDone(bool success, string16 filename);
+  void OnFileOpenDone(bool success, const base::FilePath& filename);
   void OnMultiFileOpenDone(bool success,
                            const std::vector<base::FilePath>& files);
-
+  void OnSelectFolderDone(bool success, const base::FilePath& folder);
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
@@ -185,10 +195,11 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   scoped_ptr<ui::ViewProp> prop_;
 
   // Saved callbacks which inform the caller about the result of the open file/
-  // save file operations.
+  // save file/select operations.
   OpenFileCompletion file_open_completion_callback_;
   OpenMultipleFilesCompletion multi_file_open_completion_callback_;
   SaveFileCompletion file_saveas_completion_callback_;
+  SelectFolderCompletion select_folder_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };

@@ -377,7 +377,7 @@ SaveFilePickerSession::SaveFilePickerSession(
     : FilePickerSessionBase(app_view,
                             params.title,
                             params.filter,
-                            params.suggested_name),
+                            params.suggested_name.value()),
       filter_index_(params.filter_index) {
 }
 
@@ -541,6 +541,75 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
     LOG(ERROR) << "Unexpected async status " << status;
   }
   app_view_->OnSaveFileCompleted(this, success_);
+  return S_OK;
+}
+
+FolderPickerSession::FolderPickerSession(ChromeAppViewAsh* app_view,
+                                         const string16& title)
+    : FilePickerSessionBase(app_view, title, L"", L"") {}
+
+HRESULT FolderPickerSession::StartFilePicker() {
+  mswrw::HStringReference class_name(
+      RuntimeClass_Windows_Storage_Pickers_FolderPicker);
+
+  // Create the folder picker.
+  mswr::ComPtr<winstorage::Pickers::IFolderPicker> picker;
+  HRESULT hr = ::Windows::Foundation::ActivateInstance(
+      class_name.Get(), picker.GetAddressOf());
+  CheckHR(hr);
+
+  // Set the file type filter
+  mswr::ComPtr<winfoundtn::Collections::IVector<HSTRING>> filter;
+  hr = picker->get_FileTypeFilter(filter.GetAddressOf());
+  if (FAILED(hr))
+    return hr;
+
+  hr = filter->Append(mswrw::HStringReference(L"*").Get());
+  if (FAILED(hr))
+    return hr;
+
+  mswr::ComPtr<FolderPickerAsyncOp> completion;
+  hr = picker->PickSingleFolderAsync(&completion);
+  if (FAILED(hr))
+    return hr;
+
+  // Create the callback method.
+  typedef winfoundtn::IAsyncOperationCompletedHandler<
+      winstorage::StorageFolder*> HandlerDoneType;
+  mswr::ComPtr<HandlerDoneType> handler(mswr::Callback<HandlerDoneType>(
+      this, &FolderPickerSession::FolderPickerDone));
+  DCHECK(handler.Get() != NULL);
+  hr = completion->put_Completed(handler.Get());
+  return hr;
+}
+
+HRESULT FolderPickerSession::FolderPickerDone(FolderPickerAsyncOp* async,
+                                              AsyncStatus status) {
+  if (status == Completed) {
+    mswr::ComPtr<winstorage::IStorageFolder> folder;
+    HRESULT hr = async->GetResults(folder.GetAddressOf());
+
+    if (folder) {
+      mswr::ComPtr<winstorage::IStorageItem> storage_item;
+      if (SUCCEEDED(hr))
+        hr = folder.As(&storage_item);
+
+      mswrw::HString file_path;
+      if (SUCCEEDED(hr))
+        hr = storage_item->get_Path(file_path.GetAddressOf());
+
+      if (SUCCEEDED(hr)) {
+        string16 path_str = MakeStdWString(file_path.Get());
+        result_ = path_str;
+        success_ = true;
+      }
+    } else {
+      LOG(ERROR) << "NULL IStorageItem";
+    }
+  } else {
+    LOG(ERROR) << "Unexpected async status " << status;
+  }
+  app_view_->OnFolderPickerCompleted(this, success_);
   return S_OK;
 }
 

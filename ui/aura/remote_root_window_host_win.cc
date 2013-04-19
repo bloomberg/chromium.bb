@@ -93,6 +93,13 @@ void HandleSaveFile(
                                                             callback);
 }
 
+void HandleSelectFolder(const string16& title,
+                        const SelectFolderCompletion& callback) {
+  DCHECK(aura::RemoteRootWindowHostWin::Instance());
+  aura::RemoteRootWindowHostWin::Instance()->HandleSelectFolder(title,
+                                                                callback);
+}
+
 RemoteRootWindowHostWin* g_instance = NULL;
 
 RemoteRootWindowHostWin* RemoteRootWindowHostWin::Instance() {
@@ -145,6 +152,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnFileOpenDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MultiFileOpenDone,
                         OnMultiFileOpenDone)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SelectFolderDone,
+                        OnSelectFolderDone)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -158,13 +167,13 @@ void RemoteRootWindowHostWin::HandleOpenFile(
   if (!host_)
     return;
 
-  // Can only one of these operations in flight.
+  // Can only have one of these operations in flight.
   DCHECK(file_open_completion_callback_.is_null());
   file_open_completion_callback_ = callback;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileOpen(title,
                                                      filter,
-                                                     default_path.value(),
+                                                     default_path,
                                                      false));
 }
 
@@ -176,13 +185,13 @@ void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
   if (!host_)
     return;
 
-  // Can only one of these operations in flight.
+  // Can only have one of these operations in flight.
   DCHECK(multi_file_open_completion_callback_.is_null());
   multi_file_open_completion_callback_ = callback;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileOpen(title,
                                                      filter,
-                                                     default_path.value(),
+                                                     default_path,
                                                      true));
 }
 
@@ -202,11 +211,24 @@ void RemoteRootWindowHostWin::HandleSaveFile(
   params.filter = filter;
   params.filter_index = filter_index;
 
-  // Can only one of these operations in flight.
+  // Can only have one of these operations in flight.
   DCHECK(file_saveas_completion_callback_.is_null());
   file_saveas_completion_callback_ = callback;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileSaveAs(params));
+}
+
+void RemoteRootWindowHostWin::HandleSelectFolder(
+    const string16& title,
+    const SelectFolderCompletion& callback) {
+  if (!host_)
+    return;
+
+  // Can only have one of these operations in flight.
+  DCHECK(select_folder_completion_callback_.is_null());
+  select_folder_completion_callback_ = callback;
+
+  host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
 }
 
 void RemoteRootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {
@@ -404,17 +426,17 @@ void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
 }
 
 void RemoteRootWindowHostWin::OnFileSaveAsDone(bool success,
-                                               string16 filename,
+                                               const base::FilePath& filename,
                                                int filter_index) {
   if (success) {
-    file_saveas_completion_callback_.Run(
-        base::FilePath(filename), filter_index, NULL);
+    file_saveas_completion_callback_.Run(filename, filter_index, NULL);
   }
   file_saveas_completion_callback_.Reset();
 }
 
 
-void RemoteRootWindowHostWin::OnFileOpenDone(bool success, string16 filename) {
+void RemoteRootWindowHostWin::OnFileOpenDone(bool success,
+                                             const base::FilePath& filename) {
   if (success) {
     file_open_completion_callback_.Run(
         base::FilePath(filename), 0, NULL);
@@ -429,6 +451,15 @@ void RemoteRootWindowHostWin::OnMultiFileOpenDone(
     multi_file_open_completion_callback_.Run(files, NULL);
   }
   multi_file_open_completion_callback_.Reset();
+}
+
+void RemoteRootWindowHostWin::OnSelectFolderDone(
+    bool success,
+    const base::FilePath& folder) {
+  if (success) {
+    select_folder_completion_callback_.Run(base::FilePath(folder), 0, NULL);
+  }
+  select_folder_completion_callback_.Reset();
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,

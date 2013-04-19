@@ -144,5 +144,23 @@ class SaveFilePickerSession : public FilePickerSessionBase {
   DISALLOW_COPY_AND_ASSIGN(SaveFilePickerSession);
 };
 
+// Provides functionality to display the folder picker.
+class FolderPickerSession : public FilePickerSessionBase {
+ public:
+  explicit FolderPickerSession(ChromeAppViewAsh* app_view,
+                               const string16& title);
+
+ private:
+  virtual HRESULT StartFilePicker() OVERRIDE;
+
+  typedef winfoundtn::IAsyncOperation<winstorage::StorageFolder*>
+      FolderPickerAsyncOp;
+
+  // Called asynchronously when the folder picker is done.
+  HRESULT FolderPickerDone(FolderPickerAsyncOp* async, AsyncStatus status);
+
+  DISALLOW_COPY_AND_ASSIGN(FolderPickerSession);
+};
+
 #endif  // CHROME_BROWSER_UI_METRO_DRIVER_FILE_PICKER_ASH_H_
 
