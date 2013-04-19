@@ -7074,3 +7074,24 @@
    fun:_ZN22DiskCacheTestWithCache9InitCacheEv
    fun:*DiskCacheBackendTest_SimpleDoom*
 }
+{
+   bug_233541_a
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN11GrEffectRefD0Ev
+   fun:_ZNK8SkRefCnt16internal_disposeEv
+   fun:_ZNK8SkRefCnt5unrefEv
+}
+{
+   bug_233541_b
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN14DeferredDevice5flushEv
+   fun:_ZN8SkCanvas5flushEv
+   fun:_ZN7WebCore19Canvas2DLayerBridge14prepareTextureERN6WebKit17WebTextureUpdaterE
+   fun:_ZN6webkit27WebExternalTextureLayerImpl14PrepareTextureEPN2cc19ResourceUpdateQueueE
+   fun:_ZN2cc12TextureLayer6UpdateEPNS_19ResourceUpdateQueueEPKNS_20OcclusionTrackerBaseINS_5LayerENS_13RenderSurfaceEEEPNS_14RenderingStatsE
+   fun:_ZN2cc13LayerTreeHost18PaintLayerContentsERKSt6vectorI13scoped_refptrINS_5LayerEESaIS4_EEPNS_19ResourceUpdateQueueE
+   fun:_ZN2cc13LayerTreeHost12UpdateLayersEPNS_5LayerEPNS_19ResourceUpdateQueueE
+}
+
