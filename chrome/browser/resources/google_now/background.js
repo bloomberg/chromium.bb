@@ -150,8 +150,7 @@ function showNotification(card, notificationsData, previousVersion) {
   console.log('showNotification ' + JSON.stringify(card));
 
   if (typeof card.version != 'number') {
-    recordEvent('ERROR:version-is-not-number');
-
+    console.error('card.version is not a number');
     // Fix card version.
     card.version = previousVersion !== undefined ? previousVersion : 0;
   }
