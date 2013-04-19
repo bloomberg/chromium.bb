@@ -76,7 +76,6 @@ private:
     IntSize containerSize() const;
     virtual bool usesContainerSize() const { return true; }
     virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
-    IntSize defaultIntrinsicSize() const;
 
     virtual bool dataChanged(bool allDataReceived);
 
