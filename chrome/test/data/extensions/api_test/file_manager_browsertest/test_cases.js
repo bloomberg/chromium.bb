@@ -65,8 +65,20 @@ function setupAndWaitUntilReady(path, callback) {
 }
 
 /**
+ * Verifies if there are no Javascript errors in any of the app windows.
+ * @param {function()} Completion callback.
+ */
+function checkIfNoErrorsOccured(callback) {
+  callRemoteTestUtil('getErrorCount', null, [], function(count) {
+    chrome.test.assertEq(0, count);
+    callback();
+  });
+}
+
+/**
  * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
  * list as they are not expected in "Recent".
+ *
  * @type {Array.<Array.<string>>}
  * @const
  */
@@ -128,10 +140,10 @@ testcase.intermediate.fileDisplay = function(path) {
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,
-          [expectedFilesBefore.length],
-          chrome.test.callbackPass(function(actualFilesAfter) {
+          [expectedFilesBefore.length], function(actualFilesAfter) {
             chrome.test.assertEq(expectedFilesAfter, actualFilesAfter);
-          }));
+            checkIfNoErrorsOccured(chrome.test.succeed);
+          });
     });
   });
 };
@@ -142,14 +154,15 @@ testcase.intermediate.fileDisplay = function(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-testcase.intermediate.keyboardCopy = function(path) {
+testcase.intermediate.keyboardCopy = function(path, callback) {
   setupAndWaitUntilReady(path, function(appId) {
     callRemoteTestUtil('copyFile', appId, ['world.mpeg'], function(result) {
       chrome.test.assertFalse(!result);
       callRemoteTestUtil('waitForFileListChange',
                          appId,
                          [getExpectedFilesBefore(path == '/drive/root').length],
-                         chrome.test.succeed);
+                         checkIfNoErrorsOccured.bind(null,
+                                                     chrome.test.succeed));
     });
   });
 };
@@ -167,7 +180,7 @@ testcase.intermediate.keyboardDelete = function(path) {
             'waitForFileListChange',
             appId,
             [getExpectedFilesBefore(path == '/drive/root').length],
-            chrome.test.succeed);
+            checkIfNoErrorsOccured.bind(null, chrome.test.succeed));
       });
     });
   });
@@ -204,9 +217,10 @@ testcase.keyboardDeleteDrive = function() {
  * Drive.
  */
 testcase.openSidebarRecent = function() {
-  var onFileListChange = chrome.test.callbackPass(function(actualFilesAfter) {
+  var onFileListChange = function(actualFilesAfter) {
     chrome.test.assertEq(EXPECTED_FILES_IN_RECENT, actualFilesAfter);
-  });
+    checkIfNoErrorsOccured(chrome.test.succeed);
+  };
 
   setupAndWaitUntilReady('/drive/root', function(appId) {
     // Use the icon for a click target.
@@ -230,9 +244,10 @@ testcase.openSidebarRecent = function() {
  * entries cached by DriveCache.
  */
 testcase.openSidebarOffline = function() {
-  var onFileListChange = chrome.test.callbackPass(function(actualFilesAfter) {
+  var onFileListChange = function(actualFilesAfter) {
     chrome.test.assertEq(EXPECTED_FILES_IN_OFFLINE, actualFilesAfter);
-  });
+    checkIfNoErrorsOccured(chrome.test.succeed);
+  };
 
   setupAndWaitUntilReady('/drive/root/', function(appId) {
     // Use the icon for a click target.
@@ -284,10 +299,10 @@ testcase.autocomplete = function() {
     'hello.txt\n',
   ];
 
-  var onAutocompleteListShown = chrome.test.callbackPass(
-      function(autocompleteList) {
-        chrome.test.assertEq(EXPECTED_AUTOCOMPLETE_LIST, autocompleteList);
-      });
+  var onAutocompleteListShown = function(autocompleteList) {
+    chrome.test.assertEq(EXPECTED_AUTOCOMPLETE_LIST, autocompleteList);
+    checkIfNoErrorsOccured(chrome.test.succeed);
+  };
 
   setupAndWaitUntilReady('/drive/root', function(appId, list) {
     callRemoteTestUtil('performAutocompleteAndWait',

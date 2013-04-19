@@ -43,6 +43,20 @@ test.util.openMainWindow = function(path, callback) {
 };
 
 /**
+ * Gets total Javascript error count from each app window.
+ * @return {number} Error count.
+ */
+test.util.getErrorCount = function() {
+  var totalCount = 0;
+  for (var appId in appWindows) {
+    var contentWindow = appWindows[appId].contentWindow;
+    if (contentWindow.JSErrorCount)
+      totalCount += contentWindow.JSErrorCount;
+  }
+  return totalCount;
+};
+
+/**
  * Returns an array with the files currently selected in the file manager.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -306,6 +320,9 @@ test.util.registerRemoteTestUtils = function() {
       switch (request.func) {
         case 'openMainWindow':
           test.util.openMainWindow(request.args[0], sendResponse);
+          return true;
+        case 'getErrorCount':
+          sendResponse(test.util.getErrorCount());
           return true;
         default:
           console.error('Global function ' + request.func + ' not found.');
