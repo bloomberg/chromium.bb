@@ -760,7 +760,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_MouseLockLost)
 IPC_MESSAGE_ROUTED1(ViewMsg_OrientationChangeEvent,
                     int /* orientation */)
 
-// Sent by the renderer when the parameters for vsync alignment have changed.
+// Sent by the browser when the parameters for vsync alignment have changed.
 IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
@@ -1367,6 +1367,11 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
                     bool /* animate */)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
+
+// Sent by the browser when the display vsync signal was triggered and the
+// renderer should generate a new frame.
+IPC_MESSAGE_ROUTED1(ViewMsg_DidVSync,
+                    base::TimeTicks /* frame_time */)
 
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
@@ -2350,6 +2355,12 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
 IPC_MESSAGE_CONTROL2(ViewHostMsg_RunWebAudioMediaCodec,
                      base::SharedMemoryHandle /* encoded_data_handle */,
                      base::FileDescriptor /* pcm_output */)
+
+// Sent by renderer to request a ViewMsg_VSync message for upcoming display
+// vsync events. If |enabled| is true, the vsync message will continue to be be
+// delivered until the notification is disabled.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetVSyncNotificationEnabled,
+                    bool /* enabled */)
 
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.

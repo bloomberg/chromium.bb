@@ -51,6 +51,9 @@ class CompositorOutputSurface
   virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
   virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
   virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
+#if defined(OS_ANDROID)
+  virtual void EnableVSyncNotification(bool enable) OVERRIDE;
+#endif
 
   // TODO(epenner): This seems out of place here and would be a better fit
   // int CompositorThread after it is fully refactored (http://crbug/170828)
@@ -83,6 +86,9 @@ class CompositorOutputSurface
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
+#if defined(OS_ANDROID)
+  void OnDidVSync(base::TimeTicks frame_time);
+#endif
   bool Send(IPC::Message* message);
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
