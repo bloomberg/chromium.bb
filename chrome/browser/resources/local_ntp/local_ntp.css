@@ -2,7 +2,100 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 body {
-  background-attachment: fixed !important
+  background-attachment: fixed !important;
+  background-color: white;
+  cursor: default;
+  margin: 0;
+  overflow: hidden;
+}
+
+#ntp-contents {
+  text-align: -webkit-center;
+}
+
+body.fakebox-animate #ntp-contents {
+  -webkit-transition: opacity 100ms linear;
+  opacity: 0.2;
+}
+
+body.google-page #mv-top-margin {
+  display: none;
+}
+
+#logo {
+  background: -webkit-image-set(
+      url(images/google_logo.png) 1x,
+      url(images/2x/google_logo.png) 2x) no-repeat;
+  height: 95px;
+  margin-bottom: 20px;
+  margin-top: 144px;
+  width: 275px;
+}
+
+body.custom-theme #logo {
+  background: -webkit-image-set(
+      url(images/white_google_logo.png) 1x,
+      url(images/2x/white_google_logo.png) 2x) no-repeat;
+}
+
+#fakebox {
+  /* Use GPU compositing if available. */
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit-transform 100ms linear;
+  background-color: #fff;
+  border: 1px solid #b9b9b9;
+  border-radius: 1px;
+  border-top-color: #a0a0a0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: text;
+  font: 18px arial, sans-serif;
+  height: 36px;
+  max-width: 620px;
+  width: 300px;
+}
+
+#fakebox:hover {
+  border: 1px solid #a9a9a9;
+  border-top-color: #909090;
+}
+
+body.fakebox-focused #fakebox {
+  border: 1px solid rgb(77, 144, 254);
+}
+
+body.fakebox-animate #fakebox {
+  -webkit-transform: translateY(-100px);
+}
+
+#fakebox > input {
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#cursor {
+  background: #333;
+  bottom: 5px;
+  position: absolute;
+  top: 5px;
+  visibility: hidden;
+  width: 1px;
+}
+
+@-webkit-keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  61.55% {
+    opacity: 0;
+  }
+}
+body.fakebox-focused #cursor {
+  -webkit-animation: blink 1.3s step-end infinite;
+  visibility: inherit;
 }
 
 #most-visited {
@@ -25,7 +118,6 @@ body {
 #mv-tiles {
   /* Use GPU compositing if available. */
   -webkit-transform: translate3d(0, 0, 0);
-  -webkit-transition: width 200ms;
   height: 120px;
   overflow: hidden;
   white-space: nowrap;
@@ -33,12 +125,14 @@ body {
 }
 
 @media only screen and (min-width:666px) {
+  #fakebox,
   #mv-tiles {
     width: 466px;
   }
 }
 
 @media only screen and (min-width:829px) {
+  #fakebox,
   #mv-tiles {
     width: 629px;
   }
@@ -207,4 +301,58 @@ body {
 
 #attribution img {
   display: block;
+}
+
+#suggestions-box {
+  border-bottom: 1px #d9d9d9 solid;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+#suggestions-box-container {
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.suggestion {
+  background: -webkit-image-set(
+      url(images/page_icon.png) 1x,
+      url(images/2x/page_icon.png) 2x) no-repeat;
+  border-radius: 2px;
+  padding-bottom: 2px;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+
+.search {
+  background: -webkit-image-set(
+      url(images/search_icon.png) 1x,
+      url(images/2x/search_icon.png) 2x) no-repeat;
+}
+
+.suggestion:hover {
+  background-color: #eee;
+}
+
+.selected,
+.selected:hover {
+  background-color: rgba(181, 213, 255, 0.5);
+}
+
+.contents {
+  -webkit-padding-start: 26px;
+  -webkit-user-select: none;
+  border: none;
+  height: 22px;
+  overflow: hidden;
+}
+
+/* Styling for native suggestions, hidden by the shadow DOM. */
+.chrome_url {
+  color: rgb(0, 153, 51);
+}
+
+.chrome_title {
+  color: #666;
 }

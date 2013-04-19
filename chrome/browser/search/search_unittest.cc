@@ -188,14 +188,23 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+    SetSearchProvider(false);
+  }
 
+  void SetSearchProvider(bool is_google) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;
-    data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?"
-        "{google:omniboxStartMarginParameter}foo=foo#foo=foo";
-    data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-    data.search_terms_replacement_key = "strk";
-
+    if (is_google) {
+      data.SetURL("http://www.google.com/");
+      data.instant_url = "http://www.google.com/";
+    } else {
+      data.SetURL("http://foo.com/url?bar={searchTerms}");
+      data.instant_url = "http://foo.com/instant?"
+          "{google:omniboxStartMarginParameter}foo=foo#foo=foo";
+      data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
+      data.search_terms_replacement_key = "strk";
+    }
     TemplateURL* template_url = new TemplateURL(profile(), data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
@@ -243,8 +252,8 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
   EnableInstantExtendedAPIForTesting();
 
   const SearchTestCase kTestCases[] = {
-    {chrome::kChromeSearchLocalOmniboxPopupURL, true,  ""},
     {chrome::kChromeSearchLocalNtpUrl, true,  ""},
+    {chrome::kChromeSearchLocalGoogleNtpUrl, true,  ""},
     {"https://foo.com/instant?strk",   true,  ""},
     {"https://foo.com/instant#strk",   true,  ""},
     {"https://foo.com/instant?strk=0", true,  ""},
@@ -277,23 +286,23 @@ TEST_F(SearchTest, CoerceCommandLineURLToTemplateURL) {
 }
 
 const SearchTestCase kInstantNTPTestCases[] = {
-  {"https://foo.com/instant?strk",     true,  "Valid Instant URL"},
-  {"https://foo.com/instant#strk",     true,  "Valid Instant URL"},
-  {"https://foo.com/url?strk",         true,  "Valid search URL"},
-  {"https://foo.com/url#strk",         true,  "Valid search URL"},
-  {"https://foo.com/alt?strk",         true,  "Valid alternative URL"},
-  {"https://foo.com/alt#strk",         true,  "Valid alternative URL"},
-  {"https://foo.com/url?strk&bar=",    true,  "No query terms"},
-  {"https://foo.com/url?strk&q=abc",   true,  "No query terms key"},
-  {"https://foo.com/url?strk#bar=abc", true,  "Query terms key in ref"},
-  {"https://foo.com/url?strk&bar=abc", false, "Has query terms"},
-  {"http://foo.com/instant?strk=1",    false, "Insecure URL"},
-  {"https://foo.com/instant",          false, "No search terms replacement"},
-  {"chrome://blank/",                  false, "Chrome scheme"},
-  {"chrome-search//foo",               false, "Chrome-search scheme"},
-  {chrome::kChromeSearchLocalOmniboxPopupURL, false, "Local omnibox popup"},
-  {chrome::kChromeSearchLocalNtpUrl,   true,  "Local new tab page"},
-  {"https://bar.com/instant?strk=1",   false, "Random non-search page"},
+  {"https://foo.com/instant?strk",         true,  "Valid Instant URL"},
+  {"https://foo.com/instant#strk",         true,  "Valid Instant URL"},
+  {"https://foo.com/url?strk",             true,  "Valid search URL"},
+  {"https://foo.com/url#strk",             true,  "Valid search URL"},
+  {"https://foo.com/alt?strk",             true,  "Valid alternative URL"},
+  {"https://foo.com/alt#strk",             true,  "Valid alternative URL"},
+  {"https://foo.com/url?strk&bar=",        true,  "No query terms"},
+  {"https://foo.com/url?strk&q=abc",       true,  "No query terms key"},
+  {"https://foo.com/url?strk#bar=abc",     true,  "Query terms key in ref"},
+  {"https://foo.com/url?strk&bar=abc",     false, "Has query terms"},
+  {"http://foo.com/instant?strk=1",        false, "Insecure URL"},
+  {"https://foo.com/instant",              false, "No search term replacement"},
+  {"chrome://blank/",                      false, "Chrome scheme"},
+  {"chrome-search://foo",                   false, "Chrome-search scheme"},
+  {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
+  {chrome::kChromeSearchLocalGoogleNtpUrl, true,  "Local new tab page"},
+  {"https://bar.com/instant?strk=1",       false, "Random non-search page"},
 };
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
@@ -302,6 +311,7 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
     NavigateAndCommitActiveTab(GURL(test.url));
+    SetSearchProvider(test.url == chrome::kChromeSearchLocalGoogleNtpUrl);
     const content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
@@ -326,6 +336,7 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
     NavigateAndCommitActiveTab(GURL(test.url));
+    SetSearchProvider(test.url == chrome::kChromeSearchLocalGoogleNtpUrl);
     content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     content::NavigationController& controller = contents->GetController();

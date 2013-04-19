@@ -664,7 +664,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPForWrongProvider) {
+// TODO(samarth): re-enable when fixing the infinite reload on shutdown.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       DISABLED_PreloadedNTPForWrongProvider) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();

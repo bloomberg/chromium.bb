@@ -101,6 +101,11 @@ void SetInstantExtendedPrefDefault(Profile* profile);
 // lead to an infinite recursion.
 GURL GetInstantURL(Profile* profile, int start_margin);
 
+// Returns the Local Instant URL of the default search engine.  In particular,
+// a Google search provider will include a special query parameter, indicating
+// to the JS that Google-specific New Tab Page elements should be rendered.
+GURL GetLocalInstantURL(Profile* profile);
+
 // Instant (loading a remote server page and talking to it using the searchbox
 // API) is considered enabled if there's a valid Instant URL that can be used,
 // so this simply returns whether GetInstantURL() is a valid URL.

@@ -424,11 +424,10 @@ extern const char kExtensionResourceScheme[];
 //     coming from a blessed Instant process, and deny the request.
 extern const char kChromeSearchScheme[];
 
-// The local omnibox host and pages under chrome-search.
-extern const char kChromeSearchLocalOmniboxPopupHost[];
-extern const char kChromeSearchLocalOmniboxPopupURL[];
+// Pages under chrome-search.
 extern const char kChromeSearchLocalNtpHost[];
 extern const char kChromeSearchLocalNtpUrl[];
+extern const char kChromeSearchLocalGoogleNtpUrl[];
 
 // Host for search suggestions iframes.
 extern const char kChromeSearchSuggestionHost[];

@@ -284,9 +284,9 @@ class InstantController : public InstantPage::Delegate,
 
   // Ensures that |overlay_| uses the Instant URL returned by GetInstantURL(),
   // creating a new overlay if necessary. In extended mode, will fallback to
-  // using the kLocalOmniboxPopupURL as the Instant URL in case GetInstantURL()
-  // returns false. Returns true if an Instant URL could be determined.
-  // For |ignore_blacklist| look at comments in GetInstantURL().
+  // using the kChromeSearchLocalNtpUrl as the Instant URL in case
+  // GetInstantURL() returns false. Returns true if an Instant URL could be
+  // determined. For |ignore_blacklist| look at comments in GetInstantURL().
   bool EnsureOverlayIsCurrent(bool ignore_blacklist);
 
   // Recreates the |overlay_| with |instant_url|. Note that |overlay_| is
@@ -360,12 +360,6 @@ class InstantController : public InstantPage::Delegate,
   // returns false.)
   bool FixSuggestion(InstantSuggestion* suggestion) const;
 
-  // Returns true if we should use |instant_tab_| instead of |overlay_| for
-  // handling suggestions.
-  // TODO(samarth|sreeram): this is brittle. Instead, we should probably just
-  // combine the two local pages into one.
-  bool UseInstantTabToShowSuggestions() const;
-
   // Returns true if we should switch to using the local NTP.
   bool ShouldSwitchToLocalNTP() const;
 
@@ -376,7 +370,7 @@ class InstantController : public InstantPage::Delegate,
   const bool extended_enabled_;
   bool instant_enabled_;
 
-  // If true, the Instant URL is set to kLocalOmniboxPopupURL.
+  // If true, the Instant URL is set to kChromeSearchLocalNtpUrl.
   bool use_local_page_only_;
 
   // The state of the overlay page, i.e., the page owned by |overlay_|. Ignored

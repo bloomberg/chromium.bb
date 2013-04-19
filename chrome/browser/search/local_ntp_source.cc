@@ -16,12 +16,38 @@
 
 namespace {
 
-const char kHtmlFilename[] = "local-ntp.html";
-const char kJSFilename[] = "local-ntp.js";
-const char kCssFilename[] = "local-ntp.css";
-const char kCloseBarFilename[] = "images/close_2.png";
-const char kCloseBarHoverFilename[] = "images/close_2_hover.png";
-const char kCloseBarActiveFilename[] = "images/close_2_active.png";
+const struct Resource{
+  const char* filename;
+  int identifier;
+  const char* mime_type;
+} kResources[] = {
+  { "local-ntp.html", IDR_LOCAL_NTP_HTML, "text/html" },
+  { "local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript" },
+  { "local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css" },
+  { "images/close_2.png", IDR_CLOSE_2, "image/png" },
+  { "images/close_2_hover.png", IDR_CLOSE_2_H, "image/png" },
+  { "images/close_2_active.png", IDR_CLOSE_2_P, "image/png" },
+  { "images/page_icon.png", IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG,
+    "image/png" },
+  { "images/2x/page_icon.png",
+    IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG, "image/png" },
+  { "images/search_icon.png",
+    IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG, "image/png" },
+  { "images/2x/search_icon.png",
+    IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG, "image/png" },
+  { "images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png" },
+  { "images/2x/google_logo.png",
+    IDR_LOCAL_NTP_IMAGES_2X_LOGO_PNG, "image/png" },
+  { "images/white_google_logo.png",
+    IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG, "image/png" },
+  { "images/2x/white_google_logo.png",
+    IDR_LOCAL_NTP_IMAGES_2X_WHITE_LOGO_PNG, "image/png" },
+};
+
+// Strips any query parameters from the specified path.
+std::string StripParameters(const std::string& path) {
+  return path.substr(0, path.find("?"));
+}
 
 }  // namespace
 
@@ -39,40 +65,25 @@ void LocalNtpSource::StartDataRequest(
     const std::string& path,
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
-  int identifier = -1;
-  if (path == kHtmlFilename) {
-    identifier = IDR_LOCAL_NTP_HTML;
-  } else if (path == kJSFilename) {
-    identifier = IDR_LOCAL_NTP_JS;
-  } else if (path == kCssFilename) {
-    identifier = IDR_LOCAL_NTP_CSS;
-  } else if (path == kCloseBarFilename) {
-    identifier = IDR_CLOSE_2;
-  } else if (path == kCloseBarHoverFilename) {
-    identifier = IDR_CLOSE_2_H;
-  } else if (path == kCloseBarActiveFilename) {
-    identifier = IDR_CLOSE_2_P;
-  } else {
-    callback.Run(NULL);
-    return;
+  const std::string stripped_path = StripParameters(path);
+  for (size_t i = 0; i < arraysize(kResources); ++i) {
+    if (stripped_path == kResources[i].filename) {
+      scoped_refptr<base::RefCountedStaticMemory> response(
+          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              kResources[i].identifier));
+      callback.Run(response);
+      return;
+    }
   }
-
-  scoped_refptr<base::RefCountedStaticMemory> response(
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(identifier));
-  callback.Run(response);
-}
+  callback.Run(NULL);
+};
 
 std::string LocalNtpSource::GetMimeType(
     const std::string& path) const {
-  if (path == kHtmlFilename)
-    return "text/html";
-  if (path == kJSFilename)
-    return "application/javascript";
-  if (path == kCssFilename)
-    return "text/css";
-  if (path == kCloseBarFilename || path == kCloseBarHoverFilename ||
-      path == kCloseBarActiveFilename) {
-    return "image/png";
+  const std::string stripped_path = StripParameters(path);
+  for (size_t i = 0; i < arraysize(kResources); ++i) {
+    if (stripped_path == kResources[i].filename)
+      return kResources[i].mime_type;
   }
   return std::string();
 }
@@ -84,10 +95,10 @@ bool LocalNtpSource::ShouldServiceRequest(
   if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
     DCHECK(StartsWithASCII(request->url().path(), "/", true));
     std::string filename = request->url().path().substr(1);
-    return filename == kHtmlFilename || filename == kJSFilename ||
-           filename == kCssFilename || filename == kCloseBarFilename ||
-           filename == kCloseBarHoverFilename ||
-           filename == kCloseBarActiveFilename;
+    for (size_t i = 0; i < arraysize(kResources); ++i) {
+      if (filename == kResources[i].filename)
+        return true;
+    }
   }
   return false;
 }

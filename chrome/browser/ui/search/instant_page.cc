@@ -17,14 +17,10 @@ InstantPage::Delegate::~Delegate() {
 InstantPage::~InstantPage() {
 }
 
-bool InstantPage::IsLocalNTP() const {
+bool InstantPage::IsLocal() const {
   return contents() &&
-      contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-bool InstantPage::IsLocalOverlay() const {
-  return contents() &&
-      contents()->GetURL() == GURL(chrome::kChromeSearchLocalOmniboxPopupURL);
+      (contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||
+       contents()->GetURL() == GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
 }
 
 void InstantPage::Update(const string16& text,

@@ -3,6 +3,72 @@
 // found in the LICENSE file.
 
 (function() {
+
+/**
+ * True if this a Google page and not some other search provider.  Used to
+ * determine whether to show the logo and fakebox.
+ * @type {boolean}
+ * @const
+ */
+var isGooglePage = location.href.indexOf('isGoogle') != -1;
+
+// ==========================================================
+//  Enums
+// ==========================================================
+
+/**
+ * Enum for classnames.
+ * @enum {string}
+ * @const
+ */
+var CLASSES = {
+  BLACKLIST: 'mv-blacklist', // triggers tile blacklist animation
+  BLACKLIST_BUTTON: 'mv-x',
+  CUSTOM_THEME: 'custom-theme',
+  DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DOMAIN: 'mv-domain',
+  FAKEBOX_ANIMATE: 'fakebox-animate', // triggers fakebox animation
+  FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
+  FAVICON: 'mv-favicon',
+  FILLER: 'mv-filler', // filler tiles
+  GOOGLE_PAGE: 'google-page', // shows the Google logo and fakebox
+  HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
+  HIDE_NOTIFICATION: 'mv-notice-hide',
+  HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
+  PAGE: 'mv-page', // page tiles
+  SELECTED: 'selected', // a selected suggestion (if any)
+  THUMBNAIL: 'mv-thumb',
+  TILE: 'mv-tile',
+  TITLE: 'mv-title'
+};
+
+/**
+ * Enum for HTML element ids.
+ * @enum {string}
+ * @const
+ */
+var IDS = {
+  ATTRIBUTION: 'attribution',
+  CURSOR: 'cursor',
+  FAKEBOX: 'fakebox',
+  LOGO: 'logo',
+  NOTIFICATION: 'mv-notice',
+  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
+  NOTIFICATION_MESSAGE: 'mv-msg',
+  NTP_CONTENTS: 'ntp-contents',
+  RESTORE_ALL_LINK: 'mv-restore',
+  SUGGESTIONS_BOX: 'suggestions-box',
+  SUGGESTIONS_CONTAINER: 'suggestions-box-container',
+  SUGGESTION_STYLE: 'suggestion-style',
+  TILES: 'mv-tiles',
+  TOP_MARGIN: 'mv-top-margin',
+  UNDO_LINK: 'mv-undo'
+};
+
+// =============================================================================
+//  NTP implementation
+// =============================================================================
+
 /**
  * The element used to vertically position the most visited section on
  * window resize.
@@ -29,8 +95,22 @@ var notification;
 var attribution;
 
 /**
+ * The "fakebox" - an input field that looks like a regular searchbox.  When it
+ * is focused, any text the user types goes directly into the omnibox.
+ * @type {Element}
+ */
+var fakebox;
+
+/**
+ * The container for NTP elements that should be hidden when suggestions are
+ * visible.
+ * @type {Element}
+ */
+var ntpContents;
+
+/**
  * The array of rendered tiles, ordered by appearance.
- * @type {Array.<Tile>}
+ * @type {!Array.<Tile>}
  */
 var tiles = [];
 
@@ -73,7 +153,7 @@ var numTilesShown = 0;
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
-var apiHandle;
+var ntpApiHandle;
 
 /**
  * Possible background-colors of a non-custom theme. Used to determine whether
@@ -112,43 +192,6 @@ var MIN_NUM_TILES_TO_SHOW = 2;
 var MIN_TOTAL_HORIZONTAL_PADDING = 188;
 
 /**
- * Enum for classnames.
- * @enum {string}
- * @const
- */
-var CLASSES = {
-  BLACKLIST: 'mv-blacklist',  // triggers tile blacklist animation
-  BLACKLIST_BUTTON: 'mv-x',
-  DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  DOMAIN: 'mv-domain',
-  FAVICON: 'mv-favicon',
-  FILLER: 'mv-filler',  // filler tiles
-  HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
-  HIDE_NOTIFICATION: 'mv-notice-hide',
-  HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
-  PAGE: 'mv-page',  // page tiles
-  THUMBNAIL: 'mv-thumb',
-  TILE: 'mv-tile',
-  TITLE: 'mv-title'
-};
-
-/**
- * Enum for HTML element ids.
- * @enum {string}
- * @const
- */
-var IDS = {
-  ATTRIBUTION: 'attribution',
-  NOTIFICATION: 'mv-notice',
-  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
-  NOTIFICATION_MESSAGE: 'mv-msg',
-  RESTORE_ALL_LINK: 'mv-restore',
-  TILES: 'mv-tiles',
-  TOP_MARGIN: 'mv-top-margin',
-  UNDO_LINK: 'mv-undo'
-};
-
-/**
  * A Tile is either a rendering of a Most Visited page or "filler" used to
  * pad out the section when not enough pages exist.
  *
@@ -170,7 +213,10 @@ function Tile(elem, opt_rid) {
  * @private
  */
 function onThemeChange() {
-  var info = apiHandle.themeBackgroundInfo;
+  if (!isNtpVisible())
+    return;
+
+  var info = ntpApiHandle.themeBackgroundInfo;
   if (!info)
     return;
   var background = [info.colorRgba,
@@ -180,7 +226,7 @@ function onThemeChange() {
                     info.imageVerticalAlignment].join(' ').trim();
   document.body.style.background = background;
   var isCustom = !!background && WHITE.indexOf(background) == -1;
-  document.body.classList.toggle('custom-theme', isCustom);
+  document.body.classList.toggle(CLASSES.CUSTOM_THEME, isCustom);
   updateAttribution(info.attributionUrl);
 }
 
@@ -213,7 +259,7 @@ function updateAttribution(url) {
  * Handles a new set of Most Visited page data.
  */
 function onMostVisitedChange() {
-  var pages = apiHandle.mostVisited;
+  var pages = ntpApiHandle.mostVisited;
 
   if (isBlacklisting) {
     // If this was called as a result of a blacklist, add a new replacement
@@ -281,7 +327,7 @@ function createTile(page) {
 
     // The click handler for navigating to the page identified by the RID.
     tileElement.addEventListener('click', function() {
-      apiHandle.navigateContentWindow(rid);
+      ntpApiHandle.navigateContentWindow(rid);
     });
 
     // The shadow DOM which renders the page title.
@@ -355,7 +401,7 @@ function generateBlacklistFunction(rid) {
     tilesContainer.classList.add(CLASSES.HIDE_BLACKLIST_BUTTON);
     lastBlacklistedTile = getTileByRid(rid);
     lastBlacklistedIndex = tiles.indexOf(lastBlacklistedTile);
-    apiHandle.deleteMostVisitedItem(rid);
+    ntpApiHandle.deleteMostVisitedItem(rid);
   };
 }
 
@@ -398,7 +444,7 @@ function onUndo() {
   var lastBlacklistedRID = lastBlacklistedTile.rid;
   if (typeof lastBlacklistedRID != 'undefined') {
     isUndoing = true;
-    apiHandle.undoMostVisitedDeletion(lastBlacklistedRID);
+    ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedRID);
   }
 }
 
@@ -420,7 +466,7 @@ function undoAnimationDone() {
  */
 function onRestoreAll() {
   hideNotification();
-  apiHandle.undoAllMostVisitedDeletions();
+  ntpApiHandle.undoAllMostVisitedDeletions();
 }
 
 /**
@@ -428,10 +474,12 @@ function onRestoreAll() {
  * and triggering the tile show/hide animation if necessary.
  */
 function onResize() {
-  var clientHeight = document.documentElement.clientHeight;
-  topMarginElement.style.marginTop =
-      Math.max(0, (clientHeight - MOST_VISITED_HEIGHT) / 2) + 'px';
-
+  // The Google page uses a fixed layout instead.
+  if (!isGooglePage) {
+    var clientHeight = document.documentElement.clientHeight;
+    topMarginElement.style.marginTop =
+        Math.max(0, (clientHeight - MOST_VISITED_HEIGHT) / 2) + 'px';
+  }
   var clientWidth = document.documentElement.clientWidth;
   var numTilesToShow = Math.floor(
       (clientWidth - MIN_TOTAL_HORIZONTAL_PADDING) / TILE_WIDTH);
@@ -465,6 +513,413 @@ function getTileByRid(rid) {
       return tile;
   }
   return null;
+}
+
+/**
+ * @param {boolean} visible True to show the NTP.
+ */
+function updateNtpVisibility(visible) {
+  if (visible && !isNtpVisible()) {
+    if (fakebox) {
+      // Stop any fakebox animation animation in progress and restore the NTP.
+      fakebox.removeEventListener('webkitTransitionEnd', fakeboxAnimationDone);
+      document.body.classList.remove(CLASSES.FAKEBOX_ANIMATE);
+    }
+    ntpContents.hidden = false;
+    onThemeChange();
+  } else if (!visible && isNtpVisible()) {
+    if (fakebox && isFakeboxFocused()) {
+      // The user has typed in the fakebox - initiate the fakebox animation,
+      // which upon termination will hide the NTP.
+      document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
+      // Don't show the suggestions until the animation termintes.
+      $(IDS.SUGGESTIONS_CONTAINER).hidden = true;
+      fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
+      document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
+    } else if (!fakebox ||
+        !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
+      // The user has typed in the omnibox - hide the NTP immediately.
+      ntpContents.hidden = true;
+      clearCustomTheme();
+    }
+  }
+}
+
+/**
+ * Clears the custom theme (if any).
+ */
+function clearCustomTheme() {
+  document.body.style.background = '';
+  document.body.classList.remove(CLASSES.CUSTOM_THEME);
+}
+
+/**
+ * @return {boolean} True if the NTP is visible.
+ */
+function isNtpVisible() {
+  return !ntpContents.hidden;
+}
+
+/**
+ * @return {boolean} True if the fakebox has focus.
+ */
+function isFakeboxFocused() {
+  return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS);
+}
+
+/**
+ * @param {!Event} event The click event.
+ * @return {boolean} True if the click occurred in the fakebox.
+ */
+function isFakeboxClick(event) {
+  return fakebox.contains(event.target);
+}
+
+/**
+ * Cleans up the fakebox animation, hides the NTP, and shows suggestions.
+ * @param {!Event} e The webkitTransitionEnd event.
+ */
+function fakeboxAnimationDone(event) {
+  if (event.propertyName == '-webkit-transform') {
+    ntpContents.hidden = true;
+    $(IDS.SUGGESTIONS_CONTAINER).hidden = false;
+    clearCustomTheme();
+    document.body.classList.remove(CLASSES.FAKEBOX_ANIMATE);
+    fakebox.removeEventListener('webkitTransitionEnd', fakeboxAnimationDone);
+  }
+}
+
+// =============================================================================
+//  Dropdown Implementation
+// =============================================================================
+
+/**
+ * Possible behaviors for navigateContentWindow.
+ * @enum {number}
+ */
+var WindowOpenDisposition = {
+  CURRENT_TAB: 1,
+  NEW_BACKGROUND_TAB: 2
+};
+
+/**
+ * The JavaScript button event value for a middle click.
+ * @type {number}
+ * @const
+ */
+var MIDDLE_MOUSE_BUTTON = 1;
+
+/**
+ * The maximum number of suggestions to show.
+ * @type {number}
+ * @const
+ */
+var MAX_SUGGESTIONS_TO_SHOW = 5;
+
+/**
+ * Assume any native suggestion with a score higher than this value has been
+ * inlined by the browser.
+ * @type {number}
+ * @const
+ */
+var INLINE_SUGGESTION_THRESHOLD = 1200;
+
+/**
+ * Suggestion provider type corresponding to a verbatim URL suggestion.
+ * @type {string}
+ * @const
+ */
+var VERBATIM_URL_TYPE = 'url-what-you-typed';
+
+/**
+ * Suggestion provider type corresponding to a verbatim search suggestion.
+ * @type {string}
+ * @const
+ */
+var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
+
+/**
+ * The omnibox input value during the last onnativesuggestions event.
+ * @type {string}
+ */
+var lastInputValue = '';
+
+/**
+ * The ordered restricted ids of the currently displayed suggestions.  Since the
+ * suggestions contain the user's personal data (browser history) the searchBox
+ * API embeds the content of the suggestion in a shadow dom, and assigns a
+ * random restricted id to each suggestion which is accessible to the JS.
+ * @type {!Array.<number>}
+ */
+
+var restrictedIds = [];
+
+/**
+ * The index of the currently selected suggestion or -1 if none are selected.
+ * @type {number}
+ */
+var selectedIndex = -1;
+
+/**
+ * The browser embeddedSearch.searchBox object.
+ * @type {Object}
+ */
+var searchboxApiHandle;
+
+/**
+ * Displays a suggestion.
+ * @param {Object} suggestion The suggestion to render.
+ * @param {HTMLElement} box The html element to add the suggestion to.
+ * @param {boolean} select True to select the selection.
+ */
+function addSuggestionToBox(suggestion, box, select) {
+  var suggestionDiv = document.createElement('div');
+  suggestionDiv.classList.add('suggestion');
+  suggestionDiv.classList.toggle(CLASSES.SELECTED, select);
+  suggestionDiv.classList.toggle('search', suggestion.is_search);
+
+  if (suggestion.destination_url) {  // iframes.
+    var suggestionIframe = document.createElement('iframe');
+    suggestionIframe.className = 'contents';
+    suggestionIframe.src = suggestion.destination_url;
+    suggestionIframe.id = suggestion.rid;
+    suggestionDiv.appendChild(suggestionIframe);
+  } else {
+    var contentsContainer = document.createElement('div');
+    var contents = suggestion.combinedNode;
+    contents.classList.add('contents');
+    contentsContainer.appendChild(contents);
+    suggestionDiv.appendChild(contentsContainer);
+    suggestionDiv.onclick = function(event) {
+      handleSuggestionClick(suggestion.rid, event.button);
+    };
+  }
+
+  restrictedIds.push(suggestion.rid);
+  box.appendChild(suggestionDiv);
+}
+
+/**
+ * Renders the input suggestions.
+ * @param {!Array} nativeSuggestions An array of native suggestions to render.
+ */
+function renderSuggestions(nativeSuggestions) {
+  for (var i = 0, length = nativeSuggestions.length;
+       i < Math.min(MAX_SUGGESTIONS_TO_SHOW, length); ++i) {
+    // Don't add the search-what-you-typed suggestion if it's the top match.
+    if (i > 0 || nativeSuggestions[i].type != VERBATIM_SEARCH_TYPE) {
+      var box = $(IDS.SUGGESTIONS_BOX);
+      if (!box) {
+        box = document.createElement('div');
+        box.id = IDS.SUGGESTIONS_BOX;
+        $(IDS.SUGGESTIONS_CONTAINER).appendChild(box);
+      }
+      addSuggestionToBox(nativeSuggestions[i], box, i == selectedIndex);
+    }
+  }
+}
+
+/**
+ * Clears the suggestions being displayed.
+ */
+function clearSuggestions() {
+  $(IDS.SUGGESTIONS_CONTAINER).innerHTML = '';
+  restrictedIds = [];
+  selectedIndex = -1;
+}
+
+/**
+ * @return {number} The height of the dropdown.
+ */
+function getDropdownHeight() {
+  return $(IDS.SUGGESTIONS_CONTAINER).offsetHeight;
+}
+
+/**
+ * @param {!Object} suggestion A suggestion.
+ * @param {boolean} inVerbatimMode Are we in verbatim mode?
+ * @return {boolean} True if the suggestion should be selected.
+ */
+function shouldSelectSuggestion(suggestion, inVerbatimMode) {
+  var isVerbatimUrl = suggestion.type == VERBATIM_URL_TYPE;
+  var inlinableSuggestion = suggestion.type != VERBATIM_SEARCH_TYPE &&
+      suggestion.rankingData.relevance > INLINE_SUGGESTION_THRESHOLD;
+  // Verbatim URLs should always be selected. Otherwise, select suggestions
+  // with a high enough score unless we are in verbatim mode (e.g. backspacing
+  // away).
+  return isVerbatimUrl || (!inVerbatimMode && inlinableSuggestion);
+}
+
+/**
+ * Updates selectedIndex, bounding it between -1 and the total number of
+ * of suggestions - 1 (looping as necessary), and selects the corresponding
+ * suggestion.
+ * @param {boolean} increment True to increment the selected suggestion, false
+ *     to decrement.
+ */
+function updateSelectedSuggestion(increment) {
+  var numSuggestions = restrictedIds.length;
+  if (!numSuggestions)
+    return;
+
+  var oldSelection = $(IDS.SUGGESTIONS_BOX).querySelector('.selected');
+  if (oldSelection)
+    oldSelection.classList.remove(CLASSES.SELECTED);
+  if (increment) {
+    if (selectedIndex > numSuggestions)
+      selectedIndex = -1;
+    else
+      ++selectedIndex;
+  } else {
+    if (selectedIndex < 0)
+      selectedIndex = numSuggestions - 1;
+    else
+      --selectedIndex;
+  }
+
+  if (selectedIndex == -1) {
+    searchboxApiHandle.setValue(lastInputValue);
+  } else {
+    var newSelection = $(IDS.SUGGESTIONS_BOX).querySelector(
+        '.suggestion:nth-of-type(' + (selectedIndex + 1) + ')');
+    newSelection.classList.add(CLASSES.SELECTED);
+    searchboxApiHandle.setRestrictedValue(restrictedIds[selectedIndex]);
+  }
+}
+
+/**
+ * Updates suggestions in response to a onchange or onnativesuggestions call.
+ */
+function updateSuggestions() {
+  appendSuggestionStyles();
+  lastInputValue = searchboxApiHandle.value;
+
+  // Hide the NTP if input has made it into the omnibox.
+  var showNTP = lastInputValue == '';
+  updateNtpVisibility(showNTP);
+
+  clearSuggestions();
+  if (showNTP) {
+    searchboxApiHandle.showBars();
+  } else {
+    var nativeSuggestions = searchboxApiHandle.nativeSuggestions;
+    if (nativeSuggestions.length) {
+      nativeSuggestions.sort(function(a, b) {
+        return b.rankingData.relevance - a.rankingData.relevance;
+      });
+      if (shouldSelectSuggestion(
+          nativeSuggestions[0], searchboxApiHandle.verbatim)) {
+        selectedIndex = 0;
+      }
+
+      renderSuggestions(nativeSuggestions);
+      searchboxApiHandle.hideBars();
+    } else {
+      searchboxApiHandle.showBars();
+    }
+  }
+
+  var height = getDropdownHeight();
+  searchboxApiHandle.showOverlay(height);
+}
+
+/**
+ * Appends a style node for suggestion properties that depend on apiHandle.
+ */
+function appendSuggestionStyles() {
+  if ($(IDS.SUGGESTION_STYLE))
+    return;
+
+  var isRtl = searchboxApiHandle.rtl;
+  var startMargin = searchboxApiHandle.startMargin;
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.id = IDS.SUGGESTION_STYLE;
+  style.textContent =
+      '.suggestion, ' +
+      '.suggestion.search {' +
+      '  background-position: ' +
+          (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
+      '  -webkit-margin-start: ' + startMargin + 'px;' +
+      '  -webkit-margin-end: ' +
+          (window.innerWidth - searchboxApiHandle.width - startMargin) + 'px;' +
+      '  font: ' + searchboxApiHandle.fontSize + 'px "' +
+          searchboxApiHandle.font + '";' +
+      '}';
+  document.querySelector('head').appendChild(style);
+}
+
+/**
+ * Extract the desired navigation behavior from a click button.
+ * @param {number} button The Event#button property of a click event.
+ * @return {!WindowOpenDisposition} The desired behavior for
+ *     navigateContentWindow.
+ */
+function getDispositionFromClickButton(button) {
+  if (button == MIDDLE_MOUSE_BUTTON)
+    return WindowOpenDisposition.NEW_BACKGROUND_TAB;
+  return WindowOpenDisposition.CURRENT_TAB;
+}
+
+/**
+ * Handles suggestion clicks.
+ * @param {number} restrictedId The restricted id of the suggestion being
+ *     clicked.
+ * @param {number} button The Event#button property of a click event.
+ *
+ */
+function handleSuggestionClick(restrictedId, button) {
+  clearSuggestions();
+  searchboxApiHandle.navigateContentWindow(
+      restrictedId, getDispositionFromClickButton(button));
+}
+
+/**
+ * chrome.searchBox.onkeypress implementation.
+ * @param {!Event} e The key being pressed.
+ */
+function handleKeyPress(e) {
+  switch (e.keyCode) {
+    case 38:  // Up arrow.
+      updateSelectedSuggestion(false);
+      break;
+    case 40:  // Down arrow.
+      updateSelectedSuggestion(true);
+      break;
+  }
+}
+
+/**
+ * Handles the postMessage calls from the result iframes.
+ * @param {Object} message The message containing details of clicks the iframes.
+ */
+function handleMessage(message) {
+  if (message.origin != 'null' || !message.data ||
+      message.data.eventType != 'click') {
+    return;
+  }
+
+  var iframes = document.getElementsByClassName('contents');
+  for (var i = 0; i < iframes.length; ++i) {
+    if (iframes[i].contentWindow == message.source) {
+      handleSuggestionClick(parseInt(iframes[i].id, 10),
+                            message.data.button);
+      break;
+    }
+  }
+}
+
+// =============================================================================
+//  Utils
+// =============================================================================
+
+/**
+ * Shortcut for document.getElementById.
+ * @param {string} id of the element.
+ * @return {HTMLElement} with the id.
+ */
+function $(id) {
+  return document.getElementById(id);
 }
 
 /**
@@ -510,46 +965,117 @@ function getEmbeddedSearchApiHandle() {
   return null;
 }
 
+// =============================================================================
+//  Initialization
+// =============================================================================
+
 /**
  * Prepares the New Tab Page by adding listeners, rendering the current
- * theme, and the most visited pages section.
+ * theme, the most visited pages section, and Google-specific elements for a
+ * Google-provided page.
  */
 function init() {
-  topMarginElement = document.getElementById(IDS.TOP_MARGIN);
-  tilesContainer = document.getElementById(IDS.TILES);
-  notification = document.getElementById(IDS.NOTIFICATION);
-  attribution = document.getElementById(IDS.ATTRIBUTION);
+  topMarginElement = $(IDS.TOP_MARGIN);
+  tilesContainer = $(IDS.TILES);
+  notification = $(IDS.NOTIFICATION);
+  attribution = $(IDS.ATTRIBUTION);
+  ntpContents = $(IDS.NTP_CONTENTS);
+
+  if (isGooglePage) {
+    document.body.classList.add(CLASSES.GOOGLE_PAGE);
+    var logo = document.createElement('div');
+    logo.id = IDS.LOGO;
+
+    fakebox = document.createElement('div');
+    fakebox.id = IDS.FAKEBOX;
+    fakebox.innerHTML =
+        '<input autocomplete="off" tabindex="-1" aria-hidden="true">' +
+        '<div id=cursor></div>';
+
+    ntpContents.insertBefore(fakebox, ntpContents.firstChild);
+    ntpContents.insertBefore(logo, ntpContents.firstChild);
+  }
+
 
   // TODO(jeremycho): i18n.
-  var notificationMessage = document.getElementById(IDS.NOTIFICATION_MESSAGE);
+  var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
   notificationMessage.innerText = 'Thumbnail removed.';
-  var undoLink = document.getElementById(IDS.UNDO_LINK);
+  var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
   undoLink.innerText = 'Undo';
-  var restoreAllLink = document.getElementById(IDS.RESTORE_ALL_LINK);
+  var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
   restoreAllLink.innerText = 'Restore all';
   attribution.innerText = 'Theme created by';
 
-  var notificationCloseButton =
-      document.getElementById(IDS.NOTIFICATION_CLOSE_BUTTON);
+  var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);
 
   window.addEventListener('resize', onResize);
   onResize();
 
   var topLevelHandle = getEmbeddedSearchApiHandle();
-  // This is to inform Chrome that the NTP is instant-extended capable i.e.
-  // it should fire events like onmostvisitedchange.
-  topLevelHandle.searchBox.onsubmit = function() {};
 
-  apiHandle = topLevelHandle.newTabPage;
-  apiHandle.onthemechange = onThemeChange;
-  apiHandle.onmostvisitedchange = onMostVisitedChange;
+  ntpApiHandle = topLevelHandle.newTabPage;
+  ntpApiHandle.onthemechange = onThemeChange;
+  ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
   onThemeChange();
   onMostVisitedChange();
+
+  searchboxApiHandle = topLevelHandle.searchBox;
+  searchboxApiHandle.onnativesuggestions = updateSuggestions;
+  searchboxApiHandle.onchange = updateSuggestions;
+  searchboxApiHandle.onkeypress = handleKeyPress;
+  searchboxApiHandle.onsubmit = function() {
+    var value = searchboxApiHandle.value;
+    if (!value) {
+      // Interpret onsubmit with an empty query as an ESC key press.
+      clearSuggestions();
+      updateNtpVisibility(true);
+    }
+  };
+
+  $(IDS.SUGGESTIONS_CONTAINER).dir = searchboxApiHandle.rtl ? 'rtl' : 'ltr';
+
+  if (!document.webkitHidden)
+    window.addEventListener('resize', addDelayedTransitions);
+  else
+    document.addEventListener('webkitvisibilitychange', addDelayedTransitions);
+
+  if (fakebox) {
+    // Listener for updating the fakebox focus.
+    document.body.onclick = function(event) {
+      if (isFakeboxClick(event)) {
+        document.body.classList.add(CLASSES.FAKEBOX_FOCUS);
+        searchboxApiHandle.startCapturingKeyStrokes();
+      } else {
+        document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
+        searchboxApiHandle.stopCapturingKeyStrokes();
+      }
+    };
+
+    // Set the cursor alignment based on language directionality.
+    $(IDS.CURSOR).style[searchboxApiHandle.rtl ? 'right' : 'left'] = '9px';
+  }
+}
+
+/**
+ * Applies webkit transitions to NTP elements which need to be delayed until
+ * after the page is made visible and any initial resize has occurred.  This is
+ * to prevent animations from triggering when the NTP is shown.
+ */
+function addDelayedTransitions() {
+  if (fakebox) {
+    fakebox.style.webkitTransition =
+        '-webkit-transform 100ms linear, width 200ms ease';
+  }
+
+  tilesContainer.style.webkitTransition = 'width 200ms';
+  window.removeEventListener('resize', addDelayedTransitions);
+  document.removeEventListener('webkitvisibilitychange', addDelayedTransitions);
 }
 
 document.addEventListener('DOMContentLoaded', init);
+window.addEventListener('message', handleMessage, false);
 })();

@@ -108,11 +108,7 @@ class InstantPage : public content::WebContentsObserver {
 
   // Returns true if the page is the local NTP (i.e. its URL is
   // chrome::kChromeSearchLocalNTPURL).
-  bool IsLocalNTP() const;
-
-  // Returns true if the page is the local overlay (i.e. its URL is
-  // chrome::kChromeSearchLocalOmniboxPopupURL).
-  bool IsLocalOverlay() const;
+  bool IsLocal() const;
 
   // Tells the page that the user typed |text| into the omnibox. If |verbatim|
   // is false, the page predicts the query the user means to type and fetches
