@@ -1937,6 +1937,22 @@ other types of suffix sets.
   <summary>Time from when the Connect() starts until it completes.</summary>
 </histogram>
 
+<histogram name="Net.SpdyFrameStreamAndSessionFlowControlState"
+    enum="SpdyFrameFlowControlState">
+  <summary>
+    The counts of the flow control state of each frame (with stream and session
+    flow control on).
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdyFrameStreamFlowControlState"
+    enum="SpdyFrameFlowControlState">
+  <summary>
+    The counts of the flow control state of each frame (with stream flow control
+    on).
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdyIPPoolDomainMatch" enum="SpdyIPPoolDomainMatch"
     units="count">
   <summary>
@@ -6073,6 +6089,13 @@ other types of suffix sets.
   <int value="0" label="unknown"/>
   <int value="1" label="ws"/>
   <int value="2" label="wss"/>
+</enum>
+
+<enum name="SpdyFrameFlowControlState" type="int">
+  <int value="0" label="Send not stalled"/>
+  <int value="1" label="Send stalled by stream"/>
+  <int value="2" label="Send stalled by session"/>
+  <int value="3" label="Send stalled by stream and session"/>
 </enum>
 
 <enum name="SpdyIPPoolDomainMatch" type="int">

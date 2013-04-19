@@ -1125,11 +1125,11 @@ EVENT_TYPE(SPDY_SESSION_SEND_DATA)
 //   }
 EVENT_TYPE(SPDY_SESSION_RECV_DATA)
 
-// Logs that a stream is stalled on the session send window being closed.
-EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_ON_SESSION_SEND_WINDOW)
+// Logs that a stream is stalled by the session send window being closed.
+EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
 
-// Logs that a stream is stalled on its send window being closed.
-EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_ON_STREAM_SEND_WINDOW)
+// Logs that a stream is stalled by its send window being closed.
+EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW)
 
 // Session is closing
 //   {

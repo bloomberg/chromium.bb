@@ -753,74 +753,106 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
     return scoped_ptr<SpdyBuffer>();
   }
 
-  if (len > kMaxSpdyFrameChunkSize) {
-    len = kMaxSpdyFrameChunkSize;
-    flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
+  int effective_len = std::min(len, kMaxSpdyFrameChunkSize);
+
+  bool send_stalled_by_stream =
+      (flow_control_state_ >= FLOW_CONTROL_STREAM) &&
+      (stream->send_window_size() <= 0);
+  bool send_stalled_by_session = IsSendStalled();
+
+  // NOTE: There's an enum of the same name in histograms.xml.
+  enum SpdyFrameFlowControlState {
+    SEND_NOT_STALLED,
+    SEND_STALLED_BY_STREAM,
+    SEND_STALLED_BY_SESSION,
+    SEND_STALLED_BY_STREAM_AND_SESSION,
+  };
+
+  SpdyFrameFlowControlState frame_flow_control_state = SEND_NOT_STALLED;
+  if (send_stalled_by_stream) {
+    if (send_stalled_by_session) {
+      frame_flow_control_state = SEND_STALLED_BY_STREAM_AND_SESSION;
+    } else {
+      frame_flow_control_state = SEND_STALLED_BY_STREAM;
+    }
+  } else if (send_stalled_by_session) {
+    frame_flow_control_state = SEND_STALLED_BY_SESSION;
   }
 
-  // Obey send window size of the stream (and session, if applicable)
-  // if flow control is enabled.
+  if (flow_control_state_ == FLOW_CONTROL_STREAM) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.SpdyFrameStreamFlowControlState",
+        frame_flow_control_state,
+        SEND_STALLED_BY_STREAM + 1);
+  } else if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.SpdyFrameStreamAndSessionFlowControlState",
+        frame_flow_control_state,
+        SEND_STALLED_BY_STREAM_AND_SESSION + 1);
+  }
+
+  // Obey send window size of the stream if stream flow control is
+  // enabled.
   if (flow_control_state_ >= FLOW_CONTROL_STREAM) {
-    int32 effective_window_size = stream->send_window_size();
-    if (effective_window_size <= 0) {
-      // Because we queue frames onto the session, it is possible that
-      // a stream was not flow controlled at the time it attempted the
-      // write, but when we go to fulfill the write, it is now flow
-      // controlled.  This is why we need the session to mark the stream
-      // as stalled - because only the session knows for sure when the
-      // stall occurs.
+    if (send_stalled_by_stream) {
       stream->set_send_stalled_by_flow_control(true);
       net_log().AddEvent(
-          NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_ON_STREAM_SEND_WINDOW,
+          NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW,
           NetLog::IntegerCallback("stream_id", stream_id));
       return scoped_ptr<SpdyBuffer>();
     }
-    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-      effective_window_size =
-          std::min(effective_window_size, session_send_window_size_);
-      if (effective_window_size <= 0) {
-        DCHECK(IsSendStalled());
-        stream->set_send_stalled_by_flow_control(true);
-        QueueSendStalledStream(stream);
-        net_log().AddEvent(
-            NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_ON_SESSION_SEND_WINDOW,
-            NetLog::IntegerCallback("stream_id", stream_id));
-        return scoped_ptr<SpdyBuffer>();
-      }
+
+    effective_len = std::min(effective_len, stream->send_window_size());
+  }
+
+  // Obey send window size of the session if session flow control is
+  // enabled.
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+    if (send_stalled_by_session) {
+      stream->set_send_stalled_by_flow_control(true);
+      QueueSendStalledStream(stream);
+      net_log().AddEvent(
+          NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW,
+          NetLog::IntegerCallback("stream_id", stream_id));
+      return scoped_ptr<SpdyBuffer>();
     }
 
-    int new_len = std::min(len, effective_window_size);
-    if (new_len < len) {
-      len = new_len;
-      flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
-    }
+    effective_len = std::min(effective_len, session_send_window_size_);
   }
+
+  DCHECK_GE(effective_len, 0);
+
+  // Clear FIN flag if only some of the data will be in the data
+  // frame.
+  if (effective_len < len)
+    flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
 
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SEND_DATA,
-        base::Bind(&NetLogSpdyDataCallback, stream_id, len,
+        base::Bind(&NetLogSpdyDataCallback, stream_id, effective_len,
                    (flags & DATA_FLAG_FIN) != 0));
   }
 
   // Send PrefacePing for DATA_FRAMEs with nonzero payload size.
-  if (len > 0)
+  if (effective_len > 0)
     SendPrefacePingIfNoneInFlight();
 
   // TODO(mbelshe): reduce memory copies here.
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> frame(
       buffered_spdy_framer_->CreateDataFrame(
-          stream_id, data->data(), static_cast<uint32>(len), flags));
+          stream_id, data->data(),
+          static_cast<uint32>(effective_len), flags));
 
   scoped_ptr<SpdyBuffer> data_buffer(new SpdyBuffer(frame.Pass()));
 
   if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-    DecreaseSendWindowSize(static_cast<int32>(len));
+    DecreaseSendWindowSize(static_cast<int32>(effective_len));
     data_buffer->AddConsumeCallback(
         base::Bind(&SpdySession::OnWriteBufferConsumed,
                    weak_factory_.GetWeakPtr(),
-                   static_cast<size_t>(len)));
+                   static_cast<size_t>(effective_len)));
   }
 
   return data_buffer.Pass();
