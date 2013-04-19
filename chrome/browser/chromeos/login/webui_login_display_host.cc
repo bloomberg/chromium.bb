@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -71,7 +72,7 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN),
       old_ignore_solo_window_frame_painter_policy_value_(false) {
-  bool is_registered = WizardController::IsDeviceRegistered();
+  bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   bool disable_boot_animation = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableBootAnimation);
@@ -110,7 +111,7 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
 
   // Always postpone WebUI initialization on first boot, otherwise we miss
   // initial animation.
-  if (!WizardController::IsOobeCompleted())
+  if (!StartupUtils::IsOobeCompleted())
     initialize_webui_hidden_ = false;
 
   // There is no wallpaper for KioskMode, don't initialize the webui hidden.

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -193,7 +194,7 @@ void LoginDisplayHostImpl::StartWizard(
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
 
-  oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
+  oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   wizard_controller_->Init(first_screen_name, screen_parameters);
 }
@@ -205,15 +206,15 @@ void LoginDisplayHostImpl::StartSignInScreen() {
   // Fix for users who updated device and thus never passed register screen.
   // If we already have users, we assume that it is not a second part of
   // OOBE. See http://crosbug.com/6289
-  if (!WizardController::IsDeviceRegistered() && !users.empty()) {
+  if (!StartupUtils::IsDeviceRegistered() && !users.empty()) {
     VLOG(1) << "Mark device registered because there are remembered users: "
             << users.size();
-    WizardController::MarkDeviceRegistered();
+    StartupUtils::MarkDeviceRegistered();
   }
 
   sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
-  oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
+  oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
   SetShutdownButtonEnabled(true);
@@ -418,7 +419,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
   // Check whether we need to execute OOBE process.
-  bool oobe_complete = chromeos::WizardController::IsOobeCompleted();
+  bool oobe_complete = chromeos::StartupUtils::IsOobeCompleted();
   if (!oobe_complete) {
     LoginState::Get()->SetLoggedInState(
         LoginState::LOGGED_IN_OOBE, LoginState::LOGGED_IN_USER_NONE);
@@ -440,7 +441,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     // OOBE process has set kApplicationLocale to non-default value.
     PrefService* prefs = g_browser_process->local_state();
     if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
-      std::string locale = chromeos::WizardController::GetInitialLocale();
+      std::string locale = chromeos::StartupUtils::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
       manager->EnableLayouts(
           locale,
@@ -478,7 +479,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       // Don't need to schedule pref save because setting initial local
       // will enforce preference saving.
       prefs->SetString(prefs::kApplicationLocale, locale);
-      chromeos::WizardController::SetInitialLocale(locale);
+      chromeos::StartupUtils::SetInitialLocale(locale);
       // Determine keyboard layout from OEM customization (if provided) or
       // initial locale and save it in preferences.
       DetermineAndSaveHardwareKeyboard(locale, layout);

@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -305,7 +305,7 @@ bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
 
 MobileConfig::MobileConfig()
     : CustomizationDocument(kAcceptedConfigVersion),
-      initial_locale_(WizardController::GetInitialLocale()) {
+      initial_locale_(StartupUtils::GetInitialLocale()) {
   LoadConfig();
 }
 

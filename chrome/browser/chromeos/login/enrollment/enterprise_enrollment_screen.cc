@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -221,7 +222,7 @@ void EnterpriseEnrollmentScreen::ReportEnrollmentStatus(
 
   switch (status.status()) {
     case policy::EnrollmentStatus::STATUS_SUCCESS:
-      WizardController::MarkDeviceRegistered();
+      StartupUtils::MarkDeviceRegistered();
       UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoOK
                               : policy::kMetricEnrollmentOK);
       return;

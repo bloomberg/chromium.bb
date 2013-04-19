@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -58,7 +59,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     // It is a first boot case now. If kDisableBootAnimation flag
     // is passed, it only disables any transition after OOBE.
     // |kDisableOobeAnimation| disables OOBE animation for slow hardware.
-    bool is_registered = WizardController::IsDeviceRegistered();
+    bool is_registered = StartupUtils::IsDeviceRegistered();
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     bool disable_boot_animation = command_line->
         HasSwitch(::switches::kDisableBootAnimation);

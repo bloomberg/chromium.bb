@@ -68,38 +68,11 @@ class WizardController : public ScreenObserver {
     return skip_post_login_screens_;
   }
 
-  // Returns true if EULA has been accepted.
-  static bool IsEulaAccepted();
-
-  // Returns OOBE completion status.
-  static bool IsOobeCompleted();
-
-  // Marks EULA status as accepted.
-  static void MarkEulaAccepted();
-
-  // Marks OOBE process as completed.
-  static void MarkOobeCompleted();
-
-  // Returns device registration completion status, i.e. second part of OOBE.
-  static bool IsDeviceRegistered();
-
-  // Marks device registered. i.e. second part of OOBE is completed.
-  static void MarkDeviceRegistered();
-
-  // Returns initial locale from local settings.
-  static std::string GetInitialLocale();
-
   // Sets delays to zero. MUST be used only for tests.
   static void SetZeroDelays();
 
   // If true zero delays have been enabled (for browser tests).
   static bool IsZeroDelayEnabled();
-
-  // Sets initial locale in local settings.
-  static void SetInitialLocale(const std::string& locale);
-
-  // Registers OOBE preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).

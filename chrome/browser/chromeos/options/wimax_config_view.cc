@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -59,7 +59,7 @@ views::View* WimaxConfigView::GetInitiallyFocusedView() {
 
 bool WimaxConfigView::CanLogin() {
   // In OOBE it may be valid to log in with no credentials (crbug.com/137776).
-  if (!chromeos::WizardController::IsOobeCompleted())
+  if (!chromeos::StartupUtils::IsOobeCompleted())
     return true;
 
   // TODO(benchan): Update this with the correct minimum length (don't just

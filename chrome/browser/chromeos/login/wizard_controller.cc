@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -175,7 +176,7 @@ void WizardController::Init(const std::string& first_screen_name,
   first_screen_name_ = first_screen_name;
   screen_parameters_.reset(screen_parameters);
 
-  bool oobe_complete = IsOobeCompleted();
+  bool oobe_complete = StartupUtils::IsOobeCompleted();
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
   }
@@ -185,7 +186,7 @@ void WizardController::Init(const std::string& first_screen_name,
       chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-  if (!IsMachineHWIDCorrect() && !IsDeviceRegistered() &&
+  if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen_name.empty())
     ShowWrongHWIDScreen();
 }
@@ -390,7 +391,7 @@ void WizardController::ShowLocallyManagedUserCreationScreen() {
 }
 
 void WizardController::SkipToLoginForTesting() {
-  MarkEulaAccepted();
+  StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
   PerformPostUpdateActions();
   ShowLoginScreen();
@@ -416,19 +417,11 @@ void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
 
-// static
-void WizardController::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kOobeComplete, false);
-  registry->RegisterIntegerPref(kDeviceRegistered, -1);
-  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
-  registry->RegisterStringPref(kInitialLocale, "en-US");
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
-    if (!IsEulaAccepted()) {
+    if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
     } else {
       // Possible cases:
@@ -459,7 +452,7 @@ void WizardController::OnUpdateCompleted() {
 
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
-  MarkEulaAccepted();
+  StartupUtils::MarkEulaAccepted();
   bool uma_enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
 
@@ -589,7 +582,7 @@ void WizardController::PerformPostEulaActions() {
 }
 
 void WizardController::PerformPostUpdateActions() {
-  MarkOobeCompleted();
+  StartupUtils::MarkOobeCompleted();
 }
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
@@ -675,106 +668,6 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
       ShowLoginScreen();
     }
   }
-}
-
-// static
-bool WizardController::IsEulaAccepted() {
-  return g_browser_process->local_state()->GetBoolean(prefs::kEulaAccepted);
-}
-
-// static
-bool WizardController::IsOobeCompleted() {
-  return g_browser_process->local_state()->GetBoolean(kOobeComplete);
-}
-
-// static
-void WizardController::MarkEulaAccepted() {
-  SaveBoolPreferenceForced(prefs::kEulaAccepted, true);
-}
-
-// static
-void WizardController::MarkOobeCompleted() {
-  SaveBoolPreferenceForced(kOobeComplete, true);
-}
-
-// Returns the path to flag file indicating that both parts of OOBE were
-// completed.
-// On chrome device, returns /home/chronos/.oobe_completed.
-// On Linux desktop, returns $HOME/.oobe_completed.
-static base::FilePath GetOobeCompleteFlagPath() {
-  // The constant is defined here so it won't be referenced directly.
-  const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
-
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    return base::FilePath(kOobeCompleteFlagFilePath);
-  } else {
-    const char* home = getenv("HOME");
-    // Unlikely but if HOME is not defined, use the current directory.
-    if (!home)
-      home = "";
-    return base::FilePath(home).AppendASCII(".oobe_completed");
-  }
-}
-
-static void CreateOobeCompleteFlagFile() {
-  // Create flag file for boot-time init scripts.
-  base::FilePath oobe_complete_path = GetOobeCompleteFlagPath();
-  if (!file_util::PathExists(oobe_complete_path)) {
-    FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
-    if (oobe_flag_file == NULL)
-      DLOG(WARNING) << oobe_complete_path.value() << " doesn't exist.";
-    else
-      file_util::CloseFile(oobe_flag_file);
-  }
-}
-
-// static
-bool WizardController::IsDeviceRegistered() {
-  int value = g_browser_process->local_state()->GetInteger(kDeviceRegistered);
-  if (value > 0) {
-    // Recreate flag file in case it was lost.
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&CreateOobeCompleteFlagFile));
-    return true;
-  } else if (value == 0) {
-    return false;
-  } else {
-    // Pref is not set. For compatibility check flag file. It causes blocking
-    // IO on UI thread. But it's required for update from old versions.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    base::FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
-    bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
-    SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
-    return file_exists;
-  }
-}
-
-// static
-void WizardController::MarkDeviceRegistered() {
-  SaveIntegerPreferenceForced(kDeviceRegistered, 1);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateOobeCompleteFlagFile));
-}
-
-// static
-std::string WizardController::GetInitialLocale() {
-  std::string locale =
-      g_browser_process->local_state()->GetString(kInitialLocale);
-  if (!l10n_util::IsValidLocaleSyntax(locale))
-    locale = "en-US";
-  return locale;
-}
-
-// static
-void WizardController::SetInitialLocale(const std::string& locale) {
-  if (l10n_util::IsValidLocaleSyntax(locale))
-    SaveStringPreferenceForced(kInitialLocale, locale);
-  else
-    NOTREACHED();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

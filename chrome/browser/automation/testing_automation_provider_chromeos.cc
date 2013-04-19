@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -227,8 +228,7 @@ void TestingAutomationProvider::AcceptOOBEEula(DictionaryValue* args,
 
 void TestingAutomationProvider::CancelOOBEUpdate(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
-  WizardController* wizard_controller = WizardController::default_controller();
-  if (wizard_controller && wizard_controller->IsOobeCompleted()) {
+  if (chromeos::StartupUtils::IsOobeCompleted()) {
     // Update already finished.
     scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
     return_value->SetString("next_screen",
@@ -236,6 +236,7 @@ void TestingAutomationProvider::CancelOOBEUpdate(DictionaryValue* args,
     AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
     return;
   }
+  WizardController* wizard_controller = WizardController::default_controller();
   if (!wizard_controller || wizard_controller->current_screen()->GetName() !=
           WizardController::kUpdateScreenName) {
     AutomationJSONReply(this, reply_message).SendError(

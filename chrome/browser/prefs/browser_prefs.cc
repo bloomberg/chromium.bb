@@ -121,10 +121,10 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
@@ -255,7 +255,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserManager::RegisterPrefs(registry);
   chromeos::WallpaperManager::RegisterPrefs(registry);
-  chromeos::WizardController::RegisterPrefs(registry);
+  chromeos::StartupUtils::RegisterPrefs(registry);
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
 #endif

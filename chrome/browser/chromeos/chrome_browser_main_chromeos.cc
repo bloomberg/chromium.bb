@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -672,7 +673,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 #endif
     // Enable portal detector if EULA was previously accepted or if
     // this is an unofficial build.
-    if (!is_official_build || WizardController::IsEulaAccepted())
+    if (!is_official_build || StartupUtils::IsEulaAccepted())
       detector->Enable(true);
   }
 

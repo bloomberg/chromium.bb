@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
@@ -784,8 +785,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 #endif
       // Mark the device as registered., i.e. the second part of OOBE as
       // completed.
-      if (!WizardController::IsDeviceRegistered())
-        WizardController::MarkDeviceRegistered();
+      if (!StartupUtils::IsDeviceRegistered())
+        StartupUtils::MarkDeviceRegistered();
 
       ActivateWizard(WizardController::kTermsOfServiceScreenName);
 #ifndef NDEBUG
@@ -810,8 +811,8 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
   offline_failed_ = false;
 
   // Mark the device as registered., i.e. the second part of OOBE as completed.
-  if (!WizardController::IsDeviceRegistered())
-    WizardController::MarkDeviceRegistered();
+  if (!StartupUtils::IsDeviceRegistered())
+    StartupUtils::MarkDeviceRegistered();
 
   LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
 

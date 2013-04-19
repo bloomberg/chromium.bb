@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -205,7 +206,7 @@ void UpdateScreen::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       // Make sure that first OOBE stage won't be shown after reboot.
-      WizardController::MarkOobeCompleted();
+      StartupUtils::MarkOobeCompleted();
       actor_->SetProgress(kProgressComplete);
       actor_->ShowEstimatedTimeLeft(false);
       if (HasCriticalUpdate()) {

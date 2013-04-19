@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -265,7 +266,7 @@ void WallpaperManager::InitializeWallpaper() {
   }
 
   if (!user_manager->IsUserLoggedIn()) {
-    if (!WizardController::IsDeviceRegistered())
+    if (!StartupUtils::IsDeviceRegistered())
       SetDefaultWallpaper();
     else
       InitializeRegisteredDeviceWallpaper();

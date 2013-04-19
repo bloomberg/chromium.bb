@@ -7,8 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 
 using chromeos::CrosLibrary;
@@ -76,7 +76,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     return new base::StringValue(netlib->GetCellularHomeCarrierId());
   } else if (property_name == kPropertyInitialLocale) {
     return new base::StringValue(
-        chromeos::WizardController::GetInitialLocale());
+        chromeos::StartupUtils::GetInitialLocale());
   } else if (property_name == kPropertyBoard) {
     std::string board;
     chromeos::system::StatisticsProvider* provider =

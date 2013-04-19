@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -36,7 +37,7 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
 
   // Make sure that libcros is loaded and OOBE is complete.
   if (!WizardController::default_controller() ||
-      WizardController::IsDeviceRegistered()) {
+      chromeos::StartupUtils::IsDeviceRegistered()) {
     update_engine_client->RequestUpdateCheck(
         base::Bind(&VersionUpdaterCros::OnUpdateCheck,
                    weak_ptr_factory_.GetWeakPtr()));

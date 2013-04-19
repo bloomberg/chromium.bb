@@ -16,9 +16,9 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -49,7 +49,7 @@ class TrayAccessibilityTest : public CrosInProcessBrowserTest {
 
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     // Need to mark oobe completed to show detailed views.
-    WizardController::MarkOobeCompleted();
+    StartupUtils::MarkOobeCompleted();
     CrosInProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 

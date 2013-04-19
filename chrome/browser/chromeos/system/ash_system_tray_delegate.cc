@@ -58,9 +58,9 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
@@ -417,7 +417,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual bool IsOobeCompleted() const OVERRIDE {
-    return WizardController::IsOobeCompleted();
+    return StartupUtils::IsOobeCompleted();
   }
 
   virtual void GetLoggedInUsers(ash::UserEmailList* users) OVERRIDE {

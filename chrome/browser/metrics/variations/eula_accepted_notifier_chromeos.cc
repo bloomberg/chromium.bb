@@ -4,7 +4,8 @@
 
 #include "chrome/browser/metrics/variations/eula_accepted_notifier_chromeos.h"
 
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "base/logging.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -15,7 +16,7 @@ EulaAcceptedNotifierChromeos::~EulaAcceptedNotifierChromeos() {
 }
 
 bool EulaAcceptedNotifierChromeos::IsEulaAccepted() {
-  if (chromeos::WizardController::IsEulaAccepted())
+  if (chromeos::StartupUtils::IsEulaAccepted())
     return true;
 
   // Register for the notification, if this is the first time.
