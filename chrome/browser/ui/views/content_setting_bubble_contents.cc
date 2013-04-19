@@ -201,6 +201,8 @@ void ContentSettingBubbleContents::Init() {
   if (!bubble_content.title.empty()) {
     views::Label* title_label = new views::Label(UTF8ToUTF16(
         bubble_content.title));
+    title_label->SetMultiLine(true);
+    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(title_label);
     bubble_content_empty = false;
