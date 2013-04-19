@@ -1059,15 +1059,18 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
 void BrowsingHistoryHandler::RemoveComplete() {
   urls_to_be_deleted_.clear();
 
-  // Notify the page that the deletion request succeeded.
-  web_ui()->CallJavascriptFunction("deleteComplete");
+  // Notify the page that the deletion request is complete, but only if a web
+  // history delete request is not still pending.
+  if (!(web_history_request_.get() && web_history_request_->is_pending()))
+    web_ui()->CallJavascriptFunction("deleteComplete");
 }
 
 void BrowsingHistoryHandler::RemoveWebHistoryComplete(
     history::WebHistoryService::Request* request, bool success) {
-  // Notify the page that the deletion request is complete.
-  base::FundamentalValue success_value(success);
-  web_ui()->CallJavascriptFunction("webHistoryDeleteComplete", success_value);
+  // TODO(dubroy): Should we handle failure somehow? Delete directives will
+  // ensure that the visits are eventually deleted, so maybe it's not necessary.
+  if (!delete_task_tracker_.HasTrackedTasks())
+    RemoveComplete();
 }
 
 void BrowsingHistoryHandler::SetQueryTimeInWeeks(

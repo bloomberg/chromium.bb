@@ -54,6 +54,8 @@ class RequestImpl : public WebHistoryService::Request,
   // Returns the contents of the response body received from the server.
   const std::string& response_body() { return response_body_; }
 
+  virtual bool is_pending() OVERRIDE { return is_pending_; }
+
  private:
   friend class history::WebHistoryService;
 
@@ -66,7 +68,8 @@ class RequestImpl : public WebHistoryService::Request,
         url_(GURL(url)),
         response_code_(0),
         auth_retry_count_(0),
-        callback_(callback) {
+        callback_(callback),
+        is_pending_(false) {
   }
 
   // Tells the request to do its thang.
@@ -77,6 +80,7 @@ class RequestImpl : public WebHistoryService::Request,
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     token_request_ = token_service->StartRequest(oauth_scopes, this);
+    is_pending_ = true;
   }
 
   // content::URLFetcherDelegate interface.
@@ -99,6 +103,7 @@ class RequestImpl : public WebHistoryService::Request,
     url_fetcher_->GetResponseAsString(&response_body_);
     url_fetcher_.reset();
     callback_.Run(this, true);
+    is_pending_ = false;
   }
 
   // OAuth2TokenService::Consumer interface.
@@ -121,6 +126,7 @@ class RequestImpl : public WebHistoryService::Request,
     token_request_.reset();
     LOG(WARNING) << "Failed to get OAuth token: " << error.ToString();
     callback_.Run(this, false);
+    is_pending_ = false;
   }
 
   // Helper for creating a new URLFetcher for the API request.
@@ -174,23 +180,33 @@ class RequestImpl : public WebHistoryService::Request,
 
   // The callback to execute when the query is complete.
   CompletionCallback callback_;
+
+  // True if the request was started and has not yet completed, otherwise false.
+  bool is_pending_;
 };
+
+// Extracts a JSON-encoded HTTP response into a DictionaryValue.
+// If |request|'s HTTP response code indicates failure, or if the response
+// body is not JSON, a null pointer is returned.
+scoped_ptr<DictionaryValue> ReadResponse(RequestImpl* request) {
+  scoped_ptr<DictionaryValue> result;
+  if (request->response_code() == net::HTTP_OK) {
+    Value* value = base::JSONReader::Read(request->response_body());
+    if (value && value->IsType(base::Value::TYPE_DICTIONARY))
+      result.reset(static_cast<DictionaryValue*>(value));
+  }
+  return result.Pass();
+}
 
 // Called when a query to web history has completed, successfully or not.
 void QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
-  RequestImpl* request_impl = static_cast<RequestImpl*>(request);
-  if (success && request_impl->response_code() == net::HTTP_OK) {
-    scoped_ptr<base::Value> value(
-        base::JSONReader::Read(request_impl->response_body()));
-    if (value.get() && value->IsType(base::Value::TYPE_DICTIONARY)) {
-      callback.Run(request, static_cast<DictionaryValue*>(value.get()));
-      return;
-    }
-  }
-  callback.Run(request, NULL);
+  scoped_ptr<DictionaryValue> response_value;
+  if (success)
+    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+  callback.Run(request, response_value.get());
 }
 
 // Converts a time into a string for use as a parameter in a request to the
@@ -200,9 +216,12 @@ std::string ServerTimeString(base::Time time) {
 }
 
 // Returns a URL for querying the history server for a query specified by
-// |options|.
+// |options|. |version_info|, if not empty, should be a token that was received
+// from the server in response to a write operation. It is used to help ensure
+// read consistency after a write.
 std::string GetQueryUrl(const string16& text_query,
-                        const QueryOptions& options) {
+                        const QueryOptions& options,
+                        const std::string& version_info) {
   GURL url = GURL(kHistoryQueryHistoryUrl);
   url = net::AppendQueryParameter(url, "titles", "1");
 
@@ -226,6 +245,9 @@ std::string GetQueryUrl(const string16& text_query,
 
   if (!text_query.empty())
     url = net::AppendQueryParameter(url, "q", UTF16ToUTF8(text_query));
+
+  if (!version_info.empty())
+    url = net::AppendQueryParameter(url, "kvi", version_info);
 
   return url.spec();
 }
@@ -269,11 +291,24 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   RequestImpl::CompletionCallback completion_callback = base::Bind(
       &QueryHistoryCompletionCallback, callback);
 
-  std::string url = GetQueryUrl(text_query, options);
+  std::string url = GetQueryUrl(text_query, options, server_version_info_);
   scoped_ptr<RequestImpl> request(
       new RequestImpl(profile_, url, completion_callback));
   request->Start();
   return request.PassAs<Request>();
+}
+
+void WebHistoryService::ExpireHistoryCompletionCallback(
+    const WebHistoryService::ExpireWebHistoryCallback& callback,
+    WebHistoryService::Request* request,
+    bool success) {
+  scoped_ptr<DictionaryValue> response_value;
+  if (success) {
+    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+    if (response_value.get())
+      response_value->GetString("version_info", &server_version_info_);
+  }
+  callback.Run(request, response_value.get() && success);
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
@@ -306,8 +341,21 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
   std::string post_data;
   base::JSONWriter::Write(&delete_request, &post_data);
 
+  GURL url(kHistoryDeleteHistoryUrl);
+
+  // Append the version info token, if it is available, to help ensure
+  // consistency with any previous deletions.
+  if (!server_version_info_.empty())
+    url = net::AppendQueryParameter(url, "kvi", server_version_info_);
+
+  // Wrap the original callback into a generic completion callback.
+  RequestImpl::CompletionCallback completion_callback = base::Bind(
+      base::Bind(&WebHistoryService::ExpireHistoryCompletionCallback,
+                 base::Unretained(this),
+                 callback));
+
   scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, kHistoryDeleteHistoryUrl, callback));
+      new RequestImpl(profile_, url.spec(), completion_callback));
   request->set_post_data(post_data);
   request->Start();
   return request.PassAs<Request>();

@@ -31,6 +31,10 @@ class WebHistoryService : public ProfileKeyedService {
    public:
     virtual ~Request();
 
+    // Returns true if the request is "pending" (i.e., it has been started, but
+    // is not yet been complete).
+    virtual bool is_pending() = 0;
+
    protected:
     Request();
   };
@@ -75,7 +79,20 @@ class WebHistoryService : public ProfileKeyedService {
       const ExpireWebHistoryCallback& callback);
 
  private:
+  // Called by |request| when a request to delete history from the server has
+  // completed. Unpacks the response and calls |callback|, which is the original
+  // callback that was passed to ExpireHistory().
+  void ExpireHistoryCompletionCallback(
+      const WebHistoryService::ExpireWebHistoryCallback& callback,
+      WebHistoryService::Request* request,
+      bool success);
+
   Profile* profile_;
+
+  // Stores the version_info token received from the server in response to
+  // a mutation operation (e.g., deleting history). This is used to ensure that
+  // subsequent reads see a version of the data that includes the mutation.
+  std::string server_version_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebHistoryService);
 };
