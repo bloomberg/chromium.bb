@@ -87,6 +87,10 @@ IPC_MESSAGE_ROUTED2(AwViewHostMsg_DocumentHasImagesResponse,
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
                     android_webview::AwHitTestData)
 
+// Sent whenever the page scale factor (as seen by RenderView) is changed.
+IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
+                    float /* page_scale_factor */)
+
 // Notification that a new picture becomes available. It is only sent if
 // AwViewMsg_EnableCapturePictureCallback was previously enabled.
 IPC_MESSAGE_ROUTED0(AwViewHostMsg_PictureUpdated)

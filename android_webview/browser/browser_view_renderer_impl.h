@@ -66,6 +66,9 @@ class BrowserViewRendererImpl
 
   // ViewRendererHost::Client implementation.
   virtual void OnPictureUpdated(int process_id, int render_view_id) OVERRIDE;
+  virtual void OnPageScaleFactorChanged(int process_id,
+                                        int render_view_id,
+                                        float page_scale_factor) OVERRIDE;
 
  protected:
   BrowserViewRendererImpl(BrowserViewRenderer::Client* client,

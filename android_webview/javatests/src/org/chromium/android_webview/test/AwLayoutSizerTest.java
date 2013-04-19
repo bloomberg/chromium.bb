@@ -31,18 +31,29 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         }
     }
 
-    private static final int firstContentWidth = 101;
-    private static final int firstContentHeight = 389;
-    private static final int secondContentWidth = 103;
-    private static final int secondContentHeight = 397;
+    private static final int FIRST_CONTENT_WIDTH = 101;
+    private static final int FIRST_CONTENT_HEIGHT = 389;
+    private static final int SECOND_CONTENT_WIDTH = 103;
+    private static final int SECOND_CONTENT_HEIGHT = 397;
+
+    private static final int SMALLER_CONTENT_SIZE = 25;
+    private static final int AT_MOST_MEASURE_SIZE = 50;
+    private static final int TOO_LARGE_CONTENT_SIZE = 100;
+
+    private static final double INITIAL_PAGE_SCALE = 1.0;
+    private static final double DIP_SCALE = 1.0;
 
     public void testCanQueryContentSize() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
-        AwLayoutSizer layoutSizer = new AwLayoutSizer(delegate);
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
         final int contentWidth = 101;
         final int contentHeight = 389;
 
         layoutSizer.onContentSizeChanged(contentWidth, contentHeight);
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
 
@@ -52,47 +63,167 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
     }
 
     public void testContentSizeChangeRequestsLayout() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
-        AwLayoutSizer layoutSizer = new AwLayoutSizer(delegate);
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onContentSizeChanged(firstContentWidth, firstContentHeight);
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         final int requestLayoutCallCount = delegate.requestLayoutCallCount;
-        layoutSizer.onContentSizeChanged(secondContentWidth, secondContentWidth);
+        layoutSizer.onContentSizeChanged(SECOND_CONTENT_WIDTH, SECOND_CONTENT_WIDTH);
 
         assertEquals(requestLayoutCallCount + 1, delegate.requestLayoutCallCount);
     }
 
     public void testContentSizeChangeDoesNotRequestLayoutIfMeasuredExcatly() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
-        AwLayoutSizer layoutSizer = new AwLayoutSizer(delegate);
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
 
-        layoutSizer.onContentSizeChanged(firstContentWidth, firstContentHeight);
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
         layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         final int requestLayoutCallCount = delegate.requestLayoutCallCount;
-        layoutSizer.onContentSizeChanged(secondContentWidth, firstContentHeight);
+        layoutSizer.onContentSizeChanged(SECOND_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+
+        assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
+    }
+
+    public void testDuplicateContentSizeChangeDoesNotRequestLayout() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
 
         assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
     }
 
     public void testContentHeightGrowsTillAtMostSize() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
-        AwLayoutSizer layoutSizer = new AwLayoutSizer(delegate);
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
 
-        final int smallerContentSize = 25;
-        final int atMostMeasureSize = 50;
-        final int tooLargeContentSize = 100;
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredWidth);
+        assertEquals(SMALLER_CONTENT_SIZE, delegate.measuredHeight);
 
-        layoutSizer.onContentSizeChanged(smallerContentSize, smallerContentSize);
-        layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(atMostMeasureSize, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(atMostMeasureSize, MeasureSpec.AT_MOST));
-        assertEquals(atMostMeasureSize, delegate.measuredWidth);
-        assertEquals(smallerContentSize, delegate.measuredHeight);
+        layoutSizer.onContentSizeChanged(TOO_LARGE_CONTENT_SIZE, TOO_LARGE_CONTENT_SIZE);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredWidth & View.MEASURED_SIZE_MASK);
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredHeight & View.MEASURED_SIZE_MASK);
+    }
 
-        layoutSizer.onContentSizeChanged(tooLargeContentSize, tooLargeContentSize);
-        layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(atMostMeasureSize, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(atMostMeasureSize, MeasureSpec.AT_MOST));
-        assertEquals(atMostMeasureSize, delegate.measuredWidth & View.MEASURED_SIZE_MASK);
-        assertEquals(atMostMeasureSize, delegate.measuredHeight & View.MEASURED_SIZE_MASK);
+    public void testScaleChangeRequestsLayout() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE + 0.5);
+
+        assertEquals(requestLayoutCallCount + 1, delegate.requestLayoutCallCount);
+    }
+
+    public void testDuplicateScaleChangeDoesNotRequestLayout() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onPageScaleChanged(DIP_SCALE);
+
+        assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
+    }
+
+    public void testScaleChangeGrowsTillAtMostSize() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        final double tooLargePageScale = 3.00;
+
+        layoutSizer.onContentSizeChanged(SMALLER_CONTENT_SIZE, SMALLER_CONTENT_SIZE);
+        layoutSizer.onPageScaleChanged(INITIAL_PAGE_SCALE);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredWidth);
+        assertEquals(SMALLER_CONTENT_SIZE, delegate.measuredHeight);
+
+        layoutSizer.onPageScaleChanged(tooLargePageScale);
+        layoutSizer.onMeasure(
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(AT_MOST_MEASURE_SIZE, MeasureSpec.AT_MOST));
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredWidth & View.MEASURED_SIZE_MASK);
+        assertEquals(AT_MOST_MEASURE_SIZE, delegate.measuredHeight & View.MEASURED_SIZE_MASK);
+    }
+
+    public void testFreezeAndUnfreezeDoesntCauseLayout() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.freezeLayoutRequests();
+        layoutSizer.unfreezeLayoutRequests();
+        assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
+    }
+
+    public void testFreezeInhibitsLayoutRequest() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.freezeLayoutRequests();
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onContentSizeChanged(SECOND_CONTENT_WIDTH, SECOND_CONTENT_WIDTH);
+        assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
+    }
+
+    public void testUnfreezeIssuesLayoutRequest() {
+        AwLayoutSizer layoutSizer = new AwLayoutSizer();
+        LayoutSizerDelegate delegate = new LayoutSizerDelegate();
+        layoutSizer.setDelegate(delegate);
+        layoutSizer.setDIPScale(DIP_SCALE);
+
+        layoutSizer.freezeLayoutRequests();
+        layoutSizer.onContentSizeChanged(FIRST_CONTENT_WIDTH, FIRST_CONTENT_HEIGHT);
+        final int requestLayoutCallCount = delegate.requestLayoutCallCount;
+        layoutSizer.onContentSizeChanged(SECOND_CONTENT_WIDTH, SECOND_CONTENT_WIDTH);
+        assertEquals(requestLayoutCallCount, delegate.requestLayoutCallCount);
+        layoutSizer.unfreezeLayoutRequests();
+        assertEquals(requestLayoutCallCount + 1, delegate.requestLayoutCallCount);
     }
 }

@@ -628,13 +628,22 @@ jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
 gfx::Point AwContents::GetLocationOnScreen() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) return gfx::Point();
+  if (obj.is_null())
+    return gfx::Point();
   std::vector<int> location;
   base::android::JavaIntArrayToIntVector(
       env,
       Java_AwContents_getLocationOnScreen(env, obj.obj()).obj(),
       &location);
   return gfx::Point(location[0], location[1]);
+}
+
+void AwContents::OnPageScaleFactorChanged(float page_scale_factor) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_onPageScaleFactorChanged(env, obj.obj(), page_scale_factor);
 }
 
 ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,

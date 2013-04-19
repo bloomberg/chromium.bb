@@ -39,126 +39,12 @@ import org.chromium.net.NetError;
 public abstract class AwContentsClient extends ContentViewClient {
 
     private static final String TAG = "AwContentsClient";
-    // Handler for WebContentsDelegate callbacks
-    private final WebContentsDelegateAdapter mWebContentsDelegateAdapter =
-            new WebContentsDelegateAdapter();
-
     private final AwContentsClientCallbackHelper mCallbackHelper =
         new AwContentsClientCallbackHelper(this);
 
     private AwWebContentsObserver mWebContentsObserver;
 
     private double mDIPScale;
-
-    //--------------------------------------------------------------------------------------------
-    //                        Adapter for WebContentsDelegate methods.
-    //--------------------------------------------------------------------------------------------
-    class WebContentsDelegateAdapter extends AwWebContentsDelegate {
-
-        @Override
-        public void onLoadProgressChanged(int progress) {
-            AwContentsClient.this.onProgressChanged(progress);
-        }
-
-        @Override
-        public void handleKeyboardEvent(KeyEvent event) {
-            AwContentsClient.this.onUnhandledKeyEvent(event);
-        }
-
-        @Override
-        public boolean addMessageToConsole(int level, String message, int lineNumber,
-                String sourceId) {
-            ConsoleMessage.MessageLevel messageLevel = ConsoleMessage.MessageLevel.DEBUG;
-            switch(level) {
-                case LOG_LEVEL_TIP:
-                    messageLevel = ConsoleMessage.MessageLevel.TIP;
-                    break;
-                case LOG_LEVEL_LOG:
-                    messageLevel = ConsoleMessage.MessageLevel.LOG;
-                    break;
-                case LOG_LEVEL_WARNING:
-                    messageLevel = ConsoleMessage.MessageLevel.WARNING;
-                    break;
-                case LOG_LEVEL_ERROR:
-                    messageLevel = ConsoleMessage.MessageLevel.ERROR;
-                    break;
-                default:
-                    Log.w(TAG, "Unknown message level, defaulting to DEBUG");
-                    break;
-            }
-
-            return AwContentsClient.this.onConsoleMessage(
-                    new ConsoleMessage(message, sourceId, lineNumber, messageLevel));
-        }
-
-        @Override
-        public void onUpdateUrl(String url) {
-            // TODO: implement
-        }
-
-        @Override
-        public void openNewTab(String url, boolean incognito) {
-            // TODO: implement
-        }
-
-        @Override
-        public boolean addNewContents(int nativeSourceWebContents, int nativeWebContents,
-                int disposition, Rect initialPosition, boolean userGesture) {
-            // TODO: implement
-            return false;
-        }
-
-        @Override
-        public void closeContents() {
-            AwContentsClient.this.onCloseWindow();
-        }
-
-        @Override
-        public void showRepostFormWarningDialog(final ContentViewCore contentViewCore) {
-            // This is intentionally not part of mCallbackHelper as that class is intended for
-            // callbacks going the other way (to the embedder, not from the embedder).
-            // TODO(mkosiba) We should be using something akin to the JsResultReceiver as the
-            // callback parameter (instead of ContentViewCore) and implement a way of converting
-            // that to a pair of messages.
-            final int MSG_CONTINUE_PENDING_RELOAD = 1;
-            final int MSG_CANCEL_PENDING_RELOAD = 2;
-
-            // TODO(sgurun) Remember the URL to cancel the reload behavior
-            // if it is different than the most recent NavigationController entry.
-            final Handler handler = new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(Message msg) {
-                    switch(msg.what) {
-                        case MSG_CONTINUE_PENDING_RELOAD: {
-                            contentViewCore.continuePendingReload();
-                            break;
-                        }
-                        case MSG_CANCEL_PENDING_RELOAD: {
-                            contentViewCore.cancelPendingReload();
-                            break;
-                        }
-                        default:
-                            throw new IllegalStateException(
-                                    "WebContentsDelegateAdapter: unhandled message " + msg.what);
-                    }
-                }
-            };
-
-            Message resend = handler.obtainMessage(MSG_CONTINUE_PENDING_RELOAD);
-            Message dontResend = handler.obtainMessage(MSG_CANCEL_PENDING_RELOAD);
-            AwContentsClient.this.onFormResubmission(dontResend, resend);
-        }
-
-        @Override
-        public boolean addNewContents(boolean isDialog, boolean isUserGesture) {
-            return AwContentsClient.this.onCreateWindow(isDialog, isUserGesture);
-        }
-
-        @Override
-        public void activateContents() {
-            AwContentsClient.this.onRequestFocus();
-        }
-    }
 
     class AwWebContentsObserver extends WebContentsObserverAndroid {
         public AwWebContentsObserver(ContentViewCore contentViewCore) {
@@ -206,10 +92,6 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     void setDIPScale(double dipScale) {
         mDIPScale = dipScale;
-    }
-
-    final AwWebContentsDelegate getWebContentsDelegate() {
-        return mWebContentsDelegateAdapter;
     }
 
     final AwContentsClientCallbackHelper getCallbackHelper() {

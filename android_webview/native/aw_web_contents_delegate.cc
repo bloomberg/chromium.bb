@@ -122,6 +122,17 @@ void AwWebContentsDelegate::ActivateContents(content::WebContents* contents) {
   }
 }
 
+void AwWebContentsDelegate::UpdatePreferredSize(
+    WebContents* web_contents,
+    const gfx::Size& pref_size) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  return Java_AwWebContentsDelegate_updatePreferredSize(
+      env, obj.obj(), pref_size.width(), pref_size.height());
+}
+
 bool RegisterAwWebContentsDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

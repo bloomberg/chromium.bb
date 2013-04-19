@@ -19,37 +19,116 @@ public class AwLayoutSizer {
     private boolean mWidthMeasurementIsFixed;
     private boolean mHeightMeasurementIsFixed;
 
-    // Size of the rendered content, as reported by native, in physical pixels.
-    private int mContentHeight;
-    private int mContentWidth;
+    // Size of the rendered content, as reported by native.
+    private int mContentHeightCss;
+    private int mContentWidthCss;
+
+    // Page scale factor. This is set to zero initially so that we don't attempt to do a layout if
+    // we get the content size change notification first and a page scale change second.
+    private double mPageScaleFactor = 0.0;
+
+    // Whether to postpone layout requests.
+    private boolean mFreezeLayoutRequests;
+    // Did we try to request a layout since the last time mPostponeLayoutRequests was set to true.
+    private boolean mFrozenLayoutRequestPending;
+
+    private double mDIPScale;
 
     // Callback object for interacting with the View.
-    Delegate mDelegate;
+    private Delegate mDelegate;
 
     public interface Delegate {
         void requestLayout();
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
     }
 
-    public AwLayoutSizer(Delegate delegate) {
+    /**
+     * Default constructor. Note: both setDelegate and setDIPScale must be called before the class
+     * is ready for use.
+     */
+    public AwLayoutSizer() {
+    }
+
+    public void setDelegate(Delegate delegate) {
         mDelegate = delegate;
+    }
+
+    public void setDIPScale(double dipScale) {
+        mDIPScale = dipScale;
+    }
+
+    /**
+     * This is used to register the AwLayoutSizer to preferred content size change notifications in
+     * the AwWebContentsDelegate.
+     */
+    public AwWebContentsDelegateAdapter.PreferredSizeChangedListener
+            getPreferredSizeChangedListener() {
+        return new AwWebContentsDelegateAdapter.PreferredSizeChangedListener() {
+            @Override
+            public void updatePreferredSize(int widthCss, int heightCss) {
+                onContentSizeChanged(widthCss, heightCss);
+            }
+        };
+    }
+
+    /**
+     * Postpone requesting layouts till unfreezeLayoutRequests is called.
+     */
+    public void freezeLayoutRequests() {
+        mFreezeLayoutRequests = true;
+        mFrozenLayoutRequestPending = false;
+    }
+
+    /**
+     * Stop postponing layout requests and request layout if such a request would have been made
+     * had the freezeLayoutRequests method not been called before.
+     */
+    public void unfreezeLayoutRequests() {
+        mFreezeLayoutRequests = false;
+        if (mFrozenLayoutRequestPending) {
+            mFrozenLayoutRequestPending = false;
+            mDelegate.requestLayout();
+        }
     }
 
     /**
      * Update the contents size.
      * This should be called whenever the content size changes (due to DOM manipulation or page
      * load, for example).
-     * The width and height should be in physical pixels.
+     * The width and height should be in CSS pixels.
      */
-    public void onContentSizeChanged(int width, int height) {
-        boolean layoutNeeded = (mContentWidth != width && !mWidthMeasurementIsFixed) ||
-            (mContentHeight != height && !mHeightMeasurementIsFixed);
+    public void onContentSizeChanged(int widthCss, int heightCss) {
+        doUpdate(widthCss, heightCss, mPageScaleFactor);
+    }
 
-        mContentWidth = width;
-        mContentHeight = height;
+    /**
+     * Update the contents page scale.
+     * This should be called whenever the content page scale factor changes (due to pinch zoom, for
+     * example).
+     */
+    public void onPageScaleChanged(double pageScaleFactor) {
+        doUpdate(mContentWidthCss, mContentHeightCss, pageScaleFactor);
+    }
+
+    private void doUpdate(int widthCss, int heightCss, double pageScaleFactor) {
+        // We want to request layout only if the size or scale change, however if any of the
+        // measurements are 'fixed', then changing the underlying size won't have any effect, so we
+        // ignore changes to dimensions that are 'fixed'.
+        boolean anyMeasurementNotFixed = !mWidthMeasurementIsFixed || !mHeightMeasurementIsFixed;
+        boolean layoutNeeded = (mContentWidthCss != widthCss && !mWidthMeasurementIsFixed) ||
+            (mContentHeightCss != heightCss && !mHeightMeasurementIsFixed) ||
+            (mPageScaleFactor != pageScaleFactor && anyMeasurementNotFixed);
+
+        mContentWidthCss = widthCss;
+        mContentHeightCss = heightCss;
+        mPageScaleFactor = pageScaleFactor;
 
         if (layoutNeeded) {
-            mDelegate.requestLayout();
+            if (mFreezeLayoutRequests) {
+                mFrozenLayoutRequestPending = true;
+            } else {
+                mDelegate.requestLayout();
+            }
         }
     }
 
@@ -66,6 +145,9 @@ public class AwLayoutSizer {
         int measuredHeight = heightSize;
         int measuredWidth = widthSize;
 
+        int contentHeightPix = (int) (mContentHeightCss * mPageScaleFactor * mDIPScale);
+        int contentWidthPix = (int) (mContentWidthCss * mPageScaleFactor * mDIPScale);
+
         // Always use the given size unless unspecified. This matches WebViewClassic behavior.
         mWidthMeasurementIsFixed = (widthMode != MeasureSpec.UNSPECIFIED);
         // Freeze the height if an exact size is given by the parent or if the content size has
@@ -73,21 +155,21 @@ public class AwLayoutSizer {
         // TODO(mkosiba): Actually we'd like the reduction in content size to cause the WebView to
         // shrink back again but only as a result of a page load.
         mHeightMeasurementIsFixed = (heightMode == MeasureSpec.EXACTLY) ||
-            (heightMode == MeasureSpec.AT_MOST && mContentHeight > heightSize);
+            (heightMode == MeasureSpec.AT_MOST && contentHeightPix > heightSize);
 
         if (!mHeightMeasurementIsFixed) {
-            measuredHeight = mContentHeight;
+            measuredHeight = contentHeightPix;
         }
 
         if (!mWidthMeasurementIsFixed) {
-            measuredWidth = mContentWidth;
+            measuredWidth = contentWidthPix;
         }
 
-        if (measuredHeight < mContentHeight) {
+        if (measuredHeight < contentHeightPix) {
             measuredHeight |= View.MEASURED_STATE_TOO_SMALL;
         }
 
-        if (measuredWidth < mContentWidth) {
+        if (measuredWidth < contentWidthPix) {
             measuredWidth |= View.MEASURED_STATE_TOO_SMALL;
         }
 

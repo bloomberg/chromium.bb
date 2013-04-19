@@ -144,6 +144,7 @@ class AwContents : public FindHelper::Listener,
   virtual void OnNewPicture(
       const base::android::JavaRef<jobject>& picture) OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
+  virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);

@@ -12,6 +12,7 @@ import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.InMemorySharedPreferences;
@@ -189,26 +190,52 @@ public class AwTestBase
         });
     }
 
-    protected AwTestContainerView createAwTestContainerView(
-            final AwContentsClient awContentsClient) {
-        return createAwTestContainerView(new AwTestContainerView(getActivity()),
-                awContentsClient);
+    /**
+     * Factory class used in creation of test AwContents instances.
+     *
+     * Test cases can provide subclass instances to the createAwTest* methods in order to create an
+     * AwContents instance with injected test dependencies.
+     */
+    public static class TestDependencyFactory {
+        public AwLayoutSizer createLayoutSizer() {
+            return new AwLayoutSizer();
+        }
     }
 
     protected AwTestContainerView createAwTestContainerView(
-            final AwTestContainerView testContainerView,
             final AwContentsClient awContentsClient) {
-        testContainerView.initialize(new AwContents(
-                new AwBrowserContext(new InMemorySharedPreferences()),
-                testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false));
+        return createAwTestContainerView(awContentsClient, new TestDependencyFactory());
+    }
+
+    protected AwTestContainerView createAwTestContainerView(
+            final AwContentsClient awContentsClient,
+            final TestDependencyFactory testDependencyFactory) {
+        AwTestContainerView testContainerView =
+            createDetachedAwTestContainerView(awContentsClient, testDependencyFactory);
         getActivity().addView(testContainerView);
         testContainerView.requestFocus();
         return testContainerView;
     }
 
+    protected AwTestContainerView createDetachedAwTestContainerView(
+            final AwContentsClient awContentsClient,
+            final TestDependencyFactory testDependencyFactory) {
+        final AwTestContainerView testContainerView = new AwTestContainerView(getActivity());
+        testContainerView.initialize(new AwContents(
+                new AwBrowserContext(new InMemorySharedPreferences()),
+                testContainerView, testContainerView.getInternalAccessDelegate(),
+                awContentsClient, false, testDependencyFactory.createLayoutSizer()));
+        return testContainerView;
+    }
+
     protected AwTestContainerView createAwTestContainerViewOnMainSync(
             final AwContentsClient client) throws Exception {
+        return createAwTestContainerViewOnMainSync(client, new TestDependencyFactory());
+    }
+
+    protected AwTestContainerView createAwTestContainerViewOnMainSync(
+            final AwContentsClient client,
+            final TestDependencyFactory testDependencyFactory) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<AwTestContainerView>();
         getInstrumentation().runOnMainSync(new Runnable() {

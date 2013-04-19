@@ -127,7 +127,7 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 }  // namespace
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view), page_scale_factor_(0.0f) {
   render_view->GetWebView()->setPermissionClient(this);
 }
 
@@ -189,6 +189,18 @@ void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
   if (document_state->can_load_local_resources()) {
     WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
     origin.grantLoadLocalResources();
+  }
+}
+
+void AwRenderViewExt::DidCommitCompositorFrame() {
+  UpdatePageScaleFactor();
+}
+
+void AwRenderViewExt::UpdatePageScaleFactor() {
+  if (page_scale_factor_ != render_view()->GetWebView()->pageScaleFactor()) {
+    page_scale_factor_ = render_view()->GetWebView()->pageScaleFactor();
+    Send(new AwViewHostMsg_PageScaleFactorChanged(routing_id(),
+                                                  page_scale_factor_));
   }
 }
 

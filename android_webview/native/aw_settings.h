@@ -31,6 +31,9 @@ class AwSettings : public content::WebContentsObserver {
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateInitialPageScale();
   void UpdateTextZoom();
+  void UpdatePreferredSizeMode(content::RenderViewHost* render_view_host);
+  void UpdateRenderViewHostExtSettings();
+  void UpdateRenderViewHostSettings(content::RenderViewHost* render_view_host);
 
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(

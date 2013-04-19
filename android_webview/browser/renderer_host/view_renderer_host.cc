@@ -21,6 +21,7 @@ ViewRendererHost::ViewRendererHost(content::WebContents* contents,
                                    Client* client)
     : content::WebContentsObserver(contents),
       client_(client) {
+  DCHECK(client);
 }
 
 ViewRendererHost::~ViewRendererHost() {
@@ -40,10 +41,8 @@ void ViewRendererHost::EnableCapturePictureCallback(bool enabled) {
 }
 
 void ViewRendererHost::OnPictureUpdated() {
-  if (client_) {
-    client_->OnPictureUpdated(web_contents()->GetRenderProcessHost()->GetID(),
-        routing_id());
-  }
+  client_->OnPictureUpdated(web_contents()->GetRenderProcessHost()->GetID(),
+                            routing_id());
 }
 
 void ViewRendererHost::OnDidActivateAcceleratedCompositing(
@@ -68,6 +67,13 @@ void ViewRendererHost::OnDidActivateAcceleratedCompositing(
     content_view_core->SetInputHandler(input_handler);
 }
 
+void ViewRendererHost::OnPageScaleFactorChanged(float page_scale_factor) {
+  client_->OnPageScaleFactorChanged(
+      web_contents()->GetRenderProcessHost()->GetID(),
+      routing_id(),
+      page_scale_factor);
+}
+
 void ViewRendererHost::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   RendererPictureMap::GetInstance()->ClearRendererPicture(
@@ -81,6 +87,8 @@ bool ViewRendererHost::OnMessageReceived(const IPC::Message& message) {
                         OnPictureUpdated)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_DidActivateAcceleratedCompositing,
                         OnDidActivateAcceleratedCompositing)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_PageScaleFactorChanged,
+                        OnPageScaleFactorChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

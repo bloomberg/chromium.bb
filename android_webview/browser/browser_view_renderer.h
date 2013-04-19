@@ -39,6 +39,9 @@ class BrowserViewRenderer {
      // Called to get view's absolute location on the screen.
      virtual gfx::Point GetLocationOnScreen() = 0;
 
+     // Called when the RenderView page scale changes.
+     virtual void OnPageScaleFactorChanged(float page_scale_factor) = 0;
+
    protected:
      virtual ~Client() {}
   };

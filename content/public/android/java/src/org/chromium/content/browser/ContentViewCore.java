@@ -163,21 +163,24 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * Interface for subscribing to content size changes.
+     * An interface that allows the embedder to be notified when the pinch gesture starts and
+     * stops.
      */
-    public static interface ContentSizeChangeListener {
+    public static interface PinchGestureStateListener {
         /**
-         * Called when the content size changes.
-         * The containing view may want to adjust its size to match the content.
+         * Called when the pinch gesture starts.
          */
-        void onContentSizeChanged(int contentWidthPix, int contentHeightPix);
+        void onPinchGestureStart();
+        /**
+         * Called when the pinch gesture ends.
+         */
+        void onPinchGestureEnd();
     }
 
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsObserverAndroid mWebContentsObserver;
-    private ContentSizeChangeListener mContentSizeChangeListener;
 
     private ContentViewClient mContentViewClient;
 
@@ -189,6 +192,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private boolean mAttachedToWindow = false;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
+    private PinchGestureStateListener mPinchGestureStateListener;
     private ZoomManager mZoomManager;
 
     private PopupZoomer mPopupZoomer;
@@ -699,10 +703,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         return mContentViewClient;
     }
 
-    public void setContentSizeChangeListener(ContentSizeChangeListener listener) {
-        mContentSizeChangeListener = listener;
-    }
-
     public int getBackgroundColor() {
         if (mNativeContentViewCore != 0) {
             return nativeGetBackgroundColor(mNativeContentViewCore);
@@ -1057,6 +1057,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
         if (mNativeContentViewCore == 0) return false;
         updateTextHandlesForGesture(type);
+        updatePinchGestureStateListener(type);
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
                 nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
@@ -1112,6 +1113,25 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    public void setPinchGestureStateListener(PinchGestureStateListener pinchGestureStateListener) {
+        mPinchGestureStateListener = pinchGestureStateListener;
+    }
+
+    void updatePinchGestureStateListener(int gestureType) {
+        if (mPinchGestureStateListener == null) return;
+
+        switch (gestureType) {
+            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+                mPinchGestureStateListener.onPinchGestureStart();
+                break;
+            case ContentViewGestureHandler.GESTURE_PINCH_END:
+                mPinchGestureStateListener.onPinchGestureEnd();
+                break;
+            default:
+                break;
         }
     }
 
@@ -2031,17 +2051,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
-
-        if (contentSizeChanged) {
-            getContentViewClient().onContentSizeChanged(
-                    mRenderCoordinates.getContentWidthCss(),
-                    mRenderCoordinates.getContentHeightCss());
-            if (mContentSizeChangeListener != null) {
-                mContentSizeChangeListener.onContentSizeChanged(
-                        mRenderCoordinates.getContentWidthPixInt(),
-                        mRenderCoordinates.getContentHeightPixInt());
-            }
-        }
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomManager.updateZoomControls();

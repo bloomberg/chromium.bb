@@ -24,4 +24,13 @@ public abstract class AwWebContentsDelegate extends WebContentsDelegateAndroid {
 
     @CalledByNative
     public abstract void activateContents();
+
+    /**
+     * Report a change in the preferred size.
+     * @param width preferred width in CSS pixels.
+     * @param height scroll height of the document element in CSS pixels.
+     */
+    @CalledByNative
+    public void updatePreferredSize(int widthCss, int heightCss) {
+    }
 }

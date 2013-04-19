@@ -476,6 +476,17 @@ void BrowserViewRendererImpl::OnPictureUpdated(int process_id,
   Invalidate();
 }
 
+void BrowserViewRendererImpl::OnPageScaleFactorChanged(
+    int process_id,
+    int render_view_id,
+    float page_scale_factor) {
+  CHECK_EQ(web_contents_->GetRenderProcessHost()->GetID(), process_id);
+  if (render_view_id != web_contents_->GetRoutingID())
+    return;
+
+  client_->OnPageScaleFactorChanged(page_scale_factor);
+}
+
 void BrowserViewRendererImpl::SetCompositorVisibility(bool visible) {
   if (compositor_visible_ != visible) {
     compositor_visible_ = visible;

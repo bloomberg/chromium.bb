@@ -42,14 +42,6 @@ public class ContentViewClient {
     }
 
     /**
-     * Notifies that the content size has changed.
-     * @param widthCss The width of the content in CSS pixels.
-     * @param heightCss The height of the content in CSS pixels.
-     */
-    public void onContentSizeChanged(float widthCss, float heightCss) {
-    }
-
-    /**
       * Lets client listen on the scaling changes on delayed, throttled
       * and best-effort basis. Used for WebView.onScaleChanged.
       */

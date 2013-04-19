@@ -28,6 +28,8 @@ import android.view.inputmethod.InputConnection;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
@@ -91,23 +93,13 @@ public class AwContents {
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
     }
 
-    /**
-     * Listener for renderer state change notifications coming through ContentViewCore.
-     */
-    private class AwContentStateChangeListener
-            implements ContentViewCore.ContentSizeChangeListener {
-        @Override
-        public void onContentSizeChanged(int contentWidthPix, int contentHeightPix) {
-            mLayoutSizer.onContentSizeChanged(contentWidthPix, contentHeightPix);
-        }
-    }
-
     private int mNativeAwContents;
     private AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
     private AwContentsClientBridge mContentsClientBridge;
+    private AwWebContentsDelegate mWebContentsDelegate;
     private AwContentsIoThreadClient mIoThreadClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
@@ -138,6 +130,7 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
+    //--------------------------------------------------------------------------------------------
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
         // All methods are called on the IO thread.
 
@@ -203,6 +196,7 @@ public class AwContents {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
         private String mLastLoadUrlAddress;
 
@@ -247,6 +241,7 @@ public class AwContents {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
     private class AwLayoutSizerDelegate implements AwLayoutSizer.Delegate {
         @Override
         public void requestLayout() {
@@ -259,26 +254,65 @@ public class AwContents {
         }
     }
 
+    //--------------------------------------------------------------------------------------------
+    private class AwPinchGestureStateListener implements ContentViewCore.PinchGestureStateListener {
+        @Override
+        public void onPinchGestureStart() {
+            // While it's possible to re-layout the view during a pinch gesture, the effect is very
+            // janky (especially that the page scale update notification comes from the renderer
+            // main thread, not from the impl thread, so it's usually out of sync with what's on
+            // screen). It's also quite expensive to do a re-layout, so we simply postpone
+            // re-layout for the duration of the gesture. This is compatible with what
+            // WebViewClassic does.
+            mLayoutSizer.freezeLayoutRequests();
+        }
+
+        public void onPinchGestureEnd() {
+            mLayoutSizer.unfreezeLayoutRequests();
+        }
+    }
+
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
+     *
+     * This constructor uses the default view sizing policy.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             boolean isAccessFromFileURLsGrantedByDefault) {
+        this(browserContext, containerView, internalAccessAdapter, contentsClient,
+                isAccessFromFileURLsGrantedByDefault, new AwLayoutSizer());
+    }
+
+    /**
+     * @param layoutSizer the AwLayoutSizer instance implementing the sizing policy for the view.
+     *
+     * This version of the constructor is used in test code to inject test versions of the above
+     * documented classes
+     */
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
+            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
+        mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
         // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
+        mContentViewCore.setPinchGestureStateListener(new AwPinchGestureStateListener());
         mContentsClientBridge = new AwContentsClientBridge(contentsClient);
-        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(),
-                mContentsClientBridge);
+        mLayoutSizer = layoutSizer;
+        mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
+        mLayoutSizer.setDIPScale(mDIPScale);
+        mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient,
+                mLayoutSizer.getPreferredSizeChangedListener());
+        mNativeAwContents = nativeInit(mWebContentsDelegate, mContentsClientBridge);
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
@@ -286,8 +320,6 @@ public class AwContents {
         mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents,
                 null, isAccessFromFileURLsGrantedByDefault);
         mContentViewCore.setContentViewClient(mContentsClient);
-        mLayoutSizer = new AwLayoutSizer(new AwLayoutSizerDelegate());
-        mContentViewCore.setContentSizeChangeListener(new AwContentStateChangeListener());
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents);
@@ -298,7 +330,6 @@ public class AwContents {
         nativeDidInitializeContentViewCore(mNativeAwContents,
                 mContentViewCore.getNativeContentViewCore());
 
-        mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
         mContentsClient.setDIPScale(mDIPScale);
         mSettings.setDIPScale(mDIPScale);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
@@ -309,7 +340,7 @@ public class AwContents {
                 new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
     }
 
-    // TODO(mkosiba): Remove this once we move the embedding layer to use methods on AwContents.
+    @VisibleForTesting
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
     }
@@ -336,7 +367,7 @@ public class AwContents {
         // We explicitly do not null out the mContentViewCore reference here
         // because ContentViewCore already has code to deal with the case
         // methods are called on it after it's been destroyed, and other
-        // code relies on AwContents.getContentViewCore to return non-null.
+        // code relies on AwContents.mContentViewCore to be non-null.
         mCleanupReference.cleanupNow();
         mNativeAwContents = 0;
     }
@@ -432,7 +463,7 @@ public class AwContents {
      */
     public int getMostRecentProgress() {
         // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
-        return mContentsClient.getWebContentsDelegate().getMostRecentProgress();
+        return mWebContentsDelegate.getMostRecentProgress();
     }
 
     public Bitmap getFavicon() {
@@ -1243,6 +1274,12 @@ public class AwContents {
         int[] result = new int[2];
         mContainerView.getLocationOnScreen(result);
         return result;
+    }
+
+    @CalledByNative
+    private void onPageScaleFactorChanged(float pageScaleFactor) {
+        // This change notification comes from the renderer thread, not from the cc/ impl thread.
+        mLayoutSizer.onPageScaleChanged(pageScaleFactor);
     }
 
     // -------------------------------------------------------------------------------------------
