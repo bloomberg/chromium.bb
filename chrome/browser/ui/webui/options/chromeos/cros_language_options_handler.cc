@@ -292,6 +292,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetComponentExtensionImeList() {
     scoped_ptr<DictionaryValue> dictionary(new DictionaryValue());
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", descriptor.name());
+    dictionary->SetString("optionsPage", descriptor.options_page_url());
 
     scoped_ptr<DictionaryValue> language_codes(new DictionaryValue());
     language_codes->SetBoolean(descriptor.language_code(), true);

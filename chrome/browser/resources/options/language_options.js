@@ -296,6 +296,15 @@ cr.define('options', function() {
           element.appendChild(button);
         }
 
+        if (inputMethod.optionsPage) {
+          var button = document.createElement('button');
+          button.textContent = loadTimeData.getString('configure');
+          button.onclick = function(e) {
+            window.open(inputMethod.optionsPage);
+          };
+          element.appendChild(button);
+        }
+
         // Listen to user clicks.
         input.addEventListener('click',
                                this.handleCheckboxClick_.bind(this));
