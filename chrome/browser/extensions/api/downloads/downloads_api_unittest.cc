@@ -264,6 +264,25 @@ class DownloadExtensionTest : public ExtensionApiTest {
     // testing incognito.
     extension_ = LoadExtensionIncognito(test_data_dir_.AppendASCII(name));
     CHECK(extension_);
+    content::WebContents* tab = chrome::AddSelectedTabWithURL(
+        current_browser(),
+        extension_->GetResourceURL("empty.html"),
+        content::PAGE_TRANSITION_LINK);
+    extensions::ExtensionSystem::Get(current_browser()->profile())->
+      event_router()->AddEventListener(
+          extensions::event_names::kOnDownloadCreated,
+          tab->GetRenderProcessHost(),
+          GetExtensionId());
+    extensions::ExtensionSystem::Get(current_browser()->profile())->
+      event_router()->AddEventListener(
+          extensions::event_names::kOnDownloadChanged,
+          tab->GetRenderProcessHost(),
+          GetExtensionId());
+    extensions::ExtensionSystem::Get(current_browser()->profile())->
+      event_router()->AddEventListener(
+          extensions::event_names::kOnDownloadErased,
+          tab->GetRenderProcessHost(),
+          GetExtensionId());
   }
 
   content::RenderProcessHost* AddFilenameDeterminer() {
@@ -884,6 +903,7 @@ bool ItemIsInterrupted(DownloadItem* item) {
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Open) {
+  LoadExtension("downloads_split");
   EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
                RunFunctionAndReturnError(
                    new DownloadsOpenFunction(),
