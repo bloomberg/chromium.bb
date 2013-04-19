@@ -162,10 +162,21 @@
           'dependencies': [
             'cups',
           ],
+          'variables': {
+            'cups_version': '<!(cups-config --api-version)',
+          },
           'conditions': [
             ['OS!="mac"', {
               'dependencies': [
                 '../build/linux/system.gyp:libgcrypt',
+              ],
+            }],
+            ['cups_version=="1.6"', {
+              'cflags': [
+                # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
+                # API for now as supported Linux and Mac OS'es are still using
+                # older versions of CUPS. More info: crbug.com/226176
+                '-Wno-deprecated-declarations',
               ],
             }],
           ],
