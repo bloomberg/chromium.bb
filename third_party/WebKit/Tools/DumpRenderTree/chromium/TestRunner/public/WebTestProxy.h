@@ -199,7 +199,7 @@ protected:
     bool runModalConfirmDialog(WebKit::WebFrame*, const WebKit::WebString&);
     bool runModalPromptDialog(WebKit::WebFrame*, const WebKit::WebString& message, const WebKit::WebString& defaultValue, WebKit::WebString* actualValue);
     bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
-    WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationType, const WebKit::WebNode& originatingNode, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect);
+    WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationType, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent);
 
 private:
@@ -591,12 +591,12 @@ public:
     {
         return WebTestProxyBase::runModalBeforeUnloadDialog(frame, message);
     }
-    virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, const WebKit::WebNode& originatingNode, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
+    virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
-        WebKit::WebNavigationPolicy policy = WebTestProxyBase::decidePolicyForNavigation(frame, request, type, originatingNode, defaultPolicy, isRedirect);
+        WebKit::WebNavigationPolicy policy = WebTestProxyBase::decidePolicyForNavigation(frame, request, type, defaultPolicy, isRedirect);
         if (policy == WebKit::WebNavigationPolicyIgnore)
             return policy;
-        return Base::decidePolicyForNavigation(frame, request, type, originatingNode, defaultPolicy, isRedirect);
+        return Base::decidePolicyForNavigation(frame, request, type, defaultPolicy, isRedirect);
     }
     virtual bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent event)
     {

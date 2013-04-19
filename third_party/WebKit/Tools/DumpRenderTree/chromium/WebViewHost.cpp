@@ -428,9 +428,7 @@ void WebViewHost::loadURLExternally(WebFrame*, const WebURLRequest& request, Web
 }
 
 WebNavigationPolicy WebViewHost::decidePolicyForNavigation(
-    WebFrame*, const WebURLRequest&,
-    WebNavigationType, const WebNode&,
-    WebNavigationPolicy defaultPolicy, bool)
+    WebFrame*, const WebURLRequest&, WebNavigationType, WebNavigationPolicy defaultPolicy, bool)
 {
     return defaultPolicy;
 }

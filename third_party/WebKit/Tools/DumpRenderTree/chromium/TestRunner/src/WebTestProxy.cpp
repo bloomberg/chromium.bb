@@ -1464,18 +1464,13 @@ void WebTestProxyBase::locationChangeDone(WebFrame* frame)
     m_testInterfaces->testRunner()->setTopLoadingFrame(frame, true);
 }
 
-WebNavigationPolicy WebTestProxyBase::decidePolicyForNavigation(WebFrame*, const WebURLRequest& request, WebNavigationType type, const WebNode& originatingNode, WebNavigationPolicy defaultPolicy, bool isRedirect)
+WebNavigationPolicy WebTestProxyBase::decidePolicyForNavigation(WebFrame*, const WebURLRequest& request, WebNavigationType type, WebNavigationPolicy defaultPolicy, bool isRedirect)
 {
     WebNavigationPolicy result;
     if (!m_testInterfaces->testRunner()->policyDelegateEnabled())
         return defaultPolicy;
 
-    m_delegate->printMessage(string("Policy delegate: attempt to load ") + URLDescription(request.url()) + " with navigation type '" + webNavigationTypeToString(type) + "'");
-    if (!originatingNode.isNull()) {
-        m_delegate->printMessage(" originating from ");
-        printNodeDescription(m_delegate, originatingNode, 0);
-    }
-    m_delegate->printMessage("\n");
+    m_delegate->printMessage(string("Policy delegate: attempt to load ") + URLDescription(request.url()) + " with navigation type '" + webNavigationTypeToString(type) + "'\n");
     if (m_testInterfaces->testRunner()->policyDelegateIsPermissive())
         result = WebKit::WebNavigationPolicyCurrentTab;
     else

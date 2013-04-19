@@ -893,11 +893,8 @@ PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
             WebNavigationType webnavType =
                 WebDataSourceImpl::toWebNavigationType(action.type());
 
-            WebNode originatingNode; // FIXME: Delete this when the decidePolicyForNavigation API is updated.
-
             navigationPolicy = m_webFrame->client()->decidePolicyForNavigation(
-                m_webFrame, ds->request(), webnavType, originatingNode,
-                navigationPolicy, isRedirect);
+                m_webFrame, ds->request(), webnavType, navigationPolicy, isRedirect);
         }
 
         if (navigationPolicy == WebNavigationPolicyCurrentTab)

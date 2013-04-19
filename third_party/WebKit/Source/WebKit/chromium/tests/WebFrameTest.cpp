@@ -1303,7 +1303,6 @@ class TestReloadDoesntRedirectWebFrameClient : public WebFrameClient {
 public:
     virtual WebNavigationPolicy decidePolicyForNavigation(
         WebFrame*, const WebURLRequest&, WebNavigationType,
-        const WebNode& originatingNode,
         WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
         EXPECT_FALSE(isRedirect);
