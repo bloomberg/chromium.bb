@@ -186,7 +186,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_compositedLayerCount(0)
     , m_showDebugBorders(false)
     , m_showRepaintCounter(false)
-    , m_compositingConsultsOverlap(true)
     , m_reevaluateCompositingAfterLayout(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
@@ -329,9 +328,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         checkForHierarchyUpdate = true;
         break;
     case CompositingUpdateOnScroll:
-        if (m_compositingConsultsOverlap)
-            checkForHierarchyUpdate = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
-
+        checkForHierarchyUpdate = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
         needGeometryUpdate = true;
         break;
     case CompositingUpdateOnCompositedScroll:
@@ -344,11 +341,10 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 
     bool needHierarchyUpdate = m_compositingLayersNeedRebuild;
     bool isFullUpdate = !updateRoot;
-    if (!updateRoot || m_compositingConsultsOverlap) {
-        // Only clear the flag if we're updating the entire hierarchy.
-        m_compositingLayersNeedRebuild = false;
-        updateRoot = rootRenderLayer();
-    }
+
+    // Only clear the flag if we're updating the entire hierarchy.
+    m_compositingLayersNeedRebuild = false;
+    updateRoot = rootRenderLayer();
 
     if (isFullUpdate && updateType == CompositingUpdateAfterLayout)
         m_reevaluateCompositingAfterLayout = false;
@@ -364,16 +360,13 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     if (checkForHierarchyUpdate) {
         // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
         // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
-        CompositingState compState(updateRoot, m_compositingConsultsOverlap);
+        CompositingState compState(updateRoot, true);
         bool layersChanged = false;
         bool saw3DTransform = false;
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::computeCompositingRequirements");
-            if (m_compositingConsultsOverlap) {
-                OverlapMap overlapTestRequestMap;
-                computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform);
-            } else
-                computeCompositingRequirements(0, updateRoot, 0, compState, layersChanged, saw3DTransform);
+            OverlapMap overlapTestRequestMap;
+            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform);
         }
         needHierarchyUpdate |= layersChanged;
     }
@@ -386,8 +379,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         m_secondaryBackingStoreBytes = 0;
 
         Frame* frame = m_renderView->frameView()->frame();
-        LOG(Compositing, "\nUpdate %d of %s. Overlap testing is %s\n", m_rootLayerUpdateCount, isMainFrame() ? "main frame" : frame->tree()->uniqueName().string().utf8().data(),
-            m_compositingConsultsOverlap ? "on" : "off");
+        LOG(Compositing, "\nUpdate %d of %s.\n", m_rootLayerUpdateCount, isMainFrame() ? "main frame" : frame->tree()->uniqueName().string().utf8().data());
     }
 #endif
 

@@ -293,9 +293,6 @@ bool RenderLayerBacking::shouldClipCompositedBounds() const
     if (layerForHorizontalScrollbar() || layerForVerticalScrollbar())
         return false;
 
-    if (!compositor()->compositingConsultsOverlap())
-        return false;
-
     if (layerOrAncestorIsTransformedOrUsingCompositedScrolling(m_owningLayer))
         return false;
 
