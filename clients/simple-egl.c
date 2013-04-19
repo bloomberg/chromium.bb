@@ -146,11 +146,6 @@ init_egl(struct display *display, int opaque)
 static void
 fini_egl(struct display *display)
 {
-	/* Required, otherwise segfault in egl_dri2.c: dri2_make_current()
-	 * on eglReleaseThread(). */
-	eglMakeCurrent(display->egl.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-
 	eglTerminate(display->egl.dpy);
 	eglReleaseThread();
 }
@@ -330,6 +325,12 @@ create_surface(struct window *window)
 static void
 destroy_surface(struct window *window)
 {
+	/* Required, otherwise segfault in egl_dri2.c: dri2_make_current()
+	 * on eglReleaseThread(). */
+	eglMakeCurrent(window->display->egl.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+
+	eglDestroySurface(window->display->egl.dpy, window->egl_surface);
 	wl_egl_window_destroy(window->native);
 
 	wl_shell_surface_destroy(window->shell_surface);
