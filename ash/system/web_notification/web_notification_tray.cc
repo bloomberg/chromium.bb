@@ -12,6 +12,9 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
@@ -27,6 +30,7 @@
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 #if defined(OS_CHROMEOS)
@@ -44,8 +48,14 @@ MessageCenterTrayDelegate* CreateMessageCenterTray() {
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
-
 namespace internal {
+namespace {
+
+// The text cannot be placed in the middle of the button vertically. This
+// constant is used to modify the vertical position of the text.
+const int kUnreadLabelBottomOffset = 6;
+
+}
 
 // Class to initialize and manage the WebNotificationBubble and
 // TrayBubbleWrapper instances for a bubble.
@@ -80,6 +90,69 @@ class WebNotificationBubbleWrapper {
  private:
   scoped_ptr<message_center::MessageBubbleBase> bubble_;
   scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
+};
+
+class WebNotificationButton : public views::ImageButton {
+ public:
+  WebNotificationButton(views::ButtonListener* listener)
+      : views::ImageButton(listener),
+        unread_label_(NULL) {
+  }
+
+  void SetUnreadCount(int unread_count) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    if (unread_count == 0) {
+      SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_NORMAL));
+      SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_HOVER));
+      SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_PRESSED));
+
+      if (unread_label_) {
+        delete unread_label_;
+        unread_label_ = NULL;
+      }
+    } else {
+      SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
+      SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER));
+      SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_PRESSED));
+
+      string16 text((unread_count > 9) ?
+                    UTF8ToUTF16("9+") : base::IntToString16(unread_count));
+      if (unread_label_) {
+        unread_label_->SetText(text);
+      } else {
+        unread_label_ = new views::Label(text);
+        SetupLabelForTray(unread_label_);
+        AddChildView(unread_label_);
+      }
+    }
+    InvalidateLayout();
+    SchedulePaint();
+  }
+
+ protected:
+  // Overridden from views::ImageButton:
+  virtual void Layout() OVERRIDE {
+    views::ImageButton::Layout();
+    if (unread_label_) {
+      gfx::Rect parent_bounds(bounds());
+      parent_bounds.set_height(
+          parent_bounds.height() - kUnreadLabelBottomOffset);
+      unread_label_->SetBoundsRect(parent_bounds);
+    }
+  }
+
+ private:
+  views::Label* unread_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
 };
 
 }  // namespace internal
@@ -89,7 +162,7 @@ WebNotificationTray::WebNotificationTray(
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false) {
-  button_ = new views::ImageButton(this);
+  button_ = new internal::WebNotificationButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
@@ -377,24 +450,9 @@ void WebNotificationTray::ButtonPressed(views::Button* sender,
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   message_center::MessageCenter* message_center =
       message_center_tray_->message_center();
-  if (message_center->UnreadNotificationCount() > 0) {
-    button_->SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
-    button_->SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER));
-    button_->SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_PRESSED));
-  } else {
-    button_->SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_NORMAL));
-    button_->SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_HOVER));
-    button_->SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_PRESSED));
-  }
+  button_->SetUnreadCount(message_center->UnreadNotificationCount());
   if (IsMessageCenterBubbleVisible())
     button_->SetState(views::CustomButton::STATE_PRESSED);
   else

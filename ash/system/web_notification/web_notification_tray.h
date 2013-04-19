@@ -41,6 +41,7 @@ namespace ash {
 namespace internal {
 class StatusAreaWidget;
 class WebNotificationBubbleWrapper;
+class WebNotificationButton;
 }
 
 class ASH_EXPORT WebNotificationTray
@@ -142,7 +143,7 @@ class ASH_EXPORT WebNotificationTray
   scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
   scoped_ptr<views::MenuRunner> quiet_mode_menu_runner_;
-  views::ImageButton* button_;
+  internal::WebNotificationButton* button_;
 
   bool show_message_center_on_unlock_;
 
