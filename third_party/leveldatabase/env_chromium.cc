@@ -180,9 +180,9 @@ const char* MethodIDToString(MethodID method) {
 class UMALogger {
  public:
   virtual void RecordErrorAt(MethodID method) const = 0;
-  virtual void RecordSpecificError(MethodID method, int saved_errno) const = 0;
-  virtual void RecordSpecificError(MethodID method,
-                                   base::PlatformFileError error) const = 0;
+  virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
+  virtual void RecordOSError(MethodID method, base::PlatformFileError error)
+      const = 0;
 };
 
 }  // namespace
@@ -322,7 +322,7 @@ class ChromiumWritableFile : public WritableFile {
     size_t r = fwrite_unlocked(data.data(), 1, data.size(), file_);
     Status result;
     if (r != data.size()) {
-      uma_logger_->RecordSpecificError(kWritableFileAppend, errno);
+      uma_logger_->RecordOSError(kWritableFileAppend, errno);
       result = Status::IOError(filename_, strerror(errno));
     }
     return result;
@@ -343,7 +343,7 @@ class ChromiumWritableFile : public WritableFile {
     if (HANDLE_EINTR(fflush_unlocked(file_))) {
       int saved_errno = errno;
       result = Status::IOError(filename_, strerror(saved_errno));
-      uma_logger_->RecordSpecificError(kWritableFileFlush, saved_errno);
+      uma_logger_->RecordOSError(kWritableFileFlush, saved_errno);
     }
     return result;
   }
@@ -385,7 +385,7 @@ class ChromiumEnv : public Env, public UMALogger {
     if (f == NULL) {
       *result = NULL;
       int saved_errno = errno;
-      RecordSpecificError(kNewSequentialFile, saved_errno);
+      RecordOSError(kNewSequentialFile, saved_errno);
       return Status::IOError(fname, strerror(saved_errno));
     } else {
       *result = new ChromiumSequentialFile(fname, f, this);
@@ -402,7 +402,7 @@ class ChromiumEnv : public Env, public UMALogger {
         CreateFilePath(fname), flags, &created, &error_code);
     if (error_code != ::base::PLATFORM_FILE_OK) {
       *result = NULL;
-      RecordSpecificError(kNewRandomAccessFile, error_code);
+      RecordOSError(kNewRandomAccessFile, error_code);
       return Status::IOError(fname, PlatformFileErrorString(error_code));
     }
     *result = new ChromiumRandomAccessFile(fname, file, this);
@@ -561,7 +561,7 @@ class ChromiumEnv : public Env, public UMALogger {
 
     if (error_code != ::base::PLATFORM_FILE_OK) {
       result = Status::IOError(fname, PlatformFileErrorString(error_code));
-      RecordSpecificError(kLockFile, error_code);
+      RecordOSError(kLockFile, error_code);
     } else {
       ChromiumFileLock* my_lock = new ChromiumFileLock;
       my_lock->file_ = file;
@@ -618,7 +618,7 @@ class ChromiumEnv : public Env, public UMALogger {
     if (f == NULL) {
       *result = NULL;
       int saved_errno = errno;
-      RecordSpecificError(kNewLogger, saved_errno);
+      RecordOSError(kNewLogger, saved_errno);
       return Status::IOError(fname, strerror(saved_errno));
     } else {
       if (!sync_parent(fname)) {
@@ -643,13 +643,12 @@ class ChromiumEnv : public Env, public UMALogger {
     io_error_histogram_->Add(method);
   }
 
-  void RecordSpecificError(MethodID method, base::PlatformFileError error)
-      const {
+  void RecordOSError(MethodID method, base::PlatformFileError error) const {
     DCHECK(error < 0);
-    RecordSpecificError(method, -error);
+    RecordOSError(method, -error);
   }
 
-  void RecordSpecificError(MethodID method, int error) const {
+  void RecordOSError(MethodID method, int error) const {
     RecordErrorAt(method);
     if (error_histograms_.find(method) == error_histograms_.end()) {
       NOTREACHED();
