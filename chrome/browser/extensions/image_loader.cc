@@ -175,19 +175,20 @@ bool ImageLoader::IsComponentExtensionResource(
     {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
 #endif
 #if defined(USE_AURA)
-    {"keyboard/index.html", IDR_KEYBOARD_INDEX},
-    {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
-    {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
     {"keyboard/common.js", IDR_KEYBOARD_COMMON_JS},
-    {"keyboard/layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS},
     {"keyboard/images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON},
     {"keyboard/images/del.svg", IDR_KEYBOARD_IMAGES_DEL},
     {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
     {"keyboard/images/mic.svg", IDR_KEYBOARD_IMAGES_MIC},
     {"keyboard/images/ret.svg", IDR_KEYBOARD_IMAGES_RET},
-    {"keyboard/images/shift_down.svg", IDR_KEYBOARD_IMAGES_SHIFT_DOWN},
     {"keyboard/images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT},
+    {"keyboard/images/shift_down.svg", IDR_KEYBOARD_IMAGES_SHIFT_DOWN},
     {"keyboard/images/tab.svg", IDR_KEYBOARD_IMAGES_TAB},
+    {"keyboard/index.html", IDR_KEYBOARD_INDEX},
+    {"keyboard/layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS},
+    {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
+    {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
+    {"keyboard/send_key_event.js", IDR_KEYBOARD_SEND_KEY_EVENT_JS},
 #endif
   };
   static const size_t kExtraComponentExtensionResourcesSize =

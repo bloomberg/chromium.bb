@@ -114,28 +114,15 @@ function transitionMode(transition) {
   setMode(MODE_TRANSITIONS[currentMode + transition]);
 }
 
-function logIfError() {
-  if (chrome.runtime.lastError) {
-    console.log(chrome.runtime.lastError);
-  }
-}
-
 /**
  * Send the given key to chrome, via the experimental extension API.
  * @param {string} keyIdentifier The key to send.
  */
 function sendKey(keyIdentifier) {
-  // FIXME(bryeung)
-  console.log('Typed: ' + keyIdentifier);
   var keyEvent = {
-    type: 'keydown',
     keyIdentifier: keyIdentifier
   };
-  chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent,
-      logIfError);
-  keyEvent.type = 'keyup';
-  chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent,
-      logIfError);
+  sendKeyEvent(keyEvent);
 
   // Exit shift mode after pressing any key but space.
   if (currentMode == SHIFT_MODE && keyIdentifier != 'Spacebar') {

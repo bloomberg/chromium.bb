@@ -10,6 +10,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/keyboard_resources.h"
 #include "ui/keyboard/keyboard_constants.h"
+#include "ui/keyboard/keyboard_ui_handler.h"
 
 namespace {
 
@@ -19,20 +20,21 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
 
   source->SetDefaultResource(IDR_KEYBOARD_INDEX);
 
-  source->AddResourcePath("main.css", IDR_KEYBOARD_MAIN_CSS);
-
-  source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("common.js", IDR_KEYBOARD_COMMON_JS);
-  source->AddResourcePath("layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS);
   source->AddResourcePath("images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON);
   source->AddResourcePath("images/del.svg", IDR_KEYBOARD_IMAGES_DEL);
   source->AddResourcePath("images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD);
   source->AddResourcePath("images/mic.svg", IDR_KEYBOARD_IMAGES_MIC);
   source->AddResourcePath("images/ret.svg", IDR_KEYBOARD_IMAGES_RET);
+  source->AddResourcePath("images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT);
   source->AddResourcePath("images/shift_down.svg",
       IDR_KEYBOARD_IMAGES_SHIFT_DOWN);
-  source->AddResourcePath("images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT);
   source->AddResourcePath("images/tab.svg", IDR_KEYBOARD_IMAGES_TAB);
+  source->AddResourcePath("layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS);
+  source->AddResourcePath("main.css", IDR_KEYBOARD_MAIN_CSS);
+  source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
+  source->AddResourcePath("send_key_event.js",
+      IDR_KEYBOARD_SEND_KEY_EVENT_WEBUI_JS);
 
   return source;
 }
@@ -45,6 +47,7 @@ KeyboardUIController::KeyboardUIController(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
+  web_ui->AddMessageHandler(new KeyboardUIHandler());
   content::WebUIDataSource::Add(
       browser_context,
       CreateKeyboardUIDataSource());
