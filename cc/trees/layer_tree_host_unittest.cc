@@ -254,6 +254,11 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->active_tree()->source_frame_number() == 1)
+      EndTest();
+  }
+
   virtual void DidCommit() OVERRIDE {
     switch (layer_tree_host()->commit_number()) {
       case 1:
@@ -263,7 +268,6 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
       default:
         // No extra commits.
         EXPECT_EQ(2, layer_tree_host()->commit_number());
-        EndTest();
     }
   }
 
@@ -275,6 +279,61 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
+
+class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate()
+      : root_layer_(FakeContentLayer::Create(&client_)) {}
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_->SetBounds(gfx::Size(10, 20));
+
+    bool paint_scrollbar = true;
+    bool has_thumb = false;
+    scrollbar_ = FakeScrollbarLayer::Create(paint_scrollbar,
+                                            has_thumb,
+                                            root_layer_->id());
+    scrollbar_->SetPosition(gfx::Point(0, 10));
+    scrollbar_->SetBounds(gfx::Size(10, 10));
+
+    root_layer_->AddChild(scrollbar_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->active_tree()->source_frame_number() == 1)
+      EndTest();
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->commit_number()) {
+      case 1:
+        // This should cause a single commit.
+        scrollbar_->SetRasterScale(4.0f);
+        break;
+      default:
+        // No extra commits.
+        EXPECT_EQ(2, layer_tree_host()->commit_number());
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_layer_;
+  scoped_refptr<FakeScrollbarLayer> scrollbar_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
 
 class LayerTreeHostTestCompositeAndReadback : public LayerTreeHostTest {
  public:

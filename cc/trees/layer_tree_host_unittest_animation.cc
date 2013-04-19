@@ -765,5 +765,68 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations);
 
+// Test that creating a pinch-zoom scrollbar animation leads to AnimateLayers
+// being called.
+class LayerTreeHostAnimationTestPinchZoomScrollbars
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestPinchZoomScrollbars()
+      : root_layer_(FakeContentLayer::Create(&client_)),
+        started_times_(0),
+        num_commit_complete_(0) {}
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->use_pinch_zoom_scrollbars = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_->SetBounds(gfx::Size(100, 100));
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostAnimationTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.55f, 1.f, 4.f);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    num_commit_complete_++;
+  }
+
+  virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
+                             base::TimeTicks monotonic_time) OVERRIDE {
+    // Two commits are required for the creation of pinch-zoom scrollbars.
+    // Wait for these to finish.
+    if (num_commit_complete_ < 2)
+      return;
+
+    EXPECT_NE(host_impl->active_tree()->page_scale_factor(), 1.f);
+
+    switch (started_times_) {
+      case 0:
+        host_impl->active_tree()->DidBeginScroll();
+        started_times_++;
+        break;
+      case 1:
+        host_impl->active_tree()->DidEndScroll();
+        started_times_++;
+        break;
+      case 2:
+        EndTest();
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_layer_;
+  int started_times_;
+  int num_commit_complete_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestPinchZoomScrollbars);
+
 }  // namespace
 }  // namespace cc

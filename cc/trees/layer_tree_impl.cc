@@ -637,6 +637,7 @@ void LayerTreeImpl::FadeInPinchZoomScrollbars() {
 
   StartFadeInAnimation(PinchZoomScrollbarHorizontal());
   StartFadeInAnimation(PinchZoomScrollbarVertical());
+  SetNeedsRedraw();
 }
 
 static void StartFadeOutAnimation(LayerImpl* layer) {
@@ -658,6 +659,7 @@ void LayerTreeImpl::FadeOutPinchZoomScrollbars() {
 
   StartFadeOutAnimation(PinchZoomScrollbarHorizontal());
   StartFadeOutAnimation(PinchZoomScrollbarVertical());
+  SetNeedsRedraw();
 }
 
 bool LayerTreeImpl::HasPinchZoomScrollbars() const {

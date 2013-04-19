@@ -4,6 +4,7 @@
 
 #include "cc/layers/scrollbar_layer.h"
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "cc/layers/scrollbar_layer_impl.h"
@@ -400,7 +401,11 @@ void ScrollbarLayer::SetTexturePriorities(
 void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion,
                             RenderingStats* stats) {
-  ContentsScalingLayer::Update(queue, occlusion, stats);
+  {
+    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
+                                                  true);
+    ContentsScalingLayer::Update(queue, occlusion, stats);
+  }
 
   dirty_rect_.Union(update_rect_);
   if (content_bounds().IsEmpty())
