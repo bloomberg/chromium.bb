@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "gles2_impl_export.h"
 
 namespace gpu {
 
@@ -20,7 +21,7 @@ namespace gpu {
 // This interface is thread-safe. However, multiple threads mapping
 // a buffer for Write or ReadOrWrite simultaneously may result in undefined
 // behavior and is not allowed.
-class GpuMemoryBuffer {
+class GLES2_IMPL_EXPORT GpuMemoryBuffer {
  public:
   typedef base::Callback<scoped_ptr<GpuMemoryBuffer>(int, int)> Creator;
   enum AccessMode {
