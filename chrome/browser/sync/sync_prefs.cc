@@ -214,10 +214,6 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
                             keep_everything_synced);
 }
 
-// TODO(akalin): If encryption is turned on for all data types,
-// history delete directives are useless and so we shouldn't bother
-// enabling them.
-
 syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     syncer::ModelTypeSet registered_types) const {
   DCHECK(CalledOnValidThread());

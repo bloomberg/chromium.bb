@@ -1117,6 +1117,15 @@ void ProfileSyncService::OnEncryptedTypesChanged(
            << " (encrypt everything is set to "
            << (encrypt_everything_ ? "true" : "false") << ")";
   DCHECK(encrypted_types_.Has(syncer::PASSWORDS));
+
+  // If sessions are encrypted, full history sync is not possible, and
+  // delete directives are unnecessary.
+  if (GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      encrypted_types_.Has(syncer::SESSIONS)) {
+    DisableBrokenDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
+                          FROM_HERE,
+                          "Delete directives not supported with encryption.");
+  }
 }
 
 void ProfileSyncService::OnEncryptionComplete() {
