@@ -1116,21 +1116,26 @@ void MinidumpContext::Print() {
     case MD_CONTEXT_PPC64: {
       const MDRawContextPPC64* context_ppc64 = GetContextPPC64();
       printf("MDRawContextPPC64\n");
-      printf("  context_flags            = 0x%lx\n",
+      printf("  context_flags            = 0x%" PRIx64 "\n",
              context_ppc64->context_flags);
-      printf("  srr0                     = 0x%lx\n", context_ppc64->srr0);
-      printf("  srr1                     = 0x%lx\n", context_ppc64->srr1);
+      printf("  srr0                     = 0x%" PRIx64 "\n",
+             context_ppc64->srr0);
+      printf("  srr1                     = 0x%" PRIx64 "\n",
+             context_ppc64->srr1);
       for (unsigned int gpr_index = 0;
            gpr_index < MD_CONTEXT_PPC64_GPR_COUNT;
            ++gpr_index) {
-        printf("  gpr[%2d]                  = 0x%lx\n",
+        printf("  gpr[%2d]                  = 0x%" PRIx64 "\n",
                gpr_index, context_ppc64->gpr[gpr_index]);
       }
-      printf("  cr                       = 0x%lx\n", context_ppc64->cr);
-      printf("  xer                      = 0x%lx\n", context_ppc64->xer);
-      printf("  lr                       = 0x%lx\n", context_ppc64->lr);
-      printf("  ctr                      = 0x%lx\n", context_ppc64->ctr);
-      printf("  vrsave                   = 0x%lx\n", context_ppc64->vrsave);
+      printf("  cr                       = 0x%" PRIx64 "\n", context_ppc64->cr);
+      printf("  xer                      = 0x%" PRIx64 "\n",
+             context_ppc64->xer);
+      printf("  lr                       = 0x%" PRIx64 "\n", context_ppc64->lr);
+      printf("  ctr                      = 0x%" PRIx64 "\n",
+             context_ppc64->ctr);
+      printf("  vrsave                   = 0x%" PRIx64 "\n",
+             context_ppc64->vrsave);
       for (unsigned int fpr_index = 0;
            fpr_index < MD_FLOATINGSAVEAREA_PPC_FPR_COUNT;
            ++fpr_index) {
