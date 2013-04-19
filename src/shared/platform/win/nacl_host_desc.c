@@ -624,7 +624,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
       dwCreationDisposition = OPEN_ALWAYS;
       break;
     case NACL_ABI_O_TRUNC:
-      dwCreationDisposition = OPEN_EXISTING;
+      dwCreationDisposition = TRUNCATE_EXISTING;
       truncate_after_open = 1;
       break;
     case NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC:
@@ -650,7 +650,19 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   }
   if (truncate_after_open &&
       NACL_ABI_O_RDONLY != (flags & NACL_ABI_O_ACCMODE)) {
-    (void) SetEndOfFile(hFile);
+    NaClLog(4, "NaClHostDescOpen: Truncating file\n");
+    if (!SetEndOfFile(hFile)) {
+      int last_error = GetLastError();
+      NaClLog(LOG_ERROR,
+              "NaClHostDescOpen: could not truncate file:"
+              " last error %d.\n",
+              last_error);
+      if (last_error == ERROR_USER_MAPPED_FILE) {
+        NaClLog(LOG_ERROR,
+                "NaClHostDescOpen: this is due to an existing mapping"
+                " of the same file.\n");
+      }
+    }
   }
   d->d = _open_osfhandle((intptr_t) hFile, oflags);
   /*

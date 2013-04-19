@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -53,12 +55,50 @@ int g_prot_exec_disabled = 0;
  */
 extern char etext;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+# if NACL_BUILD_SUBARCH == 32
+unsigned char const test_machine_code[] = {
+  0x8b, 0x44, 0x24, 0x04,  /* mov 0x4(%esp),%eax */
+  0x59,                    /* pop %ecx */
+  0x83, 0xc0, 0x01,        /* add $01,%eax */
+  0x83, 0xe1, 0xe0, 0xff,  /* and $0xffffffe0, %ecx*/
+  0xe1,                    /* jmp *%ecx */
+};
+# elif NACL_BUILD_SUBARCH == 64
+unsigned char const test_machine_code[] = {
+  0x41, 0x5b,             /* pop %r11 */
+  0x8d, 0x47, 0x01,       /* lea 0x1(%rdi), %eax */
+  0x41, 0x83, 0xe3, 0xe0, /* and $0xffffffe0, %r11d */
+  0x4d, 0x01, 0xfb,       /* add %r15, %r11 */
+  0x41, 0xff, 0xe3        /* jmpq *%r11 */
+};
+# else
+#  error "Who leaked the secret x86-128 project?"
+# endif
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+unsigned char const test_machine_code[] = {
+  0x01, 0x00, 0x80, 0xe2,  /* add r0, r0, #1 */
+  0x3f, 0xe1, 0xce, 0xe3,  /* bic lr, lr #0xc000000f */
+  0x1e, 0xff, 0x2f, 0xe1,  /* bx lr */
+};
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+/* this is hand assembled and may not yet satisfy MIPS sandboxing rules */
+unsigned char const test_machine_code[] = {
+  0x01, 0x00, 0x42, 0x20,  /* addi v0, a0, 1 */
+  0x24, 0xf8, 0xee, 0x03,  /* and ra, ra, t6 */
+  0x08, 0x00, 0xe0, 0x23,  /* jr ra */
+};
+#else
+# error "What architecture?"
+#endif
+
 struct ProtExecSpecifics {
   uintptr_t target_addr;
   int misalign_addr;
   int map_prot;
   int map_flags;
   int expected_errno;  /* if expected mmap to fail */
+  int maps_into_data_region;
 };
 
 uintptr_t get_target_addr(struct ProtExecSpecifics *spec) {
@@ -84,7 +124,7 @@ int x_plus_1(int x) {
   return x + 1;
 }
 
-int prot_exec_test(int d, size_t file_size, void *test_specifics) {
+int prot_exec_test(int d, size_t map_size, void *test_specifics) {
   struct ProtExecSpecifics *spec = (struct ProtExecSpecifics *) test_specifics;
   uintptr_t target_addr;
   void *addr;
@@ -100,12 +140,12 @@ int prot_exec_test(int d, size_t file_size, void *test_specifics) {
    */
   errno = 0;
   addr = mmap((void *) target_addr,
-              file_size,
+              map_size,
               spec->map_prot,
               spec->map_flags,
               d,
               /* offset */ 0);
-  if (g_prot_exec_disabled) {
+  if (g_prot_exec_disabled && !spec->maps_into_data_region) {
     if (MAP_FAILED != addr) {
       fprintf(stderr,
               "prot_exec_test: expected mmap to fail but did not."
@@ -139,35 +179,44 @@ int prot_exec_test(int d, size_t file_size, void *test_specifics) {
               errno);
       return 1;
     }
-    if ((uintptr_t) addr != target_addr) {
-      fprintf(stderr,
-              "prot_exec_test: expected mmap address 0x%p, got %p\n",
-              (void *) target_addr, addr);
-      return 1;
-    }
+    printf("Checking contents.\n");
+    CHECK(0 == memcmp(test_machine_code, addr, sizeof test_machine_code));
 
-    func = (int (*)(int)) (uintptr_t) addr;
-    for (param = 0; param < 16; ++param) {
-      printf("%d -> ", param);
+    if (spec->maps_into_data_region) {
+      printf("Treat as data, so will not try to execute.\n");
+      printf("unmapping data...\n");
       fflush(stdout);
-      value = (*func)(param);
-      printf("%d\n", value);
-      fflush(stdout);
-      CHECK(value == x_plus_1(param));
-    }
+      CHECK(0 == munmap(addr, map_size));
+    } else {
+      if ((uintptr_t) addr != target_addr) {
+        fprintf(stderr,
+                "prot_exec_test: expected mmap address 0x%p, got %p\n",
+                (void *) target_addr, addr);
+        return 1;
+      }
+      func = (int (*)(int)) (uintptr_t) addr;
+      for (param = 0; param < 16; ++param) {
+        printf("%d -> ", param);
+        fflush(stdout);
+        value = (*func)(param);
+        printf("%d\n", value);
+        fflush(stdout);
+        CHECK(value == x_plus_1(param));
+      }
 
-    printf("unmapping code...\n");
-    fflush(stdout);
-    CHECK(-1 == munmap(addr, file_size));
-    CHECK(EINVAL == errno);
-    printf("... failed as expected\n");
+      printf("unmapping code...\n");
+      fflush(stdout);
+      CHECK(-1 == munmap(addr, map_size));
+      CHECK(EINVAL == errno);
+      printf("... failed as expected\n");
+    }
     fflush(stdout);
   }
 
   return 0;
 }
 
-int prot_exec_write_test(int d, size_t file_size, void *test_specifics) {
+int prot_exec_write_test(int d, size_t map_size, void *test_specifics) {
   struct ProtExecSpecifics *spec = (struct ProtExecSpecifics *) test_specifics;
   uintptr_t target_addr;
   void *addr;
@@ -175,7 +224,7 @@ int prot_exec_write_test(int d, size_t file_size, void *test_specifics) {
   target_addr = get_target_addr(spec);
 
   addr = mmap((void *) target_addr,
-              file_size,
+              map_size,
               PROT_READ | PROT_WRITE | PROT_EXEC,
               MAP_SHARED | MAP_FIXED,
               d,
@@ -194,7 +243,7 @@ int prot_exec_write_test(int d, size_t file_size, void *test_specifics) {
  * Make sure two views of the same file see the changes made from one
  * view in the other.
  */
-int map_shared_test(int d, size_t file_size, void *test_specifics) {
+int map_shared_test(int d, size_t map_size, void *test_specifics) {
   void *view1;
   void *view2;
   char *v1ptr;
@@ -204,7 +253,7 @@ int map_shared_test(int d, size_t file_size, void *test_specifics) {
 
   if (MAP_FAILED ==
       (view1 = mmap(NULL,
-                    file_size,
+                    map_size,
                     PROT_READ | PROT_WRITE,
                     MAP_SHARED,
                     d,
@@ -218,7 +267,7 @@ int map_shared_test(int d, size_t file_size, void *test_specifics) {
 
   if (MAP_FAILED ==
       (view2 = mmap(NULL,
-                    file_size,
+                    map_size,
                     PROT_READ | PROT_WRITE,
                     MAP_SHARED,
                     d,
@@ -240,8 +289,8 @@ int map_shared_test(int d, size_t file_size, void *test_specifics) {
   v2ptr[0x400] = 'y';
   CHECK(v1ptr[0x400] == 'y');
 
-  CHECK(0 == munmap(view1, file_size));
-  CHECK(0 == munmap(view2, file_size));
+  CHECK(0 == munmap(view1, map_size));
+  CHECK(0 == munmap(view2, map_size));
 
   return 0;
 }
@@ -257,7 +306,7 @@ struct MapPrivateSpecifics {
  * in a MAP_SHARED view, but after touching the private view further
  * changes become invisible.
  */
-int map_private_test(int d, size_t file_size, void *test_specifics) {
+int map_private_test(int d, size_t map_size, void *test_specifics) {
   struct MapPrivateSpecifics *params =
       (struct MapPrivateSpecifics *) test_specifics;
   void *view1;
@@ -269,7 +318,7 @@ int map_private_test(int d, size_t file_size, void *test_specifics) {
 
   if (MAP_FAILED ==
       (view1 = mmap(NULL,
-                    file_size,
+                    map_size,
                     PROT_READ | PROT_WRITE,
                     MAP_SHARED,
                     d,
@@ -281,7 +330,7 @@ int map_private_test(int d, size_t file_size, void *test_specifics) {
 
   if (MAP_FAILED ==
       (view2 = mmap(NULL,
-                    file_size,
+                    map_size,
                     PROT_READ | PROT_WRITE,
                     MAP_PRIVATE,
                     d,
@@ -341,8 +390,8 @@ int map_private_test(int d, size_t file_size, void *test_specifics) {
   v2ptr[0x400] = 'y';
   CHECK(v1ptr[0x400] == '\0');
 
-  CHECK(0 == munmap(view1, file_size));
-  CHECK(0 == munmap(view2, file_size));
+  CHECK(0 == munmap(view1, map_size));
+  CHECK(0 == munmap(view2, map_size));
 
   return 0;
 }
@@ -384,9 +433,10 @@ int CreateTestData(int d, size_t num_bytes, int halt_fill) {
 
 struct TestParams {
   char const *test_name;
-  int (*test_func)(int fd, size_t file_size, void *test_specifics);
+  int (*test_func)(int fd, size_t map_size, void *test_specifics);
   int open_flags;
   size_t file_size;
+  size_t map_size;
   int halt_fill;
 
   unsigned char const *test_data_start;
@@ -398,11 +448,12 @@ struct TestParams {
 int CreateTestFile(char const *pathname,
                    struct TestParams *param) {
   int d;
+  struct stat stbuf;
   off_t off;
   size_t desired_write;
   ssize_t bytes_written;
 
-  printf("pathname = %s\n", pathname);
+  printf("pathname = %s, %d bytes\n", pathname, param->file_size);
   if (-1 == (d = open(pathname,
                       O_WRONLY | O_CREAT | O_TRUNC,
                       0777))) {
@@ -413,6 +464,14 @@ int CreateTestFile(char const *pathname,
     fprintf(stderr,
             "Could not write test data into test scratch file: NaCl errno %d\n",
             errno);
+    exit(1);
+  }
+  if (fstat(d, &stbuf) == -1) {
+    fprintf(stderr, "fstat failed\n");
+    exit(1);
+  }
+  if (stbuf.st_size != param->file_size) {
+    fprintf(stderr, "file size incorrect!\n");
     exit(1);
   }
   if (NULL != param->test_data_start) {
@@ -459,93 +518,66 @@ void CloseTestFile(int d) {
 struct MapPrivateSpecifics test0 = { 0 };
 struct MapPrivateSpecifics test1 = { 1 };
 
-struct ProtExecSpecifics exec_spec[] = {
-  {
-    /* 0:  non-functional no NACL_FI */
-    (0 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    EINVAL,
-  }, {
-    /* 1:  functional */
-    (0 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    0,
-  }, {
-    /* 2:  functional, fallback */
-    (2 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    0,
-  }, {
-    /* 3:  short_file */
-    (4 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    EINVAL,
-  }, {
-    /* 4:  PROT_WRITE|PROT_EXEC */
-    (4 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    EINVAL,
-  }, {
-    /* 5:  unaligned */
-    (4 * 0x10000 + (uintptr_t) &etext), 1,
-    PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-    EINVAL,
-  }, {
-    /* 6: no MAP_FIXED, hint */
-    (4 * 0x10000 + (uintptr_t) &etext), 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED,
-    EINVAL,
-  }, {
-    /* 7: no MAP_FIXED, no hint */
-    0, 0,
-    PROT_READ | PROT_EXEC, MAP_SHARED,
-    EINVAL,
-  },
+struct ProtExecSpecifics prot_exec_non_functional = {
+  /* non-functional: no NACL_FI */
+  (0 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
 };
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-# if NACL_BUILD_SUBARCH == 32
-unsigned char const test_machine_code[] = {
-  0x8b, 0x44, 0x24, 0x04,  /* mov 0x4(%esp),%eax */
-  0x59,                    /* pop %ecx */
-  0x83, 0xc0, 0x01,        /* add $01,%eax */
-  0x83, 0xe1, 0xe0, 0xff,  /* and $0xffffffe0, %ecx*/
-  0xe1,                    /* jmp *%ecx */
+struct ProtExecSpecifics prot_exec_functional = {
+  /* functional: NACL_FI bypasses descriptor blessing check */
+  (0 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ 0,
 };
-# elif NACL_BUILD_SUBARCH == 64
-unsigned char const test_machine_code[] = {
-  0x41, 0x5b,             /* pop %r11 */
-  0x8d, 0x47, 0x01,       /* lea 0x1(%rdi), %eax */
-  0x41, 0x83, 0xe3, 0xe0, /* and $0xffffffe0, %r11d */
-  0x4d, 0x01, 0xfb,       /* add %r15, %r11 */
-  0x41, 0xff, 0xe3        /* jmpq *%r11 */
+
+struct ProtExecSpecifics prot_exec_fallback_functional = {
+  (2 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ 0,
 };
-# else
-#  error "Who leaked the secret x86-128 project?"
-# endif
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-unsigned char const test_machine_code[] = {
-  0x01, 0x00, 0x80, 0xe2,  /* add r0, r0, #1 */
-  0x3f, 0xe1, 0xce, 0xe3,  /* bic lr, lr #0xc000000f */
-  0x1e, 0xff, 0x2f, 0xe1,  /* bx lr */
+
+struct ProtExecSpecifics prot_exec_short_file = {
+  /* short_file */
+  (4 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
 };
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
-/* this is hand assembled and may not yet satisfy MIPS sandboxing rules */
-unsigned char const test_machine_code[] = {
-  0x01, 0x00, 0x42, 0x20,  /* addi v0, a0, 1 */
-  0x24, 0xf8, 0xee, 0x03,  /* and ra, ra, t6 */
-  0x08, 0x00, 0xe0, 0x23,  /* jr ra */
+
+struct ProtExecSpecifics prot_exec_and_write = {
+  (4 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
 };
-#else
-# error "What architecture?"
-#endif
+
+struct ProtExecSpecifics prot_exec_unaligned = {
+  (4 * 0x10000 + (uintptr_t) &etext), 1,
+  PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
+};
+
+struct ProtExecSpecifics prot_exec_not_fixed_with_addr_hint = {
+  /* no MAP_FIXED, addr used as hint -- maps into data region */
+  (4 * 0x10000 + (uintptr_t) &etext), 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ 1,
+};
+
+struct ProtExecSpecifics prot_exec_not_fixed_without_addr_hint = {
+  /* no MAP_FIXED, no address hint -- maps into data region */
+  0, 0,
+  PROT_READ | PROT_EXEC, MAP_SHARED,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ 1,
+};
 
 struct TestParams tests[] = {
   {
     "Shared Mapping Test",
     map_shared_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     0,
     NULL, 0,
     NULL,
@@ -553,7 +585,8 @@ struct TestParams tests[] = {
     "Private Mapping Test, modify by write",
     map_private_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     0,
     NULL, 0,
     &test0,
@@ -561,7 +594,8 @@ struct TestParams tests[] = {
     "Private Mapping Test, modify by shm",
     map_private_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     0,
     NULL, 0,
     &test1,
@@ -570,67 +604,84 @@ struct TestParams tests[] = {
     " (no MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[0],
+    &prot_exec_non_functional,
   }, {
     "PROT_EXEC Mapping Test: functional (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[1],
+    &prot_exec_functional,
   }, {
     "PROT_EXEC Mapping Test: functional, fallback\n"
     " (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK, MMAP_FORCE_MMAP_VALIDATION_FAIL)",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[2],
+    &prot_exec_fallback_functional,
   }, {
-    "PROT_EXEC Mapping Test: short file",
+    "PROT_EXEC Mapping Test: short file, short map",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    4096,
+    /* file_size= */ 4096,
+    /* map_size= */ 4960,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[3],
+    &prot_exec_short_file,
+  }, {
+    "PROT_EXEC Mapping Test: short file, rounded map",
+    prot_exec_test,
+    (O_RDWR | O_CREAT),
+    /* file_size= */ 4096,
+    /* map_size= */ 65536,
+    1,
+    test_machine_code, sizeof test_machine_code,
+    &prot_exec_short_file,
   }, {
     "PROT_EXEC Mapping Test: PROT_WRITE|PROT_EXEC",
     prot_exec_write_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[4],
+    &prot_exec_and_write,
   }, {
     "PROT_EXEC Mapping Test: unaligned target address",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[5],
+    &prot_exec_unaligned,
   }, {
-    "PROT_EXEC Mapping Test: no MAP_FIXED, hint",
+    "PROT_EXEC Mapping Test: no MAP_FIXED, hint; treat as data",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[6],
+    &prot_exec_not_fixed_with_addr_hint,
   }, {
-    "PROT_EXEC Mapping Test: no MAP_FIXED, no hint",
+    "PROT_EXEC Mapping Test: no MAP_FIXED, no hint; treat as data",
     prot_exec_test,
     (O_RDWR | O_CREAT),
-    NUM_FILE_BYTES,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
     1,
     test_machine_code, sizeof test_machine_code,
-    &exec_spec[7],
+    &prot_exec_not_fixed_without_addr_hint,
   },
 };
 
@@ -648,7 +699,7 @@ struct TestParams tests[] = {
  * file passed as command-line argument.  See the nacl.scons file.
  */
 int main(int ac, char **av) {
-  char const *test_file_name = "/tmp/nacl_host_desc_test";
+  char const *test_file_dir = "/tmp/nacl_host_desc_test";
   int fd;
   size_t err_count;
   size_t test_errors;
@@ -657,7 +708,7 @@ int main(int ac, char **av) {
   int num_runs = 1;
   int test_run;
 
-  while (EOF != (opt = getopt(ac, av, "c:df:m"))) {
+  while (EOF != (opt = getopt(ac, av, "c:dmt:"))) {
     switch (opt) {
       case 'c':
         num_runs = atoi(optarg);
@@ -665,16 +716,17 @@ int main(int ac, char **av) {
       case 'd':
         g_prot_exec_disabled = 1;
         break;
-      case 'f':
-        test_file_name = optarg;
-        break;
       case 'm':
         g_mach_copy_on_write_behavior = 1;
+        break;
+      case 't':
+        test_file_dir = optarg;
         break;
       default:
         fprintf(stderr,
                 "Usage: nacl_host_desc_mmap_test [-c run_count]\n"
-                "                                [-f test_file]\n");
+                "                                [-t test_temporary_dir]\n"
+                "                                [-dm]\n");
         exit(1);
     }
   }
@@ -690,10 +742,13 @@ int main(int ac, char **av) {
   for (test_run = 0; test_run < num_runs; ++test_run) {
     printf("Test run %d\n\n", test_run);
     for (ix = 0; ix < NACL_ARRAY_SIZE(tests); ++ix) {
+      char test_file_name[PATH_MAX];
       printf("%s\n", tests[ix].test_name);
+      snprintf(test_file_name, sizeof test_file_name,
+               "%s/f%d.%u", test_file_dir, test_run, ix);
       fd = CreateTestFile(test_file_name, &tests[ix]);
       test_errors = (*tests[ix].test_func)(fd,
-                                           tests[ix].file_size,
+                                           tests[ix].map_size,
                                            tests[ix].test_specifics);
       printf("%s\n", (0 == test_errors) ? "PASS" : "FAIL");
       err_count += test_errors;

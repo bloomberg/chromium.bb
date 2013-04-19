@@ -1049,9 +1049,9 @@ cleanup:
 }
 
 
-int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
-                                                     uintptr_t      usraddr,
-                                                     size_t         length) {
+int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,
+                                                  uintptr_t usraddr,
+                                                  size_t length) {
   /*
    * NOTE: currently only trampoline and text region are executable,
    * and they are at the beginning of the address space, so this code
@@ -1071,9 +1071,9 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
   return usraddr < nap->dynamic_text_end;
 }
 
-int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace_mu(struct NaClApp *nap,
-                                                       uintptr_t usraddr,
-                                                       size_t length) {
+int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace(struct NaClApp *nap,
+                                                    uintptr_t usraddr,
+                                                    size_t length) {
   uintptr_t usr_region_end = usraddr + length;
 
   if (usr_region_end < usraddr) {
@@ -1104,7 +1104,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   uintptr_t                   usrpage;
   uintptr_t                   sysaddr;
   uintptr_t                   endaddr;
-  int                         mapping_code = 0;
+  int                         mapping_code;
   uintptr_t                   map_result;
   int                         holding_app_lock;
   struct nacl_abi_stat        stbuf;
@@ -1142,28 +1142,31 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     }
   }
 
-  if (0 != (NACL_ABI_PROT_EXEC & prot) && !nap->enable_dyncode_syscalls) {
-    NaClLog(LOG_WARNING,
-            "NaClSysMmap: PROT_EXEC when dyncode syscalls are disabled.\n");
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
-  if (NULL == ndp && 0 != (NACL_ABI_PROT_EXEC & prot)) {
-    NaClLog(3, "NaClSysMmap: asked for executable anonymous pages?!?\n");
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
-  if (((NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC) & prot) ==
-      (NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC)) {
-    NaClLog(3, "NaClSysMmap: asked for writable and executable pages?!?\n");
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
+  mapping_code = 0;
+  /*
+   * Check if application is trying to do dynamic code loading by
+   * mmaping a file.
+   */
   if (0 != (NACL_ABI_PROT_EXEC & prot) &&
-      0 == (NACL_ABI_MAP_FIXED & flags)) {
-    NaClLog(3, "NaClSysMmap: PROT_EXEC without MAP_FIXED.\n");
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
+      0 != (NACL_ABI_MAP_FIXED & flags) &&
+      NULL != ndp &&
+      NaClSysCommonAddrRangeInAllowedDynamicCodeSpace(nap, usraddr, length)) {
+    if (!nap->enable_dyncode_syscalls) {
+      NaClLog(LOG_WARNING,
+              "NaClSysMmap: PROT_EXEC when dyncode syscalls are disabled.\n");
+      map_result = -NACL_ABI_EINVAL;
+      goto cleanup;
+    }
+    if (0 != (NACL_ABI_PROT_WRITE & prot)) {
+      NaClLog(3,
+              "NaClSysMmap: asked for writable and executable code pages?!?\n");
+      map_result = -NACL_ABI_EINVAL;
+      goto cleanup;
+    }
+    mapping_code = 1;
+  } else {
+    /* Assume data, for compatibility, we ignore the NACL_ABI_PROT_EXEC bit */
+    prot &= ~NACL_ABI_PROT_EXEC;
   }
 
   /*
@@ -1205,7 +1208,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   }
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
-    if (0 != (NACL_ABI_PROT_EXEC & prot)) {
+    if (mapping_code) {
       NaClLog(3, "NaClSysMmap: length not a multiple of allocation size\n");
       map_result = -NACL_ABI_EINVAL;
       goto cleanup;
@@ -1292,6 +1295,13 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
    * host-OS allocation size.  it cannot be larger than
    * kMaxUsableFileSize.
    */
+  if (mapping_code && (size_t) file_bytes < alloc_rounded_length) {
+    NaClLog(3,
+            "NaClSysMmap: disallowing partial allocation page extension for"
+            " short files\n");
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
   length = size_min(alloc_rounded_length, (size_t) host_rounded_file_bytes);
 
   /*
@@ -1387,34 +1397,27 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     goto cleanup;
   }
 
-  /*
-   * Check if application is trying to do dynamic code loading by
-   * mmaping a file.
-   */
-  if (NULL != ndp && 0 != (prot & NACL_ABI_PROT_EXEC)) {
+  if (mapping_code) {
     NaClLog(4,
             "NaClSysMmap: PROT_EXEC requested, usraddr 0x%08"NACL_PRIxPTR
             ", length %"NACL_PRIxS"\n",
             usraddr, length);
-    if (NACL_FI("MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK",
-                NaClDescIsSafeForMmap(ndp),
-                1) &&
-        NaClSysCommonAddrRangeInAllowedDynamicCodeSpace_mu(nap,
-                                                           usraddr, length)) {
-      NaClLog(4, "NaClSysMmap: allowed\n");
-      mapping_code = 1;
-    } else {
-      NaClLog(4, "NaClSysMmap: descriptor not blessed, or target addr bad\n");
+    if (!NACL_FI("MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK",
+                 NaClDescIsSafeForMmap(ndp),
+                 1)) {
+      NaClLog(4, "NaClSysMmap: descriptor not blessed\n");
       map_result = -NACL_ABI_EINVAL;
       goto cleanup;
     }
-  } else if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
-                                                              usraddr,
-                                                              length)) {
+    NaClLog(4, "NaClSysMmap: allowed\n");
+  } else if (NaClSysCommonAddrRangeContainsExecutablePages(nap,
+                                                           usraddr,
+                                                           length)) {
     NaClLog(2, "NaClSysMmap: region contains executable pages\n");
     map_result = -NACL_ABI_EINVAL;
     goto cleanup;
   }
+
   NaClVmIoPendingCheck_mu(nap,
                           (uint32_t) usraddr,
                           (uint32_t) (usraddr + length - 1));
@@ -1969,9 +1972,9 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   /*
    * User should be unable to unmap any executable pages.  We check here.
    */
-  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
-                                                       (uintptr_t) start,
-                                                       length)) {
+  if (NaClSysCommonAddrRangeContainsExecutablePages(nap,
+                                                    (uintptr_t) start,
+                                                    length)) {
     NaClLog(2, "NaClSysMunmap: region contains executable pages\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
@@ -2100,9 +2103,9 @@ int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
   /*
    * User should be unable to change protection of any executable pages.
    */
-  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
-                                                       (uintptr_t) start,
-                                                       length)) {
+  if (NaClSysCommonAddrRangeContainsExecutablePages(nap,
+                                                    (uintptr_t) start,
+                                                    length)) {
     NaClLog(2, "NaClSysMprotect: region contains executable pages\n");
     retval = -NACL_ABI_EACCES;
     goto cleanup;
