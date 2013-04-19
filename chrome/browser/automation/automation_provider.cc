@@ -767,12 +767,12 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
       view->GetRoutingID(), cmd, param));
 }
 
-void AutomationProvider::BeginTracing(const std::string& categories,
+void AutomationProvider::BeginTracing(const std::string& category_patterns,
                                       bool* success) {
   tracing_data_.trace_output.clear();
   *success = TraceController::GetInstance()->BeginTracing(
       this,
-      categories,
+      category_patterns,
       base::debug::TraceLog::RECORD_UNTIL_FULL);
 }
 

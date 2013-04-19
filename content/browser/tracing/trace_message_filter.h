@@ -28,8 +28,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void SendBeginTracing(const std::vector<std::string>& included_categories,
-                        const std::vector<std::string>& excluded_categories,
+  void SendBeginTracing(const std::string& category_filter_str,
                         base::debug::TraceLog::Options options);
   void SendEndTracing();
   void SendGetTraceBufferPercentFull();

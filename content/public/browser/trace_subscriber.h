@@ -26,7 +26,7 @@ class TraceSubscriber {
   virtual void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& trace_fragment) = 0;
 
-  // Called once after TraceController::GetKnownCategoriesAsync.
+  // Called once after TraceController::GetKnownCategoryGroupsAsync.
   virtual void OnKnownCategoriesCollected(
       const std::set<std::string>& known_categories) {}
 

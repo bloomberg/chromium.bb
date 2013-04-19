@@ -928,7 +928,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_MoveWindow,
 // Call BeginTracing on the browser TraceController. This will tell all
 // processes to start collecting trace events via base/debug/trace_event.h.
 IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_BeginTracing,
-                            std::string /* categories */,
+                            std::string /* category_patterns */,
                             bool /* success */)
 
 // End tracing (called after BeginTracing). This blocks until tracing has

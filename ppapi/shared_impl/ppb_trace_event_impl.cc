@@ -23,7 +23,8 @@ void* TraceEventImpl::GetCategoryEnabled(const char* category_name) {
   // return a pointer type to the caller without some const_cast.  The pointer
   // type the tracing system works with is normally unsigned char*.
   return const_cast<void*>(static_cast<const void*>(
-      base::debug::TraceLog::GetInstance()->GetCategoryEnabled(category_name)));
+      base::debug::TraceLog::GetInstance()->GetCategoryGroupEnabled(
+          category_name)));
 }
 
 // static

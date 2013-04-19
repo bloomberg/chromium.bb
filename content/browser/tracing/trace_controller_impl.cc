@@ -54,7 +54,9 @@ TraceControllerImpl::TraceControllerImpl() :
     pending_bpf_ack_count_(0),
     maximum_bpf_(0.0f),
     is_tracing_(false),
-    is_get_categories_(false) {
+    is_get_category_groups_(false),
+    category_filter_(
+        base::debug::CategoryFilter::kDefaultCategoryFilterString) {
   TraceLog::GetInstance()->SetNotificationCallback(
       base::Bind(&TraceControllerImpl::OnTraceNotification,
                  base::Unretained(this)));
@@ -106,40 +108,23 @@ void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
       base::TimeDelta::FromSeconds(delay_secs));
 }
 
-bool TraceControllerImpl::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
+bool TraceControllerImpl::GetKnownCategoryGroupsAsync(
+    TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Known categories come back from child processes with the EndTracingAck
   // message. So to get known categories, just begin and end tracing immediately
   // afterwards. This will ping all the child processes for categories.
-  is_get_categories_ = true;
+  is_get_category_groups_ = true;
   bool success = BeginTracing(subscriber, "*",
                               TraceLog::GetInstance()->trace_options()) &&
                  EndTracingAsync(subscriber);
-  is_get_categories_ = success;
+  is_get_category_groups_ = success;
   return success;
 }
 
-bool TraceControllerImpl::BeginTracing(
-    TraceSubscriber* subscriber,
-    const std::vector<std::string>& included_categories,
-    const std::vector<std::string>& excluded_categories,
-    base::debug::TraceLog::Options options) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!can_begin_tracing(subscriber))
-    return false;
-
-  // Enable tracing
-  TraceLog::GetInstance()->SetEnabled(included_categories, excluded_categories,
-                                      options);
-  OnTracingBegan(subscriber);
-
-  return true;
-}
-
 bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber,
-                                       const std::string& categories,
+                                       const std::string& category_patterns,
                                        base::debug::TraceLog::Options options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -147,7 +132,8 @@ bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber,
     return false;
 
   // Enable tracing
-  TraceLog::GetInstance()->SetEnabled(categories, options);
+  TraceLog::GetInstance()->SetEnabled(
+      base::debug::CategoryFilter(category_patterns), options);
 
   OnTracingBegan(subscriber);
 
@@ -170,11 +156,11 @@ bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   // Handle special case of zero child processes.
   if (pending_end_ack_count_ == 1) {
     // Ack asynchronously now, because we don't have any children to wait for.
-    std::vector<std::string> categories;
-    TraceLog::GetInstance()->GetKnownCategories(&categories);
+    std::vector<std::string> category_groups;
+    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TraceControllerImpl::OnEndTracingAck,
-                   base::Unretained(this), categories));
+                   base::Unretained(this), category_groups));
   }
 
   // Notify all child processes.
@@ -265,8 +251,8 @@ void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
 
   filters_.insert(filter);
   if (is_tracing_enabled()) {
-    filter->SendBeginTracing(included_categories_, excluded_categories_,
-                             trace_options_);
+    std::string cf_str = category_filter_.ToString();
+    filter->SendBeginTracing(cf_str, trace_options_);
     if (!watch_category_.empty())
       filter->SendSetWatchEvent(watch_category_, watch_name_);
   }
@@ -288,28 +274,27 @@ void TraceControllerImpl::OnTracingBegan(TraceSubscriber* subscriber) {
 
   subscriber_ = subscriber;
 
-  TraceLog::GetInstance()->GetEnabledTraceCategories(&included_categories_,
-                                                     &excluded_categories_);
+  category_filter_ = TraceLog::GetInstance()->GetCurrentCategoryFilter();
   trace_options_ = TraceLog::GetInstance()->trace_options();
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(included_categories_, excluded_categories_,
-                                trace_options_);
+    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_);
   }
 }
 
 void TraceControllerImpl::OnEndTracingAck(
-    const std::vector<std::string>& known_categories) {
+    const std::vector<std::string>& known_category_groups) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TraceControllerImpl::OnEndTracingAck,
-                   base::Unretained(this), known_categories));
+                   base::Unretained(this), known_category_groups));
     return;
   }
 
-  // Merge known_categories with known_categories_
-  known_categories_.insert(known_categories.begin(), known_categories.end());
+  // Merge known_category_groups with known_category_groups_
+  known_category_groups_.insert(known_category_groups.begin(),
+                                known_category_groups.end());
 
   if (pending_end_ack_count_ == 0)
     return;
@@ -331,25 +316,25 @@ void TraceControllerImpl::OnEndTracingAck(
 
     // Trigger callback if one is set.
     if (subscriber_) {
-      if (is_get_categories_)
-        subscriber_->OnKnownCategoriesCollected(known_categories_);
+      if (is_get_category_groups_)
+        subscriber_->OnKnownCategoriesCollected(known_category_groups_);
       else
         subscriber_->OnEndTracingComplete();
       // Clear subscriber so that others can use TraceController.
       subscriber_ = NULL;
     }
 
-    is_get_categories_ = false;
+    is_get_category_groups_ = false;
   }
 
   if (pending_end_ack_count_ == 1) {
     // The last ack represents local trace, so we need to ack it now. Note that
     // this code only executes if there were child processes.
-    std::vector<std::string> categories;
-    TraceLog::GetInstance()->GetKnownCategories(&categories);
+    std::vector<std::string> category_groups;
+    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TraceControllerImpl::OnEndTracingAck,
-                   base::Unretained(this), categories));
+                   base::Unretained(this), category_groups));
   }
 }
 
@@ -365,7 +350,7 @@ void TraceControllerImpl::OnTraceDataCollected(
   }
 
   // Drop trace events if we are just getting categories.
-  if (subscriber_ && !is_get_categories_)
+  if (subscriber_ && !is_get_category_groups_)
     subscriber_->OnTraceDataCollected(events_str_ptr);
 }
 

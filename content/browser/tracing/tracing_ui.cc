@@ -496,7 +496,7 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 
 void TracingMessageHandler::OnGetKnownCategories(const base::ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!TraceController::GetInstance()->GetKnownCategoriesAsync(this)) {
+  if (!TraceController::GetInstance()->GetKnownCategoryGroupsAsync(this)) {
     std::set<std::string> ret;
     OnKnownCategoriesCollected(ret);
   }

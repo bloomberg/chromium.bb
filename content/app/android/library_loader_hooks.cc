@@ -42,8 +42,9 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
-    base::debug::TraceLog::GetInstance()->SetEnabled(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup),
+    base::debug::CategoryFilter category_filter(
+        command_line->GetSwitchValueASCII(switches::kTraceStartup));
+    base::debug::TraceLog::GetInstance()->SetEnabled(category_filter,
         base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 

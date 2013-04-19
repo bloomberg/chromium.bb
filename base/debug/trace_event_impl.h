@@ -80,7 +80,7 @@ class BASE_EXPORT TraceEvent {
   TraceEvent(int thread_id,
              TimeTicks timestamp,
              char phase,
-             const unsigned char* category_enabled,
+             const unsigned char* category_group_enabled,
              const char* name,
              unsigned long long id,
              int num_args,
@@ -112,7 +112,10 @@ class BASE_EXPORT TraceEvent {
     return parameter_copy_storage_.get();
   }
 
-  const unsigned char* category_enabled() const { return category_enabled_; }
+  const unsigned char* category_group_enabled() const {
+    return category_group_enabled_;
+  }
+
   const char* name() const { return name_; }
 
  private:
@@ -123,7 +126,7 @@ class BASE_EXPORT TraceEvent {
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
   scoped_ptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
-  const unsigned char* category_enabled_;
+  const unsigned char* category_group_enabled_;
   const char* name_;
   scoped_refptr<base::RefCountedString> parameter_copy_storage_;
   int thread_id_;
@@ -190,6 +193,67 @@ class BASE_EXPORT TraceResultBuffer {
   bool append_comma_;
 };
 
+class BASE_EXPORT CategoryFilter {
+ public:
+  // The default category filter, used when none is provided.
+  // Allows all categories through, except if they end in the suffix 'Debug' or
+  // 'Test'.
+  static const char* kDefaultCategoryFilterString;
+
+  // |filter_string| is a comma-delimited list of category wildcards.
+  // A category can have an optional '-' prefix to make it an excluded category.
+  // All the same rules apply above, so for example, having both included and
+  // excluded categories in the same list would not be supported.
+  //
+  // Example: CategoryFilter"test_MyTest*");
+  // Example: CategoryFilter("test_MyTest*,test_OtherStuff");
+  // Example: CategoryFilter("-excluded_category1,-excluded_category2");
+  // Example: CategoryFilter("-*,webkit"); would disable everything but webkit.
+  // Example: CategoryFilter("-webkit"); would enable everything but webkit.
+  explicit CategoryFilter(const std::string& filter_string);
+
+  CategoryFilter(const CategoryFilter& cf);
+
+  ~CategoryFilter();
+
+  CategoryFilter& operator=(const CategoryFilter& rhs);
+
+  // Writes the string representation of the CategoryFilter. This is a comma
+  // separated string, similar in nature to the one used to determine
+  // enabled/disabled category patterns, except here there is an arbitrary
+  // order, included categories go first, then excluded categories. Excluded
+  // categories are distinguished from included categories by the prefix '-'.
+  std::string ToString() const;
+
+  // Determines whether category group would be enabled or
+  // disabled by this category filter.
+  bool IsCategoryGroupEnabled(const char* category_group) const;
+
+  // Merges nested_filter with the current CategoryFilter
+  void Merge(const CategoryFilter& nested_filter);
+
+  // Determines whether or not we have explicitly allowed category patterns.
+  bool HasIncludedPatterns() const;
+
+  // Clears both included/excluded pattern lists. This would be equivalent to
+  // creating a CategoryFilter with an empty string, through the constructor.
+  // i.e: CategoryFilter("").
+  //
+  // When using an empty filter, all categories are considered included as we
+  // are not excluding anything.
+  void Clear();
+
+  static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      const std::string& str);
+
+ private:
+  void Initialize(const std::string& filter_string);
+  void WriteString(std::string* out, bool included) const;
+
+  std::vector<std::string> included_;
+  std::vector<std::string> excluded_;
+};
+
 class TraceSamplingThread;
 
 class BASE_EXPORT TraceLog {
@@ -223,43 +287,21 @@ class BASE_EXPORT TraceLog {
   // the string does not provide valid options.
   static Options TraceOptionsFromString(const std::string& str);
 
-  // Get set of known categories. This can change as new code paths are reached.
-  // The known categories are inserted into |categories|.
-  void GetKnownCategories(std::vector<std::string>* categories);
+  // Get set of known category groups. This can change as new code paths are
+  // reached. The known category groups are inserted into |category_groups|.
+  void GetKnownCategoryGroups(std::vector<std::string>* category_groups);
 
-  // Enable tracing for provided list of categories. If tracing is already
-  // enabled, this method does nothing -- changing categories during trace is
-  // not supported.
-  // If both included_categories and excluded_categories are empty,
-  //   all categories are traced.
-  // Else if included_categories is non-empty, only those are traced.
-  // Else if excluded_categories is non-empty, everything but those are traced.
-  // Wildcards * and ? are supported (see MatchPattern in string_util.h).
-  void SetEnabled(const std::vector<std::string>& included_categories,
-                  const std::vector<std::string>& excluded_categories,
-                  Options options);
-
-  // |categories| is a comma-delimited list of category wildcards.
-  // A category can have an optional '-' prefix to make it an excluded category.
-  // All the same rules apply above, so for example, having both included and
-  // excluded categories in the same list would not be supported.
-  //
-  // Example: SetEnabled("test_MyTest*");
-  // Example: SetEnabled("test_MyTest*,test_OtherStuff");
-  // Example: SetEnabled("-excluded_category1,-excluded_category2");
-  void SetEnabled(const std::string& categories, Options options);
-
-  // Retieves the categories set via a prior call to SetEnabled(). Only
-  // meaningful if |IsEnabled()| is true.
-  void GetEnabledTraceCategories(std::vector<std::string>* included_out,
-                                 std::vector<std::string>* excluded_out);
+  // Retrieves the current CategoryFilter.
+  const CategoryFilter& GetCurrentCategoryFilter();
 
   Options trace_options() const { return trace_options_; }
 
+  // Enables tracing. See CategoryFilter comments for details
+  // on how to control what categories will be traced.
+  void SetEnabled(const CategoryFilter& category_filter, Options options);
+
   // Disable tracing for all categories.
   void SetDisabled();
-  // Helper method to enable/disable tracing for all categories.
-  void SetEnabled(bool enabled, Options options);
   bool IsEnabled() { return !!enable_count_; }
 
 #if defined(OS_ANDROID)
@@ -302,7 +344,7 @@ class BASE_EXPORT TraceLog {
   // after a call to SetEventCallback() that replaces or clears the callback.
   // This callback may be invoked on any thread.
   typedef void (*EventCallback)(char phase,
-                                const unsigned char* category_enabled,
+                                const unsigned char* category_group_enabled,
                                 const char* name,
                                 unsigned long long id,
                                 int num_args,
@@ -321,15 +363,18 @@ class BASE_EXPORT TraceLog {
   void Flush(const OutputCallback& cb);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
-  static const unsigned char* GetCategoryEnabled(const char* name);
-  static const char* GetCategoryName(const unsigned char* category_enabled);
+  // The name parameter is a category group for example:
+  // TRACE_EVENT0("renderer,webkit", "WebViewImpl::HandleInputEvent")
+  static const unsigned char* GetCategoryGroupEnabled(const char* name);
+  static const char* GetCategoryGroupName(
+      const unsigned char* category_group_enabled);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
   void AddTraceEvent(char phase,
-                     const unsigned char* category_enabled,
-                     const char* name,
+                     const unsigned char* category_group_enabled,
+                     const char* category_group,
                      unsigned long long id,
                      int num_args,
                      const char** arg_names,
@@ -339,7 +384,7 @@ class BASE_EXPORT TraceLog {
                      unsigned char flags);
   void AddTraceEventWithThreadIdAndTimestamp(
       char phase,
-      const unsigned char* category_enabled,
+      const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
       int thread_id,
@@ -351,11 +396,11 @@ class BASE_EXPORT TraceLog {
       scoped_ptr<ConvertableToTraceFormat> convertable_values[],
       unsigned char flags);
   static void AddTraceEventEtw(char phase,
-                               const char* name,
+                               const char* category_group,
                                const void* id,
                                const char* extra);
   static void AddTraceEventEtw(char phase,
-                               const char* name,
+                               const char* category_group,
                                const void* id,
                                const std::string& extra);
 
@@ -398,8 +443,14 @@ class BASE_EXPORT TraceLog {
   // by the Singleton class.
   friend struct StaticMemorySingletonTraits<TraceLog>;
 
-  // The pointer returned from GetCategoryEnabledInternal() points to a value
-  // with zero or more of the following bits. Used in this class only.
+  // Enable/disable each category group based on the current category_filter_.
+  // If the category group contains a category that matches an included category
+  // pattern, that category group will be enabled.
+  void EnableIncludedCategoryGroups();
+  void EnableIncludedCategoryGroup(int category_index);
+
+  // The pointer returned from GetCategoryGroupEnabledInternal() points to a
+  // value with zero or more of the following bits. Used in this class only.
   // The TRACE_EVENT macros should only use the value as a bool.
   enum CategoryEnabledFlags {
     // Normal enabled flag for categories enabled with Enable().
@@ -434,12 +485,12 @@ class BASE_EXPORT TraceLog {
 
   TraceLog();
   ~TraceLog();
-  const unsigned char* GetCategoryEnabledInternal(const char* name);
+  const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
   void AddThreadNameMetadataEvents();
 
 #if defined(OS_ANDROID)
   void SendToATrace(char phase,
-                    const char* category,
+                    const char* category_group,
                     const char* name,
                     unsigned long long id,
                     int num_args,
@@ -447,7 +498,7 @@ class BASE_EXPORT TraceLog {
                     const unsigned char* arg_types,
                     const unsigned long long* arg_values,
                     unsigned char flags);
-  static void ApplyATraceEnabledFlag(unsigned char* category_enabled);
+  static void ApplyATraceEnabledFlag(unsigned char* category_group_enabled);
 #endif
 
   TraceBuffer* GetTraceBuffer();
@@ -460,8 +511,6 @@ class BASE_EXPORT TraceLog {
   NotificationCallback notification_callback_;
   scoped_ptr<TraceBuffer> logged_events_;
   EventCallback event_callback_;
-  std::vector<std::string> included_categories_;
-  std::vector<std::string> excluded_categories_;
   bool dispatching_to_observer_list_;
   ObserverList<EnabledStateChangedObserver> enabled_state_observer_list_;
 
@@ -483,6 +532,8 @@ class BASE_EXPORT TraceLog {
   // Sampling thread handles.
   scoped_ptr<TraceSamplingThread> sampling_thread_;
   PlatformThreadHandle sampling_thread_handle_;
+
+  CategoryFilter category_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };

@@ -31,10 +31,11 @@ class TraceController {
   //   or if another subscriber is tracing,
   //   BeginTracing will return false meaning it failed.
   //
-  // |categories| is a comma-delimited list of category wildcards.
-  // A category can have an optional '-' prefix to make it an excluded category.
+  // |category_patterns| is a comma-delimited list of category wildcards.
+  // A category pattern can have an optional '-' prefix to exclude category
+  // groups that contain a matching category.
   // All the same rules apply above, so for example, having both included and
-  // excluded categories in the same list would not be supported.
+  // excluded category patterns in the same list would not be supported.
   //
   // |mode| is the tracing mode being used.
   //
@@ -42,7 +43,7 @@ class TraceController {
   // Example: BeginTracing("test_MyTest*,test_OtherStuff");
   // Example: BeginTracing("-excluded_category1,-excluded_category2");
   virtual bool BeginTracing(TraceSubscriber* subscriber,
-                            const std::string& categories,
+                            const std::string& category_patterns,
                             base::debug::TraceLog::Options options) = 0;
 
   // Called by browser process to stop tracing events on all processes.
@@ -88,10 +89,10 @@ class TraceController {
   // Safe to call even if caller is not the current subscriber.
   virtual void CancelSubscriber(TraceSubscriber* subscriber) = 0;
 
-  // Get set of known categories. This can change as new code paths are reached.
-  // If true is returned, subscriber->OnKnownCategoriesCollected will be called
-  // once the categories are retrieved from child processes.
-  virtual bool GetKnownCategoriesAsync(TraceSubscriber* subscriber) = 0;
+  // Get set of known category groups. This can change as new code paths are
+  // reached. If true is returned, subscriber->OnKnownCategoriesCollected will
+  // be called once the categories are retrieved from child processes.
+  virtual bool GetKnownCategoryGroupsAsync(TraceSubscriber* subscriber) = 0;
 
  protected:
   virtual ~TraceController() {}

@@ -46,8 +46,7 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 
 void ChildTraceMessageFilter::OnBeginTracing(
-    const std::vector<std::string>& included_categories,
-    const std::vector<std::string>& excluded_categories,
+    const std::string& category_filter_str,
     base::TimeTicks browser_time,
     int options) {
 #if defined(__native_client__)
@@ -59,8 +58,7 @@ void ChildTraceMessageFilter::OnBeginTracing(
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
   TraceLog::GetInstance()->SetEnabled(
-      included_categories,
-      excluded_categories,
+      base::debug::CategoryFilter(category_filter_str),
       static_cast<base::debug::TraceLog::Options>(options));
 }
 
@@ -74,9 +72,9 @@ void ChildTraceMessageFilter::OnEndTracing() {
   TraceLog::GetInstance()->Flush(
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
 
-  std::vector<std::string> categories;
-  TraceLog::GetInstance()->GetKnownCategories(&categories);
-  channel_->Send(new TracingHostMsg_EndTracingAck(categories));
+  std::vector<std::string> category_groups;
+  TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
+  channel_->Send(new TracingHostMsg_EndTracingAck(category_groups));
 }
 
 void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {

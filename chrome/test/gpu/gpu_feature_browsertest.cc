@@ -48,7 +48,7 @@ const char kWebGLCreationEvent[] = "DrawingBufferCreation";
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
-  GpuFeatureTest() : trace_categories_("test_gpu"), gpu_enabled_(false) {}
+  GpuFeatureTest() : category_patterns_("test_gpu"), gpu_enabled_(false) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
@@ -125,7 +125,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
       return;
 #endif
 
-    ASSERT_TRUE(tracing::BeginTracing(trace_categories_));
+    ASSERT_TRUE(tracing::BeginTracing(category_patterns_));
 
     // Have to use a new tab for the blacklist to work.
     RunTest(url, NULL, true);
@@ -151,10 +151,10 @@ class GpuFeatureTest : public InProcessBrowserTest {
   // Trigger a resize of the chrome window, and use tracing to wait for the
   // given |wait_event|.
   bool ResizeAndWait(const gfx::Rect& new_bounds,
-                     const char* trace_categories,
+                     const char* category_patterns,
                      const char* wait_category,
                      const char* wait_event) {
-    if (!tracing::BeginTracingWithWatch(trace_categories, wait_category,
+    if (!tracing::BeginTracingWithWatch(category_patterns, wait_category,
                                         wait_event, 1))
       return false;
     browser()->window()->SetBounds(new_bounds);
@@ -170,7 +170,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
  protected:
   base::FilePath gpu_test_dir_;
   scoped_ptr<TraceAnalyzer> analyzer_;
-  std::string trace_categories_;
+  std::string category_patterns_;
   std::string trace_events_json_;
   bool gpu_enabled_;
 };
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, DISABLED_ThreadedCompositor) {
 #define MAYBE_RafNoDamage RafNoDamage
 #endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_RafNoDamage) {
-  trace_categories_ = "-test_*";
+  category_patterns_ = "-test_*";
   const base::FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
   RunEventTest(url);
 

@@ -255,7 +255,7 @@ class AutomationProvider
   // for information on the arguments.
   void JavaScriptStressTestControl(int handle, int cmd, int param);
 
-  void BeginTracing(const std::string& categories, bool* success);
+  void BeginTracing(const std::string& category_patterns, bool* success);
   void EndTracing(IPC::Message* reply_message);
   void GetTracingOutput(std::string* chunk, bool* success);
 

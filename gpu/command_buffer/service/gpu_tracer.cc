@@ -128,7 +128,8 @@ class GPUTracerImpl
       public base::SupportsWeakPtr<GPUTracerImpl> {
  public:
   GPUTracerImpl()
-      : gpu_category_enabled_(TRACE_EVENT_API_GET_CATEGORY_ENABLED("gpu")),
+      : gpu_category_enabled_(
+        TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("gpu")),
         process_posted_(false) {
   }
   virtual ~GPUTracerImpl() {}

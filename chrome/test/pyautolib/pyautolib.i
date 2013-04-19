@@ -130,9 +130,10 @@ class PyUITestBase {
   void AppendBrowserLaunchSwitch(const char* name);
   void AppendBrowserLaunchSwitch(const char* name, const char* value);
 
-  %feature("docstring", "Begins tracing with the given category string.")
+  %feature("docstring", "Begins tracing with the given category_patterns "
+                        "string.")
       BeginTracing;
-  bool BeginTracing(const std::string& categories);
+  bool BeginTracing(const std::string& category_patterns);
 
   %feature("docstring", "Ends tracing and returns the collected events.")
       EndTracing;

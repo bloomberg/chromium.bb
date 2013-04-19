@@ -237,7 +237,7 @@ class UITestBase {
   void AppendBrowserLaunchSwitch(const char* name, const char* value);
 
   // Pass-through to AutomationProxy::BeginTracing.
-  bool BeginTracing(const std::string& categories);
+  bool BeginTracing(const std::string& category_patterns);
 
   // Pass-through to AutomationProxy::EndTracing.
   std::string EndTracing();

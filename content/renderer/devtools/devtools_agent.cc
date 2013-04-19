@@ -137,7 +137,13 @@ void DevToolsAgent::clearBrowserCookies() {
 void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEventCallback(cb);
-  trace_log->SetEnabled(!!cb, TraceLog::RECORD_UNTIL_FULL);
+  if (!!cb) {
+    trace_log->SetEnabled(base::debug::CategoryFilter(
+        base::debug::CategoryFilter::kDefaultCategoryFilterString),
+        TraceLog::RECORD_UNTIL_FULL);
+  } else {
+    trace_log->SetDisabled();
+  }
 }
 
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)

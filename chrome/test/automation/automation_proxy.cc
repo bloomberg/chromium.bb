@@ -404,9 +404,9 @@ void AutomationProxy::ResetChannel() {
     tracker_->put_channel(NULL);
 }
 
-bool AutomationProxy::BeginTracing(const std::string& categories) {
+bool AutomationProxy::BeginTracing(const std::string& category_patterns) {
   bool result = false;
-  bool send_success = Send(new AutomationMsg_BeginTracing(categories,
+  bool send_success = Send(new AutomationMsg_BeginTracing(category_patterns,
                                                           &result));
   return send_success && result;
 }

@@ -73,7 +73,7 @@ class TraceEventTestFixture : public testing::Test {
 
   void BeginTrace() {
     event_watch_notification_ = 0;
-    TraceLog::GetInstance()->SetEnabled(std::string("*"),
+    TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                         TraceLog::RECORD_UNTIL_FULL);
   }
 
@@ -773,7 +773,8 @@ void HighResSleepForTraceTest(base::TimeDelta elapsed) {
 // Simple Test for emitting data and validating it was received.
 TEST_F(TraceEventTestFixture, DataCaptured) {
   ManualTestSetUp();
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
 
   TraceWithAllMacroVariants(NULL);
 
@@ -797,18 +798,20 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
 
   EXPECT_CALL(observer, OnTraceLogWillEnable())
       .Times(1);
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
   testing::Mock::VerifyAndClear(&observer);
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
   ManualTestSetUp();
 
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
 
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -817,20 +820,22 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
       .Times(0);
   EXPECT_CALL(observer, OnTraceLogWillDisable())
       .Times(0);
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
   testing::Mock::VerifyAndClear(&observer);
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
+  TraceLog::GetInstance()->SetDisabled();
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
   ManualTestSetUp();
 
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  CategoryFilter cf_inc_all("*");
+  TraceLog::GetInstance()->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
 
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -839,25 +844,26 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
       .Times(0);
   EXPECT_CALL(observer, OnTraceLogWillDisable())
       .Times(0);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
   testing::Mock::VerifyAndClear(&observer);
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
   ManualTestSetUp();
 
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
 
   MockEnabledStateChangedObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
   EXPECT_CALL(observer, OnTraceLogWillDisable())
       .Times(1);
-  TraceLog::GetInstance()->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
   testing::Mock::VerifyAndClear(&observer);
 
   // Cleanup.
@@ -875,15 +881,26 @@ TEST_F(TraceEventTestFixture, Categories) {
   BeginTrace();
   TRACE_EVENT_INSTANT0("c3", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("c4", "name", TRACE_EVENT_SCOPE_THREAD);
+  // Category groups containing more than one category.
+  TRACE_EVENT_INSTANT0("c5,c6", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("c7,c8", "name", TRACE_EVENT_SCOPE_THREAD);
+
   EndTraceAndFlush();
-  std::vector<std::string> cats;
-  TraceLog::GetInstance()->GetKnownCategories(&cats);
-  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c1") != cats.end());
-  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c2") != cats.end());
-  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c3") != cats.end());
-  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "c4") != cats.end());
-  // Make sure metadata isn't returned.
-  EXPECT_TRUE(std::find(cats.begin(), cats.end(), "__metadata") == cats.end());
+  std::vector<std::string> cat_groups;
+  TraceLog::GetInstance()->GetKnownCategoryGroups(&cat_groups);
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c1") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c2") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c3") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c4") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c5,c6") != cat_groups.end());
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "c7,c8") != cat_groups.end());
+
   const std::vector<std::string> empty_categories;
   std::vector<std::string> included_categories;
   std::vector<std::string> excluded_categories;
@@ -893,8 +910,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Include nonexistent category -> no events
   Clear();
   included_categories.clear();
-  included_categories.push_back("not_found823564786");
-  TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("not_found823564786"),
                                       TraceLog::RECORD_UNTIL_FULL);
   TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
@@ -904,8 +920,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Include existent category -> only events of that category
   Clear();
   included_categories.clear();
-  included_categories.push_back("inc");
-  TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("inc"),
                                       TraceLog::RECORD_UNTIL_FULL);
   TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
@@ -916,64 +931,73 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Include existent wildcard -> all categories matching wildcard
   Clear();
   included_categories.clear();
-  included_categories.push_back("inc_wildcard_*");
-  included_categories.push_back("inc_wildchar_?_end");
-  TraceLog::GetInstance()->SetEnabled(included_categories, empty_categories,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("inc_wildcard_*,inc_wildchar_?_end"),
+      TraceLog::RECORD_UNTIL_FULL);
   TRACE_EVENT_INSTANT0("inc_wildcard_abc", "included",
-                       TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildcard_", "included", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "included",
-                       TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "not_inc",
-                       TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat1", "not_inc", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildcard_category,other_category", "included",
+      TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0(
+      "non_included_category,inc_wildcard_category", "included",
+      TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_abc"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildchar_x_end"));
   EXPECT_FALSE(FindMatchingValue("name", "not_inc"));
+  EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_category,other_category"));
+  EXPECT_TRUE(FindMatchingValue("cat",
+                                "non_included_category,inc_wildcard_category"));
 
   included_categories.clear();
 
   // Exclude nonexistent category -> all events
   Clear();
-  excluded_categories.clear();
-  excluded_categories.push_back("not_found823564786");
-  TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("-not_found823564786"),
                                       TraceLog::RECORD_UNTIL_FULL);
   TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("category1,category2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "cat1"));
   EXPECT_TRUE(FindMatchingValue("cat", "cat2"));
+  EXPECT_TRUE(FindMatchingValue("cat", "category1,category2"));
 
   // Exclude existent category -> only events of other categories
   Clear();
-  excluded_categories.clear();
-  excluded_categories.push_back("inc");
-  TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("-inc"),
                                       TraceLog::RECORD_UNTIL_FULL);
   TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc2,inc", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc,inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc2"));
   EXPECT_FALSE(FindMatchingValue("cat", "inc"));
+  EXPECT_FALSE(FindMatchingValue("cat", "inc2,inc"));
+  EXPECT_FALSE(FindMatchingValue("cat", "inc,inc2"));
 
   // Exclude existent wildcard -> all categories not matching wildcard
   Clear();
-  excluded_categories.clear();
-  excluded_categories.push_back("inc_wildcard_*");
-  excluded_categories.push_back("inc_wildchar_?_end");
-  TraceLog::GetInstance()->SetEnabled(empty_categories, excluded_categories,
-                                      TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("-inc_wildcard_*,-inc_wildchar_?_end"),
+      TraceLog::RECORD_UNTIL_FULL);
+  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc",
+      TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc",
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "not_inc",
-                       TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "included",
-                       TRACE_EVENT_SCOPE_THREAD);
+      TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat1", "included", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "included", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
@@ -1508,17 +1532,18 @@ TEST_F(TraceEventTestFixture, TraceEnableDisable) {
   ManualTestSetUp();
 
   TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEnabled(std::string(), TraceLog::RECORD_UNTIL_FULL);
+  CategoryFilter cf_inc_all("*");
+  trace_log->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(trace_log->IsEnabled());
   trace_log->SetDisabled();
   EXPECT_FALSE(trace_log->IsEnabled());
 
-  trace_log->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(trace_log->IsEnabled());
   const std::vector<std::string> empty;
-  trace_log->SetEnabled(empty, empty, TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetEnabled(CategoryFilter(""), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(trace_log->IsEnabled());
-  trace_log->SetEnabled(false, TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetDisabled();
   EXPECT_TRUE(trace_log->IsEnabled());
   trace_log->SetDisabled();
   EXPECT_FALSE(trace_log->IsEnabled());
@@ -1528,29 +1553,30 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   ManualTestSetUp();
 
   TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEnabled(std::string("foo,bar"), TraceLog::RECORD_UNTIL_FULL);
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("bar"));
-  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
-  trace_log->SetEnabled(std::string("foo2"), TraceLog::RECORD_UNTIL_FULL);
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo2"));
-  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
-  trace_log->SetEnabled(std::string(), TraceLog::RECORD_UNTIL_FULL);
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
+  trace_log->SetEnabled(CategoryFilter("foo,bar"), TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("bar"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
+  trace_log->SetEnabled(CategoryFilter("foo2"), TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo2"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
+  trace_log->SetEnabled(CategoryFilter(""), TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
   trace_log->SetDisabled();
   trace_log->SetDisabled();
   trace_log->SetDisabled();
-  EXPECT_FALSE(*trace_log->GetCategoryEnabled("foo"));
-  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
 
-  trace_log->SetEnabled(std::string("-foo,-bar"), TraceLog::RECORD_UNTIL_FULL);
-  EXPECT_FALSE(*trace_log->GetCategoryEnabled("foo"));
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
-  trace_log->SetEnabled(std::string("moo"), TraceLog::RECORD_UNTIL_FULL);
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("moo"));
-  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
+  trace_log->SetEnabled(CategoryFilter("-foo,-bar"),
+                        TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
+  trace_log->SetEnabled(CategoryFilter("moo"), TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("moo"));
+  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
   trace_log->SetDisabled();
   trace_log->SetDisabled();
 }
@@ -1572,7 +1598,7 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
 
   event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
-      std::string("*"),
+      CategoryFilter("*"),
       TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
                         TraceLog::ENABLE_SAMPLING));
 
@@ -1606,7 +1632,8 @@ class MyData : public base::debug::ConvertableToTraceFormat {
 
 TEST_F(TraceEventTestFixture, ConvertableTypes) {
   ManualTestSetUp();
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+      TraceLog::RECORD_UNTIL_FULL);
 
   scoped_ptr<MyData> data(new MyData());
   TRACE_EVENT1("foo", "bar", "data",
@@ -1667,9 +1694,10 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
 TraceEventCallbackTest* TraceEventCallbackTest::s_instance;
 
 TEST_F(TraceEventCallbackTest, TraceEventCallback) {
-  TRACE_EVENT_INSTANT0("all", "before enable", TRACE_EVENT_SCOPE_GLOBAL);
-  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("all", "before callback set", TRACE_EVENT_SCOPE_GLOBAL);
+  TRACE_EVENT_INSTANT0("all", "before enable", TRACE_EVENT_SCOPE_THREAD);
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+      TraceLog::RECORD_UNTIL_FULL);
+  TRACE_EVENT_INSTANT0("all", "before callback set", TRACE_EVENT_SCOPE_THREAD);
   TraceLog::GetInstance()->SetEventCallback(Callback);
   TRACE_EVENT_INSTANT0("all", "event1", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("all", "event2", TRACE_EVENT_SCOPE_GLOBAL);
@@ -1682,6 +1710,87 @@ TEST_F(TraceEventCallbackTest, TraceEventCallback) {
 }
 
 // TODO(dsinclair): Continuous Tracing unit test.
+
+// Test the category filter.
+TEST_F(TraceEventTestFixture, CategoryFilter) {
+  ManualTestSetUp();
+
+  // Using the default filter.
+  CategoryFilter default_cf = CategoryFilter(
+      CategoryFilter::kDefaultCategoryFilterString);
+  std::string category_filter_str = default_cf.ToString();
+  EXPECT_STREQ("-*Debug,-*Test", category_filter_str.c_str());
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
+
+  // Make sure that upon an empty string, we fall back to the default filter.
+  default_cf = CategoryFilter("");
+  category_filter_str = default_cf.ToString();
+  EXPECT_STREQ("-*Debug,-*Test", category_filter_str.c_str());
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
+
+  // Using an arbitrary non-empty filter.
+  CategoryFilter cf("included,-excluded,inc_pattern*,-exc_pattern*");
+  category_filter_str = cf.ToString();
+  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*",
+               category_filter_str.c_str());
+  EXPECT_TRUE(cf.IsCategoryGroupEnabled("included"));
+  EXPECT_TRUE(cf.IsCategoryGroupEnabled("inc_pattern_category"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("exc_pattern_category"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("excluded"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("not-excluded-nor-included"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
+
+  cf.Merge(default_cf);
+  category_filter_str = cf.ToString();
+  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*,-*Debug,-*Test",
+                category_filter_str.c_str());
+  cf.Clear();
+  EXPECT_FALSE(cf.HasIncludedPatterns());
+
+  CategoryFilter reconstructed_cf(category_filter_str);
+  category_filter_str = reconstructed_cf.ToString();
+  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*,-*Debug,-*Test",
+               category_filter_str.c_str());
+
+  // One included category.
+  CategoryFilter one_inc_cf("only_inc_cat");
+  category_filter_str = one_inc_cf.ToString();
+  EXPECT_STREQ("only_inc_cat", category_filter_str.c_str());
+
+  // One excluded category.
+  CategoryFilter one_exc_cf("-only_exc_cat");
+  category_filter_str = one_exc_cf.ToString();
+  EXPECT_STREQ("-only_exc_cat", category_filter_str.c_str());
+
+  // Test that IsEmptyOrContainsLeadingOrTrailingWhitespace actually catches
+  // categories that are explicitly forbiden.
+  // This method is called in a DCHECK to assert that we don't have these types
+  // of strings as categories.
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      " bad_category "));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      " bad_category"));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      "bad_category "));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      "   bad_category"));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      "bad_category   "));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      "   bad_category   "));
+  EXPECT_TRUE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      ""));
+  EXPECT_FALSE(CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+      "good_category"));
+}
 
 }  // namespace debug
 }  // namespace base

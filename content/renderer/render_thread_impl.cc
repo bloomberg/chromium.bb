@@ -208,12 +208,12 @@ void AddHistogramSample(void* hist, int sample) {
 }
 
 #if defined(ENABLE_WEBRTC)
-const unsigned char* GetCategoryEnabled(const char* name) {
-  return TRACE_EVENT_API_GET_CATEGORY_ENABLED(name);
+const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
+  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
 }
 
 void AddTraceEvent(char phase,
-                   const unsigned char* category_enabled,
+                   const unsigned char* category_group_enabled,
                    const char* name,
                    unsigned long long id,
                    int num_args,
@@ -221,9 +221,9 @@ void AddTraceEvent(char phase,
                    const unsigned char* arg_types,
                    const unsigned long long* arg_values,
                    unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_enabled, name, id, num_args,
-                                  arg_names, arg_types, arg_values, NULL,
-                                  flags);
+  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_group_enabled, name, id,
+                                  num_args, arg_names, arg_types, arg_values,
+                                  NULL, flags);
 }
 #endif
 
@@ -365,7 +365,7 @@ void RenderThreadImpl::Init() {
   AddFilter(db_message_filter_.get());
 
 #if defined(ENABLE_WEBRTC)
-  webrtc::SetupEventTracer(&GetCategoryEnabled, &AddTraceEvent);
+  webrtc::SetupEventTracer(&GetCategoryGroupEnabled, &AddTraceEvent);
 
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());

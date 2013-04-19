@@ -616,8 +616,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored.
     if (command_line.HasSwitch(switches::kTraceStartup)) {
+      base::debug::CategoryFilter category_filter(
+          command_line.GetSwitchValueASCII(switches::kTraceStartup));
       base::debug::TraceLog::GetInstance()->SetEnabled(
-          command_line.GetSwitchValueASCII(switches::kTraceStartup),
+          category_filter,
           base::debug::TraceLog::RECORD_UNTIL_FULL);
     }
 

@@ -54,23 +54,24 @@ const size_t kTraceEventBufferSize = 500000;
 const size_t kTraceEventBatchSize = 1000;
 const size_t kTraceEventInitialBufferSize = 1024;
 
-#define TRACE_EVENT_MAX_CATEGORIES 100
+#define MAX_CATEGORY_GROUPS 100
 
 namespace {
 
-// Parallel arrays g_categories and g_category_enabled are separate so that
-// a pointer to a member of g_category_enabled can be easily converted to an
-// index into g_categories. This allows macros to deal only with char enabled
-// pointers from g_category_enabled, and we can convert internally to determine
-// the category name from the char enabled pointer.
-const char* g_categories[TRACE_EVENT_MAX_CATEGORIES] = {
+// Parallel arrays g_category_groups and g_category_group_enabled are separate
+// so that a pointer to a member of g_category_group_enabled can be easily
+// converted to an index into g_category_groups. This allows macros to deal
+// only with char enabled pointers from g_category_group_enabled, and we can
+// convert internally to determine the category name from the char enabled
+// pointer.
+const char* g_category_groups[MAX_CATEGORY_GROUPS] = {
   "tracing already shutdown",
-  "tracing categories exhausted; must increase TRACE_EVENT_MAX_CATEGORIES",
+  "tracing categories exhausted; must increase MAX_CATEGORY_GROUPS",
   "__metadata",
 };
 
 // The enabled flag is char instead of bool so that the API can be used from C.
-unsigned char g_category_enabled[TRACE_EVENT_MAX_CATEGORIES] = { 0 };
+unsigned char g_category_group_enabled[MAX_CATEGORY_GROUPS] = { 0 };
 const int g_category_already_shutdown = 0;
 const int g_category_categories_exhausted = 1;
 const int g_category_metadata = 2;
@@ -140,7 +141,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     size_t index = oldest_event_index_;
     while (index != unused_event_index_) {
       const TraceEvent& event = GetEventAt(index);
-      if (category == event.category_enabled() &&
+      if (category == event.category_group_enabled() &&
           strcmp(event_name.c_str(), event.name()) == 0) {
         ++notify_count;
       }
@@ -203,7 +204,7 @@ class TraceBufferVector : public TraceBuffer {
     size_t notify_count = 0;
     for (size_t i = 0; i < Size(); i++) {
       const TraceEvent& event = GetEventAt(i);
-      if (category == event.category_enabled() &&
+      if (category == event.category_group_enabled() &&
           strcmp(event_name.c_str(), event.name()) == 0) {
         ++notify_count;
       }
@@ -254,7 +255,7 @@ void CopyTraceEventParameter(char** buffer,
 
 TraceEvent::TraceEvent()
     : id_(0u),
-      category_enabled_(NULL),
+      category_group_enabled_(NULL),
       name_(NULL),
       thread_id_(0),
       phase_(TRACE_EVENT_PHASE_BEGIN),
@@ -268,7 +269,7 @@ TraceEvent::TraceEvent(
     int thread_id,
     TimeTicks timestamp,
     char phase,
-    const unsigned char* category_enabled,
+    const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
     int num_args,
@@ -279,7 +280,7 @@ TraceEvent::TraceEvent(
     unsigned char flags)
     : timestamp_(timestamp),
       id_(id),
-      category_enabled_(category_enabled),
+      category_group_enabled_(category_group_enabled),
       name_(name),
       thread_id_(thread_id),
       phase_(phase),
@@ -352,7 +353,7 @@ TraceEvent::TraceEvent(
 TraceEvent::TraceEvent(const TraceEvent& other)
     : timestamp_(other.timestamp_),
       id_(other.id_),
-      category_enabled_(other.category_enabled_),
+      category_group_enabled_(other.category_group_enabled_),
       name_(other.name_),
       thread_id_(other.thread_id_),
       phase_(other.phase_),
@@ -379,7 +380,7 @@ TraceEvent& TraceEvent::operator=(const TraceEvent& other) {
 
   timestamp_ = other.timestamp_;
   id_ = other.id_;
-  category_enabled_ = other.category_enabled_;
+  category_group_enabled_ = other.category_group_enabled_;
   name_ = other.name_;
   parameter_copy_storage_ = other.parameter_copy_storage_;
   thread_id_ = other.thread_id_;
@@ -452,12 +453,12 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
 void TraceEvent::AppendAsJSON(std::string* out) const {
   int64 time_int64 = timestamp_.ToInternalValue();
   int process_id = TraceLog::GetInstance()->process_id();
-  // Category name checked at category creation time.
+  // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
   StringAppendF(out,
       "{\"cat\":\"%s\",\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ","
       "\"ph\":\"%c\",\"name\":\"%s\",\"args\":{",
-      TraceLog::GetCategoryName(category_enabled_),
+      TraceLog::GetCategoryGroupName(category_group_enabled_),
       process_id,
       thread_id_,
       time_int64,
@@ -632,12 +633,12 @@ void TraceSamplingThread::DefaultSampleCallback(TraceBucketData* bucket_data) {
     return;
   const char* const combined =
       reinterpret_cast<const char* const>(category_and_name);
-  const char* category;
+  const char* category_group;
   const char* name;
-  ExtractCategoryAndName(combined, &category, &name);
+  ExtractCategoryAndName(combined, &category_group, &name);
   TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_SAMPLE,
-                                  TraceLog::GetCategoryEnabled(category),
-                                  name, 0, 0, NULL, NULL, NULL, NULL, 0);
+      TraceLog::GetCategoryGroupEnabled(category_group),
+      name, 0, 0, NULL, NULL, NULL, NULL, 0);
 }
 
 void TraceSamplingThread::GetSamples() {
@@ -747,16 +748,18 @@ TraceLog::TraceLog()
       dispatching_to_observer_list_(false),
       watch_category_(NULL),
       trace_options_(RECORD_UNTIL_FULL),
-      sampling_thread_handle_(0) {
+      sampling_thread_handle_(0),
+      category_filter_(CategoryFilter::kDefaultCategoryFilterString) {
   // Trace is enabled or disabled on one thread while other threads are
   // accessing the enabled flag. We don't care whether edge-case events are
   // traced or not, so we allow races on the enabled flag to keep the trace
   // macros fast.
   // TODO(jbates): ANNOTATE_BENIGN_RACE_SIZED crashes windows TSAN bots:
-  // ANNOTATE_BENIGN_RACE_SIZED(g_category_enabled, sizeof(g_category_enabled),
-  //                            "trace_event category enabled");
-  for (int i = 0; i < TRACE_EVENT_MAX_CATEGORIES; ++i) {
-    ANNOTATE_BENIGN_RACE(&g_category_enabled[i],
+  // ANNOTATE_BENIGN_RACE_SIZED(g_category_group_enabled,
+  //                            sizeof(g_category_group_enabled),
+  //                           "trace_event category enabled");
+  for (int i = 0; i < MAX_CATEGORY_GROUPS; ++i) {
+    ANNOTATE_BENIGN_RACE(&g_category_group_enabled[i],
                          "trace_event category enabled");
   }
 #if defined(OS_NACL)  // NaCl shouldn't expose the process id.
@@ -771,112 +774,100 @@ TraceLog::TraceLog()
 TraceLog::~TraceLog() {
 }
 
-const unsigned char* TraceLog::GetCategoryEnabled(const char* name) {
+const unsigned char* TraceLog::GetCategoryGroupEnabled(
+    const char* category_group) {
   TraceLog* tracelog = GetInstance();
   if (!tracelog) {
-    DCHECK(!g_category_enabled[g_category_already_shutdown]);
-    return &g_category_enabled[g_category_already_shutdown];
+    DCHECK(!g_category_group_enabled[g_category_already_shutdown]);
+    return &g_category_group_enabled[g_category_already_shutdown];
   }
-  return tracelog->GetCategoryEnabledInternal(name);
+  return tracelog->GetCategoryGroupEnabledInternal(category_group);
 }
 
-const char* TraceLog::GetCategoryName(const unsigned char* category_enabled) {
-  // Calculate the index of the category by finding category_enabled in
-  // g_category_enabled array.
-  uintptr_t category_begin = reinterpret_cast<uintptr_t>(g_category_enabled);
-  uintptr_t category_ptr = reinterpret_cast<uintptr_t>(category_enabled);
+const char* TraceLog::GetCategoryGroupName(
+    const unsigned char* category_group_enabled) {
+  // Calculate the index of the category group by finding
+  // category_group_enabled in g_category_group_enabled array.
+  uintptr_t category_begin =
+      reinterpret_cast<uintptr_t>(g_category_group_enabled);
+  uintptr_t category_ptr = reinterpret_cast<uintptr_t>(category_group_enabled);
   DCHECK(category_ptr >= category_begin &&
-         category_ptr < reinterpret_cast<uintptr_t>(g_category_enabled +
-                                               TRACE_EVENT_MAX_CATEGORIES)) <<
+         category_ptr < reinterpret_cast<uintptr_t>(
+             g_category_group_enabled + MAX_CATEGORY_GROUPS)) <<
       "out of bounds category pointer";
   uintptr_t category_index =
-      (category_ptr - category_begin) / sizeof(g_category_enabled[0]);
-  return g_categories[category_index];
+      (category_ptr - category_begin) / sizeof(g_category_group_enabled[0]);
+  return g_category_groups[category_index];
 }
 
-static void EnableMatchingCategory(int category_index,
-                                   const std::vector<std::string>& patterns,
-                                   unsigned char matched_value,
-                                   unsigned char unmatched_value) {
-  std::vector<std::string>::const_iterator ci = patterns.begin();
-  bool is_match = false;
-  for (; ci != patterns.end(); ++ci) {
-    is_match = MatchPattern(g_categories[category_index], ci->c_str());
-    if (is_match)
-      break;
-  }
-  g_category_enabled[category_index] = is_match ?
-      matched_value : unmatched_value;
+void TraceLog::EnableIncludedCategoryGroup(int category_index) {
+  bool is_enabled = category_filter_.IsCategoryGroupEnabled(
+      g_category_groups[category_index]);
+  g_category_group_enabled[category_index] =
+      is_enabled ? TraceLog::CATEGORY_ENABLED : 0;
 }
 
-// Enable/disable each category based on the category filters in |patterns|.
-// If the category name matches one of the patterns, its enabled status is set
-// to |matched_value|. Otherwise its enabled status is set to |unmatched_value|.
-static void EnableMatchingCategories(const std::vector<std::string>& patterns,
-                                     unsigned char matched_value,
-                                     unsigned char unmatched_value) {
+void TraceLog::EnableIncludedCategoryGroups() {
   for (int i = 0; i < g_category_index; i++)
-    EnableMatchingCategory(i, patterns, matched_value, unmatched_value);
+    EnableIncludedCategoryGroup(i);
 }
 
-const unsigned char* TraceLog::GetCategoryEnabledInternal(const char* name) {
+const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
+    const char* category_group) {
+  DCHECK(!strchr(category_group, '"')) <<
+      "Category groups may not contain double quote";
   AutoLock lock(lock_);
-  DCHECK(!strchr(name, '"')) << "Category names may not contain double quote";
 
-  unsigned char* category_enabled = NULL;
-  // Search for pre-existing category matching this name
+  unsigned char* category_group_enabled = NULL;
+  // Search for pre-existing category group.
   for (int i = 0; i < g_category_index; i++) {
-    if (strcmp(g_categories[i], name) == 0) {
-      category_enabled = &g_category_enabled[i];
+    if (strcmp(g_category_groups[i], category_group) == 0) {
+      category_group_enabled = &g_category_group_enabled[i];
       break;
     }
   }
 
-  if (!category_enabled) {
-    // Create a new category
-    DCHECK(g_category_index < TRACE_EVENT_MAX_CATEGORIES) <<
-        "must increase TRACE_EVENT_MAX_CATEGORIES";
-    if (g_category_index < TRACE_EVENT_MAX_CATEGORIES) {
+  if (!category_group_enabled) {
+    // Create a new category group
+    DCHECK(g_category_index < MAX_CATEGORY_GROUPS) <<
+        "must increase MAX_CATEGORY_GROUPS";
+    if (g_category_index < MAX_CATEGORY_GROUPS) {
       int new_index = g_category_index++;
-      // Don't hold on to the name pointer, so that we can create categories
-      // with strings not known at compile time (this is required by
-      // SetWatchEvent).
-      const char* new_name = strdup(name);
-      ANNOTATE_LEAKING_OBJECT_PTR(new_name);
-      g_categories[new_index] = new_name;
-      DCHECK(!g_category_enabled[new_index]);
+      // Don't hold on to the category_group pointer, so that we can create
+      // category groups with strings not known at compile time (this is
+      // required by SetWatchEvent).
+      const char* new_group = strdup(category_group);
+      ANNOTATE_LEAKING_OBJECT_PTR(new_group);
+      g_category_groups[new_index] = new_group;
+      DCHECK(!g_category_group_enabled[new_index]);
       if (enable_count_) {
-        // Note that if both included and excluded_categories are empty, the
-        // else clause below excludes nothing, thereby enabling this category.
-        if (!included_categories_.empty()) {
-          EnableMatchingCategory(new_index, included_categories_,
-                                 CATEGORY_ENABLED, 0);
-        } else {
-          EnableMatchingCategory(new_index, excluded_categories_,
-                                 0, CATEGORY_ENABLED);
-        }
+        // Note that if both included and excluded patterns in the
+        // CategoryFilter are empty, we exclude nothing,
+        // thereby enabling this category group.
+        EnableIncludedCategoryGroup(new_index);
       } else {
-        g_category_enabled[new_index] = 0;
+        g_category_group_enabled[new_index] = 0;
       }
-      category_enabled = &g_category_enabled[new_index];
+      category_group_enabled = &g_category_group_enabled[new_index];
     } else {
-      category_enabled = &g_category_enabled[g_category_categories_exhausted];
+      category_group_enabled =
+          &g_category_group_enabled[g_category_categories_exhausted];
     }
   }
 #if defined(OS_ANDROID)
-  ApplyATraceEnabledFlag(category_enabled);
+  ApplyATraceEnabledFlag(category_group_enabled);
 #endif
-  return category_enabled;
+  return category_group_enabled;
 }
 
-void TraceLog::GetKnownCategories(std::vector<std::string>* categories) {
+void TraceLog::GetKnownCategoryGroups(
+    std::vector<std::string>* category_groups) {
   AutoLock lock(lock_);
-  for (int i = g_num_builtin_categories; i < g_category_index; i++)
-    categories->push_back(g_categories[i]);
+  for (int i = 0; i < g_category_index; i++)
+    category_groups->push_back(g_category_groups[i]);
 }
 
-void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
-                          const std::vector<std::string>& excluded_categories,
+void TraceLog::SetEnabled(const CategoryFilter& category_filter,
                           Options options) {
   AutoLock lock(lock_);
 
@@ -888,17 +879,14 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
 
     // Tracing is already enabled, so just merge in enabled categories.
     // We only expand the set of enabled categories upon nested SetEnable().
-    if (!included_categories_.empty() && !included_categories.empty()) {
-      included_categories_.insert(included_categories_.end(),
-                                  included_categories.begin(),
-                                  included_categories.end());
-      EnableMatchingCategories(included_categories_, CATEGORY_ENABLED, 0);
+    if (category_filter_.HasIncludedPatterns() &&
+        category_filter.HasIncludedPatterns()) {
+      category_filter_.Merge(category_filter);
     } else {
       // If either old or new included categories are empty, allow all events.
-      included_categories_.clear();
-      excluded_categories_.clear();
-      EnableMatchingCategories(excluded_categories_, 0, CATEGORY_ENABLED);
+      category_filter_.Clear();
     }
+    EnableIncludedCategoryGroups();
     return;
   }
 
@@ -918,14 +906,8 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
                     OnTraceLogWillEnable());
   dispatching_to_observer_list_ = false;
 
-  included_categories_ = included_categories;
-  excluded_categories_ = excluded_categories;
-  // Note that if both included and excluded_categories are empty, the else
-  // clause below excludes nothing, thereby enabling all categories.
-  if (!included_categories_.empty())
-    EnableMatchingCategories(included_categories_, CATEGORY_ENABLED, 0);
-  else
-    EnableMatchingCategories(excluded_categories_, 0, CATEGORY_ENABLED);
+  category_filter_ = CategoryFilter(category_filter);
+  EnableIncludedCategoryGroups();
 
   if (options & ENABLE_SAMPLING) {
     sampling_thread_.reset(new TraceSamplingThread);
@@ -948,35 +930,10 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
   }
 }
 
-void TraceLog::SetEnabled(const std::string& categories, Options options) {
-  std::vector<std::string> included, excluded;
-  // Tokenize list of categories, delimited by ','.
-  StringTokenizer tokens(categories, ",");
-  while (tokens.GetNext()) {
-    bool is_included = true;
-    std::string category = tokens.token();
-    // Excluded categories start with '-'.
-    if (category.at(0) == '-') {
-      // Remove '-' from category string.
-      category = category.substr(1);
-      is_included = false;
-    }
-    if (is_included)
-      included.push_back(category);
-    else
-      excluded.push_back(category);
-  }
-  SetEnabled(included, excluded, options);
-}
-
-void TraceLog::GetEnabledTraceCategories(
-    std::vector<std::string>* included_out,
-    std::vector<std::string>* excluded_out) {
+const CategoryFilter& TraceLog::GetCurrentCategoryFilter() {
   AutoLock lock(lock_);
-  if (enable_count_) {
-    *included_out = included_categories_;
-    *excluded_out = excluded_categories_;
-  }
+  DCHECK(enable_count_ > 0);
+  return category_filter_;
 }
 
 void TraceLog::SetDisabled() {
@@ -1007,20 +964,12 @@ void TraceLog::SetDisabled() {
                     OnTraceLogWillDisable());
   dispatching_to_observer_list_ = false;
 
-  included_categories_.clear();
-  excluded_categories_.clear();
+  category_filter_.Clear();
   watch_category_ = NULL;
   watch_event_name_ = "";
   for (int i = 0; i < g_category_index; i++)
-    g_category_enabled[i] = 0;
+    g_category_group_enabled[i] = 0;
   AddThreadNameMetadataEvents();
-}
-
-void TraceLog::SetEnabled(bool enabled, Options options) {
-  if (enabled)
-    SetEnabled(std::vector<std::string>(), std::vector<std::string>(), options);
-  else
-    SetDisabled();
 }
 
 void TraceLog::AddEnabledStateObserver(EnabledStateChangedObserver* listener) {
@@ -1082,7 +1031,7 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
 
 void TraceLog::AddTraceEvent(
     char phase,
-    const unsigned char* category_enabled,
+    const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
     int num_args,
@@ -1093,7 +1042,7 @@ void TraceLog::AddTraceEvent(
     unsigned char flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
-  AddTraceEventWithThreadIdAndTimestamp(phase, category_enabled, name, id,
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
                                         thread_id, now, num_args, arg_names,
                                         arg_types, arg_values,
                                         convertable_values, flags);
@@ -1101,7 +1050,7 @@ void TraceLog::AddTraceEvent(
 
 void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     char phase,
-    const unsigned char* category_enabled,
+    const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
     int thread_id,
@@ -1118,7 +1067,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     id ^= process_id_hash_;
 
 #if defined(OS_ANDROID)
-  SendToATrace(phase, GetCategoryName(category_enabled), name, id,
+  SendToATrace(phase, GetCategoryGroupName(category_group_enabled), name, id,
                num_args, arg_names, arg_types, arg_values, flags);
 #endif
 
@@ -1129,7 +1078,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   {
     AutoLock lock(lock_);
-    if (*category_enabled != CATEGORY_ENABLED)
+    if (*category_group_enabled != CATEGORY_ENABLED)
       return;
     if (logged_events_->IsFull())
       return;
@@ -1165,14 +1114,14 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
 
     logged_events_->AddEvent(TraceEvent(thread_id,
-        now, phase, category_enabled, name, id,
+        now, phase, category_group_enabled, name, id,
         num_args, arg_names, arg_types, arg_values,
         convertable_values, flags));
 
     if (logged_events_->IsFull())
       notifier.AddNotificationWhileLocked(TRACE_BUFFER_FULL);
 
-    if (watch_category_ == category_enabled && watch_event_name_ == name)
+    if (watch_category_ == category_group_enabled && watch_event_name_ == name)
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
 
     event_callback_copy = event_callback_;
@@ -1180,7 +1129,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   notifier.SendNotificationIfAny();
   if (event_callback_copy != NULL) {
-    event_callback_copy(phase, category_enabled, name, id,
+    event_callback_copy(phase, category_group_enabled, name, id,
         num_args, arg_names, arg_types, arg_values,
         flags);
   }
@@ -1211,7 +1160,8 @@ void TraceLog::AddTraceEventEtw(char phase,
 
 void TraceLog::SetWatchEvent(const std::string& category_name,
                              const std::string& event_name) {
-  const unsigned char* category = GetCategoryEnabled(category_name.c_str());
+  const unsigned char* category = GetCategoryGroupEnabled(
+      category_name.c_str());
   size_t notify_count = 0;
   {
     AutoLock lock(lock_);
@@ -1252,7 +1202,7 @@ void TraceLog::AddThreadNameMetadataEvents() {
       trace_event_internal::SetTraceValue(it->second, &arg_type, &arg_value);
       logged_events_->AddEvent(TraceEvent(it->first,
           TimeTicks(), TRACE_EVENT_PHASE_METADATA,
-          &g_category_enabled[g_category_metadata],
+          &g_category_group_enabled[g_category_metadata],
           "thread_name", trace_event_internal::kNoEventId,
           num_args, &arg_name, &arg_type, &arg_value, NULL,
           TRACE_EVENT_FLAG_NONE));
@@ -1287,6 +1237,145 @@ void TraceLog::SetTimeOffset(TimeDelta offset) {
   time_offset_ = offset;
 }
 
+bool CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+    const std::string& str) {
+  return  str.empty() ||
+          str.at(0) == ' ' ||
+          str.at(str.length() - 1) == ' ';
+}
+
+static bool DoesCategoryGroupContainCategory(const char* category_group,
+                                             const char* category) {
+  DCHECK(category);
+  CStringTokenizer category_group_tokens(category_group,
+                          category_group + strlen(category_group), ",");
+  while (category_group_tokens.GetNext()) {
+    std::string category_group_token = category_group_tokens.token();
+    // Don't allow empty tokens, nor tokens with leading or trailing space.
+    DCHECK(!CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
+        category_group_token))
+        << "Disallowed category string";
+    if (MatchPattern(category_group_token.c_str(), category))
+      return true;
+  }
+  return false;
+}
+
+// Enable everything but debug and test categories by default.
+const char* CategoryFilter::kDefaultCategoryFilterString = "-*Debug,-*Test";
+
+CategoryFilter::CategoryFilter(const std::string& filter_string) {
+  if (!filter_string.empty())
+    Initialize(filter_string);
+  else
+    Initialize(CategoryFilter::kDefaultCategoryFilterString);
+}
+
+CategoryFilter::CategoryFilter(const CategoryFilter& cf)
+    : included_(cf.included_),
+      excluded_(cf.excluded_) {
+}
+
+CategoryFilter::~CategoryFilter() {
+}
+
+CategoryFilter& CategoryFilter::operator=(const CategoryFilter& rhs) {
+  if (this == &rhs)
+    return *this;
+
+  included_ = rhs.included_;
+  excluded_ = rhs.excluded_;
+  return *this;
+}
+
+void CategoryFilter::Initialize(const std::string& filter_string) {
+  // Tokenize list of categories, delimited by ','.
+  StringTokenizer tokens(filter_string, ",");
+  // Add each token to the appropriate list (included_,excluded_).
+  while (tokens.GetNext()) {
+    std::string category = tokens.token();
+    // Ignore empty categories.
+    if (category.empty())
+      continue;
+    // Excluded categories start with '-'.
+    if (category.at(0) == '-') {
+      // Remove '-' from category string.
+      category = category.substr(1);
+      excluded_.push_back(category);
+    } else {
+      included_.push_back(category);
+    }
+  }
+}
+
+void CategoryFilter::WriteString(std::string* out,
+                                 bool included) const {
+  std::vector<std::string>::const_iterator ci;
+  std::vector<std::string>::const_iterator end;
+  if (included) {
+    ci = included_.begin();
+    end = included_.end();
+  } else {
+    ci = excluded_.begin();
+    end = excluded_.end();
+  }
+
+  // Prepend commas for all excluded categories IF we have included categories.
+  bool prepend_comma_for_first_excluded = !included && !included_.empty();
+  int token_cnt = 0;
+  for (; ci != end; ++ci) {
+    if (token_cnt > 0 || prepend_comma_for_first_excluded)
+      StringAppendF(out, ",");
+    StringAppendF(out, "%s%s", (included ? "" : "-"), ci->c_str());
+    ++token_cnt;
+  }
+}
+
+std::string CategoryFilter::ToString() const {
+  std::string filter_string;
+  WriteString(&filter_string, true);
+  WriteString(&filter_string, false);
+
+  return filter_string;
+}
+
+bool CategoryFilter::IsCategoryGroupEnabled(
+    const char* category_group_name) const {
+  // TraceLog should call this method only as  part of enabling/disabling
+  // categories.
+  std::vector<std::string>::const_iterator ci = included_.begin();
+  for (; ci != included_.end(); ++ci) {
+    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
+      return true;
+  }
+  ci = excluded_.begin();
+  for (; ci != excluded_.end(); ++ci) {
+    if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
+      return false;
+  }
+  // If the category group is not excluded, and there are no included patterns
+  // we consider this pattern enabled.
+  return included_.empty();
+}
+
+void CategoryFilter::Merge(const CategoryFilter& nested_filter) {
+  included_.insert(included_.end(),
+                   nested_filter.included_.begin(),
+                   nested_filter.included_.end());
+  excluded_.insert(excluded_.end(),
+                   nested_filter.excluded_.begin(),
+                   nested_filter.excluded_.end());
+}
+
+bool CategoryFilter::HasIncludedPatterns() const {
+  return !included_.empty();
+}
+
+void CategoryFilter::Clear() {
+  included_.clear();
+  excluded_.clear();
+}
+
 }  // namespace debug
 }  // namespace base
 
@@ -1294,20 +1383,20 @@ namespace trace_event_internal {
 
 ScopedTrace::ScopedTrace(
     TRACE_EVENT_API_ATOMIC_WORD* event_uid, const char* name) {
-  category_enabled_ =
+  category_group_enabled_ =
     reinterpret_cast<const unsigned char*>(TRACE_EVENT_API_ATOMIC_LOAD(
         *event_uid));
-  if (!category_enabled_) {
-    category_enabled_ = TRACE_EVENT_API_GET_CATEGORY_ENABLED("gpu");
+  if (!category_group_enabled_) {
+    category_group_enabled_ = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("gpu");
     TRACE_EVENT_API_ATOMIC_STORE(
         *event_uid,
-        reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(category_enabled_));
+        reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(category_group_enabled_));
   }
-  if (*category_enabled_) {
+  if (*category_group_enabled_) {
     name_ = name;
     TRACE_EVENT_API_ADD_TRACE_EVENT(
         TRACE_EVENT_PHASE_BEGIN,    // phase
-        category_enabled_,          // category enabled
+        category_group_enabled_,          // category enabled
         name,                       // name
         0,                          // id
         0,                          // num_args
@@ -1317,15 +1406,15 @@ ScopedTrace::ScopedTrace(
         NULL,                       // convertable_values
         TRACE_EVENT_FLAG_NONE);     // flags
   } else {
-    category_enabled_ = NULL;
+    category_group_enabled_ = NULL;
   }
 }
 
 ScopedTrace::~ScopedTrace() {
-  if (category_enabled_ && *category_enabled_) {
+  if (category_group_enabled_ && *category_group_enabled_) {
     TRACE_EVENT_API_ADD_TRACE_EVENT(
         TRACE_EVENT_PHASE_END,   // phase
-        category_enabled_,       // category enabled
+        category_group_enabled_,       // category enabled
         name_,                   // name
         0,                       // id
         0,                       // num_args

@@ -26,19 +26,9 @@ class TraceControllerImpl : public TraceController {
   // startup tracing.
   void InitStartupTracing(const CommandLine& command_line);
 
-  // Same as above, but specifies which categories to trace.
-  // If both included_categories and excluded_categories are empty,
-  //   all categories are traced.
-  // Else if included_categories is non-empty, only those are traced.
-  // Else if excluded_categories is non-empty, everything but those are traced.
-  bool BeginTracing(TraceSubscriber* subscriber,
-                    const std::vector<std::string>& included_categories,
-                    const std::vector<std::string>& excluded_categories,
-                    base::debug::TraceLog::Options options);
-
   // TraceController implementation:
   virtual bool BeginTracing(TraceSubscriber* subscriber,
-                            const std::string& categories,
+                            const std::string& category_patterns,
                             base::debug::TraceLog::Options options) OVERRIDE;
   virtual  bool EndTracingAsync(TraceSubscriber* subscriber) OVERRIDE;
   virtual bool GetTraceBufferPercentFullAsync(
@@ -48,7 +38,8 @@ class TraceControllerImpl : public TraceController {
                              const std::string& event_name) OVERRIDE;
   virtual bool CancelWatchEvent(TraceSubscriber* subscriber) OVERRIDE;
   virtual void CancelSubscriber(TraceSubscriber* subscriber) OVERRIDE;
-  virtual bool GetKnownCategoriesAsync(TraceSubscriber* subscriber) OVERRIDE;
+  virtual bool GetKnownCategoryGroupsAsync(TraceSubscriber* subscriber)
+      OVERRIDE;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;
@@ -84,7 +75,7 @@ class TraceControllerImpl : public TraceController {
   void AddFilter(TraceMessageFilter* filter);
   void RemoveFilter(TraceMessageFilter* filter);
   void OnTracingBegan(TraceSubscriber* subscriber);
-  void OnEndTracingAck(const std::vector<std::string>& known_categories);
+  void OnEndTracingAck(const std::vector<std::string>& known_category_groups);
   void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
   void OnTraceNotification(int notification);
@@ -98,13 +89,12 @@ class TraceControllerImpl : public TraceController {
   int pending_bpf_ack_count_;
   float maximum_bpf_;
   bool is_tracing_;
-  bool is_get_categories_;
-  std::set<std::string> known_categories_;
-  std::vector<std::string> included_categories_;
-  std::vector<std::string> excluded_categories_;
+  bool is_get_category_groups_;
+  std::set<std::string> known_category_groups_;
   std::string watch_category_;
   std::string watch_name_;
   base::debug::TraceLog::Options trace_options_;
+  base::debug::CategoryFilter category_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceControllerImpl);
 };

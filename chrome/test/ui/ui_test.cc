@@ -509,8 +509,8 @@ void UITestBase::AppendBrowserLaunchSwitch(const char* name,
   launch_arguments_.AppendSwitchASCII(name, value);
 }
 
-bool UITestBase::BeginTracing(const std::string& categories) {
-  return automation()->BeginTracing(categories);
+bool UITestBase::BeginTracing(const std::string& category_patterns) {
+  return automation()->BeginTracing(category_patterns);
 }
 
 std::string UITestBase::EndTracing() {

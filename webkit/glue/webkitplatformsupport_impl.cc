@@ -460,8 +460,8 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
 }
 
 const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
-    const char* category_name) {
-  return TRACE_EVENT_API_GET_CATEGORY_ENABLED(category_name);
+    const char* category_group) {
+  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
 }
 
 long* WebKitPlatformSupportImpl::getTraceSamplingState(
@@ -481,7 +481,7 @@ long* WebKitPlatformSupportImpl::getTraceSamplingState(
 
 void WebKitPlatformSupportImpl::addTraceEvent(
     char phase,
-    const unsigned char* category_enabled,
+    const unsigned char* category_group_enabled,
     const char* name,
     unsigned long long id,
     int num_args,
@@ -489,7 +489,7 @@ void WebKitPlatformSupportImpl::addTraceEvent(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_enabled, name, id,
+  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_group_enabled, name, id,
                                   num_args, arg_names, arg_types,
                                   arg_values, NULL, flags);
 }

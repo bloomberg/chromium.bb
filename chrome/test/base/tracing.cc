@@ -27,20 +27,20 @@ class InProcessTraceController : public content::TraceSubscriber {
         watch_notification_count_(0) {}
   virtual ~InProcessTraceController() {}
 
-  bool BeginTracing(const std::string& categories) {
+  bool BeginTracing(const std::string& category_patterns) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return content::TraceController::GetInstance()->BeginTracing(
-        this, categories, base::debug::TraceLog::RECORD_UNTIL_FULL);
+        this, category_patterns, base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 
-  bool BeginTracingWithWatch(const std::string& categories,
+  bool BeginTracingWithWatch(const std::string& category_patterns,
                              const std::string& category_name,
                              const std::string& event_name,
                              int num_occurrences) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(num_occurrences > 0);
     watch_notification_count_ = num_occurrences;
-    return BeginTracing(categories) &&
+    return BeginTracing(category_patterns) &&
            content::TraceController::GetInstance()->SetWatchEvent(
                this, category_name, event_name);
   }
@@ -135,16 +135,17 @@ class InProcessTraceController : public content::TraceSubscriber {
 
 namespace tracing {
 
-bool BeginTracing(const std::string& categories) {
-  return InProcessTraceController::GetInstance()->BeginTracing(categories);
+bool BeginTracing(const std::string& category_patterns) {
+  return InProcessTraceController::GetInstance()->BeginTracing(
+      category_patterns);
 }
 
-bool BeginTracingWithWatch(const std::string& categories,
+bool BeginTracingWithWatch(const std::string& category_patterns,
                            const std::string& category_name,
                            const std::string& event_name,
                            int num_occurrences) {
   return InProcessTraceController::GetInstance()->BeginTracingWithWatch(
-      categories, category_name, event_name, num_occurrences);
+      category_patterns, category_name, event_name, num_occurrences);
 }
 
 bool WaitForWatchEvent(base::TimeDelta timeout) {

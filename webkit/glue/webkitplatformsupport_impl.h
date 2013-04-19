@@ -96,7 +96,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual long* getTraceSamplingState(const unsigned thread_bucket);
   virtual void addTraceEvent(
       char phase,
-      const unsigned char* category_enabled,
+      const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
       int num_args,
