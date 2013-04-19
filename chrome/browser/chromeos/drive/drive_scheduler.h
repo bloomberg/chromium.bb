@@ -375,7 +375,7 @@ class DriveScheduler
 
   // Notifies updates to observers.
   void NotifyJobAdded(const JobInfo& job_info);
-  void NotifyJobDone(const JobInfo& job_info);
+  void NotifyJobDone(const JobInfo& job_info, DriveFileError error);
   void NotifyJobUpdated(const JobInfo& job_info);
 
   // Number of jobs in flight for each queue.

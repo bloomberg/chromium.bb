@@ -912,9 +912,11 @@ void DriveScheduler::NotifyJobAdded(const JobInfo& job_info) {
   FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobAdded(job_info));
 }
 
-void DriveScheduler::NotifyJobDone(const JobInfo& job_info) {
+void DriveScheduler::NotifyJobDone(const JobInfo& job_info,
+                                   DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobDone(job_info));
+  FOR_EACH_OBSERVER(JobListObserver, observer_list_,
+                    OnJobDone(job_info, error));
 }
 
 void DriveScheduler::NotifyJobUpdated(const JobInfo& job_info) {
