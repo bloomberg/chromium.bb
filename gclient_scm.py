@@ -16,6 +16,9 @@ import scm
 import subprocess2
 
 
+THIS_FILE_PATH = os.path.abspath(__file__)
+
+
 class DiffFiltererWrapper(object):
   """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
@@ -653,8 +656,9 @@ class GitWrapper(SCMWrapper):
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       print('')
-
-    clone_cmd = ['clone', '--progress']
+    template_path = os.path.join(
+        os.path.dirname(THIS_FILE_PATH), 'git-templates')
+    clone_cmd = ['clone', '--progress', '--template=%s' % template_path]
     if revision.startswith('refs/heads/'):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
