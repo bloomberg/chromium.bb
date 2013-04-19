@@ -439,7 +439,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
 
     setLastCheckedRequest(request);
 
-    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(action, request);
+    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(this, action, request);
     if (policy == PolicyDownload) {
         ResourceRequest mutableRequest(request);
         frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);

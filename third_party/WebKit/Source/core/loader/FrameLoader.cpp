@@ -250,8 +250,8 @@ FrameLoader::~FrameLoader()
 void FrameLoader::init()
 {
     // This somewhat odd set of steps gives the frame an initial empty document.
-    setPolicyDocumentLoader(m_client->createDocumentLoader(ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData()).get());
-    setProvisionalDocumentLoader(m_policyDocumentLoader.get());
+    setProvisionalDocumentLoader(m_client->createDocumentLoader(ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData()).get());
+    m_provisionalDocumentLoader->setFrame(m_frame);
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
@@ -266,8 +266,6 @@ void FrameLoader::setDefersLoading(bool defers)
         m_documentLoader->setDefersLoading(defers);
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->setDefersLoading(defers);
-    if (m_policyDocumentLoader)
-        m_policyDocumentLoader->setDefersLoading(defers);
     history()->setDefersLoading(defers);
 
     if (!defers) {
@@ -1273,7 +1271,7 @@ void FrameLoader::load(DocumentLoader* newDocumentLoader)
     loadWithDocumentLoader(newDocumentLoader, type, 0);
 }
 
-void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType type, PassRefPtr<FormState> prpFormState)
+void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType type, PassRefPtr<FormState> formState)
 {
     // Retain because dispatchBeforeLoadEvent may release the last reference to it.
     RefPtr<Frame> protect(m_frame);
@@ -1292,7 +1290,6 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
         m_previousURL = m_frame->document()->url();
 
     m_loadType = type;
-    RefPtr<FormState> formState = prpFormState;
     bool isFormSubmission = formState;
 
     const KURL& newURL = loader->request().url();
@@ -1300,16 +1297,8 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
 
     if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, type, newURL))
         checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(loader->request(), type, isFormSubmission));
-    else {
-        if (Frame* parent = m_frame->tree()->parent())
-            loader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
-
-        setPolicyDocumentLoader(loader);
-        if (loader->triggeringAction().isEmpty())
-            loader->setTriggeringAction(NavigationAction(loader->request(), type, isFormSubmission));
-
-        checkNavigationPolicyAndContinueLoad(formState);
-    }
+    else
+        checkNavigationPolicyAndContinueLoad(loader, formState);
 }
 
 void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
@@ -1377,10 +1366,7 @@ void FrameLoader::reloadWithOverrideEncoding(const String& encoding)
     request.setCachePolicy(ReturnCacheDataElseLoad);
 
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
-    setPolicyDocumentLoader(loader.get());
-
     loader->setOverrideEncoding(encoding);
-
     loadWithDocumentLoader(loader.get(), FrameLoadTypeReload, 0);
 }
 
@@ -1546,26 +1532,9 @@ void FrameLoader::setDocumentLoader(DocumentLoader* loader)
     m_documentLoader = loader;
 }
 
-void FrameLoader::setPolicyDocumentLoader(DocumentLoader* loader)
-{
-    if (m_policyDocumentLoader == loader)
-        return;
-
-    ASSERT(m_frame);
-    if (loader)
-        loader->setFrame(m_frame);
-    if (m_policyDocumentLoader
-            && m_policyDocumentLoader != m_provisionalDocumentLoader
-            && m_policyDocumentLoader != m_documentLoader)
-        m_policyDocumentLoader->detachFromFrame();
-
-    m_policyDocumentLoader = loader;
-}
-
 void FrameLoader::setProvisionalDocumentLoader(DocumentLoader* loader)
 {
     ASSERT(!loader || !m_provisionalDocumentLoader);
-    ASSERT(!loader || loader->frameLoader() == this);
 
     if (m_provisionalDocumentLoader && m_provisionalDocumentLoader != m_documentLoader)
         m_provisionalDocumentLoader->detachFromFrame();
@@ -1918,9 +1887,6 @@ bool FrameLoader::subframeIsLoading() const
             return true;
         documentLoader = childLoader->provisionalDocumentLoader();
         if (documentLoader && documentLoader->isLoadingInAPISense())
-            return true;
-        documentLoader = childLoader->policyDocumentLoader();
-        if (documentLoader)
             return true;
     }
     return false;
@@ -2583,27 +2549,30 @@ bool FrameLoader::fireBeforeUnloadEvent(Chrome* chrome)
     return chrome->runBeforeUnloadConfirmPanel(text, m_frame);
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState)
+void FrameLoader::checkNavigationPolicyAndContinueLoad(DocumentLoader* loader, PassRefPtr<FormState> formState)
 {
-    // If we loaded an alternate page to replace an unreachableURL, we'll get in here with a
-    // nil policyDataSource because loading the alternate page will have passed
-    // through this method already, nested; otherwise, policyDataSource should still be set.
-    ASSERT(m_policyDocumentLoader || !m_provisionalDocumentLoader->unreachableURL().isEmpty());
-
     // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
+
+    loader->setFrame(m_frame);
+
+    if (Frame* parent = m_frame->tree()->parent())
+        loader->setOverrideEncoding(parent->loader()->documentLoader()->overrideEncoding());
+
+    if (loader->triggeringAction().isEmpty())
+        loader->setTriggeringAction(NavigationAction(loader->request(), m_loadType, formState));
 
     bool isTargetItem = history()->provisionalItem() ? history()->provisionalItem()->isTargetItem() : false;
 
     bool shouldContinue = false;
     if (m_stateMachine.committedFirstRealDocumentLoad() || !m_frame->ownerElement()
-        || m_frame->ownerElement()->dispatchBeforeLoadEvent(m_policyDocumentLoader->request().url().string())) {
+        || m_frame->ownerElement()->dispatchBeforeLoadEvent(loader->request().url().string())) {
         // We skip dispatching the beforeload event if we've already
         // committed a real document load because the event would leak
         // subsequent activity by the frame which the parent frame isn't
         // supposed to learn. For example, if the child frame navigated to
         // a new URL, the parent frame shouldn't learn the URL.
-        shouldContinue = m_policyDocumentLoader->shouldContinueForNavigationPolicy(m_policyDocumentLoader->request());
+        shouldContinue = loader->shouldContinueForNavigationPolicy(loader->request());
     }
 
     // Two reasons we can't continue:
@@ -2617,8 +2586,6 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         // need to report that the client redirect was cancelled.
         if (m_quickRedirectComing)
             clientRedirectCancelledOrFinished(false);
-
-        setPolicyDocumentLoader(0);
 
         // If the navigation request came from the back/forward menu, and we punt on it, we have the 
         // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity, 
@@ -2646,10 +2613,8 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
             m_frame->page()->inspectorController()->resume();
     }
 
-    setProvisionalDocumentLoader(m_policyDocumentLoader.get());
+    setProvisionalDocumentLoader(loader);
     setState(FrameStateProvisional);
-
-    setPolicyDocumentLoader(0);
 
     if (isBackForwardLoadType(m_loadType) && history()->provisionalItem()->isInPageCache()) {
         loadProvisionalItemFromCachedPage();
@@ -3125,7 +3090,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_progressTracker, "progressTracker");
     info.addMember(m_documentLoader, "documentLoader");
     info.addMember(m_provisionalDocumentLoader, "provisionalDocumentLoader");
-    info.addMember(m_policyDocumentLoader, "policyDocumentLoader");
     info.addMember(m_pendingStateObject, "pendingStateObject");
     info.addMember(m_submittedFormURL, "submittedFormURL");
     info.addMember(m_checkTimer, "checkTimer");

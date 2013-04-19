@@ -871,6 +871,7 @@ PolicyAction FrameLoaderClientImpl::policyForNewWindowAction(
 }
 
 PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
+    DocumentLoader* documentLoader,
     const NavigationAction& action,
     const ResourceRequest& request) {
 
@@ -883,7 +884,7 @@ PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
         actionSpecifiesNavigationPolicy(action, &navigationPolicy);
 
         // Give the delegate a chance to change the navigation policy.
-        const WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
+        const WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(documentLoader);
         if (ds) {
             KURL url = ds->request().url();
             ASSERT(!url.protocolIs(backForwardNavigationScheme));
