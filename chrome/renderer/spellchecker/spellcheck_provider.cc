@@ -300,6 +300,8 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
 
   WebFrame* frame = render_view()->GetWebView()->focusedFrame();
   frame->enableContinuousSpellChecking(enable);
+  if (!enable)
+    frame->removeSpellingMarkers();
 }
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
