@@ -30,8 +30,7 @@
 #ifndef COMMON_SIMPLE_STRING_DICTIONARY_H_
 #define COMMON_SIMPLE_STRING_DICTIONARY_H_
 
-#import <string>
-#import <vector>
+#include <string.h>
 
 namespace google_breakpad {
 
@@ -80,15 +79,18 @@ class KeyValueEntry {
       value = "";
     }
 
-    strlcpy(key_, key, sizeof(key_));
-    strlcpy(value_, value, sizeof(value_));
+    strncpy(key_, key, sizeof(key_));
+    strncpy(value_, value, sizeof(value_));
+    key_[sizeof(key_) - 1] = '\0';
+    value_[sizeof(value_) - 1] = '\0';
   }
 
   void SetValue(const char *value) {
     if (!value) {
       value = "";
     }
-    strlcpy(value_, value, sizeof(value_));
+    strncpy(value_, value, sizeof(value_));
+    value_[sizeof(value_) - 1] = '\0';
   };
 
   // Removes the key/value
