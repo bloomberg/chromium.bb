@@ -390,7 +390,7 @@ public:
     RefPtr<GraphicsContext3D> m_context;
     RefPtr<WebGLContextGroup> m_contextGroup;
 
-    // Optional structure for rendering to a DrawingBuffer, instead of directly
+    // Structure for rendering to a DrawingBuffer, instead of directly
     // to the back-buffer of m_context.
     RefPtr<DrawingBuffer> m_drawingBuffer;
 

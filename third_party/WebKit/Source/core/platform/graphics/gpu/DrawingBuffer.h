@@ -69,16 +69,22 @@ public:
 
     ~DrawingBuffer();
 
+    // Clear all resources from this object, as well as context. Called when context is destroyed
+    // to prevent invalid accesses to the resources.
+    void clear();
+
     // Issues a glClear() on all framebuffers associated with this DrawingBuffer. The caller is responsible for
     // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
     void clearFramebuffers(GC3Dbitfield clearMask);
 
-    // Returns true if the buffer was successfully resized.
-    bool reset(const IntSize&);
+    // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
+    IntSize adjustSize(const IntSize&);
+    void reset(const IntSize&);
     void bind();
     IntSize size() const { return m_size; }
+    bool isZeroSized() const { return m_size.isEmpty(); }
 
-    // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound
+    // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.
     void commit(long x = 0, long y = 0, long width = -1, long height = -1);
 
     // commit should copy the full multisample buffer, and not respect the
@@ -102,10 +108,6 @@ public:
 
     Platform3DObject framebuffer() const;
 
-    // Immediately releases ownership of all resources. Call upon loss of the
-    // graphics context to prevent freeing invalid resources.
-    void discardResources();
-
     void markContentsChanged() { m_contentsChanged = true; }
 
     PlatformLayer* platformLayer();
@@ -123,20 +125,18 @@ private:
 
     void initialize(const IntSize&);
 
-    bool checkBufferIntegrity();
-
     void prepareBackBuffer();
     bool requiresCopyFromBackToFrontBuffer() const;
     Platform3DObject frontColorBuffer() const;
     Platform3DObject colorBuffer() const { return m_colorBuffer; }
 
+    unsigned createColorTexture(const IntSize& size = IntSize());
     // Create the depth/stencil and multisample buffers, if needed.
     void createSecondaryBuffers();
-    void resizeDepthStencil(int sampleCount);
-
-    // Clear all resources from this object, as well as context. Called when context is destroyed
-    // to prevent invalid accesses to the resources.
-    void clear();
+    bool resizeFramebuffer(const IntSize&);
+    bool resizeMultisampleFramebuffer(const IntSize&);
+    void resizeDepthStencil(const IntSize&, int sampleCount);
+    bool checkBufferIntegrity();
 
     // Bind to the m_framebufferBinding if it's not 0.
     void restoreFramebufferBinding();
@@ -145,6 +145,12 @@ private:
 
     PassRefPtr<MailboxInfo> getRecycledMailbox();
     PassRefPtr<MailboxInfo> createNewMailbox(unsigned);
+
+    // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
+    void setSize(const IntSize& size);
+
+    // Calculates the difference in pixels between the current buffer size and the proposed size.
+    int pixelDelta(const IntSize& size);
 
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
@@ -168,12 +174,16 @@ private:
     Platform3DObject m_depthBuffer;
     Platform3DObject m_stencilBuffer;
 
-    // For multisampling
+    // For multisampling.
     Platform3DObject m_multisampleFBO;
     Platform3DObject m_multisampleColorBuffer;
 
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
+
+    unsigned m_internalColorFormat;
+    unsigned m_colorFormat;
+    unsigned m_internalRenderbufferFormat;
 
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
 

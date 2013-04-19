@@ -54,25 +54,9 @@ namespace WebCore {
 // Global resource ceiling (expressed in terms of pixels) for DrawingBuffer creation and resize.
 // When this limit is set, DrawingBuffer::create() and DrawingBuffer::reset() calls that would
 // exceed the global cap will instead clear the buffer.
-static int s_maximumResourceUsePixels = 16 * 1024 * 1024;
+static const int s_maximumResourceUsePixels = 16 * 1024 * 1024;
 static int s_currentResourceUsePixels = 0;
 static const float s_resourceAdjustedRatio = 0.5;
-
-static unsigned generateColorTexture(GraphicsContext3D* context, const IntSize& size)
-{
-    unsigned offscreenColorTexture = context->createTexture();
-    if (!offscreenColorTexture)
-        return 0;
-
-    context->bindTexture(GraphicsContext3D::TEXTURE_2D, offscreenColorTexture);
-    context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR);
-    context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR);
-    context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
-    context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
-    context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, size.width(), size.height(), 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
-
-    return offscreenColorTexture;
-}
 
 class ScopedTextureUnit0BindingRestorer {
 public:
@@ -94,6 +78,26 @@ private:
     GC3Denum m_oldActiveTextureUnit;
     Platform3DObject m_oldTextureUnitZeroId;
 };
+
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve)
+{
+    Extensions3D* extensions = context->getExtensions();
+    bool multisampleSupported = extensions->maySupportMultisampling()
+        && extensions->supports("GL_ANGLE_framebuffer_blit")
+        && extensions->supports("GL_ANGLE_framebuffer_multisample")
+        && extensions->supports("GL_OES_rgb8_rgba8");
+    if (multisampleSupported) {
+        extensions->ensureEnabled("GL_ANGLE_framebuffer_blit");
+        extensions->ensureEnabled("GL_ANGLE_framebuffer_multisample");
+        extensions->ensureEnabled("GL_OES_rgb8_rgba8");
+    }
+    bool packedDepthStencilSupported = extensions->supports("GL_OES_packed_depth_stencil");
+    if (packedDepthStencilSupported)
+        extensions->ensureEnabled("GL_OES_packed_depth_stencil");
+
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve));
+    return drawingBuffer.release();
+}
 
 DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
                              const IntSize& size,
@@ -119,6 +123,9 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
     , m_multisampleFBO(0)
     , m_multisampleColorBuffer(0)
     , m_contentsChanged(true)
+    , m_internalColorFormat(0)
+    , m_colorFormat(0)
+    , m_internalRenderbufferFormat(0)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
@@ -132,9 +139,6 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
 
 DrawingBuffer::~DrawingBuffer()
 {
-    if (!m_context)
-        return;
-
     clear();
 
     if (m_layer)
@@ -180,7 +184,7 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
 
     // No buffer available to recycle, create a new one.
     if (!nextFrontColorBuffer) {
-        unsigned newColorBuffer = generateColorTexture(m_context.get(), m_size);
+        unsigned newColorBuffer = createColorTexture(m_size);
         // Bad things happened, abandon ship.
         if (!newColorBuffer)
             return false;
@@ -249,7 +253,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::getRecycledMailbox()
     context()->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, mailboxInfo->mailbox.name);
 
     if (mailboxInfo->size != m_size) {
-        m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, m_size.width(), m_size.height(), 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
+        m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, m_size.width(), m_size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
         mailboxInfo->size = m_size;
     }
 
@@ -268,22 +272,31 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned 
 
 void DrawingBuffer::initialize(const IntSize& size)
 {
+    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
+
+    if (attributes.alpha) {
+        m_internalColorFormat = GraphicsContext3D::RGBA;
+        m_colorFormat = GraphicsContext3D::RGBA;
+        m_internalRenderbufferFormat = Extensions3D::RGBA8_OES;
+    } else {
+        m_internalColorFormat = GraphicsContext3D::RGB;
+        m_colorFormat = GraphicsContext3D::RGB;
+        m_internalRenderbufferFormat = Extensions3D::RGB8_OES;
+    }
+
     m_fbo = m_context->createFramebuffer();
 
     if (m_separateFrontTexture)
-        m_frontColorBuffer = generateColorTexture(m_context.get(), size);
+        m_frontColorBuffer = createColorTexture();
 
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
-    m_colorBuffer = generateColorTexture(m_context.get(), size);
+    m_colorBuffer = createColorTexture();
+    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
+    createSecondaryBuffers();
+    reset(size);
 #if USES_MAILBOX
     m_lastColorBuffer = createNewMailbox(m_colorBuffer);
 #endif // USES_MAILBOX
-    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
-    createSecondaryBuffers();
-    if (!reset(size)) {
-        m_context.clear();
-        return;
-    }
 }
 
 void DrawingBuffer::prepareBackBuffer()
@@ -356,7 +369,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 #if USES_MAILBOX
     // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
     // We have to make a copy of it here and bind that copy instead.
-    unsigned sourceTexture = generateColorTexture(m_context.get(), m_size);
+    unsigned sourceTexture = createColorTexture(m_size);
     extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GraphicsContext3D::RGBA);
 #else
     // FIXME: Re-examine general correctness of this code beacause m_colorBuffer may contain a stale copy of the data
@@ -391,87 +404,76 @@ void DrawingBuffer::clearPlatformLayer()
     m_context->flush();
 }
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve)
-{
-    Extensions3D* extensions = context->getExtensions();
-    bool multisampleSupported = extensions->maySupportMultisampling()
-        && extensions->supports("GL_ANGLE_framebuffer_blit")
-        && extensions->supports("GL_ANGLE_framebuffer_multisample")
-        && extensions->supports("GL_OES_rgb8_rgba8");
-    if (multisampleSupported) {
-        extensions->ensureEnabled("GL_ANGLE_framebuffer_blit");
-        extensions->ensureEnabled("GL_ANGLE_framebuffer_multisample");
-        extensions->ensureEnabled("GL_OES_rgb8_rgba8");
-    }
-    bool packedDepthStencilSupported = extensions->supports("GL_OES_packed_depth_stencil");
-    if (packedDepthStencilSupported)
-        extensions->ensureEnabled("GL_OES_packed_depth_stencil");
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve));
-    return (drawingBuffer->m_context) ? drawingBuffer.release() : 0;
-}
-
 void DrawingBuffer::clear()
 {
-    if (!m_context)
-        return;
+    if (m_context) {
+        m_context->makeContextCurrent();
 
-    m_context->makeContextCurrent();
-
-    clearPlatformLayer();
-
-    if (!m_size.isEmpty()) {
-        s_currentResourceUsePixels -= m_size.width() * m_size.height();
-        m_size = IntSize();
-    }
+        clearPlatformLayer();
 
 #if !USES_MAILBOX
-    if (m_colorBuffer) {
-        m_context->deleteTexture(m_colorBuffer);
-        m_colorBuffer = 0;
-    }
+        if (m_colorBuffer)
+            m_context->deleteTexture(m_colorBuffer);
 
-    if (m_frontColorBuffer) {
-        m_context->deleteTexture(m_frontColorBuffer);
-        m_frontColorBuffer = 0;
-    }
+        if (m_frontColorBuffer)
+            m_context->deleteTexture(m_frontColorBuffer);
 #else
-    for (size_t i = 0; i < m_textureMailboxes.size(); i++)
-         m_context->deleteTexture(m_textureMailboxes[i]->textureId);
+        for (size_t i = 0; i < m_textureMailboxes.size(); i++)
+            m_context->deleteTexture(m_textureMailboxes[i]->textureId);
+#endif // !USES_MAILBOX
 
+        if (m_multisampleColorBuffer)
+            m_context->deleteRenderbuffer(m_multisampleColorBuffer);
+
+        if (m_depthStencilBuffer)
+            m_context->deleteRenderbuffer(m_depthStencilBuffer);
+
+        if (m_depthBuffer)
+            m_context->deleteRenderbuffer(m_depthBuffer);
+
+        if (m_stencilBuffer)
+            m_context->deleteRenderbuffer(m_stencilBuffer);
+
+        if (m_multisampleFBO)
+            m_context->deleteFramebuffer(m_multisampleFBO);
+
+        if (m_fbo)
+            m_context->deleteFramebuffer(m_fbo);
+    }
+
+    setSize(IntSize());
+
+    m_colorBuffer = 0;
+    m_frontColorBuffer = 0;
+    m_multisampleColorBuffer = 0;
+    m_depthStencilBuffer = 0;
+    m_depthBuffer = 0;
+    m_stencilBuffer = 0;
+    m_multisampleFBO = 0;
+    m_fbo = 0;
+
+#if USES_MAILBOX
     m_lastColorBuffer.clear();
     m_recycledMailboxes.clear();
     m_textureMailboxes.clear();
-#endif // USES_MAILBOX
+#endif  // USES_MAILBOX
+}
 
-    if (m_multisampleColorBuffer) {
-        m_context->deleteRenderbuffer(m_multisampleColorBuffer);
-        m_multisampleColorBuffer = 0;
-    }
+unsigned DrawingBuffer::createColorTexture(const IntSize& size)
+{
+    unsigned offscreenColorTexture = m_context->createTexture();
+    if (!offscreenColorTexture)
+        return 0;
 
-    if (m_depthStencilBuffer) {
-        m_context->deleteRenderbuffer(m_depthStencilBuffer);
-        m_depthStencilBuffer = 0;
-    }
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, offscreenColorTexture);
+    m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR);
+    m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR);
+    m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
+    m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
+    if(!size.isEmpty())
+        m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
 
-    if (m_depthBuffer) {
-        m_context->deleteRenderbuffer(m_depthBuffer);
-        m_depthBuffer = 0;
-    }
-
-    if (m_stencilBuffer) {
-        m_context->deleteRenderbuffer(m_stencilBuffer);
-        m_stencilBuffer = 0;
-    }
-
-    if (m_multisampleFBO) {
-        m_context->deleteFramebuffer(m_multisampleFBO);
-        m_multisampleFBO = 0;
-    }
-
-    if (m_fbo) {
-        m_context->deleteFramebuffer(m_fbo);
-        m_fbo = 0;
-    }
+    return offscreenColorTexture;
 }
 
 void DrawingBuffer::createSecondaryBuffers()
@@ -484,7 +486,60 @@ void DrawingBuffer::createSecondaryBuffers()
     }
 }
 
-void DrawingBuffer::resizeDepthStencil(int sampleCount)
+bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
+{
+    // resize regular FBO
+    m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
+
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_colorBuffer);
+    m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
+    if (m_lastColorBuffer)
+        m_lastColorBuffer->size = m_size;
+
+    m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
+
+    // resize the front color buffer
+    if (m_separateFrontTexture) {
+        m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer);
+        m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
+    }
+
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0);
+
+    if (!multisample())
+        resizeDepthStencil(size, 0);
+    if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE)
+        return false;
+
+    return true;
+}
+
+bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
+{
+    if (multisample()) {
+        int maxSampleCount = 0;
+
+        m_context->getIntegerv(Extensions3D::MAX_SAMPLES, &maxSampleCount);
+        int sampleCount = std::min(4, maxSampleCount);
+
+        m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO);
+
+        m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_multisampleColorBuffer);
+        m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
+
+        if (m_context->getError() == GraphicsContext3D::OUT_OF_MEMORY)
+            return false;
+
+        m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::RENDERBUFFER, m_multisampleColorBuffer);
+        resizeDepthStencil(size, sampleCount);
+        if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE)
+            return false;
+    }
+
+    return true;
+}
+
+void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
 {
     const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
     if (attributes.depth && attributes.stencil && m_packedDepthStencilExtensionSupported) {
@@ -492,9 +547,9 @@ void DrawingBuffer::resizeDepthStencil(int sampleCount)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
         if (multisample())
-            m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, Extensions3D::DEPTH24_STENCIL8, m_size.width(), m_size.height());
+            m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         else
-            m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, Extensions3D::DEPTH24_STENCIL8, m_size.width(), m_size.height());
+            m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
         m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
     } else {
@@ -503,9 +558,9 @@ void DrawingBuffer::resizeDepthStencil(int sampleCount)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
             if (multisample())
-                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::DEPTH_COMPONENT16, m_size.width(), m_size.height());
+                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
             else
-                m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::DEPTH_COMPONENT16, m_size.width(), m_size.height());
+                m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
         }
         if (attributes.stencil) {
@@ -513,9 +568,9 @@ void DrawingBuffer::resizeDepthStencil(int sampleCount)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_stencilBuffer);
             if (multisample())
-                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::STENCIL_INDEX8, m_size.width(), m_size.height());
+                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, GraphicsContext3D::STENCIL_INDEX8, size.width(), size.height());
             else 
-                m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::STENCIL_INDEX8, m_size.width(), m_size.height());
+                m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::STENCIL_INDEX8, size.width(), size.height());
             m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_stencilBuffer);
         }
     }
@@ -563,101 +618,55 @@ bool DrawingBuffer::checkBufferIntegrity()
     return (pixel[0] == 0xFF && pixel[1] == 0x00 && pixel[2] == 0xFF && pixel[3] == 0xFF);
 }
 
-bool DrawingBuffer::reset(const IntSize& newSize)
-{
+void DrawingBuffer::setSize(const IntSize& size) {
+    if (m_size == size)
+        return;
+
+    s_currentResourceUsePixels += pixelDelta(size);
+    m_size = size;
+}
+
+int DrawingBuffer::pixelDelta(const IntSize& size) {
+    return (size.width() * size.height()) - (m_size.width() * m_size.height());;
+}
+
+IntSize DrawingBuffer::adjustSize(const IntSize& size) {
     if (!m_context)
-        return false;
+        return IntSize();
 
     m_context->makeContextCurrent();
 
+    IntSize adjustedSize = size;
+
+    // Clamp if the desired size is greater than the maximum texture size for the device.
     int maxTextureSize = 0;
     m_context->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &maxTextureSize);
-    if (newSize.height() > maxTextureSize || newSize.width() > maxTextureSize) {
-        clear();
-        return false;
+    if (adjustedSize.height() > maxTextureSize)
+        adjustedSize.setHeight(maxTextureSize);
+
+    if (adjustedSize.width() > maxTextureSize)
+        adjustedSize.setWidth(maxTextureSize);
+
+    // Try progressively smaller sizes until we find a size that fits or reach a scale limit.
+    while ((s_currentResourceUsePixels + pixelDelta(adjustedSize)) > s_maximumResourceUsePixels) {
+        adjustedSize.scale(s_resourceAdjustedRatio);
+
+        if (adjustedSize.isEmpty())
+            return IntSize();
     }
+    return adjustedSize;
+}
 
-    int pixelDelta = newSize.width() * newSize.height();
-    int oldSize = 0;
-    if (!m_size.isEmpty()) {
-        oldSize = m_size.width() * m_size.height();
-        pixelDelta -= oldSize;
-    }
-
-    IntSize adjustedSize = newSize;
-    if (s_maximumResourceUsePixels) {
-        while ((s_currentResourceUsePixels + pixelDelta) > s_maximumResourceUsePixels) {
-            adjustedSize.scale(s_resourceAdjustedRatio);
-            if (adjustedSize.isEmpty()) {
-                clear();
-                return false;
-            }
-            pixelDelta = adjustedSize.width() * adjustedSize.height();
-            pixelDelta -= oldSize;
-        }
-     }
-
-    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
+void DrawingBuffer::reset(const IntSize& newSize)
+{
+    IntSize adjustedSize = adjustSize(newSize);
+    if (adjustedSize.isEmpty())
+        return;
 
     if (adjustedSize != m_size) {
-
-        unsigned internalColorFormat, colorFormat, internalRenderbufferFormat;
-        if (attributes.alpha) {
-            internalColorFormat = GraphicsContext3D::RGBA;
-            colorFormat = GraphicsContext3D::RGBA;
-            internalRenderbufferFormat = Extensions3D::RGBA8_OES;
-        } else {
-            internalColorFormat = GraphicsContext3D::RGB;
-            colorFormat = GraphicsContext3D::RGB;
-            internalRenderbufferFormat = Extensions3D::RGB8_OES;
-        }
-
         do {
-            m_size = adjustedSize;
             // resize multisample FBO
-            if (multisample()) {
-                int maxSampleCount = 0;
-
-                m_context->getIntegerv(Extensions3D::MAX_SAMPLES, &maxSampleCount);
-                int sampleCount = std::min(4, maxSampleCount);
-
-                m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO);
-
-                m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_multisampleColorBuffer);
-                m_context->getExtensions()->renderbufferStorageMultisample(GraphicsContext3D::RENDERBUFFER, sampleCount, internalRenderbufferFormat, m_size.width(), m_size.height());
-
-                if (m_context->getError() == GraphicsContext3D::OUT_OF_MEMORY) {
-                    adjustedSize.scale(s_resourceAdjustedRatio);
-                    continue;
-                }
-
-                m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::RENDERBUFFER, m_multisampleColorBuffer);
-                resizeDepthStencil(sampleCount);
-                if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
-                    adjustedSize.scale(s_resourceAdjustedRatio);
-                    continue;
-                }
-            }
-
-            // resize regular FBO
-            m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_fbo);
-
-            m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_colorBuffer);
-            m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, internalColorFormat, m_size.width(), m_size.height(), 0, colorFormat, GraphicsContext3D::UNSIGNED_BYTE, 0);
-            if (m_lastColorBuffer)
-                m_lastColorBuffer->size = m_size;
-
-            m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
-            // resize the front color buffer
-            if (m_separateFrontTexture) {
-                m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer);
-                m_context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, internalColorFormat, m_size.width(), m_size.height(), 0, colorFormat, GraphicsContext3D::UNSIGNED_BYTE, 0);
-            }
-            m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0);
-
-            if (!multisample())
-                resizeDepthStencil(0);
-            if (m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
+            if (!resizeMultisampleFramebuffer(adjustedSize) || !resizeFramebuffer(adjustedSize)) {
                 adjustedSize.scale(s_resourceAdjustedRatio);
                 continue;
             }
@@ -669,24 +678,20 @@ bool DrawingBuffer::reset(const IntSize& newSize)
                 continue;
             }
 #endif
-
             break;
-
         } while (!adjustedSize.isEmpty());
 
-        pixelDelta = m_size.width() * m_size.height();
-        pixelDelta -= oldSize;
-        s_currentResourceUsePixels += pixelDelta;
+        setSize(adjustedSize);
 
-        if (!newSize.isEmpty() && adjustedSize.isEmpty()) {
-            clear();
-            return false;
-        }
+        if (adjustedSize.isEmpty())
+            return;
     }
 
     m_context->disable(GraphicsContext3D::SCISSOR_TEST);
     m_context->clearColor(0, 0, 0, 0);
     m_context->colorMask(true, true, true, true);
+
+    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
 
     GC3Dbitfield clearMask = GraphicsContext3D::COLOR_BUFFER_BIT;
     if (attributes.depth) {
@@ -701,8 +706,6 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     }
 
     clearFramebuffers(clearMask);
-
-    return true;
 }
 
 void DrawingBuffer::commit(long x, long y, long width, long height)
@@ -745,25 +748,6 @@ void DrawingBuffer::restoreFramebufferBinding()
 bool DrawingBuffer::multisample() const
 {
     return m_context && m_context->getContextAttributes().antialias && m_multisampleExtensionSupported;
-}
-
-void DrawingBuffer::discardResources()
-{
-    m_colorBuffer = 0;
-    m_frontColorBuffer = 0;
-    m_multisampleColorBuffer = 0;
-
-    m_depthStencilBuffer = 0;
-    m_depthBuffer = 0;
-
-    m_stencilBuffer = 0;
-
-    m_multisampleFBO = 0;
-    m_fbo = 0;
-
-    m_lastColorBuffer.clear();
-    m_recycledMailboxes.clear();
-    m_textureMailboxes.clear();
 }
 
 void DrawingBuffer::bind()
