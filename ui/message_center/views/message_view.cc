@@ -79,6 +79,7 @@ class ControlButton : public views::ImageButton {
 ControlButton::ControlButton(views::ButtonListener* listener)
   : views::ImageButton(listener) {
   set_focusable(true);
+  set_request_focus_on_press(false);
 }
 
 ControlButton::~ControlButton() {

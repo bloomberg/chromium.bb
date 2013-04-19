@@ -110,12 +110,15 @@ class NotificationCenterButton : public views::TextButton {
   NotificationCenterButton(views::ButtonListener* listener,
                            const string16& text);
 
- protected:
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnPaintBorder(gfx::Canvas* canvas);
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
+ protected:
+  // Overridden from views::View:
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(NotificationCenterButton);
 };
 
@@ -168,7 +171,7 @@ class RichMessageCenterButtonBar : public MessageCenterButtonBar,
                              const ui::Event& event) OVERRIDE;
 
   views::Label* notification_label_;
-  views::Button* settings_button_;
+  NotificationCenterButton* settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(RichMessageCenterButtonBar);
 };
@@ -192,10 +195,12 @@ RichMessageCenterButtonBar::RichMessageCenterButtonBar(
       this, l10n_util::GetStringUTF16(
           IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL));
   settings_button_->set_focusable(true);
+  settings_button_->set_request_focus_on_press(false);
   AddChildView(settings_button_);
   NotificationCenterButton* close_all_button = new NotificationCenterButton(
       this, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_CLEAR_ALL));
   close_all_button->set_focusable(true);
+  close_all_button->set_request_focus_on_press(false);
   AddChildView(close_all_button);
 
   views::GridLayout* layout = new views::GridLayout(this);

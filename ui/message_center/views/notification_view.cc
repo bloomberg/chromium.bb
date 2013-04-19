@@ -271,6 +271,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       icon_(NULL),
       title_(NULL) {
   set_focusable(true);
+  set_request_focus_on_press(false);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kButtonHorizontalPadding,
                                         kButtonVecticalPadding,
