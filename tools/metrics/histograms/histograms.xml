@@ -1979,12 +1979,6 @@ other types of suffix sets.
   <summary>The number of bytes sent per stream.</summary>
 </histogram>
 
-<histogram name="Net.SpdySession.BytesRead.ClosedOnError" units="NetErrorCodes">
-  <summary>
-    Net error codes when SpdySession was closed, doesn't inlcuding net::OK.
-  </summary>
-</histogram>
-
 <histogram name="Net.SpdySession.BytesRead.EOF" units="bytes">
   <summary>
     Total number of bytes recevied per session before closing session due to
@@ -1996,6 +1990,12 @@ other types of suffix sets.
   <summary>
     Total number of bytes recevied per session before closing session due to an
     error during read.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySession.ClosedOnError" units="NetErrorCodes">
+  <summary>
+    Net error codes when SpdySession was closed, doesn't inlcuding net::OK.
   </summary>
 </histogram>
 
@@ -5665,6 +5665,8 @@ other types of suffix sets.
   <int value="18" label="FILE_NO_SPACE"/>
   <int value="19" label="FILE_VIRUS_INFECTED"/>
   <int value="20" label="BLOCKED_BY_CLIENT"/>
+  <int value="21" label="NETWORK_CHANGED"/>
+  <int value="22" label="BLOCKED_BY_ADMINISTRATOR"/>
   <int value="100" label="CONNECTION_CLOSED"/>
   <int value="101" label="CONNECTION_RESET"/>
   <int value="102" label="CONNECTION_REFUSED"/>
