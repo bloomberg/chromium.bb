@@ -43,7 +43,7 @@ class NET_EXPORT_PRIVATE WebSocketThrottle {
 
   // Checks sockets waiting in |queue_| and check the socket is the front of
   // every queue for the destination addresses of |socket|.
-  // If so, the socket can resume estabilshing connection, so wake up
+  // If so, the socket can resume establishing connection, so wake up
   // the socket.
   void WakeupSocketIfNecessary();
 
