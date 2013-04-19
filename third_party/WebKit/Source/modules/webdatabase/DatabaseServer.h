@@ -35,17 +35,11 @@ public:
     DatabaseServer() { };
     virtual ~DatabaseServer() { }
 
-    virtual void initialize(const String& databasePath);
-
-    virtual void setClient(DatabaseManagerClient*);
-    virtual String databaseDirectoryPath() const;
-    virtual void setDatabaseDirectoryPath(const String&);
-
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist);
 
     virtual PassRefPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseBackendContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
-        bool setVersionInNewDatabase, DatabaseError&, String& errorMessage, OpenAttempt);
+        bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 

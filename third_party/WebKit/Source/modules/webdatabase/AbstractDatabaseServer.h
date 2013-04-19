@@ -42,22 +42,10 @@ class SecurityOrigin;
 
 class AbstractDatabaseServer {
 public:
-    virtual void initialize(const String& databasePath) = 0;
-
-    virtual void setClient(DatabaseManagerClient*) = 0;
-    virtual String databaseDirectoryPath() const = 0;
-    virtual void setDatabaseDirectoryPath(const String&) = 0;
-
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true) = 0;
-
-    enum OpenAttempt {
-        FirstTryToOpenDatabase,
-        RetryOpenDatabase
-    };
-
     virtual PassRefPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseBackendContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
-        bool setVersionInNewDatabase, DatabaseError&, String& errorMessage, OpenAttempt = FirstTryToOpenDatabase) = 0;
+        bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) = 0;
 
     virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name) = 0;
 

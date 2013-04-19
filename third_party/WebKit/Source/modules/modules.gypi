@@ -575,7 +575,6 @@
       'webdatabase/DatabaseTracker.h',
       'webdatabase/DOMWindowWebDatabase.cpp',
       'webdatabase/DOMWindowWebDatabase.h',
-      'webdatabase/OriginLock.h',
       'webdatabase/SQLCallbackWrapper.h',
       'webdatabase/SQLException.cpp',
       'webdatabase/SQLException.h',

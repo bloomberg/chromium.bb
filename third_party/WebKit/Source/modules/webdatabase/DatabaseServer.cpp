@@ -36,25 +36,6 @@
 
 namespace WebCore {
 
-void DatabaseServer::initialize(const String& databasePath)
-{
-    UNUSED_PARAM(databasePath);
-}
-
-void DatabaseServer::setClient(DatabaseManagerClient* client)
-{
-    UNUSED_PARAM(client);
-}
-
-String DatabaseServer::databaseDirectoryPath() const
-{
-    return "";
-}
-
-void DatabaseServer::setDatabaseDirectoryPath(const String& path)
-{
-}
-
 String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)
 {
     return DatabaseTracker::tracker().fullPathForDatabase(origin, name, createIfDoesNotExist);
@@ -72,21 +53,10 @@ void DatabaseServer::interruptAllDatabasesForContext(const DatabaseBackendContex
 
 PassRefPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseBackendContext>& backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage,
-    OpenAttempt attempt)
+    unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
     RefPtr<DatabaseBackendBase> database;
-    bool success = false; // Make some older compilers happy.
-    
-    switch (attempt) {
-    case FirstTryToOpenDatabase:
-        success = DatabaseTracker::tracker().canEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error);
-        break;
-    case RetryOpenDatabase:
-        success = DatabaseTracker::tracker().retryCanEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error);
-    }
-
-    if (success)
+    if (DatabaseTracker::tracker().canEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error))
         database = createDatabase(backendContext, type, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
 }
@@ -106,8 +76,6 @@ PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseBa
 
     if (!database->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
         return 0;
-
-    DatabaseTracker::tracker().setDatabaseDetails(backendContext->securityOrigin(), name, displayName, estimatedSize);
     return database.release();
 }
 

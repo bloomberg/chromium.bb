@@ -47,11 +47,11 @@ namespace WebCore {
 
 DatabaseTracker& DatabaseTracker::tracker()
 {
-    AtomicallyInitializedStatic(DatabaseTracker&, tracker = *new DatabaseTracker(""));
+    AtomicallyInitializedStatic(DatabaseTracker&, tracker = *new DatabaseTracker());
     return tracker;
 }
 
-DatabaseTracker::DatabaseTracker(const String&)
+DatabaseTracker::DatabaseTracker()
 {
     SQLiteFileSystem::registerSQLiteVFS();
 }
@@ -63,17 +63,6 @@ bool DatabaseTracker::canEstablishDatabase(DatabaseBackendContext* databaseConte
     if (!success)
         error = DatabaseError::GenericSecurityError;
     return success;
-}
-
-bool DatabaseTracker::retryCanEstablishDatabase(DatabaseBackendContext*, const String&, const String&, unsigned long, DatabaseError&)
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-void DatabaseTracker::setDatabaseDetails(SecurityOrigin*, const String&, const String&, unsigned long)
-{
-    // Chromium sets the database details when the database is opened
 }
 
 String DatabaseTracker::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool)

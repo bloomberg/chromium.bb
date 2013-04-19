@@ -58,8 +58,7 @@ DatabaseManager& DatabaseManager::manager()
 }
 
 DatabaseManager::DatabaseManager()
-    : m_client(0)
-    , m_databaseIsAvailable(true)
+    : m_databaseIsAvailable(true)
 #if !ASSERT_DISABLED
     , m_databaseContextRegisteredCount(0)
     , m_databaseContextInstanceCount(0)
@@ -67,27 +66,6 @@ DatabaseManager::DatabaseManager()
 {
     m_server = new DatabaseServer;
     ASSERT(m_server); // We should always have a server to work with.
-}
-
-void DatabaseManager::initialize(const String& databasePath)
-{
-    m_server->initialize(databasePath);
-}
-
-void DatabaseManager::setClient(DatabaseManagerClient* client)
-{
-    m_client = client;
-    m_server->setClient(client);
-}
-
-String DatabaseManager::databaseDirectoryPath() const
-{
-    return m_server->databaseDirectoryPath();
-}
-
-void DatabaseManager::setDatabaseDirectoryPath(const String& path)
-{
-    m_server->setDatabaseDirectoryPath(path);
 }
 
 bool DatabaseManager::isAvailable()
@@ -234,6 +212,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ScriptExecu
         case DatabaseError::DatabaseIsBeingDeleted:
         case DatabaseError::DatabaseSizeOverflowed:
         case DatabaseError::GenericSecurityError:
+        case DatabaseError::DatabaseSizeExceededQuota:
             logOpenDatabaseError(context, name);
             return 0;
 
@@ -241,34 +220,8 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ScriptExecu
             logErrorMessage(context, errorMessage);
             return 0;
 
-        case DatabaseError::DatabaseSizeExceededQuota:
-            // Notify the client that we've exceeded the database quota.
-            // The client may want to increase the quota, and we'll give it
-            // one more try after if that is the case.
-            databaseContext->databaseExceededQuota(name,
-                DatabaseDetails(name.isolatedCopy(), displayName.isolatedCopy(), estimatedSize, 0));
-
-            error = DatabaseError::None;
-
-            backend = m_server->openDatabase(backendContext, type, name, expectedVersion,
-                displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage,
-                AbstractDatabaseServer::RetryOpenDatabase);
-            break;
-
         default:
             ASSERT_NOT_REACHED();
-        }
-
-        if (!backend) {
-            ASSERT(error != DatabaseError::None);
-
-            if (error == DatabaseError::InvalidDatabaseState) {
-                logErrorMessage(context, errorMessage);
-                return 0;
-            }
-
-            logOpenDatabaseError(context, name);
-            return 0;
         }
     }
 

@@ -41,7 +41,6 @@ class Database;
 class DatabaseBackendBase;
 class DatabaseCallback;
 class DatabaseContext;
-class DatabaseManagerClient;
 class DatabaseSync;
 class DatabaseTaskSynchronizer;
 class SecurityOrigin;
@@ -51,11 +50,6 @@ class DatabaseManager {
     WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED;
 public:
     static DatabaseManager& manager();
-
-    void initialize(const String& databasePath);
-    void setClient(DatabaseManagerClient*);
-    String databaseDirectoryPath() const;
-    void setDatabaseDirectoryPath(const String&);
 
     bool isAvailable();
     void setIsAvailable(bool);
@@ -106,7 +100,6 @@ private:
     static void logErrorMessage(ScriptExecutionContext*, const String& message);
 
     AbstractDatabaseServer* m_server;
-    DatabaseManagerClient* m_client;
     bool m_databaseIsAvailable;
 
     // Access to the following fields require locking m_contextMapLock:

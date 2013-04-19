@@ -55,9 +55,6 @@ public:
     // notificationMutex() is currently independent of the other locks.
 
     bool canEstablishDatabase(DatabaseBackendContext*, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError&);
-    bool retryCanEstablishDatabase(DatabaseBackendContext*, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError&);
-
-    void setDatabaseDetails(SecurityOrigin*, const String& name, const String& displayName, unsigned long estimatedSize);
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
     void addOpenDatabase(DatabaseBackendBase*);
@@ -67,13 +64,6 @@ public:
     unsigned long long getMaxSizeForDatabase(const DatabaseBackendBase*);
 
     void interruptAllDatabasesForContext(const DatabaseBackendContext*);
-
-private:
-    explicit DatabaseTracker(const String& databasePath);
-
-    bool hasAdequateQuotaForOrigin(SecurityOrigin*, unsigned long estimatedSize, DatabaseError&);
-
-public:
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
     void prepareToOpenDatabase(DatabaseBackendBase*);
@@ -84,6 +74,8 @@ private:
     typedef HashMap<String, DatabaseSet*> DatabaseNameMap;
     typedef HashMap<String, DatabaseNameMap*> DatabaseOriginMap;
     class CloseOneDatabaseImmediatelyTask;
+
+    DatabaseTracker();
 
     void closeOneDatabaseImmediately(const String& originIdentifier, const String& name, DatabaseBackendBase*);
 

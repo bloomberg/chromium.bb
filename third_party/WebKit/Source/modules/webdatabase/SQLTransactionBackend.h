@@ -40,7 +40,6 @@ namespace WebCore {
 
 class AbstractSQLTransaction;
 class DatabaseBackend;
-class OriginLock;
 class SQLError;
 class SQLiteTransaction;
 class SQLStatementBackend;
@@ -106,9 +105,6 @@ private:
     SQLTransactionState runCurrentStatementAndGetNextState();
 
     void getNextStatement();
-
-    void acquireOriginLock();
-    void releaseOriginLockIfNeeded();
 
     RefPtr<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
     RefPtr<SQLStatementBackend> m_currentStatementBackend;
