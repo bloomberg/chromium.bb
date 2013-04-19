@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
@@ -40,6 +41,14 @@ void RunGetChildDirectoriesCallbackWithResult(
     scoped_ptr<std::set<base::FilePath> > result) {
   DCHECK(!callback.is_null());
   callback.Run(*result);
+}
+
+// Returns true if enough disk space is avilable for DB operation.
+// TODO(hashimoto): Merge this with DriveCache's FreeDiskSpaceGetterInterface.
+bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
+  const int64 kRequiredDiskSpaceInMB = 128;  // 128 MB seems to be large enough.
+  return base::SysInfo::AmountOfFreeDiskSpace(path) >=
+      kRequiredDiskSpaceInMB * (1 << 20);
 }
 
 }  // namespace
@@ -201,6 +210,9 @@ DriveResourceMetadata::~DriveResourceMetadata() {
 DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return DRIVE_FILE_ERROR_NO_SPACE;
+
   // Initialize the storage.
   if (!storage_->Initialize())
     return DRIVE_FILE_ERROR_FAILED;
@@ -234,6 +246,12 @@ void DriveResourceMetadata::DestroyOnBlockingPool() {
 
 void DriveResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  // TODO(hashimoto): Return DRIVE_FILE_ERROR_NO_SPACE here.
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
+    LOG(ERROR) << "Required disk space not available.";
+    return;
+  }
 
   RemoveAllOnBlockingPool();
   storage_->SetLargestChangestamp(0);
@@ -451,6 +469,10 @@ int64 DriveResourceMetadata::GetLargestChangestampOnBlockingPool() {
 DriveFileError DriveResourceMetadata::SetLargestChangestampOnBlockingPool(
     int64 value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return DRIVE_FILE_ERROR_NO_SPACE;
+
   storage_->SetLargestChangestamp(value);
   return DRIVE_FILE_OK;
 }
@@ -462,6 +484,9 @@ DriveResourceMetadata::MoveEntryToDirectoryOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!directory_path.empty());
   DCHECK(!file_path.empty());
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(file_path);
   if (!entry)
@@ -498,6 +523,10 @@ DriveResourceMetadata::RenameEntryOnBlockingPool(
   DCHECK(!new_name.empty());
 
   DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(file_path);
   if (!entry)
     return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
@@ -515,6 +544,9 @@ DriveResourceMetadata::FileMoveResult
 DriveResourceMetadata::RemoveEntryOnBlockingPool(
     const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
 
   // Disallow deletion of special entries "/drive" and "/drive/other".
   if (util::IsSpecialResourceId(resource_id))
@@ -635,6 +667,11 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
     const DriveEntryProto& entry_proto) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
+    return make_scoped_ptr(
+        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NO_SPACE));
+  }
+
   scoped_ptr<DriveEntryProto> entry =
       storage_->GetEntry(entry_proto.resource_id());
   if (!entry) {
@@ -678,6 +715,9 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!directory_fetch_info.empty());
 
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+
   scoped_ptr<DriveEntryProto> directory = storage_->GetEntry(
       directory_fetch_info.resource_id());
 
@@ -695,6 +735,9 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
   // entries in the loop. We'll process deleted entries afterwards.
   for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();
        it != entry_proto_map.end(); ++it) {
+    if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+      return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+
     const DriveEntryProto& entry_proto = it->second;
     // Skip if the parent resource ID does not match. This is needed to
     // handle entries with multiple parents. For such entries, the first
@@ -721,6 +764,9 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
   scoped_ptr<DriveEntryProtoVector> entries =
       DirectoryChildrenToProtoVector(directory->resource_id());
   for (size_t i = 0; i < entries->size(); ++i) {
+    if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+      return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+
     const DriveEntryProto& entry_proto = entries->at(i);
     if (entry_proto_map.count(entry_proto.resource_id()) == 0)
       RemoveDirectoryChild(entry_proto.resource_id());
@@ -733,6 +779,9 @@ DriveResourceMetadata::FileMoveResult
 DriveResourceMetadata::AddEntryOnBlockingPool(
     const DriveEntryProto& entry_proto) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> existing_entry =
       storage_->GetEntry(entry_proto.resource_id());
@@ -804,6 +853,12 @@ void DriveResourceMetadata::GetDescendantDirectoryPaths(
 
 void DriveResourceMetadata::RemoveAllOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  // TODO(hashimoto): Return DRIVE_FILE_ERROR_NO_SPACE here.
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
+    LOG(ERROR) << "Required disk space not available.";
+    return;
+  }
 
   RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
   SetUpDefaultEntries();
