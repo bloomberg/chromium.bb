@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 // Align the table to 16-bytes to allow faster reading.
-extern SIMD_ALIGNED(int16 kCoefficientsRgbY[768][4]);
+extern SIMD_ALIGNED(int16 kCoefficientsRgbY[256 * 4][4]);
 
 }  // extern "C"
 

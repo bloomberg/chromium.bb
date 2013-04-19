@@ -1303,17 +1303,18 @@ WebMediaPlayerImpl::BuildFilterCollection() {
         media_thread_.message_loop_proxy(), gpu_factories_));
   }
 
-  video_decoders.push_back(new media::FFmpegVideoDecoder(
-      media_thread_.message_loop_proxy()));
-
   // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
   // (http://crbug.com/174287) .
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
+  if (cmd_line->HasSwitch(switches::kEnableVp9Playback) ||
+      cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback)) {
     video_decoders.push_back(new media::VpxVideoDecoder(
         media_thread_.message_loop_proxy()));
   }
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+  video_decoders.push_back(new media::FFmpegVideoDecoder(
+      media_thread_.message_loop_proxy()));
 
   scoped_ptr<media::VideoRenderer> video_renderer(
       new media::VideoRendererBase(

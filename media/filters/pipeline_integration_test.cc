@@ -923,4 +923,12 @@ TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VP9_Opus_WebM) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+// Verify that VP8 video with alpha channel can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a.webm"),
+                    PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 }  // namespace media

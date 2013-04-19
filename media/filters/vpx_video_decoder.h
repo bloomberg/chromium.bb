@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_frame.h"
 
 struct vpx_codec_ctx;
 struct vpx_image;
@@ -61,6 +62,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   void DoReset();
 
   void CopyVpxImageTo(const vpx_image* vpx_image,
+                      const struct vpx_image* vpx_image_alpha,
                       scoped_refptr<VideoFrame>* video_frame);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -77,6 +79,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   scoped_refptr<DemuxerStream> demuxer_stream_;
 
   vpx_codec_ctx* vpx_codec_;
+  vpx_codec_ctx* vpx_codec_alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(VpxVideoDecoder);
 };

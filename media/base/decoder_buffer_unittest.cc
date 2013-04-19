@@ -35,6 +35,17 @@ TEST(DecoderBufferTest, CopyFrom) {
   EXPECT_EQ(buffer2->GetDataSize(), kDataSize);
   EXPECT_EQ(0, memcmp(buffer2->GetData(), kData, kDataSize));
   EXPECT_FALSE(buffer2->IsEndOfStream());
+  scoped_refptr<DecoderBuffer> buffer3(DecoderBuffer::CopyFrom(
+      reinterpret_cast<const uint8*>(&kData), kDataSize,
+      reinterpret_cast<const uint8*>(&kData), kDataSize));
+  ASSERT_TRUE(buffer3);
+  EXPECT_NE(kData, buffer3->GetData());
+  EXPECT_EQ(buffer3->GetDataSize(), kDataSize);
+  EXPECT_EQ(0, memcmp(buffer3->GetData(), kData, kDataSize));
+  EXPECT_NE(kData, buffer3->GetSideData());
+  EXPECT_EQ(buffer3->GetSideDataSize(), kDataSize);
+  EXPECT_EQ(0, memcmp(buffer3->GetSideData(), kData, kDataSize));
+  EXPECT_FALSE(buffer3->IsEndOfStream());
 }
 
 #if !defined(OS_ANDROID)

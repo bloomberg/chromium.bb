@@ -109,11 +109,26 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     LOG(ERROR) << "Format conversion failed.";
   }
 
+  // Get side data if any. For now, the only type of side_data is VP8 Alpha. We
+  // keep this generic so that other side_data types in the future can be
+  // handled the same way as well.
+  av_packet_split_side_data(packet.get());
+  int side_data_size = 0;
+  uint8* side_data = av_packet_get_side_data(
+      packet.get(),
+      AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
+      &side_data_size);
+
   // If a packet is returned by FFmpeg's av_parser_parse2() the packet will
   // reference inner memory of FFmpeg.  As such we should transfer the packet
   // into memory we control.
   scoped_refptr<DecoderBuffer> buffer;
-  buffer = DecoderBuffer::CopyFrom(packet->data, packet->size);
+  if (side_data_size > 0) {
+    buffer = DecoderBuffer::CopyFrom(packet.get()->data, packet.get()->size,
+                                     side_data, side_data_size);
+  } else {
+    buffer = DecoderBuffer::CopyFrom(packet.get()->data, packet.get()->size);
+  }
 
   if ((type() == DemuxerStream::AUDIO && audio_config_.is_encrypted()) ||
       (type() == DemuxerStream::VIDEO && video_config_.is_encrypted())) {
