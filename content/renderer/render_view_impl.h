@@ -1449,6 +1449,18 @@ class CONTENT_EXPORT RenderViewImpl
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;
 #endif
 
+  // Plugins -------------------------------------------------------------------
+
+  // All the currently active plugin delegates for this RenderView; kept so
+  // that we can enumerate them to send updates about things like window
+  // location or tab focus and visibily. These are non-owning references.
+  std::set<WebPluginDelegateProxy*> plugin_delegates_;
+
+#if defined(OS_WIN)
+  // The ID of the focused NPAPI plug-in.
+  int focused_plugin_id_;
+#endif
+
   // Misc ----------------------------------------------------------------------
 
   // The current and pending file chooser completion objects. If the queue is
@@ -1507,19 +1519,9 @@ class CONTENT_EXPORT RenderViewImpl
       PendingSnapshotMap;
   PendingSnapshotMap pending_snapshots_;
 
+  // Allows to selectively disable partial buffer swap for this renderer's
+  // compositor.
   bool allow_partial_swap_;
-
-  // Plugins -------------------------------------------------------------------
-
-  // All the currently active plugin delegates for this RenderView; kept so
-  // that we can enumerate them to send updates about things like window
-  // location or tab focus and visibily. These are non-owning references.
-  std::set<WebPluginDelegateProxy*> plugin_delegates_;
-
-#if defined(OS_WIN)
-  // The ID of the focused NPAPI plug-in.
-  int focused_plugin_id_;
-#endif
 
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.

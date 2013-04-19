@@ -665,7 +665,12 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       body_background_color_(SK_ColorWHITE),
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
+#endif
+#if defined(OS_WIN)
+      focused_plugin_id_(-1),
+#endif
       enumeration_completion_id_(0),
+#if defined(OS_ANDROID)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           load_progress_tracker_(new LoadProgressTracker(this))),
 #endif
@@ -674,9 +679,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       handling_select_range_(false),
       next_snapshot_id_(0),
       allow_partial_swap_(params->allow_partial_swap),
-#if defined(OS_WIN)
-      focused_plugin_id_(-1),
-#endif
       updating_frame_tree_(false),
       pending_frame_tree_update_(false),
       target_process_id_(0),
