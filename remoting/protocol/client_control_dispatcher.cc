@@ -60,6 +60,13 @@ void ClientControlDispatcher::ControlAudio(const AudioControl& audio_control) {
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientControlDispatcher::SetCapabilities(
+    const Capabilities& capabilities) {
+  ControlMessage message;
+  message.mutable_capabilities()->CopyFrom(capabilities);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void ClientControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);
@@ -68,6 +75,8 @@ void ClientControlDispatcher::OnMessageReceived(
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
+  } else if (message->has_capabilities()) {
+    client_stub_->SetCapabilities(message->capabilities());
   } else if (message->has_cursor_shape()) {
     client_stub_->SetCursorShape(message->cursor_shape());
   } else {

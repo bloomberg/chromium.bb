@@ -33,6 +33,7 @@ using ::remoting::protocol::SessionConfig;
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::AtLeast;
 using testing::CreateFunctor;
 using testing::DeleteArg;
@@ -283,13 +284,17 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
         .Times(0);
     EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
-        .Times(AnyNumber())
-        .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateInputInjector));
+        .Times(AtMost(1))
+        .WillOnce(Invoke(this, &ChromotingHostTest::CreateInputInjector));
     EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
-        .Times(AnyNumber());
+        .Times(AtMost(1));
     EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
-        .Times(AnyNumber())
-        .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
+        .Times(AtMost(1))
+        .WillOnce(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
+    EXPECT_CALL(*desktop_environment, GetCapabilities())
+        .Times(AtMost(1));
+    EXPECT_CALL(*desktop_environment, SetCapabilities(_))
+        .Times(AtMost(1));
 
     return desktop_environment;
   }

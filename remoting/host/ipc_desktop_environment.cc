@@ -36,10 +36,9 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
                                                    caller_task_runner,
                                                    io_task_runner,
                                                    capture_task_runner,
-                                                   client_session_control);
-
-  desktop_session_proxy_->ConnectToDesktopSession(desktop_session_connector,
-                                                  virtual_terminal);
+                                                   client_session_control,
+                                                   desktop_session_connector,
+                                                   virtual_terminal);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {
@@ -59,6 +58,14 @@ scoped_ptr<ScreenControls> IpcDesktopEnvironment::CreateScreenControls() {
 
 scoped_ptr<media::ScreenCapturer> IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
+}
+
+std::string IpcDesktopEnvironment::GetCapabilities() const {
+  return desktop_session_proxy_->GetCapabilities();
+}
+
+void IpcDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
+  return desktop_session_proxy_->SetCapabilities(capabilities);
 }
 
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(

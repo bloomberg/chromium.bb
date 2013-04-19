@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_BASIC_DESKTOP_ENVIRONMENT_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +29,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual std::string GetCapabilities() const OVERRIDE;
+  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
 
  protected:
   friend class BasicDesktopEnvironmentFactory;

@@ -36,6 +36,7 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::Return;
 using testing::ReturnRef;
 
@@ -277,6 +278,8 @@ void IpcDesktopEnvironmentTest::SetUp() {
   // Create the screen capturer.
   video_capturer_ =
       desktop_environment_->CreateVideoCapturer();
+
+  desktop_environment_->SetCapabilities(std::string());
 }
 
 void IpcDesktopEnvironmentTest::ConnectTerminal(
@@ -302,15 +305,19 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
       .Times(0);
   EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke(
+      .Times(AtMost(1))
+      .WillOnce(Invoke(
           this, &IpcDesktopEnvironmentTest::CreateInputInjector));
   EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
-      .Times(AnyNumber());
+      .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke(
+      .Times(AtMost(1))
+      .WillOnce(Invoke(
           this, &IpcDesktopEnvironmentTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, GetCapabilities())
+      .Times(AtMost(1));
+  EXPECT_CALL(*desktop_environment, SetCapabilities(_))
+      .Times(AtMost(1));
 
   // Let tests know that the remote desktop environment is created.
   message_loop_.PostTask(FROM_HERE, setup_run_loop_->QuitClosure());

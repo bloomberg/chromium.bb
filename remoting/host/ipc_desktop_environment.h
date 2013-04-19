@@ -53,6 +53,8 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual std::string GetCapabilities() const OVERRIDE;
+  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
 
  private:
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;

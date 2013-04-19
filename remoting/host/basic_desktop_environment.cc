@@ -46,6 +46,13 @@ scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
   return scoped_ptr<ScreenControls>();
 }
 
+std::string BasicDesktopEnvironment::GetCapabilities() const {
+  return std::string();
+}
+
+void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
+}
+
 scoped_ptr<media::ScreenCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

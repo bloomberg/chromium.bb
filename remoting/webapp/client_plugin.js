@@ -31,6 +31,8 @@ remoting.ClientPlugin.prototype.onConnectionStatusUpdateHandler;
 remoting.ClientPlugin.prototype.onConnectionReadyHandler;
 /** @type {function(): void} Desktop size change callback. */
 remoting.ClientPlugin.prototype.onDesktopSizeUpdateHandler;
+/** @type {function(!Array.<string>): void} Capabilities negotiated callback. */
+remoting.ClientPlugin.prototype.onSetCapabilitiesHandler;
 /** @type {function(): void} Request a PIN from the user. */
 remoting.ClientPlugin.prototype.fetchPinHandler;
 

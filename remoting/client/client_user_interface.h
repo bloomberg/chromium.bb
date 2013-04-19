@@ -5,7 +5,10 @@
 #ifndef REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
 #define REMOTING_CLIENT_CLIENT_USER_INTERFACE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
@@ -29,6 +32,10 @@ class ClientUserInterface {
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
                                  protocol::ErrorCode error) = 0;
   virtual void OnConnectionReady(bool ready) = 0;
+
+  // Passes the final set of capabilities negotiated between the client and host
+  // to the application.
+  virtual void SetCapabilities(const std::string& capabilities) = 0;
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;

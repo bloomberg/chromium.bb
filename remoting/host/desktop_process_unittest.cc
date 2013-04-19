@@ -30,6 +30,7 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::InSequence;
 using testing::Return;
 
@@ -198,13 +199,17 @@ DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateAudioCapturerPtr())
       .Times(0);
   EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke(this, &DesktopProcessTest::CreateInputInjector));
+      .Times(AtMost(1))
+      .WillOnce(Invoke(this, &DesktopProcessTest::CreateInputInjector));
   EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
-      .Times(AnyNumber());
+      .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke(this, &DesktopProcessTest::CreateVideoCapturer));
+      .Times(AtMost(1))
+      .WillOnce(Invoke(this, &DesktopProcessTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, GetCapabilities())
+      .Times(AtMost(1));
+  EXPECT_CALL(*desktop_environment, SetCapabilities(_))
+      .Times(AtMost(1));
 
   // Notify the test that the desktop environment has been created.
   network_listener_.OnDesktopEnvironmentCreated();

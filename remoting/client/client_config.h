@@ -27,6 +27,9 @@ struct ClientConfig {
 
   std::vector<protocol::AuthenticationMethod> authentication_methods;
   std::string authentication_tag;
+
+  // The set of all capabilities supported by the webapp.
+  std::string capabilities;
 };
 
 }  // namespace remoting

@@ -41,6 +41,8 @@ remoting.ClientPluginAsync = function(plugin) {
   /** @param {boolean} ready Connection ready state. */
   this.onConnectionReadyHandler = function(ready) {};
   this.onDesktopSizeUpdateHandler = function () {};
+  /** @param {!Array.<string>} capabilities The negotiated capabilities. */
+  this.onSetCapabilitiesHandler = function (capabilities) {};
   this.fetchPinHandler = function () {};
 
   /** @type {number} */
@@ -49,6 +51,8 @@ remoting.ClientPluginAsync = function(plugin) {
   this.pluginApiFeatures_ = [];
   /** @type {number} */
   this.pluginApiMinVersion_ = -1;
+  /** @type {!Array.<string>} */
+  this.capabilities_ = [];
   /** @type {boolean} */
   this.helloReceived_ = false;
   /** @type {function(boolean)|null} */
@@ -98,6 +102,17 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     return;
   }
 
+  /**
+   * Splits a string into a list of words delimited by spaces.
+   * @param {string} str String that should be split.
+   * @return {!Array.<string>} List of words.
+   */
+  var tokenize = function(str) {
+    /** @type {Array.<string>} */
+    var tokens = str.match(/\S+/g);
+    return tokens ? tokens : [];
+  };
+
   if (message.method == 'hello') {
     // Reset the size in case we had to enlarge it to support click-to-play.
     this.plugin.width = 0;
@@ -108,13 +123,47 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
       return;
     }
     this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
+
     if (this.pluginApiVersion_ >= 7) {
       if (typeof message.data['apiFeatures'] != 'string') {
         console.error('Received invalid hello message: ' + messageStr);
         return;
       }
       this.pluginApiFeatures_ =
-          /** @type {Array.<string>} */ message.data['apiFeatures'].split(' ');
+          /** @type {Array.<string>} */ tokenize(message.data['apiFeatures']);
+
+      // Negotiate capabilities.
+
+      /** @type {!Array.<string>} */
+      var requestedCapabilities = [];
+      if ('requestedCapabilities' in message.data) {
+        if (typeof message.data['requestedCapabilities'] != 'string') {
+          console.error('Received invalid hello message: ' + messageStr);
+          return;
+        }
+        requestedCapabilities = tokenize(message.data['requestedCapabilities']);
+      }
+
+      /** @type {!Array.<string>} */
+      var supportedCapabilities = [];
+      if ('supportedCapabilities' in message.data) {
+        if (typeof message.data['supportedCapabilities'] != 'string') {
+          console.error('Received invalid hello message: ' + messageStr);
+          return;
+        }
+        supportedCapabilities = tokenize(message.data['supportedCapabilities']);
+      }
+
+      // At the moment the webapp does not recognize any of
+      // 'requestedCapabilities' capabilities (so they all should be disabled)
+      // and do not care about any of 'supportedCapabilities' capabilities (so
+      // they all can be enabled).
+      this.capabilities_ = supportedCapabilities;
+
+      // Let the host know that the webapp can be requested to always send
+      // the client's dimensions.
+      this.capabilities_.push(
+          remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION);
     } else if (this.pluginApiVersion_ >= 6) {
       this.pluginApiFeatures_ = ['highQualityScaling', 'injectKeyEvent'];
     } else {
@@ -208,6 +257,15 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     this.onConnectionReadyHandler(ready);
   } else if (message.method == 'fetchPin') {
     this.fetchPinHandler();
+  } else if (message.method == 'setCapabilities') {
+    if (typeof message.data['capabilities'] != 'string') {
+      console.error('Received incorrect setCapabilities message.');
+      return;
+    }
+
+    /** @type {!Array.<string>} */
+    var capabilities = tokenize(message.data['capabilities']);
+    this.onSetCapabilitiesHandler(capabilities);
   }
 };
 
@@ -306,7 +364,8 @@ remoting.ClientPluginAsync.prototype.connect = function(
         localJid: localJid,
         sharedSecret: sharedSecret,
         authenticationMethods: authenticationMethods,
-        authenticationTag: authenticationTag
+        authenticationTag: authenticationTag,
+        capabilities: this.capabilities_.join(" ")
       }
     }));
 };

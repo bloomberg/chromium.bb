@@ -34,6 +34,7 @@
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
@@ -80,6 +81,14 @@ class ChromotingInstance :
   // without bumping the API version.
   static const char kApiFeatures[];
 
+  // Capabilities supported by the plugin that should also be supported by the
+  // webapp to be enabled.
+  static const char kRequestedCapabilities[];
+
+  // Capabilities supported by the plugin that do not need to be supported by
+  // the webapp to be enabled.
+  static const char kSupportedCapabilities[];
+
   // Backward-compatibility version used by for the messaging
   // interface. Should be updated whenever we remove support for
   // an older version of the API.
@@ -108,6 +117,7 @@ class ChromotingInstance :
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
                                  protocol::ErrorCode error) OVERRIDE;
   virtual void OnConnectionReady(bool ready) OVERRIDE;
+  virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
   virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>

@@ -11,6 +11,10 @@ namespace protocol {
 
 const int kDefaultStreamVersion = 2;
 
+// The control channel version that supports the "capabilities" message.
+const int kControlStreamVersion = 3;
+const int kControlStreamVersionNoCapabilities = kDefaultStreamVersion;
+
 ChannelConfig ChannelConfig::None() {
   return ChannelConfig();
 }
@@ -35,14 +39,17 @@ bool ChannelConfig::operator==(const ChannelConfig& b) const {
 }
 
 SessionConfig::SessionConfig() {
+}
 
+bool SessionConfig::SupportsCapabilities() const {
+  return control_config_.version >= kControlStreamVersion;
 }
 
 // static
 SessionConfig SessionConfig::ForTest() {
   SessionConfig result;
   result.set_control_config(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                          kDefaultStreamVersion,
+                                          kControlStreamVersionNoCapabilities,
                                           ChannelConfig::CODEC_UNDEFINED));
   result.set_event_config(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                         kDefaultStreamVersion,
@@ -171,11 +178,15 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   // Control channel.
   result->mutable_control_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
+                    kControlStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_control_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kControlStreamVersionNoCapabilities,
                     ChannelConfig::CODEC_UNDEFINED));
   result->mutable_control_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                    kDefaultStreamVersion,
+                    kControlStreamVersionNoCapabilities,
                     ChannelConfig::CODEC_UNDEFINED));
 
   // Event channel.

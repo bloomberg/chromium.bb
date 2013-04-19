@@ -21,6 +21,7 @@ message ControlMessage {
   optional CursorShapeInfo cursor_shape = 4;
   optional VideoControl video_control = 3;
   optional AudioControl audio_control = 5;
+  optional Capabilities capabilities = 6;
 }
 
 // Defines an event message on the event channel.

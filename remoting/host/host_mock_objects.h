@@ -34,6 +34,8 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateInputInjectorPtr, InputInjector*());
   MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
   MOCK_METHOD0(CreateVideoCapturerPtr, media::ScreenCapturer*());
+  MOCK_CONST_METHOD0(GetCapabilities, std::string());
+  MOCK_METHOD1(SetCapabilities, void(const std::string&));
 
   // DesktopEnvironment implementation.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;

@@ -8,6 +8,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "media/video/capture/screen/screen_capturer.h"
+#include "remoting/base/capabilities.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
 #include "remoting/codec/audio_encoder_speex.h"
@@ -96,6 +97,8 @@ ClientSession::~ClientSession() {
 
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
+  DCHECK(CalledOnValidThread());
+
   if (!resolution.has_dips_width() || !resolution.has_dips_height())
     return;
 
@@ -116,6 +119,8 @@ void ClientSession::NotifyClientResolution(
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
+  DCHECK(CalledOnValidThread());
+
   if (video_control.has_enable()) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
@@ -125,6 +130,8 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
 }
 
 void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
+  DCHECK(CalledOnValidThread());
+
   if (audio_control.has_enable()) {
     VLOG(1) << "Received AudioControl (enable="
             << audio_control.enable() << ")";
@@ -133,10 +140,42 @@ void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
   }
 }
 
+void ClientSession::SetCapabilities(
+    const protocol::Capabilities& capabilities) {
+  DCHECK(CalledOnValidThread());
+
+  // The client should not send protocol::Capabilities if it is not supported by
+  // the config channel.
+  if (!connection_->session()->config().SupportsCapabilities()) {
+    LOG(ERROR) << "Unexpected protocol::Capabilities has been received.";
+    return;
+  }
+
+  // Ignore all the messages but the 1st one.
+  if (client_capabilities_) {
+    LOG(WARNING) << "protocol::Capabilities has been received already.";
+    return;
+  }
+
+  client_capabilities_ = make_scoped_ptr(new std::string());
+  if (capabilities.has_capabilities())
+    *client_capabilities_ = capabilities.capabilities();
+
+  VLOG(1) << "Client capabilities: " << *client_capabilities_;
+
+  // Calculate the set of capabilities enabled by both client and host and
+  // pass it to the desktop environment if it is available.
+  if (desktop_environment_) {
+    desktop_environment_->SetCapabilities(
+        IntersectCapabilities(*client_capabilities_, host_capabilities_));
+  }
+}
+
 void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+  DCHECK(!desktop_environment_);
 
   auth_input_filter_.set_enabled(true);
   auth_clipboard_filter_.set_enabled(true);
@@ -151,6 +190,8 @@ void ClientSession::OnConnectionAuthenticated(
                               this, &ClientSession::DisconnectSession);
   }
 
+  // The session may be destroyed as the result result of this call, so it must
+  // be the last in this method.
   event_handler_->OnSessionAuthenticated(this);
 }
 
@@ -159,13 +200,35 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
   DCHECK(!audio_scheduler_);
-  DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
   DCHECK(!video_scheduler_);
 
+  // Create the desktop environment.
   desktop_environment_ =
       desktop_environment_factory_->Create(control_factory_.GetWeakPtr());
+  host_capabilities_ = desktop_environment_->GetCapabilities();
+
+  // Negotiate capabilities with the client.
+  if (connection_->session()->config().SupportsCapabilities()) {
+    VLOG(1) << "Host capabilities: " << host_capabilities_;
+
+    protocol::Capabilities capabilities;
+    capabilities.set_capabilities(host_capabilities_);
+    connection_->client_stub()->SetCapabilities(capabilities);
+
+    // |client_capabilities_| could have been received before all channels were
+    // connected. Process them now.
+    if (client_capabilities_) {
+      desktop_environment_->SetCapabilities(
+          IntersectCapabilities(*client_capabilities_, host_capabilities_));
+    }
+  } else {
+    VLOG(1) << "The client does not support any capabilities.";
+
+    client_capabilities_ = make_scoped_ptr(new std::string());
+    desktop_environment_->SetCapabilities(*client_capabilities_);
+  }
 
   // Create the object that controls the screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();

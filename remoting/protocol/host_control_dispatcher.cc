@@ -32,6 +32,13 @@ void HostControlDispatcher::OnInitialized() {
   writer_.Init(channel(), BufferedSocketWriter::WriteFailedCallback());
 }
 
+void HostControlDispatcher::SetCapabilities(
+    const Capabilities& capabilities) {
+  ControlMessage message;
+  message.mutable_capabilities()->CopyFrom(capabilities);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
@@ -60,6 +67,8 @@ void HostControlDispatcher::OnMessageReceived(
     host_stub_->ControlVideo(message->video_control());
   } else if (message->has_audio_control()) {
     host_stub_->ControlAudio(message->audio_control());
+  } else if (message->has_capabilities()) {
+    host_stub_->SetCapabilities(message->capabilities());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

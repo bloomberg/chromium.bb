@@ -104,10 +104,9 @@ class MockHostStub : public HostStub {
 
   MOCK_METHOD1(NotifyClientResolution,
                void(const ClientResolution& resolution));
-  MOCK_METHOD1(ControlVideo,
-               void(const VideoControl& video_control));
-  MOCK_METHOD1(ControlAudio,
-               void(const AudioControl& audio_control));
+  MOCK_METHOD1(ControlVideo, void(const VideoControl& video_control));
+  MOCK_METHOD1(ControlAudio, void(const AudioControl& audio_control));
+  MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
@@ -117,6 +116,9 @@ class MockClientStub : public ClientStub {
  public:
   MockClientStub();
   virtual ~MockClientStub();
+
+  // ClientStub mock implementation.
+  MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
 
   // ClipboardStub mock implementation.
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));

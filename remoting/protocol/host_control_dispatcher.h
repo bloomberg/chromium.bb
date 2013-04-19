@@ -33,6 +33,9 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   HostControlDispatcher();
   virtual ~HostControlDispatcher();
 
+  // ClientStub implementation.
+  virtual void SetCapabilities(const Capabilities& capabilities) OVERRIDE;
+
   // ClipboardStub implementation for sending clipboard data to client.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
 

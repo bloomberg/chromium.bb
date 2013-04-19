@@ -47,3 +47,9 @@ message CursorShapeInfo {
   // Cursor pixmap data in 32-bit BGRA format.
   optional bytes data = 5;
 }
+
+message Capabilities {
+  // List of capabilities supported by the sender (case sensitive, capabilities
+  // are separated by spaces).
+  optional string capabilities = 1;
+}

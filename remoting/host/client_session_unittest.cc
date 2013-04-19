@@ -26,6 +26,7 @@ using protocol::SessionConfig;
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::DeleteArg;
 using testing::DoAll;
 using testing::Expectation;
@@ -190,9 +191,13 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateInputInjectorPtr())
       .WillOnce(Invoke(this, &ClientSessionTest::CreateInputInjector));
   EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
-      .Times(1);
+      .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .WillOnce(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, GetCapabilities())
+      .Times(AtMost(1));
+  EXPECT_CALL(*desktop_environment, SetCapabilities(_))
+      .Times(AtMost(1));
 
   return desktop_environment;
 }

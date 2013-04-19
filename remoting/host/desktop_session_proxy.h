@@ -70,13 +70,17 @@ class DesktopSessionProxy
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
+      bool virtual_terminal);
 
   // Mirrors DesktopEnvironment.
   scoped_ptr<AudioCapturer> CreateAudioCapturer();
   scoped_ptr<InputInjector> CreateInputInjector();
   scoped_ptr<ScreenControls> CreateScreenControls();
   scoped_ptr<media::ScreenCapturer> CreateVideoCapturer();
+  std::string GetCapabilities() const;
+  void SetCapabilities(const std::string& capabilities);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -86,11 +90,6 @@ class DesktopSessionProxy
   // Connects to the desktop session agent.
   bool AttachToDesktop(base::ProcessHandle desktop_process,
                        IPC::PlatformFileForTransit desktop_pipe);
-
-  // Binds |this| to a desktop session.
-  void ConnectToDesktopSession(
-      base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool virtual_terminal);
 
   // Closes the connection to the desktop session agent and cleans up
   // the associated resources.
@@ -183,7 +182,7 @@ class DesktopSessionProxy
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
-  // Used to bind to a desktop session and receive notifications every time
+  // Used to create a desktop session and receive notifications every time
   // the desktop process is replaced.
   base::WeakPtr<DesktopSessionConnector> desktop_session_connector_;
 
@@ -204,6 +203,11 @@ class DesktopSessionProxy
   // Keeps the desired screen resolution so it can be passed to a newly attached
   // desktop session agent.
   ScreenResolution screen_resolution_;
+
+  // True if |this| has been connected to the desktop session.
+  bool is_desktop_session_connected_;
+
+  bool virtual_terminal_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionProxy);
 };

@@ -137,11 +137,14 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 
 }  // namespace
 
-// String sent in the "hello" message to the plugin to describe features.
+// String sent in the "hello" message to the webapp to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
     "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio "
     "asyncPin thirdPartyAuth";
+
+const char ChromotingInstance::kRequestedCapabilities[] = "";
+const char ChromotingInstance::kSupportedCapabilities[] = "";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -191,6 +194,9 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   data->SetInteger("apiVersion", kApiVersion);
   data->SetString("apiFeatures", kApiFeatures);
   data->SetInteger("apiMinVersion", kApiMinMessagingVersion);
+  data->SetString("requestedCapabilities", kRequestedCapabilities);
+  data->SetString("supportedCapabilities", kSupportedCapabilities);
+
   PostChromotingMessage("hello", data.Pass());
 }
 
@@ -297,6 +303,15 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       config.fetch_secret_callback =
           base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
     }
+
+    // Read the list of capabilities, if any.
+    if (data->HasKey("capabilities")) {
+      if (!data->GetString("capabilities", &config.capabilities)) {
+        LOG(ERROR) << "Invalid connect() data.";
+        return;
+      }
+    }
+
     Connect(config);
   } else if (method == "disconnect") {
     Disconnect();
@@ -476,6 +491,12 @@ void ChromotingInstance::OnConnectionReady(bool ready) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetBoolean("ready", ready);
   PostChromotingMessage("onConnectionReady", data.Pass());
+}
+
+void ChromotingInstance::SetCapabilities(const std::string& capabilities) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("capabilities", capabilities);
+  PostChromotingMessage("setCapabilities", data.Pass());
 }
 
 void ChromotingInstance::FetchSecretFromDialog(

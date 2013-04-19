@@ -228,6 +228,39 @@ remoting.ClientSession.prototype.error_ =
 remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
 
 /**
+ * Set of capabilities for which hasCapability_() can be used to test.
+ *
+ * @enum {string}
+ */
+remoting.ClientSession.Capability = {
+  // When enabled this capability causes the client to send its screen
+  // resolution to the host once connection has been established. See
+  // this.plugin.notifyClientResolution().
+  SEND_INITIAL_RESOLUTION: 'sendInitialResolution'
+};
+
+/**
+ * The set of capabilities negotiated between the client and host.
+ * @type {Array.<string>}
+ * @private
+ */
+remoting.ClientSession.prototype.capabilities_ = null;
+
+/**
+ * @param {remoting.ClientSession.Capability} capability The capability to test
+ *     for.
+ * @return {boolean} True if the capability has been negotiated between
+ *     the client and host.
+ * @private
+ */
+remoting.ClientSession.prototype.hasCapability_ = function(capability) {
+  if (this.capabilities_ == null)
+    return false;
+
+  return this.capabilities_.indexOf(capability) > -1;
+};
+
+/**
  * @param {Element} container The element to add the plugin to.
  * @param {string} id Id to use for the plugin element .
  * @return {remoting.ClientPlugin} Create plugin object for the locally
@@ -369,6 +402,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.onConnectionReady_.bind(this);
   this.plugin.onDesktopSizeUpdateHandler =
       this.onDesktopSizeChanged_.bind(this);
+  this.plugin.onSetCapabilitiesHandler =
+      this.onSetCapabilities_.bind(this);
 
   this.connectPluginToWcs_();
 };
@@ -759,6 +794,29 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
     this.plugin.element().classList.remove("session-client-inactive");
   }
 }
+
+/**
+ * Called when the client-host capabilities negotiation is complete.
+ *
+ * @param {!Array.<string>} capabilities The set of capabilities negotiated
+ *     between the client and host.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
+  if (this.capabilities_ != null) {
+    console.error('onSetCapabilities_() is called more than once');
+    return;
+  }
+
+  this.capabilities_ = capabilities;
+  if (this.hasCapability_(
+      remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION)) {
+    this.plugin.notifyClientResolution(window.innerWidth,
+                                       window.innerHeight,
+                                       window.devicePixelRatio);
+  }
+};
 
 /**
  * @private

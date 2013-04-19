@@ -12,6 +12,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/video/capture/screen/screen_capture_data.h"
+#include "remoting/base/capabilities.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
@@ -28,6 +29,8 @@
 #include "base/win/scoped_handle.h"
 #endif  // defined(OS_WIN)
 
+const char kSendInitialResolution[] = "sendInitialResolution";
+
 namespace remoting {
 
 DesktopSessionProxy::DesktopSessionProxy(
@@ -35,14 +38,19 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
+    bool virtual_terminal)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       client_session_control_(client_session_control),
+      desktop_session_connector_(desktop_session_connector),
       desktop_process_(base::kNullProcessHandle),
-      pending_capture_frame_requests_(0) {
+      pending_capture_frame_requests_(0),
+      is_desktop_session_connected_(false),
+      virtual_terminal_(virtual_terminal) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
@@ -68,6 +76,33 @@ scoped_ptr<media::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return scoped_ptr<media::ScreenCapturer>(new IpcVideoFrameCapturer(this));
+}
+
+std::string DesktopSessionProxy::GetCapabilities() const {
+  // Ask the client to send it's resolution unconditionally.
+  return virtual_terminal_ ? kSendInitialResolution : std::string();
+}
+
+void DesktopSessionProxy::SetCapabilities(const std::string& capabilities) {
+  // Delay creation of the desktop session until the client screen resolution is
+  // received if the desktop session requires the initial screen resolution
+  // (when |virtual_terminal_| is true) and the client is expected to
+  // sent its screen resolution (the 'sendInitialResolution' capability is
+  // supported).
+  if (virtual_terminal_ &&
+      HasCapability(capabilities, kSendInitialResolution)) {
+    VLOG(1) << "Waiting for the client screen resolution.";
+    return;
+  }
+
+  // Connect to the desktop session.
+  if (!is_desktop_session_connected_) {
+    is_desktop_session_connected_ = true;
+    if (desktop_session_connector_) {
+      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
+                                                  virtual_terminal_);
+    }
+  }
 }
 
 bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
@@ -288,36 +323,35 @@ void DesktopSessionProxy::SetScreenResolution(
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  screen_resolution_ = resolution;
-  if (!screen_resolution_.IsValid())
+  if (!resolution.IsValid())
     return;
 
+  screen_resolution_ = resolution;
+
+  // Connect to the desktop session if it is not done yet.
+  if (!is_desktop_session_connected_) {
+    is_desktop_session_connected_ = true;
+    if (desktop_session_connector_) {
+      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
+                                                  virtual_terminal_);
+    }
+    return;
+  }
+
   // Pass the client's resolution to both daemon and desktop session agent.
-  // Depending on the session kind the screen resolution ccan be set by either
+  // Depending on the session kind the screen resolution can be set by either
   // the daemon (for example RDP sessions on Windows) or by the desktop session
   // agent (when sharing the physical console).
   if (desktop_session_connector_)
-    desktop_session_connector_->SetScreenResolution(this, resolution);
+    desktop_session_connector_->SetScreenResolution(this, screen_resolution_);
   SendToDesktop(
-      new ChromotingNetworkDesktopMsg_SetScreenResolution(resolution));
-}
-
-void DesktopSessionProxy::ConnectToDesktopSession(
-    base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!desktop_session_connector_);
-  DCHECK(desktop_session_connector);
-
-  desktop_session_connector_ = desktop_session_connector;
-  desktop_session_connector_->ConnectTerminal(
-      this, ScreenResolution(), virtual_terminal);
+      new ChromotingNetworkDesktopMsg_SetScreenResolution(screen_resolution_));
 }
 
 DesktopSessionProxy::~DesktopSessionProxy() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (desktop_session_connector_)
+  if (desktop_session_connector_ && is_desktop_session_connected_)
     desktop_session_connector_->DisconnectTerminal(this);
 
   if (desktop_process_ != base::kNullProcessHandle) {

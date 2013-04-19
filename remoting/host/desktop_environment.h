@@ -40,6 +40,13 @@ class DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() = 0;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() = 0;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() = 0;
+
+  // Returns the set of all capabilities supported by |this|.
+  virtual std::string GetCapabilities() const = 0;
+
+  // Passes the final set of capabilities negotiated between the client and host
+  // to |this|.
+  virtual void SetCapabilities(const std::string& capabilities) = 0;
 };
 
 // Used to create |DesktopEnvironment| instances.

@@ -5,6 +5,7 @@
 #include "remoting/client/chromoting_client.h"
 
 #include "base/bind.h"
+#include "remoting/base/capabilities.h"
 #include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
@@ -14,6 +15,7 @@
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport.h"
@@ -33,6 +35,7 @@ ChromotingClient::ChromotingClient(
       task_runner_(client_context->main_task_runner()),
       connection_(connection),
       user_interface_(user_interface),
+      host_capabilities_received_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   rectangle_decoder_ =
       new RectangleUpdateDecoder(client_context->main_task_runner(),
@@ -88,14 +91,39 @@ ChromotingStats* ChromotingClient::GetStats() {
   return rectangle_decoder_->GetStats();
 }
 
+void ChromotingClient::SetCapabilities(
+    const protocol::Capabilities& capabilities) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Only accept the first |protocol::Capabilities| message.
+  if (host_capabilities_received_) {
+    LOG(WARNING) << "protocol::Capabilities has been received already.";
+    return;
+  }
+
+  host_capabilities_received_ = true;
+  if (capabilities.has_capabilities())
+    host_capabilities_ = capabilities.capabilities();
+
+  VLOG(1) << "Host capabilities: " << host_capabilities_;
+
+  // Calculate the set of capabilities enabled by both client and host and pass
+  // it to the webapp.
+  user_interface_->SetCapabilities(
+      IntersectCapabilities(config_.capabilities, host_capabilities_));
+}
+
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   user_interface_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
 void ChromotingClient::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   user_interface_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
 }
 
@@ -121,6 +149,20 @@ void ChromotingClient::Initialize() {
   rectangle_decoder_->Initialize(connection_->config());
   if (connection_->config().is_audio_enabled())
     audio_decode_scheduler_->Initialize(connection_->config());
+
+  // Negotiate capabilities with the host.
+  if (connection_->config().SupportsCapabilities()) {
+    VLOG(1) << "Client capabilities: " << config_.capabilities;
+
+    protocol::Capabilities capabilities;
+    capabilities.set_capabilities(config_.capabilities);
+    connection_->host_stub()->SetCapabilities(capabilities);
+  } else {
+    VLOG(1) << "The host does not support any capabilities.";
+
+    host_capabilities_received_ = true;
+    user_interface_->SetCapabilities(host_capabilities_);
+  }
 }
 
 }  // namespace remoting
