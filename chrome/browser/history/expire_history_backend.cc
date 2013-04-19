@@ -327,7 +327,7 @@ void ExpireHistoryBackend::ArchiveHistoryBefore(Time end_time) {
 
   // Archive as much history as possible before the given date.
   ArchiveSomeOldHistory(end_time, GetAllVisitsReader(),
-                        std::numeric_limits<size_t>::max());
+                        std::numeric_limits<int>::max());
   ParanoidExpireHistory();
 }
 
