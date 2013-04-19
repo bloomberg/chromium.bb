@@ -138,7 +138,10 @@ private:
 #pragma warning(push)
 #pragma warning(disable: 4624) // Disable warning: destructor could not be generated because a base class destructor is inaccessible.
 #endif
-        struct Base : public Type, public BaseMixin { };
+        struct Base : public Type, public BaseMixin {
+          // FIXME: This is a workaround, http://crbug.com/233473
+          ~Base() {}
+        };
 #if COMPILER(MSVC)
 #pragma warning(pop)
 #endif
