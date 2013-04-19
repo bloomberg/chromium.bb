@@ -114,7 +114,6 @@ private:
     LoadState m_loadState;
     RefPtr<CSSFontFaceRule> m_rule;
     void notifyFontLoader(LoadState);
-    void notifyLoadingDone();
 #endif
 };
 

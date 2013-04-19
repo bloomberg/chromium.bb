@@ -32,6 +32,7 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "EventTarget.h"
+#include "Timer.h"
 #include "VoidCallback.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -66,7 +67,7 @@ public:
     void loadFont(const Dictionary&);
     void notifyWhenFontsReady(PassRefPtr<VoidCallback>);
 
-    bool loading() const { return m_loadingCount > 0; }
+    bool loading() const { return m_loadingCount > 0 || m_pendingDoneEvent; }
 
     virtual ScriptExecutionContext* scriptExecutionContext() const;
     virtual const AtomicString& interfaceName() const;
@@ -80,7 +81,7 @@ public:
     void beginFontLoading(CSSFontFaceRule*);
     void fontLoaded(CSSFontFaceRule*);
     void loadError(CSSFontFaceRule*, CSSFontFaceSource*);
-    void loadingDone();
+    void scheduleCallback(PassRefPtr<VoidCallback>);
 
 private:
     FontLoader(Document*);
@@ -91,15 +92,21 @@ private:
     virtual EventTargetData* ensureEventTargetData();
 
     void scheduleEvent(PassRefPtr<Event>);
+    void queueDoneEvent(CSSFontFaceRule* rule);
     void firePendingEvents();
+    void firePendingCallbacks();
+    void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
+    void timerFired(Timer<FontLoader>*);
 
     Document* m_document;
     EventTargetData m_eventTargetData;
     unsigned m_loadingCount;
     Vector<RefPtr<Event> > m_pendingEvents;
-    Vector<RefPtr<VoidCallback> > m_callbacks;
-    RefPtr<Event> m_loadingDoneEvent;
+    Vector<RefPtr<VoidCallback> > m_pendingCallbacks;
+    Vector<RefPtr<VoidCallback> > m_fontsReadyCallbacks;
+    RefPtr<Event> m_pendingDoneEvent;
+    Timer<FontLoader> m_timer;
 };
 
 } // namespace WebCore

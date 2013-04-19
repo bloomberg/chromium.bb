@@ -101,11 +101,6 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
     HashSet<CSSSegmentedFontFace*>::iterator end = m_segmentedFontFaces.end();
     for (HashSet<CSSSegmentedFontFace*>::iterator it = m_segmentedFontFaces.begin(); it != end; ++it)
         (*it)->fontLoaded(this);
-
-#if ENABLE(FONT_LOAD_EVENTS)
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        notifyLoadingDone();
-#endif
 }
 
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription, bool syntheticBold, bool syntheticItalic)
@@ -127,20 +122,16 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
         if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription, syntheticBold, syntheticItalic, fontSelector)) {
             m_activeSource = m_sources[i].get();
 #if ENABLE(FONT_LOAD_EVENTS)
-            if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading && m_sources[i]->isLoaded()) {
+            if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading && m_sources[i]->isLoaded())
                 notifyFontLoader(Loaded);
-                notifyLoadingDone();
-            }
 #endif
             return result.release();
         }
     }
 
 #if ENABLE(FONT_LOAD_EVENTS)
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading) {
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading)
         notifyFontLoader(Error);
-        notifyLoadingDone();
-    }
 #endif
     return 0;
 }
@@ -167,13 +158,6 @@ void CSSFontFace::notifyFontLoader(LoadState newState)
     default:
         break;
     }
-}
-
-void CSSFontFace::notifyLoadingDone()
-{
-    Document* document = (*m_segmentedFontFaces.begin())->fontSelector()->document();
-    if (document)
-        document->fontloader()->loadingDone();
 }
 #endif
 

@@ -57,8 +57,8 @@ public:
     class LoadFontCallback : public RefCounted<LoadFontCallback> {
     public:
         virtual ~LoadFontCallback() { }
-        virtual void notifyLoaded() = 0;
-        virtual void notifyError() = 0;
+        virtual void notifyLoaded(CSSSegmentedFontFace*) = 0;
+        virtual void notifyError(CSSSegmentedFontFace*) = 0;
     };
 
     bool checkFont() const;

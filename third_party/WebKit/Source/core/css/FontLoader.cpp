@@ -65,8 +65,10 @@ public:
         return LoadFontCallback::create(numFamilies, onsuccess, onerror);
     }
 
-    virtual void notifyLoaded() OVERRIDE;
-    virtual void notifyError() OVERRIDE;
+    virtual void notifyLoaded(CSSSegmentedFontFace*) OVERRIDE;
+    virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE;
+    void loaded(Document*);
+    void error(Document*);
 private:
     LoadFontCallback(int numLoading, PassRefPtr<VoidCallback> loadCallback, PassRefPtr<VoidCallback> errorCallback)
         : m_numLoading(numLoading)
@@ -81,31 +83,42 @@ private:
     RefPtr<VoidCallback> m_errorCallback;
 };
 
-void LoadFontCallback::notifyLoaded()
+void LoadFontCallback::loaded(Document* document)
 {
     m_numLoading--;
-    if (m_numLoading)
+    if (m_numLoading || !document)
         return;
 
     if (m_errorOccured) {
         if (m_errorCallback)
-            m_errorCallback->handleEvent();
+            document->fontloader()->scheduleCallback(m_errorCallback.release());
     } else {
         if (m_loadCallback)
-            m_loadCallback->handleEvent();
+            document->fontloader()->scheduleCallback(m_loadCallback.release());
     }
 }
 
-void LoadFontCallback::notifyError() 
+void LoadFontCallback::error(Document* document)
 {
     m_errorOccured = true;
-    notifyLoaded();
+    loaded(document);
+}
+
+void LoadFontCallback::notifyLoaded(CSSSegmentedFontFace* face)
+{
+    loaded(face->fontSelector()->document());
+}
+
+void LoadFontCallback::notifyError(CSSSegmentedFontFace* face)
+{
+    error(face->fontSelector()->document());
 }
 
 FontLoader::FontLoader(Document* document)
     : ActiveDOMObject(document)
     , m_document(document)
     , m_loadingCount(0)
+    , m_timer(this, &FontLoader::timerFired)
 {
     suspendIfNeeded();
 }
@@ -136,20 +149,24 @@ ScriptExecutionContext* FontLoader::scriptExecutionContext() const
 
 void FontLoader::didLayout()
 {
+    if (m_loadingCount || (!m_pendingDoneEvent && m_fontsReadyCallbacks.isEmpty()))
+        return;
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0);
+}
+
+void FontLoader::timerFired(Timer<FontLoader>*)
+{
     firePendingEvents();
-    loadingDone();
+    firePendingCallbacks();
+    fireDoneEventIfPossible();
 }
 
 void FontLoader::scheduleEvent(PassRefPtr<Event> event)
 {
-    if (FrameView* view = m_document->view()) {
-        if (view->isInLayout()) {
-            m_pendingEvents.append(event);
-            return;
-        }
-    }
-    firePendingEvents();
-    dispatchEvent(event);
+    m_pendingEvents.append(event);
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0);
 }
 
 void FontLoader::firePendingEvents()
@@ -163,63 +180,85 @@ void FontLoader::firePendingEvents()
         dispatchEvent(pendingEvents[index].release());
 }
 
+void FontLoader::scheduleCallback(PassRefPtr<VoidCallback> callback)
+{
+    m_pendingCallbacks.append(callback);
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0);
+}
+
+void FontLoader::firePendingCallbacks()
+{
+    if (m_pendingCallbacks.isEmpty())
+        return;
+
+    Vector<RefPtr<VoidCallback> > pendingCallbacks;
+    m_pendingCallbacks.swap(pendingCallbacks);
+    for (size_t index = 0; index < pendingCallbacks.size(); ++index)
+        pendingCallbacks[index]->handleEvent();
+}
+
 void FontLoader::beginFontLoading(CSSFontFaceRule* rule)
 {
     ++m_loadingCount;
-    if (m_loadingCount == 1 && !m_loadingDoneEvent)
+    if (m_loadingCount == 1 && !m_pendingDoneEvent)
         scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingEvent, rule));
     scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadstartEvent, rule));
+    m_pendingDoneEvent.clear();
 }
 
 void FontLoader::fontLoaded(CSSFontFaceRule* rule)
 {
-    ASSERT(m_loadingCount > 0);
     scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadEvent, rule));
-
-    --m_loadingCount;
-    if (!m_loadingCount)
-        m_loadingDoneEvent = CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingdoneEvent, rule);
+    queueDoneEvent(rule);
 }
 
 void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
 {
-    ASSERT(m_loadingCount > 0);
-
     // FIXME: We should report NetworkError in case of timeout, etc.
     String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : ExceptionCodeDescription(NOT_FOUND_ERR).name;
     scheduleEvent(CSSFontFaceLoadEvent::createForError(rule, DOMError::create(errorName)));
+    queueDoneEvent(rule);
+}
+
+void FontLoader::queueDoneEvent(CSSFontFaceRule* rule)
+{
+    ASSERT(m_loadingCount > 0);
     --m_loadingCount;
-    if (!m_loadingCount)
-        m_loadingDoneEvent = CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingdoneEvent, rule);
+    if (!m_loadingCount) {
+        ASSERT(!m_pendingDoneEvent);
+        m_pendingDoneEvent = CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingdoneEvent, rule);
+    }
 }
 
 void FontLoader::notifyWhenFontsReady(PassRefPtr<VoidCallback> callback)
 {
-    m_callbacks.append(callback);
-    loadingDone();
+    m_fontsReadyCallbacks.append(callback);
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0);
 }
 
-void FontLoader::loadingDone()
+void FontLoader::fireDoneEventIfPossible()
 {
-    if (loading())
+    if (!m_pendingEvents.isEmpty() || !m_pendingCallbacks.isEmpty())
         return;
-    if (!m_loadingDoneEvent && m_callbacks.isEmpty())
+    if (m_loadingCount || (!m_pendingDoneEvent && m_fontsReadyCallbacks.isEmpty()))
         return;
 
     if (FrameView* view = m_document->view()) {
-        if (view->isInLayout() || view->needsLayout())
+        if (view->needsLayout())
             return;
         m_document->updateStyleIfNeeded();
         if (view->needsLayout())
             return;
     }
 
-    if (m_loadingDoneEvent)
-        dispatchEvent(m_loadingDoneEvent.release());
+    if (m_pendingDoneEvent)
+        dispatchEvent(m_pendingDoneEvent.release());
 
-    if (!m_callbacks.isEmpty()) {
+    if (!m_fontsReadyCallbacks.isEmpty()) {
         Vector<RefPtr<VoidCallback> > callbacks;
-        m_callbacks.swap(callbacks);
+        m_fontsReadyCallbacks.swap(callbacks);
         for (size_t index = 0; index < callbacks.size(); ++index)
             callbacks[index]->handleEvent();
     }
@@ -240,7 +279,7 @@ void FontLoader::loadFont(const Dictionary& params)
         CSSSegmentedFontFace* face = m_document->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
             if (callback)
-                callback->notifyError();
+                callback->error(m_document);
             continue;
         }
         face->loadFont(font.fontDescription(), callback);

@@ -21,6 +21,11 @@ function runTests() {
 
 function onsuccess() {
     shouldBe("document.fontloader.checkFont('10px TestFont')", "true");
+    shouldBe("document.fontloader.loading", "true");
+    document.fontloader.notifyWhenFontsReady(onFontsReady);
+}
+
+function onFontsReady() {
     shouldBe("document.fontloader.loading", "false");
     finishJSTest();
 }

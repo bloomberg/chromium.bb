@@ -80,9 +80,9 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
         m_callbacks.swap(callbacks);
         for (size_t index = 0; index < callbacks.size(); ++index) {
             if (checkFont())
-                callbacks[index]->notifyLoaded();
+                callbacks[index]->notifyLoaded(this);
             else
-                callbacks[index]->notifyError();
+                callbacks[index]->notifyError(this);
         }
     }
 #endif
@@ -178,9 +178,9 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, Pass
         if (isLoading())
             m_callbacks.append(callback);
         else if (checkFont())
-            callback->notifyLoaded();
+            callback->notifyLoaded(this);
         else
-            callback->notifyError();
+            callback->notifyError(this);
     }
 }
 #endif

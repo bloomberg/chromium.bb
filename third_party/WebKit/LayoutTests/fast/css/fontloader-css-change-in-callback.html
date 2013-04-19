@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+<style>
+@font-face {
+  font-family: 'ahem';
+  src: url(../../resources/Ahem.ttf);
+}
+</style>
+<script>
+description('Checks that adding CSS in callback of fontloader.loadFont() does not cause a crash.');
+
+window.jsTestIsAsync = true;
+
+function addCss() {
+    var cssText = "@font-face { font-family: 'Courier New'; src: local('Courier New') }";
+    var cssNode = document.createElement('style');
+    cssNode.type = 'text/css';
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(cssNode);
+    var cssTextNode = document.createTextNode(cssText);
+    cssNode.appendChild(cssTextNode);
+    finishJSTest();
+}
+
+if (document.fontloader)
+    document.fontloader.loadFont({font:"12px ahem", onsuccess:addCss})
+else {
+    testFailed('document.fontloader does not exist');
+    finishJSTest();
+}
+</script>
+</head>
+<body>
+  <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
