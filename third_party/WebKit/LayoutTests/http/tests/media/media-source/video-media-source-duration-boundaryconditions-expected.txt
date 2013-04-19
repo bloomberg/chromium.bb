@@ -6,8 +6,8 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-EXPECTED (mediaSource.duration == 'testDurationValue'), OBSERVED '2147483648' FAIL
-onDurationChange : video.duration is 2147483648.000
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
+onDurationChange : video.duration is 2147483647.000
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(durationchange)
 
@@ -26,8 +26,8 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-EXPECTED (mediaSource.duration == 'testDurationValue'), OBSERVED '3.4028234663852886e+38' FAIL
-onDurationChange : video.duration is 3.4028234663852886e+38
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
+onDurationChange : video.duration is 1.7976931348623157e+308
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(durationchange)
 
@@ -36,8 +36,8 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-EXPECTED (mediaSource.duration == 'testDurationValue'), OBSERVED '3.4028234663852886e+38' FAIL
-onDurationChange : video.duration is 3.4028234663852886e+38
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
+onDurationChange : video.duration is 1.7976931348623157e+308
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(durationchange)
 
@@ -46,7 +46,7 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-EXPECTED (mediaSource.duration == 'testDurationValue'), OBSERVED '1.1754943508222875e-38' FAIL
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
 onDurationChange : video.duration is 0.000
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(durationchange)

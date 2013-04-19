@@ -471,21 +471,21 @@ void WebMediaPlayerClientImpl::setVisible(bool visible)
 double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->durationFloat();
-    return 0.0f;
+        return m_webMediaPlayer->duration();
+    return 0.0;
 }
 
 double WebMediaPlayerClientImpl::currentTime() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->currentTimeFloat();
-    return 0.0f;
+        return m_webMediaPlayer->currentTime();
+    return 0.0;
 }
 
 void WebMediaPlayerClientImpl::seek(double time)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->seekFloat(time);
+        m_webMediaPlayer->seek(time);
 }
 
 bool WebMediaPlayerClientImpl::seeking() const
@@ -495,16 +495,10 @@ bool WebMediaPlayerClientImpl::seeking() const
     return false;
 }
 
-void WebMediaPlayerClientImpl::setEndTime(double time)
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setEndTimeFloat(time);
-}
-
 void WebMediaPlayerClientImpl::setRate(double rate)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->setRateFloat(rate);
+        m_webMediaPlayer->setRate(rate);
 }
 
 bool WebMediaPlayerClientImpl::paused() const
@@ -531,7 +525,7 @@ bool WebMediaPlayerClientImpl::supportsSave() const
 void WebMediaPlayerClientImpl::setVolume(double volume)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->setVolumeFloat(volume);
+        m_webMediaPlayer->setVolume(volume);
 }
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
@@ -551,7 +545,7 @@ MediaPlayer::ReadyState WebMediaPlayerClientImpl::readyState() const
 double WebMediaPlayerClientImpl::maxTimeSeekable() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->maxTimeSeekableFloat();
+        return m_webMediaPlayer->maxTimeSeekable();
     return 0.0;
 }
 
@@ -677,7 +671,7 @@ MediaPlayer::MovieLoadType WebMediaPlayerClientImpl::movieLoadType() const
 double WebMediaPlayerClientImpl::mediaTimeForTimeValue(double timeValue) const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->mediaTimeForTimeValueFloat(timeValue);
+        return m_webMediaPlayer->mediaTimeForTimeValue(timeValue);
     return timeValue;
 }
 

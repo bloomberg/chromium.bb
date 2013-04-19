@@ -68,22 +68,7 @@ double MediaSourcePrivateImpl::duration()
     if (!m_client)
         return std::numeric_limits<float>::quiet_NaN();
 
-    // Make sure super small durations don't get truncated to 0 and
-    // large durations don't get converted to infinity by the double -> float
-    // conversion.
-    //
-    // TODO(acolwell): Remove when WebKit is changed to report duration as a
-    // double.
-    double duration = m_client->duration();
-    if (duration > 0.0 && duration < std::numeric_limits<double>::infinity()) {
-        double minDuration =
-            static_cast<double>(std::numeric_limits<float>::min());
-        double maxDuration =
-            static_cast<double>(std::numeric_limits<float>::max());
-        duration = std::min(std::max(duration, minDuration), maxDuration);
-    }
-
-    return static_cast<float>(duration);
+    return m_client->duration();
 }
 
 void MediaSourcePrivateImpl::setDuration(double duration)

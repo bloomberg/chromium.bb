@@ -110,7 +110,6 @@ public:
     virtual double currentTime() const;
     virtual void seek(double time);
     virtual bool seeking() const;
-    virtual void setEndTime(double time);
     virtual void setRate(double);
     virtual bool paused() const;
     virtual void setVolume(double);
