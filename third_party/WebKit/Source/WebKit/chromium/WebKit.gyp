@@ -396,6 +396,8 @@
                 'src/UserMediaClientImpl.cpp',
                 'src/ValidationMessageClientImpl.cpp',
                 'src/ValidationMessageClientImpl.h',
+                'src/ViewportAnchor.cpp',
+                'src/ViewportAnchor.h',
                 'src/WebTextCheckingCompletionImpl.h',
                 'src/WebTextCheckingCompletionImpl.cpp',
                 'src/WebTextCheckingResult.cpp',

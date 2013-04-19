@@ -33,11 +33,13 @@
 #include "WebFrame.h"
 
 #include "DocumentMarkerController.h"
+#include "EventHandler.h"
 #include "FloatRect.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameTestHelpers.h"
 #include "FrameView.h"
+#include "HitTestResult.h"
 #include "PlatformContextSkia.h"
 #include "Range.h"
 #include "RenderView.h"
@@ -752,6 +754,119 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
         m_webView->close();
         m_webView = 0;
     }
+}
+
+class WebFrameResizeTest : public WebFrameTest {
+protected:
+
+    static WebCore::FloatSize computeRelativeOffset(const WebCore::IntPoint& absoluteOffset, const WebCore::LayoutRect& rect)
+    {
+        WebCore::FloatSize relativeOffset = WebCore::FloatPoint(absoluteOffset) - rect.location();
+        relativeOffset.scale(1.f / rect.width(), 1.f / rect.height());
+        return relativeOffset;
+    }
+
+    void testResizeYieldsCorrectScrollAndScale(const char* url,
+                                               const float initialPageScaleFactor,
+                                               const WebSize scrollOffset,
+                                               const WebSize viewportSize,
+                                               const bool shouldScaleRelativeToViewportWidth) {
+        registerMockedHttpURLLoad(url);
+
+        const float aspectRatio = static_cast<float>(viewportSize.width) / viewportSize.height;
+
+        m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + url, true);
+        m_webView->settings()->setViewportEnabled(true);
+        m_webView->enableFixedLayoutMode(true);
+        WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+
+        // Origin scrollOffsets preserved under resize.
+        {
+            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
+            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
+            float expectedPageScaleFactor = initialPageScaleFactor * (shouldScaleRelativeToViewportWidth ? 1 / aspectRatio : 1);
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
+            EXPECT_EQ(WebSize(), webViewImpl->mainFrame()->scrollOffset());
+        }
+
+        // Resizing just the height should not affect pageScaleFactor.
+        {
+            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
+            webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 10));
+            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height * 1.25f));
+            EXPECT_EQ(initialPageScaleFactor, webViewImpl->pageScaleFactor());
+            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height * .8f));
+            EXPECT_EQ(initialPageScaleFactor, webViewImpl->pageScaleFactor());
+        }
+
+        // Generic resize preserves scrollOffset relative to anchor node located
+        // the top center of the screen.
+        {
+            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
+            float pageScaleFactor = webViewImpl->pageScaleFactor();
+            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            float expectedPageScaleFactor = pageScaleFactor * (shouldScaleRelativeToViewportWidth ? aspectRatio : 1);
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
+            webViewImpl->mainFrame()->setScrollOffset(scrollOffset);
+
+            WebCore::IntPoint anchorPoint = WebCore::IntPoint(scrollOffset) + WebCore::IntPoint(viewportSize.width / 2, 0);
+            RefPtr<WebCore::Node> anchorNode = webViewImpl->mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(anchorPoint).innerNode();
+            ASSERT(anchorNode);
+
+            pageScaleFactor = webViewImpl->pageScaleFactor();
+            const WebCore::FloatSize preResizeRelativeOffset
+                = computeRelativeOffset(anchorPoint, anchorNode->boundingBox());
+            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
+            WebCore::IntPoint newAnchorPoint = WebCore::IntPoint(webViewImpl->mainFrame()->scrollOffset()) + WebCore::IntPoint(viewportSize.height / 2, 0);
+            const WebCore::FloatSize postResizeRelativeOffset
+                = computeRelativeOffset(newAnchorPoint, anchorNode->boundingBox());
+            EXPECT_NEAR(preResizeRelativeOffset.width(), postResizeRelativeOffset.width(), 0.15f);
+            expectedPageScaleFactor = pageScaleFactor * (shouldScaleRelativeToViewportWidth ? 1 / aspectRatio : 1);
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
+        }
+    }
+};
+
+TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
+{
+    // With width=device-width, pageScaleFactor is preserved across resizes as
+    // long as the content adjusts according to the device-width.
+    const char* url = "resize_scroll_mobile.html";
+    const float initialPageScaleFactor = 1;
+    const WebSize scrollOffset(0, 200);
+    const WebSize viewportSize(120, 160);
+    const bool shouldScaleRelativeToViewportWidth = true;
+
+    testResizeYieldsCorrectScrollAndScale(
+        url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
+}
+
+TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
+{
+    // With a fixed width, pageScaleFactor scales by the relative change in viewport width.
+    const char* url = "resize_scroll_fixed_width.html";
+    const float initialPageScaleFactor = 2;
+    const WebSize scrollOffset(0, 200);
+    const WebSize viewportSize(240, 320);
+    const bool shouldScaleRelativeToViewportWidth = true;
+
+    testResizeYieldsCorrectScrollAndScale(
+        url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
+}
+
+TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
+{
+    // With a fixed layout, pageScaleFactor scales by the relative change in viewport width.
+    const char* url = "resize_scroll_fixed_layout.html";
+    const float initialPageScaleFactor = 2;
+    const WebSize scrollOffset(200, 400);
+    const WebSize viewportSize(320, 240);
+    const bool shouldScaleRelativeToViewportWidth = true;
+
+    testResizeYieldsCorrectScrollAndScale(
+        url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
 TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)

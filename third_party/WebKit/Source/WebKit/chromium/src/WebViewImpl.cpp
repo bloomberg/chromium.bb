@@ -72,7 +72,6 @@
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
-#include "HitTestResult.h"
 #include "Image.h"
 #include "ImageBuffer.h"
 #include "InspectorController.h"
@@ -118,6 +117,7 @@
 #include "TouchDisambiguation.h"
 #include "TraceEvent.h"
 #include "ValidationMessageClientImpl.h"
+#include "ViewportAnchor.h"
 #include "WebAccessibilityObject.h"
 #include "WebActiveWheelFlingParameters.h"
 #include "WebAutofillClient.h"
@@ -195,6 +195,10 @@ static const float doubleTapZoomContentDefaultMargin = 5;
 static const float doubleTapZoomContentMinimumMargin = 2;
 static const double doubleTapZoomAnimationDurationInSeconds = 0.25;
 static const float doubleTapZoomAlreadyLegibleRatio = 1.2f;
+
+// Constants for viewport anchoring on resize.
+static const float viewportAnchorXCoord = 0.5f;
+static const float viewportAnchorYCoord = 0;
 
 // Constants for zooming in on a focused text field.
 static const double scrollAndScaleAnimationDurationInSeconds = 0.2;
@@ -1651,12 +1655,18 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     WebSize oldSize = m_size;
     float oldPageScaleFactor = pageScaleFactor();
-    IntSize oldScrollOffset = view->scrollOffset();
-    int oldFixedLayoutWidth = fixedLayoutSize().width;
+    int oldContentsWidth = contentsSize().width();
 
     m_size = newSize;
 
 #if ENABLE(VIEWPORT)
+    bool shouldAnchorAndRescaleViewport = settings()->viewportEnabled() && oldSize.width && oldContentsWidth;
+    ViewportAnchor viewportAnchor(mainFrameImpl()->frame()->eventHandler());
+    if (shouldAnchorAndRescaleViewport) {
+        viewportAnchor.setAnchor(view->visibleContentRect(),
+                                 FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
+    }
+
     ViewportArguments viewportArguments = mainFrameImpl()->frame()->document()->viewportArguments();
     m_page->chrome()->client()->dispatchViewportPropertiesDidChange(viewportArguments);
 #endif
@@ -1676,21 +1686,22 @@ void WebViewImpl::resize(const WebSize& newSize)
         if (view->needsLayout())
             view->layout();
 
-        // When the device rotates:
-        // - If the page width is unchanged, then zoom by new width/old width
-        //   such as to keep the same content horizontally onscreen.
-        // - If the page width stretches proportionally to the change in
-        //   screen width, then don't zoom at all (assuming the content has
-        //   scaled uniformly, then the same content will be horizontally
-        //   onscreen).
-        //   - If the page width partially stretches, then zoom partially to
-        //   make up the difference.
-        // In all cases try to keep the same content at the top of the screen.
-        float viewportWidthRatio = !oldSize.width ? 1 : newSize.width / (float) oldSize.width;
-        float fixedLayoutWidthRatio = !oldFixedLayoutWidth ? 1 : fixedLayoutSize().width / (float) oldFixedLayoutWidth;
-        float scaleMultiplier = viewportWidthRatio / fixedLayoutWidthRatio;
-        if (scaleMultiplier != 1)
-            setPageScaleFactor(oldPageScaleFactor * scaleMultiplier, WebPoint(oldScrollOffset.width(), oldScrollOffset.height()));
+        if (shouldAnchorAndRescaleViewport) {
+            float viewportWidthRatio = static_cast<float>(newSize.width) / oldSize.width;
+            float contentsWidthRatio = static_cast<float>(contentsSize().width()) / oldContentsWidth;
+            float scaleMultiplier = viewportWidthRatio / contentsWidthRatio;
+
+            IntSize viewportSize = view->visibleContentRect().size();
+            if (scaleMultiplier != 1) {
+                float newPageScaleFactor = oldPageScaleFactor * scaleMultiplier;
+                viewportSize.scale(pageScaleFactor() / newPageScaleFactor);
+                IntPoint scrollOffsetAtNewScale = viewportAnchor.computeOrigin(viewportSize);
+                setPageScaleFactor(newPageScaleFactor, scrollOffsetAtNewScale);
+            } else {
+                IntPoint scrollOffsetAtNewScale = clampOffsetAtScale(viewportAnchor.computeOrigin(viewportSize), pageScaleFactor());
+                updateMainFrameScrollPosition(scrollOffsetAtNewScale, false);
+            }
+        }
     }
 #endif
 
