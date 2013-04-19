@@ -547,8 +547,8 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     AtlTrace("Invalid registry launch mode value %u\n", reg_value);
     launch_mode = ECHUIM_DESKTOP;
   } else {
-    AtlTrace("Launch mode forced by registry to %s\n", modes[launch_mode]);
     launch_mode = static_cast<EC_HOST_UI_MODE>(reg_value);
+    AtlTrace("Launch mode forced by registry to %s\n", modes[launch_mode]);
   }
 
   launch_mode_determined = true;
