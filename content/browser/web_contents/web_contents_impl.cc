@@ -347,17 +347,11 @@ WebContentsImpl::~WebContentsImpl() {
   // OnCloseStarted isn't called in unit tests.
   if (!close_start_time_.is_null()) {
     base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta close_time = now - close_start_time_;
-    UMA_HISTOGRAM_TIMES("Tab.Close", close_time);
-
     base::TimeTicks unload_start_time = close_start_time_;
-    base::TimeTicks unload_end_time = now;
     if (!before_unload_end_time_.is_null())
       unload_start_time = before_unload_end_time_;
-    if (!unload_detached_start_time_.is_null())
-      unload_end_time = unload_detached_start_time_;
-    base::TimeDelta unload_time = unload_end_time - unload_start_time;
-    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", unload_time);
+    UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
+    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1827,21 +1821,6 @@ void WebContentsImpl::Close() {
 void WebContentsImpl::OnCloseStarted() {
   if (close_start_time_.is_null())
     close_start_time_ = base::TimeTicks::Now();
-}
-
-void WebContentsImpl::OnCloseCanceled() {
-  close_start_time_ = base::TimeTicks();
-  before_unload_end_time_ = base::TimeTicks();
-  unload_detached_start_time_ = base::TimeTicks();
-}
-
-void WebContentsImpl::OnUnloadStarted() {
-  before_unload_end_time_ = base::TimeTicks::Now();
-}
-
-void WebContentsImpl::OnUnloadDetachedStarted() {
-  if (unload_detached_start_time_.is_null())
-    unload_detached_start_time_ = base::TimeTicks::Now();
 }
 
 void WebContentsImpl::SystemDragEnded() {
@@ -3373,7 +3352,9 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     // spinning, since we forced it to start spinning in Navigate.
     DidStopLoading(rvh);
     controller_.DiscardNonCommittedEntries();
-    OnCloseCanceled();
+
+    close_start_time_ = base::TimeTicks();
+    before_unload_end_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
   static_cast<RenderViewHostImpl*>(

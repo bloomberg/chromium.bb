@@ -343,18 +343,6 @@ class WebContents : public PageNavigator,
   // times, subsequent calls are ignored.
   virtual void OnCloseStarted() = 0;
 
-  // Notification that tab closing was cancelled. This can happen when a user
-  // cancels a window close via another tab's beforeunload dialog.
-  virtual void OnCloseCanceled() = 0;
-
-  // Set the time during close when unload is started. Normally, this is set
-  // after the beforeunload dialog. However, for a window close, it is set
-  // after all the beforeunload dialogs have finished.
-  virtual void OnUnloadStarted() = 0;
-
-  // Set the time during close when the tab is no longer visible.
-  virtual void OnUnloadDetachedStarted() = 0;
-
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.
   virtual void SystemDragEnded() = 0;

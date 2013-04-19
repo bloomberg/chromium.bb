@@ -290,21 +290,11 @@ class Browser : public TabStripModelObserver,
   // Gives beforeunload handlers the chance to cancel the close.
   bool ShouldCloseWindow();
 
-  // Figure out if there are tabs that have beforeunload handlers.
-  // It starts beforeunload/unload processing as a side-effect.
-  bool TabsNeedBeforeUnloadFired();
-
-  // Returns true if all tabs' beforeunload/unload events have fired.
-  bool HasCompletedUnloadProcessing() const;
-
   bool IsAttemptingToCloseBrowser() const;
 
   // Invoked when the window containing us is closing. Performs the necessary
   // cleanup.
   void OnWindowClosing();
-
-  // Called when all unload processing completes so the browser can close.
-  void OnUnloadProcessingCompleted();
 
   // OnWindowActivationChanged handling ///////////////////////////////////////
 
@@ -441,6 +431,9 @@ class Browser : public TabStripModelObserver,
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+
+  // Figure out if there are tabs that have beforeunload handlers.
+  bool TabsNeedBeforeUnloadFired();
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

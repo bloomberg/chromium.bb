@@ -245,9 +245,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual base::TimeTicks GetNewTabStartTime() const OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void OnCloseStarted() OVERRIDE;
-  virtual void OnCloseCanceled() OVERRIDE;
-  virtual void OnUnloadStarted() OVERRIDE;
-  virtual void OnUnloadDetachedStarted() OVERRIDE;
   virtual void SystemDragEnded() OVERRIDE;
   virtual void UserGestureDone() OVERRIDE;
   virtual void SetClosedByUserGesture(bool value) OVERRIDE;
@@ -820,9 +817,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The time when onbeforeunload ended.
   base::TimeTicks before_unload_end_time_;
-
-  // The time when the tab was removed from view during close.
-  base::TimeTicks unload_detached_start_time_;
 
   // The time that this tab was last selected.
   base::TimeTicks last_selected_time_;

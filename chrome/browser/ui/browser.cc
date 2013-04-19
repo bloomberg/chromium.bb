@@ -599,14 +599,6 @@ bool Browser::ShouldCloseWindow() {
   return unload_controller_->ShouldCloseWindow();
 }
 
-bool Browser::TabsNeedBeforeUnloadFired() {
-  return unload_controller_->TabsNeedBeforeUnloadFired();
-}
-
-bool Browser::HasCompletedUnloadProcessing() const {
-  return unload_controller_->HasCompletedUnloadProcessing();
-}
-
 bool Browser::IsAttemptingToCloseBrowser() const {
   return unload_controller_->is_attempting_to_close_browser();
 }
@@ -648,11 +640,8 @@ void Browser::OnWindowClosing() {
       chrome::NOTIFICATION_BROWSER_CLOSING,
       content::Source<Browser>(this),
       content::NotificationService::NoDetails());
-}
 
-void Browser::OnUnloadProcessingCompleted() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
+  tab_strip_model_->CloseAllTabs();
 }
 
 void Browser::OnWindowActivated() {
@@ -1201,6 +1190,10 @@ bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
 void Browser::HandleKeyboardEvent(content::WebContents* source,
                                   const NativeWebKeyboardEvent& event) {
   window()->HandleKeyboardEvent(event);
+}
+
+bool Browser::TabsNeedBeforeUnloadFired() {
+  return unload_controller_->TabsNeedBeforeUnloadFired();
 }
 
 bool Browser::IsMouseLocked() const {
