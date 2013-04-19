@@ -3222,12 +3222,9 @@ bool ZipSelectionFunction::RunImpl() {
   if (!args_->GetString(2, &dest_name) || dest_name.empty())
     return false;
 
-  // Check if the dir path is under Drive cache directory.
+  // Check if the dir path is under Drive mount point.
   // TODO(hshi): support create zip file on Drive (crbug.com/158690).
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
-  if (cache && cache->IsUnderDriveCacheDirectory(src_dir))
+  if (drive::util::IsUnderDriveMountPoint(src_dir))
     return false;
 
   base::FilePath dest_file = src_dir.Append(dest_name);
