@@ -156,7 +156,7 @@ public class AutofillDialog extends AlertDialog
     }
 
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate,
-            String saveLocallyText) {
+            String useBillingForShippingText, String saveLocallyText) {
         super(context);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         mDelegate = delegate;
@@ -170,6 +170,9 @@ public class AutofillDialog extends AlertDialog
                 inflate(R.layout.autofill_dialog_content, null);
         mContentView.setAutofillDialog(this);
 
+        CheckBox useBillingCheck = getUseBillingForShippingCheckBox();
+        useBillingCheck.setText(useBillingForShippingText);
+        useBillingCheck.setChecked(true);
         getSaveLocallyCheckBox().setText(saveLocallyText);
 
         String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
@@ -305,6 +308,9 @@ public class AutofillDialog extends AlertDialog
         }
 
         mDelegate.editingStart(section);
+        if (section == AutofillDialogConstants.SECTION_SHIPPING) {
+            getUseBillingForShippingCheckBox().setChecked(false);
+        }
         AutofillDialogMenuItem currentItem =
                 (AutofillDialogMenuItem) spinner.getItemAtPosition(position);
         if (currentItem.mIndex == ADD_MENU_ITEM_INDEX) {
@@ -316,6 +322,10 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onNothingSelected(AdapterView<?> spinner) {
+    }
+
+    private CheckBox getUseBillingForShippingCheckBox() {
+        return (CheckBox) mContentView.findViewById(R.id.use_billing_checkbox);
     }
 
     /**
@@ -446,11 +456,10 @@ public class AutofillDialog extends AlertDialog
             combinedItems = Arrays.asList(menuItems);
         } else {
             combinedItems = new ArrayList<AutofillDialogMenuItem>(
-                    menuItems.length - 2 + mDefaultMenuItems[section].length);
+                    menuItems.length - 1 + mDefaultMenuItems[section].length);
             combinedItems.addAll(Arrays.asList(menuItems));
-            // Replace the provided "Add..." item with ours and add "Edit".
-            // Also remove the "Manage..." item (for now).
-            combinedItems.remove(menuItems.length - 2);
+            // Replace the provided "Add... item with ours and add "Edit".
+            combinedItems.remove(menuItems.length - 1);
             combinedItems.addAll(Arrays.asList(mDefaultMenuItems[section]));
         }
 
@@ -546,6 +555,13 @@ public class AutofillDialog extends AlertDialog
         EditText cvcEdit = (EditText) findViewById(R.id.cvc_challenge);
         if (cvcEdit != null) return cvcEdit.getText().toString();
         return "";
+    }
+
+    /**
+     * @return Whether the billing address should be used as shipping address.
+     */
+    public boolean shouldUseBillingForShipping() {
+        return getUseBillingForShippingCheckBox().isChecked();
     }
 
     /**

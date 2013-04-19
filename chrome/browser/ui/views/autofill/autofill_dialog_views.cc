@@ -502,11 +502,7 @@ void AutofillDialogViews::SuggestionView::SetEditable(bool editable) {
 }
 
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
-    const string16& text,
-    gfx::Font::FontStyle text_style) {
-  label_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).DeriveFont(0, text_style));
-
+    const string16& text) {
   // TODO(estade): does this localize well?
   string16 line_return(ASCIIToUTF16("\n"));
   size_t position = text.find(line_return);
@@ -561,6 +557,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       window_(NULL),
       contents_(NULL),
       notification_area_(NULL),
+      use_billing_for_shipping_(NULL),
       account_chooser_(NULL),
       sign_in_container_(NULL),
       cancel_sign_in_(NULL),
@@ -712,6 +709,10 @@ string16 AutofillDialogViews::GetCvc() {
       decorated_textfield()->textfield()->text();
 }
 
+bool AutofillDialogViews::UseBillingForShipping() {
+  return use_billing_for_shipping_->checked();
+}
+
 bool AutofillDialogViews::SaveDetailsLocally() {
   return save_in_chrome_checkbox_->checked();
 }
@@ -827,7 +828,6 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
 
   legal_document_view_ = new views::StyledLabel(string16(), this);
   footnote_view_->AddChildView(legal_document_view_);
-  UpdateAccountChooser();
 
   return footnote_view_;
 }
@@ -856,7 +856,9 @@ views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  if (sender == cancel_sign_in_) {
+  if (sender == use_billing_for_shipping_) {
+    UpdateDetailsGroupState(*GroupForSection(SECTION_SHIPPING));
+  } else if (sender == cancel_sign_in_) {
     controller_->EndSignInFlow();
   } else {
     // TODO(estade): Should the menu be shown on mouse down?
@@ -1070,6 +1072,14 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   info_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
+  if (section == SECTION_SHIPPING) {
+    use_billing_for_shipping_ =
+        new views::Checkbox(controller_->UseBillingForShippingText());
+    use_billing_for_shipping_->SetChecked(true);
+    use_billing_for_shipping_->set_listener(this);
+    info_view->AddChildView(use_billing_for_shipping_);
+  }
+
   views::View* manual_inputs = InitInputsView(section);
   info_view->AddChildView(manual_inputs);
   SuggestionView* suggested_info =
@@ -1173,8 +1183,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
       controller_->SuggestionStateForSection(group.section);
   bool show_suggestions = !suggestion_state.text.empty();
   group.suggested_info->SetVisible(show_suggestions);
-  group.suggested_info->SetSuggestionText(suggestion_state.text,
-                                          suggestion_state.text_style);
+  group.suggested_info->SetSuggestionText(suggestion_state.text);
   group.suggested_info->SetSuggestionIcon(suggestion_state.icon);
   group.suggested_info->SetEditable(suggestion_state.editable);
 
@@ -1184,7 +1193,20 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
         suggestion_state.extra_icon.AsImageSkia());
   }
 
-  group.manual_input->SetVisible(!show_suggestions);
+  if (group.section == SECTION_SHIPPING) {
+    bool show_checkbox = !show_suggestions;
+    // When the checkbox is going from hidden to visible, it's because the
+    // user clicked "Enter new address". Reset the checkbox to unchecked in this
+    // case.
+    if (show_checkbox && !use_billing_for_shipping_->visible())
+      use_billing_for_shipping_->SetChecked(false);
+
+    use_billing_for_shipping_->SetVisible(show_checkbox);
+    group.manual_input->SetVisible(
+        show_checkbox && !use_billing_for_shipping_->checked());
+  } else {
+    group.manual_input->SetVisible(!show_suggestions);
+  }
 
   // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
   // hide. If the controller tells us not to show it, likewise hide.
