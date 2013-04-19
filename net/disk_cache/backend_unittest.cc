@@ -2901,13 +2901,11 @@ TEST_F(DiskCacheBackendTest, SimpleOpenBadFile) {
 
 TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
   SetSimpleCacheMode();
-  InitCache();
   BackendDoomRecent();
 }
 
 TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
   SetSimpleCacheMode();
-  InitCache();
   BackendDoomBetween();
 }
 
