@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-#if defined(OS_POSIX)
-#include <unistd.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 
 namespace {
@@ -25,7 +18,6 @@ namespace {
 #define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
 #define MAYBE_SameOriginCookie DISABLED_SameOriginCookie
 #define MAYBE_CORSNoCookie DISABLED_CORSNoCookie
-#define MAYBE_SysconfNprocessorsOnln DISABLED_SysconfNprocessorsOnln
 #else
 #define MAYBE_SimpleLoad SimpleLoad
 #define MAYBE_ExitStatus0 ExitStatus0
@@ -37,7 +29,6 @@ namespace {
 #define MAYBE_CrossOriginFail CrossOriginFail
 #define MAYBE_SameOriginCookie SameOriginCookie
 #define MAYBE_CORSNoCookie CORSNoCookie
-#define MAYBE_SysconfNprocessorsOnln SysconfNprocessorsOnln
 #endif
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
@@ -65,36 +56,6 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PPAPICore, {
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
-})
-
-// Visual Studio does not like preprocessor conditionals inside the
-// argument of a macro, so we put the conditionals on a helper
-// function.  We are already in an anonymous namespace, so the name of
-// the helper is not visible in external scope.
-//
-// The string buffer is sufficient sized: 2**64 < 8**22 < 10**22.
-#if defined(OS_POSIX)
-base::FilePath::StringType NumberOfCoresAsFilePathString() {
-  char string_rep[23];
-  snprintf(string_rep, sizeof string_rep, "%ld", sysconf(_SC_NPROCESSORS_ONLN));
-  return string_rep;
-}
-#elif defined(OS_WIN)
-base::FilePath::StringType NumberOfCoresAsFilePathString() {
-  wchar_t string_rep[23];
-  SYSTEM_INFO system_info;
-  GetSystemInfo(&system_info);
-  _snwprintf_s(string_rep, sizeof string_rep, _TRUNCATE, L"%u",
-               system_info.dwNumberOfProcessors);
-  return string_rep;
-}
-#endif
-
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SysconfNprocessorsOnln, {
-    base::FilePath::StringType path =
-        FILE_PATH_LITERAL("sysconf_nprocessors_onln_test.html?cpu_count=");
-    path = path + NumberOfCoresAsFilePathString();
-    RunNaClIntegrationTest(path);
 })
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {

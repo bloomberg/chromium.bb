@@ -34,11 +34,6 @@ class NaClListener : public IPC::Listener {
     prereserved_sandbox_size_ = prereserved_sandbox_size;
   }
 #endif
-#if defined(OS_POSIX)
-  void set_number_of_cores(int number_of_cores) {
-    number_of_cores_ = number_of_cores;
-  }
-#endif
 
  private:
   void OnStart(const nacl::NaClStartParams& params);
@@ -55,16 +50,6 @@ class NaClListener : public IPC::Listener {
 
 #if defined(OS_LINUX)
   size_t prereserved_sandbox_size_;
-#endif
-#if defined(OS_POSIX)
-  /*
-   * The outer sandbox on Linux and OSX prevents
-   * sysconf(_SC_NPROCESSORS) from working; in Windows, there are no
-   * problems with invoking GetSystemInfo.  Therefore, only in
-   * OS_POSIX do we need to supply the number of cores into
-   * NaClChromeMainArgs object.
-   */
-  int number_of_cores_;
 #endif
 
   // Used to identify what thread we're on.

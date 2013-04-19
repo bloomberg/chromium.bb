@@ -7,10 +7,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#if defined(OS_POSIX)
-#include <unistd.h>
-#endif
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -145,9 +141,6 @@ NaClListener::NaClListener() : shutdown_event_(true, false),
 #if defined(OS_LINUX)
                                prereserved_sandbox_size_(0),
 #endif
-#if defined(OS_POSIX)
-                               number_of_cores_(-1),  // unknown/error
-#endif
                                main_loop_(NULL) {
   io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
 #if defined(OS_WIN)
@@ -233,7 +226,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     LOG(ERROR) << "Failed to dup() the urandom FD";
     return;
   }
-  args->number_of_cores = number_of_cores_;
   args->create_memory_object_func = CreateMemoryObject;
 # if defined(OS_MACOSX)
   CHECK(handles.size() >= 1);

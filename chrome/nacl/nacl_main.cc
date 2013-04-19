@@ -33,12 +33,6 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
   platform.InitSandboxTests(no_sandbox);
 
-#if defined(OS_POSIX)
-  // The number of cores must be obtained before the invocation of
-  // platform.EnableSandbox(), so cannot simply be inlined below.
-  int number_of_cores = sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-
   if (!no_sandbox) {
     platform.EnableSandbox();
   }
@@ -46,9 +40,6 @@ int NaClMain(const content::MainFunctionParams& parameters) {
 
   if (sandbox_test_result) {
     NaClListener listener;
-#if defined(OS_POSIX)
-    listener.set_number_of_cores(number_of_cores);
-#endif
     listener.Listen();
   } else {
     // This indirectly prevents the test-harness-success-cookie from being set,
