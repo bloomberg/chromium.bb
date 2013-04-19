@@ -32,12 +32,6 @@ class PpapiHost;
 }
 }
 
-namespace webkit {
-namespace ppapi {
-class PluginInstance;
-}
-}
-
 namespace WebKit {
 class WebPluginContainer;
 }
