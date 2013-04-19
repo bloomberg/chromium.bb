@@ -140,6 +140,5 @@ void OneClickSigninInfoBar::ViewHierarchyChanged(bool is_add,
       alt_colors.button_background_color,
       alt_colors.button_border_color));
   ok_button()->SetEnabledColor(alt_colors.button_text_color);
-  ok_button()->SetHighlightColor(alt_colors.button_text_color);
   ok_button()->SetHoverColor(alt_colors.button_text_color);
 }

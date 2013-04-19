@@ -126,7 +126,6 @@ NotificationCenterButton::NotificationCenterButton(
   set_border(views::Border::CreateEmptyBorder(0, 16, 0, 16));
   set_min_height(kFooterHeight);
   SetEnabledColor(kFooterTextColor);
-  SetHighlightColor(kButtonTextHighlightColor);
   SetHoverColor(kButtonTextHoverColor);
 }
 

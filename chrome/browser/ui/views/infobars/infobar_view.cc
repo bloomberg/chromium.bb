@@ -107,7 +107,6 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   menu_button->set_menu_marker(
       rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToImageSkia());
   menu_button->SetEnabledColor(SK_ColorBLACK);
-  menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
   menu_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   menu_button->set_focusable(true);
@@ -123,7 +122,6 @@ views::TextButton* InfoBarView::CreateTextButton(
   text_button->set_border(new InfoBarButtonBorder);
   text_button->set_animate_on_state_change(false);
   text_button->SetEnabledColor(SK_ColorBLACK);
-  text_button->SetHighlightColor(SK_ColorBLACK);
   text_button->SetHoverColor(SK_ColorBLACK);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
