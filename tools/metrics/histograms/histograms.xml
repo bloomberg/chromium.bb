@@ -3488,6 +3488,89 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
+  <summary>
+    A count of the number of times we hit the code where a field trial is
+    disabled because no entropy provider was provided.
+  </summary>
+</histogram>
+
+<histogram name="Variations.FetchNotModifiedLatency" units="milliseconds">
+  <summary>
+    The latency of a VariationsService seed fetch that results in a not modified
+    response.
+  </summary>
+</histogram>
+
+<histogram name="Variations.FetchOtherLatency" units="milliseconds">
+  <summary>
+    The latency of a VariationsService seed fetch that results in neither a
+    success nor not modified response.
+  </summary>
+</histogram>
+
+<histogram name="Variations.FetchSuccessLatency" units="milliseconds">
+  <summary>
+    The latency of a VariationsService seed fetch that results in a success
+    response.
+  </summary>
+</histogram>
+
+<histogram name="Variations.HeaderConstructionTime" units="microseconds">
+  <summary>How long it took to create the X-Chrome-Variations header.</summary>
+</histogram>
+
+<histogram name="Variations.NetworkAvailability" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 9/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    Whether or not the network was available when requested by the
+    VariationsService.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedEmpty" enum="BooleanHit">
+  <summary>Hit if no variations seed exists in local state on startup.</summary>
+</histogram>
+
+<histogram name="Variations.SeedFetchResponseCode">
+  <summary>
+    The count of HTTP Response codes encountered by the VariationsService.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedFreshness" units="minutes">
+  <summary>
+    The time interval between when the Variations seed was last downloaded and
+    when it was used.
+  </summary>
+</histogram>
+
+<histogram name="Variations.ServerStudyExpiredUniformity1Percent"
+    enum="BooleanExpired">
+  <summary>
+    Whether or not the 1-Percent uniformity trial from the Variations server was
+    expired when loaded.
+  </summary>
+</histogram>
+
+<histogram name="Variations.UniformityTrialExpired" enum="BooleanHit">
+  <summary>
+    A count of the number of times we hit the code where the
+    UMA-Uniformity-Trial-1-Percent field trial is disabled as a result of the
+    expiration check.
+  </summary>
+</histogram>
+
+<histogram name="Variations.UniformityTrialGroupNotActive"
+    enum="UniformityTrialGroupNotActive">
+  <summary>
+    Tracks whether the UMA-Uniformity-Trial-1-Percent field trial was not active
+    and which factors contributed to it.
+  </summary>
+</histogram>
+
 <histogram name="Wallet.ApiCallDuration.AcceptLegalDocuments" units="ms">
   <summary>
     Measures the time taken by Google Online Wallet server's accept legal
@@ -5622,6 +5705,13 @@ other types of suffix sets.
 <enum name="TLSRenegotiationPatched" type="int">
   <int value="0" label="Not renegotiation patched"/>
   <int value="1" label="Renegotiation patched"/>
+</enum>
+
+<enum name="UniformityTrialGroupNotActive" type="int">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Group not reported"/>
+  <int value="2" label="Trial was disabled"/>
+  <int value="3" label="Group not reported and trial was disabled"/>
 </enum>
 
 <enum name="WalletErrors" type="int">
