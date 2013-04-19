@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/mock_shill_manager_client.h"
 
+#include "dbus/object_path.h"
+
 namespace chromeos {
 
 MockShillManagerClient::MockShillManagerClient() {}

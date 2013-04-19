@@ -58,6 +58,8 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/network_configuration_updater_impl.h"
+#include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -305,19 +307,23 @@ void BrowserPolicyConnector::InitializeUserPolicy(
     const std::string& user_name,
     bool is_public_account,
     bool wait_for_policy_fetch) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   // If the user is managed then importing certificates from ONC policy is
   // allowed, otherwise it's not. Update this flag once the user has signed in,
   // and before user policy is loaded.
-  GetNetworkConfigurationUpdater()->set_allow_trusted_certificates_from_policy(
-      GetUserAffiliation(user_name) == USER_AFFILIATION_MANAGED);
+  if (!command_line->HasSwitch(
+          chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+    GetNetworkConfigurationUpdater()->
+        set_allow_trusted_certificates_from_policy(
+            GetUserAffiliation(user_name) == USER_AFFILIATION_MANAGED);
+  }
 
   // Re-initializing user policy is disallowed for two reasons:
   // (a) Existing profiles may hold pointers to |user_cloud_policy_manager_|.
   // (b) Implementing UserCloudPolicyManager::IsInitializationComplete()
   //     correctly is impossible for re-initialization.
   CHECK(!user_cloud_policy_manager_);
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   base::FilePath profile_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
@@ -397,9 +403,17 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
 NetworkConfigurationUpdater*
     BrowserPolicyConnector::GetNetworkConfigurationUpdater() {
   if (!network_configuration_updater_) {
-    network_configuration_updater_.reset(new NetworkConfigurationUpdater(
-        GetPolicyService(),
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(
+            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+      network_configuration_updater_.reset(
+          new NetworkConfigurationUpdaterImpl(GetPolicyService()));
+    } else {
+      network_configuration_updater_.reset(
+          new NetworkConfigurationUpdaterImplCros(
+              GetPolicyService(),
+              chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+    }
   }
   return network_configuration_updater_.get();
 }

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -146,7 +147,8 @@ TEST_F(ONCMergerTest, MergeToAugmented) {
   scoped_ptr<base::DictionaryValue> expected_augmented =
       test_utils::ReadTestDictionary("augmented_merge.json");
   scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToAugmented(
-      policy_.get(), device_policy_.get(), user_.get(), NULL));
+      kNetworkConfigurationSignature, policy_.get(), device_policy_.get(),
+      user_.get(), NULL, NULL));
   EXPECT_TRUE(test_utils::Equals(expected_augmented.get(), merged.get()));
 }
 

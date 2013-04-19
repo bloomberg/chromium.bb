@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_mapper.h"
+#include "chromeos/network/onc/onc_signature.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"

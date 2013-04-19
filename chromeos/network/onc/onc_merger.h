@@ -15,6 +15,8 @@ class DictionaryValue;
 namespace chromeos {
 namespace onc {
 
+struct OncValueSignature;
+
 // Merges the given |user_settings| and |shared_settings| settings with the
 // given |user_policy| and |device_policy| settings. Each can be omitted by
 // providing a NULL pointer. Each dictionary has to be part of a valid ONC
@@ -36,13 +38,16 @@ MergeSettingsAndPoliciesToEffective(
 // dictionaries contains the onc::kAugmentations* fields (see onc_constants.h)
 // for which a value is available. The onc::kAugmentationEffectiveSetting field
 // contains the field name of the field containing the effective field that
-// overrides all other values.
+// overrides all other values. Credentials from policies are not written to the
+// result.
 CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue>
 MergeSettingsAndPoliciesToAugmented(
+    const OncValueSignature& signature,
     const base::DictionaryValue* user_policy,
     const base::DictionaryValue* device_policy,
     const base::DictionaryValue* user_settings,
-    const base::DictionaryValue* shared_settings);
+    const base::DictionaryValue* shared_settings,
+    const base::DictionaryValue* active_settings);
 
 }  // namespace onc
 }  // namespace chromeos

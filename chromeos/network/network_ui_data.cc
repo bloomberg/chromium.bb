@@ -14,6 +14,7 @@ namespace chromeos {
 const char NetworkUIData::kKeyONCSource[] = "onc_source";
 const char NetworkUIData::kKeyCertificatePattern[] = "certificate_pattern";
 const char NetworkUIData::kKeyCertificateType[] = "certificate_type";
+const char NetworkUIData::kKeyUserSettings[] = "user_settings";
 
 namespace {
 
@@ -61,11 +62,25 @@ Enum StringToEnum(const StringEnumEntry<Enum>(& table)[N],
   return fallback;
 }
 
-}
+}  // namespace
 
 NetworkUIData::NetworkUIData()
     : onc_source_(onc::ONC_SOURCE_NONE),
       certificate_type_(CLIENT_CERT_TYPE_NONE) {
+}
+
+NetworkUIData::NetworkUIData(const NetworkUIData& other) {
+  *this = other;
+}
+
+NetworkUIData& NetworkUIData::operator=(const NetworkUIData& other) {
+  certificate_pattern_ = other.certificate_pattern_;
+  onc_source_ = other.onc_source_;
+  certificate_type_ = other.certificate_type_;
+  if (other.user_settings_)
+    user_settings_.reset(other.user_settings_->DeepCopy());
+  policy_guid_ = other.policy_guid_;
+  return *this;
 }
 
 NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
@@ -88,6 +103,10 @@ NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
       certificate_type_ = CLIENT_CERT_TYPE_NONE;
     }
   }
+
+  const DictionaryValue* user_settings = NULL;
+  if (dict.GetDictionary(kKeyUserSettings, &user_settings))
+    user_settings_.reset(user_settings->DeepCopy());
 }
 
 NetworkUIData::~NetworkUIData() {
@@ -110,6 +129,9 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
                 certificate_pattern_.CreateAsDictionary());
     }
   }
+  if (user_settings_)
+    dict->SetWithoutPathExpansion(kKeyUserSettings,
+                                  user_settings_->DeepCopy());
 }
 
 namespace {

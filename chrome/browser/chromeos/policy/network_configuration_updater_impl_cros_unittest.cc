@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -46,6 +46,7 @@ ACTION_P(SetCertificateList, list) {
 
 }  // namespace
 
+// Tests of NetworkConfigurationUpdaterImplCros
 class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*>{
  protected:
@@ -110,8 +111,8 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
       device_onc, "", chromeos::onc::ONC_SOURCE_DEVICE_POLICY, _));
 
   {
-    NetworkConfigurationUpdater updater(policy_service_.get(),
-                                        &network_library_);
+    NetworkConfigurationUpdaterImplCros updater(policy_service_.get(),
+                                                &network_library_);
     Mock::VerifyAndClearExpectations(&network_library_);
 
     // After the user policy is initialized, we always push both policies to the
@@ -145,8 +146,8 @@ TEST_P(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
 
     EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, _))
         .WillRepeatedly(SetCertificateList(empty_cert_list));
-    NetworkConfigurationUpdater updater(policy_service_.get(),
-                                        &network_library_);
+    NetworkConfigurationUpdaterImplCros updater(policy_service_.get(),
+                                                &network_library_);
     net::CertTrustAnchorProvider* trust_provider =
         updater.GetCertTrustAnchorProvider();
     ASSERT_TRUE(trust_provider);
@@ -195,8 +196,8 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     // Ignore the initial updates.
     EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, _))
         .Times(AnyNumber());
-    NetworkConfigurationUpdater updater(policy_service_.get(),
-                                        &network_library_);
+    NetworkConfigurationUpdaterImplCros updater(policy_service_.get(),
+                                                &network_library_);
     updater.OnUserPolicyInitialized();
     Mock::VerifyAndClearExpectations(&network_library_);
 

@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_constants.h"
-#include "chromeos/network/onc/onc_signature.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,6 +18,8 @@ class DictionaryValue;
 
 namespace chromeos {
 namespace onc {
+
+struct OncValueSignature;
 
 // A valid but empty (no networks and no certificates) and unencrypted
 // configuration.
@@ -68,7 +69,7 @@ CHROMEOS_EXPORT void ExpandStringsInOncObject(
 // by |mask|. To find sensitive fields, signature and field name are checked
 // with the function FieldIsCredential().
 CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
-    const onc::OncValueSignature& signature,
+    const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     const std::string& mask);
 

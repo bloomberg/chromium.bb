@@ -12,6 +12,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/bus.h"
@@ -182,9 +183,6 @@ void ShillManagerClientStub::ConfigureService(
   if (callback.is_null())
     return;
 
-  // For the purposes of this stub, we're going to assume that the GUID property
-  // is set to the service path because we don't want to re-implement Shill's
-  // property matching magic here.
   ShillServiceClient::TestInterface* service_client =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
 
@@ -199,33 +197,56 @@ void ShillManagerClientStub::ConfigureService(
     return;
   }
 
+  // For the purposes of this stub, we're going to assume that the GUID property
+  // is set to the service path because we don't want to re-implement Shill's
+  // property matching magic here.
+  std::string service_path = guid;
+
   std::string ipconfig_path;
   properties.GetString(shill::kIPConfigProperty, &ipconfig_path);
 
-  // Add the service to the service client stub if not already there.
-  service_client->AddServiceWithIPConfig(guid, guid, type, flimflam::kStateIdle,
-                                         ipconfig_path, true);
 
   // Merge the new properties with existing properties, if any.
-  scoped_ptr<base::DictionaryValue> merged_properties;
   const base::DictionaryValue* existing_properties =
-      service_client->GetServiceProperties(guid);
-  if (existing_properties) {
-      merged_properties.reset(existing_properties->DeepCopy());
-  } else {
-    merged_properties.reset(new base::DictionaryValue);
+      service_client->GetServiceProperties(service_path);
+  if (!existing_properties) {
+    // Add a new service to the service client stub because none exists, yet.
+    service_client->AddServiceWithIPConfig(service_path, guid, type,
+                                           flimflam::kStateIdle, ipconfig_path,
+                                           true);  // Add service to watch list.
+    existing_properties = service_client->GetServiceProperties(service_path);
   }
+
+  scoped_ptr<base::DictionaryValue> merged_properties(
+      existing_properties->DeepCopy());
   merged_properties->MergeDictionary(&properties);
 
   // Now set all the properties.
   for (base::DictionaryValue::Iterator iter(*merged_properties);
        !iter.IsAtEnd(); iter.Advance()) {
-    service_client->SetServiceProperty(guid, iter.key(), iter.value());
+    service_client->SetServiceProperty(service_path, iter.key(), iter.value());
   }
 
+  ShillProfileClient::TestInterface* profile_test =
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+  profile_test->AddService(service_path);
+
   MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, dbus::ObjectPath(guid)));
+      FROM_HERE, base::Bind(callback, dbus::ObjectPath(service_path)));
 }
+
+void ShillManagerClientStub::ConfigureServiceForProfile(
+    const dbus::ObjectPath& profile_path,
+    const base::DictionaryValue& properties,
+    const ObjectPathCallback& callback,
+    const ErrorCallback& error_callback) {
+  std::string profile_property;
+  properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                           &profile_property);
+  CHECK(profile_property == profile_path.value());
+  ConfigureService(properties, callback, error_callback);
+}
+
 
 void ShillManagerClientStub::GetService(
     const base::DictionaryValue& properties,

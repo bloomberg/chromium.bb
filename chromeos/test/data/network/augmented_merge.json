@@ -61,9 +61,7 @@
             "UserPolicy": 1
          },
          "PSK": {
-            "DevicePolicy": "sharedkey",
             "Effective": "UserPolicy",
-            "UserPolicy": "sharedkey"
          }
       },
       "OpenVPN": {

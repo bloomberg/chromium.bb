@@ -13,7 +13,8 @@
 namespace chromeos {
 
 // A stub implementation of ShillProfileClient.
-class ShillProfileClientStub : public ShillProfileClient {
+class ShillProfileClientStub : public ShillProfileClient,
+                               public ShillProfileClient::TestInterface {
  public:
   ShillProfileClientStub();
   virtual ~ShillProfileClientStub();
@@ -37,14 +38,21 @@ class ShillProfileClientStub : public ShillProfileClient {
                            const std::string& entry_path,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE;
+  virtual ShillProfileClient::TestInterface* GetTestInterface() OVERRIDE;
+
+  // ShillProfileClient::TestInterface overrides.
+  virtual void AddProfile(const std::string& profile_path) OVERRIDE;
+  virtual void AddEntry(const std::string& profile_path,
+                        const std::string& entry_path,
+                        const base::DictionaryValue& properties) OVERRIDE;
+  virtual bool AddService(const std::string& service_path) OVERRIDE;
 
  private:
-  void PassEmptyDictionaryValue(
-      const DictionaryValueCallbackWithoutStatus& callback) const;
+  base::DictionaryValue* GetProfile(const dbus::ObjectPath& profile_path,
+                                    const ErrorCallback& error_callback);
 
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ShillProfileClientStub> weak_ptr_factory_;
+  // This maps profile path -> entry path -> Shill properties.
+  base::DictionaryValue profile_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillProfileClientStub);
 };

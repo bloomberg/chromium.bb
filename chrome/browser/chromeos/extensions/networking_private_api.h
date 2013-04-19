@@ -37,6 +37,30 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
 };
 
+// Implements the chrome.networkingPrivate.getManagedProperties method.
+class NetworkingPrivateGetManagedPropertiesFunction
+    : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateGetManagedPropertiesFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getManagedProperties",
+                             NETWORKINGPRIVATE_GETMANAGEDPROPERTIES);
+
+ protected:
+  virtual ~NetworkingPrivateGetManagedPropertiesFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Callbacks for ManagedNetworkConfigurationHandler::GetManagedProperties.
+  void Success(const std::string& service_path,
+               const base::DictionaryValue& result);
+  void Failure(const std::string& error_name,
+              scoped_ptr<base::DictionaryValue> error_data);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetManagedPropertiesFunction);
+};
+
 // Implements the chrome.networkingPrivate.getState method.
 class NetworkingPrivateGetStateFunction : public AsyncExtensionFunction {
  public:

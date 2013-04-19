@@ -16,6 +16,11 @@
         "additionalProperties": { "type": "any" }
       },
       {
+        "id": "ManagedNetworkProperties",
+        "type": "object",
+        "additionalProperties": { "type": "any" }
+      },
+      {
         "id": "VerificationProperties",
         "type": "object",
         "properties": {
@@ -60,6 +65,28 @@
                 "name": "properties",
                 "$ref": "NetworkProperties",
                 "description": "Results of the query for network properties."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getManagedProperties",
+        "description": "Gets the merged properties of the network with id networkGuid from the sources: User settings, shared settings, user policy, device policy and the currently active settings.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to get properties from."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "properties",
+                "$ref": "ManagedNetworkProperties",
+                "description": "Results of the query for managed network properties."
               }
             ]
           }

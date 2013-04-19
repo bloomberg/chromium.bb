@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_signature.h"
 
 namespace chromeos {
 namespace onc {
@@ -96,7 +97,7 @@ class MergeListOfDictionaries {
               (*it_inner)->GetDictionaryWithoutPathExpansion(key, &nested_dict);
             nested_dicts.push_back(nested_dict);
           }
-          DictionaryPtr merged_dict(MergeDictionaries(nested_dicts));
+          DictionaryPtr merged_dict(MergeNestedDictionaries(key, nested_dicts));
           if (!merged_dict->empty())
             merged_value = merged_dict.Pass();
         } else {
@@ -108,7 +109,7 @@ class MergeListOfDictionaries {
               (*it_inner)->GetWithoutPathExpansion(key, &value);
             values.push_back(value);
           }
-          merged_value = MergeListOfValues(values);
+          merged_value = MergeListOfValues(key, values);
         }
 
         if (merged_value)
@@ -124,7 +125,13 @@ class MergeListOfDictionaries {
   // values is the same as of the given dictionaries |dicts|. If a dictionary
   // doesn't contain a path then it's value is NULL.
   virtual scoped_ptr<base::Value> MergeListOfValues(
+      const std::string& key,
       const std::vector<const base::Value*>& values) = 0;
+
+  virtual DictionaryPtr MergeNestedDictionaries(const std::string& key,
+                                                const DictPtrs &dicts) {
+    return MergeDictionaries(dicts);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MergeListOfDictionaries);
@@ -136,11 +143,14 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
   struct ValueParams {
     const base::Value* user_policy;
     const base::Value* device_policy;
-    const base::Value* user_settings;
-    const base::Value* shared_settings;
+    const base::Value* user_setting;
+    const base::Value* shared_setting;
+    const base::Value* active_setting;
     bool user_editable;
     bool device_editable;
   };
+
+  MergeSettingsAndPolicies() {}
 
   // Merge the provided dictionaries. For each path in any of the dictionaries,
   // MergeValues is called. Its results are collected in a new dictionary which
@@ -150,7 +160,8 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
       const base::DictionaryValue* user_policy,
       const base::DictionaryValue* device_policy,
       const base::DictionaryValue* user_settings,
-      const base::DictionaryValue* shared_settings) {
+      const base::DictionaryValue* shared_settings,
+      const base::DictionaryValue* active_settings) {
     hasUserPolicy_ = (user_policy != NULL);
     hasDevicePolicy_ = (device_policy != NULL);
 
@@ -167,6 +178,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
     dicts[kDevicePolicyIndex] = device_policy;
     dicts[kUserSettingsIndex] = user_settings;
     dicts[kSharedSettingsIndex] = shared_settings;
+    dicts[kActiveSettingsIndex] = active_settings;
     dicts[kUserEditableIndex] = user_editable.get();
     dicts[kDeviceEditableIndex] = device_editable.get();
     return MergeListOfDictionaries::MergeDictionaries(dicts);
@@ -176,7 +188,8 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
   // This function is called by MergeDictionaries for each list of values that
   // are located at the same path in each of the dictionaries. Implementations
   // can use the Has*Policy functions.
-  virtual scoped_ptr<base::Value> MergeValues(ValueParams values) = 0;
+  virtual scoped_ptr<base::Value> MergeValues(const std::string& key,
+                                              const ValueParams& values) = 0;
 
   // Whether a user policy was provided.
   bool HasUserPolicy() {
@@ -190,6 +203,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
 
   // MergeListOfDictionaries override.
   virtual scoped_ptr<base::Value> MergeListOfValues(
+      const std::string& key,
       const std::vector<const base::Value*>& values) OVERRIDE {
     bool user_editable = !HasUserPolicy();
     if (values[kUserEditableIndex])
@@ -202,11 +216,12 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
     ValueParams params;
     params.user_policy = values[kUserPolicyIndex];
     params.device_policy = values[kDevicePolicyIndex];
-    params.user_settings = values[kUserSettingsIndex];
-    params.shared_settings = values[kSharedSettingsIndex];
+    params.user_setting = values[kUserSettingsIndex];
+    params.shared_setting = values[kSharedSettingsIndex];
+    params.active_setting = values[kActiveSettingsIndex];
     params.user_editable = user_editable;
     params.device_editable = device_editable;
-    return MergeValues(params);
+    return MergeValues(key, params);
   }
 
  private:
@@ -215,17 +230,24 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
     kDevicePolicyIndex,
     kUserSettingsIndex,
     kSharedSettingsIndex,
+    kActiveSettingsIndex,
     kUserEditableIndex,
     kDeviceEditableIndex,
     kLastIndex
   };
 
   bool hasUserPolicy_, hasDevicePolicy_;
+
+  DISALLOW_COPY_AND_ASSIGN(MergeSettingsAndPolicies);
 };
 
 // Call MergeDictionaries to merge policies and settings to the effective
-// values. See the description of MergeSettingsAndPoliciesToEffective.
+// values. This ignores the active settings of Shill. See the description of
+// MergeSettingsAndPoliciesToEffective.
 class MergeToEffective : public MergeSettingsAndPolicies {
+ public:
+  MergeToEffective() {}
+
  protected:
   // Merges |values| to the effective value (Mandatory policy overwrites user
   // settings overwrites shared settings overwrites recommended policy). |which|
@@ -234,7 +256,9 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   // pointer and set |which| to kAugmentationUserPolicy, which means that the
   // user policy didn't set a value but also didn't recommend it, thus enforcing
   // the empty value.
-  scoped_ptr<base::Value> MergeValues(ValueParams values, std::string* which) {
+  scoped_ptr<base::Value> MergeValues(const std::string& key,
+                                      const ValueParams& values,
+                                      std::string* which) {
     const base::Value* result = NULL;
     which->clear();
     if (!values.user_editable) {
@@ -243,11 +267,11 @@ class MergeToEffective : public MergeSettingsAndPolicies {
     } else if (!values.device_editable) {
       result = values.device_policy;
       *which = kAugmentationDevicePolicy;
-    } else if (values.user_settings) {
-      result = values.user_settings;
+    } else if (values.user_setting) {
+      result = values.user_setting;
       *which = kAugmentationUserSetting;
-    } else if (values.shared_settings) {
-      result = values.shared_settings;
+    } else if (values.shared_setting) {
+      result = values.shared_setting;
       *which = kAugmentationSharedSetting;
     } else if (values.user_policy) {
       result = values.user_policy;
@@ -266,53 +290,129 @@ class MergeToEffective : public MergeSettingsAndPolicies {
 
   // MergeSettingsAndPolicies override.
   virtual scoped_ptr<base::Value> MergeValues(
-      ValueParams values) OVERRIDE {
+      const std::string& key,
+      const ValueParams& values) OVERRIDE {
     std::string which;
-    return MergeValues(values, &which);
+    return MergeValues(key, values, &which);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MergeToEffective);
 };
 
 // Call MergeDictionaries to merge policies and settings to an augmented
 // dictionary which contains a dictionary for each value in the original
 // dictionaries. See the description of MergeSettingsAndPoliciesToAugmented.
 class MergeToAugmented : public MergeToEffective {
+ public:
+  MergeToAugmented() {}
+
+  DictionaryPtr MergeDictionaries(
+      const OncValueSignature& signature,
+      const base::DictionaryValue* user_policy,
+      const base::DictionaryValue* device_policy,
+      const base::DictionaryValue* user_settings,
+      const base::DictionaryValue* shared_settings,
+      const base::DictionaryValue* active_settings) {
+    signature_ = &signature;
+    return MergeToEffective::MergeDictionaries(user_policy,
+                                               device_policy,
+                                               user_settings,
+                                               shared_settings,
+                                               active_settings);
+  }
+
  protected:
   // MergeSettingsAndPolicies override.
   virtual scoped_ptr<base::Value> MergeValues(
-      ValueParams values) OVERRIDE {
+      const std::string& key,
+      const ValueParams& values) OVERRIDE {
     scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-    std::string which_effective;
-    MergeToEffective::MergeValues(values, &which_effective).reset();
-    if (!which_effective.empty()) {
+    if (values.active_setting) {
+      result->SetWithoutPathExpansion(kAugmentationActiveSetting,
+                                      values.active_setting->DeepCopy());
+    }
+
+    const OncFieldSignature* field = NULL;
+    if (signature_)
+      field = GetFieldSignature(*signature_, key);
+
+    if (field) {
+      // This field is part of the provided ONCSignature, thus it can be
+      // controlled by policy.
+      std::string which_effective;
+      MergeToEffective::MergeValues(key, values, &which_effective).reset();
+      if (!which_effective.empty()) {
+        result->SetStringWithoutPathExpansion(kAugmentationEffectiveSetting,
+                                              which_effective);
+      }
+      bool is_credential = onc::FieldIsCredential(*signature_, key);
+
+      // Prevent credentials from being forwarded in cleartext to
+      // UI. User/shared credentials are not stored separately, so they cannot
+      // leak here.
+      if (!is_credential) {
+        if (values.user_policy) {
+          result->SetWithoutPathExpansion(kAugmentationUserPolicy,
+                                          values.user_policy->DeepCopy());
+        }
+        if (values.device_policy) {
+          result->SetWithoutPathExpansion(kAugmentationDevicePolicy,
+                                          values.device_policy->DeepCopy());
+        }
+      }
+      if (values.user_setting) {
+        result->SetWithoutPathExpansion(kAugmentationUserSetting,
+                                        values.user_setting->DeepCopy());
+      }
+      if (values.shared_setting) {
+        result->SetWithoutPathExpansion(kAugmentationSharedSetting,
+                                        values.shared_setting->DeepCopy());
+      }
+      if (HasUserPolicy() && values.user_editable) {
+        result->SetBooleanWithoutPathExpansion(kAugmentationUserEditable,
+                                               true);
+      }
+      if (HasDevicePolicy() && values.device_editable) {
+        result->SetBooleanWithoutPathExpansion(kAugmentationDeviceEditable,
+                                               true);
+      }
+    } else {
+      // This field is not part of the provided ONCSignature, thus it cannot be
+      // controlled by policy.
       result->SetStringWithoutPathExpansion(kAugmentationEffectiveSetting,
-                                            which_effective);
+                                            kAugmentationUnmanaged);
     }
-    if (values.user_policy) {
-      result->SetWithoutPathExpansion(kAugmentationUserPolicy,
-                                      values.user_policy->DeepCopy());
-    }
-    if (values.device_policy) {
-      result->SetWithoutPathExpansion(kAugmentationDevicePolicy,
-                                      values.device_policy->DeepCopy());
-    }
-    if (values.user_settings) {
-      result->SetWithoutPathExpansion(kAugmentationUserSetting,
-                                      values.user_settings->DeepCopy());
-    }
-    if (values.shared_settings) {
-      result->SetWithoutPathExpansion(kAugmentationSharedSetting,
-                                      values.shared_settings->DeepCopy());
-    }
-    if (HasUserPolicy() && values.user_editable) {
-      result->SetBooleanWithoutPathExpansion(kAugmentationUserEditable,
-                                             values.user_editable);
-    }
-    if (HasDevicePolicy() && values.device_editable) {
-      result->SetBooleanWithoutPathExpansion(kAugmentationDeviceEditable,
-                                             values.device_editable);
-    }
+    if (result->empty())
+      result.reset();
     return result.PassAs<base::Value>();
   }
+
+  // MergeListOfDictionaries override.
+  virtual DictionaryPtr MergeNestedDictionaries(
+      const std::string& key,
+      const DictPtrs &dicts) OVERRIDE {
+    DictionaryPtr result;
+    if (signature_) {
+      const OncValueSignature* enclosing_signature = signature_;
+      signature_ = NULL;
+
+      const OncFieldSignature* field =
+          GetFieldSignature(*enclosing_signature, key);
+      if (field)
+        signature_ = field->value_signature;
+      result = MergeToEffective::MergeNestedDictionaries(key, dicts);
+
+      signature_ = enclosing_signature;
+    } else {
+      result = MergeToEffective::MergeNestedDictionaries(key, dicts);
+    }
+    return result.Pass();
+  }
+
+ private:
+  const OncValueSignature* signature_;
+  DISALLOW_COPY_AND_ASSIGN(MergeToAugmented);
 };
 
 }  // namespace
@@ -324,17 +424,20 @@ DictionaryPtr MergeSettingsAndPoliciesToEffective(
     const base::DictionaryValue* shared_settings) {
   MergeToEffective merger;
   return merger.MergeDictionaries(
-      user_policy, device_policy, user_settings, shared_settings);
+      user_policy, device_policy, user_settings, shared_settings, NULL);
 }
 
 DictionaryPtr MergeSettingsAndPoliciesToAugmented(
+    const OncValueSignature& signature,
     const base::DictionaryValue* user_policy,
     const base::DictionaryValue* device_policy,
     const base::DictionaryValue* user_settings,
-    const base::DictionaryValue* shared_settings) {
+    const base::DictionaryValue* shared_settings,
+    const base::DictionaryValue* active_settings) {
   MergeToAugmented merger;
   return merger.MergeDictionaries(
-      user_policy, device_policy, user_settings, shared_settings);
+      signature, user_policy, device_policy, user_settings, shared_settings,
+      active_settings);
 }
 
 }  // namespace onc

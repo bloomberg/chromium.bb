@@ -41,6 +41,11 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD3(ConfigureService, void(const base::DictionaryValue& properties,
                                       const ObjectPathCallback& callback,
                                       const ErrorCallback& error_callback));
+  MOCK_METHOD4(ConfigureServiceForProfile,
+               void(const dbus::ObjectPath& profile_path,
+                    const base::DictionaryValue& properties,
+                    const ObjectPathCallback& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD3(GetService, void(const base::DictionaryValue& properties,
                                 const ObjectPathCallback& callback,
                                 const ErrorCallback& error_callback));

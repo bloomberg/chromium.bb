@@ -43,6 +43,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& device_path() const { return device_path_; }
   const std::string& guid() const { return guid_; }
   const std::string& connection_state() const { return connection_state_; }
+  const std::string& profile_path() const { return profile_path_; }
   const std::string& error() const { return error_; }
   bool auto_connect() const { return auto_connect_; }
   bool favorite() const { return favorite_; }
@@ -86,6 +87,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string device_path_;
   std::string guid_;
   std::string connection_state_;
+  std::string profile_path_;
   std::string error_;
   bool auto_connect_;
   bool favorite_;

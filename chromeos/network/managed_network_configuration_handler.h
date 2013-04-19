@@ -5,14 +5,16 @@
 #ifndef CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 #define CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +23,7 @@ class DictionaryValue;
 namespace chromeos {
 
 // The ManagedNetworkConfigurationHandler class is used to create and configure
-// networks in ChromeOS using ONC.
+// networks in ChromeOS using ONC and takes care of network policies.
 //
 // Its interface exposes only ONC and should decouple users from Shill.
 // Internally it translates ONC to Shill dictionaries and calls through to the
@@ -44,11 +46,11 @@ namespace chromeos {
 // error, including a symbolic name for the error and often some error message
 // that is suitable for logging. None of the error message text is meant for
 // user consumption.
-//
-// TODO(pneubeck): Enforce network policies.
 
 class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
  public:
+  typedef std::map<std::string, const base::DictionaryValue*> PolicyMap;
+
   // Initializes the singleton.
   static void Initialize();
 
@@ -67,6 +69,13 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) const;
 
+  // Provides the managed properties of the network with |service_path| to
+  // |callback|.
+  void GetManagedProperties(
+      const std::string& service_path,
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback);
+
   // Sets the user's settings of an already configured network with
   // |service_path|. A network can be initially configured by calling
   // CreateConfiguration or if it is managed by a policy. The given properties
@@ -74,7 +83,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // properties.
   void SetProperties(
       const std::string& service_path,
-      const base::DictionaryValue& properties,
+      const base::DictionaryValue& user_settings,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const;
 
@@ -109,9 +118,37 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const;
 
+  // Only to be called by NetworkConfigurationUpdater or from tests.
+  // Sets |toplevel_onc| as the current policy of |onc_source|. The network
+  // configurations of the policy will be applied (not necessarily immediately)
+  // to Shill's profiles and enforced in future configurations until the policy
+  // associated with |onc_source| is changed again with this function.
+  void SetPolicy(onc::ONCSource onc_source,
+                 const base::DictionaryValue& toplevel_onc);
+
  private:
+  class PolicyApplicator;
+
   ManagedNetworkConfigurationHandler();
   ~ManagedNetworkConfigurationHandler();
+
+  void GetManagedPropertiesCallback(
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& service_path,
+      const base::DictionaryValue& shill_properties);
+
+  const PolicyMap* GetPoliciesForProfile(const std::string& profile) const;
+
+  // The entries of these maps are owned by this class and are explicitly
+  // deleted where necessary.
+  PolicyMap user_policies_by_guid_;
+  PolicyMap device_policies_by_guid_;
+  bool user_policies_initialized_;
+  bool device_policies_initialized_;
+
+  // For Shill client callbacks
+  base::WeakPtrFactory<ManagedNetworkConfigurationHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandler);
 };

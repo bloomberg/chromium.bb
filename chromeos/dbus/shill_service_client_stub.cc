@@ -32,6 +32,13 @@ void PassStubListValue(const ShillServiceClient::ListValueCallback& callback,
   callback.Run(*value);
 }
 
+void PassStubServiceProperties(
+    const ShillServiceClient::DictionaryValueCallback& callback,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue* properties) {
+  callback.Run(call_status, *properties);
+}
+
 }  // namespace
 
 ShillServiceClientStub::ShillServiceClientStub() : weak_ptr_factory_(this) {
@@ -62,12 +69,29 @@ void ShillServiceClientStub::GetProperties(
     const DictionaryValueCallback& callback) {
   if (callback.is_null())
     return;
+
+  base::DictionaryValue* nested_dict = NULL;
+  scoped_ptr<base::DictionaryValue> result_properties;
+  DBusMethodCallStatus call_status;
+  stub_services_.GetDictionaryWithoutPathExpansion(service_path.value(),
+                                                   &nested_dict);
+  if (nested_dict) {
+    result_properties.reset(nested_dict->DeepCopy());
+    // Remove credentials that Shill wouldn't send.
+    result_properties->RemoveWithoutPathExpansion(flimflam::kPassphraseProperty,
+                                                  NULL);
+    call_status = DBUS_METHOD_CALL_SUCCESS;
+  } else {
+    result_properties.reset(new base::DictionaryValue);
+    call_status = DBUS_METHOD_CALL_FAILURE;
+  }
+
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&ShillServiceClientStub::PassStubServiceProperties,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 service_path,
-                 callback));
+      base::Bind(&PassStubServiceProperties,
+                 callback,
+                 call_status,
+                 base::Owned(result_properties.release())));
 }
 
 void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
@@ -77,7 +101,7 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
                                          const ErrorCallback& error_callback) {
   base::DictionaryValue* dict = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
-      service_path.value(), &dict)) {
+          service_path.value(), &dict)) {
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
@@ -372,19 +396,6 @@ void ShillServiceClientStub::SetDefaultProperties() {
              flimflam::kTypeVPN,
              flimflam::kStateOffline,
              add_to_watchlist);
-}
-
-void ShillServiceClientStub::PassStubServiceProperties(
-    const dbus::ObjectPath& service_path,
-    const DictionaryValueCallback& callback) {
-  base::DictionaryValue* dict = NULL;
-  if (!stub_services_.GetDictionaryWithoutPathExpansion(
-      service_path.value(), &dict)) {
-    base::DictionaryValue empty_dictionary;
-    callback.Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);
-    return;
-  }
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, *dict);
 }
 
 void ShillServiceClientStub::NotifyObserversPropertyChanged(

@@ -10,33 +10,99 @@ cr.define('network.config', function() {
     decorate: function() {
       var params = parseQueryParams(window.location);
       this.networkId_ = params.network;
-      this.settingsArea_ = null;
+      this.activeArea_ = null;
+      this.userArea_ = null;
+      this.managedArea_ = null;
+      this.updateDom_();
       this.fetchProperties_();
     },
 
     fetchProperties_: function() {
-      chrome.networkingPrivate.getProperties(this.networkId_,
-                                             this.updateDom.bind(this));
+      chrome.networkingPrivate.getProperties(
+          this.networkId_,
+          this.updateActiveSettings_.bind(this));
+      chrome.networkingPrivate.getManagedProperties(
+          this.networkId_,
+          this.updateManagedSettings_.bind(this));
     },
 
-    updateDom: function(properties) {
+    stringifyJSON_: function(properties) {
+      return JSON.stringify(properties, undefined, 2);
+    },
+
+    updateActiveSettings_: function(properties) {
+      this.activeArea_.value = this.stringifyJSON_(properties);
+    },
+
+    updateManagedSettings_: function(properties) {
+      var error = chrome.runtime.lastError;
+      if (error) {
+        this.managedArea_.value = error.message;
+        this.userArea_.value = 'undefined';
+      } else {
+        this.managedArea_.value = this.stringifyJSON_(properties);
+        this.userArea_.value = this.stringifyJSON_(
+            this.extractUserSettings_(properties));
+      }
+    },
+
+    extractUserSettings_: function(properties) {
+      if ('UserSetting' in properties)
+        return properties['UserSetting'];
+
+      if ('SharedSetting' in properties)
+        return properties['SharedSetting'];
+
+      var result = {};
+      for (var fieldName in properties) {
+        var entry = properties[fieldName];
+        if (typeof entry === 'object') {
+          var nestedResult = this.extractUserSettings_(entry);
+          if (nestedResult)
+            result[fieldName] = nestedResult;
+        }
+      }
+      if (Object.keys(result).length)
+        return result;
+      else
+        return undefined;
+    },
+
+    updateDom_: function() {
       var div = document.createElement('div');
-      var label = document.createElement('h4');
-      label.textContent = 'User Settings';
-      div.appendChild(label);
-      var area = document.createElement('textarea');
-      var str = JSON.stringify(properties, undefined, 2);
-      area.value = str;
-      div.appendChild(area);
+
+      this.activeArea_ = function() {
+        var label = document.createElement('h4');
+        label.textContent = 'Active Settings (getProperties)';
+        div.appendChild(label);
+        var area = document.createElement('textarea');
+        div.appendChild(area);
+        return area;
+      }();
+
+      this.userArea_ = function() {
+        var label = document.createElement('h4');
+        label.textContent = 'User Settings';
+        div.appendChild(label);
+        var area = document.createElement('textarea');
+        div.appendChild(area);
+        return area;
+      }();
+
+      this.managedArea_ = function() {
+        var label = document.createElement('h4');
+        label.textContent = 'Managed Settings (getManagedProperties)';
+        div.appendChild(label);
+        var area = document.createElement('textarea');
+        div.appendChild(area);
+        return area;
+      }();
 
       this.appendChild(div);
-      this.settingsArea_ = area;
     },
 
-    applyUserSettings: function() {
-      chrome.networkingPrivate.setProperties(
-          this.networkId_,
-          JSON.parse(this.settingsArea_.value));
+    get userSettings() {
+      return JSON.parse(this.userArea_.value);
     },
 
     get networkId() {

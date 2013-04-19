@@ -607,9 +607,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC
   // configuration before login.
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  connector->GetNetworkConfigurationUpdater();
+  g_browser_process->browser_policy_connector()->
+      GetNetworkConfigurationUpdater();
 
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests by default.

@@ -195,7 +195,7 @@ const OncFieldSignature wifi_with_state_fields[] = {
 
 const OncFieldSignature cellular_with_state_fields[] = {
   { kRecommended, &kRecommendedSignature },
-  { cellular::kActivateOverNonCellularNetwork, &kStringSignature },
+  { cellular::kActivateOverNonCellularNetwork, &kBoolSignature },
   { cellular::kActivationState, &kStringSignature },
   { cellular::kAllowRoaming, &kStringSignature },
   { cellular::kAPN, &kStringSignature },

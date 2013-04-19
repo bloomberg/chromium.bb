@@ -37,11 +37,10 @@ cr.define('network.status', function() {
     var bMinusA = [];
     b.forEach(function(elB) {
       var keyB = toKey(elB);
-      if (inA[keyB]) {
+      if (inA[keyB])
         delete inA[keyB];
-      } else {
+      else
         bMinusA.push(elB);
-      }
     });
     var aMinusB = [];
     for (var keyA in inA) {
@@ -574,6 +573,8 @@ cr.define('network.status', function() {
           return button;
         }
       }
+      console.log('TechnologyButton for type ' + networkType +
+          ' requested but not found.');
       return null;
     },
 
@@ -620,10 +621,12 @@ cr.define('network.status', function() {
 
       var addCallback = this.addNetworkCallback_.bind(this);
       toAdd.forEach(function(id) {
+        console.log('NetworkStatus: Network ' + id + ' added.');
         chrome.networkingPrivate.getProperties(id, addCallback);
       });
 
       toRemove.forEach(function(id) {
+        console.log('NetworkStatus: Network ' + id + ' removed.');
         delete this.networkByID_[id];
       }, this);
 
@@ -637,6 +640,7 @@ cr.define('network.status', function() {
     onNetworksChanged_: function(networkIDs) {
       var updateCallback = this.updateNetworkCallback_.bind(this);
       networkIDs.forEach(function(id) {
+        console.log('NetworkStatus: Network ' + id + ' changed.');
         chrome.networkingPrivate.getProperties(id, updateCallback);
       });
     },

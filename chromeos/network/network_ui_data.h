@@ -25,8 +25,6 @@ enum ClientCertType {
   CLIENT_CERT_TYPE_PATTERN = 2
 };
 
-class NetworkPropertyUIData;
-
 // Helper for accessing and setting values in the network's UI data dictionary.
 // Accessing values is done via static members that take the network as an
 // argument. In order to fill a UI data dictionary, construct an instance, set
@@ -39,6 +37,8 @@ class NetworkPropertyUIData;
 class CHROMEOS_EXPORT NetworkUIData {
  public:
   NetworkUIData();
+  NetworkUIData(const NetworkUIData& other);
+  NetworkUIData& operator=(const NetworkUIData& other);
   explicit NetworkUIData(const base::DictionaryValue& dict);
   ~NetworkUIData();
 
@@ -61,26 +61,41 @@ class CHROMEOS_EXPORT NetworkUIData {
     return onc_source_ == onc::ONC_SOURCE_DEVICE_POLICY ||
         onc_source_ == onc::ONC_SOURCE_USER_POLICY;
   }
+  const base::DictionaryValue* user_settings() const {
+    return user_settings_.get();
+  }
+  void set_user_settings(scoped_ptr<base::DictionaryValue> dict) {
+    user_settings_ = dict.Pass();
+  }
+  const std::string& policy_guid() const {
+    return policy_guid_;
+  }
+  void set_policy_guid(const std::string& guid) {
+    policy_guid_ = guid;
+  }
 
   // Fills in |dict| with the currently configured values. This will write the
   // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
   void FillDictionary(base::DictionaryValue* dict) const;
 
-  // Key for storing source of the ONC network, which is an integer according to
-  // enum ONCSource.
+  // Key for storing source of the ONC network.
   static const char kKeyONCSource[];
 
-  // Key for storing certificate pattern for this network (if any).
+  // Key for storing the certificate pattern.
   static const char kKeyCertificatePattern[];
 
-  // Key for storing certificate type for this network (if any), which is one of
-  // "pattern", "ref", or "none", according to ClientCertType.
+  // Key for storing the certificate type.
   static const char kKeyCertificateType[];
+
+  // Key for storing the user settings.
+  static const char kKeyUserSettings[];
 
  private:
   CertificatePattern certificate_pattern_;
   onc::ONCSource onc_source_;
   ClientCertType certificate_type_;
+  scoped_ptr<base::DictionaryValue> user_settings_;
+  std::string policy_guid_;
 };
 
 // Creates a NetworkUIData object from |onc_network|, which has to be a valid

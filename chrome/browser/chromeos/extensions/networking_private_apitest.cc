@@ -10,10 +10,17 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+const char kSharedProfilePath[] = "/profile/default";
+const char kUserProfilePath[] = "/profile/chronos/shill";
 
 class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
  public:
@@ -60,6 +67,9 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     service_test->AddService("stub_wifi2", "wifi2_PSK",
                              flimflam::kTypeWifi, flimflam::kStateIdle,
                              add_to_watchlist);
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kGuidProperty,
+                                     base::StringValue("stub_wifi2"));
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSecurityProperty,
                                      base::StringValue(flimflam::kSecurityPsk));
@@ -142,7 +152,77 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, SetProperties) {
+  scoped_ptr<base::DictionaryValue> empty_policy =
+      onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration);
+  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
+      onc::ONC_SOURCE_USER_POLICY, *empty_policy);
+  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
+      onc::ONC_SOURCE_DEVICE_POLICY, *empty_policy);
+  content::RunAllPendingInMessageLoop();
+
   EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       GetManagedProperties) {
+  ShillServiceClient::TestInterface* service_test =
+      DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+  const std::string uidata_blob =
+      "{ \"user_settings\": {"
+      "      \"WiFi\": {"
+      "        \"Passphrase\": \"top secret\","
+      "      }"
+      "    }"
+      "}";
+  service_test->SetServiceProperty("stub_wifi2",
+                                   flimflam::kGuidProperty,
+                                   base::StringValue("stub_wifi2"));
+  service_test->SetServiceProperty("stub_wifi2",
+                                   flimflam::kUIDataProperty,
+                                   base::StringValue(uidata_blob));
+  service_test->SetServiceProperty("stub_wifi2",
+                                   flimflam::kProfileProperty,
+                                   base::StringValue(kUserProfilePath));
+  service_test->SetServiceProperty("stub_wifi2",
+                                   flimflam::kAutoConnectProperty,
+                                   base::FundamentalValue(false));
+
+  ShillProfileClient::TestInterface* profile_test =
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+
+  profile_test->AddService("stub_wifi2");
+
+  content::RunAllPendingInMessageLoop();
+
+  const std::string user_policy_blob =
+      "{ \"NetworkConfigurations\": ["
+      "    { \"GUID\": \"stub_wifi2\","
+      "      \"Type\": \"WiFi\","
+      "      \"Name\": \"My WiFi Network\","
+      "      \"WiFi\": {"
+      "        \"Passphrase\": \"passphrase\","
+      "        \"Recommended\": [ \"AutoConnect\", \"Passphrase\" ],"
+      "        \"SSID\": \"stub_wifi2\","
+      "        \"Security\": \"WPA-PSK\""
+      "      }"
+      "    }"
+      "  ],"
+      "  \"Certificates\": [],"
+      "  \"Type\": \"UnencryptedConfiguration\""
+      "}";
+  scoped_ptr<base::DictionaryValue> user_policy =
+      onc::ReadDictionaryFromJson(user_policy_blob);
+  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
+      onc::ONC_SOURCE_USER_POLICY, *user_policy);
+
+  scoped_ptr<base::DictionaryValue> device_policy =
+      onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration);
+  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
+      onc::ONC_SOURCE_DEVICE_POLICY, *device_policy);
+
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_TRUE(RunNetworkingSubtest("getManagedProperties")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,

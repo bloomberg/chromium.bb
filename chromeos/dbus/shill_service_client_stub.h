@@ -91,8 +91,6 @@ class ShillServiceClientStub : public ShillServiceClient,
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
   void SetDefaultProperties();
-  void PassStubServiceProperties(const dbus::ObjectPath& service_path,
-                                 const DictionaryValueCallback& callback);
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
   base::DictionaryValue* GetModifiableServiceProperties(

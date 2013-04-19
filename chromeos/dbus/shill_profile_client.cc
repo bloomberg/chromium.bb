@@ -20,12 +20,10 @@ namespace chromeos {
 
 namespace {
 
-// The ShillProfileClient implementation.
 class ShillProfileClientImpl : public ShillProfileClient {
  public:
   explicit ShillProfileClientImpl(dbus::Bus* bus);
 
-  /////////////////////////////////////
   // ShillProfileClient overrides.
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
@@ -50,6 +48,10 @@ class ShillProfileClientImpl : public ShillProfileClient {
                            const std::string& entry_path,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE;
+
+  virtual TestInterface* GetTestInterface() OVERRIDE {
+    return NULL;
+  }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;

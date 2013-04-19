@@ -12,30 +12,40 @@ function showMessage(msg) {
     }, 3000);
 }
 
+function getShowMessageCallback(message) {
+  return function() {
+    var error = chrome.runtime.lastError;
+    if (error) {
+      showMessage(message + ': ' + error.message);
+    } else {
+      showMessage(message + ': Success!');
+    }
+  };
+}
+
 function onPageLoad() {
   var networkConfig = $('network-config');
   network.config.NetworkConfig.decorate(networkConfig);
 
-  $('close').onclick = function() {
-    networkConfig.applyUserSettings();
+  $('save').onclick = function() {
+    chrome.networkingPrivate.setProperties(
+        networkConfig.networkId,
+        networkConfig.userSettings,
+        getShowMessageCallback('Set properties of ' + networkConfig.networkId));
   };
 
   $('connect').onclick = function() {
     chrome.networkingPrivate.startConnect(
         networkConfig.networkId,
-        function() {
-          showMessage('Successfully requested connect to ' +
-              networkConfig.networkId + '!');
-        });
+        getShowMessageCallback(
+            'Requested connect to ' + networkConfig.networkId));
   };
 
   $('disconnect').onclick = function() {
     chrome.networkingPrivate.startDisconnect(
         networkConfig.networkId,
-        function() {
-          showMessage('Successfully requested disconnect from ' +
-              networkConfig.networkId + '!');
-        });
+        getShowMessageCallback(
+            'Requested disconnect from ' + networkConfig.networkId));
   };
 }
 

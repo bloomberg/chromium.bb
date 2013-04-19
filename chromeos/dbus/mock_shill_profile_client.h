@@ -39,6 +39,7 @@ class MockShillProfileClient : public ShillProfileClient {
                                  const std::string& entry_path,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback));
+  MOCK_METHOD0(GetTestInterface, TestInterface*());
 };
 
 }  // namespace chromeos

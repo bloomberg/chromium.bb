@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

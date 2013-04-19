@@ -50,6 +50,11 @@ class ShillManagerClientStub : public ShillManagerClient,
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void ConfigureServiceForProfile(
+      const dbus::ObjectPath& profile_path,
+      const base::DictionaryValue& properties,
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void GetService(
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,

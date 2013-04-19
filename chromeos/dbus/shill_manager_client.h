@@ -8,14 +8,15 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
 namespace dbus {
 
 class Bus;
+class ObjectPath;
 
 }  // namespace dbus
 
@@ -59,7 +60,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual void ClearProperties() = 0;
 
    protected:
-    ~TestInterface() {}
+    virtual ~TestInterface() {}
   };
 
   virtual ~ShillManagerClient();
@@ -124,6 +125,14 @@ class CHROMEOS_EXPORT ShillManagerClient {
   virtual void ConfigureService(const base::DictionaryValue& properties,
                                 const ObjectPathCallback& callback,
                                 const ErrorCallback& error_callback) = 0;
+
+  // Calls ConfigureServiceForProfile method.
+  // |callback| is called with the created service if the method call succeeds.
+  virtual void ConfigureServiceForProfile(
+      const dbus::ObjectPath& profile_path,
+      const base::DictionaryValue& properties,
+      const ObjectPathCallback& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Calls GetService method.
   // |callback| is called after the method call succeeds.

@@ -5,11 +5,11 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
@@ -24,9 +24,7 @@
 #include "chromeos/network/onc/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
-#include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 

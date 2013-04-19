@@ -74,6 +74,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,7 +132,7 @@ class LoginUtilsImpl
     // TODO(dzhioev): Disabled in tests for a while.
     // TODO(dzhioev): Move prewarm out of LoginUtils.
     if (g_browser_process &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+        !CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType)) {
       registrar_.Add(
           this,
           chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
@@ -437,14 +438,10 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
   if (use_shared_proxies_pref->IsDefaultValue())
     user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
 
-  // Locally managed users do not have user policy initialized.
-  if (!UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    policy::NetworkConfigurationUpdater* network_configuration_updater =
-        g_browser_process->browser_policy_connector()->
-        GetNetworkConfigurationUpdater();
-    if (network_configuration_updater)
-      network_configuration_updater->OnUserPolicyInitialized();
-  }
+  // Notify the network configuration updater that policies are initialized. If
+  // there is no policy, it will read an empty policy which is fine.
+  g_browser_process->browser_policy_connector()->
+      GetNetworkConfigurationUpdater()->OnUserPolicyInitialized();
 
   RespectLocalePreference(user_profile);
 }

@@ -17,6 +17,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -193,11 +194,32 @@ void NetworkConfigurationHandler::CreateConfiguration(
     const base::DictionaryValue& properties,
     const network_handler::StringResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  DBusThreadManager::Get()->GetShillManagerClient()->GetService(
-      properties,
-      base::Bind(&RunCreateNetworkCallback, callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kLogModule, "", error_callback));
+  ShillManagerClient* manager =
+      DBusThreadManager::Get()->GetShillManagerClient();
+
+  std::string type;
+  properties.GetStringWithoutPathExpansion(flimflam::kTypeProperty, &type);
+  // Shill supports ConfigureServiceForProfile only for network type WiFi. In
+  // all other cases, we have to rely on GetService for now. This is
+  // unproblematic for VPN (user profile only), but will lead to inconsistencies
+  // with WiMax, for example.
+  if (type == flimflam::kTypeWifi) {
+    std::string profile;
+    properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                             &profile);
+    manager->ConfigureServiceForProfile(
+        dbus::ObjectPath(profile),
+        properties,
+        base::Bind(&RunCreateNetworkCallback, callback),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   kLogModule, "", error_callback));
+  } else {
+    manager->GetService(
+        properties,
+        base::Bind(&RunCreateNetworkCallback, callback),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   kLogModule, "", error_callback));
+  }
 }
 
 void NetworkConfigurationHandler::RemoveConfiguration(

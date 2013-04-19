@@ -172,8 +172,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
 
-    std::string onc_blob =
-        onc::test_utils::ReadTestData(onc_file);
+    std::string onc_blob = onc::test_utils::ReadTestData(onc_file);
 
     scoped_ptr<base::Value> expected_value =
         google_apis::test_util::LoadJSONFile(shill_json);

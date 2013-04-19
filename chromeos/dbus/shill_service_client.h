@@ -64,7 +64,7 @@ class CHROMEOS_EXPORT ShillServiceClient {
     virtual void ClearServices() = 0;
 
    protected:
-    ~TestInterface() {}
+    virtual ~TestInterface() {}
   };
   virtual ~ShillServiceClient();
 
