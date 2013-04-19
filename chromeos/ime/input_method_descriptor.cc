@@ -17,17 +17,15 @@ InputMethodDescriptor::InputMethodDescriptor(
     const std::string& name,
     const std::string& keyboard_layout,
     const std::string& language_code,
-    const std::string& options_page_url,
-    bool third_party)
+    const std::string& options_page_url)
     : id_(id),
       name_(name),
       keyboard_layout_(keyboard_layout),
       language_code_(language_code),
-      options_page_url_(options_page_url),
-      third_party_(third_party) {
+      options_page_url_(options_page_url) {
 }
 
-InputMethodDescriptor::InputMethodDescriptor() : third_party_(false) {
+InputMethodDescriptor::InputMethodDescriptor() {
 }
 
 InputMethodDescriptor::~InputMethodDescriptor() {

@@ -90,6 +90,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -141,7 +142,7 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->name = util.GetInputMethodLongName(ime);
   info->medium_name = util.GetInputMethodMediumName(ime);
   info->short_name = util.GetInputMethodShortName(ime);
-  info->third_party = ime.third_party();
+  info->third_party = extension_ime_util::IsExtensionIME(ime.id());
 }
 
 gfx::NativeWindow GetNativeWindowByStatus(

@@ -56,8 +56,7 @@ class InputMethodUtilTest : public testing::Test {
                                  "",
                                  raw_layout,
                                  language_code,
-                                 "",  // options page url
-                                 false);
+                                 "");  // options page url
   }
 
   static string16 GetDisplayLanguageName(const std::string& language_code) {

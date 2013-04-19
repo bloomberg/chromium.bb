@@ -624,8 +624,7 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
                                "",
                                "us",
                                "en-US",
-                               "",  // options page, not available.
-                               false);
+                               "");  // options page, not available.
 }
 
 void InputMethodUtil::ReloadInternalMaps() {

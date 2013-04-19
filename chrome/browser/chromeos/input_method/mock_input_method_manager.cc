@@ -118,8 +118,7 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
                                  descriptor.name(),
                                  descriptor.keyboard_layout(),
                                  descriptor.language_code(),
-                                 "",  // options page url.
-                                 false);
+                                 "");  // options page url.
   }
   return descriptor;
 }
