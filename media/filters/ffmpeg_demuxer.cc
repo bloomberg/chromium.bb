@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/task_runner_util.h"
@@ -465,6 +466,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       if (found_audio_stream)
         continue;
+      // Log the codec detected, whether it is supported or not.
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodec",
+                                  codec_context->codec_id);
       // Ensure the codec is supported.
       if (CodecIDToAudioCodec(codec_context->codec_id) == kUnknownAudioCodec)
         continue;
@@ -472,6 +476,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       if (found_video_stream)
         continue;
+      // Log the codec detected, whether it is supported or not.
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodec",
+                                  codec_context->codec_id);
       // Ensure the codec is supported.
       if (CodecIDToVideoCodec(codec_context->codec_id) == kUnknownVideoCodec)
         continue;
