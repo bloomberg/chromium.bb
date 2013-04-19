@@ -204,8 +204,6 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  // TODO(oshima): this is wrong. Figure out what display shelf is on
-  // and everything should be based on it.
   gfx::Rect bounds(
       ScreenAsh::GetDisplayBoundsInParent(shelf_->GetNativeView()));
   int width = 0, height = 0;
@@ -514,6 +512,9 @@ ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 ShelfLayoutManager::TargetBounds::~TargetBounds() {}
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
+  if (!shelf_->GetNativeView())
+    return;
+
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
