@@ -67,6 +67,11 @@ void OAuth2LoginManager::RestoreSession(
   refresh_token_ = oauth2_refresh_token;
   auth_code_ = auth_code;
 
+  // TODO(nkostylev): drop the previous fetchers if RestoreSession() is invoked
+  // for a second Profile, when using multi-profiles. This avoids the DCHECKs
+  // below until OAuthLoginManager fully supports multi-profiles.
+  Stop();
+
   // TODO(zelidrag): Remove eventually the next line in some future milestone.
   RemoveLegacyTokens();
 
