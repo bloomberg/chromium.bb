@@ -103,8 +103,11 @@ class BrowserView : public BrowserWindow,
   // The browser view's class name.
   static const char kViewClassName[];
 
-  explicit BrowserView(Browser* browser);
+  BrowserView();
   virtual ~BrowserView();
+
+  // Takes ownership of |browser|.
+  void Init(Browser* browser);
 
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
@@ -473,8 +476,8 @@ class BrowserView : public BrowserWindow,
   // can be traversed using F6, in the order they should be traversed.
   void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
 
-  // Browser window related initializations.
-  void Init();
+  // Constructs and initializes the child views.
+  void InitViews();
 
   // Callback for the loading animation(s) associated with this view.
   void LoadingAnimationCallback();

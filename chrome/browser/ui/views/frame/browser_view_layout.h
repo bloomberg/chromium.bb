@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/layout_manager.h"
@@ -36,7 +37,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // The vertical overlap between the TabStrip and the Toolbar.
   static const int kToolbarTabStripVerticalOverlap;
 
-  BrowserViewLayout();
+  explicit BrowserViewLayout(Browser* browser);
   virtual ~BrowserViewLayout();
 
   WebContentsModalDialogHost* GetWebContentsModalDialogHost();
@@ -65,6 +66,8 @@ class BrowserViewLayout : public views::LayoutManager {
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, BrowserViewLayout);
+  FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, Layout);
   class WebContentsModalDialogHostViews;
 
   enum InstantUIState {
@@ -77,8 +80,7 @@ class BrowserViewLayout : public views::LayoutManager {
     kInstantUIFullPageResults,
   };
 
-  Browser* browser();
-  const Browser* browser() const;
+  Browser* browser() { return browser_; }
 
   // Layout the tab strip region, returns the coordinate of the bottom of the
   // TabStrip, for laying out subsequent controls.
@@ -124,6 +126,9 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Returns true if an infobar is showing.
   bool InfobarVisible() const;
+
+  // The browser from the owning BrowserView.
+  Browser* browser_;
 
   // Child views that the layout manager manages.
   views::SingleSplitView* contents_split_;

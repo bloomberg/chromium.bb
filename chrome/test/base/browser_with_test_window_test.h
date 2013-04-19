@@ -72,14 +72,17 @@ class BrowserWithTestWindowTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  TestBrowserWindow* window() const { return window_.get(); }
-  void set_window(TestBrowserWindow* window) {
+  BrowserWindow* window() const { return window_.get(); }
+  void set_window(BrowserWindow* window) {
     window_.reset(window);
   }
 
   Browser* browser() const { return browser_.get(); }
   void set_browser(Browser* browser) {
     browser_.reset(browser);
+  }
+  Browser* release_browser() WARN_UNUSED_RESULT {
+    return browser_.release();
   }
 
   TestingProfile* profile() const { return profile_.get(); }
@@ -129,7 +132,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   content::TestBrowserThread file_user_blocking_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestBrowserWindow> window_;
+  scoped_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
   scoped_ptr<Browser> browser_;
 
   // The existence of this object enables tests via

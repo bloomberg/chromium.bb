@@ -106,8 +106,9 @@ const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
-BrowserViewLayout::BrowserViewLayout()
-    : contents_split_(NULL),
+BrowserViewLayout::BrowserViewLayout(Browser* browser)
+    : browser_(browser),
+      contents_split_(NULL),
       contents_container_(NULL),
       download_shelf_(NULL),
       browser_view_(NULL),
@@ -391,14 +392,6 @@ gfx::Size BrowserViewLayout::GetPreferredSize(views::View* host) {
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, private:
 
-Browser* BrowserViewLayout::browser() {
-  return browser_view_->browser();
-}
-
-const Browser* BrowserViewLayout::browser() const {
-  return browser_view_->browser();
-}
-
 int BrowserViewLayout::LayoutTabStripRegion() {
   TabStrip* tabstrip = browser_view_->tabstrip_;
   if (!browser_view_->IsTabStripVisible()) {
@@ -634,6 +627,6 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
 bool BrowserViewLayout::InfobarVisible() const {
   views::View* infobar_container = browser_view_->infobar_container_;
   // NOTE: Can't check if the size IsEmpty() since it's always 0-width.
-  return browser()->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
+  return browser_->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
       (infobar_container->GetPreferredSize().height() != 0);
 }

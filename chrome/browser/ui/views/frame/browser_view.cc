@@ -380,12 +380,11 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
-BrowserView::BrowserView(Browser* browser)
+BrowserView::BrowserView()
     : views::ClientView(NULL, NULL),
       last_focused_view_storage_id_(
           views::ViewStorage::GetInstance()->CreateStorageID()),
       frame_(NULL),
-      browser_(browser),
       top_container_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
@@ -407,7 +406,6 @@ BrowserView::BrowserView(Browser* browser)
       immersive_mode_controller_(chrome::CreateImmersiveModeController()),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
-  browser_->tab_strip_model()->AddObserver(this);
 }
 
 BrowserView::~BrowserView() {
@@ -460,6 +458,11 @@ BrowserView::~BrowserView() {
 
   // Explicitly set browser_ to NULL.
   browser_.reset();
+}
+
+void BrowserView::Init(Browser* browser) {
+  browser_.reset(browser);
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 // static
@@ -1843,7 +1846,7 @@ void BrowserView::ViewHierarchyChanged(bool is_add,
                                        views::View* parent,
                                        views::View* child) {
   if (!initialized_ && is_add && child == this && GetWidget()) {
-    Init();
+    InitViews();
     initialized_ = true;
   }
 }
@@ -1935,10 +1938,10 @@ void BrowserView::OnSysColorChange() {
   chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
 }
 
-void BrowserView::Init() {
+void BrowserView::InitViews() {
   GetWidget()->AddObserver(this);
 
-  SetLayoutManager(new BrowserViewLayout);
+  SetLayoutManager(new BrowserViewLayout(browser()));
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
@@ -2527,7 +2530,8 @@ void BrowserView::CreateLauncherIcon() {
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
-  BrowserView* view = new BrowserView(browser);
+  BrowserView* view = new BrowserView();
+  view->Init(browser);
   (new BrowserFrame(view))->InitBrowserFrame();
   view->GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
