@@ -195,6 +195,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
 
+  // Returns true if loading background pages should be deferred. This is
+  // true if there are no browser windows open and the browser process was
+  // started to show the app launcher.
+  bool DeferLoadingBackgroundHosts() const;
+
   // Contains all active extension-related RenderViewHost instances for all
   // extensions. We also keep a cache of the host's view type, because that
   // information is not accessible at registration/deregistration time.

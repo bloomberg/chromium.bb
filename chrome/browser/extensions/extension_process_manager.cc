@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
@@ -137,6 +138,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -552,13 +555,23 @@ void ExtensionProcessManager::Observe(
         break;
 
       ExtensionService* service = GetProfile()->GetExtensionService();
-      if (!service)
+      if (!service || !service->is_ready())
         break;
 
-      CHECK(service->is_ready());
       CreateBackgroundHostsForProfileStartup();
       break;
     }
+    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+      // Don't load background hosts now if the loading should be deferred.
+      // Instead they will be loaded when a browser window for this profile
+      // (or an incognito profile from this profile) is ready.
+      if (DeferLoadingBackgroundHosts())
+        break;
+
+      CreateBackgroundHostsForProfileStartup();
+      break;
+    }
+
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       ExtensionService* service = profile->GetExtensionService();
@@ -759,6 +772,15 @@ void ExtensionProcessManager::ClearBackgroundPageData(
   }
 }
 
+bool ExtensionProcessManager::DeferLoadingBackgroundHosts() const {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return chrome::GetTotalBrowserCountForProfile(GetProfile()) == 0 &&
+         CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
+#endif
+}
+
 //
 // IncognitoExtensionProcessManager
 //
@@ -769,6 +791,13 @@ IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
       original_manager_(extensions::ExtensionSystem::Get(
           profile->GetOriginalProfile())->process_manager()) {
   DCHECK(profile->IsOffTheRecord());
+
+  // The original profile will have its own ExtensionProcessManager to
+  // load the background pages of the spanning extensions. This process
+  // manager need only worry about the split mode extensions, which is handled
+  // in the NOTIFICATION_BROWSER_WINDOW_READY notification handler.
+  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                    content::Source<Profile>(profile->GetOriginalProfile()));
 }
 
 IncognitoExtensionProcessManager::~IncognitoExtensionProcessManager() {
