@@ -31,6 +31,10 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'audio/audio_pref_observer.h',
+        'audio/audio_pref_handler.h',
+        'audio/cras_audio_handler.cc',
+        'audio/cras_audio_handler.h',
         'attestation/attestation_flow.cc',
         'attestation/attestation_flow.h',
         'chromeos_export.h',

@@ -127,6 +127,8 @@
         'browser/chromeos/app_mode/startup_app_launcher.h',
         'browser/chromeos/audio/audio_handler.cc',
         'browser/chromeos/audio/audio_handler.h',
+        'browser/chromeos/audio/audio_pref_handler_impl.cc',
+        'browser/chromeos/audio/audio_pref_handler_impl.h',
         'browser/chromeos/audio/audio_mixer.h',
         'browser/chromeos/audio/audio_mixer_alsa.cc',
         'browser/chromeos/audio/audio_mixer_alsa.h',

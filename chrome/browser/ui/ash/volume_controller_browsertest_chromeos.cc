@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
-
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/audio/audio_mixer.h"
+#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/audio/audio_pref_handler.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace {
@@ -84,7 +85,8 @@ class VolumeControllerTest : public InProcessBrowserTest {
     // First we should shutdown the default audio handler.
     chromeos::AudioHandler::Shutdown();
     audio_mixer_ = new MockAudioMixer;
-    chromeos::AudioHandler::InitializeForTesting(audio_mixer_);
+    chromeos::AudioHandler::InitializeForTesting(audio_mixer_,
+        chromeos::AudioPrefHandler::Create(g_browser_process->local_state()));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

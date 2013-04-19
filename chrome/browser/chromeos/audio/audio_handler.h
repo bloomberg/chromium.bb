@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_HANDLER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread.h"
+#include "chromeos/audio/audio_pref_observer.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -20,8 +20,12 @@ class PrefService;
 namespace chromeos {
 
 class AudioMixer;
+class AudioPrefHandler;
 
-class AudioHandler {
+// TODO(jennyz): crbug.com/233301.
+// Retire the old AudioHandler and the old audio library code once
+// the new audio dbus and handler code stabilizes.
+class AudioHandler : public AudioPrefObserver {
  public:
   class VolumeObserver {
    public:
@@ -33,18 +37,17 @@ class AudioHandler {
     DISALLOW_COPY_AND_ASSIGN(VolumeObserver);
   };
 
-  static void Initialize();
+  static void Initialize(scoped_refptr<AudioPrefHandler> audio_pref_handler);
   static void Shutdown();
 
   // Same as Initialize but using the specified audio mixer.  It takes
   // ownership of |mixer|.
-  static void InitializeForTesting(AudioMixer* mixer);
+  static void InitializeForTesting(
+      AudioMixer* mixer,
+      scoped_refptr<AudioPrefHandler> audio_pref_handler);
 
   // GetInstance returns NULL if not initialized or if already shutdown.
   static AudioHandler* GetInstance();
-
-  // Registers volume and mute preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Gets volume level in our internal 0-100% range, 0 being pure silence.
   double GetVolumePercent();
@@ -79,11 +82,9 @@ class AudioHandler {
   friend struct DefaultSingletonTraits<AudioHandler>;
 
   // Takes ownership of |mixer|.
-  explicit AudioHandler(AudioMixer* mixer);
+  explicit AudioHandler(AudioMixer* mixer,
+                        scoped_refptr<AudioPrefHandler> audio_pref_handler);
   virtual ~AudioHandler();
-
-  // Initializes the observers for the policy prefs.
-  void InitializePrefObservers();
 
   // Applies the audio muting policies whenever the user logs in or policy
   // change notification is received.
@@ -92,17 +93,18 @@ class AudioHandler {
   // Sets volume to specified value and notifies observers.
   void SetVolumePercentInternal(double volume_percent);
 
+  // Overriden from AudioPrefObserver.
+  virtual void OnAudioPolicyPrefChanged() OVERRIDE;
+
   scoped_ptr<AudioMixer> mixer_;
 
   ObserverList<VolumeObserver> volume_observers_;
 
-  PrefService* local_state_;  // not owned
-
-  PrefChangeRegistrar pref_change_registrar_;
-
   // Track state for triggering callbacks
   double volume_percent_;
   bool muted_;
+
+  scoped_refptr<AudioPrefHandler> audio_pref_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

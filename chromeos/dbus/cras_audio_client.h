@@ -24,13 +24,29 @@ class CHROMEOS_EXPORT CrasAudioClient {
   // Interface for observing changes from the cras audio changes.
   class Observer {
    public:
-    // Called when audio output device volume changed.
+    // Called when cras audio client starts or re-starts, which happens when
+    // cros device powers up or restarted.
+    virtual void AudioClientRestarted();
+
+    // Called when audio output device volume changed to new value of |volume|.
     virtual void OutputVolumeChanged(int volume);
+
+    // Called whne audio output mute state changed to new state of |mute_on|.
     virtual void OutputMuteChanged(bool mute_on);
+
+    // Called when audio input gain changeg to new value of |gain|.
     virtual void InputGainChanged(int gain);
+
+    // Called when audio input mute state changed to new state of |mute_on|.
     virtual void InputMuteChanged(bool mute_on);
+
+    // Called when audio nodes change.
     virtual void NodesChanged();
+
+    // Called when active audio output node changed to new node with |node_id|.
     virtual void ActiveOutputNodeChanged(uint64 node_id);
+
+    // Called when active audio input node changed to new node with |node_id|.
     virtual void ActiveInputNodeChanged(uint64 node_id);
 
    protected:

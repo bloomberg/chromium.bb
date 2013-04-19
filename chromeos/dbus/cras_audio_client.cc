@@ -23,6 +23,11 @@ class CrasAudioClientImpl : public CrasAudioClient {
         cras::kCrasServiceName,
         dbus::ObjectPath(cras::kCrasServicePath));
 
+    // Monitor NameOwnerChanged signal.
+    cras_proxy_->SetNameOwnerChangedCallback(
+        base::Bind(&CrasAudioClientImpl::NameOwnerChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     // Monitor the D-Bus signal for output volume change.
     cras_proxy_->ConnectToSignal(
         cras::kCrasControlInterface,
@@ -198,6 +203,10 @@ class CrasAudioClientImpl : public CrasAudioClient {
         << "Failed to connect to cras signal:" << signal_name;
   }
 
+  void NameOwnerChangedReceived(dbus::Signal* signal) {
+    FOR_EACH_OBSERVER(Observer, observers_, AudioClientRestarted());
+  }
+
   // Called when a OutputVolumeChanged signal is received.
   void OutputVolumeChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
@@ -251,7 +260,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     uint64 node_id;
     if (!reader.PopUint64(&node_id)) {
       LOG(ERROR) << "Error reading signal from cras:"
-          << signal->ToString();
+                 << signal->ToString();
     }
     FOR_EACH_OBSERVER(Observer, observers_, ActiveOutputNodeChanged(node_id));
   }
@@ -261,7 +270,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     uint64 node_id;
     if (!reader.PopUint64(&node_id)) {
       LOG(ERROR) << "Error reading signal from cras:"
-          << signal->ToString();
+                 << signal->ToString();
     }
     FOR_EACH_OBSERVER(Observer, observers_, ActiveInputNodeChanged(node_id));
   }
@@ -295,7 +304,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     if (response) {
       dbus::MessageReader response_reader(response);
       dbus::MessageReader array_reader(response);
-      while(response_reader.HasMoreData()) {
+      while (response_reader.HasMoreData()) {
         if (!response_reader.PopArray(&array_reader)) {
           success = false;
           LOG(ERROR) << "Error reading response from cras: "
@@ -374,30 +383,109 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
  public:
   CrasAudioClientStubImpl() {
     VLOG(1) << "CrasAudioClientStubImpl is created";
+
+    // Fake audio nodes.
+    AudioNode node_1;
+    node_1.is_input = false;
+    node_1.id = 10001;
+    node_1.device_name = "Fake Audio Output";
+    node_1.type = "INTERNAL_SPEAKER";
+    node_1.name = "Internal Speaker";
+    node_1.active = true;
+
+    AudioNode node_2;
+    node_2.is_input = true;
+    node_2.id = 10002;
+    node_2.device_name = "Fake Audio Input";
+    node_2.type = "INTERNAL_MIC";
+    node_2.name = "Internal Mic";
+    node_2.active = true;
+
+    node_list_.push_back(node_1);
+    node_list_.push_back(node_2);
   }
-  virtual ~CrasAudioClientStubImpl() {}
+  virtual ~CrasAudioClientStubImpl() {
+  }
 
   // CrasAudioClient overrides:
   // TODO(jennyz): Implement the observers and callbacks in the stub for UI
   // testing.
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
-  virtual void GetVolumeState(const GetVolumeStateCallback& callback) OVERRIDE {
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
   }
-  virtual void GetNodes(const GetNodesCallback& callback)OVERRIDE {}
-  virtual void SetOutputVolume(int32 volume) OVERRIDE {}
-  virtual void SetOutputMute(bool mute_on) OVERRIDE {}
-  virtual void SetInputGain(int32 input_gain) OVERRIDE {}
-  virtual void SetInputMute(bool mute_on) OVERRIDE {}
-  virtual void SetActiveOutputNode(uint64 node_id) OVERRIDE {}
-  virtual void SetActiveInputNode(uint64 node_id) OVERRIDE {}
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
+
+  virtual void GetVolumeState(const GetVolumeStateCallback& callback) OVERRIDE {
+    callback.Run(volume_state_, true);
+  }
+
+  virtual void GetNodes(const GetNodesCallback& callback)OVERRIDE {
+    callback.Run(node_list_, true);
+  }
+
+  virtual void SetOutputVolume(int32 volume) OVERRIDE {
+    volume_state_.output_volume = volume;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      OutputVolumeChanged(volume_state_.output_volume));
+  }
+
+  virtual void SetOutputMute(bool mute_on) OVERRIDE {
+    volume_state_.output_mute = mute_on;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      OutputMuteChanged(volume_state_.output_mute));
+  }
+
+  virtual void SetInputGain(int32 input_gain) OVERRIDE {
+    volume_state_.input_gain = input_gain;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      InputGainChanged(volume_state_.input_gain));
+  }
+
+  virtual void SetInputMute(bool mute_on) OVERRIDE {
+    volume_state_.input_mute = mute_on;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      InputMuteChanged(volume_state_.input_mute));
+  }
+
+  virtual void SetActiveOutputNode(uint64 node_id) OVERRIDE {
+    active_output_node_id_ = node_id;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      ActiveOutputNodeChanged(node_id));
+  }
+
+  virtual void SetActiveInputNode(uint64 node_id) OVERRIDE {
+    active_input_node_id_ = node_id;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      ActiveInputNodeChanged(node_id));
+  }
 
  private:
+  VolumeState volume_state_;
+  AudioNodeList node_list_;
+  uint64 active_input_node_id_;
+  uint64 active_output_node_id_;
+  ObserverList<Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(CrasAudioClientStubImpl);
 };
 
 CrasAudioClient::Observer::~Observer() {
+}
+
+void CrasAudioClient::Observer::AudioClientRestarted() {
 }
 
 void CrasAudioClient::Observer::OutputVolumeChanged(int32 volume) {
