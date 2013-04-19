@@ -412,6 +412,7 @@ NotificationView::NotificationView(const Notification& notification,
   if (!notification.message().empty()) {
     message_view_ = new BoundedLabel(
         ui::TruncateString(notification.message(), kMessageCharacterLimit));
+    message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(4, 1));
@@ -507,7 +508,7 @@ int NotificationView::GetHeightForWidth(int width) {
   // line limit would be different for the specified width than it currently is.
   // TODO(dharcourt): Avoid BoxLayout and directly compute the correct height.
   if (message_view_ && title_view_) {
-    int used_limit = message_view_->line_limit();
+    int used_limit = message_view_->GetLineLimit();
     int correct_limit = GetMessageLineLimit(width);
     if (used_limit != correct_limit) {
       total_height -= GetMessageHeight(content_width, used_limit);

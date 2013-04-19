@@ -38,9 +38,11 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   virtual ~BoundedLabel();
 
   void SetColors(SkColor textColor, SkColor backgroundColor);
+  void SetLineHeight(int height);  // Pass in 0 for default height.
   void SetLineLimit(int lines);  // Pass in -1 for no limit.
 
-  int line_limit() const { return line_limit_; }
+  int GetLineHeight() const;
+  int GetLineLimit() const;
 
   // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
   int GetLinesForWidthAndLimit(int width, int limit);

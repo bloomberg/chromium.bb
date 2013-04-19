@@ -113,7 +113,9 @@ gfx::Size InnerBoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
     int text_height = std::numeric_limits<int>::max();
     std::vector<string16> wrapped = GetWrappedText(text_width, lines);
     gfx::Canvas::SizeStringInt(JoinString(wrapped, '\n'), font(),
-                               &text_width, &text_height, GetTextFlags());
+                               &text_width, &text_height,
+                               owner_->GetLineHeight(),
+                               GetTextFlags());
     size.set_width(text_width + insets.width());
     size.set_height(text_height + insets.height());
     SetCachedSize(key, size);
@@ -167,7 +169,7 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
   views::Label::OnPaintBackground(canvas);
   views::Label::OnPaintFocusBorder(canvas);
   views::Label::OnPaintBorder(canvas);
-  int lines = owner_->line_limit();
+  int lines = owner_->GetLineLimit();
   int height = GetSizeForWidthAndLines(width(), lines).height();
   if (height > 0) {
     gfx::Rect bounds(width(), height);
@@ -275,8 +277,20 @@ void BoundedLabel::SetColors(SkColor textColor, SkColor backgroundColor) {
   label_->SetBackgroundColor(backgroundColor);
 }
 
+void BoundedLabel::SetLineHeight(int height) {
+  label_->SetLineHeight(height);
+}
+
 void BoundedLabel::SetLineLimit(int lines) {
   line_limit_ = std::max(lines, -1);
+}
+
+int BoundedLabel::GetLineHeight() const {
+  return label_->line_height();
+}
+
+int BoundedLabel::GetLineLimit() const {
+  return line_limit_;
 }
 
 int BoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {

@@ -12,7 +12,10 @@ namespace gfx {
 // static
 void Canvas::SizeStringInt(const string16& text,
                            const gfx::Font& font,
-                           int* width, int* height, int flags) {
+                           int* width,
+                           int* height,
+                           int line_height,
+                           int flags) {
   NOTIMPLEMENTED();
 }
 
@@ -20,6 +23,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
                                    const gfx::Font& font,
                                    SkColor color,
                                    const gfx::Rect& text_bounds,
+                                   int line_height,
                                    int flags,
                                    const ShadowValues& shadows) {
   NOTIMPLEMENTED();

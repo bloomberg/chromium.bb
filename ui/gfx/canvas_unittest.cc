@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas.h"
@@ -9,29 +11,50 @@
 
 namespace gfx {
 
-TEST(CanvasTest, StringWidth) {
-  const string16 text = UTF8ToUTF16("Test");
-  const int width = Canvas::GetStringWidth(text, Font());
+class CanvasTest : public testing::Test {
+ protected:
+  int GetStringWidth(const char *text) {
+    return Canvas::GetStringWidth(UTF8ToUTF16(text), font_);
+  }
 
-  EXPECT_GT(width, 0);
+  gfx::Size SizeStringInt(const char *text, int width, int line_height) {
+    string16 text16 = UTF8ToUTF16(text);
+    int height = 0;
+    int flags = (text16.find('\n') != string16::npos) ? Canvas::MULTI_LINE : 0;
+    Canvas::SizeStringInt(text16, font_, &width, &height, line_height, flags);
+    return gfx::Size(width, height);
+  }
+
+ private:
+  gfx::Font font_;
+};
+
+TEST_F(CanvasTest, StringWidth) {
+  EXPECT_GT(GetStringWidth("Test"), 0);
 }
 
-TEST(CanvasTest, StringWidthEmptyString) {
-  const string16 text = UTF8ToUTF16("");
-  const int width = Canvas::GetStringWidth(text, Font());
-
-  EXPECT_EQ(0, width);
+TEST_F(CanvasTest, StringWidthEmptyString) {
+  EXPECT_EQ(0, GetStringWidth(""));
 }
 
-TEST(CanvasTest, StringSizeEmptyString) {
-  const Font font;
-  const string16 text = UTF8ToUTF16("");
-  int width = 0;
-  int height = 0;
-  Canvas::SizeStringInt(text, font, &width, &height, 0);
+TEST_F(CanvasTest, StringSizeEmptyString) {
+  gfx::Size size = SizeStringInt("", 0, 0);
+  EXPECT_EQ(0, size.width());
+  EXPECT_GT(size.height(), 0);
+}
 
-  EXPECT_EQ(0, width);
-  EXPECT_GT(height, 0);
+// Line height is only supported on Skia.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define MAYBE_StringSizeWithLineHeight DISABLED_StringSizeWithLineHeight
+#else
+#define MAYBE_StringSizeWithLineHeight StringSizeWithLineHeight
+#endif
+
+TEST_F(CanvasTest, MAYBE_StringSizeWithLineHeight) {
+  gfx::Size one_line_size = SizeStringInt("Q", 0, 0);
+  gfx::Size four_line_size = SizeStringInt("Q\nQ\nQ\nQ", 1000000, 1000);
+  EXPECT_EQ(one_line_size.width(), four_line_size.width());
+  EXPECT_EQ(3 * 1000 + one_line_size.height(), four_line_size.height());
 }
 
 }  // namespace gfx

@@ -659,8 +659,8 @@ void TreeView::ConfigureInternalNode(TreeModelNode* model_node,
 
 void TreeView::UpdateNodeTextWidth(InternalNode* node) {
   int width = 0, height = 0;
-  gfx::Canvas::SizeStringInt(node->model_node()->GetTitle(),
-      font_, &width, &height, gfx::Canvas::NO_ELLIPSIS);
+  gfx::Canvas::SizeStringInt(node->model_node()->GetTitle(), font_,
+                             &width, &height, 0, gfx::Canvas::NO_ELLIPSIS);
   node->set_text_width(width);
 }
 

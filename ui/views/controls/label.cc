@@ -121,6 +121,15 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   }
 }
 
+void Label::SetLineHeight(int height) {
+  if (height != line_height_) {
+    line_height_ = height;
+    ResetCachedSize();
+    PreferredSizeChanged();
+    SchedulePaint();
+  }
+}
+
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || elide_behavior_ != ELIDE_IN_MIDDLE);
   if (multi_line != is_multi_line_) {
@@ -226,7 +235,8 @@ int Label::GetHeightForWidth(int w) {
   int cache_width = w;
 
   int h = font_.GetHeight();
-  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, ComputeDrawStringFlags());
+  const int flags = ComputeDrawStringFlags();
+  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, line_height_, flags);
   cached_heights_[cached_heights_cursor_] = gfx::Size(cache_width, h);
   cached_heights_cursor_ = (cached_heights_cursor_ + 1) % kCachedSizeLimit;
   return h + GetInsets().height();
@@ -274,7 +284,7 @@ void Label::PaintText(gfx::Canvas* canvas,
         enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
   canvas->DrawStringWithShadows(text, font_,
       enabled() ? actual_enabled_color_ : actual_disabled_color_,
-      text_bounds, flags, shadows);
+      text_bounds, line_height_, flags, shadows);
 
   if (HasFocus()) {
     gfx::Rect focus_bounds = text_bounds;
@@ -297,7 +307,7 @@ gfx::Size Label::GetTextSize() const {
     int flags = ComputeDrawStringFlags();
     if (!is_multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
+    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, line_height_, flags);
     text_size_.SetSize(w, h);
     text_size_valid_ = true;
   }
@@ -338,6 +348,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   auto_color_readability_ = true;
   UpdateColorsFromTheme(ui::NativeTheme::instance());
   horizontal_alignment_ = gfx::ALIGN_CENTER;
+  line_height_ = 0;
   is_multi_line_ = false;
   allow_character_break_ = false;
   elide_behavior_ = NO_ELIDE;

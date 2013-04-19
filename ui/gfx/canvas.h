@@ -124,10 +124,12 @@ class UI_EXPORT Canvas {
   // Compute the size required to draw some text with the provided font.
   // Attempts to fit the text with the provided width and height. Increases
   // height and then width as needed to make the text fit. This method
-  // supports multiple lines.
+  // supports multiple lines. On Skia only a line_height can be specified and
+  // specifying a 0 value for it will cause the default height to be used.
   static void SizeStringInt(const string16& text,
                             const gfx::Font& font,
                             int* width, int* height,
+                            int line_height,
                             int flags);
 
   // Returns the number of horizontal pixels needed to display the specified
@@ -322,11 +324,13 @@ class UI_EXPORT Canvas {
                      int flags);
 
   // Similar to above DrawStringInt method but with text shadows support.
-  // Currently it's only implemented for canvas skia.
+  // Currently it's only implemented for canvas skia. Specifying a 0 line_height
+  // will cause the default height to be used.
   void DrawStringWithShadows(const string16& text,
                              const gfx::Font& font,
                              SkColor color,
                              const gfx::Rect& text_bounds,
+                             int line_height,
                              int flags,
                              const ShadowValues& shadows);
 

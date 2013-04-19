@@ -13,11 +13,10 @@
 #include "ui/gfx/rect.h"
 
 // Note: This is a temporary Skia-based implementation of the ui/gfx text
-// rendering routines for views/aura.  It replaces the stale Cocoa-based
-// implementation.  A future |canvas_skia.cc| implementation will supersede
-// this and the other platform-specific implmenentations.
-// Most drawing options, such as alignment and multi-line, are not implemented
-// here.
+// rendering routines for views/aura. It replaces the stale Cocoa-based
+// implementation. A future |canvas_skia.cc| implementation will supersede
+// this and the other platform-specific implmenentations. Most drawing options,
+// such as alignment, multi-line, and line heights are not implemented here.
 
 namespace {
 
@@ -40,7 +39,11 @@ void Canvas::SizeStringInt(const string16& text,
                            const gfx::Font& font,
                            int* width,
                            int* height,
+                           int line_height,
                            int flags) {
+  DLOG_IF(WARNING, line_height != 0) << "Line heights not implemented.";
+  DLOG_IF(WARNING, flags & Canvas::MULTI_LINE) << "Multi-line not implemented.";
+
   NSFont* native_font = font.GetNativeFont();
   NSString* ns_string = base::SysUTF16ToNSString(text);
   NSDictionary* attributes =
@@ -55,9 +58,12 @@ void Canvas::DrawStringWithShadows(const string16& text,
                                    const gfx::Font& font,
                                    SkColor color,
                                    const gfx::Rect& text_bounds,
+                                   int line_height,
                                    int flags,
                                    const ShadowValues& shadows) {
-  DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
+  DLOG_IF(WARNING, line_height != 0) << "Line heights not implemented.";
+  DLOG_IF(WARNING, flags & Canvas::MULTI_LINE) << "Multi-line not implemented.";
+  DLOG_IF(WARNING, !shadows.empty()) << "Text shadows not implemented.";
 
   skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
       SkTypeface::CreateFromName(

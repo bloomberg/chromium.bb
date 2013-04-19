@@ -111,7 +111,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
       word = text;  // Draw the whole text at once.
 
     int w = 0, h = 0;
-    gfx::Canvas::SizeStringInt(word, font, &w, &h, flags);
+    gfx::Canvas::SizeStringInt(word, font, &w, &h, 0, flags);
 
     // If we exceed the boundaries, we need to wrap.
     WrapIfWordDoesntFit(w, font.GetHeight(), position, bounds);

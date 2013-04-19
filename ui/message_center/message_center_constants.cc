@@ -25,6 +25,7 @@ const int kTextTopPadding = 12;
 // Text sizes.
 const int kTitleFontSize = 14;
 const int kMessageFontSize = 12;
+const int kMessageLineHeight = 18;
 
 // Colors.
 const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);

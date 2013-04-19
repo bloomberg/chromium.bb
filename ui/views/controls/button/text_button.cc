@@ -376,7 +376,7 @@ void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
   if (!multi_line_)
     flags |= gfx::Canvas::NO_ELLIPSIS;
 
-  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
+  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, 0, flags);
   text_size->SetSize(w, h);
 }
 
@@ -498,7 +498,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
         shadows.push_back(gfx::ShadowValue(text_shadow_offset_, 0, color));
       }
       canvas->DrawStringWithShadows(text_, font_, text_color, text_bounds,
-                                    draw_string_flags, shadows);
+                                    0, draw_string_flags, shadows);
     }
   }
 }

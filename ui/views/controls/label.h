@@ -117,6 +117,12 @@ class VIEWS_EXPORT Label : public View {
     return directionality_mode_;
   }
 
+  // Get or set the distance in pixels between baselines of multi-line text.
+  // Default is 0, indicating the distance between lines should be the standard
+  // one for the label's text, font, and platform.
+  int line_height() const { return line_height_; }
+  void SetLineHeight(int height);
+
   // Get or set if the label text can wrap on multiple lines; default is false.
   bool is_multi_line() const { return is_multi_line_; }
   void SetMultiLine(bool multi_line);
@@ -242,6 +248,7 @@ class VIEWS_EXPORT Label : public View {
   bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
+  int line_height_;
   bool is_multi_line_;
   bool allow_character_break_;
   ElideBehavior elide_behavior_;

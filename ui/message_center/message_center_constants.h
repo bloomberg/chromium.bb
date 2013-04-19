@@ -28,8 +28,9 @@ extern const int kIconToTextPadding;  // H space between icon & title/message.
 extern const int kTextTopPadding;     // V space between text elements.
 
 // Text sizes.
-extern const int kTitleFontSize;    // For title only.
-extern const int kMessageFontSize;  // For everything but title.
+extern const int kTitleFontSize;      // For title only.
+extern const int kMessageFontSize;    // For everything but title.
+extern const int kMessageLineHeight;  // In pixels.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
