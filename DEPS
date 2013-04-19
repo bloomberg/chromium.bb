@@ -81,12 +81,8 @@ deps = {
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@255",
 
-  # Note that this is *not* where we check out WebKit -- this just
-  # puts some extra files into place for the real WebKit checkout to
-  # happen.  See lines mentioning "webkit_revision" for the real
-  # WebKit checkout.
   "src/third_party/WebKit":
-    "/trunk/deps/third_party/WebKit@76115",
+    Var("webkit_trunk") + "@" + Var("webkit_revision"),
 
   "src/third_party/icu":
     "/trunk/deps/third_party/icu46@192960",
@@ -148,21 +144,6 @@ deps = {
   "src/third_party/skia/include":
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
-  "src/third_party/WebKit/LayoutTests":
-    Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/Source":
-    Var("webkit_trunk") + "/Source@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/Tools/DumpRenderTree":
-    Var("webkit_trunk") + "/Tools/DumpRenderTree@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/Tools/Scripts":
-    Var("webkit_trunk") + "/Tools/Scripts@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/Tools/TestWebKitAPI":
-    Var("webkit_trunk") + "/Tools/TestWebKitAPI@" + Var("webkit_revision"),
-
   "src/third_party/ots":
     (Var("googlecode_url") % "ots") + "/trunk@97",
 
@@ -192,6 +173,9 @@ deps = {
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
   # to map them here. In practice, these do not take up much space.
+  #
+  # TODO: crbug.com/230215. Remove these and update the tests to pull directly
+  # from the Blink repo since the layout tests are now always checked out.
   "src/content/test/data/layout_tests/LayoutTests/fast/events":
     Var("webkit_trunk") + "/LayoutTests/fast/events@" +
     Var("webkit_revision"),
@@ -481,11 +465,6 @@ deps_os = {
     "src/third_party/webpagereplay": None,
     "src/third_party/webrtc": None,
     "src/third_party/WebKit": None,
-    "src/third_party/WebKit/LayoutTests": None,
-    "src/third_party/WebKit/Source": None,
-    "src/third_party/WebKit/Tools/DumpRenderTree": None,
-    "src/third_party/WebKit/Tools/Scripts": None,
-    "src/third_party/WebKit/Tools/TestWebKitAPI": None,
     "src/third_party/yasm/source/patched-yasm": None,
     "src/tools/page_cycler/acid3": None,
     "src/v8": None,
@@ -529,9 +508,6 @@ deps_os = {
 
     "src/third_party/openssl":
       "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
-
-    "src/third_party/WebKit/Tools/gdb":
-      Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
 
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@168091",
