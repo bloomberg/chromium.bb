@@ -47,7 +47,10 @@ namespace tabCapture {
 
   interface Functions {
     // Captures the visible area of the currently active tab.
-    // Extensions must have the "tabCapture" permission to use this method.
+    // This method can only be used on the currently active page after the
+    // extension has been <em>invoked</em>, similar to the way that
+    // <a href="activeTab.html">activeTab</a> works.
+    // Note that Chrome internal pages cannot be captured.
     // |options| : Configures the returned media stream.
     // |callback| : Callback with either the stream returned or null.
     static void capture(CaptureOptions options,

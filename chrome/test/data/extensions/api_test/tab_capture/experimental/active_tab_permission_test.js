@@ -28,7 +28,8 @@ var afterGrantPermission = function(msg) {
 var afterOpenTab = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
     chrome.test.assertLastError(
-      'Capture of this tab must be granted by clicking on the extension icon.');
+      'Extension has not been invoked for the current page (see activeTab ' +
+      'permission). Chrome pages cannot be captured.');
     chrome.test.assertTrue(!stream);
 
     chrome.test.sendMessage('ready2', afterGrantPermission);

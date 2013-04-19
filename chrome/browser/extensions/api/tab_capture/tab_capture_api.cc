@@ -41,7 +41,8 @@ const char kFindingTabError[] = "Error finding tab to capture.";
 const char kNoAudioOrVideo[] = "Capture failed. No audio or video requested.";
 const char kPermissionError[] = "Tab Capture API flag is not enabled.";
 const char kGrantError[] =
-    "Capture of this tab must be granted by clicking on the extension icon.";
+    "Extension has not been invoked for the current page (see activeTab "
+    "permission). Chrome pages cannot be captured.";
 
 // Keys/values for media stream constraints.
 const char kMediaStreamSource[] = "chromeMediaSource";
