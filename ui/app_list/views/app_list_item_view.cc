@@ -182,6 +182,7 @@ void AppListItemView::ItemIconChanged() {
 void AppListItemView::ItemTitleChanged() {
   title_->SetText(UTF8ToUTF16(model_->title()));
   title_->Invalidate();
+  Layout();
 }
 
 void AppListItemView::ItemHighlightedChanged() {
