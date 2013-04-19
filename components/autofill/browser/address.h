@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"

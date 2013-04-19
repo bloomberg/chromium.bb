@@ -6,27 +6,16 @@
 #define COMPONENTS_AUTOFILL_BROWSER_FORM_GROUP_H_
 
 #include <string>
-#include <vector>
 
 #include "base/string16.h"
-#include "base/string_util.h"
 #include "components/autofill/browser/field_types.h"
 
 namespace autofill {
 
-class AutofillField;
-struct FormFieldData;
-
 // This class is an interface for collections of form fields, grouped by type.
-// The information in objects of this class is managed by the
-// PersonalDataManager.
 class FormGroup {
  public:
   virtual ~FormGroup() {}
-
-  // Returns a globally unique ID for this object. It is an error to call the
-  // default implementation.
-  virtual std::string GetGUID() const;
 
   // Used to determine the type of a field based on the text that a user enters
   // into the field, interpreted in the given |app_locale| if appropriate.  The
@@ -62,19 +51,6 @@ class FormGroup {
                        const base::string16& value,
                        const std::string& app_locale);
 
-  // Set |field_data|'s value based on |field| and contents of |this| (using
-  // data variant |variant|). It is an error to call the default implementation.
-  virtual void FillFormField(const AutofillField& field,
-                             size_t variant,
-                             const std::string& app_locale,
-                             FormFieldData* field_data) const;
-
-  // Fills in select control with data matching |type| from |this|.
-  // Public for testing purposes.
-  void FillSelectControl(AutofillFieldType type,
-                         const std::string& app_locale,
-                         FormFieldData* field_data) const;
-
  protected:
   // AutofillProfile needs to call into GetSupportedTypes() for objects of
   // non-AutofillProfile type, for which mere inheritance is insufficient.
@@ -83,11 +59,6 @@ class FormGroup {
   // Returns a set of AutofillFieldTypes for which this FormGroup can store
   // data.  This method is additive on |supported_types|.
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const = 0;
-
-  // Fills in a select control for a country from data in |this|. Returns true
-  // for success.
-  virtual bool FillCountrySelectControl(const std::string& app_locale,
-                                        FormFieldData* field_data) const;
 };
 
 }  // namespace autofill

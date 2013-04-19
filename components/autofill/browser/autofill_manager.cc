@@ -23,6 +23,7 @@
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
+#include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
@@ -612,15 +613,15 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
                                              const FormFieldData& field,
                                              int unique_id) {
   RenderViewHost* host = NULL;
-  const FormGroup* form_group = NULL;
+  const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
-  // NOTE: GetHost may invalidate |form_group| because it causes the
+  // NOTE: GetHost may invalidate |data_model| because it causes the
   // PersonalDataManager to reload Mac address book entries. Thus it must
   // come before GetProfileOrCreditCard.
   if (!GetHost(&host) ||
-      !GetProfileOrCreditCard(unique_id, &form_group, &variant) ||
+      !GetProfileOrCreditCard(unique_id, &data_model, &variant) ||
       !GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
@@ -636,7 +637,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
-        form_group->FillFormField(
+        data_model->FillFormField(
             *autofill_field, variant, app_locale_, &(*iter));
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
@@ -674,7 +675,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
           field_group_type == initiating_group_type) {
         use_variant = variant;
       }
-      form_group->FillFormField(*cached_field,
+      data_model->FillFormField(*cached_field,
                                 use_variant,
                                 app_locale_,
                                 &result.fields[i]);
@@ -748,9 +749,9 @@ void AutofillManager::OnShowPasswordGenerationPopup(
 }
 
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
-  const FormGroup* form_group = NULL;
+  const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
-  if (!GetProfileOrCreditCard(unique_id, &form_group, &variant)) {
+  if (!GetProfileOrCreditCard(unique_id, &data_model, &variant)) {
     NOTREACHED();
     return;
   }
@@ -761,7 +762,7 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   if (variant != 0)
     return;
 
-  personal_data_->RemoveByGUID(form_group->GetGUID());
+  personal_data_->RemoveByGUID(data_model->guid());
 }
 
 void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
@@ -1065,7 +1066,7 @@ bool AutofillManager::GetHost(RenderViewHost** host) const {
 
 bool AutofillManager::GetProfileOrCreditCard(
     int unique_id,
-    const FormGroup** form_group,
+    const AutofillDataModel** data_model,
     size_t* variant) const {
   // Unpack the |unique_id| into component parts.
   GUIDPair credit_card_guid;
@@ -1078,15 +1079,14 @@ bool AutofillManager::GetProfileOrCreditCard(
   // Otherwise find the credit card that matches the |credit_card_guid|,
   // if specified.
   if (base::IsValidGUID(profile_guid.first)) {
-    *form_group = personal_data_->GetProfileByGUID(profile_guid.first);
+    *data_model = personal_data_->GetProfileByGUID(profile_guid.first);
     *variant = profile_guid.second;
   } else if (base::IsValidGUID(credit_card_guid.first)) {
-    *form_group =
-        personal_data_->GetCreditCardByGUID(credit_card_guid.first);
+    *data_model = personal_data_->GetCreditCardByGUID(credit_card_guid.first);
     *variant = credit_card_guid.second;
   }
 
-  return !!*form_group;
+  return !!*data_model;
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,

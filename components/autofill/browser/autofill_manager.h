@@ -58,6 +58,7 @@ class Message;
 
 namespace autofill {
 
+class AutofillDataModel;
 class AutofillExternalDelegate;
 class AutofillField;
 class AutofillProfile;
@@ -66,7 +67,6 @@ class AutofillManagerTestDelegate;
 class AutofillMetrics;
 class CreditCard;
 class FormStructureBrowserTest;
-class FormGroup;
 class PasswordGenerator;
 
 struct FormData;
@@ -302,7 +302,7 @@ class AutofillManager : public content::WebContentsObserver,
   // appropriate data source and variant index.  Returns false if the unpacked
   // id cannot be found.
   bool GetProfileOrCreditCard(int unique_id,
-                              const FormGroup** form_group,
+                              const AutofillDataModel** data_model,
                               size_t* variant) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| cached element corresponding to |form|.

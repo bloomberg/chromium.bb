@@ -194,20 +194,21 @@ bool ConvertMonth(const base::string16& month,
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid)
-    : type_(kGenericCard),
+    : AutofillDataModel(guid),
+      type_(kGenericCard),
       expiration_month_(0),
-      expiration_year_(0),
-      guid_(guid) {
+      expiration_year_(0) {
 }
 
 CreditCard::CreditCard()
-    : type_(kGenericCard),
+    : AutofillDataModel(base::GenerateGUID()),
+      type_(kGenericCard),
       expiration_month_(0),
-      expiration_year_(0),
-      guid_(base::GenerateGUID()) {
+      expiration_year_(0) {
 }
 
-CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
+CreditCard::CreditCard(const CreditCard& credit_card)
+    : AutofillDataModel(std::string()) {
   operator=(credit_card);
 }
 
@@ -242,10 +243,6 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
   // include a new card.
   DCHECK_EQ(kGenericCard, type);
   return base::string16();
-}
-
-std::string CreditCard::GetGUID() const {
-  return guid();
 }
 
 base::string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
@@ -488,7 +485,8 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   type_ = credit_card.type_;
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
-  guid_ = credit_card.guid_;
+
+  set_guid(credit_card.guid());
 }
 
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
@@ -554,10 +552,7 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
 }
 
 bool CreditCard::operator==(const CreditCard& credit_card) const {
-  if (guid_ != credit_card.guid_)
-    return false;
-
-  return Compare(credit_card) == 0;
+  return guid() == credit_card.guid() && Compare(credit_card) == 0;
 }
 
 bool CreditCard::operator!=(const CreditCard& credit_card) const {

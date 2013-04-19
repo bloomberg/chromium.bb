@@ -5,6 +5,7 @@
 #include "components/autofill/browser/wallet/wallet_address.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_country.h"

@@ -17,9 +17,9 @@ class Image;
 
 namespace autofill {
 
+class AutofillDataModel;
 class AutofillProfile;
 class CreditCard;
-class FormGroup;
 class FormStructure;
 
 namespace wallet {
@@ -67,10 +67,10 @@ class DataModelWrapper {
 };
 
 // A DataModelWrapper for Autofill data.
-class AutofillFormGroupWrapper : public DataModelWrapper {
+class AutofillDataModelWrapper : public DataModelWrapper {
  public:
-  AutofillFormGroupWrapper(const FormGroup* form_group, size_t variant);
-  virtual ~AutofillFormGroupWrapper();
+  AutofillDataModelWrapper(const AutofillDataModel* data_model, size_t variant);
+  virtual ~AutofillDataModelWrapper();
 
   virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
 
@@ -80,14 +80,14 @@ class AutofillFormGroupWrapper : public DataModelWrapper {
   size_t variant() const { return variant_; }
 
  private:
-  const FormGroup* form_group_;
+  const AutofillDataModel* data_model_;
   const size_t variant_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillFormGroupWrapper);
+  DISALLOW_COPY_AND_ASSIGN(AutofillDataModelWrapper);
 };
 
 // A DataModelWrapper for Autofill profiles.
-class AutofillProfileWrapper : public AutofillFormGroupWrapper {
+class AutofillProfileWrapper : public AutofillDataModelWrapper {
  public:
   AutofillProfileWrapper(const AutofillProfile* profile, size_t variant);
   virtual ~AutofillProfileWrapper();
@@ -101,7 +101,7 @@ class AutofillProfileWrapper : public AutofillFormGroupWrapper {
 };
 
 // A DataModelWrapper specifically for Autofill CreditCard data.
-class AutofillCreditCardWrapper : public AutofillFormGroupWrapper {
+class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
  public:
   explicit AutofillCreditCardWrapper(const CreditCard* card);
   virtual ~AutofillCreditCardWrapper();

@@ -4,6 +4,7 @@
 
 #include "components/autofill/browser/webdata/autofill_change.h"
 
+#include "base/logging.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 

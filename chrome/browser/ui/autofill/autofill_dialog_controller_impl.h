@@ -36,7 +36,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 
-class FormGroup;
 class Profile;
 class PrefRegistrySyncable;
 
@@ -46,6 +45,7 @@ class WebContents;
 
 namespace autofill {
 
+class AutofillDataModel;
 class AutofillDialogView;
 class AutofillPopupControllerImpl;
 class DataModelWrapper;
@@ -305,7 +305,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Fills in |form_structure_| using |form_group|. Utility method for
   // FillOutputForSection.
-  void FillFormStructureForSection(const FormGroup& form_group,
+  void FillFormStructureForSection(const AutofillDataModel& data_model,
                                    size_t variant,
                                    DialogSection section,
                                    const InputFieldComparator& compare);

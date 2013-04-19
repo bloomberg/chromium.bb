@@ -9,16 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/browser/form_group.h"
 
 namespace autofill {
 
 struct FormFieldData;
 
 // A form group that stores credit card information.
-class CreditCard : public FormGroup {
+class CreditCard : public AutofillDataModel {
  public:
   explicit CreditCard(const std::string& guid);
 
@@ -33,8 +34,7 @@ class CreditCard : public FormGroup {
   // The user-visible type of the card, e.g. 'Mastercard'.
   static base::string16 TypeForDisplay(const std::string& type);
 
-  // FormGroup implementation:
-  virtual std::string GetGUID() const OVERRIDE;
+  // FormGroup:
   virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
@@ -46,6 +46,8 @@ class CreditCard : public FormGroup {
   virtual bool SetInfo(AutofillFieldType type,
                        const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
+
+  // AutofillDataModel:
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              const std::string& app_locale,
@@ -72,11 +74,6 @@ class CreditCard : public FormGroup {
 
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
-
-  // The guid is the primary identifier for |CreditCard| objects.
-  // TODO(estade): remove this and just use GetGUID().
-  const std::string guid() const { return guid_; }
-  void set_guid(const std::string& guid) { guid_ = guid; }
 
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
@@ -141,9 +138,6 @@ class CreditCard : public FormGroup {
   // These members are zero if not present.
   int expiration_month_;
   int expiration_year_;
-
-  // The guid of this credit card.
-  std::string guid_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

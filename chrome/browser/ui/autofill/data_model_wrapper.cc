@@ -8,10 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
-#include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
@@ -67,21 +67,22 @@ gfx::Image DataModelWrapper::GetIcon() {
   return gfx::Image();
 }
 
-// AutofillFormGroupWrapper
+// AutofillDataModelWrapper
 
-AutofillFormGroupWrapper::AutofillFormGroupWrapper(const FormGroup* form_group,
-                                                   size_t variant)
-    : form_group_(form_group),
+AutofillDataModelWrapper::AutofillDataModelWrapper(
+    const AutofillDataModel* data_model,
+    size_t variant)
+    : data_model_(data_model),
       variant_(variant) {}
 
-AutofillFormGroupWrapper::~AutofillFormGroupWrapper() {}
+AutofillDataModelWrapper::~AutofillDataModelWrapper() {}
 
-string16 AutofillFormGroupWrapper::GetInfo(AutofillFieldType type) {
-  return form_group_->GetInfo(type, g_browser_process->GetApplicationLocale());
+string16 AutofillDataModelWrapper::GetInfo(AutofillFieldType type) {
+  return data_model_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
-void AutofillFormGroupWrapper::FillFormField(AutofillField* field) {
-  form_group_->FillFormField(
+void AutofillDataModelWrapper::FillFormField(AutofillField* field) {
+  data_model_->FillFormField(
       *field, variant_, g_browser_process->GetApplicationLocale(), field);
 }
 
@@ -89,7 +90,7 @@ void AutofillFormGroupWrapper::FillFormField(AutofillField* field) {
 
 AutofillProfileWrapper::AutofillProfileWrapper(
     const AutofillProfile* profile, size_t variant)
-    : AutofillFormGroupWrapper(profile, variant),
+    : AutofillDataModelWrapper(profile, variant),
       profile_(profile) {}
 
 AutofillProfileWrapper::~AutofillProfileWrapper() {}
@@ -106,7 +107,7 @@ void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
 // AutofillCreditCardWrapper
 
 AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
-    : AutofillFormGroupWrapper(card, 0),
+    : AutofillDataModelWrapper(card, 0),
       card_(card) {}
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
@@ -115,7 +116,7 @@ string16 AutofillCreditCardWrapper::GetInfo(AutofillFieldType type) {
   if (type == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 
-  return AutofillFormGroupWrapper::GetInfo(type);
+  return AutofillDataModelWrapper::GetInfo(type);
 }
 
 gfx::Image AutofillCreditCardWrapper::GetIcon() {
@@ -137,7 +138,7 @@ void AutofillCreditCardWrapper::FillFormField(AutofillField* field) {
     field->set_heuristic_type(CREDIT_CARD_NAME);
   }
 
-  AutofillFormGroupWrapper::FillFormField(field);
+  AutofillDataModelWrapper::FillFormField(field);
 
   field->set_heuristic_type(field_type);
 }

@@ -32,7 +32,7 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
     const AutofillProfile& profile) {
   return Java_AutofillProfile_create(
       env,
-      ConvertUTF8ToJavaString(env, profile.GetGUID()).obj(),
+      ConvertUTF8ToJavaString(env, profile.guid()).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(NAME_FULL)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
@@ -112,7 +112,7 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     const CreditCard& card) {
   return Java_CreditCard_create(
       env,
-      ConvertUTF8ToJavaString(env, card.GetGUID()).obj(),
+      ConvertUTF8ToJavaString(env, card.guid()).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME)).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)).obj(),
       ConvertUTF16ToJavaString(env, card.ObfuscatedNumber()).obj(),
@@ -203,7 +203,7 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
     personal_data_manager_->UpdateProfile(profile);
   }
 
-  return ConvertUTF8ToJavaString(env, profile.GetGUID());
+  return ConvertUTF8ToJavaString(env, profile.guid());
 }
 
 
@@ -252,7 +252,7 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     card.set_guid(guid);
     personal_data_manager_->UpdateCreditCard(card);
   }
-  return ConvertUTF8ToJavaString(env, card.GetGUID());
+  return ConvertUTF8ToJavaString(env, card.guid());
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,

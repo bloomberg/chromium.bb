@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
@@ -827,7 +828,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
   }
 
   // Calculate the variant by looking at how many items come from the same
-  // FormGroup.
+  // data model.
   size_t variant = 0;
   for (int i = model->checked_item() - 1; i >= 0; --i) {
     if (model->GetItemKeyAt(i) == item_key)
@@ -1829,7 +1830,7 @@ void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
 }
 
 void AutofillDialogControllerImpl::FillFormStructureForSection(
-    const FormGroup& form_group,
+    const AutofillDataModel& data_model,
     size_t variant,
     DialogSection section,
     const InputFieldComparator& compare) {
@@ -1840,7 +1841,7 @@ void AutofillDialogControllerImpl::FillFormStructureForSection(
     const DetailInputs& inputs = RequestedFieldsForSection(section);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
-        form_group.FillFormField(*field, variant, app_locale, field);
+        data_model.FillFormField(*field, variant, app_locale, field);
         break;
       }
     }

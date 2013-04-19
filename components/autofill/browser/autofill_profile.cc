@@ -223,21 +223,21 @@ struct CaseInsensitiveStringEquals
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid)
-    : guid_(guid),
+    : AutofillDataModel(guid),
       name_(1),
       email_(1),
       home_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile()
-    : guid_(base::GenerateGUID()),
+    : AutofillDataModel(base::GenerateGUID()),
       name_(1),
       email_(1),
       home_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : FormGroup() {
+    : AutofillDataModel(std::string()) {
   operator=(profile);
 }
 
@@ -248,9 +248,9 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   if (this == &profile)
     return *this;
 
-  label_ = profile.label_;
-  guid_ = profile.guid_;
+  set_guid(profile.guid());
 
+  label_ = profile.label_;
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
@@ -262,10 +262,6 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   address_ = profile.address_;
 
   return *this;
-}
-
-std::string AutofillProfile::GetGUID() const {
-  return guid();
 }
 
 void AutofillProfile::GetMatchingTypes(const base::string16& text,
@@ -458,7 +454,7 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
 }
 
 bool AutofillProfile::operator==(const AutofillProfile& profile) const {
-  return guid_ == profile.guid_ && Compare(profile) == 0;
+  return guid() == profile.guid() && Compare(profile) == 0;
 }
 
 bool AutofillProfile::operator!=(const AutofillProfile& profile) const {

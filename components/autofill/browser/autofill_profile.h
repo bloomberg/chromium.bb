@@ -12,12 +12,13 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "components/autofill/browser/address.h"
+#include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/contact_info.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/browser/form_group.h"
 #include "components/autofill/browser/phone_number.h"
 
 namespace autofill {
@@ -28,7 +29,7 @@ struct FormFieldData;
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request
 // to the requested form group type.
-class AutofillProfile : public FormGroup {
+class AutofillProfile : public AutofillDataModel {
  public:
   explicit AutofillProfile(const std::string& guid);
 
@@ -40,7 +41,6 @@ class AutofillProfile : public FormGroup {
   AutofillProfile& operator=(const AutofillProfile& profile);
 
   // FormGroup:
-  virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
@@ -52,6 +52,8 @@ class AutofillProfile : public FormGroup {
   virtual bool SetInfo(AutofillFieldType type,
                        const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
+
+  // AutofillDataModel:
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              const std::string& app_locale,
@@ -79,12 +81,6 @@ class AutofillProfile : public FormGroup {
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
   const base::string16 Label() const;
-
-  // This guid is the primary identifier for |AutofillProfile| objects.
-  // TODO(estade): remove this and just use GetGUID(). |guid_| can probably
-  // be moved to FormGroup.
-  const std::string guid() const { return guid_; }
-  void set_guid(const std::string& guid) { guid_ = guid; }
 
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
@@ -197,9 +193,6 @@ class AutofillProfile : public FormGroup {
 
   // The label presented to the user when selecting a profile.
   base::string16 label_;
-
-  // The guid of this profile.
-  std::string guid_;
 
   // Personal information for this profile.
   std::vector<NameInfo> name_;

@@ -145,6 +145,8 @@
             'autofill/browser/autofill-inl.h',
             'autofill/browser/autofill_country.cc',
             'autofill/browser/autofill_country.h',
+            'autofill/browser/autofill_data_model.cc',
+            'autofill/browser/autofill_data_model.h',
             'autofill/browser/autofill_download.cc',
             'autofill/browser/autofill_download.h',
             'autofill/browser/autofill_download_url.cc',
