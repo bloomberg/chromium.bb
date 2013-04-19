@@ -56,6 +56,9 @@
             'includes': ['../../build/android/write_ordered_libraries.gypi'],
           },
           {
+            'variables': {
+              'input_paths': ['<(native_binary)'],
+            },
             'includes': ['../../build/android/strip_native_libraries.gypi'],
           },
         ],

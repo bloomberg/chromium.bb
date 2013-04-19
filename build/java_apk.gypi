@@ -193,6 +193,7 @@
         {
           'variables': {
             'stripped_libraries_dir': '<(libraries_source_dir)',
+            'input_paths': ['<@(native_libs_paths)'],
           },
           'includes': ['../build/android/strip_native_libraries.gypi'],
         },
