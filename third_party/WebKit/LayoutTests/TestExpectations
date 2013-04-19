@@ -863,8 +863,7 @@ crbug.com/10361 [ Win ] http/tests/misc/single-character-pi-stylesheet.xhtml [ F
 # Windows is missing the green box. Started to pass in roll to WebKit r50313
 crbug.com/8729 [ Win ] http/tests/multipart/invalid-image-data.html [ Failure ]
 
-webkit.org/b/110138 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
-webkit.org/b/110138 virtual/softwarecompositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
+webkit.org/b/110138 [ XP ] compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
 
 # Newly introduced Reftest fails on Chrome/Mac
 webkit.org/b/110203 [ MountainLion ] fast/multicol/seamless-flowed-through-columns.html [ ImageOnlyFailure ]
@@ -2925,7 +2924,7 @@ crbug.com/225184 fast/events/scale-and-scroll-body.html [ Failure ]
 crbug.com/225184 fast/events/scroll-in-scaled-page-with-overflow-hidden.html [ Failure ]
 crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure ]
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
-crbug.com/225184 svg/as-image/image-respects-pageScaleFactor.html [ Failure ImageOnlyFailure ]
+crbug.com/225184 svg/as-image/image-respects-pageScaleFactor.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/225184 [ Mac ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
@@ -3064,16 +3063,16 @@ crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailur
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
 # Failing tests after r148246
-crbug.com/230771 editing/pasteboard/drop-file-svg.html [ Failure ]
-crbug.com/230771 editing/pasteboard/file-drag-to-editable.html [ Failure ]
-crbug.com/230771 editing/pasteboard/file-input-files-access.html [ Failure ]
-crbug.com/230771 fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
-crbug.com/230771 fast/forms/file/file-input-change-event.html [ Failure ]
-crbug.com/230771 fast/forms/file/input-file-value.html [ Failure ]
-crbug.com/230771 fast/forms/file/input-file-write-files.html [ Failure ]
-crbug.com/230771 fast/forms/file/selected-files-from-history-state.html [ Failure ]
-crbug.com/230771 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
-crbug.com/230771 fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
+crbug.com/230771 [ Linux Mac ] editing/pasteboard/drop-file-svg.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] editing/pasteboard/file-input-files-access.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-change-event.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/forms/file/input-file-value.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/forms/file/input-file-write-files.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
