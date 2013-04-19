@@ -57,4 +57,33 @@ crbug.com/225398 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailur
 # in how Skia draws circles (Skia r8613)
 crbug.com/230821 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
+# Skia CLs r8742 and r8743 fixed a bug with texture rendering (when the scale was
+# close to 1).
+crbug.com/233548 scrollbars/listbox-scrollbar-combinations.html [ ImageOnlyFailure ]
+crbug.com/233548 scrollbars/overflow-scrollbar-combinations.html [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirLTR-anchorEnd.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirLTR-anchorStart.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirNone-anchorEnd.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirNone-anchorMiddle.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirNone-anchorStart.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirRTL-anchorEnd.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-dirRTL-anchorStart.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/W3C-I18N/text-anchor-no-markup.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/as-image/image-preserveAspectRatio-all.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/custom/image-small-width-height.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/custom/pointer-events-image-css-transform.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/custom/pointer-events-image.svg [ ImageOnlyFailure ]
+crbug.com/233548 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFailure ]
+crbug.com/233548 virtual/gpu/compositedscrolling/scrollbars/listbox-scrollbar-combinations.html [ ImageOnlyFailure ]
+crbug.com/233548 virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
