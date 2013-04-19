@@ -96,6 +96,9 @@ namespace internals {
 #if defined(OS_WIN)
 bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       const gfx::ImageFamily& image);
+
+std::vector<base::FilePath> GetShortcutPaths(
+    const ShellIntegration::ShortcutLocations& creation_locations);
 #endif
 
 // Implemented for each platform, does the platform specific parts of creating

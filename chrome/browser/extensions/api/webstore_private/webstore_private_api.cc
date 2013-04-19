@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
 #include "apps/app_launcher.h"
-#include "apps/switches.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -127,18 +126,9 @@ WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
 
 void EnableAppLauncher(base::Callback<void(bool)> callback) {
 #if defined(OS_WIN)
-  if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
-    LOG(INFO) << "Enabling App Launcher via installation";
-    extensions::AppHostInstaller::SetInstallWithLauncher(true);
-    extensions::AppHostInstaller::EnsureAppHostInstalled(callback);
-  } else {
-    LOG(INFO) << "Enabling App Launcher via flags";
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      apps::switches::kShowAppListShortcut,
-                                      true);
-    AppListService::Get()->EnableAppList();
-    callback.Run(true);
-  }
+  LOG(INFO) << "Enabling App Launcher via internal enable";
+  AppListService::Get()->EnableAppList();
+  callback.Run(true);
 #else
   callback.Run(true);
 #endif

@@ -23,6 +23,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 #if defined(OS_WIN)
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
+  registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
 #endif
 
   // Identifies whether we should show the app launcher promo or not.

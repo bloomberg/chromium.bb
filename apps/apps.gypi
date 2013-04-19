@@ -44,8 +44,6 @@
         'shortcut_manager.h',
         'shortcut_manager_factory.cc',
         'shortcut_manager_factory.h',
-        'switches.cc',
-        'switches.h',
       ],
       'conditions': [
         ['enable_extensions==0',

@@ -5,7 +5,6 @@
 #include "apps/app_launcher.h"
 
 #include "apps/pref_names.h"
-#include "apps/switches.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -35,40 +34,18 @@ AppLauncherState SynchronousAppLauncherChecks() {
 #elif !defined(OS_WIN)
   return APP_LAUNCHER_DISABLED;
 #else
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAppListShortcut)) {
-    return APP_LAUNCHER_ENABLED;
-  }
-
 #if defined(USE_ASH)
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
     return APP_LAUNCHER_ENABLED;
 #endif
-
-  if (!BrowserDistribution::GetDistribution()->AppHostIsSupported())
-    return APP_LAUNCHER_DISABLED;
-
-  return APP_LAUNCHER_UNKNOWN;
-#endif
-}
-
-#if defined(OS_WIN)
-void UpdatePrefAndCallCallbackOnUI(
-    bool result,
-    const OnAppLauncherEnabledCompleted& completion_callback) {
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kAppLauncherIsEnabled, result);
-  completion_callback.Run(result);
-}
-
-void IsAppLauncherInstalledOnBlockingPool(
-    const OnAppLauncherEnabledCompleted& completion_callback) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  bool result = chrome_launcher_support::IsAppLauncherPresent();
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(UpdatePrefAndCallCallbackOnUI, result, completion_callback));
-}
+  // In some tests, the prefs aren't initialised.
+  if (!prefs)
+    return APP_LAUNCHER_UNKNOWN;
+  return prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled) ?
+      APP_LAUNCHER_ENABLED : APP_LAUNCHER_DISABLED;
 #endif
+}
 
 }  // namespace
 
@@ -83,31 +60,14 @@ void GetIsAppLauncherEnabled(
   AppLauncherState state = SynchronousAppLauncherChecks();
 
   if (state != APP_LAUNCHER_UNKNOWN) {
-    bool is_enabled = state == APP_LAUNCHER_ENABLED;
-    PrefService* prefs = g_browser_process->local_state();
-    prefs->SetBoolean(prefs::kAppLauncherIsEnabled, is_enabled);
-    completion_callback.Run(is_enabled);
+    completion_callback.Run(state == APP_LAUNCHER_ENABLED);
     return;
   }
-
-#if defined(OS_WIN)
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&IsAppLauncherInstalledOnBlockingPool,
-                 completion_callback));
-#else
-  // SynchronousAppLauncherChecks() never returns APP_LAUNCHER_UNKNOWN on
-  // !defined(OS_WIN), so this path is never reached.
   NOTREACHED();
-#endif
 }
 
 bool WasAppLauncherEnabled() {
-  PrefService* prefs = g_browser_process->local_state();
-  // In some tests, the prefs aren't initialised.
-  if (!prefs)
-    return SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
-  return prefs->GetBoolean(prefs::kAppLauncherIsEnabled);
+  return SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
 }
 
 }  // namespace apps

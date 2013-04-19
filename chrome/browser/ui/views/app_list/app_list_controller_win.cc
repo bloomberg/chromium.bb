@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include "apps/switches.h"
+#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -127,6 +128,74 @@ void SetDidRunForNDayActiveStats() {
         dist,
         true /* did_run */,
         launcher_state == chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL);
+  }
+}
+
+// The start menu shortcut is created on first run by users that are
+// upgrading. The desktop and taskbar shortcuts are created the first time the
+// user enables the app list. The taskbar shortcut is created in
+// |user_data_dir| and will use a Windows Application Model Id of
+// |app_model_id|. This runs on the FILE thread and not in the blocking IO
+// thread pool as there are other tasks running (also on the FILE thread)
+// which fiddle with shortcut icons
+// (ShellIntegration::MigrateWin7ShortcutsOnPath). Having different threads
+// fiddle with the same shortcuts could cause race issues.
+void CreateAppListShortcuts(
+    const base::FilePath& user_data_dir,
+    const string16& app_model_id,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  // Shortcut paths under which to create shortcuts.
+  std::vector<base::FilePath> shortcut_paths =
+      web_app::internals::GetShortcutPaths(creation_locations);
+
+  bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
+                        (base::win::GetVersion() >= base::win::VERSION_WIN7);
+
+  // Create a shortcut in the |user_data_dir| for taskbar pinning.
+  if (pin_to_taskbar)
+    shortcut_paths.push_back(user_data_dir);
+  bool success = true;
+
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+
+  string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
+
+  base::win::ShortcutProperties shortcut_properties;
+  shortcut_properties.set_target(chrome_exe);
+  shortcut_properties.set_working_dir(chrome_exe.DirName());
+  shortcut_properties.set_arguments(wide_switches);
+  shortcut_properties.set_description(
+      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
+  shortcut_properties.set_icon(chrome_exe, kAppListIconIndex);
+  shortcut_properties.set_app_id(app_model_id);
+
+  const string16 file_name =
+      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME);
+
+  for (size_t i = 0; i < shortcut_paths.size(); ++i) {
+    base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
+        AddExtension(installer::kLnkExt);
+    if (!file_util::PathExists(shortcut_file.DirName()) &&
+        !file_util::CreateDirectory(shortcut_file.DirName())) {
+      NOTREACHED();
+      return;
+    }
+    success = success && base::win::CreateOrUpdateShortcutLink(
+        shortcut_file, shortcut_properties,
+        base::win::SHORTCUT_CREATE_ALWAYS);
+  }
+
+  if (success && pin_to_taskbar) {
+    base::FilePath shortcut_to_pin = user_data_dir.Append(file_name).
+        AddExtension(installer::kLnkExt);
+    success = base::win::TaskbarPinShortcutLink(
+        shortcut_to_pin.value().c_str()) && success;
   }
 }
 
@@ -839,78 +908,6 @@ void AppListController::FreeAnyKeepAliveForView() {
     keep_alive_.reset(NULL);
 }
 
-base::FilePath GetAppListTaskbarShortcutPath(
-    const base::FilePath& user_data_dir) {
-  const string16 shortcut_name = l10n_util::GetStringUTF16(
-      IDS_APP_LIST_SHORTCUT_NAME);
-  return user_data_dir.Append(shortcut_name).AddExtension(installer::kLnkExt);
-}
-
-void CreateAppListTaskbarShortcutOnFileThread(
-    const base::FilePath& user_data_dir,
-    const string16& app_model_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::win::ShortcutProperties shortcut_properties;
-  shortcut_properties.set_target(chrome_exe);
-  shortcut_properties.set_working_dir(chrome_exe.DirName());
-
-  string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
-  shortcut_properties.set_arguments(wide_switches);
-  shortcut_properties.set_description(l10n_util::GetStringUTF16(
-      IDS_APP_LIST_SHORTCUT_NAME));
-
-  shortcut_properties.set_icon(chrome_exe, kAppListIconIndex);
-  shortcut_properties.set_app_id(app_model_id);
-
-  const base::FilePath shortcut_path(
-      GetAppListTaskbarShortcutPath(user_data_dir));
-  base::win::CreateOrUpdateShortcutLink(shortcut_path, shortcut_properties,
-                                        base::win::SHORTCUT_CREATE_ALWAYS);
-
-  if (!base::win::TaskbarPinShortcutLink(shortcut_path.value().c_str()))
-    LOG(WARNING) << "Failed to pin AppList using " << shortcut_path.value();
-}
-
-// Check that a taskbar shortcut exists if it should, or does not exist if
-// it should not. A taskbar shortcut should exist if the switch
-// kShowAppListShortcut is set. The shortcut will be created or deleted in
-// |user_data_dir| and will use a Windows Application Model Id of
-// |app_model_id|.
-// This runs on the FILE thread and not in the blocking IO thread pool as there
-// are other tasks running (also on the FILE thread) which fiddle with shortcut
-// icons (ShellIntegration::MigrateWin7ShortcutsOnPath). Having different
-// threads fiddle with the same shortcuts could cause race issues.
-void CheckAppListTaskbarShortcutOnFileThread(
-    const base::FilePath& user_data_dir,
-    const string16& app_model_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  const base::FilePath shortcut_path(
-      GetAppListTaskbarShortcutPath(user_data_dir));
-  const bool should_show =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          apps::switches::kShowAppListShortcut);
-
-  // This will not reshow a shortcut if it has been unpinned manually by the
-  // user, as that will not delete the shortcut file.
-  if (should_show && !file_util::PathExists(shortcut_path)) {
-    CreateAppListTaskbarShortcutOnFileThread(user_data_dir, app_model_id);
-    return;
-  }
-
-  if (!should_show && file_util::PathExists(shortcut_path)) {
-    base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str());
-    file_util::Delete(shortcut_path, false);
-  }
-}
-
 void InitView(Profile* profile) {
   if (!g_browser_process || g_browser_process->IsShuttingDown())
     return;
@@ -929,22 +926,6 @@ void AppListController::Init(Profile* initial_profile) {
     prefs->SetBoolean(prefs::kRestartWithAppList, false);
     AppListController::GetInstance()->
         ShowAppListDuringModeSwitch(initial_profile);
-  }
-
-  // Check that the app list shortcut matches the flag kShowAppListShortcut.
-  // This will either create or delete a shortcut file in the user data
-  // directory.
-  // TODO(benwells): Remove this and the flag once the app list installation
-  // is implemented.
-  static bool checked_shortcut = false;
-  if (!checked_shortcut) {
-    checked_shortcut = true;
-    base::FilePath user_data_dir(
-        g_browser_process->profile_manager()->user_data_dir());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CheckAppListTaskbarShortcutOnFileThread, user_data_dir,
-                   GetAppModelId()));
   }
 
   // Instantiate AppListController so it listens for profile deletions.
@@ -968,12 +949,31 @@ bool AppListController::IsAppListVisible() const {
 }
 
 void AppListController::EnableAppList() {
-  base::FilePath user_data_dir(
-      g_browser_process->profile_manager()->user_data_dir());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateAppListTaskbarShortcutOnFileThread, user_data_dir,
-                 GetAppModelId()));
+  // Check if the app launcher shortcuts have ever been created before.
+  // Shortcuts should only be created once. If the user unpins the taskbar
+  // shortcut, they can restore it by pinning the start menu or desktop
+  // shortcut.
+  PrefService* local_state = g_browser_process->local_state();
+  bool has_been_enabled = local_state->GetBoolean(
+      apps::prefs::kAppLauncherHasBeenEnabled);
+  if (!has_been_enabled) {
+    local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
+                            true);
+    ShellIntegration::ShortcutLocations shortcut_locations;
+    shortcut_locations.on_desktop = true;
+    shortcut_locations.in_quick_launch_bar = true;
+    shortcut_locations.in_applications_menu = true;
+    shortcut_locations.applications_menu_subdir =
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    base::FilePath user_data_dir(
+        g_browser_process->profile_manager()->user_data_dir());
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&CreateAppListShortcuts,
+                   user_data_dir, GetAppModelId(), shortcut_locations));
+  }
 }
 
 }  // namespace

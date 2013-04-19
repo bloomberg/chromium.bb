@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -78,59 +79,6 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file, const SkBitmap& image) {
   // Update icon if checksums are not equal.
   return memcmp(&persisted_image_checksum, &downloaded_image_checksum,
                 sizeof(base::MD5Digest)) != 0;
-}
-
-std::vector<base::FilePath> GetShortcutPaths(
-    const ShellIntegration::ShortcutLocations& creation_locations) {
-  // Shortcut paths under which to create shortcuts.
-  std::vector<base::FilePath> shortcut_paths;
-
-  // Locations to add to shortcut_paths.
-  struct {
-    bool use_this_location;
-    int location_id;
-    const wchar_t* sub_dir;
-  } locations[] = {
-    {
-      creation_locations.on_desktop,
-      base::DIR_USER_DESKTOP,
-      NULL
-    }, {
-      creation_locations.in_applications_menu,
-      base::DIR_START_MENU,
-      NULL
-    }, {
-      creation_locations.in_quick_launch_bar,
-      // For Win7, create_in_quick_launch_bar means pinning to taskbar. Use
-      // base::PATH_START as a flag for this case.
-      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-          base::PATH_START : base::DIR_APP_DATA,
-      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-          NULL : L"Microsoft\\Internet Explorer\\Quick Launch"
-    }
-  };
-
-  // Populate shortcut_paths.
-  for (int i = 0; i < arraysize(locations); ++i) {
-    if (locations[i].use_this_location) {
-      base::FilePath path;
-
-      // Skip the Win7 case.
-      if (locations[i].location_id == base::PATH_START)
-        continue;
-
-      if (!PathService::Get(locations[i].location_id, &path)) {
-        continue;
-      }
-
-      if (locations[i].sub_dir != NULL)
-        path = path.Append(locations[i].sub_dir);
-
-      shortcut_paths.push_back(path);
-    }
-  }
-
-  return shortcut_paths;
 }
 
 bool ShortcutIsForProfile(const base::FilePath& shortcut_file_name,
@@ -281,7 +229,7 @@ bool CreatePlatformShortcuts(
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
-        AddExtension(FILE_PATH_LITERAL(".lnk"));
+        AddExtension(installer::kLnkExt);
     if (shortcut_paths[i] != web_app_path) {
       int unique_number =
           file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
@@ -310,7 +258,7 @@ bool CreatePlatformShortcuts(
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
-        AddExtension(FILE_PATH_LITERAL(".lnk"));
+        AddExtension(installer::kLnkExt);
     success = base::win::TaskbarPinShortcutLink(
         shortcut_to_pin.value().c_str()) && success;
   }
@@ -362,6 +310,56 @@ void DeletePlatformShortcuts(
       file_util::Delete(*j, false);
     }
   }
+}
+
+std::vector<base::FilePath> GetShortcutPaths(
+    const ShellIntegration::ShortcutLocations& creation_locations) {
+  // Shortcut paths under which to create shortcuts.
+  std::vector<base::FilePath> shortcut_paths;
+  // Locations to add to shortcut_paths.
+  struct {
+    bool use_this_location;
+    int location_id;
+    const wchar_t* subdir;
+  } locations[] = {
+    {
+      creation_locations.on_desktop,
+      base::DIR_USER_DESKTOP,
+      NULL
+    }, {
+      creation_locations.in_applications_menu,
+      base::DIR_START_MENU,
+      creation_locations.applications_menu_subdir.empty() ? NULL :
+          creation_locations.applications_menu_subdir.c_str()
+    }, {
+      creation_locations.in_quick_launch_bar,
+      // For Win7, in_quick_launch_bar means pinning to taskbar. Use
+      // base::PATH_START as a flag for this case.
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
+          base::PATH_START : base::DIR_APP_DATA,
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
+          NULL : L"Microsoft\\Internet Explorer\\Quick Launch"
+    }
+  };
+  // Populate shortcut_paths.
+  for (int i = 0; i < arraysize(locations); ++i) {
+    if (locations[i].use_this_location) {
+      base::FilePath path;
+
+      // Skip the Win7 case.
+      if (locations[i].location_id == base::PATH_START)
+        continue;
+
+      if (!PathService::Get(locations[i].location_id, &path)) {
+        continue;
+      }
+
+      if (locations[i].subdir != NULL)
+        path = path.Append(locations[i].subdir);
+      shortcut_paths.push_back(path);
+    }
+  }
+  return shortcut_paths;
 }
 
 }  // namespace internals

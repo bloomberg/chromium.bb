@@ -111,6 +111,7 @@ class ShellIntegration {
 
     bool on_desktop;
     bool in_applications_menu;
+    string16 applications_menu_subdir;
 
     // For Windows, this refers to quick launch bar prior to Win7. In Win7,
     // this means "pin to taskbar". For Mac/Linux, this could be used for
