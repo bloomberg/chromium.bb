@@ -23,6 +23,16 @@ namespace util {
 // See also: https://developers.google.com/drive/search-parameters
 std::string EscapeQueryStringValue(const std::string& str);
 
+// Parses the query, and builds a search query for Drive API v2.
+// This only supports:
+//   Regular query (e.g. dog => fullText contains 'dog')
+//   Conjunctions
+//     (e.g. dog cat => fullText contains 'dog' and fullText contains 'cat')
+//   Exclusion query (e.g. -cat => not fullText contains 'cat').
+//   Quoted query (e.g. "dog cat" => fullText contains 'dog cat').
+// See also: https://developers.google.com/drive/search-parameters
+std::string TranslateQuery(const std::string& original_query);
+
 }  // namespace util
 }  // namespace drive
 }  // namespace google_apis

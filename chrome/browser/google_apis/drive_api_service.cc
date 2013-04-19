@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -336,7 +335,7 @@ void DriveAPIService::Search(const std::string& search_query,
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          search_query,
+          drive::util::TranslateQuery(search_query),
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
