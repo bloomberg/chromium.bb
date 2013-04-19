@@ -1066,9 +1066,10 @@ void GLES2TraceImplementation::TexImageIOSurface2DCHROMIUM(
 
 void GLES2TraceImplementation::CopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat) {
+    GLint internalformat, GLenum dest_type) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CopyTextureCHROMIUM");
-  gl_->CopyTextureCHROMIUM(target, source_id, dest_id, level, internalformat);
+  gl_->CopyTextureCHROMIUM(
+      target, source_id, dest_id, level, internalformat, dest_type);
 }
 
 void GLES2TraceImplementation::DrawArraysInstancedANGLE(

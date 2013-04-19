@@ -1731,8 +1731,16 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivARB, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivARB,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
+// TODO(jun.a.jiang@intel.com): once all clients switch to call
+// the newer copyTextureCHROMIUM(...) with six parameters, this
+// function will be removed.
 void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
     WGC3Denum, WGC3Duint, WGC3Duint, WGC3Dint, WGC3Denum) {
+  NOTIMPLEMENTED();
+}
+
+void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
+    WGC3Denum, WGC3Duint, WGC3Duint, WGC3Dint, WGC3Denum, WGC3Denum) {
   NOTIMPLEMENTED();
 }
 

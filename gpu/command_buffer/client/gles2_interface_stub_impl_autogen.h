@@ -579,7 +579,7 @@ void GLES2InterfaceStub::TexImageIOSurface2DCHROMIUM(
 }
 void GLES2InterfaceStub::CopyTextureCHROMIUM(
     GLenum /* target */, GLenum /* source_id */, GLenum /* dest_id */,
-    GLint /* level */, GLint /* internalformat */) {
+    GLint /* level */, GLint /* internalformat */, GLenum /* dest_type */) {
 }
 void GLES2InterfaceStub::DrawArraysInstancedANGLE(
     GLenum /* mode */, GLint /* first */, GLsizei /* count */,

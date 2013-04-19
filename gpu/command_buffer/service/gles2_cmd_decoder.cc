@@ -911,7 +911,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLuint source_id,
       GLuint target_id,
       GLint level,
-      GLenum internal_format);
+      GLenum internal_format,
+      GLenum dest_type);
 
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
@@ -9618,7 +9619,7 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
 
 void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLenum target, GLuint source_id, GLuint dest_id, GLint level,
-    GLenum internal_format) {
+    GLenum internal_format, GLenum dest_type) {
   Texture* dest_texture = GetTexture(dest_id);
   Texture* source_texture = GetTexture(source_id);
 
@@ -9684,18 +9685,14 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       return;
   }
 
-  GLenum dest_type;
+  GLenum dest_type_previous;
   GLenum dest_internal_format;
   bool dest_level_defined = dest_texture->GetLevelSize(
       GL_TEXTURE_2D, level, &dest_width, &dest_height);
 
   if (dest_level_defined) {
-    dest_texture->GetLevelType(GL_TEXTURE_2D, level, &dest_type,
+    dest_texture->GetLevelType(GL_TEXTURE_2D, level, &dest_type_previous,
                                &dest_internal_format);
-  } else {
-    GLenum source_internal_format;
-    source_texture->GetLevelType(GL_TEXTURE_2D, 0, &dest_type,
-                                 &source_internal_format);
   }
 
   // Set source texture's width and height to be the same as
@@ -9708,7 +9705,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   // Resize the destination texture to the dimensions of the source texture.
   if (!dest_level_defined || dest_width != source_width ||
       dest_height != source_height ||
-      dest_internal_format != internal_format) {
+      dest_internal_format != internal_format ||
+      dest_type_previous != dest_type) {
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTextureCHROMIUM");
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());

@@ -655,9 +655,9 @@ void GLES2TexImageIOSurface2DCHROMIUM(
 }
 void GLES2CopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat) {
+    GLint internalformat, GLenum dest_type) {
   gles2::GetGLContext()->CopyTextureCHROMIUM(
-      target, source_id, dest_id, level, internalformat);
+      target, source_id, dest_id, level, internalformat, dest_type);
 }
 void GLES2DrawArraysInstancedANGLE(
     GLenum mode, GLint first, GLsizei count, GLsizei primcount) {

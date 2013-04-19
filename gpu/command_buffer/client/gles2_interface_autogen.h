@@ -277,7 +277,7 @@ virtual void TexImageIOSurface2DCHROMIUM(
     GLuint plane) = 0;
 virtual void CopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat) = 0;
+    GLint internalformat, GLenum dest_type) = 0;
 virtual void DrawArraysInstancedANGLE(
     GLenum mode, GLint first, GLsizei count, GLsizei primcount) = 0;
 virtual void DrawElementsInstancedANGLE(

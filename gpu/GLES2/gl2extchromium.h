@@ -326,11 +326,11 @@ typedef void (GL_APIENTRYP PFNGLBINDUNIFORMLOCATIONCHROMIUMPROC) (
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY glCopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat);
+    GLint internalformat, GLenum dest_type);
 #endif
 typedef void (GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC) (
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat);
+    GLint internalformat, GLenum dest_type);
 #endif  /* GL_CHROMIUM_copy_texture */
 
 /* GL_CHROMIUM_lose_context */

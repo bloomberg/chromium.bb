@@ -306,7 +306,7 @@ virtual void TexImageIOSurface2DCHROMIUM(
     GLuint plane) OVERRIDE;
 virtual void CopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat) OVERRIDE;
+    GLint internalformat, GLenum dest_type) OVERRIDE;
 virtual void DrawArraysInstancedANGLE(
     GLenum mode, GLint first, GLsizei count, GLsizei primcount) OVERRIDE;
 virtual void DrawElementsInstancedANGLE(

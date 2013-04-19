@@ -1630,11 +1630,11 @@ void GLES2Implementation::TexImageIOSurface2DCHROMIUM(
 
 void GLES2Implementation::CopyTextureCHROMIUM(
     GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-    GLint internalformat) {
+    GLint internalformat, GLenum dest_type) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopyTextureCHROMIUM(" << GLES2Util::GetStringEnum(target) << ", " << GLES2Util::GetStringEnum(source_id) << ", " << GLES2Util::GetStringEnum(dest_id) << ", " << level << ", " << internalformat << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopyTextureCHROMIUM(" << GLES2Util::GetStringEnum(target) << ", " << GLES2Util::GetStringEnum(source_id) << ", " << GLES2Util::GetStringEnum(dest_id) << ", " << level << ", " << internalformat << ", " << GLES2Util::GetStringPixelType(dest_type) << ")");  // NOLINT
   helper_->CopyTextureCHROMIUM(
-      target, source_id, dest_id, level, internalformat);
+      target, source_id, dest_id, level, internalformat, dest_type);
   CheckGLError();
 }
 

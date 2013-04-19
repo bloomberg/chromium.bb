@@ -1866,11 +1866,11 @@
 
   void CopyTextureCHROMIUM(
       GLenum target, GLenum source_id, GLenum dest_id, GLint level,
-      GLint internalformat) {
+      GLint internalformat, GLenum dest_type) {
     gles2::cmds::CopyTextureCHROMIUM* c =
         GetCmdSpace<gles2::cmds::CopyTextureCHROMIUM>();
     if (c) {
-      c->Init(target, source_id, dest_id, level, internalformat);
+      c->Init(target, source_id, dest_id, level, internalformat, dest_type);
     }
   }
 

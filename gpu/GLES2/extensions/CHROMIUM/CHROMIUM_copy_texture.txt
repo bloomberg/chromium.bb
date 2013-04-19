@@ -38,16 +38,19 @@ New Procedures and Functions
 
     void glCopyTextureCHROMIUM (GLenum target, GLenum source_id,
                                 GLenum dest_id, GLint level,
-                                GLint internal_format)
+                                GLint internal_format, GLenum dest_type)
 
     Copies the contents of texture referred to by <source_id> to texture
     <dest_id>.
 
     Texture level 0 is copied from the source image to level <level> of the
-    destination texture.
+    destination texture. The level parameter must be 0 at present.
 
     The internal format of the destination texture is converted to that
-    specified by <internal_format>
+    specified by <internal_format>.
+
+    The format type of the destination texture is converted to that specified
+    by <dest_type>.
 
     <target> uses the same parameters as TexImage2D.
 
@@ -80,3 +83,4 @@ New State
 Revision History
 
     8/1/2011    Documented the extension
+    7/4/2013    Add a new parameter dest_type to glCopyTextureCHROMIUM()

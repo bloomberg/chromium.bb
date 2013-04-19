@@ -3883,7 +3883,8 @@ TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
       static_cast<GLenum>(12),
       static_cast<GLenum>(13),
       static_cast<GLint>(14),
-      static_cast<GLint>(15));
+      static_cast<GLint>(15),
+      static_cast<GLenum>(16));
   EXPECT_EQ(static_cast<uint32>(cmds::CopyTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -3892,6 +3893,7 @@ TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
   EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_id);
   EXPECT_EQ(static_cast<GLint>(14), cmd.level);
   EXPECT_EQ(static_cast<GLint>(15), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLenum>(16), cmd.dest_type);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }
