@@ -1,11 +1,16 @@
+#-------------------------------------------------------------------------------
+# elftools tests
+#
+# Eli Bendersky (eliben@gmail.com)
+# This code is in the public domain
+#-------------------------------------------------------------------------------
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
-import sys
 from random import randint
 
-sys.path.extend(['.', '..'])
+from utils import setup_syspath; setup_syspath()
 from elftools.common.py3compat import int2byte, BytesIO
 from elftools.common.utils import (parse_cstring_from_stream,
         preserve_stream_pos)
@@ -14,7 +19,7 @@ from elftools.common.utils import (parse_cstring_from_stream,
 class Test_parse_cstring_from_stream(unittest.TestCase):
     def _make_random_bytes(self, n):
         return b''.join(int2byte(randint(32, 127)) for i in range(n))
-        
+
     def test_small1(self):
         sio = BytesIO(b'abcdefgh\x0012345')
         self.assertEqual(parse_cstring_from_stream(sio), b'abcdefgh')

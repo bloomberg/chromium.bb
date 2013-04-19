@@ -12,24 +12,27 @@ from .sections import Section
 from .segments import Segment
 from ..common.utils import struct_parse
 
-from enums import ENUM_D_TAG
+from .enums import ENUM_D_TAG
 
 
 class DynamicTag(object):
     """ Dynamic Tag object - representing a single dynamic tag entry from a
         dynamic section.
 
-        Similarly to Section objects, allows dictionary-like access to the
-        dynamic tag.
+        Allows dictionary-like access to the dynamic structure. For special
+        tags (those listed in the _HANDLED_TAGS set below), creates additional
+        attributes for convenience. For example, .soname will contain the actual
+        value of DT_SONAME (fetched from the dynamic symbol table).
     """
-
-    _HANDLED_TAGS = frozenset(['DT_NEEDED', 'DT_RPATH', 'DT_RUNPATH'])
+    _HANDLED_TAGS = frozenset(
+        ['DT_NEEDED', 'DT_RPATH', 'DT_RUNPATH', 'DT_SONAME'])
 
     def __init__(self, entry, elffile):
         self.entry = entry
         if entry.d_tag in self._HANDLED_TAGS:
-            dynstr = elffile.get_section_by_name('.dynstr')
-            setattr(self, entry.d_tag[3:].lower(), dynstr.get_string(self.entry.d_val))
+            dynstr = elffile.get_section_by_name(b'.dynstr')
+            setattr(self, entry.d_tag[3:].lower(),
+                    dynstr.get_string(self.entry.d_val))
 
     def __getitem__(self, name):
         """ Implement dict-like access to entries
@@ -48,11 +51,13 @@ class DynamicTag(object):
 
 
 class Dynamic(object):
+    """ Shared functionality between dynamic sections and segments.
+    """
     def __init__(self, stream, elffile, position):
         self._stream = stream
         self._elffile = elffile
         self._elfstructs = elffile.structs
-        self._num_tags = -1;
+        self._num_tags = -1
         self._offset = position
         self._tagsize = self._elfstructs.Elf_Dyn.sizeof()
 
@@ -76,7 +81,6 @@ class Dynamic(object):
             stream_pos=offset)
         return DynamicTag(entry, self._elffile)
 
-    @property
     def num_tags(self):
         """ Number of dynamic tags in the file
         """
@@ -86,8 +90,8 @@ class Dynamic(object):
         for n in itertools.count():
             tag = self.get_tag(n)
             if tag.entry.d_tag == 'DT_NULL':
-                self._num_tags = n
-                return n
+                self._num_tags = n + 1
+                return self._num_tags
 
 
 class DynamicSection(Section, Dynamic):

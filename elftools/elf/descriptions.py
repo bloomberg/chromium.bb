@@ -6,7 +6,9 @@
 # Eli Bendersky (eliben@gmail.com)
 # This code is in the public domain
 #-------------------------------------------------------------------------------
-from .enums import ENUM_E_VERSION, ENUM_RELOC_TYPE_i386, ENUM_RELOC_TYPE_x64
+from .enums import (
+    ENUM_D_TAG, ENUM_E_VERSION, ENUM_RELOC_TYPE_i386, ENUM_RELOC_TYPE_x64
+    )
 from .constants import P_FLAGS, SH_FLAGS
 from ..common.py3compat import iteritems
 
@@ -22,7 +24,7 @@ def describe_ei_version(x):
     if x == 'EV_CURRENT':
         s += ' (current)'
     return s
-    
+
 def describe_ei_osabi(x):
     return _DESCR_EI_OSABI.get(x, _unknown)
 
@@ -41,7 +43,7 @@ def describe_p_type(x):
 def describe_p_flags(x):
     s = ''
     for flag in (P_FLAGS.PF_R, P_FLAGS.PF_W, P_FLAGS.PF_X):
-        s += _DESCR_P_FLAGS[flag] if (x & flag) else ' ' 
+        s += _DESCR_P_FLAGS[flag] if (x & flag) else ' '
     return s
 
 def describe_sh_type(x):
@@ -78,11 +80,14 @@ def describe_reloc_type(x, elffile):
     else:
         return 'unrecognized: %-7x' % (x & 0xFFFFFFFF)
 
+def describe_dyn_tag(x):
+    return _DESCR_D_TAG.get(x, _unknown)
+
 
 #-------------------------------------------------------------------------------
 _unknown = '<unknown>'
 
-    
+
 _DESCR_EI_CLASS = dict(
     ELFCLASSNONE='none',
     ELFCLASS32='ELF32',
@@ -237,4 +242,5 @@ _DESCR_RELOC_TYPE_i386 = dict(
 _DESCR_RELOC_TYPE_x64 = dict(
         (v, k) for k, v in iteritems(ENUM_RELOC_TYPE_x64))
 
-
+_DESCR_D_TAG = dict(
+        (v, k) for k, v in iteritems(ENUM_D_TAG))
