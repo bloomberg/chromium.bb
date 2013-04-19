@@ -376,6 +376,35 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(has_test_passed);
   }
 
+  content::WebContents* LoadGuest(const std::string& guest_path,
+                                  const std::string& app_path) {
+    GURL::Replacements replace_host;
+    std::string host_str("localhost");  // Must stay in scope with replace_host.
+    replace_host.SetHostStr(host_str);
+
+    GURL guest_url = test_server()->GetURL(guest_path);
+    guest_url = guest_url.ReplaceComponents(replace_host);
+
+    ui_test_utils::UrlLoadObserver guest_observer(
+        guest_url, content::NotificationService::AllSources());
+
+    ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
+    LoadAndLaunchPlatformApp(app_path.c_str());
+    guest_observer.Wait();
+
+    content::Source<content::NavigationController> source =
+        guest_observer.source();
+    EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+
+    bool satisfied = guest_loaded_listener.WaitUntilSatisfied();
+    if (!satisfied)
+      return NULL;
+
+    content::WebContents* guest_web_contents = source->GetWebContents();
+    return guest_web_contents;
+  }
+
+ private:
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 };
@@ -401,27 +430,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
 // only. If it breaks then this is a bug in the prerenderer.
 IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
   ASSERT_TRUE(StartTestServer());
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr(host_str);
-
-  GURL guest_url = test_server()->GetURL(
-      "files/extensions/platform_apps/web_view/noprerenderer/guest.html");
-  guest_url = guest_url.ReplaceComponents(replace_host);
-
-  ui_test_utils::UrlLoadObserver guest_observer(
-      guest_url, content::NotificationService::AllSources());
-
-  ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
-  LoadAndLaunchPlatformApp("web_view/noprerenderer");
-  guest_observer.Wait();
-
-  content::Source<content::NavigationController> source =
-      guest_observer.source();
-  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
-
-  ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
-  content::WebContents* guest_web_contents = source->GetWebContents();
+  content::WebContents* guest_web_contents =
+      LoadGuest(
+          "files/extensions/platform_apps/web_view/noprerenderer/guest.html",
+          "web_view/noprerenderer");
   ASSERT_TRUE(guest_web_contents != NULL);
 
   PrerenderLinkManager* prerender_link_manager =
@@ -871,27 +883,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   ASSERT_TRUE(StartTestServer());
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr(host_str);
+  content::WebContents* guest_web_contents = LoadGuest(
+      "files/extensions/platform_apps/web_view/speech/guest.html",
+      "web_view/speech");
+  ASSERT_TRUE(guest_web_contents);
 
-  GURL guest_url = test_server()->GetURL(
-      "files/extensions/platform_apps/web_view/speech/guest.html");
-  guest_url = guest_url.ReplaceComponents(replace_host);
-
-  ui_test_utils::UrlLoadObserver guest_observer(
-      guest_url, content::NotificationService::AllSources());
-
-  ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
-  LoadAndLaunchPlatformApp("web_view/speech");
-  guest_observer.Wait();
-
-  content::Source<content::NavigationController> source =
-      guest_observer.source();
-  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
-
-  ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
-  content::WebContents* guest_web_contents = source->GetWebContents();
   // Click on the guest (center of the WebContents), the guest is rendered in a
   // way that this will trigger clicking on speech recognition input mic.
   SimulateMouseClick(guest_web_contents, 0, WebKit::WebMouseEvent::ButtonLeft);
@@ -980,22 +976,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_NewWindow) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  LoadAndLaunchPlatformApp("web_view/download");
-
-  GURL::Replacements replace_host;
-  std::string host_str("localhost");  // Must stay in scope with replace_host.
-  replace_host.SetHostStr(host_str);
-
-  // Grab the guest's WebContents.
-  GURL guest_url = test_server()->GetURL(
-      "files/extensions/platform_apps/web_view/download/guest.html");
-  guest_url = guest_url.ReplaceComponents(replace_host);
-  ui_test_utils::UrlLoadObserver observer(
-      guest_url, content::NotificationService::AllSources());
-  observer.Wait();
-  content::Source<content::NavigationController> source = observer.source();
-  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
-  content::WebContents* guest_web_contents = source->GetWebContents();
+  content::WebContents* guest_web_contents =
+      LoadGuest("files/extensions/platform_apps/web_view/download/guest.html",
+                "web_view/download");
+  ASSERT_TRUE(guest_web_contents);
 
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.

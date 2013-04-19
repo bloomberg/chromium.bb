@@ -30,6 +30,13 @@ embedder.setUpGuest_ = function() {
       }
     }
   });
+  var loaded = false;
+  webview.addEventListener('loadstop', function(e) {
+    if (!loaded) {
+      loaded = true;
+      chrome.test.sendMessage('guest-loaded');
+    }
+  });
   return webview;
 };
 
