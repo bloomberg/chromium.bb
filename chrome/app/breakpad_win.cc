@@ -759,12 +759,24 @@ extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
 
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
-  std::string key_string = key.as_string();
+  // CustomInfoEntry limits the length of key and value. If they exceed
+  // their maximum length the underlying string handling functions raise
+  // an exception and prematurely trigger a crash. Truncate here.
+  base::StringPiece safe_key(key.substr(
+      0, google_breakpad::CustomInfoEntry::kNameMaxLength  - 1));
+  base::StringPiece safe_value(value.substr(
+      0, google_breakpad::CustomInfoEntry::kValueMaxLength - 1));
 
+  // Keep a copy of the safe key as a std::string, we'll reuse it later.
+  std::string key_string(safe_key.begin(), safe_key.end());
+
+  // If we already have a value for this key, update it; otherwise, insert
+  // the new value if we have not exhausted the pre-allocated slots for dynamic
+  // entries.
   DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
   google_breakpad::CustomInfoEntry* entry = NULL;
   if (it == g_dynamic_entries->end()) {
-    if (g_dynamic_keys_offset >= g_dynamic_entries_count)
+    if (g_dynamic_entries->size() >= g_dynamic_entries_count)
       return;
     entry = &(*g_custom_entries)[g_dynamic_keys_offset++];
     g_dynamic_entries->insert(std::make_pair(key_string, entry));
@@ -772,7 +784,7 @@ void SetCrashKeyValue(const base::StringPiece& key,
     entry = it->second;
   }
 
-  entry->set(UTF8ToWide(key).data(), UTF8ToWide(value).data());
+  entry->set(UTF8ToWide(safe_key).data(), UTF8ToWide(safe_value).data());
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValuePair(
