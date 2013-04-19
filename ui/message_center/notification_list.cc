@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 
@@ -34,9 +35,6 @@ bool CompareTimestampSerial::operator()(Notification* n1, Notification* n2) {
     return false;
   return false;
 }
-
-const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
-const size_t NotificationList::kMaxVisiblePopupNotifications = 3;
 
 NotificationList::NotificationList()
     : message_center_visible_(false),

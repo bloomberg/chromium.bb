@@ -19,6 +19,10 @@ MESSAGE_CENTER_EXPORT extern const int kNotificationIconSize;
 MESSAGE_CENTER_EXPORT extern const int kNotificationPreferredImageSize;
 MESSAGE_CENTER_EXPORT extern const int kSettingsIconSize;
 
+// Limits.
+MESSAGE_CENTER_EXPORT extern const size_t kMaxVisiblePopupNotifications;
+MESSAGE_CENTER_EXPORT extern const size_t kMaxVisibleMessageCenterNotifications;
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // Pixel dimensions (H = horizontal, V = vertical).

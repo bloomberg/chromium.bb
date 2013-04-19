@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
@@ -130,8 +131,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible notifications +1, ensure the correct visible number.
-  size_t notifications_to_add =
-      NotificationList::kMaxVisibleMessageCenterNotifications + 1;
+  size_t notifications_to_add = kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
   EXPECT_TRUE(tray->message_center_bubble_.get() != NULL);
   EXPECT_EQ(notifications_to_add,
             message_center->NotificationCount());
-  EXPECT_EQ(NotificationList::kMaxVisibleMessageCenterNotifications,
+  EXPECT_EQ(kMaxVisibleMessageCenterNotifications,
             tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
@@ -151,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, ManyPopupNotifications) {
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
-  size_t notifications_to_add =
-      NotificationList::kMaxVisiblePopupNotifications + 1;
+  size_t notifications_to_add = kMaxVisiblePopupNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
@@ -165,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, ManyPopupNotifications) {
             message_center->NotificationCount());
   NotificationList::PopupNotifications popups =
       message_center->GetPopupNotifications();
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+  EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
 }
 
 }  // namespace message_center

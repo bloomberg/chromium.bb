@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
@@ -146,7 +147,7 @@ using message_center::NotificationList;
 TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add =
-      NotificationList::kMaxVisibleMessageCenterNotifications + 1;
+      message_center::kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
@@ -157,7 +158,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
   EXPECT_TRUE(GetTray()->message_center_bubble() != NULL);
   EXPECT_EQ(notifications_to_add,
             GetMessageCenter()->NotificationCount());
-  EXPECT_EQ(NotificationList::kMaxVisibleMessageCenterNotifications,
+  EXPECT_EQ(message_center::kMaxVisibleMessageCenterNotifications,
             GetTray()->GetMessageCenterBubbleForTest()->
                 NumMessageViewsForTest());
 }
@@ -166,7 +167,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
 TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =
-      NotificationList::kMaxVisiblePopupNotifications + 1;
+      message_center::kMaxVisiblePopupNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
@@ -180,9 +181,9 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   if (message_center::IsRichNotificationEnabled()) {
     NotificationList::PopupNotifications popups =
         GetMessageCenter()->GetPopupNotifications();
-    EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+    EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
   } else {
-    EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,
+    EXPECT_EQ(message_center::kMaxVisiblePopupNotifications,
               GetTray()->GetPopupBubbleForTest()->NumMessageViewsForTest());
   }
 }

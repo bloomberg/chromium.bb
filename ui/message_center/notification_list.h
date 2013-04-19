@@ -128,9 +128,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   size_t NotificationCount() const;
   size_t unread_count() const { return unread_count_; }
 
-  static const size_t kMaxVisiblePopupNotifications;
-  static const size_t kMaxVisibleMessageCenterNotifications;
-
  private:
   friend class test::NotificationListTest;
 

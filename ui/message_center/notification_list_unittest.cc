@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification_types.h"
 
 namespace message_center {
@@ -188,21 +189,18 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
 
 TEST_F(NotificationListTest, OldPopupShouldNotBeHidden) {
   std::vector<std::string> ids;
-  for (size_t i = 0; i <= NotificationList::kMaxVisiblePopupNotifications;
-       i++) {
+  for (size_t i = 0; i <= kMaxVisiblePopupNotifications; i++)
     ids.push_back(AddNotification(NULL));
-  }
 
   NotificationList::PopupNotifications popups =
       notification_list()->GetPopupNotifications();
   // The popup should contain the oldest kMaxVisiblePopupNotifications. Newer
   // one should come earlier in the popup list. It means, the last element
   // of |popups| should be the firstly added one, and so on.
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+  EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
   NotificationList::PopupNotifications::const_reverse_iterator iter =
       popups.rbegin();
-  for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications;
-       ++i, ++iter) {
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i, ++iter) {
     EXPECT_EQ(ids[i], (*iter)->id()) << i;
   }
 
@@ -218,27 +216,25 @@ TEST_F(NotificationListTest, Priority) {
   ASSERT_EQ(0u, notification_list()->unread_count());
 
   // Default priority has the limit on the number of the popups.
-  for (size_t i = 0; i <= NotificationList::kMaxVisiblePopupNotifications;
-       ++i) {
+  for (size_t i = 0; i <= kMaxVisiblePopupNotifications; ++i)
     AddNotification(NULL);
-  }
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 1,
+  EXPECT_EQ(kMaxVisiblePopupNotifications + 1,
             notification_list()->NotificationCount());
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, GetPopupCounts());
+  EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
 
   // Low priority: not visible to popups.
   notification_list()->SetMessageCenterVisible(true, NULL);
   notification_list()->SetMessageCenterVisible(false, NULL);
   EXPECT_EQ(0u, notification_list()->unread_count());
   AddPriorityNotification(LOW_PRIORITY);
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 2,
+  EXPECT_EQ(kMaxVisiblePopupNotifications + 2,
             notification_list()->NotificationCount());
   EXPECT_EQ(1u, notification_list()->unread_count());
   EXPECT_EQ(0u, GetPopupCounts());
 
   // Minimum priority: doesn't update the unread count.
   AddPriorityNotification(MIN_PRIORITY);
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications + 3,
+  EXPECT_EQ(kMaxVisiblePopupNotifications + 3,
             notification_list()->NotificationCount());
   EXPECT_EQ(1u, notification_list()->unread_count());
   EXPECT_EQ(0u, GetPopupCounts());
@@ -246,18 +242,13 @@ TEST_F(NotificationListTest, Priority) {
   notification_list()->RemoveAllNotifications();
 
   // Higher priority: no limits to the number of popups.
-  for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications * 2;
-       ++i) {
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications * 2; ++i)
     AddPriorityNotification(HIGH_PRIORITY);
-  }
-  for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications * 2;
-       ++i) {
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications * 2; ++i)
     AddPriorityNotification(MAX_PRIORITY);
-  }
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications * 4,
+  EXPECT_EQ(kMaxVisiblePopupNotifications * 4,
             notification_list()->NotificationCount());
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications * 4,
-            GetPopupCounts());
+  EXPECT_EQ(kMaxVisiblePopupNotifications * 4, GetPopupCounts());
 }
 
 TEST_F(NotificationListTest, HasPopupsWithPriority) {
@@ -390,8 +381,7 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
   std::string id2 = AddNotification(NULL);
   std::string id3 = AddNotification(NULL);
   ASSERT_EQ(3u, notification_list()->NotificationCount());
-  ASSERT_EQ(std::min(static_cast<size_t>(3u),
-                     NotificationList::kMaxVisiblePopupNotifications),
+  ASSERT_EQ(std::min(static_cast<size_t>(3u), kMaxVisiblePopupNotifications),
             GetPopupCounts());
 
   notification_list()->MarkSinglePopupAsShown(id2, true);

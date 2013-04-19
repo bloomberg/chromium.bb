@@ -14,6 +14,10 @@ const int kNotificationIconSize = 80;
 const int kNotificationPreferredImageSize = kNotificationWidth;
 const int kSettingsIconSize = 16;
 
+// Limits.
+const size_t kMaxVisibleMessageCenterNotifications = 100;
+const size_t kMaxVisiblePopupNotifications = 3;
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // Pixel dimensions.

@@ -391,10 +391,8 @@ void MessageCenterView::SetNotifications(
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     AddNotification(*(*iter));
-    if (message_views_.size() >=
-        NotificationList::kMaxVisibleMessageCenterNotifications) {
+    if (message_views_.size() >= kMaxVisibleMessageCenterNotifications)
       break;
-    }
   }
   if (message_views_.empty()) {
     views::Label* label = new views::Label(l10n_util::GetStringUTF16(
