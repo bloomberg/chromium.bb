@@ -93,6 +93,7 @@ WebRTCInternalsBrowserTest.BweCompoundGraph
 WebRTCInternalsBrowserTest.ConvertedGraphs
 WebRTCInternalsBrowserTest.UpdateAllPeerConnections
 WebRTCInternalsBrowserTest.UpdatePeerConnection
+WebRTCInternalsBrowserTest.withRealPeerConnectionCall
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
