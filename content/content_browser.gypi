@@ -347,6 +347,8 @@
     'browser/device_orientation/data_fetcher.h',
     'browser/device_orientation/data_fetcher_impl_android.cc',
     'browser/device_orientation/data_fetcher_impl_android.h',
+    'browser/device_orientation/data_fetcher_impl_win.cc',
+    'browser/device_orientation/data_fetcher_impl_win.h',
     'browser/device_orientation/device_data.h',
     'browser/device_orientation/message_filter.cc',
     'browser/device_orientation/message_filter.h',
@@ -1123,6 +1125,7 @@
           '-ldwmapi.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
+          '-lportabledeviceguids.lib',
         ],
         'msvs_settings': {
           'VCLinkerTool': {

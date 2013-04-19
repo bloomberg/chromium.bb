@@ -224,6 +224,9 @@ void ProviderImpl::Start(DeviceData::Type type) {
   polling_thread_ = new PollingThread("Device data polling thread",
                                       weak_factory_.GetWeakPtr(),
                                       creator_loop_);
+#if defined(OS_WIN)
+  polling_thread_->init_com_with_mta(true);
+#endif
   if (!polling_thread_->Start()) {
     LOG(ERROR) << "Failed to start device data polling thread";
     delete polling_thread_;

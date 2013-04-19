@@ -13,6 +13,8 @@
 #include "content/browser/device_orientation/accelerometer_mac.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#elif defined(OS_WIN)
+#include "content/browser/device_orientation/data_fetcher_impl_win.h"
 #endif
 
 namespace content {
@@ -26,6 +28,8 @@ Provider* Provider::GetInstance() {
     default_factory = AccelerometerMac::Create;
 #elif defined(OS_ANDROID)
     default_factory = DataFetcherImplAndroid::Create;
+#elif defined(OS_WIN)
+    default_factory = DataFetcherImplWin::Create;
 #endif
 
     instance_ = new ProviderImpl(default_factory);
