@@ -486,7 +486,7 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
   }
 }
 
-#if !defined(ARCH_CPU_ARM_FAMILY)
+#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
 TEST(YUVConvertTest, RGB32ToYUV_SSE2_MatchReference) {
   base::CPU cpu;
   if (!cpu.has_sse2()) {
