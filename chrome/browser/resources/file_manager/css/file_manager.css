@@ -222,6 +222,10 @@ body:not([new-ui]) #butter-bar .progress-track {
   position: relative;
 }
 
+body[new-ui] .dialog-container {
+  -webkit-border-radius: 2px;
+}
+
 /* List/grid and preview are inside this container. */
 .dialog-main {
   -webkit-box-align: stretch;
