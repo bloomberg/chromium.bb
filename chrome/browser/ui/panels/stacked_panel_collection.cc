@@ -604,6 +604,10 @@ void StackedPanelCollection::MoveAllDraggingPanelsInstantly(
   }
 }
 
+bool StackedPanelCollection::IsMinimized() const {
+  return native_stack_->IsMinimized();
+}
+
 void StackedPanelCollection::UpdatePanelCornerStyle(Panel* panel) {
   panel::CornerStyle corner_style;
   bool at_top = panel == top_panel();

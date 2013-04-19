@@ -65,13 +65,14 @@ class StackedPanelCollection : public PanelCollection {
 
   void MoveAllDraggingPanelsInstantly(const gfx::Vector2d& delta_origin);
 
+  bool IsMinimized() const;
+
   // Returns the maximum available space from the bottom of the stack. The
   // maximum available space is defined as the distance between the bottom
   // of the stack and the bottom of the working area, assuming that all inactive
   // panels are collapsed.
   int GetMaximiumAvailableBottomSpace() const;
 
-  NativePanelStackWindow* native_stack() const { return native_stack_; }
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
   Panel* top_panel() const { return panels_.empty() ? NULL : panels_.front(); }

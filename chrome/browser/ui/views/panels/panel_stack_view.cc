@@ -190,10 +190,8 @@ void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 
   HWND stack_window = NULL;
   StackedPanelCollection* stack = panel->stack();
-  if (stack) {
-    stack_window = views::HWNDForWidget(
-        static_cast<PanelStackView*>(stack->native_stack())->window_);
-  }
+  if (stack)
+    stack_window = views::HWNDForWidget(window_);
 
   // The extended style WS_EX_APPWINDOW is used to force a top-level window onto
   // the taskbar. In order for multiple stacked panels to appear as one, this
