@@ -34,6 +34,14 @@ class RecursiveOperationDelegate;
 class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
     : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
+  // NOTE: This constructor should not be called outside MountPointProviders;
+  // instead please consider using
+  // file_system_context->CreateFileSystemOperation() to instantiate
+  // an appropriate FileSystemOperation.
+  LocalFileSystemOperation(
+      FileSystemContext* file_system_context,
+      scoped_ptr<FileSystemOperationContext> operation_context);
+
   virtual ~LocalFileSystemOperation();
 
   // FileSystemOperation overrides.
@@ -158,34 +166,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   void SyncGetPlatformPath(const FileSystemURL& url,
                            base::FilePath* platform_path);
 
- private:
-  enum OperationMode {
-    OPERATION_MODE_READ,
-    OPERATION_MODE_WRITE,
-  };
-
-  // Only MountPointProviders or testing class can create a
-  // new operation directly.
-  friend class FileSystemTestHelper;
-  friend class IsolatedMountPointProvider;
-  friend class SandboxMountPointProvider;
-  friend class TestMountPointProvider;
-  friend class chromeos::CrosMountPointProvider;
-
-  friend class LocalFileSystemOperationTest;
-  friend class LocalFileSystemOperationWriteTest;
-  friend class FileWriterDelegateTest;
-  friend class FileSystemQuotaTest;
-  friend class LocalFileSystemTestOriginHelper;
-
-  friend class RecursiveOperationDelegate;
-  friend class CrossOperationDelegate;
-  friend class sync_file_system::SyncableFileSystemOperation;
-
-  LocalFileSystemOperation(
-      FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemOperationContext> operation_context);
-
   FileSystemContext* file_system_context() const {
     return file_system_context_;
   }
@@ -195,6 +175,14 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       return parent_operation_->operation_context();
     return operation_context_.get();
   }
+
+ private:
+  enum OperationMode {
+    OPERATION_MODE_READ,
+    OPERATION_MODE_WRITE,
+  };
+
+  friend class sync_file_system::SyncableFileSystemOperation;
 
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
@@ -316,7 +304,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // this holds non-null value and points to the parent operation.
   // TODO(kinuko): Cleanup this when we finish cleaning up the
   // FileSystemOperation lifetime issue.
-  LocalFileSystemOperation* parent_operation_;
+  base::WeakPtr<LocalFileSystemOperation> parent_operation_;
 
   // These are all used only by Write().
   friend class FileWriterDelegate;

@@ -12,6 +12,7 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
@@ -35,7 +36,8 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
     FileSystemOperationContext* context) {
   DCHECK(IsOnIOThread(context));
   return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
-      context->mtp_device_delegate_url());
+      context->GetUserValue<std::string>(
+          IsolatedMountPointProvider::kMTPDeviceDelegateURLKey));
 }
 
 // Called on a blocking pool thread to create a snapshot file to hold the
@@ -251,8 +253,7 @@ bool DeviceMediaAsyncFileUtil::CreateSnapshotFile(
     return true;
   }
   base::FilePath* snapshot_file_path = new base::FilePath;
-  return context->file_system_context()->task_runners()->media_task_runner()->
-      PostTaskAndReply(
+  return context->task_runner()->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&CreateSnapshotFileOnBlockingPool,
                      url.path(),

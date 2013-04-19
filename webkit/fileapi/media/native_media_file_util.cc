@@ -5,8 +5,9 @@
 #include "webkit/fileapi/media/native_media_file_util.h"
 
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
+#include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/native_file_util.h"
 
 using base::PlatformFile;
@@ -14,6 +15,15 @@ using base::PlatformFileError;
 using base::PlatformFileInfo;
 
 namespace fileapi {
+
+namespace {
+
+MediaPathFilter* GetMediaPathFilter(FileSystemOperationContext* context) {
+  return context->GetUserValue<MediaPathFilter*>(
+          IsolatedMountPointProvider::kMediaPathFilterKey);
+}
+
+}  // namespace
 
 NativeMediaFileUtil::NativeMediaFileUtil() {
 }
@@ -45,7 +55,7 @@ NativeMediaFileUtil::CreateFileEnumerator(
   DCHECK(context);
   return make_scoped_ptr(new FilteringFileEnumerator(
       IsolatedFileUtil::CreateFileEnumerator(context, root_url),
-      context->media_path_filter()))
+      GetMediaPathFilter(context)))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
@@ -109,7 +119,7 @@ PlatformFileError NativeMediaFileUtil::CopyOrMoveFile(
     return error;
   if (error == base::PLATFORM_FILE_OK && file_info.is_directory)
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  if (!context->media_path_filter()->Match(dest_file_path))
+  if (!GetMediaPathFilter(context)->Match(dest_file_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   return NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path, copy);
@@ -143,7 +153,7 @@ PlatformFileError NativeMediaFileUtil::DeleteFile(
     return error;
   if (file_info.is_directory)
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  if (!context->media_path_filter()->Match(file_path))
+  if (!GetMediaPathFilter(context)->Match(file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   return NativeFileUtil::DeleteFile(file_path);
 }
@@ -154,7 +164,7 @@ PlatformFileError NativeMediaFileUtil::GetFileInfo(
     PlatformFileInfo* file_info,
     base::FilePath* platform_path) {
   DCHECK(context);
-  DCHECK(context->media_path_filter());
+  DCHECK(GetMediaPathFilter(context));
   DCHECK(file_info);
   DCHECK(platform_path);
 
@@ -164,7 +174,7 @@ PlatformFileError NativeMediaFileUtil::GetFileInfo(
     return error;
 
   if (file_info->is_directory ||
-      context->media_path_filter()->Match(*platform_path)) {
+      GetMediaPathFilter(context)->Match(*platform_path)) {
     return base::PLATFORM_FILE_OK;
   }
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -179,7 +189,7 @@ PlatformFileError NativeMediaFileUtil::GetFilteredLocalFilePath(
       IsolatedFileUtil::GetLocalFilePath(context, file_system_url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (!context->media_path_filter()->Match(file_path))
+  if (!GetMediaPathFilter(context)->Match(file_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   *local_file_path = file_path;
@@ -205,7 +215,7 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   if (!file_info.is_directory &&
-      !context->media_path_filter()->Match(file_path)) {
+      !GetMediaPathFilter(context)->Match(file_path)) {
     return failure_error;
   }
 

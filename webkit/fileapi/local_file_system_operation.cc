@@ -32,7 +32,23 @@ using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
 
+LocalFileSystemOperation::LocalFileSystemOperation(
+    FileSystemContext* file_system_context,
+    scoped_ptr<FileSystemOperationContext> operation_context)
+    : file_system_context_(file_system_context),
+      operation_context_(operation_context.Pass()),
+      async_file_util_(NULL),
+      peer_handle_(base::kNullProcessHandle),
+      pending_operation_(kOperationNone),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(operation_context_.get());
+  operation_context_->DetachUserDataThread();
+}
+
 LocalFileSystemOperation::~LocalFileSystemOperation() {
+  if (!operation_context())
+    return;
+  operation_context()->DetachUserDataThread();
   if (write_target_url_.is_valid()) {
     operation_context()->update_observers()->Notify(
         &FileUpdateObserver::OnEndUpdate, MakeTuple(write_target_url_));
@@ -430,7 +446,7 @@ LocalFileSystemOperation* LocalFileSystemOperation::CreateNestedOperation() {
   LocalFileSystemOperation* operation = new LocalFileSystemOperation(
       file_system_context(),
       make_scoped_ptr(new FileSystemOperationContext(file_system_context())));
-  operation->parent_operation_ = this;
+  operation->parent_operation_ = weak_factory_.GetWeakPtr();
   return operation;
 }
 
@@ -533,19 +549,6 @@ void LocalFileSystemOperation::MoveFileLocal(
       base::Bind(&LocalFileSystemOperation::DoMoveFileLocal,
                  base::Unretained(this), src_url, dest_url, callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
-}
-
-LocalFileSystemOperation::LocalFileSystemOperation(
-    FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemOperationContext> operation_context)
-    : file_system_context_(file_system_context),
-      operation_context_(operation_context.Pass()),
-      async_file_util_(NULL),
-      parent_operation_(NULL),
-      peer_handle_(base::kNullProcessHandle),
-      pending_operation_(kOperationNone),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(operation_context_.get());
 }
 
 void LocalFileSystemOperation::GetUsageAndQuotaThenRunTask(

@@ -16,11 +16,13 @@ FileSystemOperationContext::FileSystemOperationContext(
       task_runner_(file_system_context_->task_runners()->file_task_runner()),
       allowed_bytes_growth_(0) {}
 
-FileSystemOperationContext::~FileSystemOperationContext() {}
+FileSystemOperationContext::FileSystemOperationContext(
+    FileSystemContext* context,
+    base::SequencedTaskRunner* task_runner)
+    : file_system_context_(context),
+      task_runner_(task_runner),
+      allowed_bytes_growth_(0) {}
 
-void FileSystemOperationContext::set_task_runner(
-    base::SequencedTaskRunner* task_runner) {
-  task_runner_ = task_runner;
-}
+FileSystemOperationContext::~FileSystemOperationContext() {}
 
 }  // namespace fileapi

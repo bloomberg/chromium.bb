@@ -21,6 +21,9 @@ class DeviceMediaAsyncFileUtil;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
+  static const char kMediaPathFilterKey[];
+  static const char kMTPDeviceDelegateURLKey[];
+
   explicit IsolatedMountPointProvider(const base::FilePath& profile_path);
   virtual ~IsolatedMountPointProvider();
 

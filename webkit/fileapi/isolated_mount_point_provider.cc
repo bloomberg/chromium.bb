@@ -36,6 +36,11 @@
 
 namespace fileapi {
 
+const char IsolatedMountPointProvider::kMediaPathFilterKey[] =
+    "MediaPathFilterKey";
+const char IsolatedMountPointProvider::kMTPDeviceDelegateURLKey[] =
+    "MTPDeviceDelegateKey";
+
 IsolatedMountPointProvider::IsolatedMountPointProvider(
     const base::FilePath& profile_path)
     : profile_path_(profile_path),
@@ -181,18 +186,25 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
-  scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(context));
-  if (url.type() == kFileSystemTypeNativeMedia ||
-      url.type() == kFileSystemTypeDeviceMedia) {
-    operation_context->set_media_path_filter(media_path_filter_.get());
-    operation_context->set_task_runner(
-        context->task_runners()->media_task_runner());
+  if (url.type() != kFileSystemTypeNativeMedia &&
+      url.type() != kFileSystemTypeDeviceMedia) {
+    return new LocalFileSystemOperation(
+        context, make_scoped_ptr(new FileSystemOperationContext(context)));
   }
 
+  // For media filesystems.
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(
+          context, context->task_runners()->media_task_runner()));
+
+  operation_context->SetUserValue(kMediaPathFilterKey,
+                                  media_path_filter_.get());
+
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  if (url.type() == kFileSystemTypeDeviceMedia)
-    operation_context->set_mtp_device_delegate_url(url.filesystem_id());
+  if (url.type() == kFileSystemTypeDeviceMedia) {
+    operation_context->SetUserValue(kMTPDeviceDelegateURLKey,
+                                    url.filesystem_id());
+  }
 #endif
 
   return new LocalFileSystemOperation(context, operation_context.Pass());
