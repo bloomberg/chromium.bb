@@ -767,6 +767,7 @@
             'browser/session_history_browsertest.cc',
             'browser/site_per_process_browsertest.cc',
             'browser/speech/speech_recognition_browsertest.cc',
+            'browser/web_contents/web_contents_impl_browsertest.cc',
             'browser/web_contents/web_contents_view_aura_browsertest.cc',
             'browser/webkit_browsertest.cc',
             'browser/worker_host/test/worker_browsertest.cc',

@@ -2853,7 +2853,10 @@ void WebContentsImpl::DidStartLoading(RenderViewHost* render_view_host) {
 void WebContentsImpl::DidStopLoading(RenderViewHost* render_view_host) {
   scoped_ptr<LoadNotificationDetails> details;
 
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  // Use the last committed entry rather than the active one, in case a
+  // pending entry has been created.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
+
   // An entry may not exist for a stop when loading an initial blank page or
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
