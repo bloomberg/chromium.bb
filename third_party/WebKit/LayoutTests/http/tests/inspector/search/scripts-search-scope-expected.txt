@@ -12,8 +12,9 @@ Search result #2: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/reso
 Search result #3: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/resources/search.js
   search match #1: lineNumber = 0, lineContent = 'function searchTestUniqueString()'
   search match #2: lineNumber = 3, lineContent = '    // searchTestUniqueString two occurences on the same line searchTestUniqueString'
-  search match #3: lineNumber = 9, lineContent = '    searchTestUniqueString();'
-  search match #4: lineNumber = 10, lineContent = '    // SEARCHTestUniqueString();'
+  search match #3: lineNumber = 4, lineContent = '    // searchTestUniqueString on the next line.'
+  search match #4: lineNumber = 10, lineContent = '    searchTestUniqueString();'
+  search match #5: lineNumber = 11, lineContent = '    // SEARCHTestUniqueString();'
 
 Running: testCaseSensitive
 Search result #1: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/resources/search.css
@@ -27,5 +28,6 @@ Search result #2: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/reso
 Search result #3: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/resources/search.js
   search match #1: lineNumber = 0, lineContent = 'function searchTestUniqueString()'
   search match #2: lineNumber = 3, lineContent = '    // searchTestUniqueString two occurences on the same line searchTestUniqueString'
-  search match #3: lineNumber = 9, lineContent = '    searchTestUniqueString();'
+  search match #3: lineNumber = 4, lineContent = '    // searchTestUniqueString on the next line.'
+  search match #4: lineNumber = 10, lineContent = '    searchTestUniqueString();'
 
