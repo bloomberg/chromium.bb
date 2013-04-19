@@ -79,7 +79,7 @@ static LayoutUnit logicalHeightForLine(const RenderBlock* block, bool isFirstLin
 ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo() const
 {
     ExclusionShapeInsideInfo* shapeInsideInfo = view()->layoutState()->exclusionShapeInsideInfo();
-    if (!shapeInsideInfo && flowThreadContainingBlock()) {
+    if (!shapeInsideInfo && flowThreadContainingBlock() && allowsExclusionShapeInsideInfoSharing()) {
         LayoutUnit offset = logicalHeight() + logicalHeightForLine(this, false);
         RenderRegion* region = regionAtBlockOffset(offset);
         return region ? region->exclusionShapeInsideInfo() : 0;
