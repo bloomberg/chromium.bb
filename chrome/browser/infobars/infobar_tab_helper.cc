@@ -135,50 +135,6 @@ content::WebContents* InfoBarTabHelper::GetWebContents() {
   return content::WebContentsObserver::web_contents();
 }
 
-void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
-                                             bool animate) {
-  if (!infobars_enabled_) {
-    DCHECK(infobars_.empty());
-    return;
-  }
-
-  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), delegate));
-  DCHECK(i != infobars_.end());
-
-  delegate->clear_owner();
-  // Remove the delegate before notifying, so that if any observers call back to
-  // AddInfoBar() or similar, we don't dupe-check against this delegate.
-  infobars_.erase(i);
-  // Remove ourselves as an observer if we are tracking no more InfoBars.
-  if (infobars_.empty()) {
-    registrar_.Remove(
-        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(
-            &web_contents()->GetController()));
-  }
-
-  InfoBarRemovedDetails removed_details(delegate, animate);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      content::Source<InfoBarService>(this),
-      content::Details<InfoBarRemovedDetails>(&removed_details));
-}
-
-void InfoBarTabHelper::RemoveAllInfoBars(bool animate) {
-  while (!infobars_.empty())
-    RemoveInfoBarInternal(GetInfoBarDelegateAt(GetInfoBarCount() - 1), animate);
-}
-
-void InfoBarTabHelper::OnDidBlockDisplayingInsecureContent() {
-  InsecureContentInfoBarDelegate::Create(
-      this, InsecureContentInfoBarDelegate::DISPLAY);
-}
-
-void InfoBarTabHelper::OnDidBlockRunningInsecureContent() {
-  InsecureContentInfoBarDelegate::Create(this,
-                                         InsecureContentInfoBarDelegate::RUN);
-}
-
 void InfoBarTabHelper::RenderViewGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
@@ -226,4 +182,47 @@ void InfoBarTabHelper::Observe(int type,
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
   return;
+}
+void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
+                                             bool animate) {
+  if (!infobars_enabled_) {
+    DCHECK(infobars_.empty());
+    return;
+  }
+
+  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), delegate));
+  DCHECK(i != infobars_.end());
+
+  delegate->clear_owner();
+  // Remove the delegate before notifying, so that if any observers call back to
+  // AddInfoBar() or similar, we don't dupe-check against this delegate.
+  infobars_.erase(i);
+  // Remove ourselves as an observer if we are tracking no more InfoBars.
+  if (infobars_.empty()) {
+    registrar_.Remove(
+        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<NavigationController>(
+            &web_contents()->GetController()));
+  }
+
+  InfoBarRemovedDetails removed_details(delegate, animate);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+      content::Source<InfoBarService>(this),
+      content::Details<InfoBarRemovedDetails>(&removed_details));
+}
+
+void InfoBarTabHelper::RemoveAllInfoBars(bool animate) {
+  while (!infobars_.empty())
+    RemoveInfoBarInternal(GetInfoBarDelegateAt(GetInfoBarCount() - 1), animate);
+}
+
+void InfoBarTabHelper::OnDidBlockDisplayingInsecureContent() {
+  InsecureContentInfoBarDelegate::Create(
+      this, InsecureContentInfoBarDelegate::DISPLAY);
+}
+
+void InfoBarTabHelper::OnDidBlockRunningInsecureContent() {
+  InsecureContentInfoBarDelegate::Create(this,
+                                         InsecureContentInfoBarDelegate::RUN);
 }
