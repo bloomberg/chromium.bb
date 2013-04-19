@@ -37,6 +37,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import remote_access as remote
+from chromite.lib import stats
 
 
 _USAGE = "deploy_chrome [--]\n\n %s" % __doc__
@@ -437,6 +438,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
          '--preserve-permissions', '--file', pkg_path, '.%s' % _CHROME_DIR],
         cwd=staging_dir)
 
+
 def main(argv):
   options, args = _ParseCommandLine(argv)
   _PostParseCheck(options, args)
@@ -447,13 +449,17 @@ def main(argv):
   else:
     logging.getLogger().setLevel(logging.INFO)
 
-  with osutils.TempDir(set_global=True) as tempdir:
-    staging_dir = options.staging_dir
-    if not staging_dir:
-      staging_dir = os.path.join(tempdir, 'chrome')
+  with stats.UploadContext() as queue:
+    cmd_stats = stats.Stats(cmd_line=argv, cmd_base='deploy_chrome')
+    queue.put([cmd_stats, stats.StatsUploader.URL, 1])
 
-    deploy = DeployChrome(options, tempdir, staging_dir)
-    try:
-      deploy.Perform()
-    except results_lib.StepFailure as ex:
-      raise SystemExit(str(ex).strip())
+    with osutils.TempDir(set_global=True) as tempdir:
+      staging_dir = options.staging_dir
+      if not staging_dir:
+        staging_dir = os.path.join(tempdir, 'chrome')
+
+      deploy = DeployChrome(options, tempdir, staging_dir)
+      try:
+        deploy.Perform()
+      except results_lib.StepFailure as ex:
+        raise SystemExit(str(ex).strip())
