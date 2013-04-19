@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
@@ -74,22 +75,17 @@ GURL GDataWapiUrlGenerator::AddInitiateUploadUrlParams(const GURL& url) {
 GURL GDataWapiUrlGenerator::AddFeedUrlParams(
     const GURL& url,
     int num_items_to_fetch,
-    int changestamp,
+    int64 changestamp,
     const std::string& search_string) {
   GURL result = AddStandardUrlParams(url);
   result = net::AppendOrReplaceQueryParameter(result, "showfolders", "true");
   result = net::AppendOrReplaceQueryParameter(result, "include-shared", "true");
   result = net::AppendOrReplaceQueryParameter(
-      result,
-      "max-results",
-      base::StringPrintf("%d", num_items_to_fetch));
-  result = net::AppendOrReplaceQueryParameter(
-      result, "include-installed-apps", "true");
+      result, "max-results", base::IntToString(num_items_to_fetch));
 
   if (changestamp) {
-    result = net::AppendQueryParameter(result,
-                                       "start-index",
-                                       base::StringPrintf("%d", changestamp));
+    result = net::AppendQueryParameter(
+        result, "start-index", base::Int64ToString(changestamp));
   }
 
   if (!search_string.empty()) {
@@ -107,7 +103,7 @@ GDataWapiUrlGenerator::~GDataWapiUrlGenerator() {
 
 GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
     const GURL& override_url,
-    int start_changestamp,
+    int64 start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id) const {
   DCHECK_LE(0, start_changestamp);

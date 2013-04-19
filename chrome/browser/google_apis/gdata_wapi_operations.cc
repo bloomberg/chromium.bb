@@ -163,7 +163,7 @@ GetResourceListOperation::GetResourceListOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GURL& override_url,
-    int start_changestamp,
+    int64 start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback)

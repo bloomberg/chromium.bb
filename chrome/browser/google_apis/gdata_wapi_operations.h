@@ -51,7 +51,7 @@ class GetResourceListOperation : public GetDataOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GURL& override_url,
-      int start_changestamp,
+      int64 start_changestamp,
       const std::string& search_string,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback);
@@ -64,7 +64,7 @@ class GetResourceListOperation : public GetDataOperation {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const GURL override_url_;
-  const int start_changestamp_;
+  const int64 start_changestamp_;
   const std::string search_string_;
   const std::string directory_resource_id_;
 

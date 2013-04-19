@@ -36,8 +36,7 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
       "http://www.example.com/?v=3&alt=json&showroot=true&"
       "showfolders=true"
       "&include-shared=true"
-      "&max-results=100"
-      "&include-installed-apps=true",
+      "&max-results=100",
       GDataWapiUrlGenerator::AddFeedUrlParams(GURL("http://www.example.com"),
                                               100,  // num_items_to_fetch
                                               0,    // changestamp
@@ -48,7 +47,6 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
       "showfolders=true"
       "&include-shared=true"
       "&max-results=100"
-      "&include-installed-apps=true"
       "&start-index=123",
       GDataWapiUrlGenerator::AddFeedUrlParams(GURL("http://www.example.com"),
                                               100,  // num_items_to_fetch
@@ -59,7 +57,6 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
             "showfolders=true"
             "&include-shared=true"
             "&max-results=100"
-            "&include-installed-apps=true"
             "&start-index=123"
             "&q=%22foo+bar%22",
             GDataWapiUrlGenerator::AddFeedUrlParams(
@@ -74,7 +71,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // This is the very basic URL for the GetResourceList operation.
   EXPECT_EQ("https://docs.google.com/feeds/default/private/full"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-            "&max-results=500&include-installed-apps=true",
+            "&max-results=500",
             url_generator_.GenerateResourceListUrl(
                 GURL(),         // override_url,
                 0,              // start_changestamp,
@@ -86,7 +83,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // parameters remain as-is.
   EXPECT_EQ("http://localhost/"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-            "&max-results=500&include-installed-apps=true",
+            "&max-results=500",
             url_generator_.GenerateResourceListUrl(
                 GURL("http://localhost/"),  // override_url,
                 0,                          // start_changestamp,
@@ -98,8 +95,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // "full" to "changes", and "start-index" parameter is added.
   EXPECT_EQ("https://docs.google.com/feeds/default/private/changes"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-            "&max-results=500&include-installed-apps=true"
-            "&start-index=100",
+            "&max-results=500&start-index=100",
             url_generator_.GenerateResourceListUrl(
                 GURL(),         // override_url,
                 100,            // start_changestamp,
@@ -111,7 +107,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // and "q" parameter is added.
   EXPECT_EQ("https://docs.google.com/feeds/default/private/full"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-            "&max-results=50&include-installed-apps=true&q=foo",
+            "&max-results=50&q=foo",
             url_generator_.GenerateResourceListUrl(
                 GURL(),        // override_url,
                 0,             // start_changestamp,
@@ -124,7 +120,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX/contents"
       "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-      "&max-results=500&include-installed-apps=true",
+      "&max-results=500",
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,       // start_changestamp,
                                              std::string(),  // search_string,
@@ -136,7 +132,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // overridden.
   EXPECT_EQ("http://example.com/"
             "?start-index=123&v=3&alt=json&showroot=true&showfolders=true"
-            "&include-shared=true&max-results=500&include-installed-apps=true",
+            "&include-shared=true&max-results=500",
             url_generator_.GenerateResourceListUrl(
                 GURL("http://example.com/?start-index=123"),  // override_url,
                 100,            // start_changestamp,

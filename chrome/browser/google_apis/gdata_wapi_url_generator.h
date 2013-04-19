@@ -37,7 +37,7 @@ class GDataWapiUrlGenerator {
   // and adds q=... parameter if |search_string| is non-empty.
   static GURL AddFeedUrlParams(const GURL& url,
                                int num_items_to_fetch,
-                               int changestamp,
+                               int64 changestamp,
                                const std::string& search_string);
 
   // Generates a URL for getting the resource list feed.
@@ -69,7 +69,7 @@ class GDataWapiUrlGenerator {
   //
   GURL GenerateResourceListUrl(
       const GURL& override_url,
-      int start_changestamp,
+      int64 start_changestamp,
       const std::string& search_string,
       const std::string& directory_resource_id) const;
 
