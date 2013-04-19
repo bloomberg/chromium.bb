@@ -40,11 +40,23 @@ namespace WebCore {
 
 class Document;
 class Page;
+class ScriptExecutionContext;
 
 class PageConsole {
 public:
     enum DeprecatedFeature {
+        // CSP
         PrefixedContentSecurityPolicyHeader,
+
+        // HTMLMediaElement
+        PrefixedMediaAddKey,
+        PrefixedMediaGenerateKeyRequest,
+
+        // Quota
+        PrefixedStorageInfo,
+
+        // Web Audio
+        WebAudioLooping,
 
         // Add newly deprecated features above this line.
         NumberOfFeatures, // Sentinel.
@@ -57,6 +69,7 @@ public:
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     void addMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0, Document* = 0);
 
+    static void reportDeprecation(ScriptExecutionContext*, DeprecatedFeature);
     static void reportDeprecation(Document*, DeprecatedFeature);
 
     static void mute();

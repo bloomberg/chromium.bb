@@ -59,7 +59,17 @@ int muteCount = 0;
 
 // Ensure that this stays in sync with the DeprecatedFeature enum.
 static const char* const deprecationMessages[] = {
-    "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead."
+    "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.",
+
+    // HTMLMediaElement
+    "'HTMLMediaElement.webkitAddKey()' is deprecated. Please use 'MediaKeySession.update()' instead.",
+    "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.",
+
+    // Quota
+    "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.",
+
+    // Web Audio
+    "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.",
 };
 
 COMPILE_ASSERT(WTF_ARRAY_LENGTH(deprecationMessages) == static_cast<int>(WebCore::PageConsole::NumberOfFeatures), DeprecationMessages_matches_enum);
@@ -124,6 +134,14 @@ void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
+}
+
+// static
+void PageConsole::reportDeprecation(ScriptExecutionContext* context, DeprecatedFeature feature)
+{
+    if (!context || !context->isDocument())
+        return;
+    PageConsole::reportDeprecation(toDocument(context), feature);
 }
 
 // static

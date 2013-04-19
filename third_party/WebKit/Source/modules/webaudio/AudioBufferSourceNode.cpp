@@ -32,8 +32,7 @@
 #include "AudioNodeOutput.h"
 #include "AudioUtilities.h"
 #include "FloatConversion.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
+#include "PageConsole.h"
 #include <algorithm>
 #include <wtf/MainThread.h>
 #include <wtf/MathExtras.h>
@@ -455,22 +454,14 @@ double AudioBufferSourceNode::totalPitchRate()
 
 bool AudioBufferSourceNode::looping()
 {
-    static bool firstTime = true;
-    if (firstTime && context() && context()->scriptExecutionContext()) {
-        context()->scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.");
-        firstTime = false;
-    }
+    PageConsole::reportDeprecation(context()->scriptExecutionContext(), PageConsole::WebAudioLooping);
 
     return m_isLooping;
 }
 
 void AudioBufferSourceNode::setLooping(bool looping)
 {
-    static bool firstTime = true;
-    if (firstTime && context() && context()->scriptExecutionContext()) {
-        context()->scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.");
-        firstTime = false;
-    }
+    PageConsole::reportDeprecation(context()->scriptExecutionContext(), PageConsole::WebAudioLooping);
 
     m_isLooping = looping;
 }

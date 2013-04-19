@@ -2288,11 +2288,7 @@ void HTMLMediaElement::setSourceState(const String& state)
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
 {
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    static bool firstTime = true;
-    if (firstTime && scriptExecutionContext()) {
-        scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated.  Use 'MediaKeys.createSession()' instead.");
-        firstTime = false;
-    }
+    PageConsole::reportDeprecation(scriptExecutionContext(), PrefixedMediaGenerateKeyRequest);
 #endif
 
     if (keySystem.isEmpty()) {
@@ -2324,11 +2320,7 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode& ec)
 {
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    static bool firstTime = true;
-    if (firstTime && scriptExecutionContext()) {
-        scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "'HTMLMediaElement.webkitAddKey()' is deprecated.  Use 'MediaKeySession.update()' instead.");
-        firstTime = false;
-    }
+    PageConsole::reportDeprecation(scriptExecutionContext(), PrefixedMediaAddKey);
 #endif
 
     if (keySystem.isEmpty()) {

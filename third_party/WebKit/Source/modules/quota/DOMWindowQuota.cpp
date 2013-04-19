@@ -34,6 +34,7 @@
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Frame.h"
+#include "PageConsole.h"
 #include "StorageInfo.h"
 #include <wtf/PassRefPtr.h>
 
@@ -73,7 +74,7 @@ StorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow* window)
 StorageInfo* DOMWindowQuota::webkitStorageInfo() const
 {
     if (!m_storageInfo && frame()) {
-        frame()->document()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "window.webkitStorageInfo is deprecated. Use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead.");
+        PageConsole::reportDeprecation(frame()->document(), PageConsole::PrefixedStorageInfo);
         m_storageInfo = StorageInfo::create();
     }
     return m_storageInfo.get();
