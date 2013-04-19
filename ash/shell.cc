@@ -249,6 +249,7 @@ Shell::~Shell() {
   if (mouse_cursor_filter_)
     RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
+  RemovePreTargetHandler(event_transformation_handler_.get());
 #if !defined(OS_MACOSX)
   RemovePreTargetHandler(accelerator_filter_.get());
 #endif

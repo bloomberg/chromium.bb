@@ -14,7 +14,7 @@ namespace ash {
 namespace internal {
 
 // An event filter that transforms input event properties in extended desktop
-// environment. It currently handles only ScrollEvents.
+// environment.
 class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
  public:
   enum TransformationMode {
@@ -33,6 +33,9 @@ class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
 
   // Overridden from ui::EventHandler.
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+#endif  // defined(OS_CHROMEOS)
 
  private:
   TransformationMode transformation_mode_;
@@ -44,4 +47,3 @@ class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_EVENT_TRANSFORMATION_HANDLER_H_
-

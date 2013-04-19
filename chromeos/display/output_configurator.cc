@@ -428,6 +428,8 @@ bool OutputConfigurator::EnterState(
           if (outputs[i].mirror_mode != outputs[i].native_mode &&
               outputs[i].is_aspect_preserving_scaling) {
             ctm = GetMirrorModeCTM(&outputs[i]);
+            mirrored_display_area_ratio_map_[outputs[i].touch_device_id] =
+              GetMirroredDisplayAreaRatio(&outputs[i]);
           }
           delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
         }
@@ -560,6 +562,30 @@ OutputConfigurator::GetMirrorModeCTM(
   }
 
   return ctm;  // Same aspect ratio - return identity
+}
+
+float OutputConfigurator::GetMirroredDisplayAreaRatio(
+    const OutputConfigurator::OutputSnapshot* output) {
+  float area_ratio = 1.0f;
+  int native_mode_width = 0, native_mode_height = 0;
+  int mirror_mode_width = 0, mirror_mode_height = 0;
+  if (!delegate_->GetModeDetails(output->native_mode,
+          &native_mode_width, &native_mode_height, NULL) ||
+      !delegate_->GetModeDetails(output->mirror_mode,
+          &mirror_mode_width, &mirror_mode_height, NULL))
+    return area_ratio;
+
+  if (native_mode_height == 0 || mirror_mode_height == 0 ||
+      native_mode_width == 0 || mirror_mode_width == 0)
+    return area_ratio;
+
+  float width_ratio = static_cast<float>(mirror_mode_width) /
+      static_cast<float>(native_mode_width);
+  float height_ratio = static_cast<float>(mirror_mode_height) /
+      static_cast<float>(native_mode_height);
+
+  area_ratio = width_ratio * height_ratio;
+  return area_ratio;
 }
 
 }  // namespace chromeos

@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 #define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -283,6 +284,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // suspended.
   void ResumeDisplays();
 
+  const std::map<int, float>& GetMirroredDisplayAreaRatioMap() {
+    return mirrored_display_area_ratio_map_;
+  }
+
  private:
   // Configure outputs.
   void ConfigureOutputs();
@@ -307,8 +312,21 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   CoordinateTransformation GetMirrorModeCTM(
       const OutputConfigurator::OutputSnapshot* output);
 
+  // Returns the ratio between mirrored mode area and native mode area:
+  // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
+  float GetMirroredDisplayAreaRatio(
+      const OutputConfigurator::OutputSnapshot* output);
+
   StateController* state_controller_;
   scoped_ptr<Delegate> delegate_;
+
+  // Key of the map is the touch display's id, and the value of the map is the
+  // touch display's area ratio in mirror mode defined as :
+  // mirror_mode_area / native_mode_area.
+  // This is used for scaling touch event's radius when the touch display is in
+  // mirror mode :
+  // new_touch_radius = sqrt(area_ratio) * old_touch_radius
+  std::map<int, float> mirrored_display_area_ratio_map_;
 
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the

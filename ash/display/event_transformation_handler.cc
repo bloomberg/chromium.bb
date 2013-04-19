@@ -4,6 +4,8 @@
 
 #include "ash/display/event_transformation_handler.h"
 
+#include <cmath>
+
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -14,6 +16,10 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/display/output_configurator.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace ash {
 namespace internal {
@@ -50,6 +56,40 @@ void EventTransformationHandler::OnScrollEvent(ui::ScrollEvent* event) {
   event->Scale(scale);
 }
 
+#if defined(OS_CHROMEOS)
+// This is to scale the TouchEvent's radius when the touch display is in
+// mirror mode. TouchEvent's radius is often reported in the touchscreen's
+// native resolution. In mirror mode, the touch display could be configured
+// at a lower resolution. We scale down the radius using the ratio defined as
+// the sqrt of
+// (mirror_width * mirror_height) / (native_width * native_height)
+void EventTransformationHandler::OnTouchEvent(ui::TouchEvent* event) {
+  using chromeos::OutputConfigurator;
+  OutputConfigurator* output_configurator =
+      ash::Shell::GetInstance()->output_configurator();
+
+  if (output_configurator->output_state() != chromeos::STATE_DUAL_MIRROR)
+    return;
+
+  const std::map<int, float>& area_ratio_map =
+      output_configurator->GetMirroredDisplayAreaRatioMap();
+
+  // TODO(miletus): When there are more than 1 touchscreen (e.g. Link connected
+  // to an external touchscreen), the correct way to do is to have a way
+  // to find out which touchscreen is the event originating from and use the
+  // area ratio of that touchscreen to scale the event's radius.
+  // Tracked here crbug.com/233245
+  if (area_ratio_map.size() != 1) {
+    LOG(ERROR) << "Mirroring mode with " << area_ratio_map.size()
+               << " touch display found";
+    return;
+  }
+
+  float area_ratio_sqrt = std::sqrt(area_ratio_map.begin()->second);
+  event->set_radius_x(event->radius_x() * area_ratio_sqrt);
+  event->set_radius_y(event->radius_y() * area_ratio_sqrt);
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace internal
 }  // namespace ash
-
