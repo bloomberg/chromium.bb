@@ -45,24 +45,24 @@ WebIDBCursorImpl::~WebIDBCursorImpl()
 {
 }
 
-void WebIDBCursorImpl::advance(unsigned long count, WebIDBCallbacks* callbacks, WebExceptionCode& ec)
+void WebIDBCursorImpl::advance(unsigned long count, WebIDBCallbacks* callbacks)
 {
-    m_idbCursorBackend->advance(count, IDBCallbacksProxy::create(adoptPtr(callbacks)), ec);
+    m_idbCursorBackend->advance(count, IDBCallbacksProxy::create(adoptPtr(callbacks)));
 }
 
-void WebIDBCursorImpl::continueFunction(const WebIDBKey& key, WebIDBCallbacks* callbacks, WebExceptionCode& ec)
+void WebIDBCursorImpl::continueFunction(const WebIDBKey& key, WebIDBCallbacks* callbacks)
 {
-    m_idbCursorBackend->continueFunction(key, IDBCallbacksProxy::create(adoptPtr(callbacks)), ec);
+    m_idbCursorBackend->continueFunction(key, IDBCallbacksProxy::create(adoptPtr(callbacks)));
 }
 
-void WebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks, WebExceptionCode& ec)
+void WebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks)
 {
-    m_idbCursorBackend->deleteFunction(IDBCallbacksProxy::create(adoptPtr(callbacks)), ec);
+    m_idbCursorBackend->deleteFunction(IDBCallbacksProxy::create(adoptPtr(callbacks)));
 }
 
-void WebIDBCursorImpl::prefetchContinue(int numberToFetch, WebIDBCallbacks* callbacks, WebExceptionCode& ec)
+void WebIDBCursorImpl::prefetchContinue(int numberToFetch, WebIDBCallbacks* callbacks)
 {
-    m_idbCursorBackend->prefetchContinue(numberToFetch, IDBCallbacksProxy::create(adoptPtr(callbacks)), ec);
+    m_idbCursorBackend->prefetchContinue(numberToFetch, IDBCallbacksProxy::create(adoptPtr(callbacks)));
 }
 
 void WebIDBCursorImpl::prefetchReset(int usedPrefetches, int unusedPrefetches)

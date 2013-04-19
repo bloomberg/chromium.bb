@@ -47,9 +47,29 @@ public:
     };
 
     virtual void advance(unsigned long, WebIDBCallbacks*, WebExceptionCode&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void advance(unsigned long count, WebIDBCallbacks* callbacks)
+    {
+        WebExceptionCode ec;
+        advance(count, callbacks, ec);
+    }
     virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*, WebExceptionCode&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void continueFunction(const WebIDBKey& key, WebIDBCallbacks* callbacks)
+    {
+        WebExceptionCode ec;
+        continueFunction(key, callbacks, ec);
+    }
     virtual void deleteFunction(WebIDBCallbacks*, WebExceptionCode&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void deleteFunction(WebIDBCallbacks* callbacks)
+    {
+        WebExceptionCode ec;
+        deleteFunction(callbacks, ec);
+    }
     virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks*, WebExceptionCode&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks* callbacks)
+    {
+        WebExceptionCode ec;
+        prefetchContinue(numberToFetch, callbacks, ec);
+    }
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void postSuccessHandlerCallback() { } // Only used in frontend.
 

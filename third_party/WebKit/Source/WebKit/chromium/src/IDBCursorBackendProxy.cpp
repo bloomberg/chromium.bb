@@ -50,19 +50,19 @@ IDBCursorBackendProxy::~IDBCursorBackendProxy()
 {
 }
 
-void IDBCursorBackendProxy::advance(unsigned long count, PassRefPtr<IDBCallbacks> callbacks, ExceptionCode& ec)
+void IDBCursorBackendProxy::advance(unsigned long count, PassRefPtr<IDBCallbacks> callbacks)
 {
-    m_idbCursor->advance(count, new WebIDBCallbacksImpl(callbacks), ec);
+    m_idbCursor->advance(count, new WebIDBCallbacksImpl(callbacks));
 }
 
-void IDBCursorBackendProxy::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBCallbacks> callbacks, ExceptionCode& ec)
+void IDBCursorBackendProxy::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBCallbacks> callbacks)
 {
-    m_idbCursor->continueFunction(key, new WebIDBCallbacksImpl(callbacks), ec);
+    m_idbCursor->continueFunction(key, new WebIDBCallbacksImpl(callbacks));
 }
 
-void IDBCursorBackendProxy::deleteFunction(PassRefPtr<IDBCallbacks> callbacks, ExceptionCode& ec)
+void IDBCursorBackendProxy::deleteFunction(PassRefPtr<IDBCallbacks> callbacks)
 {
-    m_idbCursor->deleteFunction(new WebIDBCallbacksImpl(callbacks), ec);
+    m_idbCursor->deleteFunction(new WebIDBCallbacksImpl(callbacks));
 }
 
 void IDBCursorBackendProxy::postSuccessHandlerCallback()

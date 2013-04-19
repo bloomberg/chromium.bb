@@ -53,10 +53,10 @@ public:
     virtual ~IDBCursorBackendImpl();
 
     // IDBCursorBackendInterface
-    virtual void advance(unsigned long, PassRefPtr<IDBCallbacks>, ExceptionCode&);
-    virtual void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBCallbacks>, ExceptionCode&);
-    virtual void deleteFunction(PassRefPtr<IDBCallbacks>, ExceptionCode&);
-    virtual void prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks>, ExceptionCode&);
+    virtual void advance(unsigned long, PassRefPtr<IDBCallbacks>);
+    virtual void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBCallbacks>);
+    virtual void deleteFunction(PassRefPtr<IDBCallbacks>);
+    virtual void prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks>);
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches);
     virtual void postSuccessHandlerCallback() { }
 

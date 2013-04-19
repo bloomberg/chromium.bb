@@ -116,14 +116,14 @@ IDBCursorBackendImpl::~IDBCursorBackendImpl()
 }
 
 
-void IDBCursorBackendImpl::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBCallbacks> prpCallbacks, ExceptionCode&)
+void IDBCursorBackendImpl::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBCallbacks> prpCallbacks)
 {
     IDB_TRACE("IDBCursorBackendImpl::continue");
     RefPtr<IDBCallbacks> callbacks = prpCallbacks;
     m_transaction->scheduleTask(m_taskType, CursorIterationOperation::create(this, key, callbacks));
 }
 
-void IDBCursorBackendImpl::advance(unsigned long count, PassRefPtr<IDBCallbacks> prpCallbacks, ExceptionCode&)
+void IDBCursorBackendImpl::advance(unsigned long count, PassRefPtr<IDBCallbacks> prpCallbacks)
 {
     IDB_TRACE("IDBCursorBackendImpl::advance");
     RefPtr<IDBCallbacks> callbacks = prpCallbacks;
@@ -154,7 +154,7 @@ void IDBCursorBackendImpl::CursorIterationOperation::perform(IDBTransactionBacke
     m_callbacks->onSuccess(m_cursor->key(), m_cursor->primaryKey(), m_cursor->value());
 }
 
-void IDBCursorBackendImpl::deleteFunction(PassRefPtr<IDBCallbacks> prpCallbacks, ExceptionCode&)
+void IDBCursorBackendImpl::deleteFunction(PassRefPtr<IDBCallbacks> prpCallbacks)
 {
     IDB_TRACE("IDBCursorBackendImpl::delete");
     ASSERT(m_transaction->mode() != IndexedDB::TransactionReadOnly);
@@ -162,7 +162,7 @@ void IDBCursorBackendImpl::deleteFunction(PassRefPtr<IDBCallbacks> prpCallbacks,
     m_database->deleteRange(m_transaction->id(), m_objectStoreId, keyRange.release(), prpCallbacks);
 }
 
-void IDBCursorBackendImpl::prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks> prpCallbacks, ExceptionCode&)
+void IDBCursorBackendImpl::prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks> prpCallbacks)
 {
     IDB_TRACE("IDBCursorBackendImpl::prefetchContinue");
     RefPtr<IDBCallbacks> callbacks = prpCallbacks;

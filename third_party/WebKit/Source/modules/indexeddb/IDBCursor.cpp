@@ -172,8 +172,7 @@ void IDBCursor::advance(unsigned long count, ExceptionCode& ec)
 
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->advance(count, m_request, ec);
-    ASSERT(!ec);
+    m_backend->advance(count, m_request);
 }
 
 void IDBCursor::continueFunction(ScriptExecutionContext* context, const ScriptValue& keyValue, ExceptionCode& ec)
@@ -221,8 +220,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionCode& ec)
     //        will be on the original context openCursor was called on. Is this right?
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->continueFunction(key, m_request, ec);
-    ASSERT(!ec);
+    m_backend->continueFunction(key, m_request);
 }
 
 PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context, ExceptionCode& ec)
@@ -243,8 +241,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
         return 0;
     }
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    m_backend->deleteFunction(request, ec);
-    ASSERT(!ec);
+    m_backend->deleteFunction(request);
     return request.release();
 }
 
