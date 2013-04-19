@@ -2001,11 +2001,30 @@ other types of suffix sets.
 
 <histogram name="Net.SpdySessionErrorDetails" enum="SpdyProtocolErrorDetails"
     units="count">
+  <obsolete>
+    Replaced by SpdySessionErrorDetails2 on 2013-04-19.
+  </obsolete>
+  <summary>The type of SPDY Protocol error encountered.</summary>
+</histogram>
+
+<histogram name="Net.SpdySessionErrorDetails2" enum="SpdyProtocolErrorDetails2"
+    units="count">
   <summary>The type of SPDY Protocol error encountered.</summary>
 </histogram>
 
 <histogram name="Net.SpdySessionErrorDetails_Google"
     enum="SpdyProtocolErrorDetails" units="count">
+  <obsolete>
+    Replaced by SpdySessionErrorDetails_Google2 on 2013-04-19.
+  </obsolete>
+  <summary>
+    The type of SPDY Protocol error encountered when talking to a google.com
+    server.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySessionErrorDetails_Google2"
+    enum="SpdyProtocolErrorDetails2" units="count">
   <summary>
     The type of SPDY Protocol error encountered when talking to a google.com
     server.
@@ -5788,6 +5807,7 @@ other types of suffix sets.
   <int value="803" label="DNS_TIMED_OUT"/>
   <int value="804" label="DNS_CACHE_MISS"/>
   <int value="805" label="DNS_SEARCH_EMPTY"/>
+  <int value="806" label="DNS_SORT_ERROR"/>
 </enum>
 
 <enum name="NetPreconnectUtilization" type="int">
@@ -6103,6 +6123,8 @@ other types of suffix sets.
   <int value="1" label="match"/>
 </enum>
 
+<!-- Replaced by SpdyProtocolErrorDetails2 on 2013-04-19. -->
+
 <enum name="SpdyProtocolErrorDetails" type="int">
   <int value="0" label="No error"/>
   <int value="1" label="Invalid Control Frame"/>
@@ -6113,6 +6135,9 @@ other types of suffix sets.
   <int value="6" label="Compress Failure"/>
   <int value="7" label="Credential Frame Corrupt"/>
   <int value="8" label="Invalid Data Frame Flags"/>
+<!-- r181910 added an enum value here, so don't trust the counts for
+       the values below for Chrome builds after that revision. -->
+
   <int value="9" label="Invalid Status Code"/>
   <int value="10" label="Protocol Error"/>
   <int value="11" label="Invalid Stream"/>
@@ -6131,6 +6156,45 @@ other types of suffix sets.
   <int value="24" label="Request For Secure Content Over Insecure Session"/>
   <int value="25" label="Protocol Error Syn Reply Not Received"/>
   <int value="26" label="Num Spdy Protocol Error Details"/>
+</enum>
+
+<enum name="SpdyProtocolErrorDetails2" type="int">
+<!-- SpdyFramer::SpdyErrors -->
+
+  <int value="0" label="No error"/>
+  <int value="1" label="Invalid Control Frame"/>
+  <int value="2" label="Control Frame Payload Too Large"/>
+  <int value="3" label="Zlib Init Failure"/>
+  <int value="4" label="Unsupported Version"/>
+  <int value="5" label="Decompress Failure"/>
+  <int value="6" label="Compress Failure"/>
+  <int value="7" label="Credential Frame Corrupt"/>
+  <int value="8" label="Invalid Data Frame Flags"/>
+  <int value="9" label="Invalid Control Frame Flags"/>
+<!-- SpdyRstStreamStatus -->
+
+  <int value="10" label="(Unused)"/>
+  <int value="11" label="Protocol Error"/>
+  <int value="12" label="Invalid Stream"/>
+  <int value="13" label="Refused Stream"/>
+  <int value="14" label="Unsupported Version"/>
+  <int value="15" label="Cancel"/>
+  <int value="16" label="Internal Error"/>
+  <int value="17" label="Flow Control Error"/>
+  <int value="18" label="Stream In Use"/>
+  <int value="19" label="Stream Already Closed"/>
+  <int value="20" label="Invalid Credentials"/>
+  <int value="21" label="Frame Too Large"/>
+<!-- SpdySession errors -->
+
+  <int value="22" label="Unexpected Ping"/>
+  <int value="23" label="Rst Stream For Non Active Stream"/>
+  <int value="24" label="Spdy Compression Failure"/>
+  <int value="25" label="Request For Secure Content Over Insecure Session"/>
+  <int value="26" label="Syn Reply Not Received"/>
+  <int value="27" label="Invalid Window Update Size"/>
+  <int value="28" label="Receive Window Size Violation"/>
+  <int value="29" label="(Unused)"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">

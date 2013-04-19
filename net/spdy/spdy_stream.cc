@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -188,7 +189,7 @@ void SpdyStream::PushedStreamReplayData() {
       delegate_->OnDataReceived(scoped_ptr<SpdyBuffer>(buffers[i]));
     } else {
       delegate_->OnDataReceived(scoped_ptr<SpdyBuffer>());
-      session_->CloseStream(stream_id_, net::OK);
+      session_->CloseStream(stream_id_, OK);
       // Note: |this| may be deleted after calling CloseStream.
       DCHECK_EQ(buffers.size() - 1, i);
     }
@@ -371,15 +372,15 @@ void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
-  // Since we never decrease the initial window size,
+  // Since we never decrease the initial receive window size,
   // |delta_window_size| should never cause |recv_window_size_| to go
-  // negative. If we do, it's a client-side bug, so we use
-  // PROTOCOL_ERROR for lack of a better error code.
+  // negative. If we do, the receive window isn't being respected.
   if (delta_window_size > recv_window_size_) {
     session_->ResetStream(
         stream_id_, RST_STREAM_PROTOCOL_ERROR,
-        "Invalid delta_window_size for DecreaseRecvWindowSize");
-    NOTREACHED();
+        "delta_window_size is " + base::IntToString(delta_window_size) +
+        " in DecreaseRecvWindowSize, which is larger than the receive " +
+        "window size of " + base::IntToString(recv_window_size_));
     return;
   }
 
@@ -525,7 +526,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   if (!buffer) {
     metrics_.StopStream();
-    session_->CloseStream(stream_id_, net::OK);
+    session_->CloseStream(stream_id_, OK);
     // Note: |this| may be deleted after calling CloseStream.
     return;
   }
@@ -544,7 +545,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   recv_bytes_ += length;
   recv_last_byte_time_ = base::TimeTicks::Now();
 
-  if (delegate_->OnDataReceived(buffer.Pass()) != net::OK) {
+  if (delegate_->OnDataReceived(buffer.Pass()) != OK) {
     // |delegate_| rejected the data.
     LogStreamError(ERR_SPDY_PROTOCOL_ERROR, "Delegate rejected the data");
     session_->CloseStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
@@ -598,7 +599,7 @@ void SpdyStream::Cancel() {
 
 void SpdyStream::Close() {
   if (stream_id_ != 0)
-    session_->CloseStream(stream_id_, net::OK);
+    session_->CloseStream(stream_id_, OK);
   else
     session_->CloseCreatedStream(this, OK);
 }

@@ -60,6 +60,8 @@ struct LoadTimingInfo;
 class SpdyStream;
 class SSLInfo;
 
+// NOTE: There's an enum of the same name (also with numeric suffixes)
+// in histograms.xml.
 enum SpdyProtocolErrorDetails {
   // SpdyFramer::SpdyErrors
   SPDY_ERROR_NO_ERROR,
@@ -93,6 +95,8 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_SPDY_COMPRESSION_FAILURE,
   PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION,
   PROTOCOL_ERROR_SYN_REPLY_NOT_RECEIVED,
+  PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE,
+  PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION,
   NUM_SPDY_PROTOCOL_ERROR_DETAILS
 };
 
@@ -225,9 +229,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // testing, setting is_secure to false allows initialization with a
   // pre-existing TCP socket.
   // Returns OK on success, or an error on failure.
-  net::Error InitializeWithSocket(ClientSocketHandle* connection,
-                                  bool is_secure,
-                                  int certificate_error_code);
+  Error InitializeWithSocket(ClientSocketHandle* connection,
+                             bool is_secure,
+                             int certificate_error_code);
 
   // Check to see if this SPDY session can support an additional domain.
   // If the session is un-authenticated, then this call always returns true.
@@ -274,7 +278,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Creates and returns a SpdyBuffer holding a data frame with the
   // given data. May return NULL if stalled by flow control.
   scoped_ptr<SpdyBuffer> CreateDataBuffer(SpdyStreamId stream_id,
-                                          net::IOBuffer* data,
+                                          IOBuffer* data,
                                           int len,
                                           SpdyDataFlags flags);
 
@@ -326,7 +330,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |remove_from_pool| indicates whether to also remove the session from the
   // session pool.
   // |description| indicates the reason for the error.
-  void CloseSessionOnError(net::Error err,
+  void CloseSessionOnError(Error err,
                            bool remove_from_pool,
                            const std::string& description);
 
@@ -608,14 +612,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |last_good_stream_id|, as well as any created or pending streams.
   // Does not close unclaimed push streams.
   void CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
-                            net::Error status);
+                            Error status);
 
   // Closes all streams, including unclaimed push streams.  Used as part of
   // shutdown.
-  void CloseAllStreams(net::Error status);
+  void CloseAllStreams(Error status);
 
   void LogAbandonedStream(const scoped_refptr<SpdyStream>& stream,
-                          net::Error status);
+                          Error status);
 
   // Invokes a user callback for stream creation.  We provide this method so it
   // can be deferred to the MessageLoop, so we avoid re-entrancy problems.
@@ -833,7 +837,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // If an error has occurred on the session, the session is effectively
   // dead.  Record this error here.  When no error has occurred, |error_| will
   // be OK.
-  net::Error error_;
+  Error error_;
   State state_;
 
   // Limits

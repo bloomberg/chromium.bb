@@ -1125,10 +1125,10 @@ EVENT_TYPE(SPDY_SESSION_SEND_DATA)
 //   }
 EVENT_TYPE(SPDY_SESSION_RECV_DATA)
 
-// Logs that a stream is stalled by the session send window being closed.
+// A stream is stalled by the session send window being closed.
 EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
 
-// Logs that a stream is stalled by its send window being closed.
+// A stream is stalled by its send window being closed.
 EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW)
 
 // Session is closing
@@ -1142,11 +1142,16 @@ EVENT_TYPE(SPDY_SESSION_CLOSE)
 // the maximum number of concurrent streams.
 EVENT_TYPE(SPDY_SESSION_STALLED_MAX_STREAMS)
 
-// Received a negative value for initial window size in SETTINGS frame.
+// Received a value for initial window size in SETTINGS frame with
+// flow control turned off.
+EVENT_TYPE(SPDY_SESSION_INITIAL_WINDOW_SIZE_NO_FLOW_CONTROL)
+
+// Received an out-of-range value for initial window size in SETTINGS
+// frame.
 //   {
 //     "initial_window_size"  : <The initial window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_NEGATIVE_INITIAL_WINDOW_SIZE)
+EVENT_TYPE(SPDY_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE)
 
 // Updating streams send window size by the delta window size.
 //   {

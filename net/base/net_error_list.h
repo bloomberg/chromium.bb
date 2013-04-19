@@ -465,7 +465,7 @@ NET_ERROR(INVALID_SPDY_STREAM, -335)
 // There are no supported proxies in the provided list.
 NET_ERROR(NO_SUPPORTED_PROXIES, -336)
 
-// There is a SPDY protocol framing error.
+// There is a SPDY protocol error.
 NET_ERROR(SPDY_PROTOCOL_ERROR, -337)
 
 // Credentials could not be established during HTTP Authentication.
