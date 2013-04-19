@@ -18,6 +18,9 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
+# Commit message for uprevving Portage packages.
+_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s as stable.'
+
 # Dictionary of valid commands with usage information.
 COMMAND_DICTIONARY = {
                         'commit':
@@ -295,6 +298,7 @@ def main(_argv):
           cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
                                     print_cmd=False, cwd=overlay)
 
+        messages = []
         for ebuild in ebuilds:
           if options.verbose:
             cros_build_lib.Info('Working on %s', ebuild.package)
@@ -303,11 +307,15 @@ def main(_argv):
             if new_package:
               revved_packages.append(ebuild.package)
               new_package_atoms.append('=%s' % new_package)
+              messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
           except (OSError, IOError):
             cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
                     'Note you will have to go into %s '
                     'and reset the git repo yourself.' % overlay)
             raise
+
+        if messages:
+          portage_utilities.EBuild.CommitChange('\n\n'.join(messages), overlay)
 
         if cros_build_lib.IsInsideChroot():
           # Regenerate caches if need be.  We do this all the time to

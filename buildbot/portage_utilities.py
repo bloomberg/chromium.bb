@@ -29,9 +29,6 @@ _GLOBAL_OVERLAYS = [
   '%(buildroot)s/src/third_party/portage-stable',
 ]
 
-# Takes two strings, package_name and commit_id.
-_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit(s) %s as stable.'
-
 # Define datastructures for holding PV and CPV objects.
 _PV_FIELDS = ['pv', 'package', 'version', 'version_no_rev', 'rev']
 PV = collections.namedtuple('PV', _PV_FIELDS)
@@ -437,15 +434,15 @@ class EBuild(object):
     to redirect the new stable ebuild to another file.
 
     Args:
-        srcroot: full path to the 'src' subdirectory in the source
-          repository.
-        redirect_file: Optional file to write the new ebuild.  By default
-          it is written using the standard rev'ing logic.  This file must be
-          opened and closed by the caller.
+      srcroot: full path to the 'src' subdirectory in the source
+        repository.
+      redirect_file: Optional file to write the new ebuild.  By default
+        it is written using the standard rev'ing logic.  This file must be
+        opened and closed by the caller.
 
     Raises:
-        OSError: Error occurred while creating a new ebuild.
-        IOError: Error occurred while writing to the new revved ebuild file.
+      OSError: Error occurred while creating a new ebuild.
+      IOError: Error occurred while writing to the new revved ebuild file.
     Returns:
       If the revved package is different than the old ebuild, return the full
       revved package name, including the version number. Otherwise, return None.
@@ -489,8 +486,6 @@ class EBuild(object):
         self._RunCommand(['git', 'rm', old_ebuild_path],
                          cwd=self._overlay)
 
-      message = _GIT_COMMIT_MESSAGE % (self.package, ','.join(commit_ids))
-      self.CommitChange(message, self._overlay)
       return '%s-%s' % (self.package, new_version)
 
   @classmethod

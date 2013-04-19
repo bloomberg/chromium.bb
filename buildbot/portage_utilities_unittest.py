@@ -302,15 +302,6 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
         portage_utilities.EBuild._RunCommand(
             ['git', 'rm', self.m_ebuild.ebuild_path],
             cwd=self.overlay)
-      if multi:
-        message = portage_utilities._GIT_COMMIT_MESSAGE % (
-          self.m_ebuild.package, 'my_id1,my_id2')
-      else:
-        message = portage_utilities._GIT_COMMIT_MESSAGE % (
-          self.m_ebuild.package, 'my_id')
-      cros_build_lib.RunCommand(
-          ['git', 'commit', '-a', '-m', message], cwd=self.overlay,
-          print_cmd=False)
     else:
       os.unlink(self.revved_ebuild_path)
 
