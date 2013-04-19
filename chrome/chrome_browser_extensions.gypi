@@ -67,6 +67,8 @@
         'browser/extensions/activity_database.h',
         'browser/extensions/activity_log.cc',
         'browser/extensions/activity_log.h',
+        'browser/extensions/activity_log_web_request_constants.cc',
+        'browser/extensions/activity_log_web_request_constants.h',
         'browser/extensions/admin_policy.cc',
         'browser/extensions/admin_policy.h',
         'browser/extensions/api_actions.cc',
