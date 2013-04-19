@@ -22,3 +22,4 @@ mpcomplete@chromium.org
 yoz@chromium.org
 
 per-file web_view_browsertest.cc=fsamuel@chromium.org
+per-file web_view_interactive_browsertest.cc=fsamuel@chromium.org
