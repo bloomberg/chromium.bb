@@ -134,14 +134,11 @@ private:
             void reportMemoryUsage(MemoryObjectInfo*) const { }
         };
 
-#if COMPILER(MSVC)
-#pragma warning(push)
-#pragma warning(disable: 4624) // Disable warning: destructor could not be generated because a base class destructor is inaccessible.
-#endif
-        struct Base : public Type, public BaseMixin { };
-#if COMPILER(MSVC)
-#pragma warning(pop)
-#endif
+        struct Base : public Type, public BaseMixin {
+            // Provide expicit destructor without definition to avoid MSVC warning "destructor could
+            // not be generated because a base class destructor is inaccessible."
+            ~Base();
+        };
 
         template <typename T, T t> class Helper { };
 
