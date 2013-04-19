@@ -14,6 +14,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,12 +26,6 @@ using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::StrictMock;
 using ::testing::_;
-
-#define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test) do {                \
-    EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times((expect));   \
-    code_to_test;                                                         \
-    Mock::VerifyAndClearExpectations(layer_tree_host_.get());           \
-  } while (false)
 
 #define EXPECT_SET_NEEDS_FULL_TREE_SYNC(expect, code_to_test) do {        \
     EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times((expect)); \

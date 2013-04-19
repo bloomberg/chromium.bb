@@ -83,11 +83,15 @@ scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 }
 
 void TextureLayer::SetFlipped(bool flipped) {
+  if (flipped_ == flipped)
+    return;
   flipped_ = flipped;
   SetNeedsCommit();
 }
 
 void TextureLayer::SetUV(gfx::PointF top_left, gfx::PointF bottom_right) {
+  if (uv_top_left_ == top_left && uv_bottom_right_ == bottom_right)
+    return;
   uv_top_left_ = top_left;
   uv_bottom_right_ = bottom_right;
   SetNeedsCommit();
@@ -101,6 +105,11 @@ void TextureLayer::SetVertexOpacity(float bottom_left,
   // 1--2
   // |  |
   // 0--3
+  if (vertex_opacity_[0] == bottom_left &&
+      vertex_opacity_[1] == top_left &&
+      vertex_opacity_[2] == top_right &&
+      vertex_opacity_[3] == bottom_right)
+    return;
   vertex_opacity_[0] = bottom_left;
   vertex_opacity_[1] = top_left;
   vertex_opacity_[2] = top_right;
@@ -109,6 +118,8 @@ void TextureLayer::SetVertexOpacity(float bottom_left,
 }
 
 void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
+  if (premultiplied_alpha_ == premultiplied_alpha)
+    return;
   premultiplied_alpha_ = premultiplied_alpha;
   SetNeedsCommit();
 }

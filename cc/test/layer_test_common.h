@@ -5,6 +5,12 @@
 #ifndef CC_TEST_LAYER_TEST_COMMON_H_
 #define CC_TEST_LAYER_TEST_COMMON_H_
 
+#define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test) do {                \
+    EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times((expect));   \
+    code_to_test;                                                         \
+    Mock::VerifyAndClearExpectations(layer_tree_host_.get());           \
+  } while (false)
+
 namespace gfx { class Rect; }
 
 namespace cc {

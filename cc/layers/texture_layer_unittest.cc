@@ -13,6 +13,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -179,6 +180,24 @@ TEST_F(TextureLayerTest, SyncImplWhenRemovingFromTree) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   test_layer->RemoveFromParent();
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+}
+
+TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
+  scoped_refptr<TextureLayer> test_layer = TextureLayer::Create(NULL);
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+
+  // Test properties that should call SetNeedsCommit.  All properties need to
+  // be set to new values in order for SetNeedsCommit to be called.
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFlipped(false));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUV(
+      gfx::PointF(0.25f, 0.25f), gfx::PointF(0.75f, 0.75f)));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetVertexOpacity(
+      0.5f, 0.5f, 0.5f, 0.5f));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPremultipliedAlpha(false));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTextureId(1));
+
+  // Calling SetTextureId can call AcquireLayerTextures.
+  EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(AnyNumber());
 }
 
 class MockMailboxCallback {
