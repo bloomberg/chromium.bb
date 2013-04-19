@@ -917,72 +917,6 @@ html[dir=rtl] .step-extra-controls {
   z-index: 5;
 }
 
-#enroll-login-screen {
-  display: -webkit-box;
-  width: 630px;
-}
-
-#enroll-login-info {
-  width: 310px;
-}
-
-.enroll-login-item {
-  font-size: 0.9em;
-  margin: 16px 8px;
-}
-
-.enroll-login-item-content {
-  -webkit-margin-start: 52px;
-}
-
-.enroll-login-item-header {
-  font-weight: bold;
-  margin: 0 8px 0 0;
-}
-
-.enroll-login-item-image {
-  position: absolute;
-}
-
-#enroll-login-form {
-  height: 100%;
-  width: 310px;
-}
-
-#gaia-local-login {
-  border: none;
-  height: 100%;
-  vertical-align: top;
-  width: 100%;
-}
-
-#enroll-confirmation-screen {
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#enroll-confirmation-content {
-  height: 1.5em;
-  margin-top: -.75em;
-  position: absolute;
-  text-align: center;
-  top: 50%;
-  width: 100%;
-}
-
-#enroll-confirmation-image {
-  vertical-align: middle;
-}
-
-#enroll-confirmation-footer {
-  bottom: 0;
-  text-align: end;
-  width: 100%;
-}
-
 /* Styling for OAuth enrollment screen. */
 
 #oauth-enroll-container {
@@ -1112,23 +1046,6 @@ span.bold {
       0 -1px 2px rgba(0,0,0,1);
 }
 
-#notification-area {
-  color: #666;
-  position: absolute;
-  text-align: center;
-  top: 40px;
-  width: 100%;
-}
-
-#notification-area a {
-  color: rgb(37, 79, 155);
-}
-
-#notification-area .butter-bar {
-  margin: 0 auto;
-  max-width: 850px;
-}
-
 #background {
   -webkit-transition: 700ms opacity;
   background-size: 100% 100%;
@@ -1142,8 +1059,3 @@ span.bold {
 .background-initial {
   opacity: 0;
 }
-
-.background-final {
-  opacity: 1;
-}
-
