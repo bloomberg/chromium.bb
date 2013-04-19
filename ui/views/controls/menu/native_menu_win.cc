@@ -627,7 +627,8 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
   ui::MenuModel::ItemType type = model_->GetTypeAt(model_index);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
     item_data->submenu.reset(
-        new NativeMenuWin(model_->GetSubmenuModelAt(model_index), NULL));
+        new NativeMenuWin(model_->GetSubmenuModelAt(model_index),
+                          system_menu_for_));
     mii.fMask |= MIIM_SUBMENU;
     mii.hSubMenu = item_data->submenu->GetNativeMenu();
     GetNativeMenuWinFromHMENU(mii.hSubMenu)->parent_ = this;
