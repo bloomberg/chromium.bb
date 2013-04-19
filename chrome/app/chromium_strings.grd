@@ -445,7 +445,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
         Use hardware acceleration when available
       </message>
       <message name="IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE_RESTART" desc="The restart string after changing hardware acceleration mode">
-        ( requires Chromium <ph name="BEGIN_BUTTON">&lt;button id="gpu-mode-reset-restart-button" type="button" class="link-button"&gt;</ph>restart<ph name="END_BUTTON">&lt;/button&gt;</ph>)
+        (requires Chromium <ph name="BEGIN_BUTTON">&lt;button id="gpu-mode-reset-restart-button" type="button" class="link-button standalone-link-button"&gt;</ph>restart<ph name="END_BUTTON">&lt;/button&gt;</ph>)
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
 Chromium cannot read and write to its data directory:
