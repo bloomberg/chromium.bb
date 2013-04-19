@@ -10,6 +10,7 @@
 #include "cc/animation/timing_function.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
@@ -31,6 +32,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/thread_proxy.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "skia/ext/refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -40,6 +42,11 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
+
+using testing::_;
+using testing::AnyNumber;
+using testing::AtLeast;
+using testing::Mock;
 
 namespace cc {
 namespace {
@@ -2386,6 +2393,139 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 };
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
+
+class MockIOSurfaceWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+ public:
+  MockIOSurfaceWebGraphicsContext3D()
+      : FakeWebGraphicsContext3D() {}
+
+  virtual WebKit::WebGLId createTexture() OVERRIDE {
+    return 1;
+  }
+
+  virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
+    if (name == GL_EXTENSIONS) {
+      return WebKit::WebString(
+          "GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
+    }
+    return WebKit::WebString();
+  }
+
+  MOCK_METHOD1(activeTexture, void(WebKit::WGC3Denum texture));
+  MOCK_METHOD2(bindTexture, void(WebKit::WGC3Denum target,
+                                WebKit::WebGLId texture_id));
+  MOCK_METHOD3(texParameteri, void(WebKit::WGC3Denum target,
+                                   WebKit::WGC3Denum pname,
+                                   WebKit::WGC3Dint param));
+  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(WebKit::WGC3Denum target,
+                                                 WebKit::WGC3Dint width,
+                                                 WebKit::WGC3Dint height,
+                                                 WebKit::WGC3Duint ioSurfaceId,
+                                                 WebKit::WGC3Duint plane));
+  MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode,
+                                  WebKit::WGC3Dsizei count,
+                                  WebKit::WGC3Denum type,
+                                  WebKit::WGC3Dintptr offset));
+};
+
+
+class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
+ protected:
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+    scoped_ptr<MockIOSurfaceWebGraphicsContext3D> context(
+        new MockIOSurfaceWebGraphicsContext3D);
+    mock_context_ = context.get();
+    scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d(
+        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return output_surface.Pass();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+
+    layer_tree_host()->root_layer()->SetIsDrawable(false);
+
+    io_surface_id_ = 9;
+    io_surface_size_ = gfx::Size(6, 7);
+
+    scoped_refptr<IOSurfaceLayer> io_surface_layer = IOSurfaceLayer::Create();
+    io_surface_layer->SetBounds(gfx::Size(10, 10));
+    io_surface_layer->SetAnchorPoint(gfx::PointF());
+    io_surface_layer->SetIsDrawable(true);
+    io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
+    layer_tree_host()->root_layer()->AddChild(io_surface_layer);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // In WillDraw, the IOSurfaceLayer sets up the io surface texture.
+
+    EXPECT_CALL(*mock_context_, activeTexture(_))
+        .Times(0);
+    EXPECT_CALL(*mock_context_, bindTexture(GL_TEXTURE_RECTANGLE_ARB, 1))
+        .Times(AtLeast(1));
+    EXPECT_CALL(*mock_context_, texParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                              GL_TEXTURE_MIN_FILTER,
+                                              GL_LINEAR))
+        .Times(1);
+    EXPECT_CALL(*mock_context_, texParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                              GL_TEXTURE_MAG_FILTER,
+                                              GL_LINEAR))
+        .Times(1);
+    EXPECT_CALL(*mock_context_, texParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                              GL_TEXTURE_WRAP_S,
+                                              GL_CLAMP_TO_EDGE))
+        .Times(1);
+    EXPECT_CALL(*mock_context_, texParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                              GL_TEXTURE_WRAP_T,
+                                              GL_CLAMP_TO_EDGE))
+        .Times(1);
+
+    EXPECT_CALL(*mock_context_, texImageIOSurface2DCHROMIUM(
+        GL_TEXTURE_RECTANGLE_ARB,
+        io_surface_size_.width(),
+        io_surface_size_.height(),
+        io_surface_id_,
+        0))
+        .Times(1);
+
+    EXPECT_CALL(*mock_context_, bindTexture(_, 0))
+        .Times(AnyNumber());
+  }
+
+  virtual bool PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      bool result) OVERRIDE {
+    Mock::VerifyAndClearExpectations(&mock_context_);
+
+    // The io surface layer's texture is drawn.
+    EXPECT_CALL(*mock_context_, activeTexture(GL_TEXTURE0))
+        .Times(AtLeast(1));
+    EXPECT_CALL(*mock_context_, bindTexture(GL_TEXTURE_RECTANGLE_ARB, 1))
+        .Times(1);
+    EXPECT_CALL(*mock_context_, drawElements(GL_TRIANGLES, 6, _, _))
+        .Times(AtLeast(1));
+
+    return result;
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    Mock::VerifyAndClearExpectations(&mock_context_);
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  int io_surface_id_;
+  MockIOSurfaceWebGraphicsContext3D* mock_context_;
+  gfx::Size io_surface_size_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestIOSurfaceDrawing);
 
 }  // namespace
 }  // namespace cc

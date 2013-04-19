@@ -81,22 +81,9 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
               io_surface_texture_id_);
     }
 
-    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
     GLC(context3d,
         context3d->bindTexture(GL_TEXTURE_RECTANGLE_ARB,
                                io_surface_texture_id_));
-    GLC(context3d,
-        context3d->texParameteri(
-            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context3d,
-        context3d->texParameteri(
-            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context3d,
-        context3d->texParameteri(
-            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context3d,
-        context3d->texParameteri(
-            GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     context3d->texImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
                                            io_surface_size_.width(),
                                            io_surface_size_.height(),
