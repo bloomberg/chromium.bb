@@ -4,16 +4,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/test/compositor_test_support.h"
+#include "ui/test/test_suite.h"
 #include "ui/views/view.h"
 
-class MessageCenterTestSuite : public base::TestSuite {
+class MessageCenterTestSuite : public ui::test::UITestSuite {
  public:
-  MessageCenterTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  MessageCenterTestSuite(int argc, char** argv)
+      : ui::test::UITestSuite(argc, argv) {
+  }
 
  protected:
   virtual void Initialize() OVERRIDE;
@@ -24,17 +26,20 @@ class MessageCenterTestSuite : public base::TestSuite {
 };
 
 void MessageCenterTestSuite::Initialize() {
-  base::TestSuite::Initialize();
+  ui::test::UITestSuite::Initialize();
 
-  ui::RegisterPathProvider();
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-
+#if !defined(OS_MACOSX)
   ui::CompositorTestSupport::Initialize();
   ui::SetupTestCompositor();
+#endif
 }
 
 void MessageCenterTestSuite::Shutdown() {
+  ui::test::UITestSuite::Shutdown();
+
+#if !defined(OS_MACOSX)
   ui::CompositorTestSupport::Terminate();
+#endif
 }
 
 int main(int argc, char** argv) {

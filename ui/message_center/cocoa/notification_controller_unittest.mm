@@ -16,7 +16,7 @@
 
 namespace {
 
-class MockMessageCenter : public FakeMessageCenter {
+class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter()
     : last_removed_by_user_(false),
@@ -26,7 +26,8 @@ class MockMessageCenter : public FakeMessageCenter {
   virtual void RemoveNotification(const std::string& id,
                                   bool by_user) OVERRIDE {
     last_removed_id_ = id;
-    last_removed_by_user_ = by_user_;
+    last_removed_by_user_ = by_user;
+    ++remove_count_;
   }
 
   const std::string& last_removed_id() const { return last_removed_id_; }
@@ -82,7 +83,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
 
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
-                                              changeObserver:NULL]);
+                                               messageCenter:NULL]);
   [controller view];
 
   EXPECT_EQ(TestIcon(), [[controller iconView] image]);
@@ -108,7 +109,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
           NULL));
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
-                                              changeObserver:NULL]);
+                                               messageCenter:NULL]);
   [controller view];
 
   EXPECT_GT(NSHeight([[controller view] frame]),
@@ -132,9 +133,9 @@ TEST_F(NotificationControllerTest, Close) {
                                                messageCenter:&messageCenter]);
   [controller view];
 
-  EXPECT_TRUE(1, messageCenter.remove_count());
+  [[controller closeButton] performClick:nil];
+
+  EXPECT_EQ(1, messageCenter.remove_count());
   EXPECT_EQ("an_id", messageCenter.last_removed_id());
   EXPECT_TRUE(messageCenter.last_removed_by_user());
-
-  [[controller closeButton] performClick:nil];
 }
