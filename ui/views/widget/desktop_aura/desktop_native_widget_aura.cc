@@ -458,10 +458,12 @@ void DesktopNativeWidgetAura::Hide() {
 void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) {
   desktop_root_window_host_->ShowMaximizedWithBounds(restored_bounds);
+  window_->Show();
 }
 
 void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   desktop_root_window_host_->ShowWindowWithState(state);
+  window_->Show();
 }
 
 bool DesktopNativeWidgetAura::IsVisible() const {

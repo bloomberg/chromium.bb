@@ -1444,6 +1444,29 @@ TEST_F(WidgetTest, DesktopAuraFullscreenChildParentDestroyed) {
   RunPendingMessages();
 }
 
+// Test to ensure that the aura Window's visiblity state is set to visible if
+// the underlying widget is hidden and then shown.
+TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
+  // Create a widget.
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 300, 400);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+  NonClientView* non_client_view = widget.non_client_view();
+  NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
+  non_client_view->SetFrameView(frame_view);
+
+  widget.Hide();
+  EXPECT_FALSE(widget.GetNativeView()->IsVisible());
+  widget.Show();
+  EXPECT_TRUE(widget.GetNativeView()->IsVisible());
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 // Tests that wheel events generted from scroll events are targetted to the
