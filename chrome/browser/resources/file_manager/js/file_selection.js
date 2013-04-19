@@ -13,6 +13,7 @@
  */
 function FileSelection(fileManager, indexes) {
   this.fileManager_ = fileManager;
+  this.computeBytesSequence_ = 0;
   this.indexes = indexes;
   this.entries = [];
   this.urls = [];
@@ -23,7 +24,6 @@ function FileSelection(fileManager, indexes) {
   this.showBytes = false;
   this.allDriveFilesPresent = false,
   this.iconType = null;
-  this.cancelled_ = false;
   this.bytesKnown = false;
 
   // Synchronously compute what we can.
@@ -83,7 +83,8 @@ FileSelection.prototype.createTasks = function(callback) {
 /**
  * Computes the total size of selected files.
  *
- * @param {function} callback The callback.
+ * @param {function} callback Completion callback. Not called when cancelled,
+ *     or a new call has been invoked in the meantime.
  */
 FileSelection.prototype.computeBytes = function(callback) {
   if (this.entries.length == 0) {
@@ -92,26 +93,30 @@ FileSelection.prototype.computeBytes = function(callback) {
     return;
   }
 
-  var countdown = this.entries.length;
+  var computeBytesSequence = ++this.computeBytesSequence_;
   var pendingMetadataCount = 0;
 
   var maybeDone = function() {
-    if (countdown == 0 && pendingMetadataCount == 0 && !this.cancelled_) {
+    if (pendingMetadataCount == 0) {
       this.bytesKnown = true;
       callback();
     }
   }.bind(this);
 
-  var onProps = function(filesystem) {
-    this.bytes += filesystem.size;
+  var onProps = function(properties) {
+    // Ignore if the call got cancelled, or there is another new one fired.
+    if (computeBytesSequence != this.computeBytesSequence_)
+      return;
+
+    // It may happen that the metadata is not available because a file has been
+    // deleted in the meantime.
+    if (properties)
+      this.bytes += properties.size;
     pendingMetadataCount--;
     maybeDone();
   }.bind(this);
 
   for (var index = 0; index < this.entries.length; index++) {
-    if (this.cancelled_)
-      break;
-
     var entry = this.entries[index];
     if (entry.isFile) {
       this.showBytes |= !FileType.isHosted(entry);
@@ -121,21 +126,20 @@ FileSelection.prototype.computeBytes = function(callback) {
       // Don't compute the directory size as it's expensive.
       // crbug.com/179073.
       this.showBytes = false;
-      countdown = 0;
       break;
     }
-    countdown--;
   }
   maybeDone();
 };
 
 /**
- * Cancels any async computation.
+ * Cancels any async computation by increasing the sequence number. Results
+ * of any previous call to computeBytes() will be discarded.
  *
  * @private
  */
 FileSelection.prototype.cancelComputing_ = function() {
-  this.cancelled_ = true;
+  this.computeBytesSequence_++;
 };
 
 /**
