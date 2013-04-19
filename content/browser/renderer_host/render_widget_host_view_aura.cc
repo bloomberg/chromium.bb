@@ -399,18 +399,15 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit :
 
 void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
     ui::MouseEvent* event) {
-  if (in_shutdown_) {
-    event_filter_for_popup_exit_.reset();
+  if (in_shutdown_ || is_fullscreen_)
     return;
-  }
-  if (is_fullscreen_ || event->type() != ui::ET_MOUSE_PRESSED ||
-      !event->target())
+
+  if (event->type() != ui::ET_MOUSE_PRESSED || !event->target())
     return;
 
   DCHECK(popup_parent_host_view_);
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (target != window_ && target != popup_parent_host_view_->window_) {
-    event_filter_for_popup_exit_.reset();
     in_shutdown_ = true;
     host_->Shutdown();
   }
