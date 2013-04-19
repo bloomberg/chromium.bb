@@ -95,10 +95,12 @@ void WebMediaPlayerAndroid::cancelLoad() {
 }
 
 void WebMediaPlayerAndroid::play() {
+#if defined(GOOGLE_TV)
   if (hasVideo() && needs_external_surface_) {
     DCHECK(!needs_establish_peer_);
     RequestExternalSurface();
   }
+#endif
   if (hasVideo() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
@@ -414,6 +416,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   if (natural_size_.width == width && natural_size_.height == height)
     return;
 
+#if defined(GOOGLE_TV)
   static bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseExternalVideoSurfaceThresholdInPixels);
   static int threshold = 0;
@@ -430,6 +433,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     if (!paused())
       RequestExternalSurface();
   }
+#endif
 
   natural_size_.width = width;
   natural_size_.height = height;
@@ -553,5 +557,28 @@ void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
 }
+
+#if defined(GOOGLE_TV)
+bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
+  if (!video_weblayer_)
+    return false;
+
+  // Compute the geometry of video frame layer.
+  cc::Layer* layer = video_weblayer_->layer();
+  rect->set_size(layer->bounds());
+  while (layer) {
+    rect->Offset(layer->position().OffsetFromOrigin());
+    layer = layer->parent();
+  }
+
+  // Return false when the geometry hasn't been changed from the last time.
+  if (last_computed_rect_ == *rect)
+    return false;
+
+  // Store the changed geometry information when it is actually changed.
+  last_computed_rect_ = *rect;
+  return true;
+}
+#endif
 
 }  // namespace webkit_media

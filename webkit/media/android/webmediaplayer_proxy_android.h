@@ -45,8 +45,10 @@ class WebMediaPlayerProxyAndroid {
   // Request the player to exit fullscreen.
   virtual void ExitFullscreen(int player_id) = 0;
 
+#if defined(GOOGLE_TV)
   // Request an external surface for out-of-band compositing.
   virtual void RequestExternalSurface(int player_id) = 0;
+#endif
 };
 
 }  // namespace webkit_media

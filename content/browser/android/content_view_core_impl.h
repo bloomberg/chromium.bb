@@ -21,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 
 struct WebMenuItem;
 
@@ -268,6 +269,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
 
   void RequestExternalVideoSurface(int player_id);
+  void NotifyGeometryChange(int player_id, const gfx::RectF& rect);
 
   // --------------------------------------------------------------------------
   // Methods called from native code

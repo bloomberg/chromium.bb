@@ -68,7 +68,9 @@ class WebMediaPlayerImplAndroid : public WebMediaPlayerAndroid {
   virtual double GetCurrentTimeInternal() const OVERRIDE;
   virtual void ReleaseResourcesInternal() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+#if defined(GOOGLE_TV)
   virtual void RequestExternalSurface() OVERRIDE;
+#endif
 
   WebKit::WebFrame* const frame_;
 

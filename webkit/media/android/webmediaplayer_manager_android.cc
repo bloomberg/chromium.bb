@@ -4,6 +4,7 @@
 
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 
+#include "ui/gfx/rect_f.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 
 namespace webkit_media {
@@ -14,7 +15,7 @@ WebMediaPlayerManagerAndroid::WebMediaPlayerManagerAndroid()
 }
 
 WebMediaPlayerManagerAndroid::~WebMediaPlayerManagerAndroid() {
-  std::map<int32, WebMediaPlayerAndroid*>::iterator player_it;
+  std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {
     WebMediaPlayerAndroid* player = player_it->second;
@@ -33,7 +34,7 @@ void WebMediaPlayerManagerAndroid::UnregisterMediaPlayer(int player_id) {
 }
 
 void WebMediaPlayerManagerAndroid::ReleaseMediaResources() {
-  std::map<int32, WebMediaPlayerAndroid*>::iterator player_it;
+  std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {
     WebMediaPlayerAndroid* player = player_it->second;
@@ -46,7 +47,7 @@ void WebMediaPlayerManagerAndroid::ReleaseMediaResources() {
 
 WebMediaPlayerAndroid* WebMediaPlayerManagerAndroid::GetMediaPlayer(
     int player_id) {
-  std::map<int32, WebMediaPlayerAndroid*>::iterator iter =
+  std::map<int, WebMediaPlayerAndroid*>::iterator iter =
       media_players_.find(player_id);
   if (iter != media_players_.end())
     return iter->second;
@@ -68,5 +69,25 @@ void WebMediaPlayerManagerAndroid::DidExitFullscreen() {
 bool WebMediaPlayerManagerAndroid::IsInFullscreen(WebKit::WebFrame* frame) {
   return fullscreen_frame_ == frame;
 }
+
+#if defined(GOOGLE_TV)
+void WebMediaPlayerManagerAndroid::RetrieveGeometryChanges(
+    std::map<int, gfx::RectF>* changes) {
+  DCHECK(changes->empty());
+  for (std::map<int, WebMediaPlayerAndroid*>::iterator player_it =
+           media_players_.begin();
+       player_it != media_players_.end();
+       ++player_it) {
+    WebMediaPlayerAndroid* player = player_it->second;
+
+    if (player && player->hasVideo()) {
+      gfx::RectF rect;
+      if (player->RetrieveGeometryChange(&rect)) {
+        (*changes)[player_it->first] = rect;
+      }
+    }
+  }
+}
+#endif
 
 }  // namespace webkit_media

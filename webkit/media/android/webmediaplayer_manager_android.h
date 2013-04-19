@@ -13,6 +13,10 @@ namespace WebKit {
 class WebFrame;
 }
 
+namespace gfx {
+class RectF;
+}
+
 namespace webkit_media {
 
 class WebMediaPlayerAndroid;
@@ -45,12 +49,17 @@ class WebMediaPlayerManagerAndroid {
   // Get the pointer to WebMediaPlayerAndroid given the |player_id|.
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
 
+#if defined(GOOGLE_TV)
+  // Get the list of media players with video geometry changes.
+  void RetrieveGeometryChanges(std::map<int, gfx::RectF>* changes);
+#endif
+
  private:
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibily.
-  std::map<int32, WebMediaPlayerAndroid*> media_players_;
+  std::map<int, WebMediaPlayerAndroid*> media_players_;
 
-  int32 next_media_player_id_;
+  int next_media_player_id_;
 
   // WebFrame of the fullscreen video.
   WebKit::WebFrame* fullscreen_frame_;

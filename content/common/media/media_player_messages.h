@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/rect_f.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -116,6 +117,13 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen,
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
                     int /* player_id */)
 
+#if defined(GOOGLE_TV)
 // Request the player to use external surface for rendering.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestExternalSurface,
                     int /* player_id */)
+
+// Request the player to use external surface for rendering.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_NotifyGeometryChange,
+                    int /* player_id */,
+                    gfx::RectF /* rect */)
+#endif

@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "ui/gfx/rect_f.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 
 namespace webkit {
@@ -149,6 +150,13 @@ class WebMediaPlayerAndroid
   // Detach the player from its manager.
   void Detach();
 
+#if defined(GOOGLE_TV)
+  // Retrieve geometry of the media player (i.e. location and size of the video
+  // frame) if changed. Returns true only if the geometry has been changed since
+  // the last call.
+  bool RetrieveGeometryChange(gfx::RectF* rect);
+#endif
+
  protected:
   // Construct a WebMediaPlayerAndroid object with reference to the
   // client, manager and stream texture factory.
@@ -199,8 +207,10 @@ class WebMediaPlayerAndroid
 
   WebMediaPlayerManagerAndroid* manager() const { return manager_; }
 
+#if defined(GOOGLE_TV)
   // Request external surface for out-of-band composition.
   virtual void RequestExternalSurface() = 0;
+#endif
 
  private:
   void ReallocateVideoFrame();
@@ -274,6 +284,12 @@ class WebMediaPlayerAndroid
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
+
+#if defined(GOOGLE_TV)
+  // A rectangle represents the geometry of video frame, when computed last
+  // time.
+  gfx::RectF last_computed_rect_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

@@ -611,6 +611,23 @@ void ContentViewCoreImpl::RequestExternalVideoSurface(int player_id) {
       env, obj.obj(), static_cast<jint>(player_id));
 }
 
+void ContentViewCoreImpl::NotifyGeometryChange(int player_id,
+                                               const gfx::RectF& rect) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_ContentViewCore_notifyGeometryChange(env,
+                                            obj.obj(),
+                                            static_cast<jint>(player_id),
+                                            static_cast<jfloat>(rect.x()),
+                                            static_cast<jfloat>(rect.y()),
+                                            static_cast<jfloat>(rect.width()),
+                                            static_cast<jfloat>(rect.height()));
+}
+
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -1223,23 +1240,27 @@ void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
                                                      jobject obj,
                                                      jint player_id,
                                                      jobject jsurface) {
+#if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
   if (rvhi && rvhi->media_player_manager()) {
     rvhi->media_player_manager()->AttachExternalVideoSurface(
         static_cast<int>(player_id), jsurface);
   }
+#endif
 }
 
 void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
                                                      jobject obj,
                                                      jint player_id) {
+#if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
   if (rvhi && rvhi->media_player_manager()) {
     rvhi->media_player_manager()->DetachExternalVideoSurface(
         static_cast<int>(player_id));
   }
+#endif
 }
 
 jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,

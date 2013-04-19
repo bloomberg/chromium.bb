@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_bridge_manager.h"
+#include "ui/gfx/rect_f.h"
 
 namespace content {
 
@@ -65,8 +66,10 @@ class MediaPlayerManagerAndroid
   // Release all the players managed by this object.
   void DestroyAllMediaPlayers();
 
+#if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
+#endif
 
   media::MediaPlayerBridge* GetFullscreenPlayer();
   media::MediaPlayerBridge* GetPlayer(int player_id);
@@ -82,7 +85,10 @@ class MediaPlayerManagerAndroid
   void OnPause(int player_id);
   void OnReleaseResources(int player_id);
   void OnDestroyPlayer(int player_id);
+#if defined(GOOGLE_TV)
   void OnRequestExternalSurface(int player_id);
+  void OnNotifyGeometryChange(int player_id, const gfx::RectF& rect);
+#endif
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerBridge> players_;

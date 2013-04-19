@@ -181,9 +181,23 @@ void WebMediaPlayerProxyImplAndroid::ExitFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
+#if defined(GOOGLE_TV)
 void WebMediaPlayerProxyImplAndroid::RequestExternalSurface(int player_id) {
   Send(new MediaPlayerHostMsg_RequestExternalSurface(routing_id(), player_id));
 }
+
+void WebMediaPlayerProxyImplAndroid::DidCommitCompositorFrame() {
+  std::map<int, gfx::RectF> geometry_change;
+  manager_->RetrieveGeometryChanges(&geometry_change);
+  for (std::map<int, gfx::RectF>::iterator it = geometry_change.begin();
+       it != geometry_change.end();
+       ++it) {
+    Send(new MediaPlayerHostMsg_NotifyGeometryChange(routing_id(),
+                                                     it->first,
+                                                     it->second));
+  }
+}
+#endif
 
 webkit_media::WebMediaPlayerImplAndroid*
     WebMediaPlayerProxyImplAndroid::GetWebMediaPlayer(int player_id) {

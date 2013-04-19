@@ -129,10 +129,12 @@ void WebMediaPlayerImplAndroid::Destroy() {
   proxy_ = NULL;
 }
 
+#if defined(GOOGLE_TV)
 void WebMediaPlayerImplAndroid::RequestExternalSurface() {
   if (proxy_)
     proxy_->RequestExternalSurface(player_id());
 }
+#endif
 
 void WebMediaPlayerImplAndroid::SetVideoSurface(jobject j_surface) {}
 

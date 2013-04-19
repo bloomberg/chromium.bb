@@ -44,7 +44,12 @@ class WebMediaPlayerProxyImplAndroid
   virtual void DestroyPlayer(int player_id) OVERRIDE;
   virtual void EnterFullscreen(int player_id) OVERRIDE;
   virtual void ExitFullscreen(int player_id) OVERRIDE;
+#if defined(GOOGLE_TV)
   virtual void RequestExternalSurface(int player_id) OVERRIDE;
+
+  // Methods inherited from RenderViewObserver.
+  virtual void DidCommitCompositorFrame() OVERRIDE;
+#endif
 
  private:
   webkit_media::WebMediaPlayerImplAndroid* GetWebMediaPlayer(int player_id);

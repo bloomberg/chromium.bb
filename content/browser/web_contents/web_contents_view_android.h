@@ -11,6 +11,7 @@
 #include "content/port/browser/web_contents_view_port.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
+#include "ui/gfx/rect_f.h"
 
 namespace content {
 class ContentViewCoreImpl;
@@ -28,7 +29,10 @@ class WebContentsViewAndroid : public WebContentsViewPort,
   // by the UI frontend.
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
+#if defined(GOOGLE_TV)
   void RequestExternalVideoSurface(int player_id);
+  void NotifyGeometryChange(int player_id, const gfx::RectF& rect);
+#endif
 
   // WebContentsView implementation --------------------------------------------
   virtual gfx::NativeView GetNativeView() const OVERRIDE;

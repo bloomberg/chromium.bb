@@ -2650,6 +2650,21 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         getContentViewClient().onExternalVideoSurfaceRequested(playerId);
     }
 
+    @CalledByNative
+    private void notifyGeometryChange(int playerId, float x, float y, float width, float height) {
+        RenderCoordinates.NormalizedPoint topLeft = mRenderCoordinates.createNormalizedPoint();
+        RenderCoordinates.NormalizedPoint bottomRight = mRenderCoordinates.createNormalizedPoint();
+        topLeft.setLocalDip(x * getScale(), y * getScale());
+        bottomRight.setLocalDip((x + width) * getScale(), (y + height) * getScale());
+
+        getContentViewClient().onGeometryChanged(
+                playerId,
+                topLeft.getXPix(),
+                topLeft.getYPix(),
+                bottomRight.getXPix() - topLeft.getXPix(),
+                bottomRight.getYPix() - topLeft.getYPix());
+    }
+
     private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
             int webContentsPtr, int windowAndroidPtr);
 

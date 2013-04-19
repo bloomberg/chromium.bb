@@ -45,8 +45,12 @@ bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
+#if defined(GOOGLE_TV)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_RequestExternalSurface,
                         OnRequestExternalSurface)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyGeometryChange,
+                        OnNotifyGeometryChange)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -199,6 +203,7 @@ void MediaPlayerManagerAndroid::DestroyAllMediaPlayers() {
   }
 }
 
+#if defined(GOOGLE_TV)
 void MediaPlayerManagerAndroid::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
   MediaPlayerBridge* player = GetPlayer(player_id);
@@ -213,13 +218,26 @@ void MediaPlayerManagerAndroid::DetachExternalVideoSurface(int player_id) {
 }
 
 void MediaPlayerManagerAndroid::OnRequestExternalSurface(int player_id) {
-  if (web_contents_) {
-    WebContentsViewAndroid* view =
-        static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
-    if (view)
-      view->RequestExternalVideoSurface(player_id);
-  }
+  if (!web_contents_)
+    return;
+
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  if (view)
+    view->RequestExternalVideoSurface(player_id);
 }
+
+void MediaPlayerManagerAndroid::OnNotifyGeometryChange(int player_id,
+                                                       const gfx::RectF& rect) {
+  if (!web_contents_)
+    return;
+
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  if (view)
+    view->NotifyGeometryChange(player_id, rect);
+}
+#endif
 
 MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
   for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
