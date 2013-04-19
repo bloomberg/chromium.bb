@@ -32,9 +32,9 @@
 ] interface Storage {
     [NotEnumerable, GetterRaisesException] readonly attribute unsigned long length;
     [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString key(unsigned long index);
-    [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString getItem(DOMString key);
-    [NotEnumerable, RaisesException] void setItem(DOMString key, DOMString data);
-    [NotEnumerable, RaisesException] void removeItem(DOMString key);
-    [NotEnumerable, RaisesException] void clear();
+    [NotEnumerable, TreatReturnedNullStringAs=Null, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] DOMString getItem(DOMString key);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void setItem(DOMString key, DOMString data);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void removeItem(DOMString key);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void clear();
 };
 

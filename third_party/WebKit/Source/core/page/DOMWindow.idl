@@ -44,7 +44,7 @@
     [Replaceable] readonly attribute BarInfo scrollbars;
     [Replaceable] readonly attribute BarInfo statusbar;
     [Replaceable] readonly attribute BarInfo toolbar;
-    [Replaceable] readonly attribute Navigator navigator;
+    [Replaceable, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
     readonly attribute Crypto crypto;
     [DoNotCheckSecurity, CustomSetter, Unforgeable] attribute Location location;
@@ -149,10 +149,10 @@
     DOMPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
                                               [Default=Undefined] optional DOMPoint p);
 
-    [EnabledAtRuntime] readonly attribute DOMApplicationCache applicationCache;
+    [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute DOMApplicationCache applicationCache;
 
-    [EnabledAtRuntime, GetterRaisesException] readonly attribute Storage sessionStorage;
-    [EnabledAtRuntime, GetterRaisesException] readonly attribute Storage localStorage;
+    [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage sessionStorage;
+    [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage localStorage;
 
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
     // This is the interface orientation in degrees. Some examples are:

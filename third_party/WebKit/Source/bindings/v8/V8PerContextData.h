@@ -106,7 +106,7 @@ public:
 
 private:
     explicit V8PerContextData(v8::Persistent<v8::Context> context)
-        : m_context(context)
+        : m_activityLogger(0), m_context(context)
     {
     }
 

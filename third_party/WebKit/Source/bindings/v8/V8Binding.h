@@ -393,6 +393,8 @@ namespace WebCore {
         return result;
     }
 
+    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::Arguments& args);
+
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/WD-WebIDL-20120207/#es-sequence
     inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isolate* isolate)

@@ -98,6 +98,15 @@ v8::Handle<v8::Value> v8Array(PassRefPtr<DOMStringList> stringList, v8::Isolate*
     return result;
 }
 
+Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::Arguments& args)
+{
+    Vector<v8::Handle<v8::Value> > result;
+    size_t length = args.Length();
+    for (size_t i = 0; i < length; ++i)
+        result.append(args[i]);
+    return result;
+}
+
 PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback)
 {
     return NodeFilter::create(V8NodeFilterCondition::create(callback));

@@ -26,11 +26,11 @@
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
 ] interface Geolocation {
-    [Custom] void getCurrentPosition(PositionCallback successCallback,
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
                                      optional PositionOptions options);
 
-    [Custom] long watchPosition(PositionCallback successCallback,
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
                                 optional PositionOptions options);
 

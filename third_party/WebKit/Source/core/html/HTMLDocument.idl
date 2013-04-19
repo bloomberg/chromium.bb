@@ -25,8 +25,8 @@
 ] interface HTMLDocument : Document {
     [Custom] void open();
     void close();
-    [Custom] void write([Default=Undefined] optional DOMString text);
-    [Custom] void writeln([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void write([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void writeln([Default=Undefined] optional DOMString text);
 
     readonly attribute HTMLCollection embeds;
     readonly attribute HTMLCollection plugins;
