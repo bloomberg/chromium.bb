@@ -277,7 +277,8 @@ cr.define('cr.ui.login', function() {
         }
       } else {
         // First screen on OOBE launch.
-        if (innerContainer.classList.contains('down')) {
+        if (document.body.classList.contains('oobe-display') &&
+            innerContainer.classList.contains('down')) {
           innerContainer.classList.remove('down');
           innerContainer.addEventListener(
               'webkitTransitionEnd', function f(e) {

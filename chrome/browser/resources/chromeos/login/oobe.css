@@ -117,11 +117,11 @@ button:not(.custom-appearance) {
 }
 
 /* Only play this animation when 'down' class is removed. */
-#inner-container:not(.down) {
+.oobe-display #inner-container:not(.down) {
   -webkit-transition: -webkit-transform 200ms ease-in-out;
 }
 
-#inner-container.down {
+.oobe-display #inner-container.down {
   -webkit-transform: translateY(50px) rotateX(-2.5deg);
 }
 
@@ -231,7 +231,7 @@ html[build=chromium] #header-sections {
 }
 
 /* Hidden for the duration of initial transition. */
-#progress-dots.down {
+.oobe-display #progress-dots.down {
   visibility: hidden;
 }
 
