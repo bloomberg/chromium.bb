@@ -57,9 +57,11 @@
       'ENABLE_MATHML=0',
       'ENABLE_MEDIA_STREAM=<(enable_webrtc)',
       'ENABLE_MOUSE_CURSOR_SCALE=1',
+      'ENABLE_PARSED_STYLE_SHEET_CACHING=1',
       'ENABLE_RESOLUTION_MEDIA_QUERY=0',
       'ENABLE_RUBY=1',
       'ENABLE_SANDBOX=1',
+      'ENABLE_SATURATED_LAYOUT_ARITHMETIC=1',
       'ENABLE_SPEECH_SYNTHESIS=0',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
@@ -152,6 +154,11 @@
       ['OS=="win" or OS=="android" or OS=="linux"', {
         'feature_defines': [
           'ENABLE_OPENTYPE_VERTICAL=1',
+        ],
+      }],
+      ['OS=="win"', {
+        'feature_defines': [
+          'ENABLE_PAN_SCROLLING=1',
         ],
       }],
       ['OS=="mac"', {

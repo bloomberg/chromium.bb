@@ -43,7 +43,6 @@
             'FastAllocBase.h',
             'FastMalloc.cpp',
             'FastMalloc.h',
-            'FeatureDefines.h',
             'FilePrintStream.cpp',
             'FilePrintStream.h',
             'FixedArray.h',

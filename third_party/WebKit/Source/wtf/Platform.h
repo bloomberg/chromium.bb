@@ -543,13 +543,6 @@
 #define WTF_USE_OS_RANDOMNESS 1
 #endif
 
-/* ENABLE macro defaults */
-
-/* FIXME: move out all ENABLE() defines from here to FeatureDefines.h */
-
-/* Include feature macros */
-#include <wtf/FeatureDefines.h>
-
 /* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
    https://bugs.webkit.org/show_bug.cgi?id=112830 */
 #if USE(CG)
