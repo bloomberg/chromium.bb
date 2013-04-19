@@ -30,7 +30,7 @@ class ExperimentalBluetoothAgentManagerClientImpl
     object_proxy_ = bus_->GetObjectProxy(
         bluetooth_agent_manager::kBluetoothAgentManagerServiceName,
         dbus::ObjectPath(
-        bluetooth_agent_manager::kExperimentalBluetoothAgentManagerInterface));
+            bluetooth_agent_manager::kBluetoothAgentManagerServicePath));
   }
 
   virtual ~ExperimentalBluetoothAgentManagerClientImpl() {
