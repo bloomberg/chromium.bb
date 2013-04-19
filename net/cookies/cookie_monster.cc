@@ -768,6 +768,41 @@ void CookieMonster::DeleteSessionCookiesTask::Run() {
   }
 }
 
+// Task class for HasCookiesForETLDP1Task call.
+class CookieMonster::HasCookiesForETLDP1Task
+    : public CookieMonster::CookieMonsterTask {
+ public:
+  HasCookiesForETLDP1Task(
+      CookieMonster* cookie_monster,
+      const std::string& etldp1,
+      const CookieMonster::HasCookiesForETLDP1Callback& callback)
+      : CookieMonsterTask(cookie_monster),
+        etldp1_(etldp1),
+        callback_(callback) {
+  }
+
+  // CookieMonster::CookieMonsterTask:
+  virtual void Run() OVERRIDE;
+
+ protected:
+  virtual ~HasCookiesForETLDP1Task() {}
+
+ private:
+  std::string etldp1_;
+  CookieMonster::HasCookiesForETLDP1Callback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(HasCookiesForETLDP1Task);
+};
+
+void CookieMonster::HasCookiesForETLDP1Task::Run() {
+  bool result = this->cookie_monster()->HasCookiesForETLDP1(etldp1_);
+  if (!callback_.is_null()) {
+    this->InvokeCallback(
+        base::Bind(&CookieMonster::HasCookiesForETLDP1Callback::Run,
+                   base::Unretained(&callback_), result));
+  }
+}
+
 // Asynchronous CookieMonster API
 
 void CookieMonster::SetCookieWithDetailsAsync(
@@ -815,6 +850,15 @@ void CookieMonster::GetAllCookiesForURLAsync(
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
   DoCookieTaskForURL(task, url);
+}
+
+void CookieMonster::HasCookiesForETLDP1Async(
+    const std::string& etldp1,
+    const HasCookiesForETLDP1Callback& callback) {
+  scoped_refptr<HasCookiesForETLDP1Task> task =
+      new HasCookiesForETLDP1Task(this, etldp1, callback);
+
+  DoCookieTaskForURL(task, GURL("http://" + etldp1));
 }
 
 void CookieMonster::DeleteAllAsync(const DeleteCallback& callback) {
@@ -1234,6 +1278,15 @@ int CookieMonster::DeleteSessionCookies() {
   }
 
   return num_deleted;
+}
+
+bool CookieMonster::HasCookiesForETLDP1(const std::string& etldp1) {
+  base::AutoLock autolock(lock_);
+
+  const std::string key(GetKey(etldp1));
+
+  CookieMapItPair its = cookies_.equal_range(key);
+  return its.first != its.second;
 }
 
 CookieMonster* CookieMonster::GetCookieMonster() {

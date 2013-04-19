@@ -125,6 +125,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
   typedef base::Callback<void(bool success)> DeleteCookieCallback;
+  typedef base::Callback<void(bool cookies_exist)> HasCookiesForETLDP1Callback;
 
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
   // name, value, domain, etc. are each provided as separate strings. This
@@ -178,6 +179,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Deletes one specific cookie.
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
+
+  // Checks whether for a given ETLD+1, there currently exist any cookies.
+  void HasCookiesForETLDP1Async(const std::string& etldp1,
+                                const HasCookiesForETLDP1Callback& callback);
 
   // Resets the list of cookieable schemes to the supplied schemes.
   // If this this method is called, it must be called before first use of
@@ -279,6 +284,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class SetCookieWithDetailsTask;
   class SetCookieWithOptionsTask;
   class DeleteSessionCookiesTask;
+  class HasCookiesForETLDP1Task;
 
   // Testing support.
   // For SetCookieWithCreationTime.
@@ -408,6 +414,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const base::Time& creation_time);
 
   int DeleteSessionCookies();
+
+  bool HasCookiesForETLDP1(const std::string& etldp1);
 
   // Called by all non-static functions to ensure that the cookies store has
   // been initialized. This is not done during creating so it doesn't block
