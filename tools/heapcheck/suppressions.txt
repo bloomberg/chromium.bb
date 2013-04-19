@@ -1878,14 +1878,6 @@
    fun:cc::DelayBasedTimeSource::OnTimerFired
 }
 {
-   bug_232777
-   Heapcheck:Leak
-   ...
-   fun:net::QuicStreamFactory::GetOrCreateCryptoConfig
-   fun:net::QuicStreamFactory::CreateSession
-   fun:net::QuicStreamFactory::Job::DoConnect
-}
-{
    bug_233128
    Heapcheck:Leak
    ...

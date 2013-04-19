@@ -234,6 +234,7 @@ QuicStreamFactory::QuicStreamFactory(
 QuicStreamFactory::~QuicStreamFactory() {
   STLDeleteElements(&all_sessions_);
   STLDeleteValues(&active_jobs_);
+  STLDeleteValues(&all_crypto_configs_);
 }
 
 int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
