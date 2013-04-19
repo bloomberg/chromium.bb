@@ -284,7 +284,7 @@ bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
     if (success) {
       // Add postMessage to the list and return it.
       if (std::numeric_limits<size_t>::max() / sizeof(NPIdentifier) <=
-          (*count + 1))
+          static_cast<size_t>(*count) + 1)  // Else, "always false" x64 warning.
         return false;
       NPIdentifier* new_array = static_cast<NPIdentifier*>(
           std::malloc(sizeof(NPIdentifier) * (*count + 1)));
