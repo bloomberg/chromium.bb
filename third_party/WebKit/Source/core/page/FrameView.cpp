@@ -482,6 +482,23 @@ void FrameView::setMarginHeight(LayoutUnit h)
     m_margins.setHeight(h);
 }
 
+bool FrameView::avoidScrollbarCreation() const
+{
+    ASSERT(m_frame);
+
+    // with frame flattening no subframe can have scrollbars
+    // but we also cannot turn scrollbars off as we determine
+    // our flattening policy using that.
+
+    if (!m_frame->ownerElement())
+        return false;
+
+    if (!m_frame->settings() || m_frame->settings()->frameFlatteningEnabled())
+        return true;
+
+    return false;
+}
+
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;
@@ -670,14 +687,14 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
         hMode = ScrollbarAlwaysOff;
         vMode = ScrollbarAlwaysOff;
     }
-
+    
     if (!m_layoutRoot) {
         Document* document = m_frame->document();
         Node* documentElement = document->documentElement();
         RenderObject* rootRenderer = documentElement ? documentElement->renderer() : 0;
         Node* body = document->body();
         if (body && body->renderer()) {
-            if (body->hasTagName(framesetTag)) {
+            if (body->hasTagName(framesetTag) && m_frame->settings() && !m_frame->settings()->frameFlatteningEnabled()) {
                 vMode = ScrollbarAlwaysOff;
                 hMode = ScrollbarAlwaysOff;
             } else if (body->hasTagName(bodyTag)) {
@@ -688,7 +705,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
             }
         } else if (rootRenderer)
             applyOverflowToViewport(rootRenderer, hMode, vMode);
-    }
+    }    
 }
 
 void FrameView::updateCompositingLayersAfterStyleChange()
@@ -929,6 +946,13 @@ void FrameView::layout(bool allowSubtree)
     // Every scroll that happens during layout is programmatic.
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
+    bool inChildFrameLayoutWithFrameFlattening = isInChildFrameWithFrameFlattening();
+
+    if (inChildFrameLayoutWithFrameFlattening) {
+        if (doLayoutWithFrameFlattening(allowSubtree))
+            return;
+    }
+
     m_layoutTimer.stop();
     m_delayedLayout = false;
     m_setNeedsLayoutWasDeferred = false;
@@ -962,7 +986,7 @@ void FrameView::layout(bool allowSubtree)
     {
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
-        if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive()) {
+        if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !inChildFrameLayoutWithFrameFlattening) {
             // This is a new top-level layout. If there are any remaining tasks from the previous
             // layout, finish them now.
             m_inSynchronousPostLayout = true;
@@ -1014,7 +1038,7 @@ void FrameView::layout(bool allowSubtree)
             Document* document = m_frame->document();
             Node* body = document->body();
             if (body && body->renderer()) {
-                if (body->hasTagName(framesetTag)) {
+                if (body->hasTagName(framesetTag) && m_frame->settings() && !m_frame->settings()->frameFlatteningEnabled()) {
                     body->renderer()->setChildNeedsLayout(true);
                 } else if (body->hasTagName(bodyTag)) {
                     if (!m_firstLayout && m_size.height() != layoutHeight() && body->renderer()->enclosingBox()->stretchesToViewport())
@@ -1146,14 +1170,19 @@ void FrameView::layout(bool allowSubtree)
 
     if (!m_postLayoutTasksTimer.isActive()) {
         if (!m_inSynchronousPostLayout) {
-            m_inSynchronousPostLayout = true;
-            // Calls resumeScheduledEvents()
-            performPostLayoutTasks();
-            m_inSynchronousPostLayout = false;
+            if (inChildFrameLayoutWithFrameFlattening) {
+                if (RenderView* renderView = this->renderView())
+                    renderView->updateWidgetPositions();
+            } else {
+                m_inSynchronousPostLayout = true;
+                // Calls resumeScheduledEvents()
+                performPostLayoutTasks();
+                m_inSynchronousPostLayout = false;
+            }
         }
-
-        if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout)) {
-            // If we need layout or are already in a synchronous call to postLayoutTasks(),
+        
+        if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout || inChildFrameLayoutWithFrameFlattening)) {
+            // If we need layout or are already in a synchronous call to postLayoutTasks(), 
             // defer widget updates and event dispatch until after we return. postLayoutTasks()
             // can make us need to update again, and we can get stuck in a nasty cycle unless
             // we call it through the timer here.
@@ -2010,10 +2039,9 @@ void FrameView::scheduleRelayout()
     if (!m_frame->document()->shouldScheduleLayout())
         return;
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
-
-    // When seamless mode is enabled, the contents of the frame could affect the layout of the
-    // parent frames. Also invalidate parent frame starting from the owner element of this frame.
-    if (m_frame->ownerRenderer() && m_frame->document()->shouldDisplaySeamlesslyWithParent())
+    // When frame flattening is enabled, the contents of the frame could affect the layout of the parent frames.
+    // Also invalidate parent frame starting from the owner element of this frame.
+    if (m_frame->ownerRenderer() && isInChildFrameWithFrameFlattening())
         m_frame->ownerRenderer()->setNeedsLayout(true, MarkContainingBlockChain);
 
     int delay = m_frame->document()->minimumLayoutDelay();
@@ -2952,6 +2980,55 @@ FrameView* FrameView::parentFrameView() const
     return 0;
 }
 
+bool FrameView::isInChildFrameWithFrameFlattening() const
+{
+    if (!parent() || !m_frame->ownerElement())
+        return false;
+
+    // Frame flattening applies when the owner element is either in a frameset or
+    // an iframe with flattening parameters.
+    if (m_frame->ownerElement()->hasTagName(iframeTag)) {
+        RenderIFrame* iframeRenderer = toRenderIFrame(m_frame->ownerElement()->renderPart());
+        if (iframeRenderer->flattenFrame() || iframeRenderer->isSeamless())
+            return true;
+    }
+
+    if (!m_frame->settings() || !m_frame->settings()->frameFlatteningEnabled())
+        return false;
+
+    if (m_frame->ownerElement()->hasTagName(frameTag))
+        return true;
+
+    return false;
+}
+
+bool FrameView::doLayoutWithFrameFlattening(bool allowSubtree)
+{
+    // Try initiating layout from the topmost parent.
+    FrameView* parentView = parentFrameView();
+
+    if (!parentView)
+        return false;
+
+    // In the middle of parent layout, no need to restart from topmost.
+    if (parentView->m_nestedLayoutCount)
+        return false;
+
+    // Parent tree is clean. Starting layout from it would have no effect.
+    if (!parentView->needsLayout())
+        return false;
+
+    while (parentView->parentFrameView())
+        parentView = parentView->parentFrameView();
+
+    parentView->layout(allowSubtree);
+
+    RenderObject* root = m_layoutRoot ? m_layoutRoot : m_frame->document()->renderer();
+    ASSERT_UNUSED(root, !root->needsLayout());
+
+    return true;
+}
+
 void FrameView::updateControlTints()
 {
     // This is called when control tints are changed from aqua/graphite to clear and vice versa.
@@ -3154,9 +3231,9 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // painting, so we need to flush out any deferred repaints too.
     flushDeferredRepaints();
 
-    // When seamless inner frames exist, child frame can mark the parent frame as dirty. In such case
-    // the child frame needs to call layout on parent frame recursively. This assert ensures that
-    // parent frames are clean, when child frames finished updating layout and style.
+    // When frame flattening is on, child frame can mark parent frame dirty. In such case, child frame
+    // needs to call layout on parent frame recursively.
+    // This assert ensures that parent frames are clean, when child frames finished updating layout and style.
     ASSERT(!needsLayout());
 }
 

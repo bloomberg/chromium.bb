@@ -121,6 +121,7 @@ threadedHTMLParser initial=false, conditional=THREADED_HTML_PARSER
 useThreadedHTMLParserForDataURLs initial=false, conditional=THREADED_HTML_PARSER
 
 applyPageScaleFactorInCompositor initial=false
+frameFlatteningEnabled initial=false
 
 allowCustomScrollbarInMainFrame initial=true
 webSecurityEnabled initial=true
