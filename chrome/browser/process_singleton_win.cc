@@ -255,8 +255,7 @@ bool ProcessSingleton::EscapeVirtualization(
 ProcessSingleton::ProcessSingleton(
     const base::FilePath& user_data_dir,
     const NotificationCallback& notification_callback)
-    : window_(NULL), locked_(false), foreground_window_(NULL),
-      notification_callback_(notification_callback),
+    : window_(NULL), notification_callback_(notification_callback),
       is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE),
       user_data_dir_(user_data_dir) {
 }
@@ -538,38 +537,12 @@ void ProcessSingleton::Cleanup() {
 }
 
 LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
-  // If locked, it means we are not ready to process this message because
-  // we are probably in a first run critical phase.
-  if (locked_) {
-#if defined(USE_AURA)
-    NOTIMPLEMENTED();
-#else
-    // Attempt to place ourselves in the foreground / flash the task bar.
-    if (foreground_window_ != NULL && ::IsWindow(foreground_window_)) {
-      DoSetForegroundWindow(foreground_window_);
-    } else {
-      // Read the command line and store it. It will be replayed when the
-      // ProcessSingleton becomes unlocked.
-      CommandLine parsed_command_line(CommandLine::NO_PROGRAM);
-      base::FilePath current_directory;
-      if (ParseCommandLine(cds, &parsed_command_line, &current_directory))
-        saved_startup_messages_.push_back(
-            std::make_pair(parsed_command_line.argv(), current_directory));
-    }
-#endif
-    return TRUE;
-  }
-
   CommandLine parsed_command_line(CommandLine::NO_PROGRAM);
   base::FilePath current_directory;
   if (!ParseCommandLine(cds, &parsed_command_line, &current_directory))
     return TRUE;
   return notification_callback_.Run(parsed_command_line, current_directory) ?
       TRUE : FALSE;
-}
-
-void ProcessSingleton::DoSetForegroundWindow(HWND target_window) {
-  ::SetForegroundWindow(target_window);
 }
 
 LRESULT ProcessSingleton::WndProc(HWND hwnd, UINT message,

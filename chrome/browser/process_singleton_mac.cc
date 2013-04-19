@@ -41,9 +41,7 @@ const int kMaxErrno = 102;
 ProcessSingleton::ProcessSingleton(
     const base::FilePath& user_data_dir,
     const NotificationCallback& /* notification_callback */)
-    : locked_(false),
-      foreground_window_(NULL),
-      lock_path_(user_data_dir.Append(chrome::kSingletonLockFilename)),
+    : lock_path_(user_data_dir.Append(chrome::kSingletonLockFilename)),
       lock_fd_(-1) {
 }
 

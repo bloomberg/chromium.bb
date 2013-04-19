@@ -747,12 +747,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   bool is_first_run = false;
   // Android's first run is done in Java instead of native.
 #if !defined(OS_ANDROID)
-
-  process_singleton_.reset(new ProcessSingleton(
+  process_singleton_.reset(new ChromeProcessSingleton(
       user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
-  // Ensure ProcessSingleton won't process messages too early. It will be
-  // unlocked in PostBrowserStart().
-  process_singleton_->Lock(NULL);
 
   bool force_first_run =
       parsed_command_line().HasSwitch(switches::kForceFirstRun);
@@ -1179,8 +1175,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // sucessfully grabbed above.
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
-    TryChromeDialogView::Result answer =
-        TryChromeDialogView::Show(try_chrome_int, process_singleton_.get());
+    TryChromeDialogView::Result answer = TryChromeDialogView::Show(
+        try_chrome_int,
+        base::Bind(&ChromeProcessSingleton::SetActiveModalDialog,
+                   base::Unretained(process_singleton_.get())));
     if (answer == TryChromeDialogView::NOT_NOW)
       return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
     if (answer == TryChromeDialogView::UNINSTALL_CHROME)
@@ -1282,8 +1280,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     first_run::AutoImport(profile_,
                           master_prefs_->homepage_defined,
                           master_prefs_->do_import_items,
-                          master_prefs_->dont_import_items,
-                          process_singleton_.get());
+                          master_prefs_->dont_import_items);
     // Note: this can pop the first run consent dialog on linux.
     first_run::DoPostImportTasks(profile_, master_prefs_->make_chrome_default);
 

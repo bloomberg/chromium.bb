@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/process_singleton.h"
+#include "chrome/browser/chrome_process_singleton.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -28,16 +28,19 @@ bool ClientCallback(const CommandLine& command_line,
 
 }  // namespace
 
-TEST(ProcessSingletonWinTest, Basic) {
+TEST(ChromeProcessSingletonTest, Basic) {
   base::ScopedTempDir profile_dir;
   ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
 
   int callback_count = 0;
 
-  ProcessSingleton ps1(
+  ChromeProcessSingleton ps1(
       profile_dir.path(),
       base::Bind(&ServerCallback, base::Unretained(&callback_count)));
-  ProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ps1.Unlock();
+
+  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();
 
@@ -50,19 +53,18 @@ TEST(ProcessSingletonWinTest, Basic) {
   ASSERT_EQ(1, callback_count);
 }
 
-#if !defined(USE_AURA)
-TEST(ProcessSingletonWinTest, Lock) {
+TEST(ChromeProcessSingletonTest, Lock) {
   base::ScopedTempDir profile_dir;
   ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
 
   int callback_count = 0;
 
-  ProcessSingleton ps1(
+  ChromeProcessSingleton ps1(
       profile_dir.path(),
       base::Bind(&ServerCallback, base::Unretained(&callback_count)));
-  ps1.Lock(NULL);
 
-  ProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();
 
@@ -77,51 +79,53 @@ TEST(ProcessSingletonWinTest, Lock) {
   ASSERT_EQ(1, callback_count);
 }
 
-class TestableProcessSingleton : public ProcessSingleton {
- public:
-  TestableProcessSingleton(const base::FilePath& user_data_dir,
-                           const NotificationCallback& notification_callback)
-      : ProcessSingleton(user_data_dir, notification_callback),
-        called_set_foreground_window_(false) {}
+#if defined(OS_WIN) && !defined(USE_AURA)
+namespace {
 
-  bool called_set_foreground_window() { return called_set_foreground_window_; }
+void SetForegroundWindowHandler(bool* flag,
+                                gfx::NativeWindow /* target_window */) {
+  *flag = true;
+}
 
- protected:
-  virtual void DoSetForegroundWindow(HWND target_window) OVERRIDE {
-    called_set_foreground_window_ = true;
-  }
+}  // namespace
 
- private:
-  bool called_set_foreground_window_;
-};
-
-TEST(ProcessSingletonWinTest, LockWithModalDialog) {
+TEST(ChromeProcessSingletonTest, LockWithModalDialog) {
   base::ScopedTempDir profile_dir;
   ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
 
   int callback_count = 0;
+  bool called_set_foreground_window = false;
 
-  TestableProcessSingleton ps1(
+  ChromeProcessSingleton ps1(
       profile_dir.path(),
-      base::Bind(&ServerCallback, base::Unretained(&callback_count)));
-  ps1.Lock(::GetShellWindow());
+      base::Bind(&ServerCallback, base::Unretained(&callback_count)),
+      base::Bind(&SetForegroundWindowHandler,
+                 base::Unretained(&called_set_foreground_window)));
+  ps1.SetActiveModalDialog(::GetShellWindow());
 
-  ProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ChromeProcessSingleton ps2(profile_dir.path(), base::Bind(&ClientCallback));
+  ps2.Unlock();
 
   ProcessSingleton::NotifyResult result = ps1.NotifyOtherProcessOrCreate();
 
   ASSERT_EQ(ProcessSingleton::PROCESS_NONE, result);
   ASSERT_EQ(0, callback_count);
 
-  ASSERT_FALSE(ps1.called_set_foreground_window());
+  ASSERT_FALSE(called_set_foreground_window);
   result = ps2.NotifyOtherProcessOrCreate();
   ASSERT_EQ(ProcessSingleton::PROCESS_NOTIFIED, result);
-  ASSERT_TRUE(ps1.called_set_foreground_window());
+  ASSERT_TRUE(called_set_foreground_window);
 
   ASSERT_EQ(0, callback_count);
+  ps1.SetActiveModalDialog(NULL);
   ps1.Unlock();
-  // When a modal dialog is present, the new command-line invocation is silently
+  // The notification sent while a modal dialog was present was silently
   // dropped.
   ASSERT_EQ(0, callback_count);
+
+  // But now that the active modal dialog is NULL notifications will be handled.
+  result = ps2.NotifyOtherProcessOrCreate();
+  ASSERT_EQ(ProcessSingleton::PROCESS_NOTIFIED, result);
+  ASSERT_EQ(1, callback_count);
 }
-#endif  // !defined(USE_AURA)
+#endif  // defined(OS_WIN) && !defined(USE_AURA)

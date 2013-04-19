@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
+#include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/task_profiler/auto_tracking.h"
@@ -170,7 +171,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Android doesn't support multiple browser processes, so it doesn't implement
   // ProcessSingleton.
-  scoped_ptr<ProcessSingleton> process_singleton_;
+  scoped_ptr<ChromeProcessSingleton> process_singleton_;
 #endif
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
   bool record_search_engine_;

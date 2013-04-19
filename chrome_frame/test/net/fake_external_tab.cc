@@ -791,7 +791,6 @@ int CFUrlRequestUnittestRunner::PreCreateThreads() {
           base::Unretained(this)));
   process_singleton_.reset(new ProcessSingleton(fake_chrome_->user_data(),
                                                 callback));
-  process_singleton_->Lock(NULL);
   return 0;
 }
 
@@ -822,8 +821,6 @@ void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
       base::KillProcess(crash_service_, 0, false);
     ::ExitProcess(1);
   }
-
-  StartChromeFrameInHostBrowser();
 }
 
 bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
@@ -832,7 +829,7 @@ bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
 
   // We need to allow IO on the main thread for these tests.
   base::ThreadRestrictions::SetIOAllowed(true);
-  process_singleton_->Unlock();
+  StartChromeFrameInHostBrowser();
   StartInitializationTimeout();
   return false;
 }

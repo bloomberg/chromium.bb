@@ -20,7 +20,6 @@ class CommandLine;
 class GURL;
 class PrefRegistrySyncable;
 class Profile;
-class ProcessSingleton;
 
 namespace base {
 class FilePath;
@@ -141,8 +140,7 @@ const CommandLine& GetExtraArgumentsForImportProcess();
 void AutoImport(Profile* profile,
                 bool homepage_defined,
                 int import_items,
-                int dont_import_items,
-                ProcessSingleton* process_singleton);
+                int dont_import_items);
 
 // Does remaining first run tasks for |profile| and makes Chrome default browser
 // if |make_chrome_default|. This can pop the first run consent dialog on linux.

@@ -567,16 +567,6 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     SocketReader* reader) {
   DCHECK(ui_message_loop_ == MessageLoop::current());
   DCHECK(reader);
-  // If locked, it means we are not ready to process this message because
-  // we are probably in a first run critical phase.
-  if (parent_->locked()) {
-    DLOG(WARNING) << "Browser is locked";
-    parent_->saved_startup_messages_.push_back(
-        std::make_pair(argv, base::FilePath(current_dir)));
-    // Send back "ACK" message to prevent the client process from starting up.
-    reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
-    return;
-  }
 
   if (parent_->notification_callback_.Run(CommandLine(argv),
                                           base::FilePath(current_dir))) {
@@ -695,9 +685,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
 ProcessSingleton::ProcessSingleton(
     const base::FilePath& user_data_dir,
     const NotificationCallback& notification_callback)
-    : locked_(false),
-      foreground_window_(NULL),
-      notification_callback_(notification_callback),
+    : notification_callback_(notification_callback),
       current_pid_(base::GetCurrentProcId()),
       ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);

@@ -58,6 +58,11 @@ class Widget;
 class TryChromeDialogView : public views::ButtonListener,
                             public views::LinkListener {
  public:
+  // Receives a handle to the active modal dialog, or NULL when the active
+  // dialog is dismissed.
+  typedef base::Callback<void(gfx::NativeWindow active_dialog)>
+      ActiveModalDialogListener;
+
   enum Result {
     TRY_CHROME,             // Launch chrome right now.
     TRY_CHROME_AS_DEFAULT,  // Launch chrome and make it the default.
@@ -71,18 +76,18 @@ class TryChromeDialogView : public views::ButtonListener,
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.
   // |flavor| can be 0, 1, 2 or 3 and selects what strings to present.
-  // |process_singleton| needs to be valid and it will be locked while
-  // the dialog is shown.
+  // |listener| will be notified when the dialog becomes active and when it is
+  // dismissed.
   // Note that the dialog has no parent and it will position itself in a lower
   // corner of the screen. The dialog does not steal focus and does not have an
   // entry in the taskbar.
-  static Result Show(size_t flavor, ProcessSingleton* process_singleton);
+  static Result Show(size_t flavor, const ActiveModalDialogListener& listener);
 
  private:
   explicit TryChromeDialogView(size_t flavor);
   virtual ~TryChromeDialogView();
 
-  Result ShowModal(ProcessSingleton* process_singleton);
+  Result ShowModal(const ActiveModalDialogListener& listener);
 
   // Returns a screen rectangle that is fit to show the window. In particular
   // it has the following properties: a) is visible and b) is attached to the

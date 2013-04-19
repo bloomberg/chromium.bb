@@ -55,14 +55,14 @@ const int kRadioGroupID = 1;
 // static
 TryChromeDialogView::Result TryChromeDialogView::Show(
     size_t flavor,
-    ProcessSingleton* process_singleton) {
+    const ActiveModalDialogListener& listener) {
   if (flavor > 10000) {
     // This is a test value. We want to make sure we exercise
     // returning this early. See TryChromeDialogBrowserTest test.
     return NOT_NOW;
   }
   TryChromeDialogView dialog(flavor);
-  return dialog.ShowModal(process_singleton);
+  return dialog.ShowModal(listener);
 }
 
 TryChromeDialogView::TryChromeDialogView(size_t flavor)
@@ -79,7 +79,7 @@ TryChromeDialogView::~TryChromeDialogView() {
 }
 
 TryChromeDialogView::Result TryChromeDialogView::ShowModal(
-    ProcessSingleton* process_singleton) {
+    const ActiveModalDialogListener& listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
@@ -297,14 +297,13 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 #endif
   SetToastRegion(toast_window, preferred.width(), preferred.height());
 
-  // Time to show the window in a modal loop. The ProcessSingleton should
-  // already be locked and it will not process WM_COPYDATA requests. Change the
-  // window to bring to foreground if a request arrives.
-  CHECK(process_singleton->locked());
-  process_singleton->SetActiveModalDialog(popup_->GetNativeView());
+  // Time to show the window in a modal loop.
   popup_->Show();
+  if (!listener.is_null())
+    listener.Run(popup_->GetNativeView());
   MessageLoop::current()->Run();
-  process_singleton->SetActiveModalDialog(NULL);
+  if (!listener.is_null())
+    listener.Run(NULL);
   return result_;
 }
 

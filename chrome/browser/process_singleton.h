@@ -84,30 +84,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Clear any lock state during shutdown.
   void Cleanup();
 
-  // Blocks the dispatch of CopyData messages. foreground_window refers
-  // to the window that should be set to the foreground if a CopyData message
-  // is received while the ProcessSingleton is locked.
-  void Lock(gfx::NativeWindow foreground_window) {
-    DCHECK(CalledOnValidThread());
-    locked_ = true;
-    foreground_window_ = foreground_window;
-  }
-
-  // Changes the foreground window without changing the locked state.
-  void SetActiveModalDialog(gfx::NativeWindow foreground_window) {
-    DCHECK(CalledOnValidThread());
-    foreground_window_ = foreground_window;
-  }
-
-  // Allows the dispatch of CopyData messages and replays the messages which
-  // were received when the ProcessSingleton was locked.
-  void Unlock();
-
-  bool locked() {
-    DCHECK(CalledOnValidThread());
-    return locked_;
-  }
-
 #if defined(OS_WIN)
   LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 #endif
@@ -138,17 +114,12 @@ class ProcessSingleton : public base::NonThreadSafe {
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
  private:
-  typedef std::pair<CommandLine::StringVector,
-                    base::FilePath> DelayedStartupMessage;
-
 #if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
   // enough. It's only used in Windows and Linux implementations.
   static const int kTimeoutInSeconds = 20;
 #endif
 
-  bool locked_;
-  gfx::NativeWindow foreground_window_;
   NotificationCallback notification_callback_;  // Handler for notifications.
 
 #if defined(OS_WIN)
@@ -156,8 +127,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
 
   bool EscapeVirtualization(const base::FilePath& user_data_dir);
-
-  virtual void DoSetForegroundWindow(HWND target_window);
 
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
@@ -212,10 +181,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   // the same file at the same time.
   int lock_fd_;
 #endif
-
-  // If messages are received in the locked state, the corresponding command
-  // lines are saved here to be replayed later.
-  std::vector<DelayedStartupMessage> saved_startup_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingleton);
 };
