@@ -98,8 +98,6 @@ public:
     virtual void setCanHaveScrollbars(bool);
     bool canHaveScrollbars() const { return horizontalScrollbarMode() != ScrollbarAlwaysOff || verticalScrollbarMode() != ScrollbarAlwaysOff; }
 
-    virtual bool avoidScrollbarCreation() const { return false; }
-
     virtual void setScrollbarOverlayStyle(ScrollbarOverlayStyle) OVERRIDE;
 
     // By default you only receive paint events for the area that is visible. In the case of using a

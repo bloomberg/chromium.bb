@@ -110,15 +110,12 @@ private:
 
     inline HTMLFrameSetElement* frameSet() const;
 
-    bool flattenFrameSet() const;
-
     void setIsResizing(bool);
 
     void layOutAxis(GridAxis&, const Length*, int availableSpace);
     void computeEdgeInfo();
     void fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c);
     void positionFrames();
-    void positionFramesWithFlattening();
 
     int splitPosition(const GridAxis&, int split) const;
     int hitTestSplit(const GridAxis&, int position) const;
