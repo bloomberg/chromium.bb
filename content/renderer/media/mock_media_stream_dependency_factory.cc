@@ -39,14 +39,19 @@ static typename V::iterator FindTrack(V* vector,
 class MockMediaStream : public webrtc::MediaStreamInterface {
  public:
   explicit MockMediaStream(const std::string& label)
-      : label_(label) {
+      : label_(label),
+        observer_(NULL) {
   }
   virtual bool AddTrack(AudioTrackInterface* track) OVERRIDE {
     audio_track_vector_.push_back(track);
+    if (observer_)
+      observer_->OnChanged();
     return true;
   }
   virtual bool AddTrack(VideoTrackInterface* track) OVERRIDE {
     video_track_vector_.push_back(track);
+    if (observer_)
+      observer_->OnChanged();
     return true;
   }
   virtual bool RemoveTrack(AudioTrackInterface* track) OVERRIDE {
@@ -55,6 +60,8 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
     if (it == audio_track_vector_.end())
       return false;
     audio_track_vector_.erase(it);
+    if (observer_)
+      observer_->OnChanged();
     return true;
   }
   virtual bool RemoveTrack(VideoTrackInterface* track) OVERRIDE {
@@ -63,6 +70,8 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
     if (it == video_track_vector_.end())
       return false;
     video_track_vector_.erase(it);
+    if (observer_)
+      observer_->OnChanged();
     return true;
   }
   virtual std::string label() const OVERRIDE { return label_; }
@@ -83,10 +92,12 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
     return it == video_track_vector_.end() ? NULL : *it;
   }
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE {
-    NOTIMPLEMENTED();
+    DCHECK(!observer_);
+    observer_ = observer;
   }
   virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE {
-    NOTIMPLEMENTED();
+    DCHECK(observer_ == observer);
+    observer_ = NULL;
   }
 
  protected:
@@ -96,6 +107,7 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
   std::string label_;
   AudioTrackVector audio_track_vector_;
   VideoTrackVector video_track_vector_;
+  webrtc::ObserverInterface* observer_;
 };
 
 MockAudioSource::MockAudioSource(
@@ -191,7 +203,9 @@ MockLocalVideoTrack::MockLocalVideoTrack(std::string id,
                                          webrtc::VideoSourceInterface* source)
     : enabled_(false),
       id_(id),
-      source_(source) {
+      state_(MediaStreamTrackInterface::kLive),
+      source_(source),
+      observer_(NULL) {
 }
 
 MockLocalVideoTrack::~MockLocalVideoTrack() {}
@@ -219,8 +233,7 @@ std::string MockLocalVideoTrack::id() const { return id_; }
 bool MockLocalVideoTrack::enabled() const { return enabled_; }
 
 MockLocalVideoTrack::TrackState MockLocalVideoTrack::state() const {
-  NOTIMPLEMENTED();
-  return kInitializing;
+  return state_;
 }
 
 bool MockLocalVideoTrack::set_enabled(bool enable) {
@@ -229,16 +242,19 @@ bool MockLocalVideoTrack::set_enabled(bool enable) {
 }
 
 bool MockLocalVideoTrack::set_state(TrackState new_state) {
-  NOTIMPLEMENTED();
-  return false;
+  state_ = new_state;
+  if (observer_)
+    observer_->OnChanged();
+  return true;
 }
 
 void MockLocalVideoTrack::RegisterObserver(ObserverInterface* observer) {
-  NOTIMPLEMENTED();
+  observer_ = observer;
 }
 
 void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
-  NOTIMPLEMENTED();
+  DCHECK(observer_ == observer);
+  observer_ = NULL;
 }
 
 VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
@@ -254,9 +270,8 @@ std::string MockLocalAudioTrack::id() const { return id_; }
 
 bool MockLocalAudioTrack::enabled() const { return enabled_; }
 
-MockLocalVideoTrack::TrackState MockLocalAudioTrack::state() const {
-  NOTIMPLEMENTED();
-  return kInitializing;
+MockLocalAudioTrack::TrackState MockLocalAudioTrack::state() const {
+  return state_;
 }
 
 bool MockLocalAudioTrack::set_enabled(bool enable) {
@@ -265,16 +280,19 @@ bool MockLocalAudioTrack::set_enabled(bool enable) {
 }
 
 bool MockLocalAudioTrack::set_state(TrackState new_state) {
-  NOTIMPLEMENTED();
-  return false;
+  state_ = new_state;
+  if (observer_)
+    observer_->OnChanged();
+  return true;
 }
 
 void MockLocalAudioTrack::RegisterObserver(ObserverInterface* observer) {
-  NOTIMPLEMENTED();
+  observer_ = observer;
 }
 
 void MockLocalAudioTrack::UnregisterObserver(ObserverInterface* observer) {
-  NOTIMPLEMENTED();
+  DCHECK(observer_ == observer);
+  observer_ = NULL;
 }
 
 AudioSourceInterface* MockLocalAudioTrack::GetSource() const {

@@ -167,5 +167,20 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithNewVideoMediaStream) {
   ExpectTitle("OK");
 }
 
+// This test will make a PeerConnection-based call and send a new Video
+// MediaStream that has been created based on a MediaStream created with
+// getUserMedia. When video is flowing, the VideoTrack is removed and an
+// AudioTrack is added instead.
+// TODO(phoglund): This test is manual since not all buildbots has an audio
+// input.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
+  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(
+      ExecuteJavascript("callWithNewVideoMediaStreamLaterSwitchToAudio();"));
+  ExpectTitle("OK");
+}
+
 }  // namespace content
 

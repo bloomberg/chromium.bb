@@ -35,13 +35,14 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   virtual ~MockVideoSource();
 
  private:
-   webrtc::ObserverInterface* observer_;
-   MediaSourceInterface::SourceState state_;
+  webrtc::ObserverInterface* observer_;
+  MediaSourceInterface::SourceState state_;
 };
 
 class MockAudioSource : public webrtc::AudioSourceInterface {
  public:
-  MockAudioSource(const webrtc::MediaConstraintsInterface* constraints);
+  explicit MockAudioSource(
+      const webrtc::MediaConstraintsInterface* constraints);
 
   virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
   virtual void UnregisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
@@ -95,14 +96,18 @@ class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
  private:
   bool enabled_;
   std::string id_;
+  TrackState state_;
   scoped_refptr<webrtc::VideoSourceInterface> source_;
+  webrtc::ObserverInterface* observer_;
 };
 
 class MockLocalAudioTrack : public webrtc::AudioTrackInterface {
  public:
   explicit MockLocalAudioTrack(const std::string& id)
     : enabled_(false),
-      id_(id) {
+      id_(id),
+      state_(MediaStreamTrackInterface::kLive),
+      observer_(NULL) {
   }
   virtual std::string kind() const OVERRIDE;
   virtual std::string id() const OVERRIDE;
@@ -120,6 +125,8 @@ class MockLocalAudioTrack : public webrtc::AudioTrackInterface {
  private:
   bool enabled_;
   std::string id_;
+  TrackState state_;
+  webrtc::ObserverInterface* observer_;
 };
 
 // A mock factory for creating different objects for

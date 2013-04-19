@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -652,6 +653,106 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
 
   pc_handler_->OnAddStream(remote_stream);
   pc_handler_->OnRemoveStream(remote_stream);
+}
+
+// This test that WebKit is notified about remote track state changes.
+TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
+  std::string remote_stream_label("remote_stream");
+  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+      AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
+
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label))));
+  pc_handler_->OnAddStream(remote_stream);
+  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  webkit_stream.audioTracks(audio_tracks);
+  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateLive,
+            audio_tracks[0].source().readyState());
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+    webkit_stream.videoTracks(video_tracks);
+  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateLive,
+            video_tracks[0].source().readyState());
+
+  remote_stream->GetAudioTracks()[0]->set_state(
+      webrtc::MediaStreamTrackInterface::kEnded);
+  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateEnded,
+            audio_tracks[0].source().readyState());
+
+  remote_stream->GetVideoTracks()[0]->set_state(
+      webrtc::MediaStreamTrackInterface::kEnded);
+  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateEnded,
+            video_tracks[0].source().readyState());
+}
+
+// TODO(perkj): Enable this test once https://codereview.chromium.org/14314003
+// is landed.
+TEST_F(RTCPeerConnectionHandlerTest,
+       DISABLED_RemoveAndAddAudioTrackFromRemoteStream) {
+  std::string remote_stream_label("remote_stream");
+  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+      AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
+
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label))));
+  pc_handler_->OnAddStream(remote_stream);
+  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  webkit_stream.audioTracks(audio_tracks);
+  EXPECT_EQ(1u, audio_tracks.size());
+
+  // Remove the Webrtc audio track from the Webrtc MediaStream.
+  scoped_refptr<webrtc::AudioTrackInterface> webrtc_track =
+      remote_stream->GetAudioTracks()[0].get();
+  remote_stream->RemoveTrack(webrtc_track);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_audio_tracks1;
+  webkit_stream.audioTracks(modified_audio_tracks1);
+  EXPECT_EQ(0u, modified_audio_tracks1.size());
+
+  // Add the WebRtc audio track again.
+  remote_stream->AddTrack(webrtc_track);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_audio_tracks2;
+  webkit_stream.audioTracks(modified_audio_tracks2);
+  EXPECT_EQ(1u, modified_audio_tracks2.size());
+}
+
+// TODO(perkj): Enable this test once https://codereview.chromium.org/14314003
+// is landed.
+TEST_F(RTCPeerConnectionHandlerTest,
+       DISABLED_RemoveAndAddVideoTrackFromRemoteStream) {
+  std::string remote_stream_label("remote_stream");
+  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+      AddRemoteMockMediaStream(remote_stream_label, "video", "video"));
+
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
+      testing::Property(&WebKit::WebMediaStream::label,
+                        UTF8ToUTF16(remote_stream_label))));
+  pc_handler_->OnAddStream(remote_stream);
+  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  webkit_stream.videoTracks(video_tracks);
+  EXPECT_EQ(1u, video_tracks.size());
+
+  // Remove the Webrtc video track from the Webrtc MediaStream.
+  scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
+      remote_stream->GetVideoTracks()[0].get();
+  remote_stream->RemoveTrack(webrtc_track);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_video_tracks1;
+  webkit_stream.videoTracks(modified_video_tracks1);
+  EXPECT_EQ(0u, modified_video_tracks1.size());
+
+  // Add the WebRtc video track again.
+  remote_stream->AddTrack(webrtc_track);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_video_tracks2;
+  webkit_stream.videoTracks(modified_video_tracks2);
+  EXPECT_EQ(1u, modified_video_tracks2.size());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {

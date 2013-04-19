@@ -145,6 +145,8 @@
     'renderer/media/renderer_gpu_video_decoder_factories.h',
     'renderer/media/renderer_webaudiodevice_impl.cc',
     'renderer/media/renderer_webaudiodevice_impl.h',
+    'renderer/media/remote_media_stream_impl.cc',
+    'renderer/media/remote_media_stream_impl.h',    
     'renderer/media/rtc_video_renderer.cc',
     'renderer/media/rtc_video_renderer.h',
     'renderer/media/stream_texture_factory_impl_android.cc',

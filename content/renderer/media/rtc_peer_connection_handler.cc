@@ -10,9 +10,11 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/peer_connection_tracker.h"
+#include "content/renderer/media/remote_media_stream_impl.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
@@ -323,6 +325,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
+  STLDeleteValues(&remote_streams_);
 }
 
 void RTCPeerConnectionHandler::associateWithFrame(WebKit::WebFrame* frame) {
@@ -660,17 +663,19 @@ void RTCPeerConnectionHandler::OnAddStream(
     webrtc::MediaStreamInterface* stream_interface) {
   DCHECK(stream_interface);
   DCHECK(remote_streams_.find(stream_interface) == remote_streams_.end());
-  WebKit::WebMediaStream stream =
-      CreateRemoteWebKitMediaStream(stream_interface);
+
+  RemoteMediaStreamImpl* remote_stream =
+      new RemoteMediaStreamImpl(stream_interface);
+  remote_streams_.insert(
+      std::pair<webrtc::MediaStreamInterface*, RemoteMediaStreamImpl*> (
+          stream_interface, remote_stream));
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackAddStream(
-        this, stream, PeerConnectionTracker::SOURCE_REMOTE);
+        this, remote_stream->webkit_stream(),
+        PeerConnectionTracker::SOURCE_REMOTE);
 
-  remote_streams_.insert(
-      std::pair<webrtc::MediaStreamInterface*,
-                WebKit::WebMediaStream>(stream_interface, stream));
-  client_->didAddRemoteStream(stream);
+  client_->didAddRemoteStream(remote_stream->webkit_stream());
 }
 
 void RTCPeerConnectionHandler::OnRemoveStream(
@@ -681,15 +686,17 @@ void RTCPeerConnectionHandler::OnRemoveStream(
     NOTREACHED() << "Stream not found";
     return;
   }
-  WebKit::WebMediaStream stream = it->second;
-  DCHECK(!stream.isNull());
+
+  scoped_ptr<RemoteMediaStreamImpl> remote_stream(it->second);
+  const WebKit::WebMediaStream& webkit_stream = remote_stream->webkit_stream();
+  DCHECK(!webkit_stream.isNull());
   remote_streams_.erase(it);
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackRemoveStream(
-        this, stream, PeerConnectionTracker::SOURCE_REMOTE);
+        this, webkit_stream, PeerConnectionTracker::SOURCE_REMOTE);
 
-  client_->didRemoveRemoteStream(stream);
+  client_->didRemoveRemoteStream(webkit_stream);
 }
 
 void RTCPeerConnectionHandler::OnIceCandidate(
