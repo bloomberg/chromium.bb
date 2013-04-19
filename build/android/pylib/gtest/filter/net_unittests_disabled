@@ -1,24 +1,15 @@
 # List of suppressions.
+
+CertVerifyProcTest.InvalidKeyUsage
 CertVerifyProcTest.PublicKeyHashes
-CertVerifyProcTest.RejectWeakKeys
 CertVerifyProcTest.VerifyReturnChainBasic
 CertVerifyProcTest.VerifyReturnChainFiltersUnrelatedCerts
 CertVerifyProcTest.VerifyReturnChainProperlyOrdered
-HTTPSCRLSetTest.ExpiredCRLSet
-HTTPSEVCRLSetTest.FreshCRLSet
-HTTPSRequestTest.ClientAuthTest
-HTTPSRequestTest.HTTPSGetTest
-HTTPSRequestTest.ResumeTest
-HTTPSRequestTest.SSLSessionCacheShardTest
 # Bug: 171812
 MultiThreadedCertVerifierTest.CancelRequest
 
 PythonUtils.PythonRunTime
-TransportSecurityStateTest.ValidPinsHeadersSHA1
-TransportSecurityStateTest.ValidPinsHeadersSHA256
 URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
-URLRequestTestHTTP.ProcessSTS
-URLRequestTestHTTP.ProcessSTSOnce
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/0
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/1
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/2
@@ -38,9 +29,6 @@ VerifyRoot/CertVerifyProcWeakDigestTest.Verify/0
 VerifyRoot/CertVerifyProcWeakDigestTest.Verify/1
 VerifyRoot/CertVerifyProcWeakDigestTest.Verify/2
 # Fail only on bots.
-CertVerifyProcTest.TestKnownRoot
-CertVerifyProcTest.WithoutRevocationChecking
-CertVerifyProcTest.InvalidKeyUsage
 HttpCache.RangeGET_Cancel
 HttpCache.RangeGET_Cancel2
 HttpCache.RangeGET_OK
