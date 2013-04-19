@@ -879,8 +879,12 @@ void AutofillManager::OnLoadedServerPredictions(
                                     page_meta_data.get(),
                                     *metric_logger_);
 
+  // TODO(ahutter): Remove this once Autocheckout is implemented on other
+  // platforms. See http://crbug.com/173416.
+#if defined(TOOLKIT_VIEWS)
   if (!GetAutocheckoutURLPrefix().empty())
     autocheckout_manager_.OnLoadedPageMetaData(page_meta_data.Pass());
+#endif  // #if defined(TOOLKIT_VIEWS)
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   SendAutofillTypePredictions(form_structures_.get());
