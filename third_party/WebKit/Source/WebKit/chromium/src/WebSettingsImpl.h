@@ -46,6 +46,7 @@ public:
 
     virtual bool deviceSupportsTouch();
     virtual bool scrollAnimatorEnabled() const;
+    virtual bool touchEditingEnabled() const;
     virtual bool viewportEnabled() const { return m_viewportEnabled; }
     virtual void setAccelerated2dCanvasEnabled(bool);
     virtual void setAcceleratedCompositingEnabled(bool);
@@ -155,6 +156,7 @@ public:
     virtual void setTextAutosizingFontScaleFactor(float);
     virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
     virtual void setTouchDragDropEnabled(bool);
+    virtual void setTouchEditingEnabled(bool);
     virtual void setThreadedHTMLParser(bool);
     virtual void setUnifiedTextCheckerEnabled(bool);
     virtual void setUnsafePluginPastingEnabled(bool);

@@ -357,6 +357,11 @@ void WebSettingsImpl::setTouchDragDropEnabled(bool enabled)
     m_settings->setTouchDragDropEnabled(enabled);
 }
 
+void WebSettingsImpl::setTouchEditingEnabled(bool enabled)
+{
+    m_settings->setTouchEditingEnabled(enabled);
+}
+
 void WebSettingsImpl::setThreadedHTMLParser(bool enabled)
 {
     m_settings->setThreadedHTMLParser(enabled);
@@ -617,6 +622,11 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
 bool WebSettingsImpl::scrollAnimatorEnabled() const
 {
     return m_settings->scrollAnimatorEnabled();
+}
+
+bool WebSettingsImpl::touchEditingEnabled() const
+{
+    return m_settings->touchEditingEnabled();
 }
 
 void WebSettingsImpl::setVisualWordMovementEnabled(bool enabled)

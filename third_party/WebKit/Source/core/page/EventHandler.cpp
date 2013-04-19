@@ -2453,58 +2453,68 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
 
 bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent)
 {
-    if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
-        IntPoint adjustedPoint = gestureEvent.position();
+    IntPoint adjustedPoint = gestureEvent.position();
 #if ENABLE(TOUCH_ADJUSTMENT)
-        adjustGesturePosition(gestureEvent, adjustedPoint);
+    adjustGesturePosition(gestureEvent, adjustedPoint);
 #endif
+    RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
+    if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
+        return true;
+
+    m_didLongPressInvokeContextMenu = true;
+    if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
             gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
         m_didStartDrag = false;
-        RefPtr<Frame> subframe = subframeForHitTestResult(mev);
-        if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
-            return true;
         m_mouseDownMayStartDrag = true;
         dragState().m_dragSrc = 0;
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
         handleDrag(mev, DontCheckDragHysteresis);
-        if (m_didStartDrag)
+        if (m_didStartDrag) {
+            m_didLongPressInvokeContextMenu = false;
             return true;
+        }
     }
-    return handleGestureForTextSelectionOrContextMenu(gestureEvent);
+#if OS(ANDROID)
+    bool shouldLongPressSelectWord = true;
+#else
+    bool shouldLongPressSelectWord = m_frame->settings() && m_frame->settings()->touchEditingEnabled();
+#endif
+    if (shouldLongPressSelectWord) {
+      IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
+      HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+      Node* innerNode = result.targetNode();
+      if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
+          selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
+          if (m_frame->selection()->isRange())
+              return true;
+      }
+    }
+    return sendContextMenuEventForGesture(gestureEvent);
 }
 
 bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent)
 {
+    IntPoint adjustedPoint = gestureEvent.position();
+#if ENABLE(TOUCH_ADJUSTMENT)
+    adjustGesturePosition(gestureEvent, adjustedPoint);
+#endif
+    RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
+    if (subframe && subframe->eventHandler()->handleGestureLongTap(gestureEvent))
+        return true;
 #if !OS(ANDROID)
     if (!m_didLongPressInvokeContextMenu)
         return sendContextMenuEventForGesture(gestureEvent);
+    m_didLongPressInvokeContextMenu = true;
 #endif
     return false;
 }
 
-bool EventHandler::handleGestureForTextSelectionOrContextMenu(const PlatformGestureEvent& gestureEvent)
-{
-#if OS(ANDROID)
-    IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
-    HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-    Node* innerNode = result.targetNode();
-    if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
-        selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
-        if (m_frame->selection()->isRange())
-            return true;
-    }
-#endif
-    m_didLongPressInvokeContextMenu = (gestureEvent.type() == PlatformEvent::GestureLongPress);
-
-    return sendContextMenuEventForGesture(gestureEvent);
-}
-
 bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gestureEvent)
 {
-    return handleGestureForTextSelectionOrContextMenu(gestureEvent);
+    return sendContextMenuEventForGesture(gestureEvent);
 }
 
 bool EventHandler::passGestureEventToWidget(const PlatformGestureEvent& gestureEvent, Widget* widget)
@@ -2621,6 +2631,15 @@ bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEven
         setFrameWasScrolledByUser();
 
     return scrolledFrame;
+}
+
+Frame* EventHandler::getSubFrameForGestureEvent(const IntPoint& touchAdjustedPoint, const PlatformGestureEvent& gestureEvent)
+{
+    PlatformMouseEvent mouseDown(touchAdjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
+        gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
+    HitTestRequest request(HitTestRequest::ReadOnly);
+    MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDown);
+    return EventHandler::subframeForHitTestResult(mev);
 }
 
 void EventHandler::clearGestureScrollNodes()

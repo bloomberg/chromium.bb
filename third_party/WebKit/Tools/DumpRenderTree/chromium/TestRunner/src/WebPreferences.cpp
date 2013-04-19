@@ -195,6 +195,7 @@ void WebPreferences::applyTo(WebView* webView)
 
     // Fixed values.
     settings->setTouchDragDropEnabled(false);
+    settings->setTouchEditingEnabled(false);
     settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
     settings->setDownloadableBinaryFontsEnabled(true);
     settings->setAllowScriptsToCloseWindows(false);

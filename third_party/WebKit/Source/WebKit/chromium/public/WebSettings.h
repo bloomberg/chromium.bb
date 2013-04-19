@@ -53,6 +53,7 @@ public:
     };
 
     virtual bool scrollAnimatorEnabled() const = 0;
+    virtual bool touchEditingEnabled() const = 0;
     virtual bool viewportEnabled() const = 0;
     virtual void setAccelerated2dCanvasEnabled(bool) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
@@ -160,6 +161,7 @@ public:
     virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() = 0;
     virtual void setThreadedHTMLParser(bool) = 0;
     virtual void setTouchDragDropEnabled(bool) = 0;
+    virtual void setTouchEditingEnabled(bool) = 0;
     virtual void setUnifiedTextCheckerEnabled(bool) = 0;
     virtual void setUnsafePluginPastingEnabled(bool) = 0;
     virtual void setUserStyleSheetLocation(const WebURL&) = 0;
