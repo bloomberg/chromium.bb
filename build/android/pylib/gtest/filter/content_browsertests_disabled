@@ -106,3 +106,5 @@ IndexedDBLayoutTest.IndexTests
 FileSystemLayoutTest.*
 IndexedDBBrowserTest.*
 IndexedDBLayoutTest.*
+IndexedDBBrowserTestWithVersion0Schema.MigrationTest
+IndexedDBBrowserTestWithVersion123456Schema.DestroyTest
