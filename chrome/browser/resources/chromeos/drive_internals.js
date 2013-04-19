@@ -189,8 +189,6 @@ function updateLocalMetadata(localMetadata) {
 function updateDeltaUpdateStatus(deltaUpdateStatus) {
   $('push-notification-enabled').textContent =
         deltaUpdateStatus['push-notification-enabled'];
-  $('polling-interval-sec').textContent =
-        deltaUpdateStatus['polling-interval-sec'];
   $('last-update-check-time').textContent =
         deltaUpdateStatus['last-update-check-time'];
   $('last-update-check-error').textContent =
