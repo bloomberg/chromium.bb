@@ -53,6 +53,19 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Event handler that is invoked just before the screen is shown.
+     * @param {object} data Screen init payload.
+     */
+    onBeforeShow: function() {
+      $('eula').classList.add('eula-loading');
+      $('cros-eula-frame').onload = function() {
+        $('accept-button').disabled = false;
+        $('eula').classList.remove('eula-loading');
+      }
+      $('cros-eula-frame').src = 'chrome://terms';
+    },
+
+    /**
      * Header text of the screen.
      * @type {string}
      */
@@ -78,6 +91,8 @@ cr.define('oobe', function() {
 
       var acceptButton = this.ownerDocument.createElement('button');
       acceptButton.id = 'accept-button';
+      acceptButton.disabled = true;
+      acceptButton.classList.add('preserve-disabled-state');
       acceptButton.textContent = loadTimeData.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         $('eula').classList.add('loading');  // Mark EULA screen busy.

@@ -810,6 +810,23 @@ html[dir=rtl] .step-extra-controls {
   height: 222px;
 }
 
+#cros-eula-loading {
+  -webkit-align-items: center;
+  -webkit-flex-direction: column;
+  -webkit-justify-content: center;
+  display: none;
+  height: 100%;
+  width: 100%;
+}
+
+.step.eula-loading #cros-eula-frame {
+  display: none;
+}
+
+.step.eula-loading #cros-eula-loading {
+  display: -webkit-flex;
+}
+
 #cros-eula {
   width: 314px;
 }

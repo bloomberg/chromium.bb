@@ -59,6 +59,7 @@ void EulaScreenHandler::DeclareLocalizedValues(
   builder->Add("eulaTpmDescPowerwash", IDS_EULA_TPM_KEY_DESCRIPTION_POWERWASH);
   builder->Add("eulaTpmBusy", IDS_EULA_TPM_BUSY);
   builder->Add("eulaSystemInstallationSettingsOkButton", IDS_OK);
+  builder->Add("termsOfServiceLoading", IDS_TERMS_OF_SERVICE_SCREEN_LOADING);
 #if defined(ENABLE_RLZ)
   builder->AddF("eulaRlzDesc",
                 IDS_EULA_RLZ_DESCRIPTION,

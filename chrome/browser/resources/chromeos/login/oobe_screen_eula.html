@@ -1,9 +1,14 @@
-<div class="step right hidden animated" id="eula">
+<div class="step right hidden animated eula-loading" id="eula">
   <div class="step-contents">
     <div id="eulas" class="eula-columns one-column">
       <div id="cros-eula">
         <iframe id="cros-eula-frame" class="eula-frame"
-          src="chrome://terms"></iframe>
+            src="about:blank"></iframe>
+        <div id="cros-eula-loading">
+          <div>
+            <p i18n-content="termsOfServiceLoading"></p>
+          </div>
+        </div>
       </div>
       <div id="oem-eula">
         <iframe id="oem-eula-frame" class="eula-frame"></iframe>

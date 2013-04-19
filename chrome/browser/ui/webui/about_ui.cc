@@ -55,6 +55,9 @@
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
@@ -96,6 +99,8 @@ const char kMemoryJsPath[] = "memory.js";
 const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
+// chrome://terms falls back to offline page after kOnlineTermsTimeoutSec.
+const int kOnlineTermsTimeoutSec = 10;
 
 // When you type about:memory, it actually loads this intermediate URL that
 // redirects you to the final page. This avoids the problem where typing
@@ -137,6 +142,75 @@ class AboutMemoryHandler : public MemoryDetails {
 };
 
 #if defined(OS_CHROMEOS)
+// Helper class that fetches the online Chrome OS terms. Empty string is
+// returned once fetching failed or exceeded |kOnlineTermsTimeoutSec|.
+class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
+ public:
+  typedef base::Callback<void (ChromeOSOnlineTermsHandler*)> FetchCallback;
+
+  explicit ChromeOSOnlineTermsHandler(const FetchCallback& callback)
+      : fetch_callback_(callback) {
+    eula_fetcher_.reset(net::URLFetcher::Create(
+        GURL(l10n_util::GetStringUTF16(IDS_EULA_POLICY_URL)),
+        net::URLFetcher::GET,
+        this));
+    eula_fetcher_->SetRequestContext(
+        g_browser_process->system_request_context());
+    eula_fetcher_->AddExtraRequestHeader("Accept: text/html");
+    eula_fetcher_->Start();
+    // Abort the download attempt if it takes longer than one minute.
+    download_timer_.Start(FROM_HERE,
+                          base::TimeDelta::FromSeconds(kOnlineTermsTimeoutSec),
+                          this,
+                          &ChromeOSOnlineTermsHandler::OnDownloadTimeout);
+  }
+
+  void GetResponseResult(std::string* response_string) {
+    std::string mime_type;
+    if (!eula_fetcher_ ||
+        !eula_fetcher_->GetStatus().is_success() ||
+        eula_fetcher_->GetResponseCode() != 200 ||
+        !eula_fetcher_->GetResponseHeaders()->GetMimeType(&mime_type) ||
+        mime_type != "text/html" ||
+        !eula_fetcher_->GetResponseAsString(response_string)) {
+      response_string->clear();
+    }
+  }
+
+ private:
+  // Prevents allocation on the stack. ChromeOSOnlineTermsHandler should be
+  // created by 'operator new'. |this| takes care of destruction.
+  virtual ~ChromeOSOnlineTermsHandler() {}
+
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+    if (source != eula_fetcher_.get()) {
+      NOTREACHED() << "Callback from foreign URL fetcher";
+      return;
+    }
+    fetch_callback_.Run(this);
+    delete this;
+  }
+
+  void OnDownloadTimeout() {
+    eula_fetcher_.reset();
+    fetch_callback_.Run(this);
+    delete this;
+  }
+
+  // Timer that enforces a timeout on the attempt to download the
+  // ChromeOS Terms.
+  base::OneShotTimer<ChromeOSOnlineTermsHandler> download_timer_;
+
+  // |fetch_callback_| called when fetching succeeded or failed.
+  FetchCallback fetch_callback_;
+
+  // Helper to fetch online eula.
+  scoped_ptr<net::URLFetcher> eula_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSOnlineTermsHandler);
+};
+
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
@@ -158,41 +232,65 @@ class ChromeOSTermsHandler
       locale_(g_browser_process->GetApplicationLocale()) {
   }
 
-  ~ChromeOSTermsHandler() {}
+  virtual ~ChromeOSTermsHandler() {}
 
   void StartOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ChromeOSTermsHandler::LoadFileOnFileThread, this));
+    if (path_ == chrome::kOemEulaURLPath) {
+      // Load local OEM EULA from the disk.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ChromeOSTermsHandler::LoadOemEulaFileOnFileThread, this));
+    } else {
+      // Try to load online version of ChromeOS terms first.
+      // ChromeOSOnlineTermsHandler object destroys itself.
+      new ChromeOSOnlineTermsHandler(
+          base::Bind(&ChromeOSTermsHandler::OnOnlineEULAFetched, this));
+    }
   }
 
-  void LoadFileOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    if (path_ == chrome::kOemEulaURLPath) {
-      const chromeos::StartupCustomizationDocument* customization =
-          chromeos::StartupCustomizationDocument::GetInstance();
-      if (customization->IsReady()) {
-        base::FilePath oem_eula_file_path;
-        if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
-                                   &oem_eula_file_path)) {
-          if (!file_util::ReadFileToString(oem_eula_file_path, &contents_)) {
-            contents_.clear();
-          }
-        }
-      }
+  void OnOnlineEULAFetched(ChromeOSOnlineTermsHandler* loader) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    loader->GetResponseResult(&contents_);
+    if (contents_.empty()) {
+      // Load local ChromeOS terms from the file.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ChromeOSTermsHandler::LoadEulaFileOnFileThread, this));
     } else {
-      std::string file_path =
-          base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
-      if (!file_util::ReadFileToString(base::FilePath(file_path), &contents_)) {
-        // No EULA for given language - try en-US as default.
-        file_path = base::StringPrintf(chrome::kEULAPathFormat, "en-US");
-        if (!file_util::ReadFileToString(base::FilePath(file_path),
-                                         &contents_)) {
-          // File with EULA not found, ResponseOnUIThread will load EULA from
-          // resources if contents_ is empty.
+      ResponseOnUIThread();
+    }
+  }
+
+  void LoadOemEulaFileOnFileThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    const chromeos::StartupCustomizationDocument* customization =
+        chromeos::StartupCustomizationDocument::GetInstance();
+    if (customization->IsReady()) {
+      base::FilePath oem_eula_file_path;
+      if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
+                                 &oem_eula_file_path)) {
+        if (!file_util::ReadFileToString(oem_eula_file_path, &contents_)) {
           contents_.clear();
         }
+      }
+    }
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ChromeOSTermsHandler::ResponseOnUIThread, this));
+  }
+
+  void LoadEulaFileOnFileThread() {
+    std::string file_path =
+        base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
+    if (!file_util::ReadFileToString(base::FilePath(file_path), &contents_)) {
+      // No EULA for given language - try en-US as default.
+      file_path = base::StringPrintf(chrome::kEULAPathFormat, "en-US");
+      if (!file_util::ReadFileToString(base::FilePath(file_path),
+                                       &contents_)) {
+        // File with EULA not found, ResponseOnUIThread will load EULA from
+        // resources if contents_ is empty.
+        contents_.clear();
       }
     }
     BrowserThread::PostTask(
@@ -210,13 +308,13 @@ class ChromeOSTermsHandler
   }
 
   // Path in the URL.
-  std::string path_;
+  const std::string path_;
 
   // Callback to run with the response.
   content::URLDataSource::GotDataCallback callback_;
 
   // Locale of the EULA.
-  std::string locale_;
+  const std::string locale_;
 
   // EULA contents that was loaded from file.
   std::string contents_;
