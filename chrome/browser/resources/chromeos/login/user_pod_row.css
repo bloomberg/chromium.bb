@@ -423,5 +423,5 @@ html[dir=rtl] .side-pane-container .enter-button {
 .pod.public-account.expanded .side-pane-divider,
 .pod.public-account.expanded .side-pane-container,
 .pod.public-account.animating .side-pane-container {
-  visibility: visible;
+  visibility: inherit;
 }
