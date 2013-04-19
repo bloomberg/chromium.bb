@@ -104,7 +104,8 @@ void DrivePrefetcher::DoPrefetch() {
   for (LatestFileSet::reverse_iterator it = latest_files_.rbegin();
       it != latest_files_.rend(); ++it) {
     const std::string& resource_id = it->resource_id();
-    event_logger_->Log("Prefetcher: Enqueue prefetching " + resource_id);
+    event_logger_->Log("Prefetcher: Enqueue prefetching %s",
+                       resource_id.c_str());
     file_system_->GetFileByResourceId(
         resource_id,
         DriveClientContext(PREFETCH),
@@ -123,9 +124,9 @@ void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error != DRIVE_FILE_OK)
     LOG(WARNING) << "Prefetch failed: " << DriveFileErrorToString(error);
-  event_logger_->Log(base::StringPrintf("Prefetcher: Finish fetching (%s) %s",
-                                        DriveFileErrorToString(error).c_str(),
-                                        resource_id.c_str()));
+  event_logger_->Log("Prefetcher: Finish fetching (%s) %s",
+                     DriveFileErrorToString(error).c_str(),
+                     resource_id.c_str());
 }
 
 void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {

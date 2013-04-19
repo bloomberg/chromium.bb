@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_EVENT_LOGGER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_EVENT_LOGGER_H_
 
+#include <stdarg.h>   // va_list
 #include <string>
 #include <deque>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 
 namespace drive {
@@ -29,8 +31,10 @@ class EventLogger {
   explicit EventLogger(size_t history_size);
   ~EventLogger();
 
-  // Logs a message.
-  void Log(const std::string& what);
+  // Logs a message using printf format.
+  // Note that PRINTF_FORMAT should be (2, 3) instead of (1, 2) as this is a
+  // C++ member function.
+  void Log(const char* format, ...) PRINTF_FORMAT(2, 3);
 
   // Gets the list of latest events (the oldest event comes first).
   const std::deque<Event>& history() const { return history_; }

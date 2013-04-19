@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/event_logger.h"
 
+#include "base/stringprintf.h"
+
 namespace drive {
 
 EventLogger::Event::Event(int id, const std::string& what)
@@ -20,7 +22,14 @@ EventLogger::EventLogger(size_t history_size)
 EventLogger::~EventLogger() {
 }
 
-void EventLogger::Log(const std::string& what) {
+void EventLogger::Log(const char* format, ...) {
+  std::string what;
+
+  va_list args;
+  va_start(args, format);
+  base::StringAppendV(&what, format, args);
+  va_end(args);
+
   history_.push_back(Event(next_event_id_, what));
   ++next_event_id_;
   if (history_.size() > history_size_)
