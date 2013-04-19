@@ -575,7 +575,7 @@ NSView *ThemeMac::ensuredView(ScrollView* scrollView)
 
     // Use a fake flipped view.
     static NSView *flippedView = [[WebCoreFlippedView alloc] init];
-    [flippedView setFrameSize:NSSizeFromCGSize(scrollView->totalContentsSize())];
+    [flippedView setFrameSize:NSSizeFromCGSize(scrollView->contentsSize())];
 
     return flippedView;
 }

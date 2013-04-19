@@ -380,14 +380,7 @@ IntPoint ScrollableArea::minimumScrollPosition() const
 
 IntPoint ScrollableArea::maximumScrollPosition() const
 {
-    return IntPoint(totalContentsSize().width() - visibleWidth(), totalContentsSize().height() - visibleHeight());
-}
-
-IntSize ScrollableArea::totalContentsSize() const
-{
-    IntSize totalContentsSize = contentsSize();
-    totalContentsSize.setHeight(totalContentsSize.height() + headerHeight() + footerHeight());
-    return totalContentsSize;
+    return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
 }
 
 IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
@@ -408,19 +401,17 @@ IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars 
                    std::max(0, visibleHeight() + horizontalScrollbarHeight));
 }
 
-static int constrainedScrollPosition(int visibleContentSize, int totalContentsSize, int scrollPosition, int scrollOrigin, int headerHeight, int footerHeight)
+static int constrainedScrollPosition(int visibleContentSize, int contentsSize, int scrollPosition, int scrollOrigin)
 {
-    int maxValue = totalContentsSize - visibleContentSize - footerHeight;
+    int maxValue = contentsSize - visibleContentSize;
     if (maxValue <= 0)
         return 0;
 
     if (!scrollOrigin) {
-        if (scrollPosition <= headerHeight)
+        if (scrollPosition <= 0)
             return 0;
         if (scrollPosition > maxValue)
-            scrollPosition = maxValue - headerHeight;
-        else
-            scrollPosition -= headerHeight;
+            scrollPosition = maxValue;
     } else {
         // FIXME: position:fixed elements are currently broken when there is a non-zero y-value in the scroll origin
         // such as when -webkit-writing-mode:horizontal-bt; is set. But when we fix that, we need to make such
@@ -434,15 +425,15 @@ static int constrainedScrollPosition(int visibleContentSize, int totalContentsSi
     return scrollPosition;
 }
 
-IntPoint ScrollableArea::constrainScrollPositionForOverhang(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, int headerHeight, int footerHeight)
+IntPoint ScrollableArea::constrainScrollPositionForOverhang(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin)
 {
-    return IntPoint(constrainedScrollPosition(visibleContentRect.width(), totalContentsSize.width(), scrollPosition.x(), scrollOrigin.x(), 0, 0),
-        constrainedScrollPosition(visibleContentRect.height(), totalContentsSize.height(), scrollPosition.y(), scrollOrigin.y(), headerHeight, footerHeight));
+    return IntPoint(constrainedScrollPosition(visibleContentRect.width(), contentsSize.width(), scrollPosition.x(), scrollOrigin.x()),
+        constrainedScrollPosition(visibleContentRect.height(), contentsSize.height(), scrollPosition.y(), scrollOrigin.y()));
 }
 
 IntPoint ScrollableArea::constrainScrollPositionForOverhang(const IntPoint& scrollPosition)
 {
-    return constrainScrollPositionForOverhang(visibleContentRect(), totalContentsSize(), scrollPosition, scrollOrigin(), headerHeight(), footerHeight());
+    return constrainScrollPositionForOverhang(visibleContentRect(), contentsSize(), scrollPosition, scrollOrigin());
 }
 
 void ScrollableArea::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

@@ -223,8 +223,6 @@ public:
 
     GraphicsLayer* updateLayerForTopOverhangArea(bool wantsLayer);
     GraphicsLayer* updateLayerForBottomOverhangArea(bool wantsLayer);
-    GraphicsLayer* updateLayerForHeader(bool wantsLayer);
-    GraphicsLayer* updateLayerForFooter(bool wantsLayer);
 #endif
 
     void updateViewportConstraintStatus(RenderLayer*);
@@ -379,8 +377,6 @@ private:
     OwnPtr<GraphicsLayer> m_contentShadowLayer;
     OwnPtr<GraphicsLayer> m_layerForTopOverhangArea;
     OwnPtr<GraphicsLayer> m_layerForBottomOverhangArea;
-    OwnPtr<GraphicsLayer> m_layerForHeader;
-    OwnPtr<GraphicsLayer> m_layerForFooter;
 #endif
 
 #if !LOG_DISABLED

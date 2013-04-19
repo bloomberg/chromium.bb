@@ -185,8 +185,6 @@ FrameView::FrameView(Frame* frame)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
     , m_didRunAutosize(false)
-    , m_headerHeight(0)
-    , m_footerHeight(0)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
 {
@@ -801,43 +799,7 @@ GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) co
     return renderView->compositor()->updateLayerForBottomOverhangArea(wantsLayer);
 }
 
-GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return 0;
-
-    ASSERT(m_frame == m_frame->page()->mainFrame());
-
-    return renderView->compositor()->updateLayerForHeader(wantsLayer);
-}
-
-GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return 0;
-
-    ASSERT(m_frame == m_frame->page()->mainFrame());
-
-    return renderView->compositor()->updateLayerForFooter(wantsLayer);
-}
-
 #endif // ENABLE(RUBBER_BANDING)
-
-void FrameView::setHeaderHeight(int headerHeight)
-{
-    if (m_frame && m_frame->page())
-        ASSERT(m_frame == m_frame->page()->mainFrame());
-    m_headerHeight = headerHeight;
-}
-
-void FrameView::setFooterHeight(int footerHeight)
-{
-    if (m_frame && m_frame->page())
-        ASSERT(m_frame == m_frame->page()->mainFrame());
-    m_footerHeight = footerHeight;
-}
 
 bool FrameView::hasCompositedContent() const
 {
@@ -1394,14 +1356,14 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
     return viewportRect;
 }
 
-IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame, int headerHeight, int footerHeight)
+IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame)
 {
-    IntPoint constrainedPosition = ScrollableArea::constrainScrollPositionForOverhang(visibleContentRect, totalContentsSize, scrollPosition, scrollOrigin, headerHeight, footerHeight);
+    IntPoint constrainedPosition = ScrollableArea::constrainScrollPositionForOverhang(visibleContentRect, contentsSize, scrollPosition, scrollOrigin);
 
-    IntSize maxSize = totalContentsSize - visibleContentRect.size();
+    IntSize maxSize = contentsSize - visibleContentRect.size();
 
-    float dragFactorX = (fixedElementsLayoutRelativeToFrame || !maxSize.width()) ? 1 : (totalContentsSize.width() - visibleContentRect.width()) / maxSize.width();
-    float dragFactorY = (fixedElementsLayoutRelativeToFrame || !maxSize.height()) ? 1 : (totalContentsSize.height() - visibleContentRect.height()) / maxSize.height();
+    float dragFactorX = (fixedElementsLayoutRelativeToFrame || !maxSize.width()) ? 1 : (contentsSize.width() - visibleContentRect.width()) / maxSize.width();
+    float dragFactorY = (fixedElementsLayoutRelativeToFrame || !maxSize.height()) ? 1 : (contentsSize.height() - visibleContentRect.height()) / maxSize.height();
 
     return IntSize(constrainedPosition.x() * dragFactorX, constrainedPosition.y() * dragFactorY);
 }
@@ -1409,10 +1371,10 @@ IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRec
 IntSize FrameView::scrollOffsetForFixedPosition() const
 {
     IntRect visibleContentRect = this->visibleContentRect();
-    IntSize totalContentsSize = this->totalContentsSize();
+    IntSize contentsSize = this->contentsSize();
     IntPoint scrollPosition = this->scrollPosition();
     IntPoint scrollOrigin = this->scrollOrigin();
-    return scrollOffsetForFixedPosition(visibleContentRect, totalContentsSize, scrollPosition, scrollOrigin, fixedElementsLayoutRelativeToFrame(), headerHeight(), footerHeight());
+    return scrollOffsetForFixedPosition(visibleContentRect, contentsSize, scrollPosition, scrollOrigin, fixedElementsLayoutRelativeToFrame());
 }
 
 bool FrameView::fixedElementsLayoutRelativeToFrame() const
@@ -2580,7 +2542,7 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
     ASSERT(m_frame->view() == this);
 
     if (paintsEntireContents())
-        return IntRect(IntPoint(), totalContentsSize());
+        return IntRect(IntPoint(), contentsSize());
 
     // Set our clip rect to be our contents.
     IntRect clipRect = contentsToWindow(visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars));
@@ -2715,9 +2677,9 @@ bool FrameView::isScrollable()
     // 4) scrolling: no;
 
     // Covers #1
-    IntSize totalContentsSize = this->totalContentsSize();
+    IntSize contentsSize = this->contentsSize();
     IntSize visibleContentSize = visibleContentRect().size();
-    if ((totalContentsSize.height() <= visibleContentSize.height() && totalContentsSize.width() <= visibleContentSize.width()))
+    if ((contentsSize.height() <= visibleContentSize.height() && contentsSize.width() <= visibleContentSize.width()))
         return false;
 
     // Covers #2.

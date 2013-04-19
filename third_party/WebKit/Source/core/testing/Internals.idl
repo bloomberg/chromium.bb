@@ -209,9 +209,6 @@
 
     [RaisesException] void setPageScaleFactor(float scaleFactor, long x, long y);
 
-    void setHeaderHeight(Document document, float height);
-    void setFooterHeight(Document document, float height);
-
     void webkitWillEnterFullScreenForElement(Document document, Element element);
     void webkitDidEnterFullScreenForElement(Document document, Element element);
     void webkitWillExitFullScreenForElement(Document document, Element element);

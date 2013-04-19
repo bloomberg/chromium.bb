@@ -222,10 +222,6 @@ void Internals::resetToConsistentState(Page* page)
 
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
-    if (FrameView* mainFrameView = page->mainFrame()->view()) {
-        mainFrameView->setHeaderHeight(0);
-        mainFrameView->setFooterHeight(0);
-    }
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
     WebCore::Settings::setUsesOverlayScrollbars(false);
@@ -1718,24 +1714,6 @@ void Internals::setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCod
     }
     Page* page = document->page();
     page->setPageScaleFactor(scaleFactor, IntPoint(x, y));
-}
-
-void Internals::setHeaderHeight(Document* document, float height)
-{
-    if (!document || !document->view())
-        return;
-
-    FrameView* frameView = document->view();
-    frameView->setHeaderHeight(height);
-}
-
-void Internals::setFooterHeight(Document* document, float height)
-{
-    if (!document || !document->view())
-        return;
-
-    FrameView* frameView = document->view();
-    frameView->setFooterHeight(height);
 }
 
 void Internals::webkitWillEnterFullScreenForElement(Document* document, Element* element)

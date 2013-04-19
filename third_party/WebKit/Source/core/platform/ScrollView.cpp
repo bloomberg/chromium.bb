@@ -273,7 +273,7 @@ void ScrollView::setContentsSize(const IntSize& newSize)
 
 IntPoint ScrollView::maximumScrollPosition() const
 {
-    IntPoint maximumOffset(contentsWidth() - visibleWidth() - scrollOrigin().x(), totalContentsSize().height() - visibleHeight() - scrollOrigin().y());
+    IntPoint maximumOffset(contentsWidth() - visibleWidth() - scrollOrigin().x(), contentsHeight() - visibleHeight() - scrollOrigin().y());
     maximumOffset.clampNegativeToZero();
     return maximumOffset;
 }
@@ -316,7 +316,7 @@ void ScrollView::setScrollOffset(const IntPoint& offset)
     int verticalOffset = offset.y();
     if (constrainsScrollingToContentEdge()) {
         horizontalOffset = max(min(horizontalOffset, contentsWidth() - visibleWidth()), 0);
-        verticalOffset = max(min(verticalOffset, totalContentsSize().height() - visibleHeight()), 0);
+        verticalOffset = max(min(verticalOffset, contentsHeight() - visibleHeight()), 0);
     }
 
     IntSize newOffset = m_scrollOffset;
@@ -375,8 +375,8 @@ IntSize ScrollView::overhangAmount() const
     int physicalScrollY = scrollPosition().y() + scrollOrigin().y();
     if (physicalScrollY < 0)
         stretch.setHeight(physicalScrollY);
-    else if (totalContentsSize().height() && physicalScrollY > totalContentsSize().height() - visibleHeight())
-        stretch.setHeight(physicalScrollY - (totalContentsSize().height() - visibleHeight()));
+    else if (contentsHeight() && physicalScrollY > contentsHeight() - visibleHeight())
+        stretch.setHeight(physicalScrollY - (contentsHeight() - visibleHeight()));
 
     int physicalScrollX = scrollPosition().x() + scrollOrigin().x();
     if (physicalScrollX < 0)
@@ -432,7 +432,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     } else {
         bool sendContentResizedNotification = false;
         
-        IntSize docSize = totalContentsSize();
+        IntSize docSize = contentsSize();
         IntSize fullVisibleSize = visibleContentRect(IncludeScrollbars).size();
 
         if (hScroll == ScrollbarAuto) {
@@ -480,7 +480,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             m_updateScrollbarsPass++;
             contentsResized();
             visibleContentsResized();
-            IntSize newDocSize = totalContentsSize();
+            IntSize newDocSize = contentsSize();
             if (newDocSize == docSize) {
                 // The layout with the new scroll state had no impact on
                 // the document's overall size, so updateScrollbars didn't get called.
@@ -533,9 +533,9 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(true);
-        m_verticalScrollbar->setEnabled(totalContentsSize().height() > clientHeight);
+        m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
         m_verticalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
-        m_verticalScrollbar->setProportion(clientHeight, totalContentsSize().height());
+        m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(false);
     }
@@ -667,29 +667,26 @@ IntRect ScrollView::contentsToRootView(const IntRect& contentsRect) const
 IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
 {
     IntPoint viewPoint = convertFromContainingWindow(windowPoint);
-    IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
-    return viewPoint + offsetInDocument;
+    return viewPoint + scrollOffset();
 }
 
 IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
 {
-    IntSize offsetInDocument = scrollOffset() + IntSize(0, headerHeight());
-    IntPoint viewPoint = contentsPoint - offsetInDocument;
+    IntPoint viewPoint = contentsPoint - scrollOffset();
     return convertToContainingWindow(viewPoint);  
 }
 
 IntRect ScrollView::windowToContents(const IntRect& windowRect) const
 {
     IntRect viewRect = convertFromContainingWindow(windowRect);
-    IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
-    viewRect.move(offsetInDocument);
+    viewRect.move(scrollOffset());
     return viewRect;
 }
 
 IntRect ScrollView::contentsToWindow(const IntRect& contentsRect) const
 {
     IntRect viewRect = contentsRect;
-    viewRect.move(-scrollOffset() + IntSize(0, headerHeight()));
+    viewRect.move(-scrollOffset());
     return convertToContainingWindow(viewRect);
 }
 
@@ -1003,8 +1000,8 @@ void ScrollView::calculateOverhangAreasForPainting(IntRect& horizontalOverhangRe
         horizontalOverhangRect = frameRect();
         horizontalOverhangRect.setHeight(-physicalScrollY);
         horizontalOverhangRect.setWidth(horizontalOverhangRect.width() - verticalScrollbarWidth);
-    } else if (totalContentsSize().height() && physicalScrollY > totalContentsSize().height() - visibleHeight()) {
-        int height = physicalScrollY - (totalContentsSize().height() - visibleHeight());
+    } else if (contentsHeight() && physicalScrollY > contentsHeight() - visibleHeight()) {
+        int height = physicalScrollY - (contentsHeight() - visibleHeight());
         horizontalOverhangRect = frameRect();
         horizontalOverhangRect.setY(frameRect().maxY() - height - horizontalScrollbarHeight);
         horizontalOverhangRect.setHeight(height);

@@ -1407,7 +1407,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
     if (m_rootContentLayer) {
         const IntRect& documentRect = m_renderView->documentRect();
         m_rootContentLayer->setSize(documentRect.size());
-        m_rootContentLayer->setPosition(FloatPoint(documentRect.x(), documentRect.y() + m_renderView->frameView()->headerHeight()));
+        m_rootContentLayer->setPosition(documentRect.location());
     }
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
@@ -1427,8 +1427,6 @@ void RenderLayerCompositor::updateRootLayerPosition()
 
     updateLayerForTopOverhangArea(m_layerForTopOverhangArea);
     updateLayerForBottomOverhangArea(m_layerForBottomOverhangArea);
-    updateLayerForHeader(m_layerForHeader);
-    updateLayerForFooter(m_layerForFooter);
 #endif
 }
 
@@ -2194,60 +2192,8 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForBottomOverhangArea(bool want
         m_scrollLayer->addChildBelow(m_layerForBottomOverhangArea.get(), m_rootContentLayer.get());
     }
 
-    m_layerForBottomOverhangArea->setPosition(FloatPoint(0, m_rootContentLayer->size().height() + m_renderView->frameView()->headerHeight() + m_renderView->frameView()->footerHeight()));
+    m_layerForBottomOverhangArea->setPosition(FloatPoint(0, m_rootContentLayer->size().height()));
     return m_layerForBottomOverhangArea.get();
-}
-
-GraphicsLayer* RenderLayerCompositor::updateLayerForHeader(bool wantsLayer)
-{
-    if (!isMainFrame())
-        return 0;
-
-    if (!wantsLayer) {
-        if (m_layerForHeader) {
-            m_layerForHeader->removeFromParent();
-            m_layerForHeader = nullptr;
-        }
-        return 0;
-    }
-
-    if (!m_layerForHeader) {
-        m_layerForHeader = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_layerForHeader->setName("header");
-#endif
-        m_scrollLayer->addChildBelow(m_layerForHeader.get(), m_rootContentLayer.get());
-    }
-
-    m_layerForHeader->setPosition(FloatPoint(0, 0));
-    m_layerForHeader->setSize(FloatSize(m_renderView->frameView()->visibleWidth(), m_renderView->frameView()->headerHeight()));
-    return m_layerForHeader.get();
-}
-
-GraphicsLayer* RenderLayerCompositor::updateLayerForFooter(bool wantsLayer)
-{
-    if (!isMainFrame())
-        return 0;
-
-    if (!wantsLayer) {
-        if (m_layerForFooter) {
-            m_layerForFooter->removeFromParent();
-            m_layerForFooter = nullptr;
-        }
-        return 0;
-    }
-
-    if (!m_layerForFooter) {
-        m_layerForFooter = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_layerForFooter->setName("footer");
-#endif
-        m_scrollLayer->addChildBelow(m_layerForFooter.get(), m_rootContentLayer.get());
-    }
-
-    m_layerForFooter->setPosition(FloatPoint(0, m_rootContentLayer->size().height() + m_renderView->frameView()->headerHeight()));
-    m_layerForFooter->setSize(FloatSize(m_renderView->frameView()->visibleWidth(), m_renderView->frameView()->footerHeight()));
-    return m_layerForFooter.get();
 }
 
 #endif
@@ -2773,8 +2719,6 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     info.addMember(m_contentShadowLayer, "contentShadowLayer");
     info.addMember(m_layerForTopOverhangArea, "layerForTopOverhangArea");
     info.addMember(m_layerForBottomOverhangArea, "layerForBottomOverhangArea");
-    info.addMember(m_layerForHeader, "layerForHeader");
-    info.addMember(m_layerForFooter, "layerForFooter");
 #endif
 }
 
