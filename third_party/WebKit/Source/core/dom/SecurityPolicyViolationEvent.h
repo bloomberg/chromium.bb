@@ -71,6 +71,7 @@ public:
 private:
     SecurityPolicyViolationEvent()
     {
+        ScriptWrappable::init(this);
     }
 
     SecurityPolicyViolationEvent(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
@@ -84,6 +85,7 @@ private:
         , m_sourceFile(initializer.sourceFile)
         , m_lineNumber(initializer.lineNumber)
     {
+        ScriptWrappable::init(this);
     }
 
     String m_documentURI;

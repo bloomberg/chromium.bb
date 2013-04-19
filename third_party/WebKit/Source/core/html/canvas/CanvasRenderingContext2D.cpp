@@ -123,6 +123,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, bo
     , m_unrealizedSaveCount(0)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
 {
+    ScriptWrappable::init(this);
 }
 
 void CanvasRenderingContext2D::unwindStateStack()

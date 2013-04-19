@@ -43,6 +43,7 @@ MutationEvent::MutationEvent(const AtomicString& type, bool canBubble, bool canc
     , m_attrName(attrName)
     , m_attrChange(attrChange)
 {
+    ScriptWrappable::init(this);
 }
 
 MutationEvent::~MutationEvent()

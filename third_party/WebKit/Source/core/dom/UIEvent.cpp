@@ -47,6 +47,7 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
     , m_view(viewArg)
     , m_detail(detailArg)
 {
+    ScriptWrappable::init(this);
 }
 
 UIEvent::UIEvent(const AtomicString& eventType, const UIEventInit& initializer)
@@ -54,6 +55,7 @@ UIEvent::UIEvent(const AtomicString& eventType, const UIEventInit& initializer)
     , m_view(initializer.view)
     , m_detail(initializer.detail)
 {
+    ScriptWrappable::init(this);
 }
 
 UIEvent::~UIEvent()
