@@ -217,7 +217,18 @@
                         Start="demand"
                         Account="LocalSystem"
                         ErrorControl="ignore"
-                        Interactive="no" />
+                        Interactive="no">
+          <!-- Configure the service to restart after one minute when it
+               crashes.
+          -->
+          <util:ServiceConfig
+              xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+              FirstFailureActionType="restart"
+              ResetPeriodInDays="1"
+              RestartServiceDelayInSeconds="60"
+              SecondFailureActionType="restart"
+              ThirdFailureActionType="restart"/>
+        </ServiceInstall>
 
         <ServiceControl Id="start_service"
                         Stop="both"
