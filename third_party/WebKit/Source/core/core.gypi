@@ -816,8 +816,6 @@
             'editing/chromium/FrameSelectionChromium.cpp',
             'editing/htmlediting.cpp',
             'editing/markup.cpp',
-            'fileapi/AsyncFileStream.cpp',
-            'fileapi/AsyncFileStream.h',
             'fileapi/Blob.cpp',
             'fileapi/Blob.h',
             'fileapi/BlobBuilder.cpp',
