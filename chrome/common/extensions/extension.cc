@@ -28,9 +28,7 @@
 // part of crbug.com/159265.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
@@ -663,55 +661,6 @@ bool Extension::ShowConfigureContextMenus() const {
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
   return location() != Manifest::COMPONENT;
-}
-
-std::set<base::FilePath> Extension::GetBrowserImages() const {
-  std::set<base::FilePath> image_paths;
-  // TODO(viettrungluu): These |FilePath::FromWStringHack(UTF8ToWide())|
-  // indicate that we're doing something wrong.
-
-  // Extension icons.
-  for (ExtensionIconSet::IconMap::const_iterator iter =
-           IconsInfo::GetIcons(this).map().begin();
-       iter != IconsInfo::GetIcons(this).map().end(); ++iter) {
-    image_paths.insert(
-        base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
-  }
-
-  // Theme images.
-  DictionaryValue* theme_images = ThemeInfo::GetThemeImages(this);
-  if (theme_images) {
-    for (DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
-         it.Advance()) {
-      std::string val;
-      if (it.value().GetAsString(&val))
-        image_paths.insert(base::FilePath::FromWStringHack(UTF8ToWide(val)));
-    }
-  }
-
-  const ActionInfo* page_action_info = ActionInfo::GetPageActionInfo(this);
-  if (page_action_info && !page_action_info->default_icon.empty()) {
-    for (ExtensionIconSet::IconMap::const_iterator iter =
-             page_action_info->default_icon.map().begin();
-         iter != page_action_info->default_icon.map().end();
-         ++iter) {
-      image_paths.insert(
-          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
-    }
-  }
-
-  const ActionInfo* browser_action = ActionInfo::GetBrowserActionInfo(this);
-  if (browser_action && !browser_action->default_icon.empty()) {
-    for (ExtensionIconSet::IconMap::const_iterator iter =
-             browser_action->default_icon.map().begin();
-         iter != browser_action->default_icon.map().end();
-         ++iter) {
-      image_paths.insert(
-          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
-    }
-  }
-
-  return image_paths;
 }
 
 GURL Extension::GetFullLaunchURL() const {

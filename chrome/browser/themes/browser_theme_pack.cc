@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/id_util.h"
 #include "grit/theme_resources.h"
@@ -542,15 +542,15 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
 
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->BuildHeader(extension);
-  pack->BuildTintsFromJSON(extensions::ThemeInfo::GetThemeTints(extension));
-  pack->BuildColorsFromJSON(extensions::ThemeInfo::GetThemeColors(extension));
+  pack->BuildTintsFromJSON(extensions::ThemeInfo::GetTints(extension));
+  pack->BuildColorsFromJSON(extensions::ThemeInfo::GetColors(extension));
   pack->BuildDisplayPropertiesFromJSON(
-      extensions::ThemeInfo::GetThemeDisplayProperties(extension));
+      extensions::ThemeInfo::GetDisplayProperties(extension));
 
   // Builds the images. (Image building is dependent on tints).
   FilePathMap file_paths;
   pack->ParseImageNamesFromJSON(
-      extensions::ThemeInfo::GetThemeImages(extension),
+      extensions::ThemeInfo::GetImages(extension),
       extension->path(),
       &file_paths);
   pack->BuildSourceImagesArray(file_paths);
@@ -841,7 +841,8 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   memcpy(header_->theme_id, id.c_str(), extensions::id_util::kIdSize);
 }
 
-void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
+void BrowserThemePack::BuildTintsFromJSON(
+    const base::DictionaryValue* tints_value) {
   tints_ = new TintEntry[kTintTableLength];
   for (size_t i = 0; i < kTintTableLength; ++i) {
     tints_[i].id = -1;
@@ -886,7 +887,8 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
   }
 }
 
-void BrowserThemePack::BuildColorsFromJSON(DictionaryValue* colors_value) {
+void BrowserThemePack::BuildColorsFromJSON(
+    const base::DictionaryValue* colors_value) {
   colors_ = new ColorPair[kColorTableLength];
   for (size_t i = 0; i < kColorTableLength; ++i) {
     colors_[i].id = -1;
@@ -908,7 +910,7 @@ void BrowserThemePack::BuildColorsFromJSON(DictionaryValue* colors_value) {
 }
 
 void BrowserThemePack::ReadColorsFromJSON(
-    DictionaryValue* colors_value,
+    const base::DictionaryValue* colors_value,
     std::map<int, SkColor>* temp_colors) {
   // Parse the incoming data from |colors_value| into an intermediary structure.
   for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
@@ -1003,7 +1005,7 @@ void BrowserThemePack::GenerateMissingColors(
 }
 
 void BrowserThemePack::BuildDisplayPropertiesFromJSON(
-    DictionaryValue* display_properties_value) {
+    const base::DictionaryValue* display_properties_value) {
   display_properties_ = new DisplayPropertyPair[kDisplayPropertiesSize];
   for (size_t i = 0; i < kDisplayPropertiesSize; ++i) {
     display_properties_[i].id = -1;
@@ -1055,7 +1057,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
 }
 
 void BrowserThemePack::ParseImageNamesFromJSON(
-    DictionaryValue* images_value,
+    const base::DictionaryValue* images_value,
     const base::FilePath& images_path,
     FilePathMap* file_paths) const {
   if (!images_value)

@@ -125,22 +125,23 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Transforms the JSON tint values into their final versions in the |tints_|
   // array.
-  void BuildTintsFromJSON(base::DictionaryValue* tints_value);
+  void BuildTintsFromJSON(const base::DictionaryValue* tints_value);
 
   // Transforms the JSON color values into their final versions in the
   // |colors_| array and also fills in unspecified colors based on tint values.
-  void BuildColorsFromJSON(base::DictionaryValue* color_value);
+  void BuildColorsFromJSON(const base::DictionaryValue* color_value);
 
   // Implementation details of BuildColorsFromJSON().
-  void ReadColorsFromJSON(base::DictionaryValue* colors_value,
+  void ReadColorsFromJSON(const base::DictionaryValue* colors_value,
                           std::map<int, SkColor>* temp_colors);
   void GenerateMissingColors(std::map<int, SkColor>* temp_colors);
 
   // Transforms the JSON display properties into |display_properties_|.
-  void BuildDisplayPropertiesFromJSON(base::DictionaryValue* display_value);
+  void BuildDisplayPropertiesFromJSON(
+      const base::DictionaryValue* display_value);
 
   // Parses the image names out of an extension.
-  void ParseImageNamesFromJSON(base::DictionaryValue* images_value,
+  void ParseImageNamesFromJSON(const base::DictionaryValue* images_value,
                                const base::FilePath& images_path,
                                FilePathMap* file_paths) const;
 

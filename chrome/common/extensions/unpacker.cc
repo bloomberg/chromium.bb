@@ -196,7 +196,8 @@ bool Unpacker::Run() {
   extension->AddInstallWarnings(warnings);
 
   // Decode any images that the browser needs to display.
-  std::set<base::FilePath> image_paths = extension->GetBrowserImages();
+  std::set<base::FilePath> image_paths =
+      extension_file_util::GetBrowserImagePaths(extension);
   for (std::set<base::FilePath>::iterator it = image_paths.begin();
        it != image_paths.end(); ++it) {
     if (!AddDecodedImage(*it))

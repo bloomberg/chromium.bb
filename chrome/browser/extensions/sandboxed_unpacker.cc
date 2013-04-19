@@ -641,7 +641,8 @@ bool SandboxedUnpacker::RewriteImageFiles() {
   // Delete any images that may be used by the browser.  We're going to write
   // out our own versions of the parsed images, and we want to make sure the
   // originals are gone for good.
-  std::set<base::FilePath> image_paths = extension_->GetBrowserImages();
+  std::set<base::FilePath> image_paths =
+      extension_file_util::GetBrowserImagePaths(extension_);
   if (image_paths.size() != images.size()) {
     // Decoded images don't match what's in the manifest.
     ReportFailure(

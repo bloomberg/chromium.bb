@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +13,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::DictionaryValue;
+
 namespace extensions {
 
 namespace keys = extension_manifest_keys;
@@ -20,9 +22,9 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-bool LoadThemeImages(const DictionaryValue* theme_value,
-                     string16* error,
-                     ThemeInfo* theme_info) {
+bool LoadImages(const DictionaryValue* theme_value,
+                string16* error,
+                ThemeInfo* theme_info) {
   const DictionaryValue* images_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings.
@@ -38,9 +40,9 @@ bool LoadThemeImages(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadThemeColors(const DictionaryValue* theme_value,
-                     string16* error,
-                     ThemeInfo* theme_info) {
+bool LoadColors(const DictionaryValue* theme_value,
+                string16* error,
+                ThemeInfo* theme_info) {
   const DictionaryValue* colors_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
     // Validate that the colors are RGB or RGBA lists.
@@ -70,9 +72,9 @@ bool LoadThemeColors(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadThemeTints(const DictionaryValue* theme_value,
-                    string16* error,
-                    ThemeInfo* theme_info) {
+bool LoadTints(const DictionaryValue* theme_value,
+               string16* error,
+               ThemeInfo* theme_info) {
   const DictionaryValue* tints_value = NULL;
   if (!theme_value->GetDictionary(keys::kThemeTints, &tints_value))
     return true;
@@ -95,9 +97,9 @@ bool LoadThemeTints(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadThemeDisplayProperties(const DictionaryValue* theme_value,
-                                string16* error,
-                                ThemeInfo* theme_info) {
+bool LoadDisplayProperties(const DictionaryValue* theme_value,
+                           string16* error,
+                           ThemeInfo* theme_info) {
   const DictionaryValue* display_properties_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
                                  &display_properties_value)) {
@@ -107,7 +109,7 @@ bool LoadThemeDisplayProperties(const DictionaryValue* theme_value,
   return true;
 }
 
-const ThemeInfo* GetThemeInfo(const Extension* extension) {
+const ThemeInfo* GetInfo(const Extension* extension) {
   return static_cast<ThemeInfo*>(extension->GetManifestData(keys::kTheme));
 }
 
@@ -120,27 +122,27 @@ ThemeInfo::~ThemeInfo() {
 }
 
 // static
-DictionaryValue* ThemeInfo::GetThemeImages(const Extension* extension) {
-  const ThemeInfo* theme_info = GetThemeInfo(extension);
+const DictionaryValue* ThemeInfo::GetImages(const Extension* extension) {
+  const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_images_.get() : NULL;
 }
 
 // static
-DictionaryValue* ThemeInfo::GetThemeColors(const Extension* extension) {
-  const ThemeInfo* theme_info = GetThemeInfo(extension);
+const DictionaryValue* ThemeInfo::GetColors(const Extension* extension) {
+  const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_colors_.get() : NULL;
 }
 
 // static
-DictionaryValue* ThemeInfo::GetThemeTints(const Extension* extension) {
-  const ThemeInfo* theme_info = GetThemeInfo(extension);
+const DictionaryValue* ThemeInfo::GetTints(const Extension* extension) {
+  const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_tints_.get() : NULL;
 }
 
 // static
-DictionaryValue* ThemeInfo::GetThemeDisplayProperties(
+const DictionaryValue* ThemeInfo::GetDisplayProperties(
     const Extension* extension) {
-  const ThemeInfo* theme_info = GetThemeInfo(extension);
+  const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_display_properties_.get() : NULL;
 }
 
@@ -158,13 +160,13 @@ bool ThemeHandler::Parse(Extension* extension, string16* error) {
   }
 
   scoped_ptr<ThemeInfo> theme_info(new ThemeInfo);
-  if (!LoadThemeImages(theme_value, error, theme_info.get()))
+  if (!LoadImages(theme_value, error, theme_info.get()))
     return false;
-  if (!LoadThemeColors(theme_value, error, theme_info.get()))
+  if (!LoadColors(theme_value, error, theme_info.get()))
     return false;
-  if (!LoadThemeTints(theme_value, error, theme_info.get()))
+  if (!LoadTints(theme_value, error, theme_info.get()))
     return false;
-  if (!LoadThemeDisplayProperties(theme_value, error, theme_info.get()))
+  if (!LoadDisplayProperties(theme_value, error, theme_info.get()))
     return false;
 
   extension->SetManifestData(keys::kTheme, theme_info.release());
@@ -176,8 +178,8 @@ bool ThemeHandler::Validate(const Extension* extension,
                             std::vector<InstallWarning>* warnings) const {
   // Validate that theme images exist.
   if (extension->is_theme()) {
-    DictionaryValue* images_value =
-        extensions::ThemeInfo::GetThemeImages(extension);
+    const DictionaryValue* images_value =
+        extensions::ThemeInfo::GetImages(extension);
     if (images_value) {
       for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
            iter.Advance()) {

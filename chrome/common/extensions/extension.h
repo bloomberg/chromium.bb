@@ -309,10 +309,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
 
-  // Returns a list of paths (relative to the extension dir) for images that
-  // the browser might load (like themes and page action icons).
-  std::set<base::FilePath> GetBrowserImages() const;
-
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
 

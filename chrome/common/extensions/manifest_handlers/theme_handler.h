@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_THEMES_THEME_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_API_THEMES_THEME_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -20,10 +20,10 @@ struct ThemeInfo : public Extension::ManifestData {
   ThemeInfo();
   virtual ~ThemeInfo();
 
-  static base::DictionaryValue* GetThemeImages(const Extension* extension);
-  static base::DictionaryValue* GetThemeColors(const Extension* extension);
-  static base::DictionaryValue* GetThemeTints(const Extension* extension);
-  static base::DictionaryValue* GetThemeDisplayProperties(
+  static const base::DictionaryValue* GetImages(const Extension* extension);
+  static const base::DictionaryValue* GetColors(const Extension* extension);
+  static const base::DictionaryValue* GetTints(const Extension* extension);
+  static const base::DictionaryValue* GetDisplayProperties(
       const Extension* extension);
 
   // A map of resource id's to relative file paths.
@@ -58,4 +58,4 @@ class ThemeHandler : public ManifestHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_THEMES_THEME_HANDLER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
