@@ -20,11 +20,15 @@ void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
   if (paint_all_opaque_)
     *opaque_rect = rect;
 
-  SkPaint paint;
-  for (RectVector::const_iterator rect_it = draw_rects_.begin();
-      rect_it < draw_rects_.end(); rect_it++) {
-    SkRect draw_rect = SkRect::MakeXYWH(rect_it->x(), rect_it->y(),
-        rect_it->width(), rect_it->height());
+  for (RectPaintVector::const_iterator it = draw_rects_.begin();
+      it < draw_rects_.end(); ++it) {
+    gfx::Rect rect = it->first;
+    SkPaint paint = it->second;
+    SkRect draw_rect = SkRect::MakeXYWH(
+        rect.x(),
+        rect.y(),
+        rect.width(),
+        rect.height());
     canvas->drawRect(draw_rect, paint);
   }
 }

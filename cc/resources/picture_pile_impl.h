@@ -44,7 +44,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
-  struct Analysis {
+  struct CC_EXPORT Analysis {
     Analysis();
     ~Analysis();
 
@@ -57,7 +57,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     skia::AnalysisCanvas::LazyPixelRefList lazy_pixel_refs;
   };
 
-  void AnalyzeInRect(const gfx::Rect& content_rect,
+  void AnalyzeInRect(gfx::Rect content_rect,
                      float contents_scale,
                      Analysis* analysis);
 

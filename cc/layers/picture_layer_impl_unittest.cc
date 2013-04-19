@@ -11,6 +11,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,79 +54,6 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
     SetBounds(pile_->size());
     CreateTilingSet();
   }
-};
-
-class TestablePicturePileImpl : public PicturePileImpl {
- public:
-  static scoped_refptr<TestablePicturePileImpl> CreateFilledPile(
-      gfx::Size tile_size,
-      gfx::Size layer_bounds) {
-    scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
-    pile->tiling().SetTotalSize(layer_bounds);
-    pile->tiling().SetMaxTextureSize(tile_size);
-    pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
-    for (int x = 0; x < pile->tiling().num_tiles_x(); ++x) {
-      for (int y = 0; y < pile->tiling().num_tiles_y(); ++y)
-        pile->AddRecordingAt(x, y);
-    }
-    pile->UpdateRecordedRegion();
-    return pile;
-  }
-
-  static scoped_refptr<TestablePicturePileImpl> CreateEmptyPile(
-      gfx::Size tile_size,
-      gfx::Size layer_bounds) {
-    scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
-    pile->tiling().SetTotalSize(layer_bounds);
-    pile->tiling().SetMaxTextureSize(tile_size);
-    pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
-    pile->UpdateRecordedRegion();
-    return pile;
-  }
-
-  TilingData& tiling() { return tiling_; }
-
-  void AddRecordingAt(int x, int y) {
-    EXPECT_GE(x, 0);
-    EXPECT_GE(y, 0);
-    EXPECT_LT(x, tiling_.num_tiles_x());
-    EXPECT_LT(y, tiling_.num_tiles_y());
-
-    if (HasRecordingAt(x, y))
-      return;
-    gfx::Rect bounds(tiling().TileBounds(x, y));
-    scoped_refptr<Picture> picture(Picture::Create(bounds));
-    picture->Record(&client_, NULL, tile_grid_info_);
-    picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
-    EXPECT_TRUE(HasRecordingAt(x, y));
-
-    UpdateRecordedRegion();
-  }
-
-  void RemoveRecordingAt(int x, int y) {
-    EXPECT_GE(x, 0);
-    EXPECT_GE(y, 0);
-    EXPECT_LT(x, tiling_.num_tiles_x());
-    EXPECT_LT(y, tiling_.num_tiles_y());
-
-    if (!HasRecordingAt(x, y))
-      return;
-    picture_list_map_.erase(std::pair<int, int>(x, y));
-    EXPECT_FALSE(HasRecordingAt(x, y));
-
-    UpdateRecordedRegion();
-  }
-
-  void add_draw_rect(const gfx::Rect& rect) {
-    client_.add_draw_rect(rect);
-  }
-
- protected:
-  TestablePicturePileImpl() : PicturePileImpl(false) {}
-
-  virtual ~TestablePicturePileImpl() {}
-
-  FakeContentLayerClient client_;
 };
 
 class MockCanvas : public SkCanvas {
@@ -217,10 +145,10 @@ class PictureLayerImplTest : public testing::Test {
         settings.default_tile_size.width() * 7 / 2,
         settings.default_tile_size.height() * 7 / 2);
 
-    scoped_refptr<TestablePicturePileImpl> pending_pile =
-        TestablePicturePileImpl::CreateFilledPile(layer_size, layer_size);
-    scoped_refptr<TestablePicturePileImpl> active_pile =
-        TestablePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+    scoped_refptr<FakePicturePileImpl> pending_pile =
+        FakePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+    scoped_refptr<FakePicturePileImpl> active_pile =
+        FakePicturePileImpl::CreateFilledPile(layer_size, layer_size);
 
     SetupTrees(pending_pile, active_pile);
 
@@ -290,10 +218,10 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -314,10 +242,10 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   gfx::Size layer_bounds(400, 400);
   gfx::Rect layer_invalidation(150, 200, 30, 180);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -351,10 +279,10 @@ TEST_F(PictureLayerImplTest, CloneFullInvalidation) {
   gfx::Size tile_size(90, 80);
   gfx::Size layer_bounds(300, 500);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -375,11 +303,11 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
   gfx::Size active_layer_bounds(300, 500);
   gfx::Size pending_layer_bounds(400, 800);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size,
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size,
                                                 pending_layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, active_layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, active_layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
 
@@ -415,10 +343,10 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
 
   // Fill in some of active pile, but more of pending pile.
   int hole_count = 0;
@@ -473,10 +401,10 @@ TEST_F(PictureLayerImplTest, ManageTilingsWithNoRecording) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
 
   float result_scale_x, result_scale_y;
   gfx::Size result_bounds;
@@ -497,10 +425,10 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   float result_scale_x, result_scale_y;
   gfx::Size result_bounds;
@@ -583,10 +511,10 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   float result_scale_x, result_scale_y;
   gfx::Size result_bounds;
@@ -696,10 +624,10 @@ TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
-  scoped_refptr<TestablePicturePileImpl> pending_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<TestablePicturePileImpl> active_pile =
-      TestablePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   float result_scale_x, result_scale_y;
   gfx::Size result_bounds;

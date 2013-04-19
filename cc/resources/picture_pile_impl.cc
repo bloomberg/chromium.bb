@@ -242,18 +242,19 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   return picture;
 }
 
-void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
+void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
                                     float contents_scale,
                                     PicturePileImpl::Analysis* analysis) {
   DCHECK(analysis);
   TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
 
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+  content_rect.Intersect(gfx::Rect(gfx::ToCeiledSize(
+      gfx::ScaleSize(tiling_.total_size(), contents_scale))));
 
   SkBitmap empty_bitmap;
-  empty_bitmap.setConfig(SkBitmap::kNo_Config, content_rect.width(),
-                        content_rect.height());
+  empty_bitmap.setConfig(SkBitmap::kNo_Config,
+                         content_rect.width(),
+                         content_rect.height());
   skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
