@@ -19,8 +19,11 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/message_bubble_base.h"
@@ -32,6 +35,10 @@ namespace {
 
 // Tray constants
 const int kScreenEdgePadding = 2;
+
+const int kSystemTrayWidth = 16;
+const int kSystemTrayHeight = 16;
+const int kNumberOfSystemTraySprites = 10;
 
 gfx::Rect GetCornerAnchorRect() {
   // TODO(dewittj): Use the preference to determine which corner to anchor from.
@@ -72,12 +79,37 @@ gfx::Rect GetMouseAnchorRect(gfx::Point cursor) {
   return mouse_anchor_rect;
 }
 
-gfx::ImageSkia GetIcon(bool has_unread) {
+gfx::ImageSkia GetIcon(int unread_count) {
+  bool has_unread = unread_count > 0;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* icon = rb.GetImageSkiaNamed(
-      has_unread ? IDR_NOTIFICATION_TRAY_LIT : IDR_NOTIFICATION_TRAY_DIM);
-  DCHECK(icon);
-  return *icon;
+  if (!has_unread)
+    return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_EMPTY);
+
+  // TODO(dewittj): Use scale factors other than 100P.
+  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
+      gfx::Size(kSystemTrayWidth, kSystemTrayHeight),
+      ui::SCALE_FACTOR_100P,
+      false));
+
+  // Draw the attention-grabbing background image.
+  canvas->DrawImageInt(
+      *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_ATTENTION), 0, 0);
+
+  // |numbers| is a sprite map with the image of a number from 1-9 and 9+. They
+  // are arranged horizontally, and have a transparent background.
+  gfx::ImageSkia* numbers = rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_NUMBERS);
+
+  // Assume that the last sprite is the catch-all for higher numbers of
+  // notifications.
+  int effective_unread = std::min(unread_count, kNumberOfSystemTraySprites);
+  int x_offset = (effective_unread - 1) * kSystemTrayWidth;
+
+  canvas->DrawImageInt(*numbers,
+                       x_offset, 0, kSystemTrayWidth, kSystemTrayHeight,
+                       0, 0, kSystemTrayWidth, kSystemTrayHeight,
+                       false);
+
+  return gfx::ImageSkia(canvas->ExtractImageRep());
 }
 
 }  // namespace
@@ -213,7 +245,7 @@ gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
 
 void WebNotificationTrayWin::UpdateStatusIcon() {
   int unread_notifications = message_center()->UnreadNotificationCount();
-  status_icon_->SetImage(GetIcon(unread_notifications > 0));
+  status_icon_->SetImage(GetIcon(unread_notifications));
 
   string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   if (unread_notifications > 0) {

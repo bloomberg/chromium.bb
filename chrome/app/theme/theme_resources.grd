@@ -515,8 +515,9 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
       </if>
       <if expr="is_win">
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DIM" file="win/notification_tray_dim.png" />
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_LIT" file="win/notification_tray_lit.png" />
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_EMPTY" file="win/notification_tray_empty.png" />
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_ATTENTION" file="win/notification_tray_attention.png" />
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_NUMBERS" file="win/notification_tray_numbers.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C" file="common/cs_bubble_center.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L" file="common/cs_bubble_left.png" />
