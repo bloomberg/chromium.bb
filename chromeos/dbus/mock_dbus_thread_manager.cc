@@ -20,10 +20,6 @@
 #include "chromeos/dbus/mock_cros_disks_client.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_debug_daemon_client.h"
-#include "chromeos/dbus/mock_experimental_bluetooth_adapter_client.h"
-#include "chromeos/dbus/mock_experimental_bluetooth_agent_manager_client.h"
-#include "chromeos/dbus/mock_experimental_bluetooth_device_client.h"
-#include "chromeos/dbus/mock_experimental_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/mock_shill_device_client.h"
 #include "chromeos/dbus/mock_shill_ipconfig_client.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
@@ -58,14 +54,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_debugdaemon_client_(new MockDebugDaemonClient),
-      mock_experimental_bluetooth_adapter_client_(
-          new MockExperimentalBluetoothAdapterClient),
-      mock_experimental_bluetooth_agent_manager_client_(
-          new MockExperimentalBluetoothAgentManagerClient),
-      mock_experimental_bluetooth_device_client_(
-          new MockExperimentalBluetoothDeviceClient),
-      mock_experimental_bluetooth_profile_manager_client_(
-          new MockExperimentalBluetoothProfileManagerClient),
       mock_shill_device_client_(new MockShillDeviceClient),
       mock_shill_ipconfig_client_(new MockShillIPConfigClient),
       mock_shill_manager_client_(new MockShillManagerClient),
@@ -105,16 +93,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_cryptohome_client()));
   EXPECT_CALL(*this, GetDebugDaemonClient())
       .WillRepeatedly(Return(mock_debugdaemon_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothAdapterClient())
-      .WillRepeatedly(Return(mock_experimental_bluetooth_adapter_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothAgentManagerClient())
-      .WillRepeatedly(Return(
-          mock_experimental_bluetooth_agent_manager_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothDeviceClient())
-      .WillRepeatedly(Return(mock_experimental_bluetooth_device_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothProfileManagerClient())
-      .WillRepeatedly(Return(
-          mock_experimental_bluetooth_profile_manager_client()));
   EXPECT_CALL(*this, GetShillDeviceClient())
       .WillRepeatedly(Return(mock_shill_device_client()));
   EXPECT_CALL(*this, GetShillIPConfigClient())
@@ -215,18 +193,6 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_bluetooth_node_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_bluetooth_node_client_.get(), RemoveObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_experimental_bluetooth_adapter_client_.get(),
-              AddObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_experimental_bluetooth_adapter_client_.get(),
-              RemoveObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_experimental_bluetooth_device_client_.get(),
-              AddObserver(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_experimental_bluetooth_device_client_.get(),
-              RemoveObserver(_))
       .Times(AnyNumber());
 
   // Called from PowerMenuButton ctor.

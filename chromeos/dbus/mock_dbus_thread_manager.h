@@ -29,10 +29,6 @@ class MockBluetoothOutOfBandClient;
 class MockCrosDisksClient;
 class MockCryptohomeClient;
 class MockDebugDaemonClient;
-class MockExperimentalBluetoothAdapterClient;
-class MockExperimentalBluetoothAgentManagerClient;
-class MockExperimentalBluetoothDeviceClient;
-class MockExperimentalBluetoothProfileManagerClient;
 class MockShillDeviceClient;
 class MockShillIPConfigClient;
 class MockShillManagerClient;
@@ -141,22 +137,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockDebugDaemonClient* mock_debugdaemon_client() {
     return mock_debugdaemon_client_.get();
   }
-  MockExperimentalBluetoothAdapterClient*
-        mock_experimental_bluetooth_adapter_client() {
-    return mock_experimental_bluetooth_adapter_client_.get();
-  }
-  MockExperimentalBluetoothAgentManagerClient*
-        mock_experimental_bluetooth_agent_manager_client() {
-    return mock_experimental_bluetooth_agent_manager_client_.get();
-  }
-  MockExperimentalBluetoothDeviceClient*
-        mock_experimental_bluetooth_device_client() {
-    return mock_experimental_bluetooth_device_client_.get();
-  }
-  MockExperimentalBluetoothProfileManagerClient*
-        mock_experimental_bluetooth_profile_manager_client() {
-    return mock_experimental_bluetooth_profile_manager_client_.get();
-  }
   MockShillDeviceClient* mock_shill_device_client() {
     return mock_shill_device_client_.get();
   }
@@ -235,14 +215,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockDebugDaemonClient> mock_debugdaemon_client_;
-  scoped_ptr<MockExperimentalBluetoothAdapterClient>
-      mock_experimental_bluetooth_adapter_client_;
-  scoped_ptr<MockExperimentalBluetoothAgentManagerClient>
-      mock_experimental_bluetooth_agent_manager_client_;
-  scoped_ptr<MockExperimentalBluetoothDeviceClient>
-      mock_experimental_bluetooth_device_client_;
-  scoped_ptr<MockExperimentalBluetoothProfileManagerClient>
-      mock_experimental_bluetooth_profile_manager_client_;
   scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
   scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
   scoped_ptr<MockShillManagerClient> mock_shill_manager_client_;
