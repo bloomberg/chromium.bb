@@ -362,6 +362,8 @@
         'browser/ui/cocoa/applescript/tab_applescript.mm',
         'browser/ui/cocoa/applescript/window_applescript.h',
         'browser/ui/cocoa/applescript/window_applescript.mm',
+        'browser/ui/cocoa/autofill/autofill_dialog_cocoa.h',
+        'browser/ui/cocoa/autofill/autofill_dialog_cocoa.mm',
         'browser/ui/cocoa/autofill/autofill_popup_view_bridge.h',
         'browser/ui/cocoa/autofill/autofill_popup_view_bridge.mm',
         'browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h',
