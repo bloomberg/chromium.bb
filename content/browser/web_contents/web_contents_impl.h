@@ -381,7 +381,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual void LostCapture() OVERRIDE;
-  virtual void HandleMouseMove() OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandlePointerActivate() OVERRIDE;
