@@ -900,6 +900,9 @@ TEST_F(TraceEventTestFixture, Categories) {
                         cat_groups.end(), "c5,c6") != cat_groups.end());
   EXPECT_TRUE(std::find(cat_groups.begin(),
                         cat_groups.end(), "c7,c8") != cat_groups.end());
+  // Make sure metadata isn't returned.
+  EXPECT_TRUE(std::find(cat_groups.begin(),
+                        cat_groups.end(), "__metadata") == cat_groups.end());
 
   const std::vector<std::string> empty_categories;
   std::vector<std::string> included_categories;

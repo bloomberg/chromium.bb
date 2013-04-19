@@ -861,7 +861,7 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
 void TraceLog::GetKnownCategoryGroups(
     std::vector<std::string>* category_groups) {
   AutoLock lock(lock_);
-  for (int i = 0; i < g_category_index; i++)
+  for (int i = g_num_builtin_categories; i < g_category_index; i++)
     category_groups->push_back(g_category_groups[i]);
 }
 
