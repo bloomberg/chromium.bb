@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Thu Mar 28 11:12:59 2013.
+//   modified Tue Apr 16 11:25:44 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -24,8 +24,9 @@ void NeedKey(PP_Instance instance,
              struct PP_Var init_data) {
   VLOG(4) << "PPB_ContentDecryptor_Private::NeedKey()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->NeedKey(instance, key_system, session_id, init_data);
+  if (enter.failed())
+    return;
+  enter.functions()->NeedKey(instance, key_system, session_id, init_data);
 }
 
 void KeyAdded(PP_Instance instance,
@@ -33,8 +34,9 @@ void KeyAdded(PP_Instance instance,
               struct PP_Var session_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyAdded()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->KeyAdded(instance, key_system, session_id);
+  if (enter.failed())
+    return;
+  enter.functions()->KeyAdded(instance, key_system, session_id);
 }
 
 void KeyMessage(PP_Instance instance,
@@ -44,12 +46,13 @@ void KeyMessage(PP_Instance instance,
                 struct PP_Var default_url) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyMessage()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->KeyMessage(instance,
-                                  key_system,
-                                  session_id,
-                                  message,
-                                  default_url);
+  if (enter.failed())
+    return;
+  enter.functions()->KeyMessage(instance,
+                                key_system,
+                                session_id,
+                                message,
+                                default_url);
 }
 
 void KeyError(PP_Instance instance,
@@ -59,12 +62,13 @@ void KeyError(PP_Instance instance,
               int32_t system_code) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyError()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->KeyError(instance,
-                                key_system,
-                                session_id,
-                                media_error,
-                                system_code);
+  if (enter.failed())
+    return;
+  enter.functions()->KeyError(instance,
+                              key_system,
+                              session_id,
+                              media_error,
+                              system_code);
 }
 
 void DeliverBlock(PP_Instance instance,
@@ -72,10 +76,11 @@ void DeliverBlock(PP_Instance instance,
                   const struct PP_DecryptedBlockInfo* decrypted_block_info) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DeliverBlock()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DeliverBlock(instance,
-                                    decrypted_block,
-                                    decrypted_block_info);
+  if (enter.failed())
+    return;
+  enter.functions()->DeliverBlock(instance,
+                                  decrypted_block,
+                                  decrypted_block_info);
 }
 
 void DecoderInitializeDone(PP_Instance instance,
@@ -84,11 +89,12 @@ void DecoderInitializeDone(PP_Instance instance,
                            PP_Bool success) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DecoderInitializeDone()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DecoderInitializeDone(instance,
-                                             decoder_type,
-                                             request_id,
-                                             success);
+  if (enter.failed())
+    return;
+  enter.functions()->DecoderInitializeDone(instance,
+                                           decoder_type,
+                                           request_id,
+                                           success);
 }
 
 void DecoderDeinitializeDone(PP_Instance instance,
@@ -96,10 +102,11 @@ void DecoderDeinitializeDone(PP_Instance instance,
                              uint32_t request_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DecoderDeinitializeDone()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DecoderDeinitializeDone(instance,
-                                               decoder_type,
-                                               request_id);
+  if (enter.failed())
+    return;
+  enter.functions()->DecoderDeinitializeDone(instance,
+                                             decoder_type,
+                                             request_id);
 }
 
 void DecoderResetDone(PP_Instance instance,
@@ -107,8 +114,9 @@ void DecoderResetDone(PP_Instance instance,
                       uint32_t request_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DecoderResetDone()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DecoderResetDone(instance, decoder_type, request_id);
+  if (enter.failed())
+    return;
+  enter.functions()->DecoderResetDone(instance, decoder_type, request_id);
 }
 
 void DeliverFrame(PP_Instance instance,
@@ -116,10 +124,11 @@ void DeliverFrame(PP_Instance instance,
                   const struct PP_DecryptedFrameInfo* decrypted_frame_info) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DeliverFrame()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DeliverFrame(instance,
-                                    decrypted_frame,
-                                    decrypted_frame_info);
+  if (enter.failed())
+    return;
+  enter.functions()->DeliverFrame(instance,
+                                  decrypted_frame,
+                                  decrypted_frame_info);
 }
 
 void DeliverSamples(
@@ -128,10 +137,11 @@ void DeliverSamples(
     const struct PP_DecryptedBlockInfo* decrypted_block_info) {
   VLOG(4) << "PPB_ContentDecryptor_Private::DeliverSamples()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DeliverSamples(instance,
-                                      audio_frames,
-                                      decrypted_block_info);
+  if (enter.failed())
+    return;
+  enter.functions()->DeliverSamples(instance,
+                                    audio_frames,
+                                    decrypted_block_info);
 }
 
 const PPB_ContentDecryptor_Private_0_6

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_widget_dev.idl modified Thu Dec 20 13:10:26 2012.
+// From dev/ppb_widget_dev.idl modified Tue Apr 16 11:25:44 2013.
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -53,15 +53,17 @@ PP_Bool GetLocation(PP_Resource widget, struct PP_Rect* location) {
 void SetLocation(PP_Resource widget, const struct PP_Rect* location) {
   VLOG(4) << "PPB_Widget_Dev::SetLocation()";
   EnterResource<PPB_Widget_API> enter(widget, false);
-  if (enter.succeeded())
-    enter.object()->SetLocation(location);
+  if (enter.failed())
+    return;
+  enter.object()->SetLocation(location);
 }
 
 void SetScale(PP_Resource widget, float scale) {
   VLOG(4) << "PPB_Widget_Dev::SetScale()";
   EnterResource<PPB_Widget_API> enter(widget, false);
-  if (enter.succeeded())
-    enter.object()->SetScale(scale);
+  if (enter.failed())
+    return;
+  enter.object()->SetScale(scale);
 }
 
 const PPB_Widget_Dev_0_3 g_ppb_widget_dev_thunk_0_3 = {

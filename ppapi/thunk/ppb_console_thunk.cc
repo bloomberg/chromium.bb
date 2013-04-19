@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_console.idl modified Thu Dec 20 13:10:26 2012.
+// From ppb_console.idl modified Tue Apr 16 11:25:44 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
@@ -20,8 +20,9 @@ namespace {
 void Log(PP_Instance instance, PP_LogLevel level, struct PP_Var value) {
   VLOG(4) << "PPB_Console::Log()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->Log(instance, level, value);
+  if (enter.failed())
+    return;
+  enter.functions()->Log(instance, level, value);
 }
 
 void LogWithSource(PP_Instance instance,
@@ -30,8 +31,9 @@ void LogWithSource(PP_Instance instance,
                    struct PP_Var value) {
   VLOG(4) << "PPB_Console::LogWithSource()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->LogWithSource(instance, level, source, value);
+  if (enter.failed())
+    return;
+  enter.functions()->LogWithSource(instance, level, source, value);
 }
 
 const PPB_Console_1_0 g_ppb_console_thunk_1_0 = {

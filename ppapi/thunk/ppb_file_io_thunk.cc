@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Mon Mar 18 13:58:22 2013.
+// From ppb_file_io.idl modified Tue Apr 16 11:25:44 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -120,8 +120,9 @@ int32_t Flush(PP_Resource file_io, struct PP_CompletionCallback callback) {
 void Close(PP_Resource file_io) {
   VLOG(4) << "PPB_FileIO::Close()";
   EnterResource<PPB_FileIO_API> enter(file_io, true);
-  if (enter.succeeded())
-    enter.object()->Close();
+  if (enter.failed())
+    return;
+  enter.object()->Close();
 }
 
 int32_t ReadToArray(PP_Resource file_io,

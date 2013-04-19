@@ -23,11 +23,11 @@ namespace {
 void Sample(PP_Instance instance, struct PP_GamepadsSampleData* data) {
   VLOG(4) << "PPB_Gamepad::Sample()";
   EnterInstanceAPI<PPB_Gamepad_API> enter(instance);
-  if (enter.succeeded()) {
-    enter.functions()->Sample(instance, data);
+  if (enter.failed()) {
+    memset(data, 0, sizeof(*data));
     return;
   }
-  memset(data, 0, sizeof(*data));
+  enter.functions()->Sample(instance, data);
 }
 
 const PPB_Gamepad_1_0 g_ppb_gamepad_thunk_1_0 = {

@@ -115,8 +115,9 @@ int32_t FinishStreamingToFile(PP_Resource loader,
 void Close(PP_Resource loader) {
   VLOG(4) << "PPB_URLLoader::Close()";
   EnterResource<PPB_URLLoader_API> enter(loader, true);
-  if (enter.succeeded())
-    enter.object()->Close();
+  if (enter.failed())
+    return;
+  enter.object()->Close();
 }
 
 const PPB_URLLoader_1_0 g_ppb_urlloader_thunk_1_0 = {

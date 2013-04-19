@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_audio_input_dev.idl modified Thu Mar 28 11:12:59 2013.
+// From dev/ppb_audio_input_dev.idl modified Tue Apr 16 11:25:44 2013.
 
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -110,8 +110,9 @@ PP_Bool StopCapture(PP_Resource audio_input) {
 void Close(PP_Resource audio_input) {
   VLOG(4) << "PPB_AudioInput_Dev::Close()";
   EnterResource<PPB_AudioInput_API> enter(audio_input, true);
-  if (enter.succeeded())
-    enter.object()->Close();
+  if (enter.failed())
+    return;
+  enter.object()->Close();
 }
 
 const PPB_AudioInput_Dev_0_2 g_ppb_audioinput_dev_thunk_0_2 = {

@@ -279,60 +279,43 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
   handle_errors = not (member.GetProperty('report_errors') == 'False')
   out_params = _GetOutputParams(member, release)
   if is_callback_func:
-    # TODO(teravest): Reduce code duplication below.
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, args[len(args) - 1][1], meta)
-    value = member.GetProperty('on_failure')
-    if value is None:
-      value = 'enter.retval()'
-    if member.GetProperty('always_set_output_parameters'):
-      body += 'if (enter.failed()) {\n'
-      for param in out_params:
-        body += '  memset(%s, 0, sizeof(*%s));\n' % (param, param)
-      body += '  return %s;\n' % value
-      body += '}\n'
-      body += 'return enter.SetResult(%s);' % invocation
-      meta.AddBuiltinInclude('string.h')
-    else:
-      body += 'if (enter.failed())\n'
-      body += '  return %s;\n' % value
-      body += 'return enter.SetResult(%s);' % invocation
+    failure_value = member.GetProperty('on_failure')
+    if failure_value is None:
+      failure_value = 'enter.retval()'
+    failure_return = 'return %s;' % failure_value
+    success_return = 'return enter.SetResult(%s);' % invocation
   elif rtype == 'void':
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, None, meta)
-    if member.GetProperty('always_set_output_parameters'):
-      body += 'if (enter.succeeded()) {\n'
-      body += '  %s;\n' % invocation
-      body += '  return;\n'
-      body += '}'
-      for param in out_params:
-        body += '\nmemset(%s, 0, sizeof(*%s));' % (param, param)
-      meta.AddBuiltinInclude('string.h')
-    else:
-      body += 'if (enter.succeeded())\n'
-      body += '  %s;' % invocation
-
+    failure_return = 'return;'
+    success_return = '%s;' % invocation  # We don't return anything for void.
   else:
-    value = member.GetProperty('on_failure')
-    if value is None:
-      value = _GetDefaultFailureValue(rtype)
-    if value is None:
-      raise TGenError('No default value for rtype %s' % rtype)
-
     body = '%s\n' % _MakeEnterLine(filenode, node, member, args[0],
                                    handle_errors, None, meta)
-    if member.GetProperty('always_set_output_parameters'):
-      body += 'if (enter.failed()) {\n'
-      for param in out_params:
-        body += '  memset(%s, 0, sizeof(*%s));\n' % (param, param)
-      body += '  return %s;\n' % value
-      body += '}\n'
-      body += 'return %s;' % invocation
-      meta.AddBuiltinInclude('string.h')
-    else:
-      body += 'if (enter.failed())\n'
-      body += '  return %s;\n' % value
-      body += 'return %s;' % invocation
+    failure_value = member.GetProperty('on_failure')
+    if failure_value is None:
+      failure_value = _GetDefaultFailureValue(rtype)
+    if failure_value is None:
+      raise TGenError('There is no default value for rtype %s. '
+                      'Maybe you should provide an on_failure attribute '
+                      'in the IDL file.' % rtype)
+    failure_return = 'return %s;' % failure_value
+    success_return = 'return %s;' % invocation
+
+  if member.GetProperty('always_set_output_parameters'):
+    body += 'if (enter.failed()) {\n'
+    for param in out_params:
+      body += '  memset(%s, 0, sizeof(*%s));\n' % (param, param)
+    body += '  %s\n' % failure_return
+    body += '}\n'
+    body += '%s' % success_return
+    meta.AddBuiltinInclude('string.h')
+  else:
+    body += 'if (enter.failed())\n'
+    body += '  %s\n' % failure_return
+    body += '%s' % success_return
   return body
 
 
