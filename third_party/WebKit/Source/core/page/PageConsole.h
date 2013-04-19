@@ -32,6 +32,7 @@
 #include "ConsoleTypes.h"
 #include "ScriptCallStack.h"
 #include "ScriptState.h"
+#include <wtf/BitVector.h>
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -42,6 +43,13 @@ class Page;
 
 class PageConsole {
 public:
+    enum DeprecatedFeature {
+        PrefixedContentSecurityPolicyHeader,
+
+        // Add newly deprecated features above this line.
+        NumberOfFeatures, // Sentinel.
+    };
+
     static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
     virtual ~PageConsole();
 
@@ -49,15 +57,20 @@ public:
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     void addMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0, Document* = 0);
 
+    static void reportDeprecation(Document*, DeprecatedFeature);
+
     static void mute();
     static void unmute();
 
 private:
     PageConsole(Page*);
 
+    void addDeprecationMessage(DeprecatedFeature);
+
     Page* page() { return m_page; };
 
     Page* m_page;
+    BitVector m_deprecationNotifications;
 };
 
 } // namespace WebCore

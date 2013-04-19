@@ -145,6 +145,7 @@ static TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(Mes
     case CSSMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Css;
     case SecurityMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Security;
     case OtherMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Other;
+    case DeprecationMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Deprecation;
     }
     return TypeBuilder::Console::ConsoleMessage::Source::Other;
 }

@@ -39,6 +39,7 @@ enum MessageSource {
     CSSMessageSource,
     SecurityMessageSource,
     OtherMessageSource,
+    DeprecationMessageSource,
 };
 
 enum MessageLevel {

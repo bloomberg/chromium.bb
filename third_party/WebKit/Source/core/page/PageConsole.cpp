@@ -54,10 +54,23 @@
 namespace WebCore {
 
 namespace {
-    int muteCount = 0;
+
+int muteCount = 0;
+
+// Ensure that this stays in sync with the DeprecatedFeature enum.
+static const char* const deprecationMessages[] = {
+    "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead."
+};
+
+COMPILE_ASSERT(WTF_ARRAY_LENGTH(deprecationMessages) == static_cast<int>(WebCore::PageConsole::NumberOfFeatures), DeprecationMessages_matches_enum);
+
 }
 
-PageConsole::PageConsole(Page* page) : m_page(page) { }
+PageConsole::PageConsole(Page* page)
+    : m_page(page)
+    , m_deprecationNotifications(NumberOfFeatures)
+{
+}
 
 PageConsole::~PageConsole() { }
 
@@ -111,6 +124,30 @@ void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
+}
+
+// static
+void PageConsole::reportDeprecation(Document* document, DeprecatedFeature feature)
+{
+    if (!document)
+        return;
+
+    Page* page = document->page();
+    if (!page || !page->console())
+        return;
+
+    page->console()->addDeprecationMessage(feature);
+}
+
+void PageConsole::addDeprecationMessage(DeprecatedFeature feature)
+{
+    ASSERT(feature < NumberOfFeatures);
+
+    if (m_deprecationNotifications.quickGet(feature))
+        return;
+
+    m_deprecationNotifications.quickSet(feature);
+    addMessage(DeprecationMessageSource, WarningMessageLevel, ASCIILiteral(deprecationMessages[feature]));
 }
 
 } // namespace WebCore
