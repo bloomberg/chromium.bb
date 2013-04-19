@@ -87,6 +87,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                                           HttpStreamBase* stream) OVERRIDE;
 
  private:
+  friend class HttpNetworkTransactionSSLTest;
+
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy2Test,
                            ResetStateForRestart);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy3Test,

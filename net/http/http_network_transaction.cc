@@ -47,6 +47,7 @@
 #include "net/http/http_stream_base.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/http/url_security_manager.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socks_client_socket_pool.h"
@@ -1183,11 +1184,13 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         GetHostAndPort(request_->url));
   }
 
+  uint16 version_max = server_ssl_config_.version_max;
+
   switch (error) {
     case ERR_SSL_PROTOCOL_ERROR:
     case ERR_SSL_VERSION_OR_CIPHER_MISMATCH:
-      if (server_ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1 &&
-          server_ssl_config_.version_max > server_ssl_config_.version_min) {
+      if (version_max >= SSL_PROTOCOL_VERSION_TLS1 &&
+          version_max > server_ssl_config_.version_min) {
         // This could be a TLS-intolerant server or a server that chose a
         // cipher suite defined only for higher protocol versions (such as
         // an SSL 3.0 server that chose a TLS-only cipher suite).  Fall
@@ -1198,38 +1201,34 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         // repeat the TLS 1.0 handshake. To avoid this problem, the default
         // version_max should match the maximum protocol version supported
         // by the SSLClientSocket class.
-        uint16 version_before = server_ssl_config_.version_max;
-        server_ssl_config_.version_max--;
-        net_log_.AddEvent(
-            NetLog::TYPE_SSL_VERSION_FALLBACK,
-            base::Bind(&NetLogSSLVersionFallbackCallback,
-                       &request_->url, error, version_before,
-                       server_ssl_config_.version_max));
-        server_ssl_config_.version_fallback = true;
-        ResetConnectionAndRequestForResend();
-        error = OK;
-      }
-      break;
-    case ERR_SSL_DECOMPRESSION_FAILURE_ALERT:
-    case ERR_SSL_BAD_RECORD_MAC_ALERT:
-      if (server_ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1 &&
-          server_ssl_config_.version_min == SSL_PROTOCOL_VERSION_SSL3) {
-        // This could be a server with buggy DEFLATE support. Turn off TLS,
-        // DEFLATE support and retry.
-        // TODO(wtc): turn off DEFLATE support only. Do not tie it to TLS.
-        uint16 version_before = server_ssl_config_.version_max;
-        server_ssl_config_.version_max = SSL_PROTOCOL_VERSION_SSL3;
-        net_log_.AddEvent(
-            NetLog::TYPE_SSL_VERSION_FALLBACK,
-            base::Bind(&NetLogSSLVersionFallbackCallback,
-                       &request_->url, error, version_before,
-                       server_ssl_config_.version_max));
-        server_ssl_config_.version_fallback = true;
-        ResetConnectionAndRequestForResend();
-        error = OK;
+        version_max--;
+
+        // Fallback to the lower SSL version.
+        // While SSL 3.0 fallback should be eliminated because of security
+        // reasons, there is a high risk of breaking the servers if this is
+        // done in general.
+        // For now SSL 3.0 fallback is disabled for Google servers first,
+        // and will be expanded to other servers after enough experiences
+        // have been gained showing that this experiment works well with
+        // today's Internet.
+        if (version_max > SSL_PROTOCOL_VERSION_SSL3 ||
+            (server_ssl_config_.unrestricted_ssl3_fallback_enabled ||
+             !TransportSecurityState::IsGooglePinnedProperty(
+                 request_->url.host(), true /* include SNI */))) {
+          net_log_.AddEvent(
+              NetLog::TYPE_SSL_VERSION_FALLBACK,
+              base::Bind(&NetLogSSLVersionFallbackCallback,
+                         &request_->url, error, server_ssl_config_.version_max,
+                         version_max));
+          server_ssl_config_.version_max = version_max;
+          server_ssl_config_.version_fallback = true;
+          ResetConnectionAndRequestForResend();
+          error = OK;
+        }
       }
       break;
   }
+
   return error;
 }
 

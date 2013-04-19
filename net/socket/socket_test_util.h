@@ -529,6 +529,8 @@ class SocketDataProviderArray {
     data_providers_.push_back(data_provider);
   }
 
+  size_t next_index() { return next_index_; }
+
   void ResetNextIndex() {
     next_index_ = 0;
   }

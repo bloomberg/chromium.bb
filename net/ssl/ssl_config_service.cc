@@ -40,6 +40,7 @@ SSLConfig::SSLConfig()
       cached_info_enabled(false),
       channel_id_enabled(true),
       false_start_enabled(true),
+      unrestricted_ssl3_fallback_enabled(false),
       send_client_cert(false),
       verify_ev_cert(false),
       version_fallback(false),
@@ -154,9 +155,11 @@ void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,
       (orig_config.version_min != new_config.version_min) ||
       (orig_config.version_max != new_config.version_max) ||
       (orig_config.disabled_cipher_suites !=
-       new_config.disabled_cipher_suites) ||
+          new_config.disabled_cipher_suites) ||
       (orig_config.channel_id_enabled != new_config.channel_id_enabled) ||
-      (orig_config.false_start_enabled != new_config.false_start_enabled);
+      (orig_config.false_start_enabled != new_config.false_start_enabled) ||
+      (orig_config.unrestricted_ssl3_fallback_enabled !=
+          new_config.unrestricted_ssl3_fallback_enabled);
 
   if (config_changed)
     NotifySSLConfigChange();

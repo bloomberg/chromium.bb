@@ -1533,6 +1533,7 @@
         'http/http_network_layer_unittest.cc',
         'http/http_network_transaction_spdy3_unittest.cc',
         'http/http_network_transaction_spdy2_unittest.cc',
+        'http/http_network_transaction_ssl_unittest.cc',
         'http/http_pipelined_connection_impl_unittest.cc',
         'http/http_pipelined_host_forced_unittest.cc',
         'http/http_pipelined_host_impl_unittest.cc',

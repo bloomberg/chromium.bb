@@ -431,6 +431,7 @@ extern const char kSSLVersionMax[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kEnableOriginBoundCerts[];
 extern const char kDisableSSLRecordSplitting[];
+extern const char kEnableUnrestrictedSSL3Fallback[];
 extern const char kEnableMemoryInfo[];
 
 extern const char kGLVendorString[];

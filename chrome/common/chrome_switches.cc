@@ -660,6 +660,13 @@ const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 const char kEnableTranslateAlphaLanguages[] =
     "enable-translate-alpha-languages";
 
+// Enables unrestricted SSL 3.0 fallback.
+// With this switch, SSL 3.0 fallback will be enabled for all sites.
+// Without this switch, SSL 3.0 fallback will be disabled for a site
+// pinned to the Google pin list (indicating that it is a Google site).
+const char kEnableUnrestrictedSSL3Fallback[] =
+    "enable-unrestricted-ssl3-fallback";
+
 // Enables Alternate-Protocol when the port is user controlled (> 1024).
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
