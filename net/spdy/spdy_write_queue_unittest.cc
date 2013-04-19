@@ -178,6 +178,49 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
 
+// Enqueue a bunch of writes and then call
+// RemovePendingWritesForStreamsAfter(). No dequeued write should be for
+// those streams without a stream id, or with a stream_id after that
+// argument.
+TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
+  SpdyWriteQueue write_queue;
+
+  scoped_refptr<SpdyStream> stream1(MakeTestStream(DEFAULT_PRIORITY));
+  stream1->set_stream_id(1);
+  scoped_refptr<SpdyStream> stream2(MakeTestStream(DEFAULT_PRIORITY));
+  stream2->set_stream_id(3);
+  scoped_refptr<SpdyStream> stream3(MakeTestStream(DEFAULT_PRIORITY));
+  stream3->set_stream_id(5);
+  // No stream id assigned.
+  scoped_refptr<SpdyStream> stream4(MakeTestStream(DEFAULT_PRIORITY));
+  scoped_refptr<SpdyStream> streams[] = {
+    stream1, stream2, stream3, stream4
+  };
+
+  for (int i = 0; i < 100; ++i) {
+    scoped_refptr<SpdyStream> stream = streams[i % arraysize(streams)];
+    write_queue.Enqueue(DEFAULT_PRIORITY, SYN_STREAM, IntToProducer(i), stream);
+  }
+
+  write_queue.RemovePendingWritesForStreamsAfter(stream1->stream_id());
+
+  for (int i = 0; i < 100; i += arraysize(streams)) {
+    SpdyFrameType frame_type = DATA;
+    scoped_ptr<SpdyBufferProducer> frame_producer;
+    scoped_refptr<SpdyStream> stream;
+    ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream))
+        << "Unable to Dequeue i: " << i;
+    EXPECT_EQ(SYN_STREAM, frame_type);
+    EXPECT_EQ(i, ProducerToInt(frame_producer.Pass()));
+    EXPECT_EQ(stream1, stream);
+  }
+
+  SpdyFrameType frame_type = DATA;
+  scoped_ptr<SpdyBufferProducer> frame_producer;
+  scoped_refptr<SpdyStream> stream;
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+}
+
 // Enqueue a bunch of writes and then call Clear(). The write queue
 // should clean up the memory properly, and Dequeue() should return
 // false.

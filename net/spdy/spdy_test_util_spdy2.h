@@ -97,9 +97,13 @@ SpdyFrame* ConstructSpdyCredential(const SpdyCredential& credential);
 // Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyPing(uint32 ping_id);
 
-// Construct a SPDY GOAWAY frame.
+// Construct a SPDY GOAWAY frame with last_good_stream_id = 0.
 // Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyGoAway();
+
+// Construct a SPDY GOAWAY frame with the specified last_good_stream_id.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id);
 
 // Construct a SPDY WINDOW_UPDATE frame.
 // Returns the constructed frame.  The caller takes ownership of the frame.

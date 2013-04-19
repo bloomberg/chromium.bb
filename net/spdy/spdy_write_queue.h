@@ -48,6 +48,10 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // non-NULL.
   void RemovePendingWritesForStream(const scoped_refptr<SpdyStream>& stream);
 
+  // Removes all pending writes for streams after |last_good_stream_id|
+  // and streams with no stream id.
+  void RemovePendingWritesForStreamsAfter(SpdyStreamId last_good_stream_id);
+
   // Removes all pending writes.
   void Clear();
 

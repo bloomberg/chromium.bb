@@ -1139,19 +1139,8 @@ void SpdySession::WriteSocket() {
   }
 }
 
-void SpdySession::CloseAllStreams(net::Error status) {
-  base::StatsCounter abandoned_streams("spdy.abandoned_streams");
-  base::StatsCounter abandoned_push_streams(
-      "spdy.abandoned_push_streams");
-
-  if (!active_streams_.empty())
-    abandoned_streams.Add(active_streams_.size());
-  if (!unclaimed_pushed_streams_.empty()) {
-    streams_abandoned_count_ += unclaimed_pushed_streams_.size();
-    abandoned_push_streams.Add(unclaimed_pushed_streams_.size());
-    unclaimed_pushed_streams_.clear();
-  }
-
+void SpdySession::CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
+                                       net::Error status) {
   for (int i = 0; i < NUM_PRIORITIES; ++i) {
     PendingStreamRequestQueue queue;
     queue.swap(pending_create_stream_queues_[i]);
@@ -1161,11 +1150,14 @@ void SpdySession::CloseAllStreams(net::Error status) {
     }
   }
 
-  while (!active_streams_.empty()) {
-    ActiveStreamMap::iterator it = active_streams_.begin();
+  ActiveStreamMap::iterator it =
+      active_streams_.lower_bound(last_good_stream_id + 1);
+  while (it != active_streams_.end()) {
     const scoped_refptr<SpdyStream>& stream = it->second;
+    ++it;
     LogAbandonedStream(stream, status);
     DeleteStream(stream->stream_id(), status);
+    streams_abandoned_count_++;
   }
 
   while (!created_streams_.empty()) {
@@ -1176,6 +1168,21 @@ void SpdySession::CloseAllStreams(net::Error status) {
     stream->OnClose(status);
   }
 
+  write_queue_.RemovePendingWritesForStreamsAfter(last_good_stream_id);
+}
+
+void SpdySession::CloseAllStreams(net::Error status) {
+  base::StatsCounter abandoned_streams("spdy.abandoned_streams");
+  base::StatsCounter abandoned_push_streams(
+      "spdy.abandoned_push_streams");
+
+  if (!unclaimed_pushed_streams_.empty()) {
+    streams_abandoned_count_ += unclaimed_pushed_streams_.size();
+    abandoned_push_streams.Add(unclaimed_pushed_streams_.size());
+    unclaimed_pushed_streams_.clear();
+  }
+
+  CloseAllStreamsAfter(0, status);
   write_queue_.Clear();
 }
 
@@ -1753,14 +1760,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                  unclaimed_pushed_streams_.size(),
                  status));
   RemoveFromPool();
-  CloseAllStreams(net::ERR_ABORTED);
-
-  // TODO(willchan): Cancel any streams that are past the GoAway frame's
-  // |last_accepted_stream_id|.
-
-  // Don't bother killing any streams that are still reading.  They'll either
-  // complete successfully or get an ERR_CONNECTION_CLOSED when the socket is
-  // closed.
+  CloseAllStreamsAfter(last_accepted_stream_id, net::ERR_ABORTED);
 }
 
 void SpdySession::OnPing(uint32 unique_id) {

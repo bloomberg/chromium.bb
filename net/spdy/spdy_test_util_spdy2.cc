@@ -119,58 +119,43 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
   return ConstructSpdyFrame(header_info, headers.Pass());
 }
 
-// Construct an expected SPDY SETTINGS frame.
-// |settings| are the settings to set.
-// Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreateSettings(settings);
 }
 
-// Construct an expected SPDY CREDENTIAL frame.
-// |credential| is the credential to sen.
-// Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyCredential(
     const SpdyCredential& credential) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreateCredentialFrame(credential);
 }
 
-// Construct a SPDY PING frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyPing(uint32 ping_id) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreatePingFrame(ping_id);
 }
 
-// Construct a SPDY GOAWAY frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyGoAway() {
-  BufferedSpdyFramer framer(2, false);
-  return framer.CreateGoAway(0, GOAWAY_OK);
+  return ConstructSpdyGoAway(0);
 }
 
-// Construct a SPDY WINDOW_UPDATE frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
+SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id) {
+  BufferedSpdyFramer framer(2, false);
+  return framer.CreateGoAway(last_good_stream_id, GOAWAY_OK);
+}
+
 SpdyFrame* ConstructSpdyWindowUpdate(
     const SpdyStreamId stream_id, uint32 delta_window_size) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreateWindowUpdate(stream_id, delta_window_size);
 }
 
-// Construct a SPDY RST_STREAM frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
 SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
                                   SpdyRstStreamStatus status) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreateRstStream(stream_id, status);
 }
 
-// Construct a single SPDY header entry, for validation.
-// |extra_headers| are the extra header-value pairs.
-// |buffer| is the buffer we're filling in.
-// |index| is the index of the header we want.
-// Returns the number of bytes written into |buffer|.
 int ConstructSpdyHeader(const char* const extra_headers[],
                         int extra_header_count,
                         char* buffer,
@@ -262,11 +247,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                             kHeadersSize / 2);
 }
 
-// Constructs a standard SPDY GET SYN frame, optionally compressed
-// for the url |url|.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGet(const char* const url,
                             bool compressed,
                             SpdyStreamId stream_id,
@@ -288,10 +268,6 @@ SpdyFrame* ConstructSpdyGet(const char* const url,
   return ConstructSpdyFrame(kSynStartHeader, ConstructGetHeaderBlock(url));
 }
 
-// Constructs a standard SPDY GET SYN frame, optionally compressed.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                             int extra_header_count,
                             bool compressed,
@@ -301,10 +277,6 @@ SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                           stream_id, request_priority, true);
 }
 
-// Constructs a standard SPDY GET SYN frame, optionally compressed.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                             int extra_header_count,
                             bool compressed,
@@ -329,7 +301,6 @@ SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
 SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                 int extra_header_count,
                                 int stream_id) {
@@ -350,10 +321,6 @@ SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                    arraysize(kConnectHeaders));
 }
 
-// Constructs a standard SPDY push SYN frame.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              int extra_header_count,
                              int stream_id,
@@ -460,8 +427,6 @@ SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a standard SPDY SYN_REPLY frame with the specified status code.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdySynReplyError(const char* const status,
                                       const char* const* const extra_headers,
                                       int extra_header_count,
@@ -482,10 +447,6 @@ SpdyFrame* ConstructSpdySynReplyError(const char* const status,
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
   static const char* const kExtraHeaders[] = {
     "location", "http://www.foo.com/index.php",
@@ -494,17 +455,10 @@ SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
                                     arraysize(kExtraHeaders)/2, stream_id);
 }
 
-// Constructs a standard SPDY SYN_REPLY frame with an Internal Server
-// Error status code.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdySynReplyError(int stream_id) {
   return ConstructSpdySynReplyError("500 Internal Server Error", NULL, 0, 1);
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY GET.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
                                     int extra_header_count,
                                     int stream_id) {
@@ -524,11 +478,6 @@ SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a standard SPDY POST SYN frame.
-// |content_length| is the size of post data.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyPost(const char* url,
                              int64 content_length,
                              const char* const extra_headers[],
@@ -551,10 +500,6 @@ SpdyFrame* ConstructSpdyPost(const char* url,
       kSynStartHeader, ConstructPostHeaderBlock(url, content_length));
 }
 
-// Constructs a chunked transfer SPDY POST SYN frame.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                     int extra_header_count) {
   const char* post_headers[] = {
@@ -575,10 +520,6 @@ SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
                                    arraysize(post_headers));
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY POST.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
                                      int extra_header_count) {
   static const char* const kStandardGetHeaders[] = {
@@ -598,7 +539,6 @@ SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a single SPDY data frame with the default contents.
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
   BufferedSpdyFramer framer(2, false);
   return framer.CreateDataFrame(
@@ -606,7 +546,6 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
       fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
 }
 
-// Constructs a single SPDY data frame with the given content.
 SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                   uint32 len, bool fin) {
   BufferedSpdyFramer framer(2, false);
@@ -614,18 +553,12 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
       stream_id, data, len, fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
 }
 
-// Wraps |frame| in the payload of a data frame in stream |stream_id|.
 SpdyFrame* ConstructWrappedSpdyFrame(const scoped_ptr<SpdyFrame>& frame,
                                      int stream_id) {
   return ConstructSpdyBodyFrame(stream_id, frame->data(),
                                 frame->size(), false);
 }
 
-// Construct an expected SPDY reply string.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// |buffer| is the buffer we're filling in.
-// Returns the number of bytes written into |buffer|.
 int ConstructSpdyReplyString(const char* const extra_headers[],
                              int extra_header_count,
                              char* buffer,

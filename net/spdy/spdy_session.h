@@ -604,7 +604,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
 
-  // Closes all streams.  Used as part of shutdown.
+  // Closes all active streams with stream id's greater than
+  // |last_good_stream_id|, as well as any created or pending streams.
+  // Does not close unclaimed push streams.
+  void CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
+                            net::Error status);
+
+  // Closes all streams, including unclaimed push streams.  Used as part of
+  // shutdown.
   void CloseAllStreams(net::Error status);
 
   void LogAbandonedStream(const scoped_refptr<SpdyStream>& stream,

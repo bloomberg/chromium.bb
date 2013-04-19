@@ -110,31 +110,75 @@ TEST_F(SpdySessionSpdy2Test, GoAway) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
-  scoped_ptr<SpdyFrame> goaway(ConstructSpdyGoAway());
+  scoped_ptr<SpdyFrame> goaway(ConstructSpdyGoAway(1));
   MockRead reads[] = {
-    CreateMockRead(*goaway),
-    MockRead(SYNCHRONOUS, 0, 0)  // EOF
+    CreateMockRead(*goaway, 2),
+    MockRead(ASYNC, 0, 3)  // EOF
   };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, MEDIUM));
+  MockWrite writes[] = {
+    CreateMockWrite(*req1, 0),
+    CreateMockWrite(*req2, 1),
+  };
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
   data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.SetNextProto(kProtoSPDY2);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  CreateNetworkSession();
+  CreateDeterministicNetworkSession();
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
   EXPECT_EQ(2, session->GetProtocolVersion());
 
-  // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
+  GURL url("http://www.google.com");
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url, MEDIUM, BoundNetLog());
+
+  scoped_refptr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(session, url, MEDIUM, BoundNetLog());
+
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  (*headers)["method"] = "GET";
+  (*headers)["scheme"] = url.scheme();
+  (*headers)["host"] = url.host();
+  (*headers)["url"] = url.path();
+  (*headers)["version"] = "HTTP/1.1";
+  scoped_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock);
+  *headers2 = *headers;
+
+  spdy_stream1->set_spdy_headers(headers.Pass());
+  EXPECT_TRUE(spdy_stream1->HasUrl());
+
+  spdy_stream2->set_spdy_headers(headers2.Pass());
+  EXPECT_TRUE(spdy_stream2->HasUrl());
+
+  spdy_stream1->SendRequest(false);
+  spdy_stream2->SendRequest(false);
+  data.RunFor(2);
+
+  EXPECT_EQ(1u, spdy_stream1->stream_id());
+  EXPECT_EQ(3u, spdy_stream2->stream_id());
+
+  EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
+
+  // Read and process the GOAWAY frame.
+  data.RunFor(1);
 
   EXPECT_FALSE(spdy_session_pool_->HasSession(pair_));
 
+  EXPECT_TRUE(session->IsStreamActive(1));
+  EXPECT_FALSE(session->IsStreamActive(3));
+
   scoped_refptr<SpdySession> session2 = GetSession(pair_);
+
+  spdy_stream1->Close();
+  spdy_stream1 = NULL;
+  spdy_stream2 = NULL;
 
   // Delete the first session.
   session = NULL;

@@ -89,6 +89,26 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   queue->erase(out_it, queue->end());
 }
 
+void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
+    SpdyStreamId last_good_stream_id) {
+  for (int i = 0; i < NUM_PRIORITIES; ++i) {
+    // Do the actual deletion and removal, preserving FIFO-ness.
+    std::deque<PendingWrite>* queue = &queue_[i];
+    std::deque<PendingWrite>::iterator out_it = queue->begin();
+    for (std::deque<PendingWrite>::const_iterator it = queue->begin();
+         it != queue->end(); ++it) {
+      if (it->stream && (it->stream->stream_id() > last_good_stream_id ||
+                         it->stream->stream_id() == 0)) {
+        delete it->frame_producer;
+      } else {
+        *out_it = *it;
+        ++out_it;
+      }
+    }
+    queue->erase(out_it, queue->end());
+  }
+}
+
 void SpdyWriteQueue::Clear() {
   for (int i = 0; i < NUM_PRIORITIES; ++i) {
     for (std::deque<PendingWrite>::iterator it = queue_[i].begin();
