@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -448,13 +449,17 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
       display_text, &scheme, &host);
-  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
-  if (emphasize) {
+  bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==
+      UTF8ToUTF16(extensions::kExtensionScheme);
+  if (model()->CurrentTextIsURL() &&
+      (host.is_nonempty() || grey_out_url)) {
     [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()
                range:as_entire_string];
 
-    [as addAttribute:NSForegroundColorAttributeName value:HostTextColor()
+    if (!grey_out_url) {
+      [as addAttribute:NSForegroundColorAttributeName value:HostTextColor()
                range:ComponentToNSRange(host)];
+    }
   }
 
   // TODO(shess): GTK has this as a member var, figure out why.

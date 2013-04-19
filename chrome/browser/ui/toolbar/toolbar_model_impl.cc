@@ -27,7 +27,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/ssl_status.h"
-#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -168,9 +167,6 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
         url = virtual_url;
       return url.host() != chrome::kChromeUINewTabHost;
     }
-
-    if (url.SchemeIs(extensions::kExtensionScheme))
-      return false;
   }
 
   if (chrome::IsInstantNTP(delegate_->GetActiveWebContents()))

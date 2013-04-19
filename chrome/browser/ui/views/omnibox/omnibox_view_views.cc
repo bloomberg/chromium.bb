@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
@@ -849,10 +850,14 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // And Go system uses.
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(text(), &scheme, &host);
-  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
-  SetColor(location_bar_view_->GetColor(security_level_,
-      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
-  if (emphasize) {
+  bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
+      UTF8ToUTF16(extensions::kExtensionScheme);
+  bool grey_base = model()->CurrentTextIsURL() &&
+      (host.is_nonempty() || grey_out_url);
+  SetColor(location_bar_view_->GetColor(
+      security_level_,
+      grey_base ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
+  if (grey_base && !grey_out_url) {
     ApplyColor(
         location_bar_view_->GetColor(security_level_, LocationBarView::TEXT),
         ui::Range(host.begin, host.end()));

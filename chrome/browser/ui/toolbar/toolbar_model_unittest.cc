@@ -59,11 +59,11 @@ struct TestItem {
   },
   {
     GURL("chrome-extension://monkey/balls.html"),
-    string16(),
-    string16(),
-    string16(),
+    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
+    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
+    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
     false,
-    false
+    true
   },
   {
     GURL("chrome://newtab/"),

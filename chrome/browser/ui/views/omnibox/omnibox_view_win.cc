@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -2469,26 +2470,30 @@ void OmniboxViewWin::EmphasizeURLComponents() {
   // be treated as a search or a navigation, and is the same method the Paste
   // And Go system uses.
   url_parse::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(GetText(), &scheme, &host);
-  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
+  string16 text(GetText());
+  AutocompleteInput::ParseForEmphasizeComponents(text, &scheme, &host);
 
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
   // If we're going to emphasize parts of the text, then the baseline state
   // should be "de-emphasized".  If not, then everything should be rendered in
-  // the standard text color.
+  // the standard text color unless we should grey out the entire URL.
+  bool grey_out_url = text.substr(scheme.begin, scheme.len) ==
+      UTF8ToUTF16(extensions::kExtensionScheme);
+  bool grey_base = model()->CurrentTextIsURL() &&
+      (host.is_nonempty() || grey_out_url);
   cf.crTextColor = skia::SkColorToCOLORREF(parent_view_->GetColor(
       security_level_,
-      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
-  // NOTE: Don't use SetDefaultCharFormat() instead of the below; that sets the
-  // format that will get applied to text added in the future, not to text
+      grey_base ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
+  // NOTE: Don't use SetDefaultCharFormat() instead of the below; that sets
+  // the format that will get applied to text added in the future, not to text
   // already in the edit.
   SelectAll(false);
   SetSelectionCharFormat(cf);
-
-  if (emphasize) {
-    // We've found a host name, give it more emphasis.
+  if (host.is_nonempty() && !grey_out_url) {
+    // We've found a host name and we should provide emphasis to host names,
+    // so emphasize it.
     cf.crTextColor = skia::SkColorToCOLORREF(parent_view_->GetColor(
         security_level_, LocationBarView::TEXT));
     SetSelection(host.begin, host.end());

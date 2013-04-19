@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -1651,25 +1652,25 @@ void OmniboxViewGtk::EmphasizeURLComponents() {
   url_parse::Component scheme, host;
   string16 text(GetText());
   AutocompleteInput::ParseForEmphasizeComponents(text, &scheme, &host);
-  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
   // Set the baseline emphasis.
   GtkTextIter start, end;
   GetTextBufferBounds(&start, &end);
   gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
-  if (emphasize) {
-    gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
+  bool grey_out_url = text.substr(scheme.begin, scheme.len) ==
+       UTF8ToUTF16(extensions::kExtensionScheme);
+  bool grey_base = model()->CurrentTextIsURL() &&
+      (host.is_nonempty() || grey_out_url);
+  gtk_text_buffer_apply_tag(
+      text_buffer_, grey_base ? faded_text_tag_ : normal_text_tag_ , &start,
+      &end);
 
+  if (grey_base && !grey_out_url) {
     // We've found a host name, give it more emphasis.
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
-                                           GetUTF8Offset(text,
-                                                         host.begin));
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
-                                           GetUTF8Offset(text,
-                                                         host.end()));
-
-    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
-  } else {
+    gtk_text_buffer_get_iter_at_line_index(
+        text_buffer_, &start, 0, GetUTF8Offset(text, host.begin));
+    gtk_text_buffer_get_iter_at_line_index(
+        text_buffer_, &end, 0, GetUTF8Offset(text, host.end()));
     gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
   }
 
