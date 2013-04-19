@@ -772,90 +772,6 @@ class SVN(object):
       return ''
 
   @staticmethod
-  def DiffItem(filename, cwd, full_move, revision):
-    """Diffs a single file.
-
-    Should be simple, eh? No it isn't.
-    Be sure to be in the appropriate directory before calling to have the
-    expected relative path.
-    full_move means that move or copy operations should completely recreate the
-    files, usually in the prospect to apply the patch for a try job."""
-    # If the user specified a custom diff command in their svn config file,
-    # then it'll be used when we do svn diff, which we don't want to happen
-    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
-    # work, since they can have another diff executable in their path that
-    # gives different line endings.  So we use a bogus temp directory as the
-    # config directory, which gets around these problems.
-    bogus_dir = tempfile.mkdtemp()
-    try:
-      # Use "svn info" output instead of os.path.isdir because the latter fails
-      # when the file is deleted.
-      return SVN._DiffItemInternal(
-          filename,
-          cwd,
-          SVN.CaptureLocalInfo([filename], cwd),
-          bogus_dir,
-          full_move,
-          revision)
-    finally:
-      gclient_utils.RemoveDirectory(bogus_dir)
-
-  @staticmethod
-  def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
-    """Grabs the diff data."""
-    command = ["diff", "--config-dir", bogus_dir, filename]
-    if revision:
-      command.extend(['--revision', revision])
-    data = None
-    if SVN.IsMovedInfo(info):
-      if full_move:
-        if info.get("Node Kind") == "directory":
-          # Things become tricky here. It's a directory copy/move. We need to
-          # diff all the files inside it.
-          # This will put a lot of pressure on the heap. This is why StringIO
-          # is used and converted back into a string at the end. The reason to
-          # return a string instead of a StringIO is that StringIO.write()
-          # doesn't accept a StringIO object. *sigh*.
-          for (dirpath, dirnames, filenames) in os.walk(filename):
-            # Cleanup all files starting with a '.'.
-            for d in dirnames:
-              if d.startswith('.'):
-                dirnames.remove(d)
-            for f in filenames:
-              if f.startswith('.'):
-                filenames.remove(f)
-            for f in filenames:
-              if data is None:
-                data = cStringIO.StringIO()
-              data.write(GenFakeDiff(os.path.join(dirpath, f)))
-          if data:
-            tmp = data.getvalue()
-            data.close()
-            data = tmp
-        else:
-          data = GenFakeDiff(filename)
-      else:
-        if info.get("Node Kind") != "directory":
-          # svn diff on a mv/cp'd file outputs nothing if there was no change.
-          data = SVN.Capture(command, cwd)
-          if not data:
-            # We put in an empty Index entry so upload.py knows about them.
-            data = "Index: %s\n" % filename.replace(os.sep, '/')
-        # Otherwise silently ignore directories.
-    else:
-      if info.get("Node Kind") != "directory":
-        # Normal simple case.
-        try:
-          data = SVN.Capture(command, cwd)
-        except subprocess2.CalledProcessError:
-          if revision:
-            data = GenFakeDiff(filename)
-          else:
-            raise
-      # Otherwise silently ignore directories.
-    return data
-
-  @staticmethod
   def GenerateDiff(filenames, cwd, full_move, revision):
     """Returns a string containing the diff for the given file list.
 
@@ -941,6 +857,61 @@ class SVN(object):
       return result
     finally:
       gclient_utils.RemoveDirectory(bogus_dir)
+
+  @staticmethod
+  def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
+    """Grabs the diff data."""
+    command = ["diff", "--config-dir", bogus_dir, filename]
+    if revision:
+      command.extend(['--revision', revision])
+    data = None
+    if SVN.IsMovedInfo(info):
+      if full_move:
+        if info.get("Node Kind") == "directory":
+          # Things become tricky here. It's a directory copy/move. We need to
+          # diff all the files inside it.
+          # This will put a lot of pressure on the heap. This is why StringIO
+          # is used and converted back into a string at the end. The reason to
+          # return a string instead of a StringIO is that StringIO.write()
+          # doesn't accept a StringIO object. *sigh*.
+          for (dirpath, dirnames, filenames) in os.walk(filename):
+            # Cleanup all files starting with a '.'.
+            for d in dirnames:
+              if d.startswith('.'):
+                dirnames.remove(d)
+            for f in filenames:
+              if f.startswith('.'):
+                filenames.remove(f)
+            for f in filenames:
+              if data is None:
+                data = cStringIO.StringIO()
+              data.write(GenFakeDiff(os.path.join(dirpath, f)))
+          if data:
+            tmp = data.getvalue()
+            data.close()
+            data = tmp
+        else:
+          data = GenFakeDiff(filename)
+      else:
+        if info.get("Node Kind") != "directory":
+          # svn diff on a mv/cp'd file outputs nothing if there was no change.
+          data = SVN.Capture(command, cwd)
+          if not data:
+            # We put in an empty Index entry so upload.py knows about them.
+            data = "Index: %s\n" % filename.replace(os.sep, '/')
+        # Otherwise silently ignore directories.
+    else:
+      if info.get("Node Kind") != "directory":
+        # Normal simple case.
+        try:
+          data = SVN.Capture(command, cwd)
+        except subprocess2.CalledProcessError:
+          if revision:
+            data = GenFakeDiff(filename)
+          else:
+            raise
+      # Otherwise silently ignore directories.
+    return data
 
   @staticmethod
   def GetEmail(cwd):

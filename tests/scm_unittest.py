@@ -204,7 +204,6 @@ class SVNTestCase(BaseSCMTestCase):
         'CaptureRevision',
         'CaptureStatus',
         'current_version',
-        'DiffItem',
         'GenerateDiff',
         'GetCheckoutRoot',
         'GetEmail',

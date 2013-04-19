@@ -29,7 +29,6 @@ class TryChangeTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetEmail')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetPatchName')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetUpstreamBranch')
-    self.mox.StubOutWithMock(trychange.scm.SVN, 'DiffItem')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetCheckoutRoot')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetEmail')
