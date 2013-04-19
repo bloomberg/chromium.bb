@@ -34,13 +34,16 @@
     'loader': {
       'filepath': 'Source/core/loader',
     },
+    'owners': {
+      'filepath': 'OWNERS',
+    },
     'public_api': {
       'filepath': 'Source/Platform/chromium/public' \
                   '|Source/WebKit/chromium/public' \
                   '|Tools/DumpRenderTree/chromium/TestRunner/public/',
     },
     'wtf': {
-      'filepath': 'Source/WTF',
+      'filepath': 'Source/wtf',
     },
     'platform_graphics': {
       'filepath': 'Source/core/platform/graphics',
@@ -124,6 +127,7 @@
                   'japhet@chromium.org',
                   'haraken@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
+    'owners': [ 'abarth@chromium.org'],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'jamesr@chromium.org', 'schenney@chromium.org' ],
     'platform': [ 'forgerbr@gmail.com' ],
