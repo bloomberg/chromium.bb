@@ -32,7 +32,7 @@ namespace {
 
 // When a peripheral device's battery level is <= kLowBatteryLevel, consider
 // it to be in low battery condition.
-const int kLowBatteryLevel = 15;
+const int kLowBatteryLevel = 5;
 
 // Don't show 2 low battery notification within |kNotificationIntervalSec|
 // seconds.
