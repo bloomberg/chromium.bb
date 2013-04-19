@@ -322,7 +322,6 @@ class PortTest(unittest.TestCase):
     def test_is_test_file(self):
         filesystem = MockFileSystem()
         self.assertTrue(Port._is_test_file(filesystem, '', 'foo.html'))
-        self.assertTrue(Port._is_test_file(filesystem, '', 'foo.shtml'))
         self.assertTrue(Port._is_test_file(filesystem, '', 'foo.svg'))
         self.assertTrue(Port._is_test_file(filesystem, '', 'test-ref-test.html'))
         self.assertFalse(Port._is_test_file(filesystem, '', 'foo.png'))

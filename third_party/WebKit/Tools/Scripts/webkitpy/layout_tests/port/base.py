@@ -593,7 +593,7 @@ class Port(object):
         return [self.relative_test_filename(f) for f in files]
 
     # When collecting test cases, we include any file with these extensions.
-    _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
+    _supported_file_extensions = set(['.html', '.xml', '.xhtml', '.pl',
                                       '.htm', '.php', '.svg', '.mht'])
 
     @staticmethod
