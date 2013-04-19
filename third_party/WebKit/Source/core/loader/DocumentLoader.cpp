@@ -417,12 +417,9 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         setTriggeringAction(action);
     }
 
-    // Don't ask more than once for the same request or if we are loading an empty URL.
-    // This avoids confusion on the part of the client.
-    if (equalIgnoringHeaderFields(request, lastCheckedRequest()) || (!request.isNull() && request.url().isEmpty())) {
-        setLastCheckedRequest(request);
+    // Don't ask if we are loading an empty URL.
+    if (!request.isNull() && request.url().isEmpty())
         return true;
-    }
 
     // We are always willing to show alternate content for unreachable URLs;
     // treat it like a reload so it maintains the right state for b/f list.
@@ -436,8 +433,6 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     // and kill the load if that check fails.
     if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
-
-    setLastCheckedRequest(request);
 
     PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(this, action, request);
     if (policy == PolicyDownload) {
@@ -729,7 +724,6 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_originalRequestCopy, "originalRequestCopy");
     info.addMember(m_request, "request");
     info.addMember(m_response, "response");
-    info.addMember(m_lastCheckedRequest, "lastCheckedRequest");
     info.addMember(m_pendingSubstituteResources, "pendingSubstituteResources");
     info.addMember(m_substituteResourceDeliveryTimer, "substituteResourceDeliveryTimer");
     info.addMember(m_archiveResourceCollection, "archiveResourceCollection");
@@ -791,12 +785,6 @@ void DocumentLoader::setFrame(Frame* frame)
     ASSERT(frame && !m_frame);
     m_frame = frame;
     m_writer.setFrame(frame);
-    attachToFrame();
-}
-
-void DocumentLoader::attachToFrame()
-{
-    ASSERT(m_frame);
 }
 
 void DocumentLoader::detachFromFrame()

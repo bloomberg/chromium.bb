@@ -79,8 +79,7 @@ namespace WebCore {
         void setFrame(Frame*);
         Frame* frame() const { return m_frame; }
 
-        virtual void attachToFrame();
-        virtual void detachFromFrame();
+        void detachFromFrame();
 
         FrameLoader* frameLoader() const;
         ResourceLoader* mainResourceLoader() const;
@@ -141,9 +140,6 @@ namespace WebCore {
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 
         void setOverrideEncoding(const String& encoding) { m_overrideEncoding = encoding; }
-        void setLastCheckedRequest(const ResourceRequest& request) { m_lastCheckedRequest = request; }
-        const ResourceRequest& lastCheckedRequest()  { return m_lastCheckedRequest; }
-
         const StringWithDirection& title() const { return m_pageTitle; }
 
         KURL urlForHistory() const;
@@ -288,10 +284,6 @@ namespace WebCore {
         // The action that triggered loading - we keep this around for the
         // benefit of the various policy handlers.
         NavigationAction m_triggeringAction;
-
-        // The last request that we checked click policy for - kept around
-        // so we can avoid asking again needlessly.
-        ResourceRequest m_lastCheckedRequest;
         
         typedef HashMap<RefPtr<ResourceLoader>, RefPtr<SubstituteResource> > SubstituteResourceMap;
         SubstituteResourceMap m_pendingSubstituteResources;
