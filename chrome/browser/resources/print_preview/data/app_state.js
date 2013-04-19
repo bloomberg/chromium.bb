@@ -18,11 +18,11 @@ cr.define('print_preview', function() {
     this.selectedDestinationId_ = null;
 
     /**
-     * Whether the selected destination is a local destination.
-     * @type {?boolean}
+     * Origin of the selected destination.
+     * @type {?string}
      * @private
      */
-    this.isSelectedDestinationLocal_ = null;
+    this.selectedDestinationOrigin_ = null;
 
     /**
      * Whether the GCP promotion has been dismissed.
@@ -105,7 +105,8 @@ cr.define('print_preview', function() {
   AppState.Field_ = {
     VERSION: 'version',
     SELECTED_DESTINATION_ID: 'selectedDestinationId',
-    IS_SELECTED_DESTINATION_LOCAL: 'isSelectedDestinationLocal',
+    SELECTED_DESTINATION_ORIGIN: 'selectedDestinationOrigin',
+    IS_SELECTED_DESTINATION_LOCAL: 'isSelectedDestinationLocal',  // Deprecated
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
     MARGINS_TYPE: 'marginsType',
     CUSTOM_MARGINS: 'customMargins',
@@ -131,9 +132,9 @@ cr.define('print_preview', function() {
       return this.selectedDestinationId_;
     },
 
-    /** @return {?boolean} Whether the selected destination is local. */
-    get isSelectedDestinationLocal() {
-      return this.isSelectedDestinationLocal_;
+    /** @return {?string} Origin of the selected destination. */
+    get selectedDestinationOrigin() {
+      return this.selectedDestinationOrigin_;
     },
 
     /** @return {boolean} Whether the GCP promotion has been dismissed. */
@@ -195,14 +196,20 @@ cr.define('print_preview', function() {
       }
 
       var state = JSON.parse(serializedAppStateStr);
-      if (state[AppState.Field_.VERSION] == 2) {
+      if (state[AppState.Field_.VERSION] == AppState.VERSION_) {
         this.selectedDestinationId_ =
             state[AppState.Field_.SELECTED_DESTINATION_ID] || null;
         if (state.hasOwnProperty(
                 AppState.Field_.IS_SELECTED_DESTINATION_LOCAL)) {
-          this.isSelectedDestinationLocal_ =
-              state[AppState.Field_.IS_SELECTED_DESTINATION_LOCAL];
+          this.selectedDestinationOrigin_ =
+              state[AppState.Field_.IS_SELECTED_DESTINATION_LOCAL] ?
+              print_preview.Destination.Origin.LOCAL :
+              print_preview.Destination.Origin.COOKIES;
+        } else {
+          this.selectedDestinationOrigin_ =
+              state[AppState.Field_.SELECTED_DESTINATION_ORIGIN] || null;
         }
+
         this.isGcpPromoDismissed_ =
             state[AppState.Field_.IS_GCP_PROMO_DISMISSED] || false;
         if (state.hasOwnProperty(AppState.Field_.MARGINS_TYPE)) {
@@ -242,7 +249,7 @@ cr.define('print_preview', function() {
      */
     persistSelectedDestination: function(dest) {
       this.selectedDestinationId_ = dest.id;
-      this.isSelectedDestinationLocal_ = dest.isLocal;
+      this.selectedDestinationOrigin_ = dest.origin;
       this.persist_();
     },
 
@@ -339,8 +346,8 @@ cr.define('print_preview', function() {
       obj[AppState.Field_.VERSION] = AppState.VERSION_;
       obj[AppState.Field_.SELECTED_DESTINATION_ID] =
           this.selectedDestinationId_;
-      obj[AppState.Field_.IS_SELECTED_DESTINATION_LOCAL] =
-          this.isSelectedDestinationLocal_;
+      obj[AppState.Field_.SELECTED_DESTINATION_ORIGIN] =
+          this.selectedDestinationOrigin_;
       obj[AppState.Field_.IS_GCP_PROMO_DISMISSED] = this.isGcpPromoDismissed_;
       obj[AppState.Field_.MARGINS_TYPE] = this.marginsType_;
       if (this.customMargins_) {

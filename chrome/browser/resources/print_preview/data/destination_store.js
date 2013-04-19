@@ -39,7 +39,7 @@ cr.define('print_preview', function() {
     this.destinations_ = [];
 
     /**
-     * Cache used for constant lookup of destinations by ID.
+     * Cache used for constant lookup of destinations by origin and id.
      * @type {object.<string, !print_preview.Destination>}
      * @private
      */
@@ -62,11 +62,11 @@ cr.define('print_preview', function() {
     this.initialDestinationId_ = null;
 
     /**
-     * Whether the initial destination is a local one or not.
-     * @type {boolean}
+     * Initial origin used to auto-select destination.
+     * @type {print_preview.Destination.Origin}
      * @private
      */
-    this.isInitialDestinationLocal_ = true;
+    this.initialDestinationOrigin_ = print_preview.Destination.Origin.LOCAL;
 
     /**
      * Whether the destination store will auto select the destination that
@@ -154,7 +154,7 @@ cr.define('print_preview', function() {
     var dest = new print_preview.Destination(
         print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         print_preview.Destination.Type.LOCAL,
-        print_preview.Destination.AuthType.LOCAL,
+        print_preview.Destination.Origin.LOCAL,
         localStrings.getString('printToPDF'),
         false /*isRecent*/,
         print_preview.Destination.ConnectionStatus.ONLINE);
@@ -218,25 +218,31 @@ cr.define('print_preview', function() {
      * @private
      */
     init: function(systemDefaultDestinationId) {
-      if (this.appState_.selectedDestinationId) {
+      if (this.appState_.selectedDestinationId &&
+          this.appState_.selectedDestinationOrigin) {
         this.initialDestinationId_ = this.appState_.selectedDestinationId;
-        this.isInitialDestinationLocal_ =
-            this.appState_.isSelectedDestinationLocal;
+        this.initialDestinationOrigin_ =
+            this.appState_.selectedDestinationOrigin_;
       } else {
         this.initialDestinationId_ = systemDefaultDestinationId;
-        this.isInitialDestinationLocal_ = true;
+        this.initialDestinationOrigin_ =
+            print_preview.Destination.Origin.LOCAL;
       }
-
       this.isInAutoSelectMode_ = true;
-      if (this.initialDestinationId_ == null) {
+      if (this.initialDestinationId_ == null ||
+          this.initialDestinationOrigin_ == null) {
         assert(this.destinations_.length > 0,
                'No destinations available to select');
         this.selectDestination(this.destinations_[0]);
       } else {
-        var candidate = this.destinationMap_[this.initialDestinationId_];
+        var key = this.getDestinationKey_(this.initialDestinationOrigin_,
+                                          this.initialDestinationId_);
+        var candidate = this.destinationMap_[key];
         if (candidate != null) {
           this.selectDestination(candidate);
-        } else if (!cr.isChromeOS && this.isInitialDestinationLocal_) {
+        } else if (!cr.isChromeOS &&
+                   this.initialDestinationOrigin_ ==
+                   print_preview.Destination.Origin.LOCAL) {
           this.nativeLayer_.startGetLocalDestinationCapabilities(
               this.initialDestinationId_);
         }
@@ -267,8 +273,10 @@ cr.define('print_preview', function() {
           cloudprint.CloudPrintInterface.EventType.PRINTER_FAILED,
           this.onCloudPrintPrinterFailed_.bind(this));
       // Fetch initial destination if its a cloud destination.
-      if (this.isInAutoSelectMode_ && !this.isInitialDestinationLocal_) {
-        this.cloudPrintInterface_.printer(this.initialDestinationId_);
+      var origin = this.initialDestinationOrigin_;
+      if (this.isInAutoSelectMode_ &&
+          origin != print_preview.Destination.Origin.LOCAL) {
+        this.cloudPrintInterface_.printer(this.initialDestinationId_, origin);
       }
     },
 
@@ -313,7 +321,8 @@ cr.define('print_preview', function() {
           assert(this.cloudPrintInterface_ != null,
                  'Selected destination is a cloud destination, but Google ' +
                  'Cloud Print is not enabled');
-          this.cloudPrintInterface_.printer(destination.id);
+          this.cloudPrintInterface_.printer(destination.id,
+                                            destination.origin);
         }
       } else {
         cr.dispatchSimpleEvent(
@@ -334,8 +343,7 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATIONS_INSERTED);
         if (this.isInAutoSelectMode_ &&
-            (this.initialDestinationId_ == null ||
-                destination.id == this.initialDestinationId_)) {
+            this.matchInitialDestination_(destination.id, destination.origin)) {
           this.selectDestination(destination);
         }
       }
@@ -356,8 +364,7 @@ cr.define('print_preview', function() {
           insertedDestination = true;
           if (this.isInAutoSelectMode_ &&
               destinationToAutoSelect == null &&
-              (this.initialDestinationId_ == null ||
-                  dest.id == this.initialDestinationId_)) {
+              this.matchInitialDestination_(dest.id, dest.origin)) {
             destinationToAutoSelect = dest;
           }
         }
@@ -376,15 +383,17 @@ cr.define('print_preview', function() {
      * the destination doesn't already exist, it will be added.
      * @param {!print_preview.Destination} destination Destination to update.
      * @return {!print_preview.Destination} The existing destination that was
-     *     updated.
+     *     updated or {@code null} if it was the new destination.
      */
     updateDestination: function(destination) {
-      var existingDestination = this.destinationMap_[destination.id];
+      var key = this.getDestinationKey_(destination.origin, destination.id);
+      var existingDestination = this.destinationMap_[key];
       if (existingDestination != null) {
         existingDestination.capabilities = destination.capabilities;
         return existingDestination;
       } else {
         this.insertDestination(destination);
+        return null;
       }
     },
 
@@ -418,10 +427,11 @@ cr.define('print_preview', function() {
      * @private
      */
     insertDestination_: function(destination) {
-      var existingDestination = this.destinationMap_[destination.id];
+      var key = this.getDestinationKey_(destination.origin, destination.id);
+      var existingDestination = this.destinationMap_[key];
       if (existingDestination == null) {
         this.destinations_.push(destination);
-        this.destinationMap_[destination.id] = destination;
+        this.destinationMap_[key] = destination;
         return true;
       } else if (existingDestination.connectionStatus ==
                      print_preview.Destination.ConnectionStatus.UNKNOWN &&
@@ -499,7 +509,10 @@ cr.define('print_preview', function() {
      */
     onLocalDestinationCapabilitiesSet_: function(event) {
       var destinationId = event.settingsInfo['printerId'];
-      var destination = this.destinationMap_[destinationId];
+      var key =
+          this.getDestinationKey_(print_preview.Destination.Origin.LOCAL,
+                                  destinationId);
+      var destination = this.destinationMap_[key];
       var capabilities = print_preview.LocalCapabilitiesParser.parse(
             event.settingsInfo);
       if (destination) {
@@ -537,7 +550,8 @@ cr.define('print_preview', function() {
       console.error('Failed to get print capabilities for printer ' +
                     event.destinationId);
       if (this.isInAutoSelectMode_ &&
-          this.initialDestinationId_ == event.destinationId) {
+          this.matchInitialDestinationStrict_(event.destinationId,
+                                              event.destinationOrigin)) {
         assert(this.destinations_.length > 0,
                'No destinations were loaded when failed to get initial ' +
                'destination');
@@ -593,7 +607,8 @@ cr.define('print_preview', function() {
      */
     onCloudPrintPrinterFailed_: function(event) {
       if (this.isInAutoSelectMode_ &&
-          this.initialDestinationId_ == event.destinationId) {
+          this.matchInitialDestinationStrict_(event.destinationId,
+                                              event.destinationOrigin)) {
         console.error('Could not find initial printer: ' + event.destinationId);
         assert(this.destinations_.length > 0,
                'No destinations were loaded when failed to get initial ' +
@@ -625,6 +640,41 @@ cr.define('print_preview', function() {
       assert(this.destinations_.length > 0,
              'No destinations were loaded before auto-select timeout expired');
       this.selectDestination(this.destinations_[0]);
+    },
+
+    // TODO(vitalybuka): Remove three next functions replacing Destination.id
+    //    and Destination.origin by complex ID.
+    /**
+     * Returns key to be used with {@code destinationMap_}.
+     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @return {!string} id Destination id.
+     * @private
+     */
+    getDestinationKey_: function(origin, id) {
+      return origin + '/' + id;
+    },
+
+    /**
+     * @param {?string} id Id of the destination.
+     * @param {?string} origin Oring of the destination.
+     * @return {boolean} Whether a initial destination matches provided.
+     * @private
+     */
+    matchInitialDestination_: function(id, origin) {
+      return this.initialDestinationId_ == null ||
+             this.initialDestinationOrigin_ == null ||
+             this.matchInitialDestinationStrict_(id, origin);
+    },
+
+    /**
+     * @param {?string} id Id of the destination.
+     * @param {?string} origin Oring of the destination.
+     * @return {boolean} Whether destination is the same as initial.
+     * @private
+     */
+    matchInitialDestinationStrict_: function(id, origin) {
+      return id == this.initialDestinationId_ &&
+             origin == this.initialDestinationOrigin_;
     }
   };
 

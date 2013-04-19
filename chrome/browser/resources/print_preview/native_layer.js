@@ -399,6 +399,8 @@ cr.define('print_preview', function() {
       var getCapsFailEvent = new cr.Event(
           NativeLayer.EventType.GET_CAPABILITIES_FAIL);
       getCapsFailEvent.destinationId = destinationId;
+      getCapsFailEvent.destinationOrigin =
+          print_preview.Destination.Origin.LOCAL;
       this.dispatchEvent(getCapsFailEvent);
     },
 

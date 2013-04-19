@@ -350,7 +350,7 @@ cr.define('cloudprint', function() {
           try {
             printerList.push(
                 cloudprint.CloudDestinationParser.parse(
-                    printerJson, print_preview.Destination.AuthType.COOKIES));
+                    printerJson, print_preview.Destination.Origin.COOKIES));
           } catch (err) {
             console.error('Unable to parse cloud print destination: ' + err);
           }
@@ -400,7 +400,7 @@ cr.define('cloudprint', function() {
         var printer;
         try {
           printer = cloudprint.CloudDestinationParser.parse(
-              printerJson, print_preview.Destination.AuthType.COOKIES);
+              printerJson, print_preview.Destination.Origin.COOKIES);
         } catch (err) {
           console.error('Failed to parse cloud print destination: ' +
               JSON.stringify(printerJson));
@@ -414,6 +414,7 @@ cr.define('cloudprint', function() {
         var errorEvent = this.createErrorEvent_(
             CloudPrintInterface.EventType.PRINTER_FAILED, status, result);
         errorEvent.destinationId = destinationId;
+        errorEvent.destinationOrigin = print_preview.Destination.Origin.COOKIES;
         this.dispatchEvent(errorEvent);
       }
     },

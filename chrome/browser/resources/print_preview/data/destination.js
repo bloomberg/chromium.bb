@@ -10,8 +10,8 @@ cr.define('print_preview', function() {
    * destinations.
    * @param {string} id ID of the destination.
    * @param {!print_preview.Destination.Type} type Type of the destination.
-   * @param {!print_preview.Destination.AuthType} authType Type of the
-   *     authentication used to access the destination.
+   * @param {!print_preview.Destination.Origin} origin Origin of the
+   *     destination.
    * @param {string} displayName Display name of the destination.
    * @param {boolean} isRecent Whether the destination has been used recently.
    * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
@@ -23,7 +23,7 @@ cr.define('print_preview', function() {
    *     destination.
    * @constructor
    */
-  function Destination(id, type, authType, displayName, isRecent,
+  function Destination(id, type, origin, displayName, isRecent,
                        connectionStatus, opt_params) {
     /**
      * ID of the destination.
@@ -40,11 +40,11 @@ cr.define('print_preview', function() {
     this.type_ = type;
 
     /**
-     * Type of authentication for the destination.
-     * @type {!print_preview.Destination.AuthType}
+     * Origin of the destination.
+     * @type {!print_preview.Destination.Origin}
      * @private
      */
-    this.authType_ = authType;
+    this.origin_ = origin;
 
     /**
      * Display name of the destination.
@@ -142,10 +142,10 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Enumeration of the authentication types for cloud destinations.
+   * Enumeration of the origin types for cloud destinations.
    * @enum {string}
    */
-  Destination.AuthType = {
+  Destination.Origin = {
     LOCAL: 'local',
     COOKIES: 'cookies',
     PROFILE: 'profile',
@@ -192,11 +192,10 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {!print_preview.Destination.AuthType} Type of authentication for
-     *     the destination.
+     * @return {!print_preview.Destination.Origin} Origin of the destination.
      */
-    get authType() {
-      return this.authType_;
+    get origin() {
+      return this.origin_;
     },
 
     /** @return {string} Display name of the destination. */
@@ -226,7 +225,7 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
-      return this.type_ == Destination.Type.LOCAL;
+      return this.origin_ == Destination.Origin.LOCAL;
     },
 
     /**
