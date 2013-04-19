@@ -80,7 +80,6 @@ DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          client_info.process, handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    ::CloseHandle(local_handle);
     return ERROR_ACCESS_DENIED;
   }
   return ERROR_SUCCESS;
@@ -105,7 +104,6 @@ DWORD SyncPolicy::OpenEventAction(EvalResult eval_result,
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          client_info.process, handle, 0, inherit_handle,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    ::CloseHandle(local_handle);
     return ERROR_ACCESS_DENIED;
   }
   return ERROR_SUCCESS;

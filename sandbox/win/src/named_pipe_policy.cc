@@ -28,10 +28,10 @@ HANDLE CreateNamedPipeHelper(HANDLE target_process, LPCWSTR pipe_name,
     return pipe;
 
   HANDLE new_pipe;
-  if (!::DuplicateHandle(::GetCurrentProcess(), pipe, target_process, &new_pipe,
-                         0, FALSE, DUPLICATE_CLOSE_SOURCE |
-                             DUPLICATE_SAME_ACCESS)) {
-    ::CloseHandle(pipe);
+  if (!::DuplicateHandle(::GetCurrentProcess(), pipe,
+                         target_process, &new_pipe,
+                         0, FALSE,
+                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return INVALID_HANDLE_VALUE;
   }
 

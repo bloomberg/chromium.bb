@@ -78,7 +78,6 @@ NTSTATUS NtCreateKeyInTarget(HANDLE* target_key_handle,
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          target_process, target_key_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    ::CloseHandle(local_handle);
     return STATUS_ACCESS_DENIED;
   }
   return STATUS_SUCCESS;
@@ -106,7 +105,6 @@ NTSTATUS NtOpenKeyInTarget(HANDLE* target_key_handle,
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                          target_process, target_key_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    ::CloseHandle(local_handle);
     return STATUS_ACCESS_DENIED;
   }
   return STATUS_SUCCESS;
