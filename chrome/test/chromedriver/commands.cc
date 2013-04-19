@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/commands.h"
 
+#include <list>
+
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -11,10 +13,12 @@
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/devtools_event_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
+#include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
@@ -62,9 +66,17 @@ Status ExecuteNewSession(
   if (status.IsError())
     return status;
 
+  // Create DevToolsEventLoggers, fail if log levels are invalid.
+  ScopedVector<DevToolsEventLogger> devtools_event_loggers;
+  status = CreateLoggers(capabilities, &devtools_event_loggers);
+  if (status.IsError())
+    return status;
+
   scoped_ptr<Chrome> chrome;
+  std::list<DevToolsEventLogger*> devtools_event_logger_list(
+      devtools_event_loggers.begin(), devtools_event_loggers.end());
   status = LaunchChrome(context_getter, port, socket_factory,
-                        capabilities, &chrome);
+                        capabilities, devtools_event_logger_list, &chrome);
   if (status.IsError())
     return status;
 
@@ -80,6 +92,7 @@ Status ExecuteNewSession(
   if (new_id.empty())
     new_id = GenerateId();
   scoped_ptr<Session> session(new Session(new_id, chrome.Pass()));
+  session->devtools_event_loggers.swap(devtools_event_loggers);
   if (!session->thread.Start()) {
     chrome->Quit();
     return Status(kUnknownError,

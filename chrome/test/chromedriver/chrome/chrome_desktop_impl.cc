@@ -20,10 +20,11 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,
     int build_no,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
     base::ProcessHandle process,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
-    : ChromeImpl(client.Pass(), version, build_no),
+    : ChromeImpl(client.Pass(), version, build_no, devtools_event_loggers),
       process_(process) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));

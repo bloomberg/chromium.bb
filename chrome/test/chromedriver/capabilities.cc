@@ -201,6 +201,21 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
   return Status(kOk);
 }
 
+Status ParseLoggingPrefs(const base::DictionaryValue& desired_caps,
+                         Capabilities* capabilities) {
+  const base::Value* logging_prefs = NULL;
+  if (desired_caps.Get("loggingPrefs", &logging_prefs)) {
+    const base::DictionaryValue* logging_prefs_dict = NULL;
+    if (!logging_prefs->GetAsDictionary(&logging_prefs_dict)) {
+      return Status(kUnknownError, "'loggingPrefs' must be a dictionary");
+    }
+    // TODO(klm): verify log types.
+    // TODO(klm): verify log levels.
+    capabilities->logging_prefs.reset(logging_prefs_dict->DeepCopy());
+  }
+  return Status(kOk);
+}
+
 }  // namespace
 
 Capabilities::Capabilities() : command(CommandLine::NO_PROGRAM) {}
@@ -212,7 +227,10 @@ bool Capabilities::IsAndroid() const {
 }
 
 Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
-  Status status = ParseAndroidChromeCapabilities(desired_caps, this);
+  Status status = ParseLoggingPrefs(desired_caps, this);
+  if (status.IsError())
+    return status;
+  status = ParseAndroidChromeCapabilities(desired_caps, this);
   if (status.IsError())
     return status;
   if (IsAndroid())

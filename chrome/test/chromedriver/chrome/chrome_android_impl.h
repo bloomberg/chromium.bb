@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_ANDROID_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_ANDROID_IMPL_H_
 
+#include <list>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -15,9 +16,11 @@ class DevToolsHttpClient;
 
 class ChromeAndroidImpl : public ChromeImpl {
  public:
-  ChromeAndroidImpl(scoped_ptr<DevToolsHttpClient> client,
-                    const std::string& version,
-                    int build_no);
+  ChromeAndroidImpl(
+      scoped_ptr<DevToolsHttpClient> client,
+      const std::string& version,
+      int build_no,
+      const std::list<DevToolsEventLogger*>& devtools_event_loggers);
   virtual ~ChromeAndroidImpl();
 
   // Overridden from Chrome:

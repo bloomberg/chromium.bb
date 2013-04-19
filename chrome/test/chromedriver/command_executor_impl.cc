@@ -228,6 +228,10 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSetWindowSize);
   session_command_map[CommandNames::kMaximizeWindow] =
       base::Bind(&ExecuteMaximizeWindow);
+  session_command_map[CommandNames::kGetAvailableLogTypes] =
+      base::Bind(&ExecuteGetAvailableLogTypes);
+  session_command_map[CommandNames::kGetLog] =
+      base::Bind(&ExecuteGetLog);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

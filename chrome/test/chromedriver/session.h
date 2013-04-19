@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/test/chromedriver/basic_types.h"
@@ -21,6 +22,7 @@ class DictionaryValue;
 }
 
 class Chrome;
+class DevToolsEventLogger;
 class Status;
 class WebView;
 
@@ -61,6 +63,7 @@ struct Session {
   int script_timeout;
   std::string prompt_text;
   scoped_ptr<Geoposition> overridden_geoposition;
+  ScopedVector<DevToolsEventLogger> devtools_event_loggers;
   const scoped_ptr<base::DictionaryValue> capabilities;
 
  private:

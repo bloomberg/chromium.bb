@@ -252,3 +252,27 @@ TEST(ParseCapabilities, MissingSettingForManualProxy) {
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
+
+TEST(ParseCapabilities, LoggingPrefsOk) {
+  Capabilities capabilities;
+  base::DictionaryValue logging_prefs;
+  logging_prefs.SetString("Network", "INFO");
+  base::DictionaryValue caps;
+  caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_TRUE(capabilities.logging_prefs.get());
+  ASSERT_EQ(1u, capabilities.logging_prefs->size());
+  std::string log_level;
+  ASSERT_TRUE(capabilities.logging_prefs->GetString("Network", &log_level));
+  ASSERT_STREQ("INFO", log_level.c_str());
+}
+
+TEST(ParseCapabilities, LoggingPrefsNotDict) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetString("loggingPrefs", "INFO");
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+

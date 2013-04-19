@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class CommandLine;
+class DevToolsEventLogger;
 
 namespace base {
 class DictionaryValue;
@@ -24,11 +26,13 @@ class Chrome;
 class Status;
 class URLRequestContextGetter;
 
-Status LaunchChrome(URLRequestContextGetter* context_getter,
-                    int port,
-                    const SyncWebSocketFactory& socket_factory,
-                    const Capabilities& capabilities,
-                    scoped_ptr<Chrome>* chrome);
+Status LaunchChrome(
+    URLRequestContextGetter* context_getter,
+    int port,
+    const SyncWebSocketFactory& socket_factory,
+    const Capabilities& capabilities,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    scoped_ptr<Chrome>* chrome);
 
 namespace internal {
 Status ProcessExtensions(const std::vector<std::string>& extensions,

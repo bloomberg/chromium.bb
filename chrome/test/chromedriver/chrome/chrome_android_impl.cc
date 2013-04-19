@@ -10,8 +10,9 @@
 ChromeAndroidImpl::ChromeAndroidImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,
-    int build_no)
-    : ChromeImpl(client.Pass(), version, build_no) {}
+    int build_no,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers)
+    : ChromeImpl(client.Pass(), version, build_no, devtools_event_loggers) {}
 
 ChromeAndroidImpl::~ChromeAndroidImpl() {}
 

@@ -34,6 +34,7 @@ struct Capabilities {
   scoped_ptr<base::DictionaryValue> prefs;
   scoped_ptr<base::DictionaryValue> local_state;
   std::vector<std::string> extensions;
+  scoped_ptr<base::DictionaryValue> logging_prefs;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_

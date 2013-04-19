@@ -177,11 +177,13 @@ Status WaitForDevToolsAndCheckVersion(
   return Status(kUnknownError, "unable to discover open pages");
 }
 
-Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
-                           int port,
-                           const SyncWebSocketFactory& socket_factory,
-                           const Capabilities& capabilities,
-                           scoped_ptr<Chrome>* chrome) {
+Status LaunchDesktopChrome(
+    URLRequestContextGetter* context_getter,
+    int port,
+    const SyncWebSocketFactory& socket_factory,
+    const Capabilities& capabilities,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    scoped_ptr<Chrome>* chrome) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
@@ -245,16 +247,18 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
     return status;
   }
   chrome->reset(new ChromeDesktopImpl(
-      devtools_client.Pass(), version, build_no, process, &user_data_dir,
-      &extension_dir));
+      devtools_client.Pass(), version, build_no, devtools_event_loggers,
+      process, &user_data_dir, &extension_dir));
   return Status(kOk);
 }
 
-Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
-                           int port,
-                           const SyncWebSocketFactory& socket_factory,
-                           const Capabilities& capabilities,
-                           scoped_ptr<Chrome>* chrome) {
+Status LaunchAndroidChrome(
+    URLRequestContextGetter* context_getter,
+    int port,
+    const SyncWebSocketFactory& socket_factory,
+    const Capabilities& capabilities,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    scoped_ptr<Chrome>* chrome) {
   // TODO(frankf): Figure out how this should be installed to
   // make this work for all platforms.
   base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
@@ -283,23 +287,27 @@ Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
     return status;
 
   chrome->reset(new ChromeAndroidImpl(
-      devtools_client.Pass(), version, build_no));
+      devtools_client.Pass(), version, build_no, devtools_event_loggers));
   return Status(kOk);
 }
 
 }  // namespace
 
-Status LaunchChrome(URLRequestContextGetter* context_getter,
-                    int port,
-                    const SyncWebSocketFactory& socket_factory,
-                    const Capabilities& capabilities,
-                    scoped_ptr<Chrome>* chrome) {
+Status LaunchChrome(
+    URLRequestContextGetter* context_getter,
+    int port,
+    const SyncWebSocketFactory& socket_factory,
+    const Capabilities& capabilities,
+    const std::list<DevToolsEventLogger*>& devtools_event_loggers,
+    scoped_ptr<Chrome>* chrome) {
   if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(
-        context_getter, port, socket_factory, capabilities, chrome);
+        context_getter, port, socket_factory, capabilities,
+        devtools_event_loggers, chrome);
   } else {
     return LaunchDesktopChrome(
-        context_getter, port, socket_factory, capabilities, chrome);
+        context_getter, port, socket_factory, capabilities,
+        devtools_event_loggers, chrome);
   }
 }
 

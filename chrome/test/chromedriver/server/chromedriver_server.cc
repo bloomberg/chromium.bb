@@ -159,6 +159,9 @@ int main(int argc, char *argv[]) {
                        false,  // enable_thread_id
                        true,   // enable_timestamp
                        false); // enable_tickcount
+  if (cmd_line->HasSwitch("verbose")) {
+    logging::SetMinLogLevel(logging::LOG_VERBOSE);
+  }
 
   scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl());
   HttpHandler handler(executor.Pass(), HttpHandler::CreateCommandMap(),

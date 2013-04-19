@@ -17,6 +17,7 @@
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/devtools_event_logger.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
@@ -471,4 +472,38 @@ Status ExecuteMaximizeWindow(
     return status;
 
   return extension->MaximizeWindow();
+}
+
+Status ExecuteGetAvailableLogTypes(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  scoped_ptr<ListValue> types(new base::ListValue());
+  for (ScopedVector<DevToolsEventLogger>::const_iterator logger =
+       session->devtools_event_loggers.begin();
+       logger != session->devtools_event_loggers.end(); ++logger) {
+    types->AppendString((*logger)->GetLogType());
+  }
+  value->reset(types.release());
+  return Status(kOk);
+}
+
+Status ExecuteGetLog(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string log_type;
+  if (!params.GetString("type", &log_type)) {
+    return Status(kUnknownError, "missing or invalid 'type'");
+  }
+  for (ScopedVector<DevToolsEventLogger>::const_iterator logger =
+       session->devtools_event_loggers.begin();
+       logger != session->devtools_event_loggers.end(); ++logger) {
+    if (log_type == (*logger)->GetLogType()) {
+      scoped_ptr<ListValue> log_entries = (*logger)->GetAndClearLogEntries();
+      value->reset(log_entries.release());
+      return Status(kOk);
+    }
+  }
+  return Status(kUnknownError, "log type '" + log_type + "' not found");
 }

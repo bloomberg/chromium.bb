@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_DESKTOP_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_DESKTOP_IMPL_H_
 
+#include <list>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -22,6 +23,7 @@ class ChromeDesktopImpl : public ChromeImpl {
       scoped_ptr<DevToolsHttpClient> client,
       const std::string& version,
       int build_no,
+      const std::list<DevToolsEventLogger*>& devtools_event_loggers,
       base::ProcessHandle process,
       base::ScopedTempDir* user_data_dir,
       base::ScopedTempDir* extension_dir);
