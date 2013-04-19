@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
 
 #include <map>
+#include <queue>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "cc/layers/texture_layer_client.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -46,7 +48,8 @@ struct NativeWebKeyboardEvent;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
+class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
+                                    public cc::TextureLayerClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -147,6 +150,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
 
+  // cc::TextureLayerClient implementation.
+  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE;
+
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
@@ -181,6 +189,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
                       const gfx::Size texture_size,
                       const gfx::SizeF content_size,
                       const base::Closure& ack_callback);
+
+  void RunAckCallbacks();
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -221,6 +231,10 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   // The mailbox of the frame we last returned.
   gpu::Mailbox last_mailbox_;
+
+  bool consumed_current_texture_;
+
+  std::queue<base::Closure> ack_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

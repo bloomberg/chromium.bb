@@ -77,17 +77,18 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0) {
+      texture_id_in_layer_(0),
+      consumed_current_texture_(true) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
+    layer_->SetIsDrawable(true);
   } else {
-    texture_layer_ = cc::TextureLayer::Create(NULL);
+    texture_layer_ = cc::TextureLayer::Create(this);
     layer_ = texture_layer_;
   }
 
   layer_->SetContentsOpaque(true);
-  layer_->SetIsDrawable(true);
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
@@ -95,6 +96,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   SetContentViewCore(NULL);
+  DCHECK(ack_callbacks_.empty());
   if (texture_id_in_layer_ || !last_mailbox_.IsZero()) {
     ImageTransportFactoryAndroid* factory =
         ImageTransportFactoryAndroid::GetInstance();
@@ -108,6 +110,9 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
     }
     factory->DeleteTexture(texture_id_in_layer_);
   }
+
+  if (texture_layer_)
+    texture_layer_->ClearClient();
 }
 
 
@@ -154,6 +159,8 @@ void RenderWidgetHostViewAndroid::WasShown() {
 }
 
 void RenderWidgetHostViewAndroid::WasHidden() {
+  RunAckCallbacks();
+
   if (host_->is_hidden())
     return;
 
@@ -605,7 +612,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
         texture_id_in_layer_, current_mailbox_.name);
   } else {
     texture_id_in_layer_ = factory->CreateTexture();
-    texture_layer_->SetTextureId(texture_id_in_layer_);
+    texture_layer_->SetIsDrawable(true);
   }
 
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
@@ -625,7 +632,13 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   texture_layer_->SetUV(gfx::PointF(0, 0), uv_max);
   texture_size_in_layer_ = texture_size;
   current_mailbox_ = mailbox;
-  ack_callback.Run();
+
+  if (consumed_current_texture_ || host_->is_hidden())
+    ack_callback.Run();
+  else
+    ack_callbacks_.push(ack_callback);
+
+  consumed_current_texture_ = false;
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -642,6 +655,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
   // This tells us we should free the frontbuffer.
   if (texture_id_in_layer_) {
     texture_layer_->SetTextureId(0);
+    texture_layer_->SetIsDrawable(false);
     ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
         texture_id_in_layer_);
     texture_id_in_layer_ = 0;
@@ -767,6 +781,8 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
+  RunAckCallbacks();
+
   if (content_view_core_ && is_layer_attached_)
     content_view_core_->RemoveLayer(layer_);
 
@@ -775,10 +791,33 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     content_view_core_->AttachLayer(layer_);
 }
 
+void RenderWidgetHostViewAndroid::RunAckCallbacks() {
+  while (!ack_callbacks_.empty()) {
+    ack_callbacks_.front().Run();
+    ack_callbacks_.pop();
+  }
+}
+
 void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
     bool need_touch_events) {
   if (content_view_core_)
     content_view_core_->HasTouchEventHandlers(need_touch_events);
+}
+
+unsigned RenderWidgetHostViewAndroid::PrepareTexture(
+    cc::ResourceUpdateQueue* queue) {
+  RunAckCallbacks();
+  consumed_current_texture_ = true;
+  return texture_id_in_layer_;
+}
+
+WebKit::WebGraphicsContext3D* RenderWidgetHostViewAndroid::Context3d() {
+  return ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
+}
+
+bool RenderWidgetHostViewAndroid::PrepareTextureMailbox(
+    cc::TextureMailbox* mailbox) {
+  return false;
 }
 
 // static
