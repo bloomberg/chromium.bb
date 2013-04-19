@@ -5,21 +5,18 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_SYSTEM_MENU_INSERTION_DELEGATE_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_SYSTEM_MENU_INSERTION_DELEGATE_WIN_H_
 
-#include <windows.h>
-
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "ui/views/controls/menu/menu_insertion_delegate.h"
+#include "ui/views/controls/menu/native_menu_win.h"
 
 // SystemMenuInsertionDelegateWin is used to determine the index to insert menu
 // items into the system item. It is only needed on windows as that is the only
 // place we insert items into the system menu.
-class SystemMenuInsertionDelegateWin : public views::MenuInsertionDelegate {
+class SystemMenuInsertionDelegateWin
+    : public views::MenuWrapper::InsertionDelegate {
  public:
   SystemMenuInsertionDelegateWin() {}
   virtual ~SystemMenuInsertionDelegateWin() {}
 
-  // Overridden from views::MenuInsertionDelegate:
+  // InsertionDelegate overrides:
   virtual int GetInsertionIndex(HMENU native_menu) OVERRIDE;
 
  private:

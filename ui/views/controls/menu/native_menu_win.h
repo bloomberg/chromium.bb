@@ -8,15 +8,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "ui/views/controls/menu/menu_wrapper.h"
 #include "ui/views/views_export.h"
-
-namespace gfx {
-class Point;
-}
 
 namespace ui {
 class MenuModel;
@@ -24,41 +22,26 @@ class MenuModel;
 
 namespace views {
 
-class MenuInsertionDelegate;
-class MenuListener;
-
-class VIEWS_EXPORT NativeMenuWin {
+// A Windows implementation of MenuWrapper.
+// TODO(beng): rename to MenuWin once the old class is dead.
+class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
  public:
-  // All of the possible actions that can result from RunMenuAt.
-  enum MenuAction {
-    MENU_ACTION_NONE,      // Menu cancelled, or never opened.
-    MENU_ACTION_SELECTED,  // An item was selected.
-    MENU_ACTION_PREVIOUS,  // User wants to navigate to the previous menu.
-    MENU_ACTION_NEXT,      // User wants to navigate to the next menu.
-  };
-
-  // How the menu is aligned relative to the point it is shown at.
-  // The alignment is reversed by menu if text direction is right to left.
-  enum Alignment {
-    ALIGN_TOPLEFT,
-    ALIGN_TOPRIGHT
-  };
-
   // Construct a NativeMenuWin, with a model and delegate. If |system_menu_for|
   // is non-NULL, the NativeMenuWin wraps the system menu for that window.
   // The caller owns the model and the delegate.
   NativeMenuWin(ui::MenuModel* model, HWND system_menu_for);
-  ~NativeMenuWin();
+  virtual ~NativeMenuWin();
 
-  void RunMenuAt(const gfx::Point& point, int alignment);
-  void CancelMenu();
-  void Rebuild(MenuInsertionDelegate* delegate);
-  void UpdateStates();
-  HMENU GetNativeMenu() const;
-  MenuAction GetMenuAction() const;
-  void AddMenuListener(MenuListener* listener);
-  void RemoveMenuListener(MenuListener* listener);
-  void SetMinimumWidth(int width);
+  // Overridden from MenuWrapper:
+  virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
+  virtual void CancelMenu() OVERRIDE;
+  virtual void Rebuild(InsertionDelegate* delegate) OVERRIDE;
+  virtual void UpdateStates() OVERRIDE;
+  virtual HMENU GetNativeMenu() const OVERRIDE;
+  virtual MenuAction GetMenuAction() const OVERRIDE;
+  virtual void AddMenuListener(MenuListener* listener) OVERRIDE;
+  virtual void RemoveMenuListener(MenuListener* listener) OVERRIDE;
+  virtual void SetMinimumWidth(int width) OVERRIDE;
 
  private:
   // IMPORTANT: Note about indices.
