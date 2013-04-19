@@ -18,11 +18,22 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'debug_stub': [
         'sel',
         ],
+    'imc': [
+        'platform',
+        ],
     'nonnacl_util': [
         'serialization',
         ],
     'platform': [
         'gio',
+        ],
+    'nacl_base': [
+        'platform',
+        ],
+    'nrd_xfer': [
+        'nacl_base',
+        'imc',
+        'platform',
         ],
     'sel': [
         'nacl_error_code',

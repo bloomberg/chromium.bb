@@ -11,6 +11,8 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
 
 #if NACL_WINDOWS
@@ -20,6 +22,9 @@
 
 #define ADD_LITERAL(cache, query, data) \
   ((cache)->AddData((query), (uint8_t*)&(data), sizeof(data)))
+
+/* Arbitrary magic value. */
+static int32_t FILE_ORIGIN_INFO_TYPE = 0x0EA7F00D;
 
 int CachingIsInexpensive(struct NaClValidationCache *cache,
                          const struct NaClValidationMetadata *metadata) {
@@ -133,6 +138,24 @@ int SerializeNaClDescMetadata(
   return 0;
 }
 
+int SetFileOriginInfo(struct NaClDesc *desc, uint8_t known_file,
+                      const char *file_name, uint32_t file_name_length) {
+  uint8_t *buffer = NULL;
+  uint32_t buffer_length = 0;
+  int status;
+  if (SerializeNaClDescMetadata(known_file, file_name, file_name_length,
+                                &buffer, &buffer_length)) {
+    return 1;
+  }
+  status = NACL_VTBL(NaClDesc, desc)->SetMetadata(
+      desc,
+      FILE_ORIGIN_INFO_TYPE,
+      buffer_length,
+      (uint8_t *) buffer);
+  free(buffer);
+  return status;
+}
+
 static int Deserialize(uint8_t *buffer, uint32_t buffer_length, void *value,
                        size_t size, uint32_t *offset) {
   if (*offset + size > buffer_length)
@@ -179,6 +202,38 @@ int DeserializeNaClDescMetadata(
   *file_name = NULL;
   *file_name_length = 0;
   return 1;
+}
+
+int GetFileOriginInfo(struct NaClDesc *desc, uint8_t *known_file,
+                      char **file_name, uint32_t *file_name_length) {
+  int32_t metadata_type;
+  uint8_t *buffer = NULL;
+  uint32_t buffer_length = 0;
+  int status;
+
+  /* Get the buffer length. */
+  metadata_type = NACL_VTBL(NaClDesc, desc)->GetMetadata(
+      desc,
+      &buffer_length,
+      NULL);
+  if (metadata_type != FILE_ORIGIN_INFO_TYPE)
+    return 1;
+
+  buffer = (uint8_t *) malloc(buffer_length);
+  if (NULL == buffer)
+    return 1;
+
+  metadata_type = NACL_VTBL(NaClDesc, desc)->GetMetadata(
+      desc,
+      &buffer_length,
+      buffer);
+  if (metadata_type != FILE_ORIGIN_INFO_TYPE)
+    return 1;
+
+  status = DeserializeNaClDescMetadata(buffer, buffer_length, known_file,
+                                       file_name, file_name_length);
+  free(buffer);
+  return status;
 }
 
 void AddCodeIdentity(uint8_t *data,

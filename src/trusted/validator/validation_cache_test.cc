@@ -6,12 +6,17 @@
 
 #include "gtest/gtest.h"
 
+#include <fcntl.h>
+
 #include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
 
 #define CONTEXT_MARKER 31
@@ -278,7 +283,7 @@ class ValidationCachingSerializationTests : public ::testing::Test {
   }
 };
 
-TEST_F(ValidationCachingSerializationTests, NormalSimple) {
+TEST_F(ValidationCachingSerializationTests, NormalOperationSimple) {
   EXPECT_EQ(0, SerializeNaClDescMetadata(0, "foo", 3, &buffer, &buffer_length));
   EXPECT_EQ(0, DeserializeNaClDescMetadata(buffer, buffer_length, &known_file,
                                            &file_name, &file_name_length));
@@ -333,8 +338,81 @@ TEST_F(ValidationCachingSerializationTests, BadSizeFull) {
   free(buffer);
 }
 
+extern "C" {
+  extern int SetFileOriginInfo(
+      struct NaClDesc *desc,
+      uint8_t known_file,
+      const char *file_name,
+      uint32_t file_name_length);
+
+  extern int GetFileOriginInfo(
+      struct NaClDesc *desc,
+      uint8_t *known_file,
+      char **file_name,
+      uint32_t *file_name_length);
+}
+
+char *AN_ARBITRARY_FILE_PATH = NULL;
+
+class ValidationCachingFileOriginTests : public ::testing::Test {
+ protected:
+  struct NaClDesc *desc;
+
+  uint8_t known_file;
+  char *file_name;
+  uint32_t file_name_length;
+
+  void SetUp() {
+    struct NaClHostDesc *host_desc = NULL;
+    int fd = open(AN_ARBITRARY_FILE_PATH, O_RDONLY);
+
+    desc = NULL;
+    known_file = 0;
+    file_name = NULL;
+    file_name_length = 0;
+
+    ASSERT_NE(-1, fd);
+    host_desc = NaClHostDescPosixMake(fd, NACL_ABI_O_RDONLY);
+    desc = (struct NaClDesc *) NaClDescIoDescMake(host_desc);
+    ASSERT_NE((struct NaClDesc *) NULL, desc);
+  }
+
+  void TearDown() {
+    free(file_name);
+    NaClDescSafeUnref(desc);
+  }
+};
+
+TEST_F(ValidationCachingFileOriginTests, None) {
+  EXPECT_EQ(1, GetFileOriginInfo(desc, &known_file, &file_name,
+                                 &file_name_length));
+}
+
+TEST_F(ValidationCachingFileOriginTests, Simple) {
+  EXPECT_EQ(0, SetFileOriginInfo(desc, 0, "foobar", 6));
+  EXPECT_EQ(0, GetFileOriginInfo(desc, &known_file, &file_name,
+                                 &file_name_length));
+
+  EXPECT_EQ(0, known_file);
+  EXPECT_EQ((uint32_t) 0, file_name_length);
+  EXPECT_EQ(NULL, file_name);
+}
+
+
+TEST_F(ValidationCachingFileOriginTests, Full) {
+  EXPECT_EQ(0, SetFileOriginInfo(desc, 1, "foobar", 6));
+  EXPECT_EQ(0, GetFileOriginInfo(desc, &known_file, &file_name,
+                                 &file_name_length));
+
+  EXPECT_EQ(1, known_file);
+  EXPECT_EQ((uint32_t) 6, file_name_length);
+  EXPECT_EQ(0, memcmp("foobar", file_name, file_name_length));
+}
+
 // Test driver function.
 int main(int argc, char *argv[]) {
+  // One file we know must exist is this executable.
+  AN_ARBITRARY_FILE_PATH = argv[0];
   // The IllegalInst test touches the log mutex deep inside the validator.
   // This causes an SEH exception to be thrown on Windows if the mutex is not
   // initialized.
