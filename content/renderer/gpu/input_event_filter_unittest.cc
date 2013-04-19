@@ -103,59 +103,78 @@ void InitMouseEvent(WebMouseEvent* event, WebInputEvent::Type type,
   event->y = y;
 }
 
-void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
-                       const WebMouseEvent events[],
-                       size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    ViewMsg_HandleInputEvent message(kTestRoutingID, &events[i], false);
-    message_filter->OnMessageReceived(message);
+void AddMessagesToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
+                         const std::vector<IPC::Message>& events) {
+  for (size_t i = 0; i < events.size(); ++i) {
+    message_filter->OnMessageReceived(events[i]);
   }
 
   MessageLoop::current()->RunUntilIdle();
 }
 
+void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
+                       const WebMouseEvent events[],
+                       size_t count) {
+  std::vector<IPC::Message> messages;
+  for (size_t i = 0; i < count; ++i) {
+    messages.push_back(
+        ViewMsg_HandleInputEvent(kTestRoutingID, &events[i], false));
+  }
+
+  AddMessagesToFilter(message_filter, messages);
+}
+
 }  // namespace
 
-TEST(InputEventFilterTest, Basic) {
-  MessageLoop message_loop;
+class InputEventFilterTest : public testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE {
+    filter_ = new InputEventFilter(
+        &message_recorder_,
+        message_loop_.message_loop_proxy(),
+        base::Bind(&InputEventRecorder::HandleInputEvent,
+            base::Unretained(&event_recorder_)));
+    event_recorder_.set_filter(filter_);
+
+    filter_->OnFilterAdded(&ipc_sink_);
+  }
+
+
+ protected:
+  MessageLoop message_loop_;
 
   // Used to record IPCs sent by the filter to the RenderWidgetHost.
-  IPC::TestSink ipc_sink;
+  IPC::TestSink ipc_sink_;
 
   // Used to record IPCs forwarded by the filter to the main thread.
-  IPCMessageRecorder message_recorder;
+  IPCMessageRecorder message_recorder_;
 
   // Used to record WebInputEvents delivered to the handler.
-  InputEventRecorder event_recorder;
+  InputEventRecorder event_recorder_;
 
-  scoped_refptr<InputEventFilter> filter =
-      new InputEventFilter(&message_recorder,
-                           message_loop.message_loop_proxy(),
-                           base::Bind(&InputEventRecorder::HandleInputEvent,
-                                      base::Unretained(&event_recorder)));
-  event_recorder.set_filter(filter);
+  scoped_refptr<InputEventFilter> filter_;
+};
 
-  filter->OnFilterAdded(&ipc_sink);
-
+TEST_F(InputEventFilterTest, Basic) {
   WebMouseEvent kEvents[3];
   InitMouseEvent(&kEvents[0], WebInputEvent::MouseDown, 10, 10);
   InitMouseEvent(&kEvents[1], WebInputEvent::MouseMove, 20, 20);
   InitMouseEvent(&kEvents[2], WebInputEvent::MouseUp, 30, 30);
 
-  AddEventsToFilter(filter, kEvents, arraysize(kEvents));
-  EXPECT_EQ(0U, ipc_sink.message_count());
-  EXPECT_EQ(0U, event_recorder.record_count());
-  EXPECT_EQ(0U, message_recorder.message_count());
+  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  EXPECT_EQ(0U, ipc_sink_.message_count());
+  EXPECT_EQ(0U, event_recorder_.record_count());
+  EXPECT_EQ(0U, message_recorder_.message_count());
 
-  filter->AddRoute(kTestRoutingID);
+  filter_->AddRoute(kTestRoutingID);
 
-  AddEventsToFilter(filter, kEvents, arraysize(kEvents));
-  ASSERT_EQ(arraysize(kEvents), ipc_sink.message_count());
-  ASSERT_EQ(arraysize(kEvents), event_recorder.record_count());
-  EXPECT_EQ(0U, message_recorder.message_count());
+  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
+  ASSERT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(0U, message_recorder_.message_count());
 
   for (size_t i = 0; i < arraysize(kEvents); ++i) {
-    const IPC::Message* message = ipc_sink.GetMessageAt(i);
+    const IPC::Message* message = ipc_sink_.GetMessageAt(i);
     EXPECT_EQ(kTestRoutingID, message->routing_id());
     EXPECT_EQ(ViewHostMsg_HandleInputEvent_ACK::ID, message->type());
 
@@ -166,22 +185,22 @@ TEST(InputEventFilterTest, Basic) {
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
-    const WebInputEvent* event = event_recorder.record_at(i);
+    const WebInputEvent* event = event_recorder_.record_at(i);
     ASSERT_TRUE(event);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
   }
 
-  event_recorder.set_send_to_widget(true);
+  event_recorder_.set_send_to_widget(true);
 
-  AddEventsToFilter(filter, kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), ipc_sink.message_count());
-  EXPECT_EQ(2 * arraysize(kEvents), event_recorder.record_count());
-  EXPECT_EQ(arraysize(kEvents), message_recorder.message_count());
+  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
+  EXPECT_EQ(2 * arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(arraysize(kEvents), message_recorder_.message_count());
 
   for (size_t i = 0; i < arraysize(kEvents); ++i) {
-    const IPC::Message& message = message_recorder.message_at(i);
+    const IPC::Message& message = message_recorder_.message_at(i);
 
     ASSERT_EQ(ViewMsg_HandleInputEvent::ID, message.type());
     const WebInputEvent* event = InputEventFilter::CrackMessage(message);
@@ -192,19 +211,19 @@ TEST(InputEventFilterTest, Basic) {
 
   // Now reset everything, and test that DidHandleInputEvent is called.
 
-  ipc_sink.ClearMessages();
-  event_recorder.Clear();
-  message_recorder.Clear();
+  ipc_sink_.ClearMessages();
+  event_recorder_.Clear();
+  message_recorder_.Clear();
 
-  event_recorder.set_handle_events(true);
+  event_recorder_.set_handle_events(true);
 
-  AddEventsToFilter(filter, kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), ipc_sink.message_count());
-  EXPECT_EQ(arraysize(kEvents), event_recorder.record_count());
-  EXPECT_EQ(0U, message_recorder.message_count());
+  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
+  EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(0U, message_recorder_.message_count());
 
   for (size_t i = 0; i < arraysize(kEvents); ++i) {
-    const IPC::Message* message = ipc_sink.GetMessageAt(i);
+    const IPC::Message* message = ipc_sink_.GetMessageAt(i);
     EXPECT_EQ(kTestRoutingID, message->routing_id());
     EXPECT_EQ(ViewHostMsg_HandleInputEvent_ACK::ID, message->type());
 
@@ -216,7 +235,57 @@ TEST(InputEventFilterTest, Basic) {
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }
 
-  filter->OnFilterRemoved();
+  filter_->OnFilterRemoved();
+}
+
+TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
+  filter_->AddRoute(kTestRoutingID);
+  event_recorder_.set_send_to_widget(true);
+
+
+  WebMouseEvent mouse_down;
+  mouse_down.type = WebMouseEvent::MouseDown;
+  WebMouseEvent mouse_up;
+  mouse_up.type = WebMouseEvent::MouseUp;
+
+  std::vector<IPC::Message> messages;
+  messages.push_back(ViewMsg_HandleInputEvent(kTestRoutingID,
+                                              &mouse_down,
+                                              false));
+  // Control where input events are delivered.
+  messages.push_back(ViewMsg_MouseCaptureLost(kTestRoutingID));
+  messages.push_back(ViewMsg_SetFocus(kTestRoutingID, true));
+  messages.push_back(ViewMsg_SetInputMethodActive(kTestRoutingID, true));
+
+  // Editing operations
+  messages.push_back(ViewMsg_Undo(kTestRoutingID));
+  messages.push_back(ViewMsg_Redo(kTestRoutingID));
+  messages.push_back(ViewMsg_Cut(kTestRoutingID));
+  messages.push_back(ViewMsg_Copy(kTestRoutingID));
+  messages.push_back(ViewMsg_Paste(kTestRoutingID));
+  messages.push_back(ViewMsg_PasteAndMatchStyle(kTestRoutingID));
+  messages.push_back(ViewMsg_Delete(kTestRoutingID));
+  messages.push_back(ViewMsg_Replace(kTestRoutingID, string16()));
+  messages.push_back(ViewMsg_ReplaceMisspelling(kTestRoutingID, string16()));
+  messages.push_back(ViewMsg_Delete(kTestRoutingID));
+  messages.push_back(ViewMsg_SelectAll(kTestRoutingID));
+  messages.push_back(ViewMsg_Unselect(kTestRoutingID));
+  messages.push_back(ViewMsg_SelectRange(kTestRoutingID,
+                                         gfx::Point(), gfx::Point()));
+  messages.push_back(ViewMsg_MoveCaret(kTestRoutingID, gfx::Point()));
+
+  messages.push_back(ViewMsg_SmoothScrollCompleted(kTestRoutingID, 0));
+  messages.push_back(ViewMsg_HandleInputEvent(kTestRoutingID,
+                                              &mouse_up,
+                                              false));
+  AddMessagesToFilter(filter_, messages);
+
+  // We should have sent two messages back to the main thread and preserved
+  // their relative order.
+  ASSERT_EQ(message_recorder_.message_count(), messages.size());
+  for (size_t i = 0; i < messages.size(); ++i) {
+    EXPECT_EQ(message_recorder_.message_at(i).type(), messages[i].type()) << i;
+  }
 }
 
 }  // namespace content

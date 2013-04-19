@@ -74,8 +74,35 @@ void InputEventFilter::OnChannelClosing() {
   sender_ = NULL;
 }
 
+// This function returns true if the IPC message is one that the compositor
+// thread can handle *or* one that needs to preserve relative order with
+// messages that the compositor thread can handle. Returning true for a message
+// type means that the message will go through an extra copy and thread hop, so
+// use with care.
+static bool RequiresThreadBounce(const IPC::Message& message) {
+  return message.type() == ViewMsg_HandleInputEvent::ID ||
+         message.type() == ViewMsg_MouseCaptureLost::ID ||
+         message.type() == ViewMsg_SetFocus::ID ||
+         message.type() == ViewMsg_SetInputMethodActive::ID ||
+         message.type() == ViewMsg_Undo::ID ||
+         message.type() == ViewMsg_Redo::ID ||
+         message.type() == ViewMsg_Cut::ID ||
+         message.type() == ViewMsg_Copy::ID ||
+         message.type() == ViewMsg_Paste::ID ||
+         message.type() == ViewMsg_PasteAndMatchStyle::ID ||
+         message.type() == ViewMsg_Delete::ID ||
+         message.type() == ViewMsg_Replace::ID ||
+         message.type() == ViewMsg_ReplaceMisspelling::ID ||
+         message.type() == ViewMsg_Delete::ID ||
+         message.type() == ViewMsg_SelectAll::ID ||
+         message.type() == ViewMsg_Unselect::ID ||
+         message.type() == ViewMsg_SelectRange::ID ||
+         message.type() == ViewMsg_MoveCaret::ID ||
+         message.type() == ViewMsg_SmoothScrollCompleted::ID;
+}
+
 bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() != ViewMsg_HandleInputEvent::ID)
+  if (!RequiresThreadBounce(message))
     return false;
 
   {
@@ -110,6 +137,14 @@ void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
 
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(target_loop_->BelongsToCurrentThread());
+
+  if (message.type() != ViewMsg_HandleInputEvent::ID) {
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&InputEventFilter::ForwardToMainListener,
+                   this, message));
+    return;
+  }
 
   // Save this message for later, in case we need to bounce it back up to the
   // main listener.
