@@ -49,6 +49,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefUsers,
   kAllowRedeemChromeOsRegistrationOffers,
   kAppPack,
+  kDeviceAttestationEnabled,
   kDeviceOwner,
   kIdleLogoutTimeout,
   kIdleLogoutWarningDuration,
@@ -63,10 +64,10 @@ const char* kKnownSettings[] = {
   kScreenSaverTimeout,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
+  kStartUpFlags,
   kStartUpUrls,
   kStatsReportingPref,
   kSystemTimezonePolicy,
-  kStartUpFlags,
   kVariationsRestrictParameter,
 };
 
@@ -341,6 +342,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
     //   kAppPack
+    //   kDeviceAttestationEnabled
     //   kDeviceOwner
     //   kIdleLogoutTimeout
     //   kIdleLogoutWarningDuration
@@ -626,6 +628,10 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
         kVariationsRestrictParameter,
         policy.variations_parameter().parameter());
   }
+
+  new_values_cache->SetBoolean(
+      kDeviceAttestationEnabled,
+      policy.attestation_settings().attestation_enabled());
 }
 
 void DeviceSettingsProvider::UpdateValuesCache(

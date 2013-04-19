@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -162,6 +163,8 @@ void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
     core()->StartRefreshScheduler();
     core()->TrackRefreshDelayPref(local_state_,
                                   prefs::kDevicePolicyRefreshRate);
+    attestation_policy_observer_.reset(
+        new chromeos::attestation::AttestationPolicyObserver(client()));
   } else {
     StartIfManaged();
   }
@@ -181,6 +184,8 @@ void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
     core()->StartRefreshScheduler();
     core()->TrackRefreshDelayPref(local_state_,
                                   prefs::kDevicePolicyRefreshRate);
+    attestation_policy_observer_.reset(
+        new chromeos::attestation::AttestationPolicyObserver(client()));
   }
 }
 

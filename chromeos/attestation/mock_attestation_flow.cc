@@ -4,6 +4,7 @@
 
 #include "chromeos/attestation/mock_attestation_flow.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -41,6 +42,11 @@ void MockServerProxy::DeferToFake(bool success) {
 MockObserver::MockObserver() {}
 
 MockObserver::~MockObserver() {}
+
+MockAttestationFlow::MockAttestationFlow()
+    : AttestationFlow(NULL, NULL, scoped_ptr<ServerProxy>()) {}
+
+MockAttestationFlow::~MockAttestationFlow() {}
 
 }  // namespace attestation
 }  // namespace chromeos

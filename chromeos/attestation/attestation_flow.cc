@@ -44,11 +44,11 @@ const char AttestationFlow::kEnterpriseMachineKey[] = "attest-ent-machine";
 
 AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                                  CryptohomeClient* cryptohome_client,
-                                 ServerProxy* server_proxy)
+                                 scoped_ptr<ServerProxy> server_proxy)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
-      server_proxy_(server_proxy) {
+      server_proxy_(server_proxy.Pass()) {
 }
 
 AttestationFlow::~AttestationFlow() {

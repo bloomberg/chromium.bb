@@ -279,6 +279,17 @@ message VariationsParameterProto {
   optional string parameter = 1;
 }
 
+message AttestationSettingsProto {
+  // Attestation involves proving that a cryptographic key is protected by a
+  // legitimate Chrome OS TPM and reporting the operating mode of the platform.
+  // This setting enables attestation features at a device level.  If this is
+  // enabled a machine key will be generated and certified by the Chrome OS
+  // CA.  If this setting is disabled, the device will not communicate with the
+  // Chrome OS CA under any circumstances.  Even users with attestation settings
+  // enabled will not be able to use those features on the device.
+  optional bool attestation_enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -305,4 +316,5 @@ message ChromeDeviceSettingsProto {
   optional StartUpFlagsProto start_up_flags = 23;
   optional UptimeLimitProto uptime_limit = 24;
   optional VariationsParameterProto variations_parameter = 25;
+  optional AttestationSettingsProto attestation_settings = 26;
 }

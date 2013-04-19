@@ -17,6 +17,12 @@
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 
+namespace chromeos {
+namespace attestation {
+class AttestationPolicyObserver;
+}
+}
+
 class PrefService;
 
 namespace policy {
@@ -93,6 +99,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Non-null if there is an enrollment operation pending.
   scoped_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
+
+  scoped_ptr<chromeos::attestation::AttestationPolicyObserver>
+      attestation_policy_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOS);
 };

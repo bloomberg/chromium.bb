@@ -523,6 +523,7 @@
         'browser/chrome_page_zoom_unittest.cc',
         'browser/chrome_process_singleton_win_unittest.cc',
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',
+	'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',
         'browser/chromeos/contacts/contact_manager_stub.cc',
         'browser/chromeos/contacts/contact_manager_stub.h',

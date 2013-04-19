@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROMEOS_ATTESTATION_MOCK_ATTESTATION_FLOW_H_
+#define CHROMEOS_ATTESTATION_MOCK_ATTESTATION_FLOW_H_
+
 #include "chromeos/attestation/attestation_flow.h"
 
 #include "base/basictypes.h"
@@ -57,5 +60,16 @@ class MockObserver {
   MOCK_METHOD2(MockCertificateCallback, void(bool, const std::string&));
 };
 
+class MockAttestationFlow : public AttestationFlow {
+ public:
+  MockAttestationFlow();
+  virtual ~MockAttestationFlow();
+
+  MOCK_METHOD2(GetCertificate, void(const std::string&,
+                                    const CertificateCallback&));
+};
+
 }  // namespace attestation
 }  // namespace chromeos
+
+#endif  // CHROMEOS_ATTESTATION_MOCK_ATTESTATION_FLOW_H_

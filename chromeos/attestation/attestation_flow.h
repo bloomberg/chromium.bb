@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -54,7 +55,7 @@ class CHROMEOS_EXPORT AttestationFlow {
 
   AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                   CryptohomeClient* cryptohome_client,
-                  ServerProxy* server_proxy);
+                  scoped_ptr<ServerProxy> server_proxy);
   virtual ~AttestationFlow();
 
   // Asynchronously gets an attestation certificate bound to the given name.
@@ -165,7 +166,7 @@ class CHROMEOS_EXPORT AttestationFlow {
   base::WeakPtrFactory<AttestationFlow> weak_factory_;
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
-  ServerProxy* server_proxy_;
+  scoped_ptr<ServerProxy> server_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(AttestationFlow);
 };
