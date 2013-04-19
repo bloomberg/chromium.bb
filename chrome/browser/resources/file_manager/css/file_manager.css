@@ -120,7 +120,7 @@ body[new-ui] #butter-bar {
   padding: 15px;
 }
 
-#butter-bar:not(.visible) {
+body #butter-bar:not(.visible) {
   opacity: 0;
   pointer-events: none;
 }
