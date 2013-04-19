@@ -5,7 +5,6 @@
 import logging
 import os
 
-from file_system import FileNotFoundError
 import third_party.json_schema_compiler.model as model
 import docs_server_utils as utils
 
@@ -85,7 +84,4 @@ class APIListDataSource(object):
     return [api_name['name'] for api_name in names]
 
   def get(self, key):
-    try:
-      return self._compiled_fs.GetFromFileListing(self._api_path)[key]
-    except FileNotFoundError as e:
-      raise ValueError('%s: Error listing files for "%s".' % (e, key))
+    return self._compiled_fs.GetFromFileListing(self._api_path)[key]

@@ -40,7 +40,7 @@ class CachingFileSystem(FileSystem):
     self._read_binary_object_store = create_object_store('read-binary')
 
   def Stat(self, path, stats=None):
-    """Stats the directory given, or if a file is given, stats the files parent
+    """Stats the directory given, or if a file is given, stats the file's parent
     directory to get info about the file.
     """
     # TODO(kalman): store the whole stat info, not just the version.
@@ -61,7 +61,7 @@ class CachingFileSystem(FileSystem):
     else:
       version = dir_stat.child_versions.get(path.split('/')[-1], None)
       if version is None:
-        raise FileNotFoundError(path)
+        raise FileNotFoundError('Version was None for %s' % path)
     mapping = { path: version }
 
     for child_path, child_version in dir_stat.child_versions.iteritems():

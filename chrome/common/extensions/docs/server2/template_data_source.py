@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 
 from branch_utility import BranchUtility
 from docs_server_utils import FormatKey
@@ -114,7 +115,7 @@ class TemplateDataSource(object):
     """
     template = self.GetTemplate(self._public_template_path, template_name)
     if not template:
-      return ''
+      return None
       # TODO error handling
     render_data = template.render({
       'api_list': self._api_list_data_source,
@@ -143,10 +144,9 @@ class TemplateDataSource(object):
     return self.GetTemplate(self._private_template_path, key)
 
   def GetTemplate(self, base_path, template_name):
-    real_path = FormatKey(template_name)
     try:
-      return self._cache.GetFromFile(base_path + '/' + real_path)
+      return self._cache.GetFromFile(
+          '/'.join((base_path, FormatKey(template_name))))
     except FileNotFoundError as e:
-      logging.warning('Template %s in %s not found: %s' % (
-          template_name, base_path, e))
+      logging.error(e)
       return None

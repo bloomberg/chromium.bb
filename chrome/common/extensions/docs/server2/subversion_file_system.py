@@ -36,7 +36,7 @@ class _AsyncFetchFuture(object):
     for path, future in self._fetches:
       result = future.Get()
       if result.status_code == 404:
-        raise FileNotFoundError(path)
+        raise FileNotFoundError('Got 404 when fetching %s for Get' % path)
       elif path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
       elif not self._binary:
@@ -125,12 +125,13 @@ class SubversionFileSystem(FileSystem):
     directory = path.rsplit('/', 1)[0]
     result = self._stat_fetcher.Fetch(directory + '/')
     if result.status_code == 404:
-      raise FileNotFoundError(path)
+      raise FileNotFoundError(
+          'Got 404 when fetching %s from %s for Stat' % (path, directory))
     stat_info = self._CreateStatInfo(result.content)
     if not path.endswith('/'):
       filename = path.rsplit('/', 1)[-1]
       if filename not in stat_info.child_versions:
-        raise FileNotFoundError(path)
+        raise FileNotFoundError('%s was not in child versions' % filename)
       stat_info.version = stat_info.child_versions[filename]
     return stat_info
 

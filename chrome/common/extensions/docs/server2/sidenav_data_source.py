@@ -7,7 +7,6 @@ import json
 import logging
 
 import compiled_file_system as compiled_fs
-from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 
 # Increment this if the data model changes for SidenavDataSource.
@@ -62,10 +61,7 @@ class SidenavDataSource(object):
     return False
 
   def get(self, key):
-    try:
-      sidenav = copy.deepcopy(self._cache.GetFromFile(
-          '%s/%s_sidenav.json' % (self._json_path, key)))
-      self._AddSelected(sidenav)
-      return sidenav
-    except FileNotFoundError as e:
-      logging.error('%s: Error reading sidenav "%s".' % (e, key))
+    sidenav = copy.deepcopy(self._cache.GetFromFile(
+        '%s/%s_sidenav.json' % (self._json_path, key)))
+    self._AddSelected(sidenav)
+    return sidenav

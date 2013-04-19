@@ -4,10 +4,10 @@
 
 import os
 
-import file_system
+from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
 from future import Future
 
-class LocalFileSystem(file_system.FileSystem):
+class LocalFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from the local
   filesystem.
   """
@@ -24,17 +24,17 @@ class LocalFileSystem(file_system.FileSystem):
         contents = f.read()
         if binary:
           return contents
-        return file_system.ToUnicode(contents)
-    except IOError:
-      raise file_system.FileNotFoundError(filename)
+        return ToUnicode(contents)
+    except IOError as e:
+      raise FileNotFoundError('Read failed for %s: %s' % (filename, e))
 
   def _ListDir(self, dir_name):
     all_files = []
     full_path = os.path.join(self._base_path, dir_name)
     try:
       files = os.listdir(full_path)
-    except OSError:
-      raise file_system.FileNotFoundError(dir_name)
+    except OSError as e:
+      raise FileNotFoundError('os.listdir failed for %s: %s' % (dir_name, e))
     for path in files:
       if path.startswith('.'):
         continue
@@ -59,10 +59,10 @@ class LocalFileSystem(file_system.FileSystem):
                       for filename in os.listdir(path))
     else:
       versions = None
-    return file_system.StatInfo(os.stat(path).st_mtime, versions)
+    try:
+      return StatInfo(os.stat(path).st_mtime, versions)
+    except OSError as e:
+      raise FileNotFoundError('os.stat failed for %s: %s' % (path, e))
 
   def Stat(self, path):
-    try:
-      return self._CreateStatInfo(os.path.join(self._base_path, path))
-    except OSError:
-      raise file_system.FileNotFoundError(path)
+    return self._CreateStatInfo(os.path.join(self._base_path, path))

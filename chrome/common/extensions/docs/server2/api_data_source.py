@@ -6,7 +6,6 @@ import copy
 import logging
 import os
 
-from file_system import FileNotFoundError
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
@@ -382,12 +381,9 @@ class APIDataSource(object):
     self._disable_refs = disable_refs
 
   def _GetFeatureFile(self, filename):
-    try:
-      perms = self._permissions_cache.GetFromFile('%s/%s' %
-          (self._base_path, filename))
-      return dict((model.UnixName(k), v) for k, v in perms.iteritems())
-    except FileNotFoundError:
-      return {}
+    perms = self._permissions_cache.GetFromFile('%s/%s' %
+        (self._base_path, filename))
+    return dict((model.UnixName(k), v) for k, v in perms.iteritems())
 
   def _GetFeatureData(self, path):
     # Remove 'experimental_' from path name to match the keys in

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from fnmatch import fnmatch
+import logging
 import mimetypes
 import os
 
@@ -184,7 +185,6 @@ class ServerInstance(object):
         svn_constants.PRIVATE_TEMPLATE_PATH)
 
     self.example_zipper = ExampleZipper(
-        self.svn_file_system,
         self.compiled_fs_factory,
         svn_constants.DOCS_PATH)
 
@@ -198,49 +198,40 @@ class ServerInstance(object):
     """Fetch a resource in the 'static' directory.
     """
     mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-    try:
-      result = self.content_cache.GetFromFile(
-          svn_constants.DOCS_PATH + '/' + path,
-          binary=_IsBinaryMimetype(mimetype))
-    except FileNotFoundError:
-      return None
+    result = self.content_cache.GetFromFile(
+        svn_constants.DOCS_PATH + '/' + path,
+        binary=_IsBinaryMimetype(mimetype))
     response.headers['content-type'] = mimetype
     return result
 
   def Get(self, path, request, response):
     templates = self.template_data_source_factory.Create(request, path)
 
-    if path.rsplit('/', 1)[-1] in ('favicon.ico', 'robots.txt'):
-      response.set_status(404)
-      response.out.write(templates.Render('404'))
-      return
-
     content = None
-    if fnmatch(path, 'extensions/examples/*.zip'):
-      try:
+    try:
+      if fnmatch(path, 'extensions/examples/*.zip'):
         content = self.example_zipper.Create(
             path[len('extensions/'):-len('.zip')])
         response.headers['content-type'] = 'application/zip'
-      except FileNotFoundError:
-        content = None
-    elif path.startswith('extensions/examples/'):
-      mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-      try:
+      elif path.startswith('extensions/examples/'):
+        mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
         content = self.content_cache.GetFromFile(
             '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
             binary=_IsBinaryMimetype(mimetype))
         response.headers['content-type'] = 'text/plain'
-      except FileNotFoundError:
-        content = None
-    elif path.startswith('static/'):
-      content = self._FetchStaticResource(path, response)
-    elif path.endswith('.html'):
-      content = templates.Render(path)
+      elif path.startswith('static/'):
+        content = self._FetchStaticResource(path, response)
+      elif path.endswith('.html'):
+        content = templates.Render(path)
+    except FileNotFoundError as e:
+      logging.warning(e)
 
     response.headers['x-frame-options'] = 'sameorigin'
-    if content:
-      response.headers['cache-control'] = 'max-age=300'
-      response.out.write(content)
-    else:
+    if content is None:
       response.set_status(404);
       response.out.write(templates.Render('404'))
+    else:
+      if not content:
+        logging.error('%s had empty content' % path)
+      response.headers['cache-control'] = 'max-age=300'
+      response.out.write(content)

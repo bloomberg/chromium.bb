@@ -15,12 +15,14 @@ _VERSION = 1
 class ExampleZipper(object):
   """This class creates a zip file given a samples directory.
   """
-  def __init__(self, file_system, compiled_fs_factory, base_path):
+  def __init__(self, compiled_fs_factory, base_path):
     self._base_path = base_path.rstrip('/')
+    # Use an IdentityFileSystem here so that it shares a cache with the samples
+    # data source. Otherwise we'd need to fetch the zip files from the cron job.
+    self._file_cache = compiled_fs_factory.GetOrCreateIdentity()
     self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
                                                  ExampleZipper,
                                                  version=_VERSION)
-    self._file_system = file_system
 
   def _MakeZipFile(self, base_dir, files):
     if 'manifest.json' not in files:
@@ -28,14 +30,17 @@ class ExampleZipper(object):
     zip_bytes = BytesIO()
     zip_file = ZipFile(zip_bytes, mode='w')
     try:
-      for name, file_contents in (
-          self._file_system.Read(['%s%s' % (base_dir, f) for f in files],
-                                 binary=True).Get().iteritems()):
+      for file_name in files:
+        file_path = '%s%s' % (base_dir, file_name)
+        file_contents = self._file_cache.GetFromFile(file_path, binary=True)
+        if isinstance(file_contents, unicode):
+          # Data is sometimes already cached as unicode.
+          file_contents = file_contents.encode('utf8')
         # We want e.g. basic.zip to expand to basic/manifest.json etc, not
         # chrome/common/extensions/.../basic/manifest.json, so only use the
         # end of the path component when writing into the zip file.
         redundant_prefix = '%s/' % base_dir.rstrip('/').rsplit('/', 1)[0]
-        zip_file.writestr(name[len(redundant_prefix):], file_contents)
+        zip_file.writestr(file_path[len(redundant_prefix):], file_contents)
     finally:
       zip_file.close()
     return zip_bytes.getvalue()

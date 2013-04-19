@@ -12,10 +12,10 @@ class OfflineFileSystem(FileSystem):
     self._cls = cls
 
   def Read(self, paths, binary=False):
-    raise FileNotFoundError(paths)
+    raise FileNotFoundError('File system is offline, cannot read %s' % paths)
 
   def Stat(self, path):
-    raise FileNotFoundError(path)
+    raise FileNotFoundError('File system is offline, cannot read %s' % path)
 
   # HACK: despite GetName/GetVersion being @classmethods, these need to be
   # instance methods so that we can grab the name and version from the class

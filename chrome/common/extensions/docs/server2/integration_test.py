@@ -26,7 +26,8 @@ def _GetPublicFiles():
   '''
   public_path = os.path.join(_BASE_PATH, 'docs', 'templates', 'public', '')
   public_files = {}
-  for path, dirs, files in os.walk(public_path):
+  for path, dirs, files in os.walk(public_path, topdown=True):
+    dirs[:] = [d for d in dirs if d != '.svn']
     relative_path = path[len(public_path):]
     for filename in files:
       with open(os.path.join(path, filename), 'r') as f:
@@ -60,10 +61,12 @@ class IntegrationTest(unittest.TestCase):
     try:
       for path, content in _GetPublicFiles().iteritems():
         def check_result(render_content, render_status, _):
-          self.assertEqual(200, render_status)
+          self.assertEqual(200, render_status,
+              'Got %s when rendering %s' % (render_status, path))
           # This is reaaaaally rough since usually these will be tiny templates
           # that render large files. At least it'll catch zero-length responses.
-          self.assertTrue(len(render_content) >= len(content))
+          self.assertTrue(len(render_content) >= len(content),
+              'Content was "%s" when rendering %s' % (render_content, path))
         check_result(*self._renderer.Render(path))
         # Samples are internationalized, test some locales.
         if path.endswith('/samples.html'):

@@ -56,12 +56,12 @@ class FakeSubversionServer(_FakeFetcher):
             html.append('<a>' + f + '</a>')
         html.append('</html>')
         return '\n'.join(html)
-      except OSError:
-        raise FileNotFoundError(path)
+      except OSError as e:
+        raise FileNotFoundError('Listing %s failed: %s' (path, e))
     try:
       return self._ReadFile(path)
-    except IOError:
-      raise FileNotFoundError(path)
+    except IOError as e:
+      raise FileNotFoundError('Reading %s failed: %s' (path, e))
 
 class FakeViewvcServer(_FakeFetcher):
   def __init__(self, base_path):
@@ -86,8 +86,8 @@ class FakeViewvcServer(_FakeFetcher):
       return '\n'.join(html)
     try:
       return self._ReadFile(path)
-    except IOError:
-      raise FileNotFoundError(path)
+    except IOError as e:
+      raise FileNotFoundError('Reading %s failed: %s' % (path, e))
 
 class FakeGithubStat(_FakeFetcher):
   def fetch(self, url):

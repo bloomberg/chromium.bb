@@ -97,11 +97,12 @@ class Handler(webapp.RequestHandler):
     server_instance = ServerInstance.GetOrCreateOnline(channel)
 
     def run_cron_for_dir(d, path_prefix=''):
-      error = None
+      success = True
       start_time = time.time()
       files = [f for f in server_instance.content_cache.GetFromFileListing(d)
                if not f.endswith('/')]
       for f in files:
+        error = None
         path = '%s%s' % (path_prefix, f)
         try:
           response = MockResponse()
@@ -113,21 +114,29 @@ class Handler(webapp.RequestHandler):
         if error:
           logging.error('cron/%s: error rendering %s: %s' % (
               channel, path, error))
+          success = False
       logging.info('cron/%s: rendering %s files took %s seconds' % (
           channel, len(files), time.time() - start_time))
-      return error
+      return success
 
     # Don't use "or" since we want to evaluate everything no matter what.
-    was_error = any((
+    success = any((
+        # Note: rendering the public templates will pull in all of the private
+        # templates.
         run_cron_for_dir(svn_constants.PUBLIC_TEMPLATE_PATH),
-        run_cron_for_dir(svn_constants.STATIC_PATH, path_prefix='static/')))
+        run_cron_for_dir(svn_constants.STATIC_PATH, path_prefix='static/'),
+        # Note: rendering the public templates will have pulled in the .js and
+        # manifest.json files (for listing examples on the API reference pages),
+        # but there are still images, CSS, etc.
+        run_cron_for_dir(svn_constants.EXAMPLES_PATH,
+                         path_prefix='extensions/examples/')))
 
-    if was_error:
-      self.response.status = 500
-      self.response.out.write('Failure')
-    else:
+    if success:
       self.response.status = 200
       self.response.out.write('Success')
+    else:
+      self.response.status = 500
+      self.response.out.write('Failure')
 
     logging.info('cron/%s: finished' % channel)
 
@@ -168,6 +177,11 @@ class Handler(webapp.RequestHandler):
 
   def get(self):
     path = self.request.path
+
+    if path in ['favicon.ico', 'robots.txt']:
+      response.set_status(404)
+      return
+
     if self._RedirectSpecialCases(path):
       return
 
