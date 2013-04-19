@@ -132,20 +132,6 @@ bool WebRuntimeFeatures::isApplicationCacheEnabled()
     return RuntimeEnabledFeatures::applicationCacheEnabled();
 }
 
-void WebRuntimeFeatures::enableDataTransferItems(bool enable)
-{
-    // FIXME: This is in the process of being removed.
-}
-
-bool WebRuntimeFeatures::isDataTransferItemsEnabled()
-{
-#if ENABLE(DATA_TRANSFER_ITEMS)
-    return RuntimeEnabledFeatures::dataTransferItemsEnabled();
-#else
-    return false;
-#endif
-}
-
 void WebRuntimeFeatures::enableGeolocation(bool enable)
 {
     RuntimeEnabledFeatures::setGeolocationEnabled(enable);

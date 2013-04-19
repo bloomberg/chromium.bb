@@ -51,9 +51,6 @@ public:
     static void setApplicationCacheEnabled(bool isEnabled) { isApplicationCacheEnabled = isEnabled; }
     static bool applicationCacheEnabled() { return isApplicationCacheEnabled; }
 
-    static void setDataTransferItemsEnabled(bool isEnabled) { isDataTransferItemsEnabled = isEnabled; }
-    static bool dataTransferItemsEnabled() { return isDataTransferItemsEnabled; }
-
     static void setGeolocationEnabled(bool isEnabled) { isGeolocationEnabled = isEnabled; }
     static bool geolocationEnabled() { return isGeolocationEnabled; }
 
@@ -259,7 +256,6 @@ private:
     static bool isSessionStorageEnabled;
     static bool isWebkitNotificationsEnabled;
     static bool isApplicationCacheEnabled;
-    static bool isDataTransferItemsEnabled;
     static bool isGeolocationEnabled;
     static bool isIndexedDBEnabled;
     static bool isWebAudioEnabled;

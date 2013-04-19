@@ -59,9 +59,6 @@ public:
     WEBKIT_EXPORT static void enableApplicationCache(bool);
     WEBKIT_EXPORT static bool isApplicationCacheEnabled();
 
-    WEBKIT_EXPORT static void enableDataTransferItems(bool);
-    WEBKIT_EXPORT static bool isDataTransferItemsEnabled();
-
     WEBKIT_EXPORT static void enableGeolocation(bool);
     WEBKIT_EXPORT static bool isGeolocationEnabled();
 
