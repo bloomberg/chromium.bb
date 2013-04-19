@@ -314,10 +314,13 @@ function handleLoadForTree(e) {
  * @return {!Array.<!BookmarkTreeNode>} .
  */
 function getBookmarkNodesForOpenCommands(target) {
-  if (target == tree)
-    return tree.selectedFolders;
-  var listItems = list.selectedItems;
-  return listItems.length ? listItems : list.dataModel.slice();
+  if (target == tree) {
+    var folderItem = tree.selectedItem;
+    return folderItem == recentTreeItem || folderItem == searchTreeItem ?
+        list.dataModel.slice() : tree.selectedFolders;
+  }
+  var items = list.selectedItems;
+  return items.length ? items : list.dataModel.slice();
 }
 
 /**
