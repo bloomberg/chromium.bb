@@ -45,9 +45,15 @@ class GLInProcessContext;
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
+  static WebGraphicsContext3DInProcessCommandBufferImpl*
+      CreateViewContext(
+          const WebKit::WebGraphicsContext3D::Attributes& attributes,
+          gfx::AcceleratedWidget window);
 
-  explicit WebGraphicsContext3DInProcessCommandBufferImpl(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  static WebGraphicsContext3DInProcessCommandBufferImpl*
+      CreateOffscreenContext(
+          const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
 
   //----------------------------------------------------------------------
@@ -526,6 +532,11 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual GrGLInterface* onCreateGrGLInterface();
 
  private:
+  WebGraphicsContext3DInProcessCommandBufferImpl(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes,
+      bool is_offscreen,
+      gfx::AcceleratedWidget window);
+
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
   virtual void OnContextLost();
@@ -535,6 +546,11 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // Used to try to find bugs in code that calls gl directly through the gl api
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
+
+
+  bool is_offscreen_;
+  // Only used when not offscreen.
+  gfx::AcceleratedWidget window_;
 
   bool initialized_;
   bool initialize_failed_;

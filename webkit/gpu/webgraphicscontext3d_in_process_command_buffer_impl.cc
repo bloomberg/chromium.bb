@@ -89,15 +89,12 @@ class GLInProcessContext {
   void PumpCommands();
   bool GetBufferChanged(int32 transfer_buffer_id);
 
-  // Create a GLInProcessContext that renders to an offscreen frame buffer. If
-  // parent is not NULL, that GLInProcessContext can access a copy of the
-  // created GLInProcessContext's frame buffer that is updated every time
-  // SwapBuffers is called. It is not as general as shared GLInProcessContexts
-  // in other implementations of OpenGL. If parent is not NULL, it must be used
-  // on the same thread as the parent. A child GLInProcessContext may not
-  // outlive its parent.  attrib_list must be NULL or a NONE-terminated list of
-  // attribute/value pairs.
-  static GLInProcessContext* CreateOffscreenContext(
+  // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
+  // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
+  // of attribute/value pairs.
+  static GLInProcessContext* CreateContext(
+      bool is_offscreen,
+      gfx::AcceleratedWidget window,
       const gfx::Size& size,
       bool share_resources,
       const char* allowed_extensions,
@@ -148,7 +145,9 @@ class GLInProcessContext {
  private:
   explicit GLInProcessContext(bool share_resources);
 
-  bool Initialize(const gfx::Size& size,
+  bool Initialize(bool is_offscreen,
+                  gfx::AcceleratedWidget window,
+                  const gfx::Size& size,
                   const char* allowed_extensions,
                   const int32* attrib_list,
                   gfx::GpuPreference gpu_preference);
@@ -208,7 +207,9 @@ GLInProcessContext::~GLInProcessContext() {
   Destroy();
 }
 
-GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
+GLInProcessContext* GLInProcessContext::CreateContext(
+    bool is_offscreen,
+    gfx::AcceleratedWidget window,
     const gfx::Size& size,
     bool share_resources,
     const char* allowed_extensions,
@@ -217,6 +218,8 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
   scoped_ptr<GLInProcessContext> context(
       new GLInProcessContext(share_resources));
   if (!context->Initialize(
+      is_offscreen,
+      window,
       size,
       allowed_extensions,
       attrib_list,
@@ -385,10 +388,13 @@ GLInProcessContext::GLInProcessContext(bool share_resources)
       context_lost_(false) {
 }
 
-bool GLInProcessContext::Initialize(const gfx::Size& size,
-                                    const char* allowed_extensions,
-                                    const int32* attrib_list,
-                                    gfx::GpuPreference gpu_preference) {
+bool GLInProcessContext::Initialize(
+    bool is_offscreen,
+    gfx::AcceleratedWidget window,
+    const gfx::Size& size,
+    const char* allowed_extensions,
+    const int32* attrib_list,
+    gfx::GpuPreference gpu_preference) {
   // Use one share group for all contexts.
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<gfx::GLShareGroup>, share_group,
                          (new gfx::GLShareGroup));
@@ -461,7 +467,10 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 
     decoder_->set_engine(gpu_scheduler_.get());
 
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+    if (is_offscreen)
+      surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, size);
+    else
+      surface_ = gfx::GLSurface::CreateViewGLSurface(false, window);
 
     if (!surface_.get()) {
       LOG(ERROR) << "Could not create GLSurface.";
@@ -574,10 +583,32 @@ void GLInProcessContext::OnContextLost() {
     context_lost_callback_.Run();
 }
 
+
+// static
+WebGraphicsContext3DInProcessCommandBufferImpl*
+WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes,
+    gfx::AcceleratedWidget window) {
+  return new WebGraphicsContext3DInProcessCommandBufferImpl(
+      attributes, false, window);
+}
+
+// static
+WebGraphicsContext3DInProcessCommandBufferImpl*
+WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  return new WebGraphicsContext3DInProcessCommandBufferImpl(
+      attributes, true, gfx::kNullAcceleratedWidget);
+}
+
 WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
-        const WebKit::WebGraphicsContext3D::Attributes& attributes)
-    : initialized_(false),
+        const WebKit::WebGraphicsContext3D::Attributes& attributes,
+        bool is_offscreen,
+        gfx::AcceleratedWidget window)
+    : is_offscreen_(is_offscreen),
+      window_(window),
+      initialized_(false),
       initialize_failed_(false),
       context_(NULL),
       gl_(NULL),
@@ -625,7 +656,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   // discrete GPU is created, or the last one is destroyed.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  context_ = GLInProcessContext::CreateOffscreenContext(
+  context_ = GLInProcessContext::CreateContext(
+      is_offscreen_,
+      window_,
       gfx::Size(1, 1),
       attributes_.shareResources,
       preferred_extensions,

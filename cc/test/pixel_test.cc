@@ -57,10 +57,10 @@ PixelTest::~PixelTest() {}
 void PixelTest::SetUp() {
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-      context3d(
-          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl(
-              WebKit::WebGraphicsContext3D::Attributes()));
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+          WebKit::WebGraphicsContext3D::Attributes()));
   output_surface_.reset(new OutputSurface(
       context3d.PassAs<WebKit::WebGraphicsContext3D>()));
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);

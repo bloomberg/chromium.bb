@@ -266,7 +266,8 @@ WebKit::WebIDBFactory* TestShellWebKitInit::idbFactory() {
 WebKit::WebGraphicsContext3D*
 TestShellWebKitInit::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  return new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl(
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
       attributes);
 }
 

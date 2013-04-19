@@ -59,8 +59,9 @@ bool ContextProviderInProcess::InitializeOnMainThread() {
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
 
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   context3d_.reset(
-      new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl(
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
           attributes));
 
   return context3d_;
