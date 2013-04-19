@@ -172,26 +172,25 @@ cr.define('apps_dev_tool', function() {
         this.setWebstoreLink_(item, node);
 
       // The 'Reload' checkbox.
-      if (item.allow_reload) {
+      if (item.allow_reload)
         this.setReloadLink_(item, node);
 
-        if (item.type == 'packaged_app') {
-          // The 'Launch' link.
-          var launch = node.querySelector('.launch-link');
-          launch.addEventListener('click', function(e) {
-            ItemsList.launchApp(item.id);
-          });
-          launch.hidden = false;
+      if (item.type == 'packaged_app') {
+        // The 'Launch' link.
+        var launch = node.querySelector('.launch-link');
+        launch.addEventListener('click', function(e) {
+          ItemsList.launchApp(item.id);
+        });
+        launch.hidden = false;
 
-          // The 'Restart' link.
-          var restart = node.querySelector('.restart-link');
-          restart.addEventListener('click', function(e) {
-            chrome.developerPrivate.restart(item.id, function() {
-              ItemsList.loadItemsInfo();
-            });
+        // The 'Restart' link.
+        var restart = node.querySelector('.restart-link');
+        restart.addEventListener('click', function(e) {
+          chrome.developerPrivate.restart(item.id, function() {
+            ItemsList.loadItemsInfo();
           });
-          restart.hidden = false;
-        }
+        });
+        restart.hidden = false;
       }
 
       // The terminated reload link.
