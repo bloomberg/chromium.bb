@@ -2798,8 +2798,24 @@ other types of suffix sets.
 
 <histogram name="NetConnectivity3">
   <summary>
-    In this experiment, 21 packets were sent to Google via UDP on port 6121.
+    In this experiment, 21 packets were sent to Google via UDP on port 443 or
+    6121.
   </summary>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.NonPacedPacket.Sent21.443.500B.PacketDelay"
+    units="ms">
+  <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121.100B.PacketDelay"
@@ -2823,6 +2839,21 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT" units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.443.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.443.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.PacedPacket.Sent21.443.500B.PacketDelay"
+    units="ms">
   <summary/>
 </histogram>
 
@@ -2858,6 +2889,21 @@ other types of suffix sets.
     This histogram records how many packets (out of 6 attempted) were sent via
     UDP as rapidly as possible, just after successfully sending an UMA upload.
   </summary>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.443.100B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.443.1200B.PacketDelay"
+    units="ms">
+  <summary/>
+</histogram>
+
+<histogram name="NetConnectivity3.StartPacket.Sent21.443.500B.PacketDelay"
+    units="ms">
+  <summary/>
 </histogram>
 
 <histogram name="NetConnectivity3.StartPacket.Sent21.6121.100B.PacketDelay"
@@ -6711,22 +6757,35 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity3PacketDelay1" separator=".">
+  <group name="Sent21.443"
+      label="This histogram shows the difference between the time when we
+             have received 1st byte from the server and the last time when we
+             have received data from the server on port 443."/>
   <group name="Sent21.6121"
       label="This histogram shows the difference between the time when we
              have received 1st byte from the server and the last time when we
-             have received data from the server."/>
+             have received data from the server on port 6121."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity3PacketDelay2" separator=".">
-  <group name="100B.PacketDelay" label="100 bytes of data is sent."/>
-  <group name="1200B.PacketDelay" label="1200 bytes of data is sent."/>
-  <group name="500B.PacketDelay" label="500 bytes of data is sent."/>
-  <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21.6121"/>
-  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.6121"/>
-  <affected-histogram name="NetConnectivity3.StartPacket.Sent21.6121"/>
+  <group name="443.100B.PacketDelay"
+      label="100 bytes of data is sent on port 443."/>
+  <group name="443.1200B.PacketDelay"
+      label="1200 bytes of data is sent on port 443."/>
+  <group name="443.500B.PacketDelay"
+      label="500 bytes of data is sent on port 443."/>
+  <group name="6121.100B.PacketDelay"
+      label="100 bytes of data is sent on port 6121."/>
+  <group name="6121.1200B.PacketDelay"
+      label="1200 bytes of data is sent on port 6121."/>
+  <group name="6121.500B.PacketDelay"
+      label="500 bytes of data is sent on port 6121."/>
+  <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity3.PacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity3.StartPacket.Sent21"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity3PacketRTT" separator=".">
@@ -6766,9 +6825,12 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity3PacketsSentBytes" separator=".">
-  <group name="6121.100B" label="100 bytes of data is sent."/>
-  <group name="6121.500B" label="500 bytes of data is sent."/>
-  <group name="6121.1200B" label="1200 bytes of data is sent."/>
+  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <group name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
   <affected-histogram
       name="NetConnectivity3.NonPacedPacket.Sent21.AckReceivedForNthPacket"/>
   <affected-histogram
@@ -6935,6 +6997,15 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity3Send6Acked" separator=".">
+  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <group name="443.100B.NoProxy"
+      label="100 bytes of data is sent on port 443 with no proxy."/>
+  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <group name="443.500B.NoProxy"
+      label="500 bytes of data is sent on port 443 with no proxy."/>
+  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <group name="443.1200B.NoProxy"
+      label="1200 bytes of data is sent on port 443 with no proxy."/>
   <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
   <group name="6121.100B.NoProxy"
       label="100 bytes of data is sent on port 6121 with no proxy."/>
