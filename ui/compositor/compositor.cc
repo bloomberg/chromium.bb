@@ -33,7 +33,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/gpu/grcontext_for_webgraphicscontext3d.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
@@ -245,12 +245,13 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
   attrs.stencil = false;
   attrs.antialias = false;
   attrs.shareResources = true;
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   WebKit::WebGraphicsContext3D* context =
       offscreen ?
-      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attrs, false) :
-      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
-          attrs, compositor->widget(), NULL);
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+          attrs) :
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
+          attrs, compositor->widget());
   if (!context)
     return NULL;
 
