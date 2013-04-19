@@ -260,6 +260,11 @@ uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
   return vars.size();
 }
 
+void SetMinimumArrayBufferSizeForShmem(PP_Instance /*instance*/,
+                                       uint32_t /*threshold*/) {
+  // Does nothing. Not needed in-process.
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
@@ -268,7 +273,8 @@ const PPB_Testing_Dev testing_interface = {
   &IsOutOfProcess,
   &SimulateInputEvent,
   &GetDocumentURL,
-  &GetLiveVars
+  &GetLiveVars,
+  &SetMinimumArrayBufferSizeForShmem
 };
 
 // GetInterface ----------------------------------------------------------------

@@ -28,6 +28,8 @@ namespace {
 // memory instead of sending the data over IPC. Light testing suggests
 // shared memory is much faster for 256K and larger messages.
 static const uint32 kMinimumArrayBufferSizeForShmem = 256 * 1024;
+static uint32 g_minimum_array_buffer_size_for_shmem =
+    kMinimumArrayBufferSizeForShmem;
 
 void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
   IPC::ParamTraits<SerializedHandle>::Write(m, handle);
@@ -174,6 +176,25 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Read(const IPC::Message* m,
   return result.Pass();
 }
 
+std::vector<SerializedHandle*> RawVarDataGraph::GetHandles() {
+  std::vector<SerializedHandle*> result;
+  for (size_t i = 0; i < data_.size(); ++i) {
+    SerializedHandle* handle = data_[i]->GetHandle();
+    if (handle)
+      result.push_back(handle);
+  }
+  return result;
+}
+
+// static
+void RawVarDataGraph::SetMinimumArrayBufferSizeForShmemForTest(
+    uint32 threshold) {
+  if (threshold == 0)
+    g_minimum_array_buffer_size_for_shmem = kMinimumArrayBufferSizeForShmem;
+  else
+    g_minimum_array_buffer_size_for_shmem = threshold;
+}
+
 // RawVarData ------------------------------------------------------------------
 
 // static
@@ -203,6 +224,10 @@ RawVarData::RawVarData() : initialized_(false) {
 }
 
 RawVarData::~RawVarData() {
+}
+
+SerializedHandle* RawVarData::GetHandle() {
+  return NULL;
 }
 
 // BasicRawVarData -------------------------------------------------------------
@@ -355,7 +380,7 @@ bool ArrayBufferRawVarData::Init(const PP_Var& var,
   if (!buffer_var)
     return false;
   bool using_shmem = false;
-  if (buffer_var->ByteLength() >= kMinimumArrayBufferSizeForShmem &&
+  if (buffer_var->ByteLength() >= g_minimum_array_buffer_size_for_shmem &&
       instance != 0) {
     int host_handle_id;
     base::SharedMemoryHandle plugin_handle;
@@ -363,7 +388,7 @@ bool ArrayBufferRawVarData::Init(const PP_Var& var,
                                              &host_handle_id,
                                              &plugin_handle);
     if (using_shmem) {
-      if (host_shm_handle_id_ != -1) {
+      if (host_handle_id != -1) {
         DCHECK(!base::SharedMemory::IsHandleValid(plugin_handle));
         DCHECK(PpapiGlobals::Get()->IsPluginGlobals());
         type_ = ARRAY_BUFFER_SHMEM_HOST;
@@ -474,6 +499,12 @@ bool ArrayBufferRawVarData::Read(PP_VarType type,
       return false;
   }
   return true;
+}
+
+SerializedHandle* ArrayBufferRawVarData::GetHandle() {
+  if (type_ == ARRAY_BUFFER_SHMEM_PLUGIN && plugin_shm_handle_.size() != 0)
+    return &plugin_shm_handle_;
+  return NULL;
 }
 
 // ArrayRawVarData -------------------------------------------------------------

@@ -58,6 +58,23 @@ void InvokePostMessageThreadFunc(void* user_data) {
   delete arg;
 }
 
+class ScopedArrayBufferSizeSetter {
+ public:
+  ScopedArrayBufferSizeSetter(const PPB_Testing_Dev* interface,
+                              PP_Instance instance,
+                              uint32_t threshold)
+     : interface_(interface),
+       instance_(instance) {
+    interface_->SetMinimumArrayBufferSizeForShmem(instance_, threshold);
+  }
+  ~ScopedArrayBufferSizeSetter() {
+    interface_->SetMinimumArrayBufferSizeForShmem(instance_, 0);
+  }
+ private:
+  const PPB_Testing_Dev* interface_;
+  PP_Instance instance_;
+};
+
 #define FINISHED_WAITING_MESSAGE "TEST_POST_MESSAGE_FINISHED_WAITING"
 
 }  // namespace
@@ -261,11 +278,10 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
 
   // TODO(sehr,dmichael): Add testing of longer array buffers when
   // crbug.com/110086 is fixed.
-#if defined(OS_LINUX)
-  uint32_t sizes[] = { 0, 100, 1000, 10000, 100000, 1000000 };
-#else
-  uint32_t sizes[] = { 0, 100, 1000, 10000, 100000  };
-#endif
+  ScopedArrayBufferSizeSetter setter(testing_interface_,
+                                     instance_->pp_instance(),
+                                     200);
+  uint32_t sizes[] = { 0, 100, 1000, 10000 };
   for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[i]); ++i) {
     std::ostringstream size_stream;
     size_stream << sizes[i];

@@ -72,6 +72,16 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
   static scoped_ptr<RawVarDataGraph> Read(const IPC::Message* m,
                                           PickleIterator* iter);
 
+  // Returns a vector of SerializedHandles associated with this RawVarDataGraph.
+  // Ownership of the pointers remains with the elements of the RawVarDataGraph.
+  std::vector<SerializedHandle*> GetHandles();
+
+  // Sets the threshold size at which point we switch from transmitting
+  // array buffers in IPC messages to using shared memory. This is only used
+  // for testing purposes where we need to transmit small buffers using shmem
+  // (in order to have fast tests).
+  static void SetMinimumArrayBufferSizeForShmemForTest(uint32 threshold);
+
   // A list of the nodes in the graph.
   ScopedVector<RawVarData> data_;
 };
@@ -106,6 +116,10 @@ class RawVarData {
   virtual bool Read(PP_VarType type,
                     const IPC::Message* m,
                     PickleIterator* iter) = 0;
+
+  // Returns a SerializedHandle associated with this RawVarData or NULL if none
+  // exists. Ownership of the pointer remains with the RawVarData.
+  virtual SerializedHandle* GetHandle();
 
   bool initialized() { return initialized_; }
 
@@ -182,6 +196,7 @@ class ArrayBufferRawVarData : public RawVarData {
   virtual bool Read(PP_VarType type,
                     const IPC::Message* m,
                     PickleIterator* iter) OVERRIDE;
+  virtual SerializedHandle* GetHandle() OVERRIDE;
 
  private:
   // The type of the storage underlying the array buffer.

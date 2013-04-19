@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Mon Mar 19 12:02:10 2012. */
+/* From dev/ppb_testing_dev.idl modified Thu Apr 18 13:22:09 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
@@ -21,7 +21,8 @@
 #define PPB_TESTING_DEV_INTERFACE_0_8 "PPB_Testing(Dev);0.8"
 #define PPB_TESTING_DEV_INTERFACE_0_9 "PPB_Testing(Dev);0.9"
 #define PPB_TESTING_DEV_INTERFACE_0_91 "PPB_Testing(Dev);0.91"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_91
+#define PPB_TESTING_DEV_INTERFACE_0_92 "PPB_Testing(Dev);0.92"
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_92
 
 /**
  * @file
@@ -35,7 +36,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Testing_Dev_0_91 {
+struct PPB_Testing_Dev_0_92 {
   /**
    * Reads the bitmap data out of the backing store for the given
    * DeviceContext2D and into the given image. If the data was successfully
@@ -134,9 +135,18 @@ struct PPB_Testing_Dev_0_91 {
    * of the returned PP_Vars will *not* be affected by this call.
    */
   uint32_t (*GetLiveVars)(struct PP_Var live_vars[], uint32_t array_size);
+  /**
+   * Sets the threshold size at which point we switch from transmitting
+   * array buffers in IPC messages to using shared memory. This is only used
+   * for testing purposes where we need to transmit small buffers using shmem
+   * (in order to have fast tests). Passing a value of 0 resets the threshold
+   * to its default. The threshold is in bytes.
+   */
+  void (*SetMinimumArrayBufferSizeForShmem)(PP_Instance instance,
+                                            uint32_t threshold);
 };
 
-typedef struct PPB_Testing_Dev_0_91 PPB_Testing_Dev;
+typedef struct PPB_Testing_Dev_0_92 PPB_Testing_Dev;
 
 struct PPB_Testing_Dev_0_7 {
   PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
@@ -170,6 +180,20 @@ struct PPB_Testing_Dev_0_9 {
   void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
   struct PP_Var (*GetDocumentURL)(PP_Instance instance,
                                   struct PP_URLComponents_Dev* components);
+};
+
+struct PPB_Testing_Dev_0_91 {
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
+  PP_Bool (*IsOutOfProcess)(void);
+  void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
+  struct PP_Var (*GetDocumentURL)(PP_Instance instance,
+                                  struct PP_URLComponents_Dev* components);
+  uint32_t (*GetLiveVars)(struct PP_Var live_vars[], uint32_t array_size);
 };
 /**
  * @}

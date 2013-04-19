@@ -41,6 +41,7 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   void OnMsgGetLiveObjectsForInstance(PP_Instance instance, uint32_t* result);
   void OnMsgSimulateInputEvent(PP_Instance instance,
                                const ppapi::InputEventData& input_event);
+  void OnMsgSetMinimumArrayBufferSizeForShmem(uint32_t threshold);
 
   // When this proxy is in the host side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

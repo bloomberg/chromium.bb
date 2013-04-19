@@ -13,7 +13,8 @@ label Chrome {
   M14 = 0.7,
   M15 = 0.8,
   M17 = 0.9,
-  M18 = 0.91
+  M18 = 0.91,
+  M28 = 0.92
 };
 
 interface PPB_Testing_Dev {
@@ -127,4 +128,15 @@ interface PPB_Testing_Dev {
   [version=0.91]
   uint32_t GetLiveVars([size_as=array_size] PP_Var[] live_vars,
                        [in] uint32_t array_size);
+
+  /**
+   * Sets the threshold size at which point we switch from transmitting
+   * array buffers in IPC messages to using shared memory. This is only used
+   * for testing purposes where we need to transmit small buffers using shmem
+   * (in order to have fast tests). Passing a value of 0 resets the threshold
+   * to its default. The threshold is in bytes.
+   */
+  [version=0.92]
+  void SetMinimumArrayBufferSizeForShmem([in] PP_Instance instance,
+                                         [in] uint32_t threshold);
 };

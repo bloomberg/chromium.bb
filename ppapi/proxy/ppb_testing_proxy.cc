@@ -114,6 +114,18 @@ uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
   return vars.size();
 }
 
+void SetMinimumArrayBufferSizeForShmem(PP_Instance instance,
+                                       uint32_t threshold) {
+  ProxyAutoLock lock;
+  RawVarDataGraph::SetMinimumArrayBufferSizeForShmemForTest(threshold);
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  dispatcher->Send(
+      new PpapiHostMsg_PPBTesting_SetMinimumArrayBufferSizeForShmem(
+          API_ID_PPB_TESTING, threshold));
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
@@ -122,7 +134,8 @@ const PPB_Testing_Dev testing_interface = {
   &IsOutOfProcess,
   &SimulateInputEvent,
   &GetDocumentURL,
-  &GetLiveVars
+  &GetLiveVars,
+  &SetMinimumArrayBufferSizeForShmem
 };
 
 InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher) {
@@ -167,6 +180,9 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgGetLiveObjectsForInstance)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_SimulateInputEvent,
                         OnMsgSimulateInputEvent)
+    IPC_MESSAGE_HANDLER(
+        PpapiHostMsg_PPBTesting_SetMinimumArrayBufferSizeForShmem,
+        OnMsgSetMinimumArrayBufferSizeForShmem)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -201,6 +217,11 @@ void PPB_Testing_Proxy::OnMsgSimulateInputEvent(
       new PPB_InputEvent_Shared(OBJECT_IS_PROXY, instance, input_event));
   ppb_testing_impl_->SimulateInputEvent(instance,
                                         input_event_impl->pp_resource());
+}
+
+void PPB_Testing_Proxy::OnMsgSetMinimumArrayBufferSizeForShmem(
+    uint32_t threshold) {
+  RawVarDataGraph::SetMinimumArrayBufferSizeForShmemForTest(threshold);
 }
 
 }  // namespace proxy
