@@ -34,7 +34,7 @@ TEST_F(VideoDecoderVp8Test, VideoEncodeAndDecode) {
 // frame too much. The frame used is a gradient, which does not contain sharp
 // transitions, so encoding lossiness should not be too high.
 TEST_F(VideoDecoderVp8Test, Gradient) {
-  TestGradient(320, 240, 320, 240, 0.03, 0.01);
+  TestGradient(320, 240, 320, 240, 0.04, 0.02);
 }
 
 TEST_F(VideoDecoderVp8Test, GradientScaleUpEvenToEven) {

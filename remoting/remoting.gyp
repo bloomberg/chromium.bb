@@ -2204,6 +2204,7 @@
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/libvpx/libvpx.gyp:libvpx',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/opus/opus.gyp:opus',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/speex/speex.gyp:libspeex',
