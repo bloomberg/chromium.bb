@@ -18,7 +18,6 @@ using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace media {
@@ -52,16 +51,17 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
     EXPECT_CALL(*demuxer_stream_, type())
         .WillRepeatedly(Return(DemuxerStream::VIDEO));
-  }
 
-  ~VideoDecoderSelectorTest() {
     EXPECT_CALL(*decoder_1_, Stop(_))
       .WillRepeatedly(RunClosure<0>());
     EXPECT_CALL(*decoder_2_, Stop(_))
       .WillRepeatedly(RunClosure<0>());
+  }
 
-    if (selected_decoder_)
+  ~VideoDecoderSelectorTest() {
+    if (selected_decoder_) {
       selected_decoder_->Stop(NewExpectedClosure());
+    }
 
     message_loop_.RunUntilIdle();
   }
@@ -69,8 +69,15 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
-               void(const scoped_refptr<VideoDecoder>&,
+               void(VideoDecoder*,
                     const scoped_refptr<DecryptingDemuxerStream>&));
+
+  void MockOnDecoderSelected(
+      scoped_ptr<VideoDecoder> decoder,
+      const scoped_refptr<DecryptingDemuxerStream>& stream) {
+    OnDecoderSelected(decoder.get(), stream);
+    selected_decoder_ = decoder.Pass();
+  }
 
   void UseClearStream() {
     EXPECT_CALL(*demuxer_stream_, video_decoder_config())
@@ -104,12 +111,12 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     }
 
     DCHECK_GE(all_decoders_.size(), static_cast<size_t>(num_decoders));
-    VideoDecoderSelector::VideoDecoderList decoders(
-        all_decoders_.begin(), all_decoders_.begin() + num_decoders);
+    all_decoders_.erase(
+        all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(new VideoDecoderSelector(
         message_loop_.message_loop_proxy(),
-        decoders,
+        all_decoders_.Pass(),
         set_decryptor_ready_cb));
   }
 
@@ -118,7 +125,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         demuxer_stream_,
         base::Bind(&VideoDecoderSelectorTest::OnStatistics,
                    base::Unretained(this)),
-        base::Bind(&VideoDecoderSelectorTest::OnDecoderSelected,
+        base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
@@ -131,11 +138,11 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
-  scoped_refptr<StrictMock<MockVideoDecoder> > decoder_1_;
-  scoped_refptr<StrictMock<MockVideoDecoder> > decoder_2_;
-  std::vector<scoped_refptr<VideoDecoder> > all_decoders_;
+  StrictMock<MockVideoDecoder>* decoder_1_;
+  StrictMock<MockVideoDecoder>* decoder_2_;
+  ScopedVector<VideoDecoder> all_decoders_;
 
-  scoped_refptr<VideoDecoder> selected_decoder_;
+  scoped_ptr<VideoDecoder> selected_decoder_;
 
   MessageLoop message_loop_;
 
@@ -162,9 +169,7 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_NoDecryptor_OneClearDecoder) {
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*this, OnDecoderSelected(scoped_refptr<VideoDecoder>(decoder_1_),
-                                       IsNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
 
   SelectDecoder();
 }
@@ -179,9 +184,7 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_NoDecryptor_MultipleClearDecoder) {
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
   EXPECT_CALL(*decoder_2_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*this, OnDecoderSelected(scoped_refptr<VideoDecoder>(decoder_2_),
-                                       IsNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
   SelectDecoder();
 }
@@ -194,9 +197,7 @@ TEST_F(VideoDecoderSelectorTest, ClearStream_HasDecryptor) {
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*this, OnDecoderSelected(scoped_refptr<VideoDecoder>(decoder_1_),
-                                       IsNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
 
   SelectDecoder();
 }
@@ -230,9 +231,7 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*this, OnDecoderSelected(scoped_refptr<VideoDecoder>(decoder_1_),
-                                       NotNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, NotNull()));
 
   SelectDecoder();
 }
@@ -249,9 +248,7 @@ TEST_F(VideoDecoderSelectorTest,
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
   EXPECT_CALL(*decoder_2_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*this, OnDecoderSelected(scoped_refptr<VideoDecoder>(decoder_2_),
-                                       NotNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
 
   SelectDecoder();
 }
@@ -263,8 +260,7 @@ TEST_F(VideoDecoderSelectorTest, EncryptedStream_DecryptAndDecode) {
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptAndDecode, 1);
 
-  EXPECT_CALL(*this, OnDecoderSelected(NotNull(), IsNull()))
-      .WillOnce(SaveArg<0>(&selected_decoder_));
+  EXPECT_CALL(*this, OnDecoderSelected(NotNull(), IsNull()));
 
   SelectDecoder();
 }

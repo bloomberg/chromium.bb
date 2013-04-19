@@ -5,8 +5,6 @@
 #ifndef MEDIA_BASE_VIDEO_RENDERER_H_
 #define MEDIA_BASE_VIDEO_RENDERER_H_
 
-#include <list>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
@@ -24,8 +22,6 @@ class VideoDecoder;
 
 class MEDIA_EXPORT VideoRenderer {
  public:
-  typedef std::list<scoped_refptr<VideoDecoder> > VideoDecoderList;
-
   // Used to update the pipeline's clock time. The parameter is the time that
   // the clock should not exceed.
   typedef base::Callback<void(base::TimeDelta)> TimeCB;
@@ -39,8 +35,8 @@ class MEDIA_EXPORT VideoRenderer {
   VideoRenderer();
   virtual ~VideoRenderer();
 
-  // Initialize a VideoRenderer with the given DemuxerStream and
-  // VideoDecoderList, executing |init_cb| callback upon completion.
+  // Initialize a VideoRenderer with |stream|, executing |init_cb| upon
+  // completion.
   //
   // |statistics_cb| is executed periodically with video rendering stats, such
   // as dropped frames.
@@ -58,7 +54,6 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // |get_duration_cb| is used to query the media duration.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
-                          const VideoDecoderList& decoders,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& time_cb,

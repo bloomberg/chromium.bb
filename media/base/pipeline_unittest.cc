@@ -87,9 +87,6 @@ class PipelineTest : public ::testing::Test {
     demuxer_ = new MockDemuxer();
     filter_collection_->SetDemuxer(demuxer_);
 
-    video_decoder_ = new MockVideoDecoder();
-    filter_collection_->GetVideoDecoders()->push_back(video_decoder_);
-
     video_renderer_ = new MockVideoRenderer();
     scoped_ptr<VideoRenderer> video_renderer(video_renderer_);
     filter_collection_->SetVideoRenderer(video_renderer.Pass());
@@ -166,14 +163,12 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer(const scoped_refptr<DemuxerStream>& stream) {
-    EXPECT_CALL(*video_renderer_,
-                Initialize(stream, _, _, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<2>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _))
+        .WillOnce(RunCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
 
     // Startup sequence.
-    EXPECT_CALL(*video_renderer_,
-                Preroll(demuxer_->GetStartTime(), _))
+    EXPECT_CALL(*video_renderer_, Preroll(demuxer_->GetStartTime(), _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, Play(_))
         .WillOnce(RunClosure<0>());
@@ -301,7 +296,6 @@ class PipelineTest : public ::testing::Test {
 
   scoped_ptr<FilterCollection> filter_collection_;
   scoped_refptr<MockDemuxer> demuxer_;
-  scoped_refptr<MockVideoDecoder> video_decoder_;
   MockVideoRenderer* video_renderer_;
   MockAudioRenderer* audio_renderer_;
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
@@ -1016,16 +1010,14 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitVideoRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*video_renderer_,
-                    Initialize(_, _, _, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_, stop_cb),
-                            RunCallback<2>(PIPELINE_OK)));
+                            RunCallback<1>(PIPELINE_OK)));
         EXPECT_CALL(callbacks_, OnStop());
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*video_renderer_,
-                    Initialize(_, _, _, _, _, _, _, _, _, _))
-            .WillOnce(RunCallback<2>(status));
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+            .WillOnce(RunCallback<1>(status));
       }
 
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
@@ -1034,9 +1026,8 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*video_renderer_,
-                Initialize(_, _, _, _, _, _, _, _, _, _))
-        .WillOnce(RunCallback<2>(PIPELINE_OK));
+    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kHaveMetadata));
 
