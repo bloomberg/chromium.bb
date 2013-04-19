@@ -717,8 +717,8 @@ void GpuProcessHost::EstablishGpuChannel(
     callback.Run(IPC::ChannelHandle(), GPUInfo());
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGpuShaderDiskCache)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id, gpu::kDefaultMaxProgramCacheMemoryBytes);
   }
 }

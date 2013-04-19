@@ -142,8 +142,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_b->set_uniform_map(value->uniform_map_1);
 
   if (!shader_callback.is_null() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuShaderDiskCache)) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
     GpuProgramProto* proto = GpuProgramProto::default_instance().New();
     proto->set_sha(sha, kHashLength);
     proto->set_format(value->format);
@@ -212,8 +212,8 @@ void MemoryProgramCache::SaveLinkedProgram(
   }
 
   if (!shader_callback.is_null() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuShaderDiskCache)) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
     GpuProgramProto* proto = GpuProgramProto::default_instance().New();
     proto->set_sha(sha, kHashLength);
     proto->set_format(format);
