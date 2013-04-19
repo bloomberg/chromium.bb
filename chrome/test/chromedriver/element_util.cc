@@ -34,13 +34,6 @@ bool ParseFromValue(base::Value* value, WebPoint* point) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebPoint& point) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("x", point.x);
-  dict->SetInteger("y", point.y);
-  return dict;
-}
-
 bool ParseFromValue(base::Value* value, WebSize* size) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))
@@ -217,6 +210,13 @@ base::DictionaryValue* CreateElement(const std::string& element_id) {
   base::DictionaryValue* element = new base::DictionaryValue();
   element->SetString(kElementKey, element_id);
   return element;
+}
+
+base::Value* CreateValueFrom(const WebPoint& point) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("x", point.x);
+  dict->SetInteger("y", point.y);
+  return dict;
 }
 
 Status FindElement(

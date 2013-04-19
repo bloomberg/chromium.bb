@@ -32,8 +32,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ClickTest.testCanClickOnALinkThatContainsEmbeddedBlockElements',
     'CombinedInputActionsTest.testClickingOnFormElements',
     'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
-    'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
-    'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
     'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',
     'CorrectEventFiringTest.testShouldEmitOnClickEventsWhenSelectingElements',
     'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',

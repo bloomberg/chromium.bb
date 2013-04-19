@@ -371,13 +371,13 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(),
-      webdriver::atoms::asString(webdriver::atoms::GET_LOCATION_IN_VIEW),
-      args,
-      value);
+  WebPoint location;
+  Status status = ScrollElementIntoView(
+      session, web_view, element_id, &location);
+  if (status.IsError())
+    return status;
+  value->reset(CreateValueFrom(location));
+  return Status(kOk);
 }
 
 Status ExecuteGetElementSize(

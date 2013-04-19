@@ -22,6 +22,8 @@ class WebView;
 
 base::DictionaryValue* CreateElement(const std::string& element_id);
 
+base::Value* CreateValueFrom(const WebPoint& point);
+
 // |root_element_id| could be null when no root element is given.
 Status FindElement(
     int interval_ms,
