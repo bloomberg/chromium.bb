@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from appengine_wrappers import memcache
 from object_store import ObjectStore
 
@@ -17,7 +19,11 @@ class MemcacheObjectStore(ObjectStore):
     self._namespace = namespace
 
   def SetMulti(self, mapping):
-    memcache.Client().set_multi_async(mapping, namespace=self._namespace)
+    try:
+      memcache.Client().set_multi_async(mapping, namespace=self._namespace)
+    except ValueError as e:
+      logging.error('Caught "ValueError: %s" when mapping keys %s' % (
+          e, mapping.keys()))
 
   def GetMulti(self, keys):
     rpc = memcache.Client().get_multi_async(keys, namespace=self._namespace)
