@@ -625,7 +625,7 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
     RenderBoxModelObject* currChild = this;
     RenderObject* currChildNextSibling = currChild->nextSibling();
 
-    while (curr && curr != fromBlock) {
+    while (curr && curr->isDescendantOf(fromBlock) && curr != fromBlock) {
         ASSERT_WITH_SECURITY_IMPLICATION(curr->isRenderBlock());
         
         RenderBlock* blockCurr = toRenderBlock(curr);
