@@ -21,11 +21,12 @@ class ThrobbingImageViewTest : public CocoaTest {
     [image unlockFocus];
 
     scoped_nsobject<ThrobbingImageView> view([[ThrobbingImageView alloc]
-          initWithFrame:NSMakeRect(0, 0, 16, 16)
-        backgroundImage:image
-             throbImage:image
-             durationMS:20
-          throbPosition:kThrobPositionOverlay]);
+            initWithFrame:NSMakeRect(0, 0, 16, 16)
+          backgroundImage:image
+               throbImage:image
+               durationMS:20
+            throbPosition:kThrobPositionOverlay
+       animationContainer:NULL]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }

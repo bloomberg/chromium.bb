@@ -33,10 +33,12 @@ enum ThrobPosition {
 }
 
 - (id)initWithFrame:(NSRect)rect
-    backgroundImage:(NSImage*)backgroundImage
-         throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS
-      throbPosition:(ThrobPosition)throbPosition;
+       backgroundImage:(NSImage*)backgroundImage
+            throbImage:(NSImage*)throbImage
+            durationMS:(int)durationMS
+         throbPosition:(ThrobPosition)throbPosition
+    animationContainer:(ui::AnimationContainer*)animationContainer;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_THROBBING_IMAGE_VIEW_H_

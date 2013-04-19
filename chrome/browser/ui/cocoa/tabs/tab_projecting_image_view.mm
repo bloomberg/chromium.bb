@@ -10,12 +10,14 @@
     backgroundImage:(NSImage*)backgroundImage
      projectorImage:(NSImage*)projectorImage
          throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS {
+         durationMS:(int)durationMS
+    animationContainer:(ui::AnimationContainer*)animationContainer {
   if ((self = [super initWithFrame:rect
                    backgroundImage:backgroundImage
                         throbImage:throbImage
                         durationMS:durationMS
-                     throbPosition:kThrobPositionOverlay])) {
+                     throbPosition:kThrobPositionOverlay
+                animationContainer:animationContainer])) {
     projectorImage_.reset([projectorImage retain]);
   }
   return self;

@@ -20,10 +20,12 @@
 }
 
 - (id)initWithFrame:(NSRect)rect
-    backgroundImage:(NSImage*)backgroundImage
-     projectorImage:(NSImage*)projectorImage
-         throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS;
+       backgroundImage:(NSImage*)backgroundImage
+        projectorImage:(NSImage*)projectorImage
+            throbImage:(NSImage*)throbImage
+            durationMS:(int)durationMS
+    animationContainer:(ui::AnimationContainer*)animationContainer;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_PROJECTING_IMAGE_VIEW_H_

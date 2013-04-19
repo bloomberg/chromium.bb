@@ -33,11 +33,12 @@ class TabProjectingImageViewTest : public CocoaTest {
     [throbImage unlockFocus];
 
     scoped_nsobject<TabProjectingImageView> view([[TabProjectingImageView alloc]
-          initWithFrame:NSMakeRect(0, 0, 32, 32)
-        backgroundImage:backgroundImage
-         projectorImage:projectorImage
-             throbImage:throbImage
-             durationMS:20]);
+              initWithFrame:NSMakeRect(0, 0, 32, 32)
+            backgroundImage:backgroundImage
+             projectorImage:projectorImage
+                 throbImage:throbImage
+                 durationMS:20
+         animationContainer:NULL]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }

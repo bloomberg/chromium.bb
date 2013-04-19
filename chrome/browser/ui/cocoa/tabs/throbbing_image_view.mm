@@ -19,16 +19,18 @@ class ThrobbingImageViewAnimationDelegate : public ui::AnimationDelegate {
 @implementation ThrobbingImageView
 
 - (id)initWithFrame:(NSRect)rect
-    backgroundImage:(NSImage*)backgroundImage
-         throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS
-     throbPosition:(ThrobPosition)throbPosition {
+       backgroundImage:(NSImage*)backgroundImage
+            throbImage:(NSImage*)throbImage
+            durationMS:(int)durationMS
+         throbPosition:(ThrobPosition)throbPosition
+    animationContainer:(ui::AnimationContainer*)animationContainer {
   if ((self = [super initWithFrame:rect])) {
     backgroundImage_.reset([backgroundImage retain]);
     throbImage_.reset([throbImage retain]);
 
     delegate_.reset(new ThrobbingImageViewAnimationDelegate(self));
     throbAnimation_.reset(new ui::ThrobAnimation(delegate_.get()));
+    throbAnimation_->SetContainer(animationContainer);
     throbAnimation_->SetThrobDuration(durationMS);
     throbAnimation_->StartThrobbing(-1);
 

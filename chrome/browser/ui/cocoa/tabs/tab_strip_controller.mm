@@ -65,6 +65,7 @@
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "ui/base/animation/animation_container.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
@@ -500,6 +501,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         [[TabStripDragController alloc] initWithTabStripController:self]);
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
+    animationContainer_ = new ui::AnimationContainer;
     NSWindow* browserWindow = [view window];
 
     // Important note: any non-tab subviews not added to |permanentSubviews_|
@@ -1623,12 +1625,13 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                                     kProjectingIconWidthAndHeight,
                                     kProjectingIconWidthAndHeight);
           TabProjectingImageView* projectingView =
-              [[[TabProjectingImageView alloc] initWithFrame:frame
-                                         backgroundImage:[imageView image]
-                                          projectorImage:projector
-                                              throbImage:projectorGlow
-                                              durationMS:kRecordingDurationMs]
-                  autorelease];
+              [[[TabProjectingImageView alloc]
+                  initWithFrame:frame
+                backgroundImage:[imageView image]
+                 projectorImage:projector
+                     throbImage:projectorGlow
+                     durationMS:kRecordingDurationMs
+             animationContainer:animationContainer_] autorelease];
 
           iconView = projectingView;
         } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
@@ -1646,7 +1649,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                 backgroundImage:favIconMasked
                      throbImage:recording
                      durationMS:kRecordingDurationMs
-                  throbPosition:kThrobPositionBottomRight] autorelease];
+                  throbPosition:kThrobPositionBottomRight
+             animationContainer:animationContainer_] autorelease];
 
           iconView = recordingView;
         } else if (chrome::IsPlayingAudio(contents) ||
@@ -1656,6 +1660,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                 NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
             tabAudioIndicatorViewMac = [[[TabAudioIndicatorViewMac alloc]
                 initWithFrame:frame] autorelease];
+            [tabAudioIndicatorViewMac
+                setAnimationContainer:animationContainer_];
           }
           [tabAudioIndicatorViewMac
               setIsPlayingAudio:chrome::IsPlayingAudio(contents)];
