@@ -14,6 +14,8 @@ TEST(DriveApiUtilTest, EscapeQueryStringValue) {
   EXPECT_EQ("abcde", EscapeQueryStringValue("abcde"));
   EXPECT_EQ("\\'", EscapeQueryStringValue("'"));
   EXPECT_EQ("\\'abcde\\'", EscapeQueryStringValue("'abcde'"));
+  EXPECT_EQ("\\\\", EscapeQueryStringValue("\\"));
+  EXPECT_EQ("\\\\\\'", EscapeQueryStringValue("\\'"));
 }
 
 TEST(DriveApiUtilTest, TranslateQuery) {

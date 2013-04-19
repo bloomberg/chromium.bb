@@ -26,7 +26,13 @@ namespace util {
 
 std::string EscapeQueryStringValue(const std::string& str) {
   std::string result;
-  ReplaceChars(str, "'", "\\'", &result);
+  result.reserve(str.size());
+  for (size_t i = 0; i < str.size(); ++i) {
+    if (str[i] == '\\' || str[i] == '\'') {
+      result.push_back('\\');
+    }
+    result.push_back(str[i]);
+  }
   return result;
 }
 
