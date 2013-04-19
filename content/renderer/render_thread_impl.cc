@@ -781,6 +781,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableWebPInAcceptHeader(
       command_line.HasSwitch(switches::kEnableWebPInAcceptHeader));
 
+  WebRuntimeFeatures::enableExperimentalWebSocket(
+      command_line.HasSwitch(switches::kEnableExperimentalWebSocket));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
