@@ -610,7 +610,7 @@ IntRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* laye
         return IntRect();
 
     RenderLayer::CalculateLayerBoundsFlags flags = RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants | RenderLayer::DontConstrainForMask;
-#if ENABLE(CSS_FILTERS) && HAVE(COMPOSITOR_FILTER_OUTSETS)
+#if HAVE(COMPOSITOR_FILTER_OUTSETS)
     // If the compositor computes its own filter outsets, don't include them in the composited bounds.
     if (!layer->paintsWithFilters())
         flags &= ~RenderLayer::IncludeLayerFilterOutsets;
@@ -1839,10 +1839,8 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
 
     if (AnimationController* animController = renderer->animation()) {
         return (animController->isRunningAnimationOnRenderer(renderer, CSSPropertyOpacity) && inCompositingMode())
-#if ENABLE(CSS_FILTERS)
             // <rdar://problem/10907251> - WebKit2 doesn't support CA animations of CI filters on Lion and below
             || animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitFilter)
-#endif // CSS_FILTERS
             || animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
     }
     return false;
@@ -1879,15 +1877,10 @@ bool RenderLayerCompositor::requiresCompositingForIndirectReason(RenderObject* r
 
 bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer) const
 {
-#if ENABLE(CSS_FILTERS)
     if (!(m_compositingTriggers & ChromeClient::FilterTrigger))
         return false;
 
     return renderer->hasFilter();
-#else
-    UNUSED_PARAM(renderer);
-    return false;
-#endif
 }
 
 bool RenderLayerCompositor::requiresCompositingForBlending(RenderObject* renderer) const

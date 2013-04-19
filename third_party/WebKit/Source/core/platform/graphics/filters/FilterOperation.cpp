@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_FILTERS)
 #include "FilterOperation.h"
 
 #include "AnimationUtilities.h"
@@ -151,4 +150,3 @@ PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperati
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_FILTERS)

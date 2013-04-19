@@ -26,7 +26,7 @@
 #ifndef CachedSVGDocumentReference_h
 #define CachedSVGDocumentReference_h
 
-#if ENABLE(SVG) && ENABLE(CSS_FILTERS)
+#if ENABLE(SVG)
 #include "CachedResourceHandle.h"
 #include "CachedSVGDocument.h"
 

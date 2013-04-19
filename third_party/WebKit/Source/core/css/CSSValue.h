@@ -89,12 +89,10 @@ public:
     bool isWebKitCSSTransformValue() const { return m_classType == WebKitCSSTransformClass; }
     bool isCSSLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalculationValue() const {return m_classType == CalculationClass; }
-#if ENABLE(CSS_FILTERS)
     bool isWebKitCSSFilterValue() const { return m_classType == WebKitCSSFilterClass; }
     bool isWebKitCSSArrayFunctionValue() const { return m_classType == WebKitCSSArrayFunctionValueClass; }
     bool isWebKitCSSMixFunctionValue() const { return m_classType == WebKitCSSMixFunctionValueClass; }
     bool isWebKitCSSShaderValue() const { return m_classType == WebKitCSSShaderClass; }
-#endif // ENABLE(CSS_FILTERS)
     bool isVariableValue() const { return m_classType == VariableClass; }
 #if ENABLE(SVG)
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
@@ -172,11 +170,9 @@ protected:
 #if ENABLE(CSS_IMAGE_SET)
         ImageSetClass,
 #endif
-#if ENABLE(CSS_FILTERS)
         WebKitCSSFilterClass,
         WebKitCSSArrayFunctionValueClass,
         WebKitCSSMixFunctionValueClass,
-#endif
         WebKitCSSTransformClass,
         // Do not append non-list class types here.
     };

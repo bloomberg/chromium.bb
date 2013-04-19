@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebKitCSSFilterValue.h"
 
-#if ENABLE(CSS_FILTERS)
-
 #include "CSSValueList.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/PassRefPtr.h>
@@ -117,4 +115,3 @@ void WebKitCSSFilterValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryO
 
 }
 
-#endif // ENABLE(CSS_FILTERS)

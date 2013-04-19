@@ -78,10 +78,8 @@
 #include "WebKitCSSArrayFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
 
-#if ENABLE(CSS_FILTERS)
 #include "StyleCustomFilterProgram.h"
 #include "WebKitCSSFilterValue.h"
-#endif
 
 namespace WebCore {
 
@@ -259,9 +257,7 @@ static const CSSPropertyID computedProperties[] = {
 #if ENABLE(CURSOR_VISIBILITY)
     CSSPropertyWebkitCursorVisibility,
 #endif
-#if ENABLE(CSS_FILTERS)
     CSSPropertyWebkitFilter,
-#endif
     CSSPropertyWebkitAlignContent,
     CSSPropertyWebkitAlignItems,
     CSSPropertyWebkitAlignSelf,
@@ -852,7 +848,6 @@ static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* re
     return 0;
 }
 
-#if ENABLE(CSS_FILTERS)
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObject* renderer, const RenderStyle* style) const
 {
     if (style->filter().operations().isEmpty())
@@ -1005,7 +1000,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 
     return list.release();
 }
-#endif
 
 static PassRefPtr<CSSValue> valueForGridTrackBreadth(const Length& trackBreadth, const RenderStyle* style, RenderView *renderView)
 {
@@ -1489,9 +1483,7 @@ static bool isLayoutDependentProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyWidth:
-#if ENABLE(CSS_FILTERS)
     case CSSPropertyWebkitFilter:
-#endif
         return true;
     default:
         return false;
@@ -2593,10 +2585,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitWrapThrough:
             return cssValuePool().createValue(style->wrapThrough());
 #endif
-#if ENABLE(CSS_FILTERS)
         case CSSPropertyWebkitFilter:
             return valueForFilter(renderer, style.get());
-#endif
 #if ENABLE(CSS_COMPOSITING)
         case CSSPropertyWebkitBlendMode:
             return cssValuePool().createValue(style->blendMode());

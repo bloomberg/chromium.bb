@@ -553,9 +553,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitColumnSpan:
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWebkitColumns:
-#if ENABLE(CSS_FILTERS)
     case CSSPropertyWebkitFilter:
-#endif
 #if ENABLE(CSS_COMPOSITING)
     case CSSPropertyWebkitBlendMode:
 #endif

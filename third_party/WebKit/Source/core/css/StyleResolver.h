@@ -40,7 +40,7 @@
 #include "StyleInheritedData.h"
 #include "StyleScopeResolver.h"
 #include "ViewportStyleResolver.h"
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
 #endif
 #include "CustomFilterConstants.h"
@@ -292,7 +292,6 @@ public:
     
     void invalidateMatchedPropertiesCache();
 
-#if ENABLE(CSS_FILTERS)
     bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, FilterOperations& outOperations);
     StyleShader* styleShader(CSSValue*);
     StyleShader* cachedOrPendingStyleShaderFromValue(WebKitCSSShaderValue*);
@@ -310,7 +309,6 @@ public:
 #if ENABLE(SVG)
     void loadPendingSVGDocuments();
 #endif
-#endif // ENABLE(CSS_FILTERS)
 
     void loadPendingResources();
 
@@ -398,7 +396,7 @@ private:
 
 public:
     typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
     typedef HashMap<FilterOperation*, RefPtr<WebKitCSSSVGDocumentValue> > PendingSVGDocumentMap;
 #endif
 
@@ -451,7 +449,7 @@ public:
         bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
         bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
         PendingImagePropertyMap& pendingImageProperties() { return m_pendingImageProperties; }
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
         PendingSVGDocumentMap& pendingSVGDocuments() { return m_pendingSVGDocuments; }
 #endif
         void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
@@ -503,7 +501,7 @@ public:
 
         PendingImagePropertyMap m_pendingImageProperties;
         bool m_hasPendingShaders;
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
         PendingSVGDocumentMap m_pendingSVGDocuments;
 #endif
         CSSValue* m_lineHeightValue;

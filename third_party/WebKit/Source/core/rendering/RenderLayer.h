@@ -49,16 +49,12 @@
 #include "ScrollableArea.h"
 #include <wtf/OwnPtr.h>
 
-#if ENABLE(CSS_FILTERS)
 #include "RenderLayerFilterInfo.h"
-#endif
 
 namespace WebCore {
 
-#if ENABLE(CSS_FILTERS)
 class FilterEffectRenderer;
 class FilterOperations;
-#endif
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
@@ -571,12 +567,10 @@ public:
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(false); }
 
-#if ENABLE(CSS_FILTERS)
     RenderLayer* enclosingFilterLayer(bool includeSelf = true) const;
     RenderLayer* enclosingFilterRepaintLayer() const;
     void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
     bool hasAncestorWithFilterOutsets() const;
-#endif
 
     bool canUseConvertToLayerCoords() const
     {
@@ -686,13 +680,9 @@ public:
     // Bounds used for layer overlap testing in RenderLayerCompositor.
     LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : localBoundingBox(); }
 
-#if ENABLE(CSS_FILTERS)
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
     bool overlapBoundsIncludeChildren() const { return hasFilter() && renderer()->style()->filter().hasFilterThatMovesPixels(); }
-#else
-    bool overlapBoundsIncludeChildren() const { return false; }
-#endif
 
     // Can pass offsetFromRoot if known.
     IntRect calculateLayerBounds(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0, CalculateLayerBoundsFlags = DefaultCalculateLayerBoundsFlags) const;
@@ -729,12 +719,8 @@ public:
     bool preserves3D() const { return renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
     bool has3DTransform() const { return m_transform && !m_transform->isAffine(); }
 
-#if ENABLE(CSS_FILTERS)
     virtual void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
-#else
-    bool hasFilter() const { return false; }
-#endif
 
 #if ENABLE(CSS_COMPOSITING)
     bool hasBlendMode() const { return renderer()->hasBlendMode(); }
@@ -762,11 +748,7 @@ public:
     bool needsCompositedScrolling() const;
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
-#if ENABLE(CSS_FILTERS)
     bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const;
-#else // !ENABLE(CSS_FILTERS)
-    bool needsCompositingLayersRebuiltForFilters(const RenderStyle*, const RenderStyle*, bool) const { return false; }
-#endif // !ENABLE(CSS_FILTERS)
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
@@ -784,7 +766,6 @@ public:
 
     bool isCSSCustomFilterEnabled() const;
 
-#if ENABLE(CSS_FILTERS)
     FilterOperations computeFilterOperations(const RenderStyle*);
     bool paintsWithFilters() const;
     bool requiresFullLayerImageForFilters() const;
@@ -806,7 +787,6 @@ public:
     void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
 
     void updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle);
-#endif
 
 #if !ASSERT_DISABLED
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
@@ -1053,10 +1033,8 @@ private:
     bool paintingInsideReflection() const { return m_paintingInsideReflection; }
     void setPaintingInsideReflection(bool b) { m_paintingInsideReflection = b; }
 
-#if ENABLE(CSS_FILTERS)
     void updateOrRemoveFilterClients();
     void updateOrRemoveFilterEffectRenderer();
-#endif
 
     void parentClipRects(const ClipRectsContext&, ClipRects&) const;
     ClipRect backgroundClipRect(const ClipRectsContext&) const;
@@ -1185,9 +1163,7 @@ protected:
     // saves a lot of time when scrolling on a table.
     const bool m_canSkipRepaintRectsUpdateOnScroll : 1;
 
-#if ENABLE(CSS_FILTERS)
     bool m_hasFilterInfo : 1;
-#endif
 
 #if ENABLE(CSS_COMPOSITING)
     BlendMode m_blendMode;

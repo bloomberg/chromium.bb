@@ -258,11 +258,9 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
         static_cast<const CSSImageSetValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
 #endif
-#if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         static_cast<const WebKitCSSFilterValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
     case WebKitCSSTransformClass:
         static_cast<const WebKitCSSTransformValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -339,7 +337,6 @@ bool CSSValue::equals(const CSSValue& other) const
         case ImageSetClass:
             return compareCSSValues<CSSImageSetValue>(*this, other);
 #endif
-#if ENABLE(CSS_FILTERS)
         case WebKitCSSFilterClass:
             return compareCSSValues<WebKitCSSFilterValue>(*this, other);
         case WebKitCSSArrayFunctionValueClass:
@@ -348,7 +345,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<WebKitCSSMixFunctionValue>(*this, other);
         case WebKitCSSShaderClass:
             return compareCSSValues<WebKitCSSShaderValue>(*this, other);
-#endif
         case VariableClass:
             return compareCSSValues<CSSVariableValue>(*this, other);
 #if ENABLE(SVG)
@@ -433,7 +429,6 @@ String CSSValue::cssText() const
     case ImageSetClass:
         return static_cast<const CSSImageSetValue*>(this)->customCssText();
 #endif
-#if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         return static_cast<const WebKitCSSFilterValue*>(this)->customCssText();
     case WebKitCSSArrayFunctionValueClass:
@@ -442,7 +437,6 @@ String CSSValue::cssText() const
         return static_cast<const WebKitCSSMixFunctionValue*>(this)->customCssText();
     case WebKitCSSShaderClass:
         return static_cast<const WebKitCSSShaderValue*>(this)->customCssText();
-#endif
     case VariableClass:
         return static_cast<const CSSVariableValue*>(this)->value();
 #if ENABLE(SVG)
@@ -564,7 +558,6 @@ void CSSValue::destroy()
         delete static_cast<CSSImageSetValue*>(this);
         return;
 #endif
-#if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         delete static_cast<WebKitCSSFilterValue*>(this);
         return;
@@ -577,7 +570,6 @@ void CSSValue::destroy()
     case WebKitCSSShaderClass:
         delete static_cast<WebKitCSSShaderValue*>(this);
         return;
-#endif
     case VariableClass:
         delete static_cast<CSSVariableValue*>(this);
         return;
@@ -606,14 +598,12 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
     case ImageClass:
     case CursorImageClass:
         return static_cast<const CSSImageValue*>(this)->cloneForCSSOM();
-#if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         return static_cast<const WebKitCSSFilterValue*>(this)->cloneForCSSOM();
     case WebKitCSSArrayFunctionValueClass:
         return static_cast<const WebKitCSSArrayFunctionValue*>(this)->cloneForCSSOM();
     case WebKitCSSMixFunctionValueClass:
         return static_cast<const WebKitCSSMixFunctionValue*>(this)->cloneForCSSOM();
-#endif
     case WebKitCSSTransformClass:
         return static_cast<const WebKitCSSTransformValue*>(this)->cloneForCSSOM();
 #if ENABLE(CSS_IMAGE_SET)

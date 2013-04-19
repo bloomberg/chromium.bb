@@ -95,11 +95,9 @@
 #include "CSSImageSetValue.h"
 #endif
 
-#if ENABLE(CSS_FILTERS)
 #include "WebKitCSSFilterValue.h"
 #if ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
-#endif
 #endif
 
 #include "WebKitCSSArrayFunctionValue.h"
@@ -2366,7 +2364,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitBoxOrdinalGroup:
         validPrimitive = validUnit(value, FInteger | FNonNeg, CSSStrictMode) && value->fValue;
         break;
-#if ENABLE(CSS_FILTERS)
     case CSSPropertyWebkitFilter:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -2379,7 +2376,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         }
         break;
-#endif
 #if ENABLE(CSS_COMPOSITING)
     case CSSPropertyWebkitBlendMode:
         if (cssCompositingEnabled())
@@ -8049,8 +8045,6 @@ bool CSSParser::isCompositeOperator(int ident)
     return ident >= CSSValueClear && ident <= CSSValueXor;
 }
 
-#if ENABLE(CSS_FILTERS)
-
 static void filterInfoForName(const CSSParserString& name, WebKitCSSFilterValue::FilterOperationType& filterType, unsigned& maximumArgumentCount)
 {
     if (equalIgnoringCase(name, "grayscale("))
@@ -8642,7 +8636,6 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
 
     return list.release();
 }
-#endif
 
 #if ENABLE(CSS_REGIONS)
 static bool validFlowName(const String& flowName)

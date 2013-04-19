@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_FILTERS)
-
 #include "FilterEffectRenderer.h"
 
 #include "ColorSpace.h"
@@ -510,4 +508,3 @@ GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_FILTERS)

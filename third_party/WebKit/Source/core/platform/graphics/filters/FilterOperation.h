@@ -26,8 +26,6 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
-#if ENABLE(CSS_FILTERS)
-
 #include "Color.h"
 #include "FilterEffect.h"
 #include "LayoutSize.h"
@@ -373,6 +371,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_FILTERS)
 
 #endif // FilterOperation_h

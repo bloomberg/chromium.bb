@@ -43,9 +43,7 @@ namespace WebCore {
 class AnimationList;
 class ShadowData;
 class StyleDeprecatedFlexibleBoxData;
-#if ENABLE(CSS_FILTERS)
 class StyleFilterData;
-#endif
 class StyleFlexibleBoxData;
 class StyleGridData;
 class StyleGridItemData;
@@ -107,9 +105,7 @@ public:
     DataRef<StyleMultiColData> m_multiCol; //  CSS3 multicol properties
     DataRef<StyleTransformData> m_transform; // Transform properties (rotate, scale, skew, etc.)
 
-#if ENABLE(CSS_FILTERS)
     DataRef<StyleFilterData> m_filter; // Filter operations (url, sepia, blur, etc.)
-#endif
 
     DataRef<StyleGridData> m_grid;
     DataRef<StyleGridItemData> m_gridItem;

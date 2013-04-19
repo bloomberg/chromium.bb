@@ -300,9 +300,7 @@
     attribute WebKitCSSFilterRuleConstructor WebKitCSSFilterRule;
     attribute WebKitCSSMixFunctionValueConstructor WebKitCSSMixFunctionValue;
 
-#if defined(ENABLE_CSS_FILTERS) && ENABLE_CSS_FILTERS
     attribute WebKitCSSFilterValueConstructor WebKitCSSFilterValue;
-#endif
 
 #if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
     attribute WebKitCSSViewportRuleConstructor WebKitCSSViewportRule;

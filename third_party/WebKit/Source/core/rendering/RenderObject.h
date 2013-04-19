@@ -597,11 +597,7 @@ public:
     bool hasClipPath() const { return style() && style()->clipPath(); }
     bool hasHiddenBackface() const { return style() && style()->backfaceVisibility() == BackfaceVisibilityHidden; }
 
-#if ENABLE(CSS_FILTERS)
     bool hasFilter() const { return style() && style()->hasFilter(); }
-#else
-    bool hasFilter() const { return false; }
-#endif
 
 #if ENABLE(CSS_COMPOSITING)
     bool hasBlendMode() const { return style() && style()->hasBlendMode(); }

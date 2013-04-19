@@ -134,9 +134,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle(bool)
     rareNonInheritedData.access()->m_marquee.init();
     rareNonInheritedData.access()->m_multiCol.init();
     rareNonInheritedData.access()->m_transform.init();
-#if ENABLE(CSS_FILTERS)
     rareNonInheritedData.access()->m_filter.init();
-#endif
     rareNonInheritedData.access()->m_grid.init();
     rareNonInheritedData.access()->m_gridItem.init();
     rareInheritedData.init();
@@ -624,14 +622,12 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         changedContextSensitiveProperties |= ContextSensitivePropertyOpacity;
     }
 
-#if ENABLE(CSS_FILTERS)
     if (rareNonInheritedData->m_filter.get() != other->rareNonInheritedData->m_filter.get()
         && *rareNonInheritedData->m_filter.get() != *other->rareNonInheritedData->m_filter.get()) {
         // Don't return early here; instead take note of the type of change,
         // and deal with it when looking at compositing.
         changedContextSensitiveProperties |= ContextSensitivePropertyFilter;
     }
-#endif
 
     if (rareNonInheritedData->m_mask != other->rareNonInheritedData->m_mask
         || rareNonInheritedData->m_maskBoxImage != other->rareNonInheritedData->m_maskBoxImage)

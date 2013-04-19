@@ -39,9 +39,7 @@
 #include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
 
-#if ENABLE(CSS_FILTERS)
 #include "WebKitCSSFilterValue.h"
-#endif
 
 namespace WebCore {
 
@@ -232,7 +230,6 @@ public:
     PassRefPtr<CSSValue> parseImageSet(CSSParserValueList*);
 #endif
 
-#if ENABLE(CSS_FILTERS)
     PassRefPtr<CSSValueList> parseFilter();
     PassRefPtr<WebKitCSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, WebKitCSSFilterValue::FilterOperationType);
     PassRefPtr<WebKitCSSMixFunctionValue> parseMixFunction(CSSParserValue*);
@@ -244,7 +241,6 @@ public:
     PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
     bool parseFilterRuleSrc();
     PassRefPtr<WebKitCSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
-#endif
 
     static bool isBlendMode(int ident);
     static bool isCompositeOperator(int ident);
@@ -636,9 +632,7 @@ private:
     inline unsigned safeUserStringTokenOffset();
 
     friend class TransformOperationInfo;
-#if ENABLE(CSS_FILTERS)
     friend class FilterOperationInfo;
-#endif
 };
 
 CSSPropertyID cssPropertyID(const CSSParserString&);

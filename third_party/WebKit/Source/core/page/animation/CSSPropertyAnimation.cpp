@@ -160,7 +160,6 @@ static inline PassRefPtr<ExclusionShapeValue> blendFunc(const AnimationBase*, Ex
 }
 #endif
 
-#if ENABLE(CSS_FILTERS)
 static inline PassRefPtr<FilterOperation> blendFunc(const AnimationBase* anim, FilterOperation* fromOp, FilterOperation* toOp, double progress, bool blendToPassthrough = false)
 {
     ASSERT(toOp);
@@ -202,7 +201,6 @@ static inline FilterOperations blendFunc(const AnimationBase* anim, const Filter
 
     return result;
 }
-#endif // ENABLE(CSS_FILTERS)
 
 static inline EVisibility blendFunc(const AnimationBase* anim, EVisibility from, EVisibility to, double progress)
 {
@@ -491,7 +489,6 @@ public:
     }
 };
 
-#if ENABLE(CSS_FILTERS)
 class PropertyWrapperAcceleratedFilter : public PropertyWrapper<const FilterOperations&> {
 public:
     PropertyWrapperAcceleratedFilter()
@@ -506,7 +503,6 @@ public:
         dst->setFilter(blendFunc(anim, a->filter(), b->filter(), progress));
     }
 };
-#endif
 
 static inline size_t shadowListLength(const ShadowData* shadow)
 {
@@ -1150,9 +1146,7 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new PropertyWrapperAcceleratedOpacity());
     gPropertyWrappers->append(new PropertyWrapperAcceleratedTransform());
-#if ENABLE(CSS_FILTERS)
     gPropertyWrappers->append(new PropertyWrapperAcceleratedFilter());
-#endif
 
     gPropertyWrappers->append(new PropertyWrapperClipPath(CSSPropertyWebkitClipPath, &RenderStyle::clipPath, &RenderStyle::setClipPath));
 

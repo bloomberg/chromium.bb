@@ -959,7 +959,6 @@ sticky
 coarse
 fine
 
-#if (defined(ENABLE_CSS_FILTERS) && ENABLE_CSS_FILTERS) || (defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING)
 // -webkit-filter
 // values for the custom() function
 // border-box
@@ -967,7 +966,6 @@ fine
 // content-box
 filter-box
 detached
-#endif // CSS_FILTERS
 // blend modes
 // normal
 multiply

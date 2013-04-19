@@ -73,9 +73,7 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(CSS_FILTERS)
 #include "StyleFilterData.h"
-#endif
 
 #if ENABLE(SVG)
 #include "SVGPaint.h"
@@ -96,9 +94,7 @@ namespace WebCore {
 
 using std::max;
 
-#if ENABLE(CSS_FILTERS)
 class FilterOperations;
-#endif
 
 class BorderData;
 class CounterContent;
@@ -413,10 +409,8 @@ public:
         return imageOutsets(maskBoxImage());
     }
 
-#if ENABLE(CSS_FILTERS)
     bool hasFilterOutsets() const { return hasFilter() && filter().hasOutsets(); }
     FilterOutsets filterOutsets() const { return hasFilter() ? filter().outsets() : FilterOutsets(); }
-#endif
 
     Order rtlOrdering() const { return static_cast<Order>(inherited_flags.m_rtlOrdering); }
     void setRTLOrdering(Order o) { inherited_flags.m_rtlOrdering = o; }
@@ -930,13 +924,9 @@ public:
 
     ESpeak speak() const { return static_cast<ESpeak>(rareInheritedData->speak); }
 
-#if ENABLE(CSS_FILTERS)
     FilterOperations& mutableFilter() { return rareNonInheritedData.access()->m_filter.access()->m_operations; }
     const FilterOperations& filter() const { return rareNonInheritedData->m_filter->m_operations; }
     bool hasFilter() const { return !rareNonInheritedData->m_filter->m_operations.operations().isEmpty(); }
-#else
-    bool hasFilter() const { return false; }
-#endif
 
 #if ENABLE(CSS_COMPOSITING)
     BlendMode blendMode() const { return static_cast<BlendMode>(rareNonInheritedData->m_effectiveBlendMode); }
@@ -1310,9 +1300,7 @@ public:
 
     void setRubyPosition(RubyPosition position) { SET_VAR(rareInheritedData, m_rubyPosition, position); }
 
-#if ENABLE(CSS_FILTERS)
     void setFilter(const FilterOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_filter, m_operations, ops); }
-#endif
 
     void setTabSize(unsigned size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 
@@ -1684,9 +1672,7 @@ public:
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     static bool initialUseTouchOverflowScrolling() { return false; }
 #endif
-#if ENABLE(CSS_FILTERS)
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
-#endif
 #if ENABLE(CSS_COMPOSITING)
     static BlendMode initialBlendMode() { return BlendModeNormal; }
 #endif

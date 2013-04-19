@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_FILTERS)
 #include "RenderLayerFilterInfo.h"
 
 #include "FilterEffectRenderer.h"
@@ -197,4 +196,3 @@ void RenderLayerFilterInfo::removeCustomFilterClients()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_FILTERS)

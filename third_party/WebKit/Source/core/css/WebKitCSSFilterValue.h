@@ -26,8 +26,6 @@
 #ifndef WebKitCSSFilterValue_h
 #define WebKitCSSFilterValue_h
 
-#if ENABLE(CSS_FILTERS)
-
 #include "CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -79,6 +77,5 @@ private:
 
 }
 
-#endif // ENABLE(CSS_FILTERS)
 
 #endif

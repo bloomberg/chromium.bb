@@ -104,9 +104,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_marquee(o.m_marquee)
     , m_multiCol(o.m_multiCol)
     , m_transform(o.m_transform)
-#if ENABLE(CSS_FILTERS)
     , m_filter(o.m_filter)
-#endif
     , m_grid(o.m_grid)
     , m_gridItem(o.m_gridItem)
     , m_content(o.m_content ? o.m_content->clone() : nullptr)
@@ -186,9 +184,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_marquee == o.m_marquee
         && m_multiCol == o.m_multiCol
         && m_transform == o.m_transform
-#if ENABLE(CSS_FILTERS)
         && m_filter == o.m_filter
-#endif
         && m_grid == o.m_grid
         && m_gridItem == o.m_gridItem
         && contentDataEquivalent(o)
@@ -317,9 +313,7 @@ void StyleRareNonInheritedData::reportMemoryUsage(MemoryObjectInfo* memoryObject
     info.addMember(m_marquee, "marquee");
     info.addMember(m_multiCol, "multiCol");
     info.addMember(m_transform, "transform");
-#if ENABLE(CSS_FILTERS)
     info.addMember(m_filter, "filter");
-#endif
     info.addMember(m_grid, "grid");
     info.addMember(m_gridItem, "gridItem");
     info.addMember(m_content, "content");

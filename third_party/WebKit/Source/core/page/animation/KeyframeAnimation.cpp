@@ -56,9 +56,7 @@ KeyframeAnimation::KeyframeAnimation(const Animation* animation, RenderObject* r
 
     // Update the m_transformFunctionListValid flag based on whether the function lists in the keyframes match.
     validateTransformFunctionList();
-#if ENABLE(CSS_FILTERS)
     checkForMatchingFilterFunctionLists();
-#endif
 }
 
 KeyframeAnimation::~KeyframeAnimation()
@@ -383,7 +381,6 @@ void KeyframeAnimation::validateTransformFunctionList()
     m_transformFunctionListValid = true;
 }
 
-#if ENABLE(CSS_FILTERS)
 void KeyframeAnimation::checkForMatchingFilterFunctionLists()
 {
     m_filterFunctionListsMatch = false;
@@ -422,7 +419,6 @@ void KeyframeAnimation::checkForMatchingFilterFunctionLists()
     
     m_filterFunctionListsMatch = true;
 }
-#endif
 
 double KeyframeAnimation::timeToNextService()
 {

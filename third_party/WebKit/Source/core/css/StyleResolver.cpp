@@ -137,10 +137,8 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(CSS_FILTERS)
 #include "FilterOperation.h"
 #include "WebKitCSSFilterValue.h"
-#endif
 
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"
@@ -222,7 +220,7 @@ inline void StyleResolver::State::clear()
     m_regionForStyling = 0;
     m_pendingImageProperties.clear();
     m_hasPendingShaders = false;
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
     m_pendingSVGDocuments.clear();
 #endif
 }
@@ -2729,7 +2727,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-#if ENABLE(CSS_FILTERS)
     case CSSPropertyWebkitFilter: {
         HANDLE_INHERIT_AND_INITIAL(filter, Filter);
         FilterOperations operations;
@@ -2737,7 +2734,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             state.style()->setFilter(operations);
         return;
     }
-#endif
     case CSSPropertyWebkitGridAutoColumns: {
         GridTrackSize trackSize;
         if (!createGridTrackSize(value, trackSize, state))
@@ -3709,7 +3705,6 @@ bool StyleResolver::createTransformOperations(CSSValue* inValue, RenderStyle* st
     return true;
 }
 
-#if ENABLE(CSS_FILTERS)
 static FilterOperation::OperationType filterOperationForType(WebKitCSSFilterValue::FilterOperationType type)
 {
     switch (type) {
@@ -3743,7 +3738,7 @@ static FilterOperation::OperationType filterOperationForType(WebKitCSSFilterValu
     return FilterOperation::NONE;
 }
 
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
 void StyleResolver::loadPendingSVGDocuments()
 {
     State& state = m_state;
@@ -4237,7 +4232,6 @@ bool StyleResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style
     return true;
 }
 
-#endif
 
 PassRefPtr<StyleImage> StyleResolver::loadPendingImage(StylePendingImage* pendingImage)
 {
@@ -4359,7 +4353,7 @@ void StyleResolver::loadPendingResources()
     // Start loading the shaders referenced by this style.
     loadPendingShaders();
     
-#if ENABLE(CSS_FILTERS) && ENABLE(SVG)
+#if ENABLE(SVG)
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments();
 #endif

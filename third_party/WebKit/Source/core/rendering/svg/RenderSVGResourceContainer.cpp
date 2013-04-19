@@ -121,11 +121,9 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
 
 void RenderSVGResourceContainer::markAllClientLayersForInvalidation()
 {
-#if ENABLE(CSS_FILTERS)
     HashSet<RenderLayer*>::iterator layerEnd = m_clientLayers.end();
     for (HashSet<RenderLayer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
         (*it)->filterNeedsRepaint();
-#endif
 }
 
 void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client, InvalidationMode mode)

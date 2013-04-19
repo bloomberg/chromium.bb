@@ -108,9 +108,7 @@ private:
     PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle*) const;
 #endif
 
-#if ENABLE(CSS_FILTERS)
     PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle*) const;
-#endif
 
     PassRefPtr<CSSValueList> getCSSPropertyValuesForShorthandProperties(const StylePropertyShorthand&) const;
     PassRefPtr<CSSValueList> getCSSPropertyValuesForSidesShorthand(const StylePropertyShorthand&) const;

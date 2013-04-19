@@ -51,11 +51,9 @@
 #include "Document.h"
 #include "DocumentEventQueue.h"
 #include "EventHandler.h"
-#if ENABLE(CSS_FILTERS)
 #include "FEColorMatrix.h"
 #include "FEMerge.h"
 #include "FilterEffectRenderer.h"
-#endif
 #include "UseCounter.h"
 #include "FloatConversion.h"
 #include "FloatPoint3D.h"
@@ -171,9 +169,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_layerListMutationAllowed(true)
 #endif
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
-#if ENABLE(CSS_FILTERS)
     , m_hasFilterInfo(false)
-#endif
 #if ENABLE(CSS_COMPOSITING)
     , m_blendMode(BlendModeNormal)
 #endif
@@ -243,10 +239,8 @@ RenderLayer::~RenderLayer()
 
     if (m_reflection)
         removeReflection();
-    
-#if ENABLE(CSS_FILTERS)
+
     removeFilterInfoIfNeeded();
-#endif
 
     // Child layers will be deleted by their corresponding render objects, so
     // we don't need to delete them ourselves.
@@ -291,7 +285,6 @@ bool RenderLayer::canRender3DTransforms() const
     return compositor()->canRender3DTransforms();
 }
 
-#if ENABLE(CSS_FILTERS)
 bool RenderLayer::paintsWithFilters() const
 {
     // FIXME: Eventually there will be more factors than isComposited() to decide whether or not to render the filter
@@ -314,7 +307,6 @@ bool RenderLayer::requiresFullLayerImageForFilters() const
     FilterEffectRenderer* filter = filterRenderer();
     return filter ? filter->hasFilterThatMovesPixels() : false;
 }
-#endif
 
 LayoutPoint RenderLayer::computeOffsetFromRoot(bool& hasLayerOffset) const
 {
@@ -1351,7 +1343,6 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) 
     return 0;
 }
 
-#if ENABLE(CSS_FILTERS)
 RenderLayer* RenderLayer::enclosingFilterLayer(bool includeSelf) const
 {
     const RenderLayer* curr = includeSelf ? this : parent();
@@ -1430,7 +1421,6 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
     }
     return false;
 }
-#endif
     
 RenderLayer* RenderLayer::clippingRootForPainting() const
 {
@@ -1555,9 +1545,7 @@ static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLaye
         // paints unfragmented.
         LayoutRect clipRect = layer->boundingBox(layer);
         expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, paintBehavior);
-#if ENABLE(CSS_FILTERS)
         layer->renderer()->style()->filterOutsets().expandRect(clipRect);
-#endif
         LayoutRect result = transform.mapRect(clipRect);
         if (!paginationLayer)
             return result;
@@ -1576,9 +1564,7 @@ static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLaye
     
     LayoutRect clipRect = layer->boundingBox(rootLayer, RenderLayer::UseFragmentBoxes);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, paintBehavior);
-#if ENABLE(CSS_FILTERS)
     layer->renderer()->style()->filterOutsets().expandRect(clipRect);
-#endif
     return clipRect;
 }
 
@@ -3626,7 +3612,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
-#if ENABLE(CSS_FILTERS)
     FilterEffectRendererHelper filterPainter(filterRenderer() && paintsWithFilters());
     if (filterPainter.haveFilterEffect() && !context->paintingDisabled()) {
         RenderLayerFilterInfo* filterInfo = this->filterInfo();
@@ -3664,7 +3649,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one with the wrong context.
         beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, localPaintingInfo.paintBehavior);
     }
-#endif
 
     // If this layer's renderer is a child of the paintingRoot, we render unconditionally, which
     // is done by passing a nil paintingRoot down to our renderer (as if no paintingRoot was ever set).
@@ -3727,7 +3711,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     if (isPaintingOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo);
 
-#if ENABLE(CSS_FILTERS)
     if (filterPainter.hasStartedFilterEffect()) {
         // Apply the correct clipping (ie. overflow: hidden).
         // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
@@ -3736,7 +3719,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         context = filterPainter.applyFilterEffect();
         restoreClip(transparencyLayerContext, localPaintingInfo.paintDirtyRect, backgroundRect);
     }
-#endif
     
     // Make sure that we now use the original transparency context.
     ASSERT(transparencyLayerContext == context);
@@ -5289,14 +5271,12 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
             }
         }
     }
-    
-#if ENABLE(CSS_FILTERS)
+
     // FIXME: We can optimize the size of the composited layers, by not enlarging
     // filtered areas with the outsets if we know that the filter is going to render in hardware.
     // https://bugs.webkit.org/show_bug.cgi?id=81239
     if (flags & IncludeLayerFilterOutsets)
         renderer->style()->filterOutsets().expandRect(unionBounds);
-#endif
 
     if ((flags & IncludeSelfTransform) && paintsWithTransform(PaintBehaviorNormal)) {
         TransformationMatrix* affineTrans = transform();
@@ -5344,9 +5324,7 @@ RenderLayerBacking* RenderLayer::ensureBacking()
         m_backing = adoptPtr(new RenderLayerBacking(this));
         compositor()->layerBecameComposited(this);
 
-#if ENABLE(CSS_FILTERS)
         updateOrRemoveFilterEffectRenderer();
-#endif
 #if ENABLE(CSS_COMPOSITING)
         backing()->setBlendMode(m_blendMode);
 #endif
@@ -5360,12 +5338,8 @@ void RenderLayer::clearBacking(bool layerBeingDestroyed)
         compositor()->layerBecameNonComposited(this);
     m_backing.clear();
 
-#if ENABLE(CSS_FILTERS)
     if (!layerBeingDestroyed)
         updateOrRemoveFilterEffectRenderer();
-#else
-    UNUSED_PARAM(layerBeingDestroyed);
-#endif
 }
 
 bool RenderLayer::hasCompositedMask() const
@@ -5686,9 +5660,7 @@ bool RenderLayer::shouldBeNormalFlowOnly() const
             && !renderer()->isPositioned()
             && !renderer()->hasTransform()
             && !renderer()->hasClipPath()
-#if ENABLE(CSS_FILTERS)
             && !renderer()->hasFilter()
-#endif
 #if ENABLE(CSS_COMPOSITING)
             && !renderer()->hasBlendMode()
 #endif
@@ -5885,13 +5857,11 @@ void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
     }
 }
 
-#if ENABLE(CSS_FILTERS)
 static bool hasOrHadFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     ASSERT(newStyle);
     return (oldStyle && oldStyle->hasFilter()) || newStyle->hasFilter();
 }
-#endif
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
@@ -5905,7 +5875,6 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderSt
     return !isComposited() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && stackingContainer()->hasCompositingDescendant();
 }
 
-#if ENABLE(CSS_FILTERS)
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const
 {
     if (!hasOrHadFilters(oldStyle, newStyle))
@@ -5938,9 +5907,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderSty
 
     return false;
 }
-#endif // ENABLE(CSS_FILTERS)
 
-#if ENABLE(CSS_FILTERS)
 void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     if (!hasOrHadFilters(oldStyle, newStyle))
@@ -5961,7 +5928,6 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     if (shouldUpdateFilters && newStyle->filter().hasReferenceFilter())
         backing()->updateFilters(renderer()->style());
 }
-#endif
 
 void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 {
@@ -6017,11 +5983,9 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 
     bool didPaintWithFilters = false;
 
-#if ENABLE(CSS_FILTERS)
     if (paintsWithFilters())
         didPaintWithFilters = true;
     updateFilters(oldStyle, renderer()->style());
-#endif
 
     updateNeedsCompositedScrolling();
 
@@ -6151,7 +6115,6 @@ bool RenderLayer::isCSSCustomFilterEnabled() const
     return settings && settings->isCSSCustomFilterEnabled() && settings->webGLEnabled();
 }
 
-#if ENABLE(CSS_FILTERS)
 FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
 {
     const FilterOperations& filters = style->filter();
@@ -6255,7 +6218,6 @@ void RenderLayer::filterNeedsRepaint()
     if (renderer()->view())
         renderer()->repaint();
 }
-#endif
 
 void RenderLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

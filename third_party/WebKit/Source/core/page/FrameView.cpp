@@ -187,9 +187,7 @@ FrameView::FrameView(Frame* frame)
     , m_didRunAutosize(false)
     , m_headerHeight(0)
     , m_footerHeight(0)
-#if ENABLE(CSS_FILTERS)
     , m_hasSoftwareFilters(false)
-#endif
     , m_visibleContentScaleFactor(1)
 {
     init();
@@ -1461,13 +1459,11 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             continue;
         }
 
-#if ENABLE(CSS_FILTERS)
         if (layer->hasAncestorWithFilterOutsets()) {
             // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot 
             // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
             return false;
         }
-#endif
         IntRect updateRect = pixelSnappedIntRect(layer->repaintRectIncludingNonCompositingDescendants());
         updateRect = contentsToRootView(updateRect);
         if (!isCompositedContentLayer && clipsRepaints())

@@ -30,8 +30,6 @@
 #ifndef RenderLayerFilterInfo_h
 #define RenderLayerFilterInfo_h
 
-#if ENABLE(CSS_FILTERS)
-
 #include "FilterOperation.h"
 #include "LayoutRect.h"
 #include <wtf/HashMap.h>
@@ -105,6 +103,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_FILTERS)
 
 #endif // RenderLayerFilterInfo_h
