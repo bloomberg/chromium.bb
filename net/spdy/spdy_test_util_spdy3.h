@@ -109,7 +109,7 @@ SpdyFrame* ConstructSpdyControlFrameWithVersion(
     const char* const extra_headers[],
     int extra_header_count,
     bool compressed,
-    int stream_id,
+    SpdyStreamId stream_id,
     RequestPriority request_priority,
     SpdyFrameType type,
     SpdyControlFlags flags,
