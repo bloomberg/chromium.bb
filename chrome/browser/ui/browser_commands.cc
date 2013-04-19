@@ -853,6 +853,11 @@ void FocusBookmarksToolbar(Browser* browser) {
   browser->window()->FocusBookmarksToolbar();
 }
 
+void FocusInfobars(Browser* browser) {
+  content::RecordAction(UserMetricsAction("FocusInfobars"));
+  browser->window()->FocusInfobars();
+}
+
 void FocusNextPane(Browser* browser) {
   content::RecordAction(UserMetricsAction("FocusNextPane"));
   browser->window()->RotatePaneFocus(true);

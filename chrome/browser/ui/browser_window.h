@@ -162,6 +162,9 @@ class BrowserWindow : public BaseWindow {
   // Focuses the bookmarks toolbar (for accessibility).
   virtual void FocusBookmarksToolbar() = 0;
 
+  // Focuses an infobar, if shown (for accessibility).
+  virtual void FocusInfobars() = 0;
+
   // Moves keyboard focus to the next pane.
   virtual void RotatePaneFocus(bool forwards) = 0;
 

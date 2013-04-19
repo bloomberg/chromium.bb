@@ -57,6 +57,7 @@ BEGIN
     "E",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
     "T",            IDC_FOCUS_TOOLBAR,          VIRTKEY, SHIFT, ALT
     "B",            IDC_FOCUS_BOOKMARKS,        VIRTKEY, SHIFT, ALT
+    "A",            IDC_FOCUS_INFOBARS,         VIRTKEY, SHIFT, ALT
     VK_RIGHT,       IDC_FORWARD,                VIRTKEY, ALT
     VK_BACK,        IDC_FORWARD,                VIRTKEY, SHIFT
     VK_F11,         IDC_FULLSCREEN,             VIRTKEY

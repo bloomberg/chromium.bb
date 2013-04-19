@@ -37,6 +37,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_E, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH },
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_TOOLBAR },
   { ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_BOOKMARKS },
+  { ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_INFOBARS },
   { ui::VKEY_RIGHT, ui::EF_ALT_DOWN, IDC_FORWARD },
   { ui::VKEY_BACK, ui::EF_SHIFT_DOWN, IDC_FORWARD },
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_DEV_TOOLS },

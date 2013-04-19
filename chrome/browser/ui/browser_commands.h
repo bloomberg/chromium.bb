@@ -126,6 +126,7 @@ void FocusLocationBar(Browser* browser);
 void FocusSearch(Browser* browser);
 void FocusAppMenu(Browser* browser);
 void FocusBookmarksToolbar(Browser* browser);
+void FocusInfobars(Browser* browser);
 void FocusNextPane(Browser* browser);
 void FocusPreviousPane(Browser* browser);
 void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action);

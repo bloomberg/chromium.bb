@@ -1040,8 +1040,13 @@ void BrowserView::FocusBookmarksToolbar() {
   if (bookmark_bar_view_.get() &&
       bookmark_bar_view_->visible() &&
       bookmark_bar_view_->GetPreferredSize().height() != 0) {
-    bookmark_bar_view_->SetPaneFocus(bookmark_bar_view_.get());
+    bookmark_bar_view_->SetPaneFocusAndFocusDefault();
   }
+}
+
+void BrowserView::FocusInfobars() {
+  if (infobar_container_->child_count() > 0)
+    infobar_container_->SetPaneFocusAndFocusDefault();
 }
 
 void BrowserView::FocusAppMenu() {

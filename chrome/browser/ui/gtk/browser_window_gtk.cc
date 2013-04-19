@@ -917,6 +917,10 @@ void BrowserWindowGtk::FocusBookmarksToolbar() {
   NOTIMPLEMENTED();
 }
 
+void BrowserWindowGtk::FocusInfobars() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::RotatePaneFocus(bool forwards) {
   NOTIMPLEMENTED();
 }

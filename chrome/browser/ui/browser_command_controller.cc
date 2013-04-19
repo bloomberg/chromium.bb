@@ -594,6 +594,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_FOCUS_BOOKMARKS:
       FocusBookmarksToolbar(browser_);
       break;
+    case IDC_FOCUS_INFOBARS:
+      FocusInfobars(browser_);
+      break;
     case IDC_FOCUS_NEXT_PANE:
       FocusNextPane(browser_);
       break;
@@ -1132,6 +1135,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
       IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
       IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_INFOBARS, main_not_fullscreen);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
