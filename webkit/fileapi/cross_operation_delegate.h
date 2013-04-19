@@ -50,14 +50,22 @@ class CrossOperationDelegate
   using base::SupportsWeakPtr<CrossOperationDelegate>::AsWeakPtr;
 
  private:
+  struct URLPair {
+    URLPair(const FileSystemURL& src, const FileSystemURL& dest)
+        : src(src),
+          dest(dest) {
+    }
+    FileSystemURL src;
+    FileSystemURL dest;
+  };
+
   void DidTryCopyOrMoveFile(base::PlatformFileError error);
   void DidTryRemoveDestRoot(base::PlatformFileError error);
   void CopyOrMoveFile(
-      const FileSystemURL& src,
-      const FileSystemURL& dest,
+      const URLPair& url_pair,
       const StatusCallback& callback);
   void DidCreateSnapshot(
-      const FileSystemURL& dest,
+      const URLPair& url_pair,
       const StatusCallback& callback,
       base::PlatformFileError error,
       const base::PlatformFileInfo& file_info,

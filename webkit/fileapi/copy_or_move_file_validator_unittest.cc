@@ -171,6 +171,7 @@ class TestCopyOrMoveFileValidatorFactory
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+      const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) {
     return new TestCopyOrMoveFileValidator(all_valid_);
   }

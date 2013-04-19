@@ -55,14 +55,14 @@ void CrossOperationDelegate::RunRecursively() {
   }
 
   // First try to copy/move it as a file.
-  CopyOrMoveFile(src_root_, dest_root_,
+  CopyOrMoveFile(URLPair(src_root_, dest_root_),
                  base::Bind(&CrossOperationDelegate::DidTryCopyOrMoveFile,
                             AsWeakPtr()));
 }
 
 void CrossOperationDelegate::ProcessFile(const FileSystemURL& src_url,
                                          const StatusCallback& callback) {
-  CopyOrMoveFile(src_url, CreateDestURL(src_url), callback);
+  CopyOrMoveFile(URLPair(src_url, CreateDestURL(src_url)), callback);
 }
 
 void CrossOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
@@ -114,16 +114,17 @@ void CrossOperationDelegate::DidTryRemoveDestRoot(
                             AsWeakPtr(), src_root_, callback_));
 }
 
-void CrossOperationDelegate::CopyOrMoveFile(
-    const FileSystemURL& src,
-    const FileSystemURL& dest,
-    const StatusCallback& callback) {
+void CrossOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
+                                            const StatusCallback& callback) {
   // Same filesystem case.
   if (same_file_system_) {
-    if (operation_type_ == OPERATION_MOVE)
-      NewSourceOperation()->MoveFileLocal(src, dest, callback);
-    else
-      NewSourceOperation()->CopyFileLocal(src, dest, callback);
+    if (operation_type_ == OPERATION_MOVE) {
+      NewSourceOperation()->MoveFileLocal(url_pair.src, url_pair.dest,
+                                          callback);
+    } else {
+      NewSourceOperation()->CopyFileLocal(url_pair.src, url_pair.dest,
+                                          callback);
+    }
     return;
   }
 
@@ -132,14 +133,15 @@ void CrossOperationDelegate::CopyOrMoveFile(
   // copy_callback which removes the source file if operation_type == MOVE.
   StatusCallback copy_callback =
       base::Bind(&CrossOperationDelegate::DidFinishCopy, AsWeakPtr(),
-                 src, callback);
+                 url_pair.src, callback);
   NewSourceOperation()->CreateSnapshotFile(
-      src, base::Bind(&CrossOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
-                      dest, copy_callback));
+      url_pair.src,
+      base::Bind(&CrossOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
+                 url_pair, copy_callback));
 }
 
 void CrossOperationDelegate::DidCreateSnapshot(
-    const FileSystemURL& dest,
+    const URLPair& url_pair,
     const StatusCallback& callback,
     base::PlatformFileError error,
     const base::PlatformFileInfo& file_info,
@@ -163,14 +165,15 @@ void CrossOperationDelegate::DidCreateSnapshot(
     return;
   }
   if (!factory) {
-    DidValidateFile(dest, callback, file_info, platform_path, error);
+    DidValidateFile(url_pair.dest, callback, file_info, platform_path, error);
     return;
   }
 
-  validator_.reset(factory->CreateCopyOrMoveFileValidator(platform_path));
+  validator_.reset(
+      factory->CreateCopyOrMoveFileValidator(url_pair.src, platform_path));
   validator_->StartValidation(
       base::Bind(&CrossOperationDelegate::DidValidateFile, AsWeakPtr(),
-                 dest, callback, file_info, platform_path));
+                 url_pair.dest, callback, file_info, platform_path));
 }
 
 void CrossOperationDelegate::DidValidateFile(

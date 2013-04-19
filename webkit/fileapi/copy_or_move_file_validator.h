@@ -26,8 +26,11 @@ class CopyOrMoveFileValidatorFactory {
  public:
   virtual ~CopyOrMoveFileValidatorFactory() {}
 
-  // This method must always return a non-NULL validator.
+  // This method must always return a non-NULL validator. |src_url| is needed
+  // in addition to |platform_path| because in the obfuscated file system
+  // case, |platform_path| will be an obfuscated filename and extension.
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+      const FileSystemURL& src_url,
       const base::FilePath& platform_path) = 0;
 };
 
