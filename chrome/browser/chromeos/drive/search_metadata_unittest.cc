@@ -325,6 +325,27 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
             result->at(0).path.AsUTF8Unsafe());
 }
 
+// "drive", "drive/root", "drive/other" should be excluded.
+TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
+  const char* kQueries[] = { "drive", "root", "other" };
+  for (size_t i = 0; i < arraysize(kQueries); ++i) {
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    scoped_ptr<MetadataSearchResultVector> result;
+
+    const std::string query = kQueries[i];
+    SearchMetadata(resource_metadata_.get(),
+                   query,
+                   SEARCH_METADATA_ALL,
+                   kDefaultAtMostNumMatches,
+                   google_apis::test_util::CreateCopyResultCallback(
+                       &error, &result));
+
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+    ASSERT_TRUE(result->empty()) << ": " << query << " should not match";
+  }
+}
+
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
   std::string highlighted_text;
   EXPECT_FALSE(FindAndHighlight("text", "query", &highlighted_text));

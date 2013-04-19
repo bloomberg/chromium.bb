@@ -89,6 +89,12 @@ bool IsEligibleEntry(const DriveEntryProto& entry, int options) {
   if (options & SEARCH_METADATA_SHARED_WITH_ME)
     return entry.shared_with_me();
 
+  // Exclude "drive", "drive/root", and "drive/other".
+  if (entry.resource_id() == util::kDriveGrandRootSpecialResourceId ||
+      entry.parent_resource_id() == util::kDriveGrandRootSpecialResourceId) {
+    return false;
+  }
+
   return true;
 }
 
