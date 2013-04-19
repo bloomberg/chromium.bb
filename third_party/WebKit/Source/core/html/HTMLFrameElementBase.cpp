@@ -49,7 +49,6 @@ HTMLFrameElementBase::HTMLFrameElementBase(const QualifiedName& tagName, Documen
     , m_scrolling(ScrollbarAuto)
     , m_marginWidth(-1)
     , m_marginHeight(-1)
-    , m_viewSource(false)
 {
 }
 
@@ -86,8 +85,6 @@ void HTMLFrameElementBase::openURL(bool lockHistory, bool lockBackForwardList)
         return;
 
     parentFrame->loader()->subframeLoader()->requestFrame(this, m_URL, m_frameName, lockHistory, lockBackForwardList);
-    if (contentFrame())
-        contentFrame()->setInViewSourceMode(viewSourceMode());
 }
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -118,12 +115,6 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
         else if (equalIgnoringCase(value, "no"))
             m_scrolling = ScrollbarAlwaysOff;
         // FIXME: If we are already attached, this has no effect.
-#if ENABLE(VIEWSOURCE_ATTRIBUTE)
-    } else if (name == viewsourceAttr) {
-        m_viewSource = !value.isNull();
-        if (contentFrame())
-            contentFrame()->setInViewSourceMode(viewSourceMode());
-#endif
     } else if (name == onbeforeloadAttr)
         setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
     else if (name == onbeforeunloadAttr) {

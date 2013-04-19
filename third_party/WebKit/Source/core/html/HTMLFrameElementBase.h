@@ -65,8 +65,6 @@ private:
 
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
-    bool viewSourceMode() const { return m_viewSource; }
-
     void setNameAndOpenURL();
     void openURL(bool lockHistory = true, bool lockBackForwardList = true);
 
@@ -77,8 +75,6 @@ private:
 
     int m_marginWidth;
     int m_marginHeight;
-
-    bool m_viewSource;
 };
 
 } // namespace WebCore
