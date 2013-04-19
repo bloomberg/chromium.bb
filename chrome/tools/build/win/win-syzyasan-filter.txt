@@ -11,5 +11,10 @@
 
 # This prevents SyzyASAN from instrumenting the 'rc4_wordconv' function, which
 # has a known heap-buffer-overflow bug:
-# https://code.google.com/p/chromium/issues/detail?id=174140
+# http://crbug.com/174140
 +function:rc4_wordconv
+
+# This prevents SyzyASAN from instrumenting the 'OnMouseRange' function, which
+# has a known use-after-free bug:
+# http://crbug.com/145293
++function:views::HWNDMessageHandler::OnMouseRange
