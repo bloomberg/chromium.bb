@@ -202,5 +202,27 @@ void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
   progress_values->push_back(ProgressInfo(progress, total));
 }
 
+TestGetContentCallback::TestGetContentCallback()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+          base::Bind(&TestGetContentCallback::OnGetContent,
+                     base::Unretained(this)))) {
+}
+
+TestGetContentCallback::~TestGetContentCallback() {
+}
+
+std::string TestGetContentCallback::GetConcatenatedData() const {
+  std::string result;
+  for (size_t i = 0; i < data_.size(); ++i) {
+    result += *data_[i];
+  }
+  return result;
+}
+
+void TestGetContentCallback::OnGetContent(google_apis::GDataErrorCode error,
+                                          scoped_ptr<std::string> data) {
+  data_.push_back(data.release());
+}
+
 }  // namespace test_util
 }  // namespace google_apis

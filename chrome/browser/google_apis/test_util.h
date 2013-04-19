@@ -12,7 +12,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/template_util.h"
+#include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -273,6 +275,27 @@ typedef std::pair<int64, int64> ProgressInfo;
 void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
                                   int64 progress,
                                   int64 total);
+
+// Helpeer utility for recording the content via GetContentCallback.
+class TestGetContentCallback {
+ public:
+  TestGetContentCallback();
+  ~TestGetContentCallback();
+
+  const GetContentCallback& callback() const { return callback_; }
+  const ScopedVector<std::string>& data() const { return data_; }
+  ScopedVector<std::string>* mutable_data() { return &data_; }
+  std::string GetConcatenatedData() const;
+
+ private:
+  void OnGetContent(google_apis::GDataErrorCode error,
+                    scoped_ptr<std::string> data);
+
+  const GetContentCallback callback_;
+  ScopedVector<std::string> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGetContentCallback);
+};
 
 }  // namespace test_util
 }  // namespace google_apis
