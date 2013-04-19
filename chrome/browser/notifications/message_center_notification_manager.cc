@@ -164,6 +164,9 @@ void MessageCenterNotificationManager::DisableExtension(
     const std::string& notification_id) {
   ProfileNotification* profile_notification =
       FindProfileNotification(notification_id);
+  if (!profile_notification)
+    return;
+
   std::string extension_id = profile_notification->GetExtensionId();
   DCHECK(!extension_id.empty());  // or UI should not have enabled the command.
   DesktopNotificationService* service =
@@ -176,6 +179,9 @@ void MessageCenterNotificationManager::DisableNotificationsFromSource(
     const std::string& notification_id) {
   ProfileNotification* profile_notification =
       FindProfileNotification(notification_id);
+  if (!profile_notification)
+    return;
+
   // UI should not have enabled the command if there is no valid source.
   DCHECK(profile_notification->notification().origin_url().is_valid());
   DesktopNotificationService* service =
@@ -194,6 +200,9 @@ void MessageCenterNotificationManager::ShowSettings(
 
   ProfileNotification* profile_notification =
       FindProfileNotification(notification_id);
+  if (!profile_notification)
+    return;
+
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(profile_notification->profile(),
                                         chrome::HOST_DESKTOP_TYPE_NATIVE);
@@ -224,13 +233,20 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
 
 void MessageCenterNotificationManager::OnNotificationClicked(
     const std::string& notification_id) {
-  FindProfileNotification(notification_id)->notification().Click();
+  ProfileNotification* profile_notification =
+      FindProfileNotification(notification_id);
+  if (!profile_notification)
+    return;
+  profile_notification->notification().Click();
 }
 void MessageCenterNotificationManager::OnNotificationButtonClicked(
     const std::string& notification_id,
     int button_index) {
-  FindProfileNotification(notification_id)->notification().ButtonClick(
-      button_index);
+  ProfileNotification* profile_notification =
+      FindProfileNotification(notification_id);
+  if (!profile_notification)
+    return;
+  profile_notification->notification().ButtonClick(button_index);
 }
 
 
@@ -409,8 +425,8 @@ MessageCenterNotificationManager::ProfileNotification*
     MessageCenterNotificationManager::FindProfileNotification(
         const std::string& id) const {
   NotificationMap::const_iterator iter = profile_notifications_.find(id);
-  // If the notification is shown in UI, it must be in the map.
-  DCHECK(iter != profile_notifications_.end());
-  DCHECK((*iter).second);
+  if (iter == profile_notifications_.end())
+    return NULL;
+
   return (*iter).second;
 }

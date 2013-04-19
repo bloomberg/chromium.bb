@@ -143,6 +143,8 @@ class MessageCenterNotificationManager
   void RemoveProfileNotification(ProfileNotification* profile_notification,
                                  bool by_user);
 
+  // Returns the ProfileNotification for the |id|, or NULL if no such
+  // notification is found.
   ProfileNotification* FindProfileNotification(const std::string& id) const;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
