@@ -1883,3 +1883,22 @@
    ...
    fun:extensions::WebstoreInlineInstallerTest_DomainVerification_Test::TestBody
 }
+{
+   bug_233532
+   Heapcheck:Leak
+   ...
+   fun:GetStoragePartitionFromConfig
+   fun:content::BrowserContext::GetStoragePartition
+   fun:content::NavigationControllerImpl::GetSessionStorageNamespace
+   fun:content::RenderViewHostManager::Init
+}
+{
+   bug_233541
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheTestWithCache::CreateBackend
+   ...
+   fun:DiskCacheTestWithCache::InitCache
+   fun:DiskCacheBackendTest_SimpleDoom*
+}
+

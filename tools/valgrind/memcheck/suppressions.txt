@@ -7065,3 +7065,12 @@
    fun:_Znw*
    fun:_ZN8chromeos52DeviceOAuth2TokenServiceTest_SaveEncryptedToken_Test8TestBodyEv
 }
+{
+   bug_233541
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22DiskCacheTestWithCache13CreateBackendEjPN4base6ThreadE
+   fun:_ZN22DiskCacheTestWithCache13InitDiskCacheEv
+   fun:_ZN22DiskCacheTestWithCache9InitCacheEv
+   fun:*DiskCacheBackendTest_SimpleDoom*
+}
