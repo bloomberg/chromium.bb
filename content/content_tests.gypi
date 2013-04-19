@@ -377,6 +377,7 @@
         'common/indexed_db/proxy_webidbcursor_impl_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/page_zoom_unittest.cc',
+        'common/partial_circular_buffer_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'common/sandbox_mac_diraccess_unittest.mm',
         'common/sandbox_mac_fontloading_unittest.mm',

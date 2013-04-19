@@ -322,6 +322,8 @@
     'common/p2p_messages.h',
     'common/p2p_sockets.h',
     'common/page_zoom.cc',
+    'common/partial_circular_buffer.cc',
+    'common/partial_circular_buffer.h',
     'common/pepper_messages.h',
     'common/pepper_plugin_registry.cc',
     'common/pepper_plugin_registry.h',
