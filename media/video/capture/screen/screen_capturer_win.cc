@@ -217,7 +217,7 @@ ScreenCapturerWin::ScreenCapturerWin(bool disable_aero)
     }
 
     if (dwmapi_library_.is_valid() && composition_func_ == NULL) {
-      composition_func_ = static_cast<DwmEnableCompositionFunc>(
+      composition_func_ = reinterpret_cast<DwmEnableCompositionFunc>(
           dwmapi_library_.GetFunctionPointer("DwmEnableComposition"));
     }
   }
@@ -542,8 +542,8 @@ void ScreenCapturerWin::CaptureCursor() {
       for (int x = 0; x < width; x++) {
         int byte = y * row_bytes + x / 8;
         int bit = 7 - x % 8;
-        int and = and_mask[byte] & (1 << bit);
-        int xor = xor_mask[byte] & (1 << bit);
+        int and_bit = and_mask[byte] & (1 << bit);
+        int xor_bit = xor_mask[byte] & (1 << bit);
 
         // The two cursor masks combine as follows:
         //  AND  XOR   Windows Result  Our result   RGB  Alpha
@@ -554,13 +554,13 @@ void ScreenCapturerWin::CaptureCursor() {
         // Since we don't support XOR cursors, we replace the "Reverse Screen"
         // with black. In this case, we also add an outline around the cursor
         // so that it is visible against a dark background.
-        int rgb = (!and && xor) ? 0xff : 0x00;
-        int alpha = (and && !xor) ? 0x00 : 0xff;
+        int rgb = (!and_bit && xor_bit) ? 0xff : 0x00;
+        int alpha = (and_bit && !xor_bit) ? 0x00 : 0xff;
         *dst++ = rgb;
         *dst++ = rgb;
         *dst++ = rgb;
         *dst++ = alpha;
-        if (and && xor) {
+        if (and_bit && xor_bit) {
           add_outline = true;
         }
       }
