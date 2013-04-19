@@ -154,6 +154,12 @@
       "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
     ]
   },
+  "enterprise.platformKeysPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app"],
+    "whitelist": [
+    ]
+  },
   "experimental": {
     "channel": "stable",
     "extension_types": [

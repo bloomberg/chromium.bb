@@ -871,6 +871,12 @@ const char kTermsOfServiceURL[] = "terms_of_service.url";
 // show a warning indicating that the organization may track the browsing
 // session.
 const char kUsedPolicyCertificatesOnce[] = "used_policy_certificates_once";
+
+// Indicates whether the remote attestation is enabled for the user.
+const char kAttestationEnabled[] = "attestation.enabled";
+// The list of extensions allowed to use the platformKeysPrivate API for
+// remote attestation.
+const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

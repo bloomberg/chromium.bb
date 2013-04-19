@@ -1735,6 +1735,22 @@
     ]
   },
 
+  "AttestationEnabledForUser": {
+    "os": ["chromeos"],
+    "test_policy": { "AttestationEnabledForUser": true },
+    "pref_mappings": [
+      { "pref": "attestation.enabled" }
+    ]
+  },
+
+  "AttestationExtensionWhitelist": {
+    "os": ["chromeos"],
+    "test_policy": { "AttestationExtensionWhitelist": ["test_ext_id1", "test_ext_id2"] },
+    "pref_mappings": [
+      { "pref": "attestation.extension_whitelist" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

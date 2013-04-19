@@ -38,6 +38,7 @@
           'downloads.idl',
           'echo_private.json',
           'downloads_internal.idl',
+          'enterprise_platform_keys_private.json',
           'events.json',
           'experimental_accessibility.json',
           'experimental_discovery.idl',

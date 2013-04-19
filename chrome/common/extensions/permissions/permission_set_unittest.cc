@@ -719,6 +719,7 @@ TEST_F(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDial);
   skip.insert(APIPermission::kDownloadsInternal);
   skip.insert(APIPermission::kEchoPrivate);
+  skip.insert(APIPermission::kEnterprisePlatformKeysPrivate);
   skip.insert(APIPermission::kFileBrowserHandlerInternal);
   skip.insert(APIPermission::kFileBrowserPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);

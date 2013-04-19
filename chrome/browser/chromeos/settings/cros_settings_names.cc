@@ -120,4 +120,7 @@ const char kKioskDisableBailoutShortcut[] =
 // when pinging the Variations server.
 const char kVariationsRestrictParameter[] =
     "cros.variations_restrict_parameter";
+
+// A boolean pref that indicates whether attestation is enabled for the device.
+const char kDeviceAttestationEnabled[] = "cros.device.attestation_enabled";
 }  // namespace chromeos

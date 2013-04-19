@@ -754,6 +754,8 @@
             'browser/extensions/default_apps.h',
           ],
           'sources': [
+            'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc',
+            'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h',
             'browser/extensions/api/input_ime/input_ime_api.cc',
             'browser/extensions/api/input_ime/input_ime_api.h',
             'browser/extensions/api/rtc_private/rtc_private_api.cc',

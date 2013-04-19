@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 199
+#   For your editing convenience: highest ID currently used: 201
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4519,6 +4519,49 @@
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
 
       If not specified, will not modify the Variations seed URL.''',
+    },
+    {
+      'name': 'Attestation',
+      'type': 'group',
+      'caption': 'Remote Attestation',
+      'desc': 'Configure the remote attestation with TPM mechanism.',
+      'policies': [
+        {
+          'name': 'AttestationEnabledForUser',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 200,
+          'caption': '''Enable remote attestation for the user.''',
+          'desc': '''If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          If it is set to false, or if it is not set, calls to the API will fail with an error code.''',
+        },
+        {
+          'name': 'AttestationExtensionWhitelist',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome_os:28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': ['ghdilpkmfbfdnomkmaiogjhjnggaggoi'],
+          'id': 201,
+          'caption': '''Extensions allowed to to use the remote attestation API.''',
+          'desc': '''This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
+
+          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
+        },
+      ],
     },
   ],
   'messages': {

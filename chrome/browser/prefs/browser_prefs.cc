@@ -133,6 +133,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+#include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -354,6 +355,8 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   chromeos::OAuth2LoginManager::RegisterUserPrefs(registry);
   chromeos::Preferences::RegisterUserPrefs(registry);
   chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(registry);
+  extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
+      RegisterUserPrefs(registry);
   FlagsUI::RegisterUserPrefs(registry);
 #endif
 

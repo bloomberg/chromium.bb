@@ -374,6 +374,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
     Value::TYPE_BOOLEAN },
+  { key::kAttestationEnabledForUser,
+    prefs::kAttestationEnabled,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -432,6 +435,12 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
           kExtensionAllowedTypesMap,
           kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap)));
+#if defined(OS_CHROMEOS)
+  handlers_.push_back(
+      new ExtensionListPolicyHandler(key::kAttestationExtensionWhitelist,
+                                     prefs::kAttestationExtensionWhitelist,
+                                     false));
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());

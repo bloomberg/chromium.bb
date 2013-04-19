@@ -308,7 +308,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kAudioOutputAllowed,
                       prefs::kAudioOutputAllowed),
         PolicyAndPref(key::kAudioCaptureAllowed,
-                      prefs::kAudioCaptureAllowed)));
+                      prefs::kAudioCaptureAllowed),
+        PolicyAndPref(key::kAttestationEnabledForUser,
+                      prefs::kAttestationEnabled)));
 #endif  // defined(OS_CHROMEOS)
 
 // Test cases for integer-valued policy settings.
