@@ -16,11 +16,10 @@ namespace extensions {
 class DOMAction : public Action {
  public:
   enum DOMActionType {
-    MODIFIED,    // For Content Script DOM manipulations
-    READ,        // For Content Script DOM manipulations
-    INSERTED,    // For when Content Scripts are added to pages
-    XHR,         // When an extension core sends an XHR
-    WEBREQUEST,  // When a page request is modified with the WebRequest API
+    MODIFIED,   // For Content Script DOM manipulations
+    READ,       // For Content Script DOM manipulations
+    INSERTED,   // For when Content Scripts are added to pages
+    XHR,        // When an extension core sends an XHR
   };
 
   static const char* kTableName;

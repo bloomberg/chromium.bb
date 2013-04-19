@@ -156,38 +156,18 @@ function doWebRequestModifications() {
   // Install a webRequest handler that will add an HTTP header to the outgoing
   // request for the main page.
   function doModifyHeaders(details) {
-    var response = {};
-
     var headers = details.requestHeaders;
     if (headers === undefined) {
       headers = [];
     }
     headers.push({'name': 'X-Test-Activity-Log-Send',
                   'value': 'Present'});
-    response['requestHeaders'] = headers;
-
-    headers = details.responseHeaders;
-    if (headers === undefined) {
-      headers = [];
-    }
-    headers = headers.filter(
-        function(x) {return x["name"] != "Cache-Control"});
-    headers.push({'name': 'X-Test-Response-Header',
-                  'value': 'Inserted'});
-    headers.push({'name': 'Set-Cookie',
-                  'value': 'ActivityLog=InsertedCookie'});
-    response['responseHeaders'] = headers;
-
-    return response;
+    return {'requestHeaders': headers};
   }
   chrome.webRequest.onBeforeSendHeaders.addListener(
       doModifyHeaders,
       {'urls': ['http://*/*'], 'types': ['main_frame']},
       ['blocking', 'requestHeaders']);
-  chrome.webRequest.onHeadersReceived.addListener(
-      doModifyHeaders,
-      {'urls': ['http://*/*'], 'types': ['main_frame']},
-      ['blocking', 'responseHeaders']);
 
   // Open a tab, then close it when it has finished loading--this should give
   // the webRequest handler a chance to run.

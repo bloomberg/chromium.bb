@@ -109,14 +109,6 @@ class ActivityLog : public ProfileKeyedService,
                     const ListValue* args,                // arguments
                     const std::string& extra);            // extra logging info
 
-  // Log a use of the WebRequest API to redirect, cancel, or modify page
-  // headers.
-  void LogWebRequestAction(const Extension* extension,
-                           const GURL& url,
-                           const std::string& api_call,
-                           scoped_ptr<base::DictionaryValue> details,
-                           const std::string& extra);
-
   // Retrieves the list of actions for a given extension on a specific day.
   // Today is 0, yesterday is 1, etc. Returns one day at a time.
   // Response is sent to the method/function in the callback.

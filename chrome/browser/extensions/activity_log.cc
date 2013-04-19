@@ -356,50 +356,6 @@ void ActivityLog::LogDOMAction(const Extension* extension,
                        DOMAction::MODIFIED);
 }
 
-void ActivityLog::LogWebRequestAction(const Extension* extension,
-                                      const GURL& url,
-                                      const std::string& api_call,
-                                      scoped_ptr<DictionaryValue> details,
-                                      const std::string& extra) {
-  string16 null_title;
-  if (!IsLogEnabled()) return;
-
-  // Strip details of the web request modifications (for privacy reasons),
-  // unless testing is enabled.
-  if (!testing_mode_) {
-    DictionaryValue::Iterator details_iterator(*details);
-    while (!details_iterator.IsAtEnd()) {
-      details->SetBoolean(details_iterator.key(), true);
-      details_iterator.Advance();
-    }
-  }
-  std::string details_string;
-  JSONStringValueSerializer serializer(&details_string);
-  serializer.SerializeAndOmitBinaryValues(*details);
-
-  scoped_refptr<DOMAction> action = new DOMAction(
-      extension->id(),
-      base::Time::Now(),
-      DOMAction::WEBREQUEST,
-      url,
-      null_title,
-      api_call,
-      details_string,
-      extra);
-  ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-
-  // Display the action.
-  ObserverMap::const_iterator iter = observers_.find(extension);
-  if (iter != observers_.end()) {
-    iter->second->Notify(&Observer::OnExtensionActivity,
-                         extension,
-                         ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                         action->PrettyPrintForDebug());
-  }
-  if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrettyPrintForDebug();
-}
-
 void ActivityLog::GetActions(
     const std::string& extension_id,
     const int day,
