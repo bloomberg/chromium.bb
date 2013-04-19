@@ -85,6 +85,8 @@ PlatformFileError NativeFileUtil::CreateOrOpen(
     // If its parent does not exist, should return NOT_FOUND error.
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
+  if (file_util::DirectoryExists(path))
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   PlatformFileError error_code = base::PLATFORM_FILE_OK;
   *file_handle = base::CreatePlatformFile(path, file_flags,
                                           created, &error_code);
