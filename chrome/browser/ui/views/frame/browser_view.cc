@@ -809,7 +809,7 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
     fullscreen_bubble_->UpdateContent(url, bubble_type);
   } else {
     fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
-        GetWidget(), browser_.get(), url, bubble_type));
+        this, url, bubble_type));
   }
 }
 
@@ -2319,7 +2319,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         type != FOR_METRO &&
         !UseImmersiveFullscreenForUrl(url)) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
-          GetWidget(), browser_.get(), url, bubble_type));
+          this, url, bubble_type));
     }
   } else {
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -225,6 +225,10 @@ bool FullscreenExitBubbleGtk::IsAnimating() {
   return slide_widget_->IsAnimating();
 }
 
+bool FullscreenExitBubbleGtk::CanMouseTriggerSlideIn() const {
+  return true;
+}
+
 void FullscreenExitBubbleGtk::StartWatchingMouseIfNecessary() {
   if (!fullscreen_bubble::ShowButtonsForType(bubble_type_))
     StartWatchingMouse();

@@ -42,6 +42,7 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble,
   virtual void Hide() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual bool IsAnimating() OVERRIDE;
+  virtual bool CanMouseTriggerSlideIn() const OVERRIDE;
 
  private:
   void InitWidgets();

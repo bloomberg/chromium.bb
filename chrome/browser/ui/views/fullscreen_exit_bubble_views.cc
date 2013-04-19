@@ -7,6 +7,12 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -249,19 +255,20 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
 // FullscreenExitBubbleViews ---------------------------------------------------
 
 FullscreenExitBubbleViews::FullscreenExitBubbleViews(
-    views::Widget* frame,
-    Browser* browser,
+    BrowserView* browser_view,
     const GURL& url,
     FullscreenExitBubbleType bubble_type)
-    : FullscreenExitBubble(browser, url, bubble_type),
-      root_view_(frame->GetRootView()),
+    : FullscreenExitBubble(browser_view->browser(), url, bubble_type),
+      browser_view_(browser_view),
       popup_(NULL),
-      size_animation_(new ui::SlideAnimation(this)) {
-  size_animation_->Reset(1);
+      animation_(new ui::SlideAnimation(this)),
+      animated_attribute_(ANIMATED_ATTRIBUTE_BOUNDS) {
+  animation_->Reset(1);
 
   // Create the contents view.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
-  bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
+  bool got_accelerator = browser_view_->GetWidget()->GetAccelerator(
+      IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
   view_ = new FullscreenExitView(
       this, accelerator.GetShortcutText(), url, bubble_type_);
@@ -273,7 +280,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   params.transparent = true;
   params.can_activate = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = frame->GetNativeView();
+  params.parent = browser_view_->GetWidget()->GetNativeView();
   params.bounds = GetPopupRect(false);
   popup_->Init(params);
   gfx::Size size = GetPopupRect(true).size();
@@ -286,10 +293,25 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   view_->SetBounds(0, 0, size.width(), size.height());
   popup_->Show();  // This does not activate the popup.
 
-  StartWatchingMouseIfNecessary();
+  popup_->AddObserver(this);
+
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::Source<FullscreenController>(
+          browser_view_->browser()->fullscreen_controller()));
+
+  UpdateForImmersiveState();
 }
 
 FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
+  popup_->RemoveObserver(this);
+  ImmersiveModeController* immersive_controller =
+      browser_view_->immersive_mode_controller();
+  // |immersive_controller| may already have been destroyed.
+  if (immersive_controller)
+    immersive_controller->UnanchorWidgetFromTopContainer(popup_);
+
   // This is tricky.  We may be in an ATL message handler stack, in which case
   // the popup cannot be deleted yet.  We also can't set the popup's ownership
   // model to NATIVE_WIDGET_OWNS_WIDGET because if the user closed the last tab
@@ -319,12 +341,68 @@ void FullscreenExitBubbleViews::UpdateContent(
   popup_->SetBounds(GetPopupRect(false));
   Show();
 
+  // Stop watching the mouse even if UpdateMouseWatcher() will start watching
+  // it again so that the popup with the new content is visible for at least
+  // |kInitialDelayMs|.
   StopWatchingMouse();
-  StartWatchingMouseIfNecessary();
+
+  UpdateMouseWatcher();
 }
 
-void FullscreenExitBubbleViews::AnimationProgressed(
-    const ui::Animation* animation) {
+void FullscreenExitBubbleViews::UpdateMouseWatcher() {
+  bool should_watch_mouse = false;
+  if (popup_->IsVisible())
+    should_watch_mouse = !fullscreen_bubble::ShowButtonsForType(bubble_type_);
+  else
+    should_watch_mouse = CanMouseTriggerSlideIn();
+
+  if (should_watch_mouse == IsWatchingMouse())
+    return;
+
+  if (should_watch_mouse)
+    StartWatchingMouse();
+  else
+    StopWatchingMouse();
+}
+
+void FullscreenExitBubbleViews::UpdateForImmersiveState() {
+  ImmersiveModeController* immersive_controller =
+      browser_view_->immersive_mode_controller();
+
+  AnimatedAttribute expected_animated_attribute =
+      immersive_controller->IsEnabled() ?
+          ANIMATED_ATTRIBUTE_OPACITY : ANIMATED_ATTRIBUTE_BOUNDS;
+  if (animated_attribute_ != expected_animated_attribute) {
+    // If an animation is currently in progress, skip to the end because
+    // switching the animated attribute midway through the animation looks
+    // weird.
+    animation_->End();
+
+    animated_attribute_ = expected_animated_attribute;
+
+    // We may have finished hiding |popup_|. However, the bounds animation
+    // assumes |popup_| has the opacity when it is fully shown and the opacity
+    // animation assumes |popup_| has the bounds when |popup_| is fully shown.
+    if (animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS)
+      popup_->SetOpacity(255);
+    else
+      UpdateBounds();
+  }
+
+  if (immersive_controller->IsEnabled()) {
+    // In immersive mode, anchor |popup_| to the top container. This repositions
+    // the top container so that it stays |kPopupTopPx| below the top container
+    // when the top container animates its position (top container reveals /
+    // unreveals) or the top container bounds change (eg bookmark bar is shown).
+    immersive_controller->AnchorWidgetToTopContainer(popup_, kPopupTopPx);
+  } else {
+    immersive_controller->UnanchorWidgetFromTopContainer(popup_);
+  }
+
+  UpdateMouseWatcher();
+}
+
+void FullscreenExitBubbleViews::UpdateBounds() {
   gfx::Rect popup_rect(GetPopupRect(false));
   if (popup_rect.IsEmpty()) {
     popup_->Hide();
@@ -332,6 +410,25 @@ void FullscreenExitBubbleViews::AnimationProgressed(
     popup_->SetBounds(popup_rect);
     view_->SetY(popup_rect.height() - view_->height());
     popup_->Show();
+  }
+}
+
+views::View* FullscreenExitBubbleViews::GetBrowserRootView() const {
+  return browser_view_->GetWidget()->GetRootView();
+}
+
+void FullscreenExitBubbleViews::AnimationProgressed(
+    const ui::Animation* animation) {
+  if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
+    int opacity = animation_->CurrentValueBetween(0, 255);
+    if (opacity == 0) {
+      popup_->Hide();
+    } else {
+      popup_->Show();
+      popup_->SetOpacity(opacity);
+    }
+  } else {
+    UpdateBounds();
   }
 }
 
@@ -343,56 +440,84 @@ void FullscreenExitBubbleViews::AnimationEnded(
 gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
     bool ignore_animation_state) const {
   gfx::Size size(view_->GetPreferredSize());
-  // NOTE: don't use the bounds of the root_view_. On linux changing window
+  // NOTE: don't use the bounds of the root_view_. On linux GTK changing window
   // size is async. Instead we use the size of the screen.
   gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(root_view_->GetWidget()->GetNativeView());
+      gfx::Screen::GetScreenFor(browser_view_->GetWidget()->GetNativeView());
   gfx::Rect screen_bounds = screen->GetDisplayNearestWindow(
-      root_view_->GetWidget()->GetNativeView()).bounds();
-  gfx::Point origin(screen_bounds.x() +
-                    (screen_bounds.width() - size.width()) / 2,
-                    kPopupTopPx + screen_bounds.y());
-  if (!ignore_animation_state) {
+      browser_view_->GetWidget()->GetNativeView()).bounds();
+  int x = screen_bounds.x() + (screen_bounds.width() - size.width()) / 2;
+
+  int top_container_bottom = screen_bounds.y();
+  if (browser_view_->immersive_mode_controller()->IsEnabled()) {
+    // Skip querying the top container height in non-immersive fullscreen
+    // because:
+    // - The top container height is always zero in non-immersive fullscreen.
+    // - Querying the top container height may return the height before entering
+    //   fullscreen because layout is disabled while entering fullscreen.
+    // A visual glitch due to the delayed layout is avoided in immersive
+    // fullscreen because entering fullscreen starts with the top container
+    // revealed. When revealed, the top container has the same height as before
+    // entering fullscreen.
+    top_container_bottom =
+        browser_view_->top_container()->GetTargetBoundsInScreen().bottom();
+  }
+  int y = top_container_bottom + kPopupTopPx;
+
+  if (!ignore_animation_state &&
+      animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS) {
     int total_height = size.height() + kPopupTopPx;
-    int popup_bottom = size_animation_->CurrentValueBetween(
-        static_cast<double>(total_height), 0.0f);
+    int popup_bottom = animation_->CurrentValueBetween(total_height, 0);
     int y_offset = std::min(popup_bottom, kPopupTopPx);
     size.set_height(size.height() - popup_bottom + y_offset);
-    origin.set_y(origin.y() - y_offset);
+    y -= y_offset;
   }
-  return gfx::Rect(origin, size);
+  return gfx::Rect(gfx::Point(x, y), size);
 }
 
 gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
   gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
-      root_view_->GetWidget()->GetNativeView())->GetCursorScreenPoint();
-  views::View::ConvertPointToTarget(NULL, root_view_, &cursor_pos);
+      browser_view_->GetWidget()->GetNativeView())->GetCursorScreenPoint();
+  views::View::ConvertPointToTarget(NULL, GetBrowserRootView(), &cursor_pos);
   return cursor_pos;
 }
 
 bool FullscreenExitBubbleViews::WindowContainsPoint(gfx::Point pos) {
-  return root_view_->HitTestPoint(pos);
+  return GetBrowserRootView()->HitTestPoint(pos);
 }
 
 bool FullscreenExitBubbleViews::IsWindowActive() {
-  return root_view_->GetWidget()->IsActive();
+  return browser_view_->GetWidget()->IsActive();
 }
 
 void FullscreenExitBubbleViews::Hide() {
-  size_animation_->SetSlideDuration(kSlideOutDurationMs);
-  size_animation_->Hide();
+  animation_->SetSlideDuration(kSlideOutDurationMs);
+  animation_->Hide();
 }
 
 void FullscreenExitBubbleViews::Show() {
-  size_animation_->SetSlideDuration(kSlideInDurationMs);
-  size_animation_->Show();
+  animation_->SetSlideDuration(kSlideInDurationMs);
+  animation_->Show();
 }
 
 bool FullscreenExitBubbleViews::IsAnimating() {
-  return size_animation_->GetCurrentValue() != 0;
+  return animation_->is_animating();
 }
 
-void FullscreenExitBubbleViews::StartWatchingMouseIfNecessary() {
-  if (!fullscreen_bubble::ShowButtonsForType(bubble_type_))
-    StartWatchingMouse();
+bool FullscreenExitBubbleViews::CanMouseTriggerSlideIn() const {
+  return !browser_view_->immersive_mode_controller()->IsEnabled();
+}
+
+void FullscreenExitBubbleViews::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
+  UpdateForImmersiveState();
+}
+
+void FullscreenExitBubbleViews::OnWidgetVisibilityChanged(
+    views::Widget* widget,
+    bool visible) {
+  UpdateMouseWatcher();
 }

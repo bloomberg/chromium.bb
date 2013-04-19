@@ -60,6 +60,10 @@ void FullscreenExitBubble::StopWatchingMouse() {
   mouse_position_checker_.Stop();
 }
 
+bool FullscreenExitBubble::IsWatchingMouse() const {
+  return mouse_position_checker_.IsRunning();
+}
+
 void FullscreenExitBubble::CheckMousePosition() {
   // Desired behavior:
   //
@@ -101,10 +105,12 @@ void FullscreenExitBubble::CheckMousePosition() {
     if (!initial_delay_.IsRunning()) {
       Hide();
     }
-  } else if ((cursor_pos.y() < kSlideInRegionHeightPx) ||
-             IsAnimating()) {
-    // The cursor is not idle, and either it's in the slide-in region or it's in
-    // the neutral region and we're sliding out.
+  } else if (cursor_pos.y() < kSlideInRegionHeightPx &&
+             CanMouseTriggerSlideIn()) {
+    Show();
+  } else if (IsAnimating()) {
+    // The cursor is not idle and either it's in the slide-in region or it's in
+    // the neutral region and we're sliding in or out.
     Show();
   }
 }

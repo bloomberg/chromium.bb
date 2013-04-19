@@ -56,12 +56,17 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
 
   virtual bool IsAnimating() = 0;
 
-  // Called repeatedly to get the current mouse position and animate the bubble
-  // on or off the screen as appropriate.
-  void CheckMousePosition();
+  // True if the mouse position can trigger sliding in the exit fullscreen
+  // bubble when the bubble is hidden.
+  virtual bool CanMouseTriggerSlideIn() const = 0;
 
   void StartWatchingMouse();
   void StopWatchingMouse();
+  bool IsWatchingMouse() const;
+
+  // Called repeatedly to get the current mouse position and animate the bubble
+  // on or off the screen as appropriate.
+  void CheckMousePosition();
 
   void ToggleFullscreen();
   // Accepts the request. Can cause FullscreenExitBubble to be deleted.

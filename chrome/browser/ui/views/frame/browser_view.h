@@ -218,7 +218,7 @@ class BrowserView : public BrowserWindow,
   void FullScreenStateChanged();
 
   // See ImmersiveModeController for description.
-  ImmersiveModeController* immersive_mode_controller() {
+  ImmersiveModeController* immersive_mode_controller() const {
     return immersive_mode_controller_.get();
   }
 
