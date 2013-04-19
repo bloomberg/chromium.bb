@@ -152,6 +152,9 @@ static string GetIceGatheringStateString(
 
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
+// Note:
+// The format must be consistent with what webrtc_internals.js expects.
+// If you change it here, you must change webrtc_internals.js as well.
 static DictionaryValue* GetDictValueStats(const webrtc::StatsReport& report) {
   if (report.values.empty())
     return NULL;
@@ -188,6 +191,9 @@ static DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
   if (!result)
     return NULL;
 
+  // Note:
+  // The format must be consistent with what webrtc_internals.js expects.
+  // If you change it here, you must change webrtc_internals.js as well.
   if (stats)
     result->Set("stats", stats.release());
   result->SetString("id", report.id);

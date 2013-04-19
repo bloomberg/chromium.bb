@@ -189,10 +189,9 @@ function updateAllPeerConnections(data) {
 
 // data = {pid:|integer|, lid:|integer|, reports:|array|}.
 // Each entry of reports =
-// {id:|string|, type:|string|, local:|object|, remote:|object|}.
-// reports.local or reports.remote =
-// {timestamp: |double|, values: |array|},
-// where values is an array of strings, whose even index entry represents
+// {id:|string|, type:|string|, stats:|object|},
+// where |stats| = {timestamp: |double|, values: |array|},
+// where |values| is an array of strings, whose even index entry represents
 // the name of the stat, and the odd index entry represents the value of
 // the stat.
 function addStats(data) {
@@ -203,10 +202,8 @@ function addStats(data) {
     var reportName = report.type + '-' + report.id;
     var statsTable = ensureStatsTable(peerConnectionElement, reportName);
 
-    addSingleReportToTable(statsTable, report.local);
-    drawSingleReport(peerConnectionElement, reportName, report.local);
-    addSingleReportToTable(statsTable, report.remote);
-    drawSingleReport(peerConnectionElement, reportName, report.remote);
+    addSingleReportToTable(statsTable, report.stats);
+    drawSingleReport(peerConnectionElement, reportName, report.stats);
   }
 }
 

@@ -88,6 +88,9 @@ function drawSingleReport(peerConnectionElement, reportName, singleReport) {
   for (var i = 0; i < singleReport.values.length - 1; i = i + 2) {
     var rawLabel = singleReport.values[i];
     var rawValue = parseInt(singleReport.values[i + 1]);
+    if (isNaN(rawValue))
+      return;
+
     var rawDataSeriesId =
         peerConnectionElement.id + '-' + reportName + '-' + rawLabel;
 
