@@ -790,15 +790,16 @@ class SVN(object):
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
     # since we want the unified diff.  Using --diff-cmd=diff doesn't always
-    # work, since they can have another diff executable in their path that
-    # gives different line endings.  So we use a bogus temp directory as the
-    # config directory, which gets around these problems.
+    # work, since e.g. Windows cmd users may not have a "diff" executable in
+    # their path at all.  So we use an empty temporary directory as the config
+    # directory, which gets around these problems.
     bogus_dir = tempfile.mkdtemp()
+    command = ['diff', '--config-dir', bogus_dir]
     try:
       # Cleanup filenames
       filenames = [RelativePath(f, root) for f in filenames]
       # Get information about the modified items (files and directories)
-      data = dict([(f, SVN.CaptureLocalInfo([f], root)) for f in filenames])
+      data = dict((f, SVN.CaptureLocalInfo([f], root)) for f in filenames)
       diffs = []
       if full_move:
         # Eliminate modified files inside moved/copied directory.
@@ -831,7 +832,7 @@ class SVN(object):
               # revision the file was deleted.
               srcinfo = {'Revision': rev}
             if (srcinfo.get('Revision') != rev and
-                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl], cwd)):
+                SVN.Capture(command + ['-r', '%d:head' % rev, srcurl], cwd)):
               metaheaders.append("#$ svn cp -r %d %s %s "
                                  "### WARNING: note non-trunk copy\n" %
                                  (rev, src, filename))
@@ -844,9 +845,9 @@ class SVN(object):
           diffs.extend(metaheaders)
           diffs.append("### END SVN COPY METADATA\n")
       # Now ready to do the actual diff.
-      for filename in sorted(data.iterkeys()):
+      for filename in sorted(data):
         diffs.append(SVN._DiffItemInternal(
-            filename, cwd, data[filename], bogus_dir, full_move, revision))
+            filename, cwd, data[filename], command, full_move, revision))
       # Use StringIO since it can be messy when diffing a directory move with
       # full_move=True.
       buf = cStringIO.StringIO()
@@ -859,9 +860,9 @@ class SVN(object):
       gclient_utils.RemoveDirectory(bogus_dir)
 
   @staticmethod
-  def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
+  def _DiffItemInternal(filename, cwd, info, diff_command, full_move, revision):
     """Grabs the diff data."""
-    command = ["diff", "--config-dir", bogus_dir, filename]
+    command = diff_command + [filename]
     if revision:
       command.extend(['--revision', revision])
     data = None
