@@ -113,6 +113,11 @@ class OneClickSigninHelper
                                     int child_id,
                                     int route_id);
 
+  // Remove the item currently at the top of the history list.  Due to
+  // limitations of the NavigationController, this cannot be done until
+  // a new page becomes "current".
+  static void RemoveCurrentHistoryItem(content::WebContents* web_contents);
+
  private:
   explicit OneClickSigninHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OneClickSigninHelper>;

@@ -398,6 +398,50 @@ bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
        !email.empty());
 }
 
+
+// Watch a webcontents and remove URL from the history once loading is complete.
+// We have to delay the cleaning until the new URL has finished loading because
+// we're not allowed to remove the last-loaded URL from the history.  Objects
+// of this type automatically self-destruct once they're finished their work.
+class CurrentHistoryCleaner : public content::WebContentsObserver {
+ public:
+  explicit CurrentHistoryCleaner(content::WebContents* contents);
+
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void DidStopLoading(content::RenderViewHost* render_view_host)
+      OVERRIDE;
+
+ private:
+  scoped_ptr<content::WebContents> contents_;
+  int history_index_to_remove_;
+
+  DISALLOW_COPY_AND_ASSIGN(CurrentHistoryCleaner);
+};
+
+
+CurrentHistoryCleaner::CurrentHistoryCleaner(content::WebContents* contents)
+    : WebContentsObserver(contents) {
+  content::NavigationController& nc = web_contents()->GetController();
+  history_index_to_remove_ = nc.GetLastCommittedEntryIndex();
+}
+
+void CurrentHistoryCleaner::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
+  content::NavigationController& nc = web_contents()->GetController();
+  // Have to wait until something else gets added to history before removal.
+  if (history_index_to_remove_ != nc.GetLastCommittedEntryIndex()) {
+    nc.RemoveEntryAtIndex(history_index_to_remove_);
+    Observe(NULL);
+    delete this;  /* success */
+  }
+}
+
+void CurrentHistoryCleaner::WebContentsDestroyed(
+    content::WebContents* contents) {
+  Observe(NULL);
+  delete this;  /* failure */
+}
+
 }  // namespace
 
 // The infobar asking the user if they want to use one-click sign in.
@@ -972,6 +1016,12 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     helper->continue_url_ = continue_url;
 }
 
+// static
+void OneClickSigninHelper::RemoveCurrentHistoryItem(
+    content::WebContents* web_contents) {
+  new CurrentHistoryCleaner(web_contents);  // will self-destruct when finished
+}
+
 void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
   VLOG(1) << "OneClickSigninHelper::RedirectToNtpOrAppsPage";
 
@@ -992,6 +1042,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
                                 CURRENT_TAB,
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 false);
+  RemoveCurrentHistoryItem(contents);
   contents->OpenURL(params);
 
   error_message_.clear();
