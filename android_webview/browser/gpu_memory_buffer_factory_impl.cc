@@ -5,12 +5,17 @@
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 
 #include "android_webview/browser/gpu_memory_buffer_impl.h"
+#include "base/logging.h"
+#include "ui/gfx/size.h"
 
 namespace android_webview {
 
-scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(gfx::Size size) {
-  scoped_ptr<GpuMemoryBufferImpl> result(new GpuMemoryBufferImpl(size));
-  return result.PassAs<gfx::GpuMemoryBuffer>();
+scoped_ptr<gpu::GpuMemoryBuffer> CreateGpuMemoryBuffer(int width, int height) {
+  DCHECK(width > 0);
+  DCHECK(height > 0);
+  scoped_ptr<GpuMemoryBufferImpl> result(new GpuMemoryBufferImpl(
+      gfx::Size(width, height)));
+  return result.PassAs<gpu::GpuMemoryBuffer>();
 }
 
 }  // namespace android_webview

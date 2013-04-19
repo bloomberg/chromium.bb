@@ -83,7 +83,7 @@ typedef int AwCreateGraphicBufferFunction(int w, int h);
 // Called to release a GraphicBuffer
 typedef void AwReleaseGraphicBufferFunction(int buffer_id);
 // Called to lock a GraphicBuffer in |mode|, which is
-// defined in AccessMode enum in ui/gl/gpu_memory_buffer.h
+// defined in AccessMode enum in gpu/command_buffer/client/gpu_memory_buffer.h
 typedef int AwLockFunction(int buffer_id, int mode, void** vaddr);
 // Called to unlock a GraphicBuffer
 typedef int AwUnlockFunction(int buffer_id);

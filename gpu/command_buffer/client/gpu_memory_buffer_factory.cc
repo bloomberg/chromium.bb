@@ -9,17 +9,17 @@
 namespace gpu {
 
 namespace {
-gfx::GpuMemoryBuffer::Creator* g_gpu_memory_buffer_factory_ = NULL;
+GpuMemoryBuffer::Creator* g_gpu_memory_buffer_factory_ = NULL;
 }
 
-const gfx::GpuMemoryBuffer::Creator& GetProcessDefaultGpuMemoryBufferFactory() {
+const GpuMemoryBuffer::Creator& GetProcessDefaultGpuMemoryBufferFactory() {
   return *g_gpu_memory_buffer_factory_;
 }
 
 void SetProcessDefaultGpuMemoryBufferFactory(
-    const gfx::GpuMemoryBuffer::Creator& factory) {
+    const GpuMemoryBuffer::Creator& factory) {
   DCHECK(g_gpu_memory_buffer_factory_ == NULL);
-  g_gpu_memory_buffer_factory_ = new gfx::GpuMemoryBuffer::Creator(factory);
+  g_gpu_memory_buffer_factory_ = new GpuMemoryBuffer::Creator(factory);
 }
 
 }  // namespace gpu

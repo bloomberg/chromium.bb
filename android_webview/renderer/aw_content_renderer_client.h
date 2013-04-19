@@ -9,7 +9,6 @@
 
 #include "android_webview/renderer/aw_render_process_observer.h"
 #include "base/compiler_specific.h"
-#include "ui/gl/gpu_memory_buffer.h"
 
 namespace components {
 class VisitedLinkSlave;

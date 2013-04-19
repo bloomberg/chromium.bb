@@ -12,7 +12,7 @@ include_rules = [
 
   "+content/public/browser",
 
-  "+gpu/command_buffer/client/gpu_memory_buffer_factory.h",
+  "+gpu/command_buffer/client",
 
   "+ui/gfx",
   "+ui/gl",

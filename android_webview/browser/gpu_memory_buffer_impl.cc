@@ -8,9 +8,9 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/gpu_memory_buffer.h"
 
 namespace android_webview {
 
@@ -29,7 +29,7 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
   buffer_id_ = 0;
 }
 
-void GpuMemoryBufferImpl::Map(gfx::GpuMemoryBuffer::AccessMode mode,
+void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
     void** vaddr) {
   DCHECK(buffer_id_ != 0);
   int err = g_gl_draw_functions->lock(buffer_id_, mode, vaddr);

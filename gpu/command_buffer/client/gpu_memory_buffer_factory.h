@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_FACTORY_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_FACTORY_H_
 
-#include "ui/gl/gpu_memory_buffer.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
 
 namespace gpu {
 
@@ -15,11 +15,11 @@ namespace gpu {
 // renderer are within the same process.
 
 // It is not valid to call this method before the setter is called.
-const gfx::GpuMemoryBuffer::Creator& GetProcessDefaultGpuMemoryBufferFactory();
+const GpuMemoryBuffer::Creator& GetProcessDefaultGpuMemoryBufferFactory();
 
 // It is illegal to call the setter more than once.
 GLES2_IMPL_EXPORT void SetProcessDefaultGpuMemoryBufferFactory(
-    const gfx::GpuMemoryBuffer::Creator& factory);
+    const GpuMemoryBuffer::Creator& factory);
 
 }  // namespace gpu
 

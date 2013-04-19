@@ -7,21 +7,21 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/gpu_memory_buffer.h"
 
 struct AwDrawGLFunctionTable;
 
 namespace android_webview {
 
-class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
+class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
  public:
   static void SetAwDrawGLFunctionTable(AwDrawGLFunctionTable* table);
   GpuMemoryBufferImpl(gfx::Size size);
   virtual ~GpuMemoryBufferImpl();
 
   // methods from GpuMemoryBuffer
-  virtual void Map(gfx::GpuMemoryBuffer::AccessMode mode,
+  virtual void Map(gpu::GpuMemoryBuffer::AccessMode mode,
       void** vaddr) OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual void* GetNativeBuffer() OVERRIDE;

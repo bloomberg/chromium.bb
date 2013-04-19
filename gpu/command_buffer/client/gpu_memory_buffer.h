@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GPU_MEMORY_BUFFER_H_
-#define UI_GL_GPU_MEMORY_BUFFER_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace gfx {
-class Size;
+namespace gpu {
 
 // Interface for creating and accessing a zero-copy GPU memory buffer.
 // This design evolved from the generalization of GraphicBuffer API
@@ -23,7 +22,7 @@ class Size;
 // behavior and is not allowed.
 class GpuMemoryBuffer {
  public:
-  typedef base::Callback<scoped_ptr<gfx::GpuMemoryBuffer>(gfx::Size)> Creator;
+  typedef base::Callback<scoped_ptr<GpuMemoryBuffer>(int, int)> Creator;
   enum AccessMode {
     READ_ONLY,
     WRITE_ONLY,
@@ -50,6 +49,6 @@ class GpuMemoryBuffer {
   virtual uint32 GetStride() = 0;
 };
 
-}  // namespace gfx
+}  // namespace gpu
 
-#endif  // UI_GL_GPU_MEMORY_BUFFER_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_H_

@@ -97,7 +97,6 @@
         'gl_surface_osmesa.h',
         'gl_switches.cc',
         'gl_switches.h',
-        'gpu_memory_buffer.h',
         'gpu_switching_manager.cc',
         'gpu_switching_manager.h',
         'safe_shared_memory_pool.h',
