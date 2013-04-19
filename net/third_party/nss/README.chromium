@@ -96,6 +96,9 @@ Patches:
     Remove this patch when all system NSS packages are NSS 3.12.10 or later.
     patches/aes256keylength.patch
 
+  * Don't False Start with RC4.
+    patches/norc4falsestart.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

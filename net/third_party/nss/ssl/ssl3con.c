@@ -6411,12 +6411,18 @@ ssl3_CanFalseStart(sslSocket *ss) {
 	  * do False Start in the case that the selected ciphersuite is
 	  * sufficiently strong that the attack can gain no advantage.
 	  * Therefore we require an 80-bit cipher and a forward-secret key
-	  * exchange. */
+	  * exchange.
+	  *
+	  * Although RC4 has more than 80 bits of key, biases in the RC4
+	  * keystream make it unsuitable for False Start because an attacker
+	  * can cause the same plaintext to be transmitted under many different
+	  * keys. */
 	 ss->ssl3.cwSpec->cipher_def->secret_key_size >= 10 &&
 	(ss->ssl3.hs.kea_def->kea == kea_dhe_dss ||
 	 ss->ssl3.hs.kea_def->kea == kea_dhe_rsa ||
 	 ss->ssl3.hs.kea_def->kea == kea_ecdhe_ecdsa ||
-	 ss->ssl3.hs.kea_def->kea == kea_ecdhe_rsa);
+	 ss->ssl3.hs.kea_def->kea == kea_ecdhe_rsa) &&
+	 ss->ssl3.cwSpec->cipher_def->cipher != cipher_rc4;
     ssl_ReleaseSpecReadLock(ss);
     return rv;
 }
