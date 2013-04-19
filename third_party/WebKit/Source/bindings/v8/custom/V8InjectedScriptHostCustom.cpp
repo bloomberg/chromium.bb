@@ -110,7 +110,6 @@ v8::Handle<v8::Value> V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(cons
     if (!args[0]->IsObject())
         return v8Boolean(false, args.GetIsolate());
 
-    v8::HandleScope handleScope;
     return v8::Boolean::New(V8HTMLAllCollection::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())));
 }
 
@@ -155,8 +154,6 @@ v8::Handle<v8::Value> V8InjectedScriptHost::functionDetailsMethodCustom(const v8
     if (args.Length() < 1)
         return v8::Undefined();
 
-    v8::HandleScope handleScope;
-
     v8::Handle<v8::Value> value = args[0];
     if (!value->IsFunction())
         return v8::Undefined();
@@ -193,8 +190,6 @@ v8::Handle<v8::Value> V8InjectedScriptHost::getInternalPropertiesMethodCustom(co
 {
     if (args.Length() < 1)
         return v8::Undefined();
-
-    v8::HandleScope handleScope;
 
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(args[0]);
 
@@ -239,8 +234,6 @@ v8::Handle<v8::Value> V8InjectedScriptHost::getEventListenersMethodCustom(const 
 {
     if (args.Length() < 1)
         return v8::Undefined();
-
-    v8::HandleScope handleScope;
 
     v8::Local<v8::Value> value = args[0];
     if (!V8Node::HasInstance(value, args.GetIsolate(), worldType(args.GetIsolate())))
