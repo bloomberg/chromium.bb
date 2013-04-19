@@ -113,7 +113,7 @@ int32_t PepperTrueTypeFontWin::Describe(
   desc->style = font_desc.lfItalic ? PP_TRUETYPEFONTSTYLE_ITALIC :
                                      PP_TRUETYPEFONTSTYLE_NORMAL;
   desc->weight = static_cast<PP_TrueTypeFontWeight_Dev>(font_desc.lfWeight);
-  desc->width = PP_TRUETYPEFONTWIDTH_NORMAL;
+  desc->width = PP_TRUETYPEFONTWIDTH_NORMAL;  // TODO(bbudge) support widths.
   desc->charset =
       static_cast<PP_TrueTypeFontCharset_Dev>(font_desc.lfCharSet);
 

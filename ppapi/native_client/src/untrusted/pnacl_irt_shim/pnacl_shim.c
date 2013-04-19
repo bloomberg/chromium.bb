@@ -2215,6 +2215,12 @@ int32_t Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontFamilies(PP_Instance instance, str
 }
 
 static __attribute__((pnaclcall))
+int32_t Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontsInFamily(PP_Instance instance, struct PP_Var family, struct PP_ArrayOutput output, struct PP_CompletionCallback callback) {
+  const struct PPB_TrueTypeFont_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1.real_iface;
+  return iface->GetFontsInFamily(instance, family, output, callback);
+}
+
+static __attribute__((pnaclcall))
 PP_Resource Pnacl_M26_PPB_TrueTypeFont_Dev_Create(PP_Instance instance, const struct PP_TrueTypeFontDesc_Dev* desc) {
   const struct PPB_TrueTypeFont_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1.real_iface;
   return iface->Create(instance, desc);
@@ -4597,6 +4603,7 @@ struct PPB_Testing_Dev_0_91 Pnacl_Wrappers_PPB_Testing_Dev_0_91 = {
 
 struct PPB_TrueTypeFont_Dev_0_1 Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1 = {
     .GetFontFamilies = (int32_t (*)(PP_Instance instance, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontFamilies,
+    .GetFontsInFamily = (int32_t (*)(PP_Instance instance, struct PP_Var family, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontsInFamily,
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_TrueTypeFontDesc_Dev* desc))&Pnacl_M26_PPB_TrueTypeFont_Dev_Create,
     .IsTrueTypeFont = (PP_Bool (*)(PP_Resource resource))&Pnacl_M26_PPB_TrueTypeFont_Dev_IsTrueTypeFont,
     .Describe = (int32_t (*)(PP_Resource font, struct PP_TrueTypeFontDesc_Dev* desc, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_Describe,

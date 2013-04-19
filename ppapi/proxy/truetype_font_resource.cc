@@ -44,7 +44,6 @@ PPB_TrueTypeFont_API* TrueTypeFontResource::AsPPB_TrueTypeFont_API() {
 int32_t TrueTypeFontResource::Describe(
     PP_TrueTypeFontDesc_Dev* desc,
     scoped_refptr<TrackedCallback> callback) {
-
   Call<PpapiPluginMsg_TrueTypeFont_DescribeReply>(RENDERER,
       PpapiHostMsg_TrueTypeFont_Describe(),
       base::Bind(&TrueTypeFontResource::OnPluginMsgDescribeComplete, this,
@@ -83,6 +82,7 @@ void TrueTypeFontResource::OnPluginMsgDescribeComplete(
   int32_t result = params.result();
   if (result == PP_OK)
     desc.CopyToPPTrueTypeFontDesc(pp_desc);
+
   callback->Run(result);
 }
 

@@ -8,17 +8,21 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
+#include "ppapi/c/dev/ppb_truetype_font_dev.h"
+#include "ppapi/proxy/serialized_structs.h"
 
 namespace content {
 
 namespace {
 
-static int CALLBACK EnumFontFamExProc(ENUMLOGFONTEXW* logical_font,
-                                      NEWTEXTMETRICEXW* physical_font,
-                                      DWORD font_type,
-                                      LPARAM lparam) {
-  std::vector<std::string>* font_families =
-      reinterpret_cast<std::vector<std::string>*>(lparam);
+typedef std::vector<std::string> FontFamilyList;
+typedef std::vector<ppapi::proxy::SerializedTrueTypeFontDesc> FontDescList;
+
+static int CALLBACK EnumFontFamiliesProc(ENUMLOGFONTEXW* logical_font,
+                                         NEWTEXTMETRICEXW* physical_font,
+                                         DWORD font_type,
+                                         LPARAM lparam) {
+  FontFamilyList* font_families = reinterpret_cast<FontFamilyList*>(lparam);
   if (font_families) {
     const LOGFONTW& lf = logical_font->elfLogFont;
     if (lf.lfFaceName[0] && lf.lfFaceName[0] != '@' &&
@@ -30,15 +34,50 @@ static int CALLBACK EnumFontFamExProc(ENUMLOGFONTEXW* logical_font,
   return 1;
 }
 
+static int CALLBACK EnumFontsInFamilyProc(ENUMLOGFONTEXW* logical_font,
+                                          NEWTEXTMETRICEXW* physical_font,
+                                          DWORD font_type,
+                                          LPARAM lparam) {
+  FontDescList* fonts_in_family = reinterpret_cast<FontDescList*>(lparam);
+  if (fonts_in_family) {
+    const LOGFONTW& lf = logical_font->elfLogFont;
+    if (lf.lfFaceName[0] && lf.lfFaceName[0] != '@' &&
+        lf.lfOutPrecision == OUT_STROKE_PRECIS) {  // Outline fonts only.
+      ppapi::proxy::SerializedTrueTypeFontDesc desc;
+      desc.family = UTF16ToUTF8(lf.lfFaceName);
+      if (lf.lfItalic)
+        desc.style = PP_TRUETYPEFONTSTYLE_ITALIC;
+      desc.weight = static_cast<PP_TrueTypeFontWeight_Dev>(lf.lfWeight);
+      desc.width = PP_TRUETYPEFONTWIDTH_NORMAL;  // TODO(bbudge) support widths.
+      desc.charset =
+          static_cast<PP_TrueTypeFontCharset_Dev>(lf.lfCharSet);
+      fonts_in_family->push_back(desc);
+    }
+  }
+  return 1;
+}
+
 }  // namespace
 
-void GetFontFamilies_SlowBlocking(std::vector<std::string>* font_families) {
+void GetFontFamilies_SlowBlocking(FontFamilyList* font_families) {
   LOGFONTW logfont;
   memset(&logfont, 0, sizeof(logfont));
   logfont.lfCharSet = DEFAULT_CHARSET;
   base::win::ScopedCreateDC hdc(::GetDC(NULL));
-  ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontFamExProc,
+  ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontFamiliesProc,
                         (LPARAM)font_families, 0);
+}
+
+void GetFontsInFamily_SlowBlocking(const std::string& family,
+                                   FontDescList* fonts_in_family) {
+  LOGFONTW logfont;
+  memset(&logfont, 0, sizeof(logfont));
+  logfont.lfCharSet = DEFAULT_CHARSET;
+  string16 family16 = UTF8ToUTF16(family);
+  memcpy(&logfont.lfFaceName, &family16[0], sizeof(logfont.lfFaceName));
+  base::win::ScopedCreateDC hdc(::GetDC(NULL));
+  ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontsInFamilyProc,
+                        (LPARAM)fonts_in_family, 0);
 }
 
 }  // namespace content

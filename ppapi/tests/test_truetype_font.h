@@ -23,6 +23,7 @@ class TestTrueTypeFont : public TestCase {
   virtual void RunTests(const std::string& filter);
 
   std::string TestGetFontFamilies();
+  std::string TestGetFontsInFamily();
   std::string TestCreate();
   std::string TestDescribe();
   std::string TestGetTableTags();

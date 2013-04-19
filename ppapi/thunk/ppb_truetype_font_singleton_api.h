@@ -24,6 +24,12 @@ class PPB_TrueTypeFont_Singleton_API {
       const PP_ArrayOutput& output,
       const scoped_refptr<TrackedCallback>& callback) = 0;
 
+  virtual int32_t GetFontsInFamily(
+      PP_Instance instance,
+      PP_Var family,
+      const PP_ArrayOutput& output,
+      const scoped_refptr<TrackedCallback>& callback) = 0;
+
   static const SingletonResourceID kSingletonResourceID =
       TRUETYPE_FONT_SINGLETON_ID;
 };

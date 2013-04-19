@@ -18,7 +18,7 @@ class TrackedCallback;
 
 namespace proxy {
 
-struct SerializedTrueTypeFontDescription;
+struct SerializedTrueTypeFontDesc;
 
 // This handles the singleton calls (that don't take a PP_Resource parameter)
 // on the TrueType font interface.
@@ -38,6 +38,11 @@ class TrueTypeFontSingletonResource
       PP_Instance instance,
       const PP_ArrayOutput& output,
       const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
+  virtual int32_t GetFontsInFamily(
+      PP_Instance instance,
+      PP_Var family,
+      const PP_ArrayOutput& output,
+      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
 
  private:
   void OnPluginMsgGetFontFamiliesComplete(
@@ -45,6 +50,11 @@ class TrueTypeFontSingletonResource
       PP_ArrayOutput array_output,
       const ResourceMessageReplyParams& params,
       const std::vector<std::string>& data);
+  void OnPluginMsgGetFontsInFamilyComplete(
+      scoped_refptr<TrackedCallback> callback,
+      PP_ArrayOutput array_output,
+      const ResourceMessageReplyParams& params,
+      const std::vector<SerializedTrueTypeFontDesc>& fonts);
 
   DISALLOW_COPY_AND_ASSIGN(TrueTypeFontSingletonResource);
 };

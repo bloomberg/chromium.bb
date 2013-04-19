@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_truetype_font_dev.idl modified Wed Apr 10 11:59:27 2013.
+// From dev/ppb_truetype_font_dev.idl modified Wed Apr 17 15:38:46 2013.
 
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -29,6 +29,21 @@ int32_t GetFontFamilies(PP_Instance instance,
     return enter.retval();
   return enter.SetResult(enter.functions()->GetFontFamilies(
       instance,
+      output,
+      enter.callback()));
+}
+
+int32_t GetFontsInFamily(PP_Instance instance,
+                         struct PP_Var family,
+                         struct PP_ArrayOutput output,
+                         struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_TrueTypeFont_Dev::GetFontsInFamily()";
+  EnterInstanceAPI<PPB_TrueTypeFont_Singleton_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.functions()->GetFontsInFamily(
+      instance,
+      family,
       output,
       enter.callback()));
 }
@@ -88,6 +103,7 @@ int32_t GetTable(PP_Resource font,
 
 const PPB_TrueTypeFont_Dev_0_1 g_ppb_truetypefont_dev_thunk_0_1 = {
   &GetFontFamilies,
+  &GetFontsInFamily,
   &Create,
   &IsTrueTypeFont,
   &Describe,

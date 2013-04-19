@@ -21,6 +21,15 @@ namespace content {
 
 namespace {
 
+static bool FindFloat(CFDictionaryRef dict, CFStringRef name, float* value) {
+  CFNumberRef num;
+  return
+      CFDictionaryGetValueIfPresent(dict, name,
+                                    reinterpret_cast<const void**>(&num)) &&
+      CFNumberIsFloatType(num) &&
+      CFNumberGetValue(num, kCFNumberFloatType, value);
+}
+
 float GetMacWeight(PP_TrueTypeFontWeight_Dev weight) {
   // Map values from NORMAL (400) to HEAVY (900) to the range [0 .. 1], and
   // values below NORMAL to the range [-0.6 .. 0]. NORMAL should map to 0.
@@ -234,28 +243,18 @@ int32_t PepperTrueTypeFontMac::Describe(
   if (symbolic_traits & kCTFontBoldTrait) {
     desc->weight = PP_TRUETYPEFONTWEIGHT_BOLD;
   } else {
-    base::mac::ScopedCFTypeRef<CFNumberRef> weight_trait_ref(
-        static_cast<CFNumberRef>(
-            CFDictionaryGetValue(traits_ref, kCTFontWeightTrait)));
-    if (weight_trait_ref) {
-      float weight;
-      if (CFNumberGetValue(weight_trait_ref, kCFNumberFloat32Type, &weight))
-        desc->weight = GetPepperWeight(weight);
-    }
+    float weight;
+    if (FindFloat(traits_ref, kCTFontWeightTrait, &weight))
+      desc->weight = GetPepperWeight(weight);
   }
   if (symbolic_traits & kCTFontCondensedTrait) {
     desc->width = PP_TRUETYPEFONTWIDTH_CONDENSED;
   } else if (symbolic_traits & kCTFontExpandedTrait) {
     desc->width = PP_TRUETYPEFONTWIDTH_EXPANDED;
   } else {
-    base::mac::ScopedCFTypeRef<CFNumberRef> width_trait_ref(
-        static_cast<CFNumberRef>(
-            CFDictionaryGetValue(traits_ref, kCTFontWidthTrait)));
-    if (width_trait_ref) {
-      float width;
-      if (CFNumberGetValue(width_trait_ref, kCFNumberFloat32Type, &width))
-        desc->width = GetPepperWidth(width);
-    }
+    float width;
+    if (FindFloat(traits_ref, kCTFontWidthTrait, &width))
+      desc->width = GetPepperWidth(width);
   }
 
   // Character set isn't supported on Mac.

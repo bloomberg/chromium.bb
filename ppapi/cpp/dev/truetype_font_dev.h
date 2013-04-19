@@ -27,14 +27,17 @@ class TrueTypeFontDesc_Dev {
   /// Default constructor for creating a <code>TrueTypeFontDesc_Dev</code>
   /// object.
   TrueTypeFontDesc_Dev();
+
   /// Constructor that takes an existing <code>PP_TrueTypeFontDesc_Dev</code>
   /// structure. The 'family' PP_Var field in the structure will be managed by
   /// this instance.
   TrueTypeFontDesc_Dev(PassRef, const PP_TrueTypeFontDesc_Dev& pp_desc);
+
   /// The copy constructor for <code>TrueTypeFontDesc_Dev</code>.
   ///
   /// @param[in] other A reference to a <code>TrueTypeFontDesc_Dev</code>.
   TrueTypeFontDesc_Dev(const TrueTypeFontDesc_Dev& other);
+
   ~TrueTypeFontDesc_Dev();
 
   TrueTypeFontDesc_Dev& operator=(const TrueTypeFontDesc_Dev& other);
@@ -81,8 +84,6 @@ class TrueTypeFontDesc_Dev {
   }
 
  private:
-  friend class TrueTypeFont_Dev;
-
   pp::Var family_;  // This manages the PP_Var embedded in desc_.
   PP_TrueTypeFontDesc_Dev desc_;
 };
@@ -125,7 +126,26 @@ class TrueTypeFont_Dev : public Resource {
   /// code from <code>pp_errors.h</code>.
   static int32_t GetFontFamilies(
       const InstanceHandle& instance,
-      const CompletionCallbackWithOutput<std::vector<Var> >& cc);
+      const CompletionCallbackWithOutput<std::vector<Var> >& callback);
+
+  /// Gets an array of TrueType font descriptors for a given font family. These
+  /// descriptors can be used to create a font in that family and matching the
+  /// descriptor attributes.
+  ///
+  /// @param[in] instance A <code>PP_Instance</code> requesting the font
+  /// descriptors.
+  /// @param[in] family A <code>Var</code> holding a string specifying the font
+  /// family.
+  /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
+  /// called upon completion of GetFontsInFamily.
+  ///
+  /// @return If >= 0, the number of font descriptors returned, otherwise an
+  /// error code from <code>pp_errors.h</code>.
+  static int32_t GetFontsInFamily(
+      const InstanceHandle& instance,
+      const Var& family,
+      const CompletionCallbackWithOutput<std::vector<TrueTypeFontDesc_Dev> >&
+          callback);
 
   /// Returns a description of the given font resource. This description may
   /// differ from the description passed to Create, reflecting the host's font
@@ -137,7 +157,7 @@ class TrueTypeFont_Dev : public Resource {
   /// @return A return code from <code>pp_errors.h</code>. If an error code is
   /// returned, the descriptor will be left unchanged.
   int32_t Describe(
-      const CompletionCallbackWithOutput<TrueTypeFontDesc_Dev>& cc);
+      const CompletionCallbackWithOutput<TrueTypeFontDesc_Dev>& callback);
 
   /// Gets an array of identifying tags for each table in the font.
   /// These tags can be used to request specific tables using GetTable.
@@ -148,7 +168,7 @@ class TrueTypeFont_Dev : public Resource {
   /// @return If >= 0, the number of table tags returned, otherwise an error
   /// code from <code>pp_errors.h</code>.
   int32_t GetTableTags(
-      const CompletionCallbackWithOutput<std::vector<uint32_t> >& cc);
+      const CompletionCallbackWithOutput<std::vector<uint32_t> >& callback);
 
   /// Copies the given font table into client memory.
   ///
@@ -158,8 +178,6 @@ class TrueTypeFont_Dev : public Resource {
   /// @param[in] offset The offset into the font table.
   /// @param[in] max_data_length The maximum number of bytes to transfer from
   /// <code>offset</code>.
-  /// @param[in] output A <code>PP_ArrayOutput</code> to hold the font data.
-  /// The data is an array of bytes.
   /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
   /// called upon completion of GetTable.
   ///
@@ -169,7 +187,7 @@ class TrueTypeFont_Dev : public Resource {
       uint32_t table,
       int32_t offset,
       int32_t max_data_length,
-      const CompletionCallbackWithOutput<std::vector<char> >& cc);
+      const CompletionCallbackWithOutput<std::vector<char> >& callback);
 };
 
 namespace internal {
@@ -189,6 +207,53 @@ struct CallbackOutputTraits<TrueTypeFontDesc_Dev> {
 
   static inline TrueTypeFontDesc_Dev StorageToPluginArg(StorageType& t) {
     return TrueTypeFontDesc_Dev(PASS_REF, t);
+  }
+};
+
+class TrueTypeFontDescArrayOutputAdapterWithStorage
+    : public ArrayOutputAdapter<PP_TrueTypeFontDesc_Dev> {
+ public:
+  TrueTypeFontDescArrayOutputAdapterWithStorage() {
+    set_output(&temp_storage_);
+  };
+
+  virtual ~TrueTypeFontDescArrayOutputAdapterWithStorage() {
+    if (!temp_storage_.empty()) {
+      // An easy way to release the resource references held by |temp_storage_|.
+      output();
+    }
+  };
+
+  std::vector<TrueTypeFontDesc_Dev>& output() {
+    PP_DCHECK(output_storage_.empty());
+    typedef std::vector<PP_TrueTypeFontDesc_Dev> Entries;
+    for (Entries::iterator it = temp_storage_.begin();
+         it != temp_storage_.end(); ++it)
+      output_storage_.push_back(TrueTypeFontDesc_Dev(PASS_REF, *it));
+    temp_storage_.clear();
+    return output_storage_;
+  }
+
+ private:
+  std::vector<PP_TrueTypeFontDesc_Dev> temp_storage_;
+  std::vector<TrueTypeFontDesc_Dev> output_storage_;
+};
+
+// A specialization of CallbackOutputTraits to provide the callback system the
+// information on how to handle vectors of TrueTypeFontDesc_Dev. This converts
+// PP_TrueTypeFontDesc_Dev to TrueTypeFontDesc_Dev when passing to the plugin.
+template<>
+struct CallbackOutputTraits< std::vector<TrueTypeFontDesc_Dev> > {
+  typedef PP_ArrayOutput APIArgType;
+  typedef TrueTypeFontDescArrayOutputAdapterWithStorage StorageType;
+
+  static inline APIArgType StorageToAPIArg(StorageType& t) {
+    return t.pp_array_output();
+  }
+
+  static inline std::vector<TrueTypeFontDesc_Dev>& StorageToPluginArg(
+      StorageType& t) {
+    return t.output();
   }
 };
 

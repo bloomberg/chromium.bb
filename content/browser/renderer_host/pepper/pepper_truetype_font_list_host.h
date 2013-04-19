@@ -15,8 +15,8 @@ class BrowserPpapiHost;
 class PepperTrueTypeFontListHost : public ppapi::host::ResourceHost {
  public:
   PepperTrueTypeFontListHost(BrowserPpapiHost* host,
-                                  PP_Instance instance,
-                                  PP_Resource resource);
+                             PP_Instance instance,
+                             PP_Resource resource);
   virtual ~PepperTrueTypeFontListHost();
 
  private:

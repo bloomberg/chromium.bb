@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_truetype_font_dev.idl modified Wed Apr 10 11:41:36 2013. */
+/* From dev/ppb_truetype_font_dev.idl modified Wed Apr 17 15:38:46 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
@@ -51,7 +51,7 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TrueTypeFontFamily_Dev, 4);
 
 /**
- * The PP_TrueTypeFontStyle_Dev defines font styles.
+ * The PP_TrueTypeFontStyle_Dev enum defines font styles.
  */
 typedef enum {
   PP_TRUETYPEFONTSTYLE_NORMAL = 0,
@@ -60,7 +60,7 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TrueTypeFontStyle_Dev, 4);
 
 /**
- * The PP_TrueTypeFontWeight_Dev defines font weights.
+ * The PP_TrueTypeFontWeight_Dev enum defines font weights.
  */
 typedef enum {
   PP_TRUETYPEFONTWEIGHT_THIN = 100,
@@ -76,7 +76,7 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TrueTypeFontWeight_Dev, 4);
 
 /**
- * The PP_TrueTypeFontWidth_Dev defines font widths.
+ * The PP_TrueTypeFontWidth_Dev enum defines font widths.
  */
 typedef enum {
   PP_TRUETYPEFONTWIDTH_ULTRACONDENSED = 0,
@@ -92,7 +92,7 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TrueTypeFontWidth_Dev, 4);
 
 /**
- * The PP_TrueTypeFontCharset defines font character sets.
+ * The PP_TrueTypeFontCharset enum defines font character sets.
  */
 typedef enum {
   PP_TRUETYPEFONTCHARSET_ANSI = 0,
@@ -125,8 +125,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TrueTypeFontCharset_Dev, 4);
  * @{
  */
 /**
- * The <code>PP_TrueTypeFontDesc</code> structure describes a TrueType font. It
- * is passed to Create, and returned by Describe.
+ * The <code>PP_TrueTypeFontDesc</code> struct describes a TrueType font. It is
+ * passed to Create(), and returned by Describe().
  */
 struct PP_TrueTypeFontDesc_Dev {
   /**
@@ -183,6 +183,28 @@ struct PPB_TrueTypeFont_Dev_0_1 {
                              struct PP_ArrayOutput output,
                              struct PP_CompletionCallback callback);
   /**
+   * Gets an array of TrueType font descriptors for a given font family. These
+   * descriptors can be used to create a font in that family and matching the
+   * descriptor attributes.
+   *
+   * @param[in] instance A <code>PP_Instance</code> requesting the font
+   * descriptors.
+   * @param[in] family A <code>PP_Var</code> holding a string specifying the
+   * font family.
+   * @param[in] output A <code>PP_ArrayOutput</code> to hold the descriptors.
+   * The output is an array of <code>PP_TrueTypeFontDesc</code> structs. Each
+   * desc contains a PP_Var for the family name which must be released.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of GetFontsInFamily.
+   *
+   * @return If >= 0, the number of font descriptors returned, otherwise an
+   * error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*GetFontsInFamily)(PP_Instance instance,
+                              struct PP_Var family,
+                              struct PP_ArrayOutput output,
+                              struct PP_CompletionCallback callback);
+  /**
    * Creates a font resource matching the given font characteristics. The
    * resource id will be non-zero on success, or zero on failure.
    *
@@ -195,7 +217,7 @@ struct PPB_TrueTypeFont_Dev_0_1 {
   /**
    * Determines if the given resource is a TrueType font.
    *
-   * @param[in] resource A <code>PP_Resource</code> corresponding to a font.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a resource.
    *
    * @return <code>PP_TRUE</code> if the resource is a
    * <code>PPB_TrueTypeFont_Dev</code>, <code>PP_FALSE</code> otherwise.
@@ -222,8 +244,8 @@ struct PPB_TrueTypeFont_Dev_0_1 {
                       struct PP_TrueTypeFontDesc_Dev* desc,
                       struct PP_CompletionCallback callback);
   /**
-   * Gets an array of identifying tags for each table in the font.
-   * These tags can be used to request specific tables using GetTable.
+   * Gets an array of identifying tags for each table in the font. These tags
+   * can be used to request specific tables using GetTable.
    *
    * @param[in] font A <code>PP_Resource</code> corresponding to a font.
    * @param[in] output A <code>PP_ArrayOutput</code> to hold the tags.

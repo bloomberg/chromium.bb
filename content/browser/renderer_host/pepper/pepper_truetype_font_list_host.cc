@@ -36,8 +36,10 @@ class FontMessageFilter : public ppapi::host::ResourceMessageFilter {
  private:
   virtual ~FontMessageFilter();
 
-  // Message handler.
+  // Message handlers.
   int32_t OnHostMsgGetFontFamilies(ppapi::host::HostMessageContext* context);
+  int32_t OnHostMsgGetFontsInFamily(ppapi::host::HostMessageContext* context,
+                                    const std::string& family);
 
   DISALLOW_COPY_AND_ASSIGN(FontMessageFilter);
 };
@@ -65,6 +67,9 @@ int32_t FontMessageFilter::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies,
         OnHostMsgGetFontFamilies)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_TrueTypeFontSingleton_GetFontsInFamily,
+        OnHostMsgGetFontsInFamily)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -83,6 +88,23 @@ int32_t FontMessageFilter::OnHostMsgGetFontFamilies(
   reply_context.params.set_result(result);
   context->reply_msg =
       PpapiPluginMsg_TrueTypeFontSingleton_GetFontFamiliesReply(font_families);
+  return result;
+}
+
+int32_t FontMessageFilter::OnHostMsgGetFontsInFamily(
+    ppapi::host::HostMessageContext* context,
+    const std::string& family) {
+  // OK to use "slow blocking" version since we're on the blocking pool.
+  std::vector<ppapi::proxy::SerializedTrueTypeFontDesc> fonts_in_family;
+  GetFontsInFamily_SlowBlocking(family, &fonts_in_family);
+
+  int32_t result = base::checked_numeric_cast<int32_t>(fonts_in_family.size());
+  ppapi::host::ReplyMessageContext reply_context =
+      context->MakeReplyMessageContext();
+  reply_context.params.set_result(result);
+  context->reply_msg =
+      PpapiPluginMsg_TrueTypeFontSingleton_GetFontsInFamilyReply(
+          fonts_in_family);
   return result;
 }
 

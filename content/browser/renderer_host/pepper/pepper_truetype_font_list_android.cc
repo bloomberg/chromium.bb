@@ -11,4 +11,10 @@ void GetFontFamilies_SlowBlocking(std::vector<std::string>* font_families) {
   NOTIMPLEMENTED();  // Font API isn't implemented on Android.
 }
 
+void GetFontsInFamily_SlowBlocking(
+    const std::string& family,
+    std::vector<ppapi::proxy::SerializedTrueTypeFontDesc>* fonts_in_family) {
+  NOTIMPLEMENTED();  // Font API isn't implemented on Android.
+}
+
 }  // namespace content

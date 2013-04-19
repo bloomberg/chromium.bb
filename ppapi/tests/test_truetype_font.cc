@@ -6,7 +6,6 @@
 
 #include "ppapi/tests/test_truetype_font.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <algorithm>
 #include <limits>
@@ -86,6 +85,7 @@ TestTrueTypeFont::~TestTrueTypeFont() {
 
 void TestTrueTypeFont::RunTests(const std::string& filter) {
   RUN_TEST(GetFontFamilies, filter);
+  RUN_TEST(GetFontsInFamily, filter);
   RUN_TEST(Create, filter);
   RUN_TEST(Describe, filter);
   RUN_TEST(GetTableTags, filter);
@@ -113,6 +113,67 @@ std::string TestTrueTypeFont::TestGetFontFamilies() {
     cc.WaitForResult(
         ppb_truetype_font_interface_->GetFontFamilies(
             kInvalidInstance,
+            cc.GetCallback().output(),
+            cc.GetCallback().pp_completion_callback()));
+    ASSERT_TRUE(cc.result() == PP_ERROR_FAILED ||
+                cc.result() == PP_ERROR_BADARGUMENT);
+    ASSERT_EQ(0, cc.output().size());
+  }
+
+  PASS();
+}
+
+std::string TestTrueTypeFont::TestGetFontsInFamily() {
+  {
+    // Get the list of all font families.
+    TestCompletionCallbackWithOutput< std::vector<pp::Var> > cc(
+        instance_->pp_instance(), false);
+    cc.WaitForResult(pp::TrueTypeFont_Dev::GetFontFamilies(instance_,
+                                                           cc.GetCallback()));
+    // Try to use a common family that is likely to have multiple variations.
+    const std::vector<pp::Var> families = cc.output();
+    pp::Var family("Arial");
+    if (std::find(families.begin(), families.end(), family) == families.end()) {
+      family = pp::Var("Times");
+      if (std::find(families.begin(), families.end(), family) == families.end())
+        family = families[0];  // Just use the first family.
+    }
+
+    // GetFontsInFamily: A valid instance should be able to enumerate fonts
+    // in a given family.
+    TestCompletionCallbackWithOutput< std::vector<pp::TrueTypeFontDesc_Dev> >
+        cc2(instance_->pp_instance(), false);
+    cc2.WaitForResult(pp::TrueTypeFont_Dev::GetFontsInFamily(
+        instance_,
+        family,
+        cc2.GetCallback()));
+    std::vector<pp::TrueTypeFontDesc_Dev> fonts_in_family = cc2.output();
+    ASSERT_NE(0, fonts_in_family.size());
+    ASSERT_EQ(static_cast<int32_t>(fonts_in_family.size()), cc2.result());
+
+    // We should be able to create any of the returned fonts without fallback.
+    for (size_t i = 0; i < fonts_in_family.size(); ++i) {
+      pp::TrueTypeFontDesc_Dev& font_in_family = fonts_in_family[i];
+      pp::TrueTypeFont_Dev font(instance_, font_in_family);
+      TestCompletionCallbackWithOutput<pp::TrueTypeFontDesc_Dev> cc(
+          instance_->pp_instance(), false);
+      cc.WaitForResult(font.Describe(cc.GetCallback()));
+      const pp::TrueTypeFontDesc_Dev desc = cc.output();
+
+      ASSERT_EQ(family, desc.family());
+      ASSERT_EQ(font_in_family.style(), desc.style());
+      ASSERT_EQ(font_in_family.weight(), desc.weight());
+    }
+  }
+  {
+    // Using an invalid instance should fail.
+    TestCompletionCallbackWithOutput< std::vector<pp::TrueTypeFontDesc_Dev> >
+        cc(instance_->pp_instance(), false);
+    pp::Var family("Times");
+    cc.WaitForResult(
+        ppb_truetype_font_interface_->GetFontsInFamily(
+            kInvalidInstance,
+            family.pp_var(),
             cc.GetCallback().output(),
             cc.GetCallback().pp_completion_callback()));
     ASSERT_TRUE(cc.result() == PP_ERROR_FAILED ||

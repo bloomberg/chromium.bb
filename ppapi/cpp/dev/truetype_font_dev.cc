@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/dev/truetype_font_dev.h"
 
-#include <stdio.h>
 #include <string.h>  // memcpy
 
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
@@ -41,7 +40,7 @@ TrueTypeFontDesc_Dev::TrueTypeFontDesc_Dev(
     PassRef,
     const PP_TrueTypeFontDesc_Dev& pp_desc) {
   desc_ = pp_desc;
-  family_ = Var(PASS_REF, pp_desc.family);
+  set_family(Var(PASS_REF, pp_desc.family));
 }
 
 TrueTypeFontDesc_Dev::TrueTypeFontDesc_Dev(const TrueTypeFontDesc_Dev& other) {
@@ -61,12 +60,12 @@ TrueTypeFontDesc_Dev& TrueTypeFontDesc_Dev::operator=(
   if (this == &other)
     return *this;
 
-  desc_ = other.desc_;
-  // Be careful about the refcount of the string, the assignment above doesn't
-  // copy a ref. The assignments below take a ref to the new name and copy the
-  // PP_Var into the wrapped descriptor.
-  family_ = other.family();
-  desc_.family = family_.pp_var();
+  set_family(other.family());
+  set_generic_family(other.generic_family());
+  set_style(other.style());
+  set_weight(other.weight());
+  set_width(other.width());
+  set_charset(other.charset());
 
   return *this;
 }
@@ -99,6 +98,21 @@ int32_t TrueTypeFont_Dev::GetFontFamilies(
   if (has_interface<PPB_TrueTypeFont_Dev_0_1>()) {
     return get_interface<PPB_TrueTypeFont_Dev_0_1>()->GetFontFamilies(
         instance.pp_instance(),
+        cc.output(), cc.pp_completion_callback());
+  }
+  return cc.MayForce(PP_ERROR_NOINTERFACE);
+}
+
+// static
+int32_t TrueTypeFont_Dev::GetFontsInFamily(
+    const InstanceHandle& instance,
+    const Var& family,
+    const CompletionCallbackWithOutput<std::vector<TrueTypeFontDesc_Dev> >& cc)
+        {
+  if (has_interface<PPB_TrueTypeFont_Dev_0_1>()) {
+    return get_interface<PPB_TrueTypeFont_Dev_0_1>()->GetFontsInFamily(
+        instance.pp_instance(),
+        family.pp_var(),
         cc.output(), cc.pp_completion_callback());
   }
   return cc.MayForce(PP_ERROR_NOINTERFACE);
