@@ -1955,6 +1955,26 @@ other types of suffix sets.
   <summary>The number of bytes sent per stream.</summary>
 </histogram>
 
+<histogram name="Net.SpdySession.BytesRead.ClosedOnError" units="NetErrorCodes">
+  <summary>
+    Net error codes when SpdySession was closed, doesn't inlcuding net::OK.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySession.BytesRead.EOF" units="bytes">
+  <summary>
+    Total number of bytes recevied per session before closing session due to
+    EOF.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySession.BytesRead.OtherErrors" units="bytes">
+  <summary>
+    Total number of bytes recevied per session before closing session due to an
+    error during read.
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdySessionErrorDetails" enum="SpdyProtocolErrorDetails"
     units="count">
   <summary>The type of SPDY Protocol error encountered.</summary>
