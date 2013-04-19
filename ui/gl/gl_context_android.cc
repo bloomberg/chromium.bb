@@ -21,7 +21,7 @@ namespace {
 // that we do not have ownership of (draw callback).
 class GLNonOwnedContext : public GLContext {
  public:
-  GLNonOwnedContext();
+  GLNonOwnedContext(GLShareGroup* share_group);
 
   // Implement GLContext.
   virtual bool Initialize(GLSurface* compatible_surface,
@@ -43,7 +43,8 @@ class GLNonOwnedContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(GLNonOwnedContext);
 };
 
-GLNonOwnedContext::GLNonOwnedContext() : GLContext(NULL) {}
+GLNonOwnedContext::GLNonOwnedContext(GLShareGroup* share_group)
+  : GLContext(share_group) {}
 
 bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
   SetCurrent(this, surface);
@@ -69,7 +70,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   if (compatible_surface->GetHandle())
     context = new GLContextEGL(share_group);
   else
-    context = new GLNonOwnedContext();
+    context = new GLNonOwnedContext(share_group);
   if (!context->Initialize(compatible_surface, gpu_preference))
     return NULL;
   return context;
