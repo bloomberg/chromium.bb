@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
@@ -14,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -343,15 +341,6 @@ void DriveFileSystem::GetEntryInfoByResourceIdAfterGetEntry(
                  file_path));
 }
 
-void DriveFileSystem::LoadIfNeeded(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);
-}
-
 void DriveFileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,
@@ -639,11 +628,12 @@ void DriveFileSystem::GetEntryInfoByPathAfterGetEntry1(
   // Start loading if needed. Note that directory_fetch_info is empty here,
   // as we don't need to fetch the contents of a directory when we just need
   // to get an entry of the directory.
-  LoadIfNeeded(DirectoryFetchInfo(),
-               base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterLoad,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          file_path,
-                          callback));
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(),
+      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
+                 callback));
 }
 
 void DriveFileSystem::GetEntryInfoByPathAfterLoad(
@@ -708,11 +698,12 @@ void DriveFileSystem::ReadDirectoryByPathAfterGetEntry(
 
   if (error != DRIVE_FILE_OK) {
     // If we don't know about the directory, start loading.
-    LoadIfNeeded(DirectoryFetchInfo(),
-                 base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            directory_path,
-                            callback));
+    change_list_loader_->LoadIfNeeded(
+        DirectoryFetchInfo(),
+        base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   directory_path,
+                   callback));
     return;
   }
 
@@ -728,11 +719,12 @@ void DriveFileSystem::ReadDirectoryByPathAfterGetEntry(
   DirectoryFetchInfo directory_fetch_info(
       entry_proto->resource_id(),
       entry_proto->directory_specific_info().changestamp());
-  LoadIfNeeded(directory_fetch_info,
-               base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          directory_path,
-                          callback));
+  change_list_loader_->LoadIfNeeded(
+      directory_fetch_info,
+      base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
+                 callback));
 }
 
 void DriveFileSystem::ReadDirectoryByPathAfterLoad(

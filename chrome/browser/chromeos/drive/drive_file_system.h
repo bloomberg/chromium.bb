@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -37,17 +36,11 @@ namespace drive {
 
 class DriveCacheEntry;
 class DriveFileSystemObserver;
-class DriveFunctionRemove;
 class DriveResourceMetadata;
 class DriveScheduler;
 class DriveWebAppsRegistry;
+class ChangeList;
 class ChangeListLoader;
-
-namespace file_system {
-class CopyOperation;
-class MoveOperation;
-class RemoveOperation;
-}
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -379,12 +372,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<GetResolvedFileParams> params,
       DriveFileError error,
       const base::FilePath& cache_file);
-
-  // Loads the file system from the cache or the server via change lists if
-  // the file system is not yet loaded. Runs |callback| upon the completion
-  // with the error code.  |callback| must not be null.
-  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                    const FileOperationCallback& callback);
 
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
