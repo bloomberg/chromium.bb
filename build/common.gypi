@@ -2975,14 +2975,24 @@
               '-fcolor-diagnostics',
             ],
           }],
+          # Common options for AddressSanitizer, ThreadSanitizer and
+          # MemorySanitizer.
+          ['asan==1 or tsan==1 or msan==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fno-omit-frame-pointer',
+                  '-gline-tables-only',
+                ],
+              }],
+            ],
+          }],
           ['asan==1', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
-                  '-fno-omit-frame-pointer',
                   '-w',  # http://crbug.com/162783
-                  '-gline-tables-only',
                 ],
                 'ldflags': [
                   '-fsanitize=address',
@@ -3005,7 +3015,6 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=thread',
-                  '-fno-omit-frame-pointer',
                   '-fPIC',
                   '-mllvm', '-tsan-blacklist=<(tsan_blacklist)',
                 ],
@@ -3033,7 +3042,6 @@
                 'cflags': [
                   '-fsanitize=memory',
                   '-fsanitize-memory-track-origins',
-                  '-fno-omit-frame-pointer',
                   '-fPIC',
                 ],
                 'ldflags': [
