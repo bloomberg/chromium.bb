@@ -32,6 +32,8 @@
 var console = { }
 /** @param {...*} vararg */
 console.log = function(vararg) { }
+/** @param {...*} vararg */
+console.table = function(vararg) { }
 
 /**
  * @constructor
