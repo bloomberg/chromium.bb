@@ -62,7 +62,6 @@ namespace chromeos {
 void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kOobeComplete, false);
   registry->RegisterIntegerPref(kDeviceRegistered, -1);
-  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
   registry->RegisterStringPref(kInitialLocale, "en-US");
 }
 
