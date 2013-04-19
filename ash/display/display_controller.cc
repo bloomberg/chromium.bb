@@ -151,12 +151,6 @@ void RotateRootWindow(aura::RootWindow* root_window,
   root_window->SetProperty(kRotationPropertyKey, info.rotation());
 #endif
   gfx::Transform rotate;
-  // TODO(oshima): Manually complute the inverse of the
-  // rotate+translate matrix to compensate for computation error in
-  // the inverted matrix. Ideally, SkMatrix should have special
-  // case handling for rotate+translate case. crbug.com/222483.
-  gfx::Transform reverse_rotate;
-
   // The origin is (0, 0), so the translate width/height must be reduced by
   // 1 pixel.
   float one_pixel = 1.0f / display.device_scale_factor();
@@ -166,31 +160,22 @@ void RotateRootWindow(aura::RootWindow* root_window,
     case gfx::Display::ROTATE_90:
       rotate.Translate(display.bounds().height() - one_pixel, 0);
       rotate.Rotate(90);
-      reverse_rotate.Rotate(270);
-      reverse_rotate.Translate(-(display.bounds().height() - one_pixel), 0);
       break;
     case gfx::Display::ROTATE_270:
       rotate.Translate(0, display.bounds().width() - one_pixel);
       rotate.Rotate(270);
-      reverse_rotate.Rotate(90);
-      reverse_rotate.Translate(0, -(display.bounds().width() - one_pixel));
       break;
     case gfx::Display::ROTATE_180:
       rotate.Translate(display.bounds().width() - one_pixel,
                        display.bounds().height() - one_pixel);
       rotate.Rotate(180);
-      reverse_rotate.Rotate(180);
-      reverse_rotate.Translate(-(display.bounds().width() - one_pixel),
-                               -(display.bounds().height() - one_pixel));
       break;
   }
   RoundNearZero(&rotate);
-  RoundNearZero(&reverse_rotate);
 
   scoped_ptr<aura::RootWindowTransformer> transformer(
       new AshRootWindowTransformer(root_window,
                                    rotate,
-                                   reverse_rotate,
                                    info.GetOverscanInsetsInPixel(),
                                    info.ui_scale()));
   root_window->SetRootWindowTransformer(transformer.Pass());

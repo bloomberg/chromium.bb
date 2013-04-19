@@ -22,7 +22,6 @@ class ASH_EXPORT AshRootWindowTransformer : public aura::RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::RootWindow* root,
                            const gfx::Transform& transform,
-                           const gfx::Transform& inverted,
                            const gfx::Insets& insets,
                            float root_window_scale);
   // aura::RootWindowTransformer overrides:

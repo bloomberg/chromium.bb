@@ -13,7 +13,6 @@ namespace ash {
 AshRootWindowTransformer::AshRootWindowTransformer(
     aura::RootWindow* root,
     const gfx::Transform& transform,
-    const gfx::Transform& inverted,
     const gfx::Insets& host_insets,
     float root_window_scale)
     : root_window_(root),
@@ -23,20 +22,18 @@ AshRootWindowTransformer::AshRootWindowTransformer(
   root_window_->layer()->SetForceRenderSurface(root_window_scale_ != 1.0f);
 
   gfx::Transform translate;
-  invert_transform_ = inverted;
-  invert_transform_.Scale(root_window_scale_, root_window_scale_);
 
   if (host_insets.top() != 0 || host_insets.left() != 0) {
     float device_scale_factor = ui::GetDeviceScaleFactor(root_window_->layer());
     float x_offset = host_insets.left() / device_scale_factor;
     float y_offset = host_insets.top() / device_scale_factor;
     translate.Translate(x_offset, y_offset);
-    invert_transform_.Translate(-x_offset, -y_offset);
   }
   float inverted_scale = 1.0f / root_window_scale_;
   translate.Scale(inverted_scale, inverted_scale);
-
   transform_ = translate * transform;
+
+  CHECK(transform_.GetInverse(&invert_transform_));
 }
 
 gfx::Transform AshRootWindowTransformer::GetTransform() const {
