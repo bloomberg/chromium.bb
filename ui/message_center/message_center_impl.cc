@@ -112,6 +112,9 @@ void MessageCenterImpl::UpdateNotification(
 
 void MessageCenterImpl::RemoveNotification(const std::string& id,
                                            bool by_user) {
+  if (!HasNotification(id))
+    return;
+
   // In many cases |id| is a reference to an existing notification instance
   // but the instance can be destructed in RemoveNotification(). Hence
   // copies the id explicitly here.
@@ -157,6 +160,8 @@ void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
 void MessageCenterImpl::SetNotificationButtonIcon(
     const std::string& notification_id, int button_index,
     const gfx::Image& image) {
+  if (!HasNotification(notification_id))
+    return;
   if (notification_list_->SetNotificationButtonIcon(notification_id,
                                                     button_index, image)) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
@@ -205,12 +210,16 @@ void MessageCenterImpl::ShowNotificationSettingsDialog(
 }
 
 void MessageCenterImpl::ExpandNotification(const std::string& id) {
+  if (!HasNotification(id))
+    return;
   notification_list_->MarkNotificationAsExpanded(id);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                     OnNotificationUpdated(id));
 }
 
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
+  if (!HasNotification(id))
+    return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
@@ -219,6 +228,8 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
                                               int button_index) {
+  if (!HasNotification(id))
+    return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
@@ -227,6 +238,8 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
 
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
+  if (!HasNotification(id))
+    return;
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                     OnNotificationUpdated(id));
