@@ -87,7 +87,7 @@ class FindBarView : public DropdownBarView,
   // Update the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
 
-  // Overridden from views::View.
+  // views::View:
   virtual void OnThemeChanged() OVERRIDE;
 
   // We use a hidden view to grab mouse clicks and bring focus to the find
@@ -117,9 +117,16 @@ class FindBarView : public DropdownBarView,
     SearchTextfieldView();
     virtual ~SearchTextfieldView();
 
-    virtual void RequestFocus() OVERRIDE;
+    // views::View:
+    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+    virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+
+    // views::Textfield:
+    virtual void OnFocus() OVERRIDE;
 
    private:
+    bool select_all_on_focus_;
+
     DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);
   };
 

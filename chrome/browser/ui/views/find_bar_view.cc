@@ -498,15 +498,29 @@ bool FindBarView::FocusForwarderView::OnMousePressed(
   return true;
 }
 
-FindBarView::SearchTextfieldView::SearchTextfieldView() {}
+FindBarView::SearchTextfieldView::SearchTextfieldView()
+    : select_all_on_focus_(true) {}
 
 FindBarView::SearchTextfieldView::~SearchTextfieldView() {}
 
-void FindBarView::SearchTextfieldView::RequestFocus() {
-  if (HasFocus())
-    return;
-  views::View::RequestFocus();
-  SelectAll(true);
+bool FindBarView::SearchTextfieldView::OnMousePressed(
+    const ui::MouseEvent& event) {
+  // Avoid temporarily selecting all the text on focus from a mouse press; this
+  // prevents flickering before setting a cursor or dragging to select text.
+  select_all_on_focus_ = false;
+  return views::Textfield::OnMousePressed(event);
+}
+
+void FindBarView::SearchTextfieldView::OnMouseReleased(
+    const ui::MouseEvent& event) {
+  views::Textfield::OnMouseReleased(event);
+  select_all_on_focus_ = true;
+}
+
+void FindBarView::SearchTextfieldView::OnFocus() {
+  views::Textfield::OnFocus();
+  if (select_all_on_focus_)
+    SelectAll(true);
 }
 
 FindBarHost* FindBarView::find_bar_host() const {
