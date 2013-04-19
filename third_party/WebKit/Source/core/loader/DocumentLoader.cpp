@@ -434,7 +434,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
 
-    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(this, action, request);
+    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(action, request);
     if (policy == PolicyDownload) {
         ResourceRequest mutableRequest(request);
         frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);

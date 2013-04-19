@@ -235,7 +235,7 @@ public:
     virtual void dispatchShow() { }
 
     virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
-    virtual PolicyAction decidePolicyForNavigationAction(DocumentLoader*, const NavigationAction&, const ResourceRequest&) OVERRIDE;
+    virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }
 
