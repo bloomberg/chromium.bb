@@ -22,13 +22,15 @@ struct Experiments {
   Experiments() : keystore_encryption(false),
                   autofill_culling(false),
                   full_history_sync(false),
-                  favicon_sync(false) {}
+                  favicon_sync(false),
+                  favicon_sync_limit(200) {}
 
   bool Matches(const Experiments& rhs) {
     return (keystore_encryption == rhs.keystore_encryption &&
             autofill_culling == rhs.autofill_culling &&
             full_history_sync == rhs.full_history_sync &&
-            favicon_sync == rhs.favicon_sync);
+            favicon_sync == rhs.favicon_sync &&
+            favicon_sync_limit == rhs.favicon_sync_limit);
   }
 
   // Enable keystore encryption logic and the new encryption UI.
@@ -42,6 +44,9 @@ struct Experiments {
 
   // Enable the favicons sync datatypes (favicon images and favicon tracking).
   bool favicon_sync;
+
+  // The number of favicons that a client is permitted to sync.
+  int favicon_sync_limit;
 };
 
 }  // namespace syncer

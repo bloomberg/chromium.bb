@@ -103,7 +103,8 @@ SessionModelAssociator::SessionModelAssociator(
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
       error_handler_(error_handler),
-      favicon_cache_(profile_, kMaxSyncFavicons) {
+      favicon_cache_(profile_,
+                     sync_service->current_experiments().favicon_sync_limit) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);

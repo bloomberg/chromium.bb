@@ -1379,9 +1379,12 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   ReadNode favicon_sync_node(&trans);
   if (favicon_sync_node.InitByClientTagLookup(
           syncer::EXPERIMENTS,
-          syncer::kFaviconSyncTag) == BaseNode::INIT_OK &&
-      favicon_sync_node.GetExperimentsSpecifics().favicon_sync().enabled()) {
-    experiments->favicon_sync = true;
+          syncer::kFaviconSyncTag) == BaseNode::INIT_OK) {
+    experiments->favicon_sync = favicon_sync_node.GetExperimentsSpecifics().
+        favicon_sync().enabled();
+    experiments->favicon_sync_limit =
+        favicon_sync_node.GetExperimentsSpecifics().favicon_sync().
+            favicon_sync_limit();
     found_experiment = true;
   }
 

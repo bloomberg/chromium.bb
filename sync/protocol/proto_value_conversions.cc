@@ -332,13 +332,26 @@ base::DictionaryValue* DictionarySpecificsToValue(
   return value;
 }
 
+namespace {
+
+DictionaryValue* FaviconSyncFlagsToValue(
+    const sync_pb::FaviconSyncFlags& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_BOOL(enabled);
+  SET_INT32(favicon_sync_limit);
+  return value;
+}
+
+}
+
 base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_EXPERIMENT_ENABLED_FIELD(keystore_encryption);
   SET_EXPERIMENT_ENABLED_FIELD(history_delete_directives);
   SET_EXPERIMENT_ENABLED_FIELD(autofill_culling);
-  SET_EXPERIMENT_ENABLED_FIELD(favicon_sync);
+  if (proto.has_favicon_sync())
+    SET(favicon_sync, FaviconSyncFlagsToValue);
   return value;
 }
 

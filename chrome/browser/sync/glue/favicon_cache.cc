@@ -225,6 +225,7 @@ FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::Source<Profile>(profile_));
+  DVLOG(1) << "Setting favicon limit to " << max_sync_favicon_limit;
 }
 
 FaviconCache::~FaviconCache() {}

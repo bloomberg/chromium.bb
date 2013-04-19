@@ -27,9 +27,11 @@ message AutofillCullingFlags {
   optional bool enabled = 1;
 }
 
-// Whether the favicon sync datatypes are enabled.
+// Whether the favicon sync datatypes are enabled, and what parameters
+// they should operate under.
 message FaviconSyncFlags {
   optional bool enabled = 1;
+  optional int32 favicon_sync_limit = 2 [default = 200];
 }
 
 // Contains one flag or set of related flags.  Each node of the experiments type
