@@ -27,6 +27,8 @@ def main(argv):
       help='Path to Android SDK tools.')
   parser.add_option('--apk-path',
       help='Path to .apk to install.')
+  parser.add_option('--install-record',
+      help='Path to install record (touched only when APK is installed).')
   parser.add_option('--stamp',
       help='Path to touch on success.')
   options, _ = parser.parse_args()
@@ -37,10 +39,14 @@ def main(argv):
       'install', '-r',
       options.apk_path]
 
+  def Install():
+      build_utils.CheckCallDie(install_cmd)
+      build_utils.Touch(options.install_record)
+
   serial_number = android_commands.AndroidCommands().Adb().GetSerialNumber()
   record_path = '%s.%s.md5.stamp' % (options.apk_path, serial_number)
   md5_check.CallAndRecordIfStale(
-      lambda: build_utils.CheckCallDie(install_cmd),
+      Install,
       record_path=record_path,
       input_paths=[options.apk_path],
       input_strings=install_cmd)

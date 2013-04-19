@@ -106,8 +106,10 @@
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'source_dir': '<(java_in_dir)/src',
-    'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
+    'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
     'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
+    'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
+    'symlink_script_device_path': '/data/local/tmp/chromium/<(_target_name)/create_symlinks.sh',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -210,22 +212,24 @@
               'includes': ['../build/android/push_libraries.gypi'],
             },
             {
-              'action_name': 'create_library_links',
+              'action_name': 'create device library symlinks',
               'message': 'Creating links on device for <(_target_name).',
               'inputs': [
+                '<(DEPTH)/build/android/gyp/util/build_utils.py',
                 '<(DEPTH)/build/android/gyp/create_device_library_links.py',
-                '<(apk_install_stamp)',
-                '<(push_stamp)'
+                '<(apk_install_record)',
+                '<(ordered_libraries_file)',
               ],
               'outputs': [
                 '<(link_stamp)'
               ],
               'action': [
                 'python', '<(DEPTH)/build/android/gyp/create_device_library_links.py',
-                '--apk=<(final_apk_path)',
                 '--libraries-json=<(ordered_libraries_file)',
-                '--libraries-dir=<(libraries_source_dir)',
+                '--script-host-path=<(symlink_script_host_path)',
+                '--script-device-path=<(symlink_script_device_path)',
                 '--target-dir=<(device_library_dir)',
+                '--apk=<(final_apk_path)',
                 '--stamp=<(link_stamp)',
               ],
             },
@@ -273,18 +277,18 @@
             '<(final_apk_path)',
           ],
           'outputs': [
-            '<(apk_install_stamp)',
+            '<(apk_install_record)',
             # If a user switches the connected device, the APK may need to be
             # installed even if there have been no changes. To ensure that the
             # APK on the device is always up-to-date, this step should always
             # be triggered.
-            '<(apk_install_stamp).fake',
+            '<(apk_install_record).fake',
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/apk_install.py',
             '--android-sdk-tools=<(android_sdk_tools)',
             '--apk-path=<(final_apk_path)',
-            '--stamp=<(apk_install_stamp)'
+            '--install-record=<(apk_install_record)'
           ],
         },
       ],

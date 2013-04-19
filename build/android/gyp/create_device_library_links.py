@@ -25,57 +25,76 @@ sys.path.append(BUILD_ANDROID_DIR)
 from pylib import android_commands
 from pylib.utils import apk_helper
 
+def RunShellCommand(adb, cmd):
+  output = adb.RunShellCommand(cmd)
 
-def RunLinkCommand(adb, target, link):
-  cmd = (
-      'rm ' + link + ' > /dev/null 2>&1 \n'
-      'ln -s ' + target + ' ' + link + '\n'
-      )
-  result = adb.RunShellCommand(cmd)
-
-  if result:
+  if output:
     raise Exception(
-        'Unexpected output creating links on device.\n' +
-        '\n'.join(result))
+        'Unexpected output running command: ' + cmd + '\n' +
+        '\n'.join(output))
 
 
-def CreateLinks(options):
+def CreateSymlinkScript(options):
   libraries = build_utils.ReadJson(options.libraries_json)
+
+  link_cmd = (
+      'rm $APK_LIBRARIES_DIR/%(lib_basename)s > /dev/null 2>&1 \n'
+      'ln -s $STRIPPED_LIBRARIES_DIR/%(lib_basename)s '
+        '$APK_LIBRARIES_DIR/%(lib_basename)s \n'
+      )
+
+  script = '#!/bin/sh \n'
+
+  for lib in libraries:
+    script += link_cmd % { 'lib_basename': lib }
+
+  with open(options.script_host_path, 'w') as scriptfile:
+    scriptfile.write(script)
+
+
+def TriggerSymlinkScript(options):
   apk_package = apk_helper.GetPackageName(options.apk)
+  apk_libraries_dir = '/data/data/%s/lib' % apk_package
 
   adb = android_commands.AndroidCommands()
-  serial_number = adb.Adb().GetSerialNumber()
-  for lib in libraries:
-    host_path = os.path.join(options.libraries_dir, lib)
-    def CreateLink():
-      link = '/data/data/' + apk_package + '/lib/' + lib
-      target = options.target_dir + '/' + lib
-      RunLinkCommand(adb, target, link)
+  device_dir = os.path.dirname(options.script_device_path)
+  mkdir_cmd = ('if [ ! -e %(dir)s ]; then mkdir %(dir)s; fi ' %
+      { 'dir': device_dir })
+  RunShellCommand(adb, mkdir_cmd)
+  adb.PushIfNeeded(options.script_host_path, options.script_device_path)
 
-    record_path = '%s.%s.link.md5.stamp' % (host_path, serial_number)
-    md5_check.CallAndRecordIfStale(
-        CreateLink,
-        record_path=record_path,
-        input_paths=[host_path])
+  trigger_cmd = (
+      'APK_LIBRARIES_DIR=%(apk_libraries_dir)s; '
+      'STRIPPED_LIBRARIES_DIR=%(target_dir)s; '
+      '. %(script_device_path)s'
+      ) % {
+          'apk_libraries_dir': apk_libraries_dir,
+          'target_dir': options.target_dir,
+          'script_device_path': options.script_device_path
+          }
+  RunShellCommand(adb, trigger_cmd)
 
 
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--apk', help='Path to the apk.')
+  parser.add_option('--script-host-path',
+      help='Path on the host for the symlink script.')
+  parser.add_option('--script-device-path',
+      help='Path on the device to push the created symlink script.')
   parser.add_option('--libraries-json',
       help='Path to the json list of native libraries.')
   parser.add_option('--target-dir',
       help='Device directory that contains the target libraries for symlinks.')
-  parser.add_option('--libraries-dir',
-      help='Directory that contains stripped libraries '
-      '(used to determine if a library has changed since last push).')
   parser.add_option('--stamp', help='Path to touch on success.')
   options, _ = parser.parse_args()
 
-  required_options = ['apk', 'libraries_json', 'target_dir', 'libraries_dir']
+  required_options = ['apk', 'libraries_json', 'script_host_path',
+      'script_device_path', 'target_dir']
   build_utils.CheckOptions(options, parser, required=required_options)
 
-  CreateLinks(options)
+  CreateSymlinkScript(options)
+  TriggerSymlinkScript(options)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
