@@ -1060,6 +1060,7 @@ static inline void AddTraceEventWithThreadIdAndTimestamp(
     const char* arg2_name,
     scoped_ptr<base::debug::ConvertableToTraceFormat> arg2_val) {
   const int num_args = 2;
+  const char* arg_names[2] = { arg1_name, arg2_name };
   unsigned char arg_types[2] =
       { TRACE_VALUE_TYPE_CONVERTABLE, TRACE_VALUE_TYPE_CONVERTABLE };
   scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[2];
@@ -1068,7 +1069,7 @@ static inline void AddTraceEventWithThreadIdAndTimestamp(
 
   TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
       phase, category_group_enabled, name, id, thread_id, timestamp,
-      num_args, &arg1_name, arg_types, NULL, convertable_values, flags);
+      num_args, arg_names, arg_types, NULL, convertable_values, flags);
 }
 
 static inline void AddTraceEvent(

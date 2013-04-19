@@ -335,8 +335,6 @@ TraceEvent::TraceEvent(
     if (copy) {
       CopyTraceEventParameter(&ptr, &name_, end);
       for (i = 0; i < num_args; ++i) {
-        if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-          continue;
         CopyTraceEventParameter(&ptr, &arg_names_[i], end);
       }
     }
