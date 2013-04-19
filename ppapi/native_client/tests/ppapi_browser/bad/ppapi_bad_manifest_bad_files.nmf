@@ -6,7 +6,7 @@
   },
   "files": {
     "file.txt": {
-      "unknown_arch": {"url": "file.txt"}
+      "unknown_arch": {}
     }
   }
 }

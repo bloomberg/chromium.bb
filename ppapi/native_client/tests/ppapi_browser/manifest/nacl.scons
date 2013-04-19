@@ -57,7 +57,9 @@ file_mapping += [
 node = env.PPAPIBrowserTester(
     'manifest_browser_test.out',
     url='manifest.html',
-    nmfs=['${TEST_DIR}/manifest_top.nmf', '${TEST_DIR}/manifest_subdir.nmf'],
+    nmfs=['${TEST_DIR}/manifest_top.nmf',
+          '${TEST_DIR}/manifest_subdir.nmf',
+          '${TEST_DIR}/manifest_arch_specific.nmf'],
     files=env.ExtractPublishedFiles(manifest_good_target),
     map_files=file_mapping)
 

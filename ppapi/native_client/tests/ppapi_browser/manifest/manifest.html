@@ -34,6 +34,15 @@ testProgressEventStateMachine(
     1,  // loadCount
     undefined  // lastError
 );
+testProgressEventStateMachine(
+    tester,
+    'arch_specific_files',
+    2,  // progressMinCount
+    0,  // errorCount
+    0,  // abortCount
+    1,  // loadCount
+    undefined  // lastError
+);
 function runTests() {
   tester.waitFor($('topdir_static'), $('subdir_static'));
   tester.run();
@@ -59,6 +68,16 @@ setListeners($('body'));
        class="naclModule"
        width=0 height=0
        src="subdir/manifest_subdir.nmf"
+       type="application/x-nacl" />
+       
+<!--
+// manifest_arch_specific refers to unused files that are not available on all
+// platforms.
+-->
+<embed id="arch_specific_files"
+       class="naclModule"
+       width=0 height=0
+       src="manifest_arch_specific.nmf"
        type="application/x-nacl" />
 
 <script type="text/javascript">

@@ -108,7 +108,9 @@ function declareTests(tester) {
       tester,
       'bad_manifest_bad_files',
       'ppapi_bad_manifest_bad_files.nmf',
-      'NaCl module load failed: manifest: no version of file.txt given for current arch and no portable version found.');
+      // Manifest loader expects either 'url' or 'pnacl-translate' key present.
+      // If neither is found, it complains about the last one.
+      'NaCl module load failed: manifest: file.txt property \'unknown_arch\' does not have required key: \'pnacl-translate\'.');
 
   // 'bad_manifest_nexe_arch' loads a manifest with no program entry for the
   // user's architecture

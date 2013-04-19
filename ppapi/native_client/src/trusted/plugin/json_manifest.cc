@@ -247,22 +247,24 @@ bool IsValidISADictionary(const Json::Value& dictionary,
         !IsValidPnaclTranslateSpec(property_value, property_name,
                                    parent_key, &error_string)) {
       error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
-                            nacl::string("manifiest: ") + error_string);
+                            nacl::string("manifest: ") + error_string);
       return false;
     }
   }
 
-  // TODO(elijahtaylor) add ISA resolver here if we expand ISAs to include
-  // micro-architectures that can resolve to multiple valid sandboxes.
-  bool has_isa = dictionary.isMember(sandbox_isa);
-  bool has_portable = dictionary.isMember(kPortableKey);
+  if (!sandbox_isa.empty()) {
+    // TODO(elijahtaylor) add ISA resolver here if we expand ISAs to include
+    // micro-architectures that can resolve to multiple valid sandboxes.
+    bool has_isa = dictionary.isMember(sandbox_isa);
+    bool has_portable = dictionary.isMember(kPortableKey);
 
-  if (!has_isa && !has_portable) {
-    error_info->SetReport(
-        ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
-        nacl::string("manifest: no version of ") + parent_key +
-        " given for current arch and no portable version found.");
-    return false;
+    if (!has_isa && !has_portable) {
+      error_info->SetReport(
+          ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
+          nacl::string("manifest: no version of ") + parent_key +
+          " given for current arch and no portable version found.");
+      return false;
+    }
   }
 
   return true;
@@ -298,8 +300,12 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
   if (url == NULL || pnacl_options == NULL || error_info == NULL)
     return false;
 
-  if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa, error_info))
+  if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa, error_info)) {
+    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                          "architecture " + sandbox_isa +
+                          " is not found for file " + parent_key);
     return false;
+  }
 
   *url = "";
 
@@ -434,7 +440,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
       nacl::string file_name = members[i];
       if (!IsValidISADictionary(files[file_name],
                                 file_name,
-                                sandbox_isa_,
+                                nacl::string(),
                                 error_info)) {
         return false;
       }
