@@ -154,15 +154,15 @@
     ]
   },
   "jsgamebench": {
-    "description": "Score on Facebook's JSGameBench <https://github.com/facebook/jsgamebench> benchmark.\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance.",
+    "description": "Score on [Facebook's JSGameBench benchmark](https://github.com/facebook/jsgamebench).\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance.",
     "code": ["chrome/src/tools/perf/perf_tools/jsgamebench.py"]
   },
   "kraken": {
-    "description": "Score on mozilla's Kraken JavaScript benchmark <http://krakenbenchmark.mozilla.org/>",
+    "description": "Score on [Mozilla's Kraken JavaScript benchmark](http://krakenbenchmark.mozilla.org/)",
     "code": ["chrome/src/tools/perf/perf_tools/kraken.py"]
   },
   "mach_ports": {
-    "description": "This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of <http://crbug.com/105513>.",
+    "description": "This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of [bug 105513](http://crbug.com/105513).",
     "code": [
       "chrome/src/chrome/test/perf/mach_ports_test.cc"
     ]
@@ -190,19 +190,19 @@
     ]
   },
   "octane": {
-    "description": "Score on the V8 team's Octane benchmark <http://octane-benchmark.googlecode.com/svn/latest/index.html>",
+    "description": "Score on the [V8 team's Octane benchmark](http://octane-benchmark.googlecode.com/svn/latest/index.html)",
     "code": ["chrome/src/tools/perf/perf_tools/octane.py"]
   },
   "robohornetpro": {
-    "description": "Milliseconds to complete the RoboHornetPro demo by Microsoft <http://ie.microsoft.com/testdrive/performance/robohornetpro/>",
+    "description": "Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)",
     "code": ["chrome/src/tools/perf/perf_tools/robohornetpro.py"]
   },
   "scrolling_benchmark": {
-    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. See <http://www.chromium.org/developers/design-documents/rendering-benchmarks>.",
+    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
     "code": ["chrome/src/tools/perf/perf_tools/scrolling_benchmark.py"]
   },
   "spaceport": {
-    "description": "Performance on spaceport.io's perfmarks benchmark. This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS. See <http://spaceport.io/community/perfmarks>.",
+    "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
     "code": ["chrome/src/tools/perf/perf_tools/spaceport.py"]
   },
   "startup_test": {
@@ -210,7 +210,7 @@
     "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
   },
   "sunspider": {
-    "description": "Performance on the SunSpider JavaScript benchmark <http://www.webkit.org/perf/sunspider/sunspider.html>",
+    "description": "Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)",
     "code": ["chrome/src/tools/perf/perf_tools/sunspider.py"]
   }
 }
