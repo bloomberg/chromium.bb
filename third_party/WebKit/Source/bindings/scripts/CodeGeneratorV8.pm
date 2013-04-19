@@ -2831,6 +2831,7 @@ sub GenerateImplementationNamedPropertyGetter
     }
 
     if ($interface->extendedAttributes->{"NamedGetter"}) {
+        die "$interfaceName: [NamedGetter] but no namedItem() method." if (!$namedPropertyGetter);
         AddToImplIncludes("V8Collection.h");
         my $type = $namedPropertyGetter->type;
         $subCode .= <<END;
