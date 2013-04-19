@@ -5,27 +5,22 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_
 
-#include <deque>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "net/base/network_change_notifier.h"
-
-class Profile;
-class PrefChangeRegistrar;
 
 namespace drive {
 
+class DriveCache;
+class DriveCacheEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class DrivePrefetcher;
 
 // The DriveSyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -40,9 +35,8 @@ class DrivePrefetcher;
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-class DriveSyncClient
-    : public DriveFileSystemObserver,
-      public DriveCacheObserver {
+class DriveSyncClient : public DriveFileSystemObserver,
+                        public DriveCacheObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -50,16 +44,8 @@ class DriveSyncClient
     UPLOAD,  // Upload a file to the Drive server.
   };
 
-  // |profile| is used to access user preferences.
-  // |file_system| is used access the
-  // cache (ex. store a file to the cache when the file is downloaded).
-  DriveSyncClient(Profile* profile,
-                  DriveFileSystemInterface* file_system,
-                  DriveCache* cache);
+  DriveSyncClient(DriveFileSystemInterface* file_system, DriveCache* cache);
   virtual ~DriveSyncClient();
-
-  // Initializes the DriveSyncClient.
-  void Initialize();
 
   // DriveFileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
@@ -150,7 +136,6 @@ class DriveSyncClient
   void OnUploadFileComplete(const std::string& resource_id,
                             DriveFileError error);
 
-  Profile* profile_;
   DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
   DriveCache* cache_;  // Owned by DriveSystemService.
 

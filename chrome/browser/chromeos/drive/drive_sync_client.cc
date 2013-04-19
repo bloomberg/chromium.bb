@@ -4,17 +4,13 @@
 
 #include "chrome/browser/chromeos/drive/drive_sync_client.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -58,30 +54,25 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 
 }  // namespace
 
-DriveSyncClient::DriveSyncClient(Profile* profile,
-                                 DriveFileSystemInterface* file_system,
+DriveSyncClient::DriveSyncClient(DriveFileSystemInterface* file_system,
                                  DriveCache* cache)
-    : profile_(profile),
-      file_system_(file_system),
+    : file_system_(file_system),
       cache_(cache),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(file_system);
+  DCHECK(cache);
+
+  file_system_->AddObserver(this);
+  cache_->AddObserver(this);
 }
 
 DriveSyncClient::~DriveSyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (file_system_)
-    file_system_->RemoveObserver(this);
-  if (cache_)
-    cache_->RemoveObserver(this);
-}
 
-void DriveSyncClient::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  file_system_->AddObserver(this);
-  cache_->AddObserver(this);
+  file_system_->RemoveObserver(this);
+  cache_->RemoveObserver(this);
 }
 
 void DriveSyncClient::StartProcessingBacklog() {

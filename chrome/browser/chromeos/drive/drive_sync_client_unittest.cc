@@ -4,34 +4,25 @@
 
 #include "chrome/browser/chromeos/drive/drive_sync_client.h"
 
-#include <algorithm>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
-using ::testing::DoAll;
-using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -56,25 +47,16 @@ ACTION_P2(MockUpdateFileByResourceId, error, md5) {
   arg1.Run(error, base::FilePath(), entry_proto.Pass());
 }
 
-class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  MOCK_CONST_METHOD0(GetCurrentConnectionType,
-                     net::NetworkChangeNotifier::ConnectionType());
-};
-
 }  // namespace
 
 class DriveSyncClientTest : public testing::Test {
  public:
   DriveSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        profile_(new TestingProfile),
         mock_file_system_(new StrictMock<MockDriveFileSystem>) {
   }
 
   virtual void SetUp() OVERRIDE {
-    mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
-
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -93,25 +75,18 @@ class DriveSyncClientTest : public testing::Test {
     SetUpCache();
 
     // Initialize the sync client.
-    sync_client_.reset(new DriveSyncClient(profile_.get(),
-                                           mock_file_system_.get(),
+    EXPECT_CALL(*mock_file_system_, AddObserver(_)).Times(1);
+    EXPECT_CALL(*mock_file_system_, RemoveObserver(_)).Times(1);
+    sync_client_.reset(new DriveSyncClient(mock_file_system_.get(),
                                            cache_.get()));
-
-    EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get())).Times(1);
-    EXPECT_CALL(*mock_file_system_,
-                RemoveObserver(sync_client_.get())).Times(1);
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
-    sync_client_->Initialize();
   }
 
   virtual void TearDown() OVERRIDE {
-    // The sync client should be deleted before NetworkLibrary, as the sync
-    // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
     cache_.reset();
-    mock_network_change_notifier_.reset();
   }
 
   // Sets up cache for tests.
@@ -244,11 +219,9 @@ class DriveSyncClientTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<DriveSyncClient> sync_client_;
-  scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 };
 
 TEST_F(DriveSyncClientTest, StartInitialScan) {

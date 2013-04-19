@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
@@ -151,7 +152,7 @@ DriveSystemService::DriveSystemService(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DriveDownloadHandler(file_write_helper(),
                                                    file_system()));
-  sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
+  sync_client_.reset(new DriveSyncClient(file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),
                                         event_logger(),
                                         DrivePrefetcherOptions()));
@@ -165,7 +166,6 @@ DriveSystemService::~DriveSystemService() {
 
 void DriveSystemService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sync_client_->Initialize();
   drive_service_->Initialize(profile_);
   file_system_->Initialize();
   cache_->RequestInitialize(
