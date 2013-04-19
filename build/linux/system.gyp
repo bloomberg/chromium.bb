@@ -480,6 +480,21 @@
             'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libspeechd.h',
             'output_cc': '<(INTERMEDIATE_DIR)/libspeechd_loader.cc',
             'generator': '../../tools/generate_library_loader/generate_library_loader.py',
+
+            # speech-dispatcher >= 0.8 installs libspeechd.h into
+            # speech-dispatcher/libspeechd.h, whereas speech-dispatcher < 0.8
+            # puts libspeechd.h in the top-level include directory.
+            # Since we need to support both cases for now, we ship a copy of
+            # libspeechd.h in third_party/speech-dispatcher. If the user
+            # prefers to link against the speech-dispatcher directly, the
+            # `libspeechd_h_prefix' variable can be passed to gyp with a value
+            # such as "speech-dispatcher/" that will be prepended to
+            # "libspeechd.h" in the #include directive.
+            # TODO(phaldan.jr): Once we do not need to support
+            # speech-dispatcher < 0.8 we can get rid of all this (including
+            # third_party/speech-dispatcher) and just include
+            # speech-dispatcher/libspeechd.h unconditionally.
+            'libspeechd_h_prefix%': '',
           },
           'action_name': 'generate_libspeechd_loader',
           'inputs': [
@@ -494,7 +509,9 @@
                      '--name', 'LibSpeechdLoader',
                      '--output-h', '<(output_h)',
                      '--output-cc', '<(output_cc)',
-                     '--header', '<libspeechd.h>',
+                     '--header', '<<(libspeechd_h_prefix)libspeechd.h>',
+                     '--bundled-header',
+                     '"third_party/speech-dispatcher/libspeechd.h"',
                      '--link-directly=<(linux_link_libspeechd)',
                      'spd_open',
                      'spd_say',

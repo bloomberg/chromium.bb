@@ -362,6 +362,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/smhasher/src': [  # http://crbug.com/98465
         'UNKNOWN',
     ],
+    'third_party/speech-dispatcher/libspeechd.h': [
+        'GPL (v2 or later)',
+    ],
     'third_party/sqlite': [
         'UNKNOWN',
     ],
