@@ -12,13 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class CommandLine;
 class GURL;
 class PrefRegistrySyncable;
@@ -187,10 +184,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
 
 // Show the first run search engine bubble at the first appropriate opportunity.
 // This bubble may be delayed by other UI, like global errors and sync promos.
-class FirstRunBubbleLauncher
-    : public content::NotificationObserver,
-      public chrome::BrowserListObserver,
-      public base::SupportsWeakPtr<FirstRunBubbleLauncher> {
+class FirstRunBubbleLauncher : public content::NotificationObserver {
  public:
   // Show the bubble at the first appropriate opportunity. This function
   // instantiates a FirstRunBubbleLauncher, which manages its own lifetime.
@@ -205,13 +199,7 @@ class FirstRunBubbleLauncher
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // chrome::BrowserListObserver override:
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
-
-  void DoShowFirstRunBubble();
-
   content::NotificationRegistrar registrar_;
-  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleLauncher);
 };
