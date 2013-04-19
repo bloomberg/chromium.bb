@@ -63,11 +63,27 @@ function WebView(node) {
     }
   }, this);
 
+  if (!this.node_.hasAttribute('tabIndex')) {
+    // <webview> needs a tabIndex in order to respond to keyboard focus.
+    // TODO(fsamuel): This introduces unexpected tab ordering. We need to find
+    // a way to take keyboard focus without messing with tab ordering.
+    // See http://crbug.com/231664.
+    this.node_.setAttribute('tabIndex', 0);
+  }
+  var self = this;
+  this.node_.addEventListener('focus', function(e) {
+    // Focus the BrowserPlugin when the <webview> takes focus.
+    self.objectNode_.focus();
+  });
+  this.node_.addEventListener('blur', function(e) {
+    // Blur the BrowserPlugin when the <webview> loses focus.
+    self.objectNode_.blur();
+  });
+
   shadowRoot.appendChild(this.objectNode_);
 
   // this.objectNode_[apiMethod] are not necessarily defined immediately after
   // the shadow object is appended to the shadow root.
-  var self = this;
   forEach(WEB_VIEW_API_METHODS, function(i, apiMethod) {
     node[apiMethod] = function(var_args) {
       return self.objectNode_[apiMethod].apply(self.objectNode_, arguments);
