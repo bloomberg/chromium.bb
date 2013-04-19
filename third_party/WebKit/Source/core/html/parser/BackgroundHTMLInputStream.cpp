@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "BackgroundHTMLInputStream.h"
 
 namespace WebCore {
@@ -105,5 +102,3 @@ void BackgroundHTMLInputStream::rewindTo(HTMLInputCheckpoint checkpointIndex, co
 }
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)

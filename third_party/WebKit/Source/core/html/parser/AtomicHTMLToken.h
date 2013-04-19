@@ -153,8 +153,6 @@ public:
         }
     }
 
-#if ENABLE(THREADED_HTML_PARSER)
-
     explicit AtomicHTMLToken(const CompactHTMLToken& token)
         : m_type(token.type())
     {
@@ -203,8 +201,6 @@ public:
         }
         }
     }
-
-#endif
 
     explicit AtomicHTMLToken(HTMLToken::Type type)
         : m_type(type)

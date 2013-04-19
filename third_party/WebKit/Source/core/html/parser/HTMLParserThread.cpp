@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "HTMLParserThread.h"
 
 namespace WebCore {
@@ -96,5 +93,3 @@ void HTMLParserThread::runLoop()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(THREADED_HTML_PARSER)

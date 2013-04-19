@@ -26,8 +26,6 @@
 #ifndef HTMLIdentifier_h
 #define HTMLIdentifier_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -80,7 +78,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif

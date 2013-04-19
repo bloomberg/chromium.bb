@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "CompactHTMLToken.h"
 
 #include "HTMLParserIdioms.h"
@@ -106,5 +103,3 @@ bool CompactHTMLToken::isSafeToSendToAnotherThread() const
 }
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)

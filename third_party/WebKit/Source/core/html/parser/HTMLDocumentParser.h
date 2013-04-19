@@ -86,7 +86,6 @@ public:
     virtual void suspendScheduledTasks();
     virtual void resumeScheduledTasks();
 
-#if ENABLE(THREADED_HTML_PARSER)
     struct ParsedChunk {
         OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
@@ -97,7 +96,6 @@ public:
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
     };
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
-#endif
 
 protected:
     virtual void insert(const SegmentedString&) OVERRIDE;
@@ -118,9 +116,7 @@ private:
     }
 
     // DocumentParser
-#if ENABLE(THREADED_HTML_PARSER)
     virtual void pinToMainThread() OVERRIDE;
-#endif
     virtual void detach() OVERRIDE;
     virtual bool hasInsertionPoint() OVERRIDE;
     virtual bool processingData() const OVERRIDE;
@@ -140,14 +136,12 @@ private:
     // CachedResourceClient
     virtual void notifyFinished(CachedResource*);
 
-#if ENABLE(THREADED_HTML_PARSER)
     void startBackgroundParser();
     void stopBackgroundParser();
     void validateSpeculations(PassOwnPtr<ParsedChunk> lastChunk);
     void discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunk, PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
     void processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void pumpPendingSpeculations();
-#endif
 
     Document* contextForParsingSession();
 
@@ -159,9 +153,7 @@ private:
     void pumpTokenizer(SynchronousMode);
     void pumpTokenizerIfPossible(SynchronousMode);
     void constructTreeFromHTMLToken(HTMLToken&);
-#if ENABLE(THREADED_HTML_PARSER)
     void constructTreeFromCompactHTMLToken(const CompactHTMLToken&);
-#endif
 
     void runScriptsForPausedTreeBuilder();
     void resumeParsingAfterScriptExecution();
@@ -195,14 +187,12 @@ private:
     XSSAuditor m_xssAuditor;
     XSSAuditorDelegate m_xssAuditorDelegate;
 
-#if ENABLE(THREADED_HTML_PARSER)
     // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be combined into a single state object
     // so they can be set and cleared together and passed between threads together.
     OwnPtr<ParsedChunk> m_lastChunkBeforeScript;
     Deque<OwnPtr<ParsedChunk> > m_speculations;
     WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
-#endif
     OwnPtr<HTMLResourcePreloader> m_preloader;
 
     bool m_isPinnedToMainThread;

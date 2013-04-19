@@ -26,8 +26,6 @@
 #ifndef BackgroundHTMLInputStream_h
 #define BackgroundHTMLInputStream_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "SegmentedString.h"
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
@@ -77,7 +75,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif

@@ -48,9 +48,7 @@ public:
     ~TokenPreloadScanner();
 
     void scan(const HTMLToken&, PreloadRequestStream& requests);
-#if ENABLE(THREADED_HTML_PARSER)
     void scan(const CompactHTMLToken&, PreloadRequestStream& requests);
-#endif
 
     void setPredictedBaseElementURL(const KURL& url) { m_predictedBaseElementURL = url; }
 

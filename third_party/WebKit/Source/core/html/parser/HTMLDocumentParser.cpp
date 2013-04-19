@@ -86,9 +86,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors
     , m_treeBuilder(HTMLTreeBuilder::create(this, document, parserContentPolicy(), reportErrors, m_options))
     , m_parserScheduler(HTMLParserScheduler::create(this))
     , m_xssAuditorDelegate(document)
-#if ENABLE(THREADED_HTML_PARSER)
     , m_weakFactory(this)
-#endif
     , m_preloader(adoptPtr(new HTMLResourcePreloader(document)))
     , m_isPinnedToMainThread(false)
     , m_endWasDelayed(false)
@@ -107,9 +105,7 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_tokenizer(HTMLTokenizer::create(m_options))
     , m_treeBuilder(HTMLTreeBuilder::create(this, fragment, contextElement, this->parserContentPolicy(), m_options))
     , m_xssAuditorDelegate(fragment->document())
-#if ENABLE(THREADED_HTML_PARSER)
     , m_weakFactory(this)
-#endif
     , m_isPinnedToMainThread(true)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
@@ -132,7 +128,6 @@ HTMLDocumentParser::~HTMLDocumentParser()
     // we we're told to stop parsing before we've consumed all the input.
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
 void HTMLDocumentParser::pinToMainThread()
 {
     ASSERT(!m_haveBackgroundParser);
@@ -144,14 +139,11 @@ void HTMLDocumentParser::pinToMainThread()
         m_tokenizer = HTMLTokenizer::create(m_options);
     }
 }
-#endif
 
 void HTMLDocumentParser::detach()
 {
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser)
         stopBackgroundParser();
-#endif
     DocumentParser::detach();
     if (m_scriptRunner)
         m_scriptRunner->detach();
@@ -167,10 +159,8 @@ void HTMLDocumentParser::stopParsing()
 {
     DocumentParser::stopParsing();
     m_parserScheduler.clear(); // Deleting the scheduler will clear any timers.
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser)
         stopBackgroundParser();
-#endif
 }
 
 // This kicks off "Once the user agent stops parsing" as described by:
@@ -187,14 +177,10 @@ void HTMLDocumentParser::prepareToStopParsing()
 
     // NOTE: This pump should only ever emit buffered character tokens,
     // so ForceSynchronous vs. AllowYield should be meaningless.
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_tokenizer) {
         ASSERT(!m_haveBackgroundParser);
         pumpTokenizerIfPossible(ForceSynchronous);
     }
-#else
-    pumpTokenizerIfPossible(ForceSynchronous);
-#endif
 
     if (isStopped())
         return;
@@ -249,12 +235,10 @@ void HTMLDocumentParser::resumeParsingAfterYield()
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
 
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser) {
         pumpPendingSpeculations();
         return;
     }
-#endif
 
     // We should never be here unless we can pump immediately.  Call pumpTokenizer()
     // directly so that ASSERTS will fire if we're wrong.
@@ -309,8 +293,6 @@ bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& ses
 
     return true;
 }
-
-#if ENABLE(THREADED_HTML_PARSER)
 
 void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> chunk)
 {
@@ -494,11 +476,8 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     InspectorInstrumentation::didWriteHTML(cookie, lineNumber().zeroBasedInt());
 }
 
-#endif // ENABLE(THREADED_HTML_PARSER)
-
 void HTMLDocumentParser::forcePlaintextForTextDocument()
 {
-#if ENABLE(THREADED_HTML_PARSER)
     if (shouldUseThreading()) {
         // This method is called before any data is appended, so we have to start
         // the background parser ourselves.
@@ -507,7 +486,6 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
 
         HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser));
     } else
-#endif
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
 
@@ -608,15 +586,11 @@ void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
     }
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 void HTMLDocumentParser::constructTreeFromCompactHTMLToken(const CompactHTMLToken& compactToken)
 {
     AtomicHTMLToken token(compactToken);
     m_treeBuilder->constructTree(&token);
 }
-
-#endif
 
 bool HTMLDocumentParser::hasInsertionPoint()
 {
@@ -637,14 +611,12 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
 
-#if ENABLE(THREADED_HTML_PARSER)
     if (!m_tokenizer) {
         ASSERT(!inPumpSession());
         ASSERT(m_haveBackgroundParser || wasCreatedByScript());
         m_token = adoptPtr(new HTMLToken);
         m_tokenizer = HTMLTokenizer::create(m_options);
     }
-#endif
 
     SegmentedString excludedLineNumberSource(source);
     excludedLineNumberSource.setExcludeLineNumbers();
@@ -662,8 +634,6 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
 
     endIfDelayed();
 }
-
-#if ENABLE(THREADED_HTML_PARSER)
 
 void HTMLDocumentParser::startBackgroundParser()
 {
@@ -698,14 +668,11 @@ void HTMLDocumentParser::stopBackgroundParser()
     m_weakFactory.revokeAll();
 }
 
-#endif
-
 void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
 {
     if (isStopped())
         return;
 
-#if ENABLE(THREADED_HTML_PARSER)
     if (shouldUseThreading()) {
         if (!m_haveBackgroundParser)
             startBackgroundParser();
@@ -718,7 +685,6 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
         HTMLParserThread::shared()->postTask(closure);
         return;
     }
-#endif
 
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
@@ -756,10 +722,8 @@ void HTMLDocumentParser::end()
     ASSERT(!isDetached());
     ASSERT(!isScheduledForResume());
 
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser)
         stopBackgroundParser();
-#endif
 
     // Informs the the rest of WebCore that parsing is really finished (and deletes this).
     m_treeBuilder->finished();
@@ -807,7 +771,6 @@ void HTMLDocumentParser::finish()
     // makes sense to call any methods on DocumentParser once it's been stopped.
     // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 
-#if ENABLE(THREADED_HTML_PARSER)
     // Empty documents never got an append() call, and thus have never started
     // a background parser. In those cases, we ignore shouldUseThreading()
     // and fall through to the non-threading case.
@@ -826,7 +789,6 @@ void HTMLDocumentParser::finish()
         m_token = adoptPtr(new HTMLToken);
         m_tokenizer = HTMLTokenizer::create(m_options);
     }
-#endif
 
     // We're not going to get any more data off the network, so we tell the
     // input stream we've reached the end of file. finish() can be called more
@@ -846,20 +808,16 @@ bool HTMLDocumentParser::isExecutingScript() const
 
 OrdinalNumber HTMLDocumentParser::lineNumber() const
 {
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser)
         return m_textPosition.m_line;
-#endif
 
     return m_input.current().currentLine();
 }
 
 TextPosition HTMLDocumentParser::textPosition() const
 {
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser)
         return m_textPosition;
-#endif
 
     const SegmentedString& currentString = m_input.current();
     OrdinalNumber line = currentString.currentLine();
@@ -889,7 +847,6 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     ASSERT(!isExecutingScript());
     ASSERT(!isWaitingForScripts());
 
-#if ENABLE(THREADED_HTML_PARSER)
     if (m_haveBackgroundParser) {
         validateSpeculations(m_lastChunkBeforeScript.release());
         ASSERT(!m_lastChunkBeforeScript);
@@ -899,7 +856,6 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
         pumpPendingSpeculations();
         return;
     }
-#endif
 
     m_insertionPreloadScanner.clear();
     pumpTokenizerIfPossible(AllowYield);

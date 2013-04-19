@@ -65,7 +65,6 @@ void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, PreloadRequestSt
     scanCommon(data.data(), data.data() + data.size(), requests);
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
 void CSSPreloadScanner::scan(const HTMLIdentifier& identifier, PreloadRequestStream& requests)
 {
     const StringImpl* data = identifier.asStringImpl();
@@ -77,7 +76,6 @@ void CSSPreloadScanner::scan(const HTMLIdentifier& identifier, PreloadRequestStr
     const UChar* begin = data->characters16();
     scanCommon(begin, begin + data->length(), requests);
 }
-#endif
 
 inline void CSSPreloadScanner::tokenize(UChar c)
 {

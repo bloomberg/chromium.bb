@@ -63,7 +63,6 @@
       'ENABLE_SPEECH_SYNTHESIS=0',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
-      'ENABLE_THREADED_HTML_PARSER=1',
       'ENABLE_TOUCH_ADJUSTMENT=1',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',
       'ENABLE_V8_SCRIPT_DEBUG_SERVER=1',

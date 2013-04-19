@@ -26,8 +26,6 @@
 #ifndef BackgroundHTMLParser_h
 #define BackgroundHTMLParser_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "BackgroundHTMLInputStream.h"
 #include "CompactHTMLToken.h"
 #include "HTMLParserOptions.h"
@@ -106,7 +104,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif

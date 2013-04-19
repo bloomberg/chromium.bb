@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "HTMLTreeBuilderSimulator.h"
 
 #include "HTMLDocumentParser.h"
@@ -185,5 +182,3 @@ bool HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLToken
 }
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)

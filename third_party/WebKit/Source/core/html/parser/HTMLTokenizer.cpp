@@ -124,8 +124,6 @@ void HTMLTokenizer::reset()
     m_additionalAllowedCharacter = '\0';
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 bool HTMLTokenizer::canCreateCheckpoint() const
 {
     if (!m_appropriateEndTagName.isEmpty())
@@ -156,8 +154,6 @@ void HTMLTokenizer::restoreFromCheckpoint(const Checkpoint& checkpoint)
     m_inputStreamPreprocessor.reset(checkpoint.skipNextNewLine);
     m_shouldAllowCDATA = checkpoint.shouldAllowCDATA;
 }
-
-#endif
 
 inline bool HTMLTokenizer::processEntity(SegmentedString& source)
 {

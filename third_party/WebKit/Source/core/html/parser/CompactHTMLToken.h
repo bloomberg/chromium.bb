@@ -26,8 +26,6 @@
 #ifndef CompactHTMLToken_h
 #define CompactHTMLToken_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "HTMLIdentifier.h"
 #include "HTMLToken.h"
 #include <wtf/OwnPtr.h>
@@ -87,7 +85,5 @@ private:
 typedef Vector<CompactHTMLToken> CompactHTMLTokenStream;
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif

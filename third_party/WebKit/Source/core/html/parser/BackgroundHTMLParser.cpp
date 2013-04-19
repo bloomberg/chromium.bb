@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "BackgroundHTMLParser.h"
 
 #include "HTMLDocumentParser.h"
@@ -205,5 +202,3 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 }
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)

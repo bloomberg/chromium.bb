@@ -61,7 +61,6 @@ TokenPreloadScanner::TagId TokenPreloadScanner::tagIdFor(const HTMLToken::DataVe
     return UnknownTagId;
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
 TokenPreloadScanner::TagId TokenPreloadScanner::tagIdFor(const HTMLIdentifier& tagName)
 {
     if (threadSafeHTMLNamesMatch(tagName, imgTag))
@@ -80,7 +79,6 @@ TokenPreloadScanner::TagId TokenPreloadScanner::tagIdFor(const HTMLIdentifier& t
         return TemplateTagId;
     return UnknownTagId;
 }
-#endif
 
 String TokenPreloadScanner::initiatorFor(TagId tagId)
 {
@@ -125,7 +123,6 @@ public:
         }
     }
 
-#if ENABLE(THREADED_HTML_PARSER)
     void processAttributes(const Vector<CompactHTMLToken::Attribute>& attributes)
     {
         if (m_tagId >= UnknownTagId)
@@ -133,7 +130,6 @@ public:
         for (Vector<CompactHTMLToken::Attribute>::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
             processAttribute(iter->name, iter->value);
     }
-#endif
 
     PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL)
     {
@@ -152,12 +148,10 @@ static bool match(const AtomicString& name, const QualifiedName& qName)
     return qName.localName() == name;
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
 static bool match(const HTMLIdentifier& name, const QualifiedName& qName)
 {
     return threadSafeHTMLNamesMatch(name, qName);
 }
-#endif
 
 private:
     template<typename NameType>
@@ -283,12 +277,10 @@ void TokenPreloadScanner::scan(const HTMLToken& token, Vector<OwnPtr<PreloadRequ
     scanCommon(token, requests);
 }
 
-#if ENABLE(THREADED_HTML_PARSER)
 void TokenPreloadScanner::scan(const CompactHTMLToken& token, Vector<OwnPtr<PreloadRequest> >& requests)
 {
     scanCommon(token, requests);
 }
-#endif
 
 template<typename Token>
 void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRequest> >& requests)

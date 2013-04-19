@@ -26,8 +26,6 @@
 #ifndef HTMLTreeBuilderSimulator_h
 #define HTMLTreeBuilderSimulator_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "HTMLParserOptions.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -69,7 +67,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif

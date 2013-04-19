@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include "HTMLIdentifier.h"
 
 #include "HTMLNames.h"
@@ -126,5 +123,3 @@ void HTMLIdentifier::init()
 }
 
 }
-
-#endif // ENABLE(THREADED_HTML_PARSER)

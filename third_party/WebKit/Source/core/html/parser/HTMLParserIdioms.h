@@ -94,7 +94,6 @@ inline bool isNotHTMLSpace(UChar character)
 }
 
 bool threadSafeMatch(const QualifiedName&, const QualifiedName&);
-#if ENABLE(THREADED_HTML_PARSER)
 bool threadSafeMatch(const HTMLIdentifier&, const QualifiedName&);
 inline bool threadSafeHTMLNamesMatch(const HTMLIdentifier& tagName, const QualifiedName& qName)
 {
@@ -103,7 +102,6 @@ inline bool threadSafeHTMLNamesMatch(const HTMLIdentifier& tagName, const Qualif
     ASSERT(HTMLIdentifier::isKnown(qName.localName().impl()));
     return tagName.asStringImpl() == qName.localName().impl();
 }
-#endif
 
 }
 

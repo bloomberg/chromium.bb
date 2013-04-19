@@ -31,8 +31,6 @@
 #ifndef HTMLParserThread_h
 #define HTMLParserThread_h
 
-#if ENABLE(THREADED_HTML_PARSER)
-
 #include <wtf/Functional.h>
 #include <wtf/MessageQueue.h>
 #include <wtf/PassOwnPtr.h>
@@ -73,7 +71,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(THREADED_HTML_PARSER)
 
 #endif // HTMLParserThread_h
