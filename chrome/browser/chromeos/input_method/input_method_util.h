@@ -114,6 +114,11 @@ class InputMethodUtil {
   // Sets the list of component extension IMEs.
   void SetComponentExtensions(const InputMethodDescriptors& imes);
 
+  // Returns the fallback input method descriptor (the very basic US
+  // keyboard). This function is mostly used for testing, but may be used
+  // as the fallback, when there is no other choice.
+  static InputMethodDescriptor GetFallbackInputMethodDescriptor();
+
  protected:
   // protected: for unit testing as well.
   bool GetInputMethodIdsFromLanguageCodeInternal(

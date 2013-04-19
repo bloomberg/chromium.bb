@@ -38,7 +38,7 @@ scoped_ptr<InputMethodDescriptors>
 MockInputMethodManager::GetSupportedInputMethods() const {
   scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
-      InputMethodDescriptor::GetFallbackInputMethodDescriptor());
+      InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result.Pass();
 }
 
@@ -46,7 +46,7 @@ scoped_ptr<InputMethodDescriptors>
 MockInputMethodManager::GetActiveInputMethods() const {
   scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
-      InputMethodDescriptor::GetFallbackInputMethodDescriptor());
+      InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result.Pass();
 }
 
@@ -112,7 +112,7 @@ bool MockInputMethodManager::SwitchInputMethod(
 
 InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
   InputMethodDescriptor descriptor =
-      InputMethodDescriptor::GetFallbackInputMethodDescriptor();
+      InputMethodUtil::GetFallbackInputMethodDescriptor();
   if (!current_input_method_id_.empty()) {
     return InputMethodDescriptor(current_input_method_id_,
                                  descriptor.name(),

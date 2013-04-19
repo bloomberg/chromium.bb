@@ -601,7 +601,7 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
     // This is totally fine if it's empty. The hardware keyboard layout is
     // not stored if startup_manifest.json (OEM customization data) is not
     // present (ex. Cr48 doen't have that file).
-    return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
+    return GetFallbackInputMethodDescriptor().id();
   }
   return input_method_id;
 }
@@ -617,6 +617,15 @@ void InputMethodUtil::SetComponentExtensions(
     id_to_descriptor_.insert(
         std::make_pair(input_method.id(), input_method));
   }
+}
+
+InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
+  return InputMethodDescriptor("xkb:us::eng",
+                               "",
+                               "us",
+                               "en-US",
+                               "",  // options page, not available.
+                               false);
 }
 
 void InputMethodUtil::ReloadInternalMaps() {

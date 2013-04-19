@@ -31,20 +31,12 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   bool operator==(const InputMethodDescriptor& other) const;
   bool operator!=(const InputMethodDescriptor& other) const;
 
-  // Debug print function.
-  std::string ToString() const;
-
   const std::string& id() const { return id_; }
   const std::string& name() const { return name_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
   const std::string& language_code() const { return language_code_; }
   const std::string& options_page_url() const { return options_page_url_; }
   bool third_party() const { return third_party_; }
-
-  // Returns the fallback input method descriptor (the very basic US
-  // keyboard). This function is mostly used for testing, but may be used
-  // as the fallback, when there is no other choice.
-  static InputMethodDescriptor GetFallbackInputMethodDescriptor();
 
  private:
   // An ID that identifies an input method engine (e.g., "t:latn-post",

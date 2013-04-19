@@ -12,10 +12,6 @@
 namespace chromeos {
 namespace input_method {
 
-namespace {
-const char kFallbackLayout[] = "us";
-}  // namespace
-
 InputMethodDescriptor::InputMethodDescriptor(
     const std::string& id,
     const std::string& name,
@@ -45,28 +41,6 @@ bool InputMethodDescriptor::operator==(
 bool InputMethodDescriptor::operator!=(
     const InputMethodDescriptor& other) const {
   return !(*this == other);
-}
-
-// static
-InputMethodDescriptor
-InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
-  return InputMethodDescriptor("xkb:us::eng",
-                               "",
-                               kFallbackLayout,
-                               "en-US",
-                               "",  // options page, not available.
-                               false);
-}
-
-std::string InputMethodDescriptor::ToString() const {
-  std::stringstream stream;
-  stream << "id=" << id()
-         << ", name=" << name()
-         << ", keyboard_layout=" << keyboard_layout()
-         << ", language_code=" << language_code()
-         << ", options_page_url=" << options_page_url()
-         << ", third_party=" << third_party();
-  return stream.str();
 }
 
 }  // namespace input_method

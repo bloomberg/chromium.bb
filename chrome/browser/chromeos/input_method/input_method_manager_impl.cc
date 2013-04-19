@@ -130,7 +130,7 @@ InputMethodManagerImpl::GetActiveInputMethods() const {
     // Initially |active_input_method_ids_| is empty. browser_tests might take
     // this path.
     result->push_back(
-        InputMethodDescriptor::GetFallbackInputMethodDescriptor());
+        InputMethodUtil::GetFallbackInputMethodDescriptor());
   }
   return result.Pass();
 }
@@ -612,7 +612,7 @@ void InputMethodManagerImpl::SwitchToNextInputMethodInternal(
 
 InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {
   if (current_input_method_.id().empty())
-    return InputMethodDescriptor::GetFallbackInputMethodDescriptor();
+    return InputMethodUtil::GetFallbackInputMethodDescriptor();
   return current_input_method_;
 }
 
