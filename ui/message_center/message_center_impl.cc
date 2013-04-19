@@ -212,7 +212,7 @@ void MessageCenterImpl::ExpandNotification(const std::string& id) {
 
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   if (HasPopupNotifications())
-    notification_list_->MarkSinglePopupAsShown(id, true);
+    MarkSinglePopupAsShown(id, true);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                     OnNotificationClicked(id));
 }
@@ -220,7 +220,7 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
                                               int button_index) {
   if (HasPopupNotifications())
-    notification_list_->MarkSinglePopupAsShown(id, true);
+    MarkSinglePopupAsShown(id, true);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                     OnNotificationButtonClicked(id, button_index));
 }

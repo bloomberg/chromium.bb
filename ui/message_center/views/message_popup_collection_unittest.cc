@@ -7,6 +7,8 @@
 #include <list>
 
 #include "base/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/fake_message_center.h"
@@ -17,6 +19,48 @@ namespace message_center {
 namespace test {
 
 class MessagePopupCollectionTest : public views::ViewsTestBase {
+ public:
+  virtual void SetUp() OVERRIDE {
+    views::ViewsTestBase::SetUp();
+    MessageCenter::Initialize();
+    collection_.reset(
+        new MessagePopupCollection(GetContext(), MessageCenter::Get()));
+    collection_->SetWorkAreaForTest(gfx::Rect(0, 0, 1280, 1024));
+    id_ = 0;
+  }
+
+  virtual void TearDown() OVERRIDE {
+    collection_->CloseAllWidgets();
+    collection_.reset();
+    MessageCenter::Shutdown();
+    views::ViewsTestBase::TearDown();
+  }
+
+ protected:
+  size_t GetToastCounts() {
+    return collection_->toasts_.size();
+  }
+
+  bool IsToastShown(const std::string& id) {
+    views::Widget* widget = collection_->GetWidgetForId(id);
+    return widget && widget->IsVisible();
+  }
+
+  std::string AddNotification() {
+    std::string id = base::IntToString(id_++);
+    MessageCenter::Get()->AddNotification(
+        NOTIFICATION_TYPE_BASE_FORMAT, id, UTF8ToUTF16("test title"),
+        UTF8ToUTF16("test message"), string16() /* display_source */,
+        "" /* extension_id */, NULL);
+    return id;
+  }
+
+ private:
+  scoped_ptr<MessagePopupCollection> collection_;
+  int id_;
+};
+
+class MessagePopupCollectionWidgetsTest : public views::ViewsTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     views::ViewsTestBase::SetUp();
@@ -69,7 +113,27 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   scoped_ptr<MessagePopupCollection> collection_;
 };
 
-TEST_F(MessagePopupCollectionTest, RepositionWidgets) {
+TEST_F(MessagePopupCollectionTest, DismissOnClick) {
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  EXPECT_EQ(2u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  MessageCenter::Get()->ClickOnNotification(id2);
+  RunPendingMessages();
+  EXPECT_EQ(1u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_FALSE(IsToastShown(id2));
+
+  MessageCenter::Get()->ClickOnNotificationButton(id1, 0);
+  RunPendingMessages();
+  EXPECT_EQ(0u, GetToastCounts());
+  EXPECT_FALSE(IsToastShown(id1));
+  EXPECT_FALSE(IsToastShown(id2));
+}
+
+TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgets) {
   std::vector<gfx::Rect> rects;
   std::list<views::Widget*> widgets;
   rects.push_back(gfx::Rect(0, 0, 10, 10));
@@ -85,7 +149,7 @@ TEST_F(MessagePopupCollectionTest, RepositionWidgets) {
   EXPECT_EQ("0,60 10x40", GetWidgetRectAt(3).ToString());
 }
 
-TEST_F(MessagePopupCollectionTest, RepositionWidgetsWithTargetDown) {
+TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetDown) {
   std::vector<gfx::Rect> rects;
   std::list<views::Widget*> widgets;
   rects.push_back(gfx::Rect(0, 180, 10, 10));
@@ -99,7 +163,7 @@ TEST_F(MessagePopupCollectionTest, RepositionWidgetsWithTargetDown) {
   EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
 }
 
-TEST_F(MessagePopupCollectionTest, RepositionWidgetsWithTargetDownAll) {
+TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetDownAll) {
   std::vector<gfx::Rect> rects;
   std::list<views::Widget*> widgets;
   rects.push_back(gfx::Rect(0, 150, 10, 20));
@@ -113,7 +177,7 @@ TEST_F(MessagePopupCollectionTest, RepositionWidgetsWithTargetDownAll) {
   EXPECT_EQ("0,90 10x40", GetWidgetRectAt(2).ToString());
 }
 
-TEST_F(MessagePopupCollectionTest, RepositionWidgetsWithTargetUp) {
+TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetUp) {
   std::vector<gfx::Rect> rects;
   std::list<views::Widget*> widgets;
   rects.push_back(gfx::Rect(0, 180, 10, 10));

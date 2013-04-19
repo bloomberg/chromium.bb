@@ -387,10 +387,10 @@ void MessagePopupCollection::OnNotificationUpdated(
   if (toast_iter == toasts_.end())
     return;
 
-  NotificationList::Notifications notifications =
-      message_center_->GetNotifications();
+  NotificationList::PopupNotifications notifications =
+      message_center_->GetPopupNotifications();
   bool updated = false;
-  for (NotificationList::Notifications::iterator iter =
+  for (NotificationList::PopupNotifications::iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() != notification_id)
       continue;
@@ -403,15 +403,29 @@ void MessagePopupCollection::OnNotificationUpdated(
     updated = true;
   }
 
-  if (updated) {
-    RepositionWidgets();
-    // Reposition could create extra space which allows additional widgets.
-    UpdateWidgets();
+  // OnNotificationUpdated() can be called when a notification is excluded from
+  // the popup notification list but still remains in the full notification
+  // list. In that case the widget for the notification has to be closed here.
+  if (!updated) {
+    views::Widget* widget = toast_iter->second->GetWidget();
+    widget->RemoveObserver(this);
+    widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
+    widget->Close();
+    toasts_.erase(toast_iter);
   }
+
+  RepositionWidgets();
+  // Reposition could create extra space which allows additional widgets.
+  UpdateWidgets();
 }
 
 void MessagePopupCollection::SetWorkAreaForTest(const gfx::Rect& work_area) {
   work_area_ = work_area;
+}
+
+views::Widget* MessagePopupCollection::GetWidgetForId(const std::string& id) {
+  ToastContainer::const_iterator iter = toasts_.find(id);
+  return (iter == toasts_.end()) ? NULL : iter->second->GetWidget();
 }
 
 }  // namespace message_center

@@ -28,6 +28,7 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManyPopupNotifications);
 namespace message_center {
 namespace test {
 class MessagePopupCollectionTest;
+class MessagePopupCollectionWidgetsTest;
 }
 
 class MessageCenter;
@@ -56,6 +57,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
                            ManyPopupNotifications);
   friend class test::MessagePopupCollectionTest;
+  friend class test::MessagePopupCollectionWidgetsTest;
   typedef std::map<std::string, ToastContentsView*> ToastContainer;
 
   void CloseAllWidgets();
@@ -86,6 +88,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
       const std::string& notification_id) OVERRIDE;
 
   void SetWorkAreaForTest(const gfx::Rect& work_area);
+  views::Widget* GetWidgetForId(const std::string& id);
 
   gfx::NativeView parent_;
   MessageCenter* message_center_;
