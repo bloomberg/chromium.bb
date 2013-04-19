@@ -221,7 +221,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Returns whether the given RenderViewHost is on the list of swapped out
   // RenderViewHosts.
-  bool IsSwappedOut(RenderViewHost* rvh);
+  bool IsOnSwappedOutList(RenderViewHost* rvh) const;
 
   // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance);
@@ -326,6 +326,6 @@ class CONTENT_EXPORT RenderViewHostManager
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManager);
 };
 
-}  // namespace content      
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_RENDER_VIEW_HOST_MANAGER_H_

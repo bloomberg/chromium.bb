@@ -931,7 +931,7 @@ void RenderViewHostManager::CancelPending() {
   // swap it back in and then canceled.  If so, make sure it gets swapped out
   // again.  If it's not on the swapped out list (e.g., aborting a pending
   // load), then it's safe to shut down.
-  if (IsSwappedOut(pending_render_view_host)) {
+  if (IsOnSwappedOutList(pending_render_view_host)) {
     // Any currently suspended navigations are no longer needed.
     pending_render_view_host->CancelSuspendedNavigations();
 
@@ -975,12 +975,16 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
   }
 }
 
-bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {
+bool RenderViewHostManager::IsOnSwappedOutList(RenderViewHost* rvh) const {
   if (!rvh->GetSiteInstance())
     return false;
 
-  return swapped_out_hosts_.find(rvh->GetSiteInstance()->GetId()) !=
-      swapped_out_hosts_.end();
+  RenderViewHostMap::const_iterator iter = swapped_out_hosts_.find(
+      rvh->GetSiteInstance()->GetId());
+  if (iter == swapped_out_hosts_.end())
+    return false;
+
+  return iter->second == rvh;
 }
 
 RenderViewHostImpl* RenderViewHostManager::GetSwappedOutRenderViewHost(

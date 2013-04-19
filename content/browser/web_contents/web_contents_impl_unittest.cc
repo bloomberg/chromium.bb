@@ -438,7 +438,8 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
   // We keep the original RVH around, swapped out.
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsSwappedOut(orig_rvh));
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
+      orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -463,7 +464,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // The pending RVH should now be swapped out, not deleted.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
-      IsSwappedOut(pending_rvh));
+      IsOnSwappedOutList(pending_rvh));
   EXPECT_EQ(pending_rvh_delete_count, 0);
 
   // Close contents and ensure RVHs are deleted.

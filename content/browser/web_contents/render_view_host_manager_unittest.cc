@@ -815,20 +815,20 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
                   rvh2->GetSiteInstance()));
 
   // Ensure rvh1 is placed on swapped out list of the current tab.
-  EXPECT_TRUE(manager->IsSwappedOut(rvh1));
+  EXPECT_TRUE(manager->IsOnSwappedOutList(rvh1));
   EXPECT_EQ(rvh1,
             manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
 
   // Ensure a swapped out RVH is created in the first opener tab.
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsSwappedOut(opener1_rvh));
+  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rvh));
   EXPECT_TRUE(opener1_rvh->is_swapped_out());
 
   // Ensure a swapped out RVH is created in the second opener tab.
   TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
       opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener2_manager->IsSwappedOut(opener2_rvh));
+  EXPECT_TRUE(opener2_manager->IsOnSwappedOutList(opener2_rvh));
   EXPECT_TRUE(opener2_rvh->is_swapped_out());
 
   // Navigate to a cross-BrowsingInstance URL.
@@ -880,7 +880,7 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   // Ensure a swapped out RVH is created in the first opener tab.
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsSwappedOut(opener1_rvh));
+  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rvh));
   EXPECT_TRUE(opener1_rvh->is_swapped_out());
 
   // Ensure the new RVH has WebUI bindings.
