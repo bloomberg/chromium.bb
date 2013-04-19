@@ -93,11 +93,6 @@ void ScriptController::initializeThreading()
     }
 }
 
-void ScriptController::setFlags(const char* string, int length)
-{
-    v8::V8::SetFlagsFromString(string, length);
-}
-
 bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
 {
     return !v8::Context::InContext() || BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), frame);
@@ -409,10 +404,6 @@ TextPosition ScriptController::eventHandlerPosition() const
     return TextPosition::minimumPosition();
 }
 
-void ScriptController::finishedWithEvent(Event* event)
-{
-}
-
 static inline v8::Local<v8::Context> contextForWorld(ScriptController* scriptController, DOMWrapperWorld* world)
 {
     return scriptController->windowShell(world)->context();
@@ -467,11 +458,6 @@ void ScriptController::bindToWindowObject(Frame* frame, const String& key, NPObj
     // Attach to the global object.
     v8::Handle<v8::Object> global = v8Context->Global();
     global->Set(v8String(key, v8Context->GetIsolate()), value);
-}
-
-bool ScriptController::haveInterpreter() const
-{
-    return m_windowShell->isContextInitialized();
 }
 
 void ScriptController::enableEval()
@@ -544,18 +530,6 @@ void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)
     _NPN_UnregisterObject(it->value);
     _NPN_ReleaseObject(it->value);
     m_pluginObjects.remove(it);
-}
-
-void ScriptController::evaluateInWorld(const ScriptSourceCode& source,
-                                       DOMWrapperWorld* world)
-{
-    if (world == mainThreadNormalWorld()) {
-        evaluate(source);
-        return;
-    }
-    Vector<ScriptSourceCode> sources;
-    sources.append(source);
-    evaluateInIsolatedWorld(world->worldId(), sources, world->extensionGroup(), 0);
 }
 
 V8Extensions& ScriptController::registeredExtensions()
@@ -638,7 +612,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
 }
 
 
-void ScriptController::clearWindowShell(DOMWindow*, bool)
+void ScriptController::clearWindowShell()
 {
     double start = currentTime();
     // V8 binding expects ScriptController::clearWindowShell only be called

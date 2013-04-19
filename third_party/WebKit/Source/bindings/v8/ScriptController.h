@@ -112,19 +112,10 @@ public:
     // ignored when evaluating resources injected into the DOM.
     bool shouldBypassMainWorldContentSecurityPolicy();
 
-    // FIXME: Remove references to this call in chromium and delete it.
-    inline static void setIsolatedWorldSecurityOrigin(int worldID, PassRefPtr<SecurityOrigin> origin)
-    {
-        DOMWrapperWorld::setIsolatedWorldSecurityOrigin(worldID, origin);
-    }
-
     // Creates a property of the global object of a frame.
     void bindToWindowObject(Frame*, const String& key, NPObject*);
 
     PassScriptInstance createScriptInstanceForWidget(Widget*);
-
-    // Check if the javascript engine has been initialized.
-    bool haveInterpreter() const;
 
     void enableEval();
     void disableEval(const String& errorMessage);
@@ -142,11 +133,6 @@ public:
     v8::Local<v8::Context> mainWorldContext();
     v8::Local<v8::Context> currentWorldContext();
 
-    // Pass command-line flags to the JS engine.
-    static void setFlags(const char* string, int length);
-
-    void finishedWithEvent(Event*);
-
     TextPosition eventHandlerPosition() const;
 
     static bool processingUserGesture();
@@ -156,7 +142,7 @@ public:
 
     const String* sourceURL() const { return m_sourceURL; } // 0 if we are not evaluating any script.
 
-    void clearWindowShell(DOMWindow*, bool);
+    void clearWindowShell();
     void updateDocument();
 
     void namedItemAdded(HTMLDocument*, const AtomicString&);
@@ -170,15 +156,8 @@ public:
     void clearForClose();
     void clearForOutOfMemory();
 
-
     NPObject* createScriptObjectForPluginElement(HTMLPlugInElement*);
     NPObject* windowScriptNPObject();
-
-    void evaluateInWorld(const ScriptSourceCode&, DOMWrapperWorld*);
-    static void getAllWorlds(Vector<RefPtr<DOMWrapperWorld> >& worlds)
-    {
-        DOMWrapperWorld::getAllWorlds(worlds);
-    }
 
     // Registers a v8 extension to be available on webpages. Will only
     // affect v8 contexts initialized after this call. Takes ownership of
@@ -218,9 +197,6 @@ private:
     // pointer in this object is cleared out when the window object is
     // destroyed.
     NPObject* m_wrappedWindowScriptNPObject;
-
-    // All of the extensions registered with the context.
-    static V8Extensions m_extensions;
 };
 
 } // namespace WebCore

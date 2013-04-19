@@ -47,6 +47,7 @@
 #include "ContentSecurityPolicy.h"
 #include "DOMImplementation.h"
 #include "DOMWindow.h"
+#include "DOMWrapperWorld.h"
 #include "DatabaseManager.h"
 #include "Document.h"
 #include "DocumentLoadTiming.h"
@@ -551,7 +552,7 @@ void FrameLoader::clear(Document* newDocument, bool clearWindowProperties, bool 
     if (clearWindowProperties) {
         InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->document()->domWindow());
         m_frame->document()->domWindow()->resetUnlessSuspendedForPageCache();
-        m_frame->script()->clearWindowShell(newDocument->domWindow(), m_frame->document()->inPageCache());
+        m_frame->script()->clearWindowShell();
     }
 
     m_frame->selection()->prepareForDestruction();
@@ -3023,7 +3024,7 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
         return;
 
     Vector<RefPtr<DOMWrapperWorld> > worlds;
-    ScriptController::getAllWorlds(worlds);
+    DOMWrapperWorld::getAllWorlds(worlds);
     for (size_t i = 0; i < worlds.size(); ++i)
         dispatchDidClearWindowObjectInWorld(worlds[i].get());
 }
