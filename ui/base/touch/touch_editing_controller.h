@@ -67,6 +67,9 @@ class UI_EXPORT TouchSelectionController {
 
   // Notifies the controller that the selection has changed.
   virtual void SelectionChanged() = 0;
+
+  // Returns true if the user is currently dragging one of the handles.
+  virtual bool IsHandleDragInProgress() = 0;
 };
 
 class UI_EXPORT TouchSelectionControllerFactory {

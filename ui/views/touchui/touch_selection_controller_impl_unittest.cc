@@ -78,6 +78,9 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     else
       controller->SetDraggingHandle(controller->selection_handle_2_.get());
 
+    // Offset the drag position by the selection handle radius since it is
+    // supposed to be in the coordinate system of the handle.
+    p.Offset(10, 0);
     controller->SelectionHandleDragged(p);
 
     // Do the work of OnMouseReleased().

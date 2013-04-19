@@ -29,6 +29,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // TextSelectionController.
   virtual void SelectionChanged() OVERRIDE;
+  virtual bool IsHandleDragInProgress() OVERRIDE;
 
  private:
   friend class TouchSelectionControllerImplTest;

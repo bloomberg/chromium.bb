@@ -245,6 +245,10 @@ void TouchSelectionControllerImpl::SelectionChanged() {
   }
 }
 
+bool TouchSelectionControllerImpl::IsHandleDragInProgress() {
+  return !!dragging_handle_;
+}
+
 void TouchSelectionControllerImpl::SetDraggingHandle(
     EditingHandleView* handle) {
   dragging_handle_ = handle;
@@ -261,10 +265,12 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 
   DCHECK(dragging_handle_);
 
+  gfx::Point offset_drag_pos(drag_pos.x(),
+      drag_pos.y() - dragging_handle_->cursor_height() / 2 -
+      2 * kSelectionHandleRadius);
+  ConvertPointToClientView(dragging_handle_, &offset_drag_pos);
   if (dragging_handle_ == cursor_handle_.get()) {
-    gfx::Point p(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
-    ConvertPointToClientView(dragging_handle_, &p);
-    client_view_->MoveCaretTo(p);
+    client_view_->MoveCaretTo(offset_drag_pos);
     return;
   }
 
@@ -274,16 +280,13 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
     fixed_handle = selection_handle_2_.get();
 
   // Find selection end points in client_view's coordinate system.
-  gfx::Point p1(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
-  ConvertPointToClientView(dragging_handle_, &p1);
-
   gfx::Point p2(kSelectionHandleRadius, fixed_handle->cursor_height() / 2);
   ConvertPointToClientView(fixed_handle, &p2);
 
   // Instruct client_view to select the region between p1 and p2. The position
   // of |fixed_handle| is the start and that of |dragging_handle| is the end
   // of selection.
-  client_view_->SelectRect(p2, p1);
+  client_view_->SelectRect(p2, offset_drag_pos);
 }
 
 void TouchSelectionControllerImpl::ConvertPointToClientView(
