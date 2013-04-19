@@ -10043,14 +10043,17 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_FIRSTRUN_TAKE_TOUR" desc="Button or link to begin a product tour of Chrome">
           Take a tour
         </message>
-        <message name="IDS_FIRSTRUN_SIGNED_IN" desc="Message informing the user that they are now signed in and sync is turned on.">
-          You are now signed in to Chrome. Your open tabs, bookmarks, omnibox data, and more are being synced with your Google Account.
-        </message>
         <message name="IDS_FIRSTRUN_SETTINGS_LINK" desc="Link to take user to Chrome's settings menu.">
           Settings
         </message>
         <message name="IDS_FIRSTRUN_TOS_EXPLANATION" desc="Message explaining that use of Chrome is governed by Chrome's terms of service.">
           Your use of Chrome is subject to the Chrome <ph name="BEGIN_LINK1">&lt;a href="$1"&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="$2"&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/a&gt;</ph>.
+        </message>
+        <message name="IDS_FIRSTRUN_SIGNED_IN_TITLE" desc="Message informing the user that they are now signed in." formatter_data="android_java">
+          You're now signed in to Chrome.
+        </message>
+        <message name="IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION" desc="Message informing the user what is being synced." formatter_data="android_java">
+          Your open tabs, bookmarks, history, and more are being synced with your Google Account.
         </message>
       </if>
 

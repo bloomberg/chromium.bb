@@ -30,7 +30,10 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("title",
       IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE);
   html_source->AddLocalizedString("takeATour", IDS_FIRSTRUN_TAKE_TOUR);
-  html_source->AddLocalizedString("firstRunSignedIn", IDS_FIRSTRUN_SIGNED_IN);
+  html_source->AddLocalizedString("firstRunSignedInTitle",
+      IDS_FIRSTRUN_SIGNED_IN_TITLE);
+  html_source->AddLocalizedString("firstRunSignedInDescription",
+      IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION);
   html_source->AddLocalizedString("settings", IDS_FIRSTRUN_SETTINGS_LINK);
 
   std::string locale = g_browser_process->GetApplicationLocale();
