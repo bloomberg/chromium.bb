@@ -240,7 +240,7 @@ void PowerStatusView::UpdateTextForNotificationView() {
 int PowerStatusView::GetRoundedBatteryPercentage() const {
   DCHECK(supply_status_.battery_percentage >= 0.0f);
   return std::max(kMinBatteryPercent,
-      static_cast<int>(supply_status_.battery_percentage));
+      static_cast<int>(supply_status_.battery_percentage + 0.5));
 }
 
 base::string16 PowerStatusView::GetBatteryTimeAccessibilityString(
