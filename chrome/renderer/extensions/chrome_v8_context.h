@@ -103,6 +103,10 @@ class ChromeV8Context : public RequestSender::Source {
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
 
+  // Returns the availability of the API |api_name| without taking into account
+  // the context's extension.
+  Feature::Availability GetAvailabilityForContext(const std::string& api_name);
+
   // Returns a string description of the type of context this is.
   std::string GetContextTypeDescription();
 
@@ -115,6 +119,9 @@ class ChromeV8Context : public RequestSender::Source {
                                   const std::string& error) OVERRIDE;
 
  private:
+  Feature::Availability GetAvailabilityInternal(const std::string& api_name,
+                                                const Extension* extension);
+
   // The v8 context the bindings are accessible to.
   ScopedPersistent<v8::Context> v8_context_;
 

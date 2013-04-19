@@ -154,9 +154,20 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 
 Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
+  return GetAvailabilityInternal(api_name, extension_);
+}
+
+Feature::Availability ChromeV8Context::GetAvailabilityForContext(
+    const std::string& api_name) {
+  return GetAvailabilityInternal(api_name, NULL);
+}
+
+Feature::Availability ChromeV8Context::GetAvailabilityInternal(
+    const std::string& api_name,
+    const Extension* extension) {
   return ExtensionAPI::GetSharedInstance()->IsAvailable(
       api_name,
-      extension_,
+      extension,
       context_type_,
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }
