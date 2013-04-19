@@ -37,6 +37,7 @@
 #include "ScriptRunner.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
+#include "V8GCController.h"
 #include "V8DedicatedWorkerContext.h"
 #include "V8Initializer.h"
 #include "V8SharedWorkerContext.h"

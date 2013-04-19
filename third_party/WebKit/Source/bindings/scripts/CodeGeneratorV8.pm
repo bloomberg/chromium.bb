@@ -3006,16 +3006,39 @@ inline void checkTypeOrDieTrying(${nativeType}* object)
 
 END
 
-
     my $parentClassInfo = $parentClass ? "&${parentClass}::info" : "0";
-
     my $WrapperTypePrototype = $interface->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
+
+    if (!$codeGenerator->IsSVGTypeNeedingTearOff($interfaceName)) {
+        push(@implContentInternals, <<END);
+#if defined(OS_WIN)
+// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
+// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
+} // namespace WebCore
+using WebCore::ScriptWrappable;
+using WebCore::${v8InterfaceName};
+END
+       push(@implContentInternals, <<END) if (GetNamespaceForInterface($interface) eq "WebCore");
+using WebCore::${interfaceName};
+END
+      push(@implContentInternals, <<END);
+#endif
+void initializeScriptWrappableForInterface(${interfaceName}* object)
+{
+    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
+        ScriptWrappable::setTypeInfoInObject(object, &${v8InterfaceName}::info);
+}
+#if defined(OS_WIN)
+namespace WebCore {
+#endif
+END
+    }
 
     my $code = "WrapperTypeInfo ${v8InterfaceName}::info = { ${v8InterfaceName}::GetTemplate, ${v8InterfaceName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$rootForGC, ${v8InterfaceName}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n\n";
     AddToImplContentInternals($code);
-    AddToImplContentInternals("namespace ${interfaceName}V8Internal {\n\n");
 
+    AddToImplContentInternals("namespace ${interfaceName}V8Internal {\n\n");
     AddToImplContentInternals("template <typename T> void V8_USE(T) { }\n\n");
 
     my $hasConstructors = 0;
