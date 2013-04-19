@@ -37,6 +37,7 @@ namespace developer_private {
 
 struct ItemInfo;
 struct ItemInspectView;
+struct ProjectInfo;
 
 }
 
@@ -47,6 +48,7 @@ struct ItemInspectView;
 namespace developer = extensions::api::developer_private;
 
 typedef std::vector<linked_ptr<developer::ItemInfo> > ItemInfoList;
+typedef std::vector<linked_ptr<developer::ProjectInfo> > ProjectInfoList;
 typedef std::vector<linked_ptr<developer::ItemInspectView> >
     ItemInspectViewList;
 
@@ -367,6 +369,53 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
 
    scoped_refptr<fileapi::FileSystemContext> context_;
 };
+
+class DeveloperPrivateLoadProjectToSyncfsFunction
+    : public SyncExtensionFunction {
+  public:
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProjectToSyncfs",
+                              DEVELOPERPRIVATE_LOADPROJECTTOSYNCFS);
+
+   DeveloperPrivateLoadProjectToSyncfsFunction();
+
+  protected:
+   virtual ~DeveloperPrivateLoadProjectToSyncfsFunction();
+
+   // ExtensionFunction
+   virtual bool RunImpl() OVERRIDE;
+};
+
+class DeveloperPrivateGetProjectsInfoFunction : public AsyncExtensionFunction {
+  public:
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.getProjectsInfo",
+                              DEVELOPERPRIVATE_GETPROJECTSINFO);
+
+   DeveloperPrivateGetProjectsInfoFunction();
+
+  protected:
+   virtual ~DeveloperPrivateGetProjectsInfoFunction();
+
+   void ReadFolder();
+
+   // ExtensionFunction
+   virtual bool RunImpl() OVERRIDE;
+};
+
+class DeveloperPrivateLoadProjectFunction : public SyncExtensionFunction {
+  public:
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProject",
+                              DEVELOPERPRIVATE_LOADPROJECT);
+
+   DeveloperPrivateLoadProjectFunction();
+
+  protected:
+   virtual ~DeveloperPrivateLoadProjectFunction();
+
+   // ExtensionFunction
+   virtual bool RunImpl() OVERRIDE;
+};
+
+
 
 }  // namespace api
 

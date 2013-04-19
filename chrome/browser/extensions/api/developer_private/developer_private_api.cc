@@ -56,6 +56,9 @@ namespace extensions {
 
 namespace {
 
+const base::FilePath::CharType kUnpackedAppsFolder[]
+    = FILE_PATH_LITERAL("apps_target");
+
 ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
 }
@@ -816,7 +819,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
         base::FilePath(file_list[i].name)));
     base::FilePath target_path(profile()->GetPath());
     target_path =
-        target_path.Append(FILE_PATH_LITERAL("apps_target"));
+        target_path.Append(kUnpackedAppsFolder);
     target_path = target_path.Append(project_name);
     target_path = target_path.Append(file_list[i].name);
 
@@ -876,6 +879,73 @@ DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
+
+bool DeveloperPrivateLoadProjectToSyncfsFunction::RunImpl() {
+  // TODO(grv) : implement
+  return true;
+}
+
+DeveloperPrivateLoadProjectToSyncfsFunction::
+    DeveloperPrivateLoadProjectToSyncfsFunction() {}
+
+DeveloperPrivateLoadProjectToSyncfsFunction::
+    ~DeveloperPrivateLoadProjectToSyncfsFunction() {}
+
+bool DeveloperPrivateGetProjectsInfoFunction::RunImpl() {
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateGetProjectsInfoFunction::ReadFolder,
+                 this));
+
+  // Released by ReadFolder
+  AddRef();
+  return true;
+}
+
+void DeveloperPrivateGetProjectsInfoFunction::ReadFolder() {
+  base::FilePath path(profile()->GetPath());
+  path = path.Append(kUnpackedAppsFolder);
+
+  file_util::FileEnumerator files(
+      path, false, file_util::FileEnumerator::DIRECTORIES);
+  ProjectInfoList info_list;
+  for (base::FilePath current_path = files.Next(); !current_path.empty();
+       current_path = files.Next()) {
+    scoped_ptr<developer::ProjectInfo> info(new developer::ProjectInfo());
+    info->name = current_path.BaseName().MaybeAsASCII();
+    info_list.push_back(
+        make_linked_ptr<developer::ProjectInfo>(info.release()));
+  }
+  results_ = developer::GetProjectsInfo::Results::Create(info_list);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeveloperPrivateGetProjectsInfoFunction::SendResponse,
+                 this,
+                 true));
+  Release();
+}
+
+DeveloperPrivateGetProjectsInfoFunction::
+    DeveloperPrivateGetProjectsInfoFunction() {}
+
+DeveloperPrivateGetProjectsInfoFunction::
+    ~DeveloperPrivateGetProjectsInfoFunction() {}
+
+bool DeveloperPrivateLoadProjectFunction::RunImpl() {
+  // TODO(grv) : add unit tests.
+  base::FilePath::StringType project_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
+  base::FilePath path(profile()->GetPath());
+  path = path.Append(kUnpackedAppsFolder);
+  // TODO(grv) : Sanitize / check project_name.
+  path = path.Append(project_name);
+  ExtensionService* service = profile()->GetExtensionService();
+  UnpackedInstaller::Create(service)->Load(path);
+  SendResponse(true);
+  return true;
+}
+
+DeveloperPrivateLoadProjectFunction::DeveloperPrivateLoadProjectFunction() {}
+
+DeveloperPrivateLoadProjectFunction::~DeveloperPrivateLoadProjectFunction() {}
 
 bool DeveloperPrivateChoosePathFunction::RunImpl() {
 

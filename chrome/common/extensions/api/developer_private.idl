@@ -98,10 +98,15 @@ namespace developerPrivate {
     PackStatus status;
   };
 
+  dictionary ProjectInfo {
+    DOMString name;
+  };
+
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
   callback GetStringsCallback = void (object result);
+  callback GetProjectsInfoCallback = void (ProjectInfo[] result);
   callback PathCallback = void (DOMString path);
   callback PackCallback = void (PackDirectoryResponse response);
   callback VoidCallback = void();
@@ -155,6 +160,17 @@ namespace developerPrivate {
     // Copies the syncfs folder for the extension to local disk.
     static void exportSyncfsFolderToLocalfs(DOMString folder_name,
                                             optional VoidCallback callback);
+
+    // Gets the list of projects along with the metadata.
+    static void getProjectsInfo(GetProjectsInfoCallback callback);
+
+    // Loads a given |project_name| into the syncfs.
+    static void loadProjectToSyncfs(DOMString project_name,
+                                    optional VoidCallback callback);
+
+    // Loads the unpacked app / extension.
+    static void loadProject(DOMString project_name,
+                            optional VoidCallback callback);
 
     // Open Dialog to browse to an entry.
     // |select_type| : Select a file or a folder.
