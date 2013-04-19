@@ -63,8 +63,6 @@ void InitWebCoreSystemInterface(void)
     INIT(DrawBezeledTextArea);
     INIT(DrawBezeledTextFieldCell);
     INIT(DrawFocusRing);
-    INIT(DrawMediaUIPart);
-    INIT(DrawMediaSliderTrack);
     INIT(DrawTextFieldCellFocusRing);
     INIT(GetExtensionsForMIMEType);
     INIT(GetFontInLanguageForCharacter);
@@ -76,14 +74,9 @@ void InitWebCoreSystemInterface(void)
     INIT(SignedPublicKeyAndChallengeString);
     INIT(GetPreferredExtensionForMIMEType);
     INIT(GetWheelEventDeltas);
-    INIT(HitTestMediaUIPart);
     INIT(InitializeMaximumHTTPConnectionCountPerHost);
-    INIT(MeasureMediaUIPart);
-    INIT(CreateMediaUIBackgroundView);
-    INIT(CreateMediaUIControl);
     INIT(WindowSetAlpha);
     INIT(WindowSetScaledFrame);
-    INIT(MediaControllerThemeAvailable);
     INIT(PopupMenu);
     INIT(SetBaseCTM);
     INIT(SetCGFontRenderingMode);
