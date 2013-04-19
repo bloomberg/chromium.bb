@@ -39,9 +39,6 @@ void SetupSingleUniformityFieldTrial(
   if (one_time_randomized)
     trial->UseOneTimeRandomization();
   chrome_variations::AssociateGoogleVariationID(
-      chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, kDefaultGroupName,
-      trial_base_id);
-  chrome_variations::AssociateGoogleVariationID(
       chrome_variations::GOOGLE_UPDATE_SERVICE, trial_name, kDefaultGroupName,
       trial_base_id);
 
@@ -52,10 +49,6 @@ void SetupSingleUniformityFieldTrial(
           base::StringPrintf("group_%02d", group_number);
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
-    chrome_variations::AssociateGoogleVariationID(
-        chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name,
-        static_cast<chrome_variations::VariationID>(trial_base_id +
-                                                    group_number));
     chrome_variations::AssociateGoogleVariationID(
         chrome_variations::GOOGLE_UPDATE_SERVICE, trial_name, group_name,
         static_cast<chrome_variations::VariationID>(trial_base_id +
