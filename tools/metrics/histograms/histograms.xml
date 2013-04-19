@@ -3024,6 +3024,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SB2.UpdateRequestSize" units="bytes">
+  <summary>The payload size of update requests to the server.</summary>
+</histogram>
+
 <histogram name="Search.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <summary>
     The id of the default search engine that is loaded after Chrome startup. See
