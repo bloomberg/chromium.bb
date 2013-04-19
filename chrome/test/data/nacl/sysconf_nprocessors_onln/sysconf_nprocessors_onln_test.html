@@ -1,0 +1,59 @@
+<!--
+  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client Sysconf _SC_NPROCESSORS_ONLN Test</title>
+  </head>
+
+  <body id="body">
+    <h1>Native Client _SC_NPROCESSORS_ONLN Test</h1>
+    <script type="text/javascript">
+    //<![CDATA[
+var tester = new Tester($('body'));
+var gotExpected = false;
+var args = getTestArguments({'cpu_count' :
+  'THIS TEST CANNOT RUN STANDALONE -- run using browser_test instead'});
+
+function setupTests(tester, plugin) {
+  tester.addAsyncTest('TestSysconfNprocessors', function(status) {
+    plugin.addEventListener('message', function handler(message_event) {
+      this.removeEventListener('message', handler, false);
+      status.assertEqual(message_event.data, args.cpu_count);
+      status.pass();
+    }, false);
+    plugin.postMessage('nprocessors');
+  });
+}
+
+function runTests() {
+  setupTests(tester, $('naclModule'));
+  tester.waitFor($('naclModule'));
+  tester.run();
+}
+    //]]>
+  </script>
+    <div>
+    <embed id="naclModule"
+           name="naclModule"
+           width=400 height=400
+           src="sysconf_nprocessors_onln_test.nmf"
+           basic_tests="2"
+           stress_tests="0"
+           style="background-color:gray"
+           type="application/x-nacl" />
+    </div>
+    <script type="text/javascript">
+    //<![CDATA[
+runTests();
+    //]]>
+    </script>
+  </body>
+</html>
