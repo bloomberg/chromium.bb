@@ -378,54 +378,6 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ResizeCorner, private:
-
-class ResizeCorner : public views::View {
- public:
-  ResizeCorner() {
-    EnableCanvasFlippingForRTLUI(true);
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    views::Widget* widget = GetWidget();
-    if (!widget || (widget->IsMaximized() || widget->IsFullscreen()))
-      return;
-
-    gfx::ImageSkia* image = ui::ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_TEXTAREA_RESIZER);
-    canvas->DrawImageInt(*image, width() - image->width(),
-                         height() - image->height());
-  }
-
-  static gfx::Size GetSize() {
-    // This is disabled until we find what makes us slower when we let
-    // WebKit know that we have a resizer rect...
-    // int scrollbar_thickness = gfx::scrollbar_size();
-    // return gfx::Size(scrollbar_thickness, scrollbar_thickness);
-    return gfx::Size();
-  }
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    views::Widget* widget = GetWidget();
-    return (!widget || widget->IsMaximized() || widget->IsFullscreen()) ?
-        gfx::Size() : GetSize();
-  }
-
-  virtual void Layout() OVERRIDE {
-    if (parent()) {
-      gfx::Size ps = GetPreferredSize();
-      // No need to handle Right to left text direction here,
-      // our parent must take care of it for us...
-      SetBounds(parent()->width() - ps.width(),
-                parent()->height() - ps.height(), ps.width(), ps.height());
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResizeCorner);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
 BrowserView::BrowserView(Browser* browser)
@@ -1175,24 +1127,9 @@ bool BrowserView::IsToolbarVisible() const {
 }
 
 gfx::Rect BrowserView::GetRootWindowResizerRect() const {
-  if (frame_->IsMaximized() || frame_->IsFullscreen())
-    return gfx::Rect();
-
-  // We don't specify a resize corner size if we have a bottom shelf either.
-  // This is because we take care of drawing the resize corner on top of that
-  // shelf, so we don't want others to do it for us in this case.
-  // Currently, the only visible bottom shelf is the download shelf.
-  // Other tests should be added here if we add more bottom shelves.
-  if (IsDownloadShelfVisible())
-    return gfx::Rect();
-
-  gfx::Rect client_rect = contents_split_->bounds();
-  gfx::Size resize_corner_size = ResizeCorner::GetSize();
-  int x = client_rect.width() - resize_corner_size.width();
-  if (base::i18n::IsRTL())
-    x = 0;
-  return gfx::Rect(x, client_rect.height() - resize_corner_size.height(),
-                   resize_corner_size.width(), resize_corner_size.height());
+  // Views does not support resizer rects because they caused page cycler
+  // performance regressions when they were added. See crrev.com/9654
+  return gfx::Rect();
 }
 
 void BrowserView::DisableInactiveFrame() {
@@ -1866,28 +1803,6 @@ bool BrowserView::CanClose() {
 }
 
 int BrowserView::NonClientHitTest(const gfx::Point& point) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // The following code is not in the LayoutManager because it's
-  // independent of layout and also depends on the ResizeCorner which
-  // is private.
-  if (!frame_->IsMaximized() && !frame_->IsFullscreen()) {
-    CRect client_rect;
-    ::GetClientRect(frame_->GetNativeWindow(), &client_rect);
-    gfx::Size resize_corner_size = ResizeCorner::GetSize();
-    gfx::Rect resize_corner_rect(client_rect.right - resize_corner_size.width(),
-        client_rect.bottom - resize_corner_size.height(),
-        resize_corner_size.width(), resize_corner_size.height());
-    bool rtl_dir = base::i18n::IsRTL();
-    if (rtl_dir)
-      resize_corner_rect.set_x(0);
-    if (resize_corner_rect.Contains(point)) {
-      if (rtl_dir)
-        return HTBOTTOMLEFT;
-      return HTBOTTOMRIGHT;
-    }
-  }
-#endif
-
   return GetBrowserViewLayout()->NonClientHitTest(point);
 }
 
@@ -2596,10 +2511,6 @@ void BrowserView::UpdateAcceleratorMetrics(
       break;
   }
 #endif
-}
-
-gfx::Size BrowserView::GetResizeCornerSize() const {
-  return ResizeCorner::GetSize();
 }
 
 void BrowserView::CreateLauncherIcon() {

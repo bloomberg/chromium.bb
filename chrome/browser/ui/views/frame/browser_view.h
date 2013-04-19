@@ -558,9 +558,6 @@ class BrowserView : public BrowserWindow,
   void UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
                                 int command_id);
 
-  // Exposes resize corner size to BrowserViewLayout.
-  gfx::Size GetResizeCornerSize() const;
-
   // Create an icon for this window in the launcher (currently only for Ash).
   void CreateLauncherIcon();
 
