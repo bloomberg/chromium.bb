@@ -67,6 +67,9 @@ public abstract class CommandLine {
     // How much of the top controls need to be hidden before they will auto hide.
     public static final String TOP_CONTROLS_HIDE_THRESHOLD = "top-controls-hide-threshold";
 
+    // Native switch - chrome_switches::kEnableInstantExtendedAPI
+    public static final String ENABLE_INSTANT_EXTENDED_API = "enable-instant-extended-api";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
