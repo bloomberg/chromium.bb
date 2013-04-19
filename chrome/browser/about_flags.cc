@@ -715,6 +715,13 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_ASH)
   {
+    "ash-disable-auto-maximizing",
+    IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME,
+    IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoMaximizing)
+  },
+  {
     "ash-disable-auto-window-placement",
     IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME,
     IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION,

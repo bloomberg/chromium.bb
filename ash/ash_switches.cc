@@ -33,6 +33,9 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// Disable auto window maximization logic.
+const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
+
 // Disable support for auto window placement.
 const char kAshDisableAutoWindowPlacement[] =
     "ash-enable-auto-window-placement";

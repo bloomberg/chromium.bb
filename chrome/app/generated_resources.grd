@@ -6716,6 +6716,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION" desc="Description for the option to enable/disable the auto window placement functionality.">
         Disable automatic window placement for one and two browser / app windows.
       </message>
+      <message name="IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME" desc="Name for the option to disable the auto window maximizing functionality.">
+        Disable automatic window maximization
+      </message>
+      <message name="IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION" desc="Description for the option to disable the auto window maximizing functionality.">
+        Disable automatic window maximization for browser / app windows if they are started the first time.
+      </message>
       <message name="IDS_FLAGS_ASH_DISABLE_PER_APP_LAUNCHER_NAME" desc="Name for the option to enable/disable the per application sorting launcher functionality.">
         Disable per application sorting in the launcher.
       </message>

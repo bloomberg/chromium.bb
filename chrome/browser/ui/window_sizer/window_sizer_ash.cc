@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,8 +24,10 @@
 namespace {
 
 // When a window gets opened in default mode and the screen is less then this
-// width, the window will get opened in maximized mode.
+// width, the window will get opened in maximized mode. This value can be
+// reduced to a "tame" number if the feature is disabled.
 const int kForceMaximizeWidthLimit = 1366;
+const int kForceMaximizeWidthLimitDisabled = 640;
 
 // Check if the given browser is 'valid': It is a tabbed, non minimized
 // window, which intersects with the |bounds_in_screen| area of a given screen.
@@ -135,7 +139,13 @@ bool MoveRect(const gfx::Rect& work_area,
 
 // static
 int WindowSizer::GetForceMaximizedWidthLimit() {
-  return kForceMaximizeWidthLimit;
+  static int maximum_limit = 0;
+  if (!maximum_limit) {
+    maximum_limit = CommandLine::ForCurrentProcess()->HasSwitch(
+                        ash::switches::kAshDisableAutoMaximizing) ?
+        kForceMaximizeWidthLimitDisabled : kForceMaximizeWidthLimit;
+  }
+  return maximum_limit;
 }
 
 bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
@@ -172,7 +182,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
       // When using "small screens" we want to always open in full screen mode.
       if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
           !browser_->is_session_restore() &&
-          work_area.width() < kForceMaximizeWidthLimit &&
+          work_area.width() < GetForceMaximizedWidthLimit() &&
           (!browser_->window() || !browser_->window()->IsFullscreen()) &&
           (!browser_->fullscreen_controller() ||
            !browser_->fullscreen_controller()->IsFullscreenForBrowser()))
