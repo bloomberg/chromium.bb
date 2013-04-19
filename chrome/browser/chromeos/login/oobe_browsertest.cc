@@ -40,7 +40,10 @@ class TestBrowserMainExtraParts
     : public ChromeBrowserMainExtraParts,
       public content::NotificationObserver {
  public:
-  TestBrowserMainExtraParts() {}
+  TestBrowserMainExtraParts()
+      : webui_visible_(false),
+        browsing_data_removed_(false),
+        signin_screen_shown_(false) {}
   virtual ~TestBrowserMainExtraParts() {}
 
   // ChromeBrowserMainExtraParts implementation.
@@ -48,6 +51,8 @@ class TestBrowserMainExtraParts
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
                    content::NotificationService::AllSources());
   }
 
@@ -61,17 +66,18 @@ class TestBrowserMainExtraParts
                        const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE) {
       LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
-      chromeos::ExistingUserController* controller =
-          chromeos::ExistingUserController::current_controller();
-      CHECK(controller);
-      chromeos::WebUILoginDisplay* webui_login_display =
-          static_cast<chromeos::WebUILoginDisplay*>(
-              controller->login_display());
-      CHECK(webui_login_display);
-      webui_login_display->SetGaiaOriginForTesting(gaia_url_);
-      webui_login_display->ShowSigninScreenForCreds("username", "password");
-      // TODO(glotov): mock GAIA server (test_server_) should support
-      // username/password configuration.
+      webui_visible_ = true;
+      if (browsing_data_removed_ && !signin_screen_shown_) {
+        signin_screen_shown_ = true;
+        ShowSigninScreen();
+      }
+    } else if (type == chrome::NOTIFICATION_BROWSING_DATA_REMOVED) {
+      LOG(INFO) << "chrome::NOTIFICATION_BROWSING_DATA_REMOVED";
+      browsing_data_removed_ = true;
+      if (webui_visible_ && !signin_screen_shown_) {
+        signin_screen_shown_ = true;
+        ShowSigninScreen();
+      }
     } else if (type == chrome::NOTIFICATION_SESSION_STARTED) {
       LOG(INFO) << "chrome::NOTIFICATION_SESSION_STARTED";
       quit_task_.Run();
@@ -80,6 +86,21 @@ class TestBrowserMainExtraParts
     }
   }
 
+  void ShowSigninScreen() {
+    chromeos::ExistingUserController* controller =
+        chromeos::ExistingUserController::current_controller();
+    CHECK(controller);
+    chromeos::WebUILoginDisplay* webui_login_display =
+        static_cast<chromeos::WebUILoginDisplay*>(
+            controller->login_display());
+    CHECK(webui_login_display);
+    webui_login_display->SetGaiaOriginForTesting(gaia_url_);
+    webui_login_display->ShowSigninScreenForCreds("username", "password");
+    // TODO(glotov): mock GAIA server (test_server_) should support
+    // username/password configuration.
+  }
+
+  bool webui_visible_, browsing_data_removed_, signin_screen_shown_;
   content::NotificationRegistrar registrar_;
   base::Closure quit_task_;
   std::string gaia_url_;
@@ -187,8 +208,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
                              // needs UI thread.
 };
 
-// Temporally disabled because of a race: crbug.com/178009
-IN_PROC_BROWSER_TEST_F(OobeTest, DISABLED_NewUser) {
+IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
