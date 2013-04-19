@@ -383,6 +383,23 @@ class DeveloperPrivateLoadProjectToSyncfsFunction
 
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
+
+   void CopyFolder(const base::FilePath::StringType& project_name);
+
+   void CopyFiles(const std::vector<base::FilePath>& paths);
+
+   void CopyFilesCallback(const base::PlatformFileError result);
+
+  private:
+   // Number of pending copy files callbacks.
+   // It should only be modified on the IO Thread.
+   int pendingCallbacksCount_;
+
+   // True only when all the copyFiles job are successful.
+   // It should only be modified on the IO thread.
+   bool success_;
+
+   scoped_refptr<fileapi::FileSystemContext> context_;
 };
 
 class DeveloperPrivateGetProjectsInfoFunction : public AsyncExtensionFunction {
@@ -414,8 +431,6 @@ class DeveloperPrivateLoadProjectFunction : public SyncExtensionFunction {
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
 };
-
-
 
 }  // namespace api
 

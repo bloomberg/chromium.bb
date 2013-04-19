@@ -48,6 +48,7 @@
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using content::RenderViewHost;
@@ -74,6 +75,34 @@ GURL ToDataURL(const base::FilePath& path) {
 
   const char kDataURLPrefix[] = "data:image;base64,";
   return GURL(kDataURLPrefix + contents_base64);
+}
+
+std::vector<base::FilePath> ListFolder(const base::FilePath path) {
+  file_util::FileEnumerator files(path, false,
+      file_util::FileEnumerator::DIRECTORIES
+      | file_util::FileEnumerator::FILES);
+  std::vector<base::FilePath> paths;
+
+  for (base::FilePath current_path = files.Next(); !current_path.empty();
+       current_path = files.Next()) {
+    paths.push_back(current_path);
+  }
+  return paths;
+}
+
+bool ValidateFolderName(const base::FilePath::StringType& name) {
+  if (!name.length() || name[0] == '.' || name[0] == '-')
+    return false;
+
+  for (size_t i = 0; i < name.length(); ++i) {
+    if (!((name[i] >= 'A' && name[i] <= 'Z') ||
+          (name[i] >= 'a' && name[i] <= 'z') ||
+          (name[i] >= '0' && name[i] <= '9') ||
+           (name[i] == '_' || name[i] == '-' || name[i] == '.'))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -764,8 +793,13 @@ DeveloperPrivatePackDirectoryFunction::~DeveloperPrivatePackDirectoryFunction()
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
 
 bool DeveloperPrivateExportSyncfsFolderToLocalfsFunction::RunImpl() {
+  // TODO(grv) : add unittests.
   base::FilePath::StringType project_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
+  if (!ValidateFolderName(project_name)) {
+    DLOG(INFO) << "Invalid project_name : [" << project_name << "]";
+    return false;
+  }
 
   context_ = content::BrowserContext::GetStoragePartition(profile(),
       render_view_host()->GetSiteInstance())->GetFileSystemContext();
@@ -874,24 +908,101 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
 }
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    DeveloperPrivateExportSyncfsFolderToLocalfsFunction()
-{}
+    DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
 
 bool DeveloperPrivateLoadProjectToSyncfsFunction::RunImpl() {
-  // TODO(grv) : implement
+  // TODO(grv) : add unittests.
+  base::FilePath::StringType project_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
+  if (!ValidateFolderName(project_name)) {
+    DLOG(INFO) << "Invalid project_name : [" << project_name << "]";
+    return false;
+  }
+
+  context_ = content::BrowserContext::GetStoragePartition(profile(),
+      render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateLoadProjectToSyncfsFunction::
+                 CopyFolder,
+                 this, project_name));
   return true;
 }
 
+void DeveloperPrivateLoadProjectToSyncfsFunction::CopyFolder(
+    const base::FilePath::StringType& project_name) {
+  base::FilePath path(profile()->GetPath());
+  path = path.Append(kUnpackedAppsFolder);
+  path = path.Append(project_name);
+
+  std::vector<base::FilePath> paths = ListFolder(path);
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&DeveloperPrivateLoadProjectToSyncfsFunction::
+                 CopyFiles,
+                 this, paths));
+}
+
+void DeveloperPrivateLoadProjectToSyncfsFunction::CopyFiles(
+    const std::vector<base::FilePath>& paths) {
+  std::string origin_url(
+      Extension::GetBaseURLFromExtensionId(extension_id()).spec());
+  fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
+      GURL(origin_url),
+      sync_file_system::DriveFileSyncService::kServiceName,
+      base::FilePath()));
+
+  pendingCallbacksCount_ = paths.size();
+
+  for (size_t i = 0; i < paths.size(); ++i) {
+    base::PlatformFileError error_code;
+    fileapi::FileSystemOperation* op
+        = context_->CreateFileSystemOperation(url, &error_code);
+    DCHECK(op);
+
+    std::string origin_url(
+        Extension::GetBaseURLFromExtensionId(extension_id()).spec());
+    fileapi::FileSystemURL
+        dest_url(sync_file_system::CreateSyncableFileSystemURL(
+            GURL(origin_url),
+            sync_file_system::DriveFileSyncService::kServiceName,
+            base::FilePath(paths[i].BaseName())));
+
+    op->AsLocalFileSystemOperation()->CopyInForeignFile(paths[i], dest_url,
+        base::Bind(&DeveloperPrivateLoadProjectToSyncfsFunction::
+                   CopyFilesCallback,
+                   this));
+  }
+}
+
+void DeveloperPrivateLoadProjectToSyncfsFunction::CopyFilesCallback(
+    const base::PlatformFileError result) {
+
+  pendingCallbacksCount_--;
+
+  if (success_ && result != base::PLATFORM_FILE_OK) {
+    SetError("Error in copying files to sync filesystem.");
+    success_ = false;
+  }
+
+  if (!pendingCallbacksCount_) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeveloperPrivateLoadProjectToSyncfsFunction::SendResponse,
+                   this,
+                   success_));
+  }
+}
+
 DeveloperPrivateLoadProjectToSyncfsFunction::
-    DeveloperPrivateLoadProjectToSyncfsFunction() {}
+    DeveloperPrivateLoadProjectToSyncfsFunction()
+    : pendingCallbacksCount_(0), success_(true) {}
 
 DeveloperPrivateLoadProjectToSyncfsFunction::
     ~DeveloperPrivateLoadProjectToSyncfsFunction() {}
 
 bool DeveloperPrivateGetProjectsInfoFunction::RunImpl() {
+  // TODO(grv) : add unittests.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeveloperPrivateGetProjectsInfoFunction::ReadFolder,
                  this));
@@ -905,16 +1016,15 @@ void DeveloperPrivateGetProjectsInfoFunction::ReadFolder() {
   base::FilePath path(profile()->GetPath());
   path = path.Append(kUnpackedAppsFolder);
 
-  file_util::FileEnumerator files(
-      path, false, file_util::FileEnumerator::DIRECTORIES);
+  std::vector<base::FilePath> paths = ListFolder(path);
   ProjectInfoList info_list;
-  for (base::FilePath current_path = files.Next(); !current_path.empty();
-       current_path = files.Next()) {
+  for (size_t i = 0; i <  paths.size(); ++i) {
     scoped_ptr<developer::ProjectInfo> info(new developer::ProjectInfo());
-    info->name = current_path.BaseName().MaybeAsASCII();
+    info->name = paths[i].BaseName().MaybeAsASCII();
     info_list.push_back(
         make_linked_ptr<developer::ProjectInfo>(info.release()));
   }
+
   results_ = developer::GetProjectsInfo::Results::Create(info_list);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&DeveloperPrivateGetProjectsInfoFunction::SendResponse,
@@ -933,6 +1043,11 @@ bool DeveloperPrivateLoadProjectFunction::RunImpl() {
   // TODO(grv) : add unit tests.
   base::FilePath::StringType project_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
+  if (!ValidateFolderName(project_name)) {
+    DLOG(INFO) << "Invalid project_name : [" << project_name << "]";
+    return false;
+  }
+
   base::FilePath path(profile()->GetPath());
   path = path.Append(kUnpackedAppsFolder);
   // TODO(grv) : Sanitize / check project_name.
