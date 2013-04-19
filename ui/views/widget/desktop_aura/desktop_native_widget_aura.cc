@@ -17,6 +17,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/screen.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -401,7 +405,16 @@ gfx::Rect DesktopNativeWidgetAura::GetRestoredBounds() const {
 }
 
 void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
-  desktop_root_window_host_->AsRootWindowHost()->SetBounds(bounds);
+  float scale = 1;
+  aura::RootWindow* root = root_window_.get();
+  if (root) {
+    scale = gfx::Screen::GetScreenFor(root)->
+        GetDisplayNearestWindow(root).device_scale_factor();
+  }
+  gfx::Rect bounds_in_pixels(
+      gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
+      gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
+  desktop_root_window_host_->AsRootWindowHost()->SetBounds(bounds_in_pixels);
 }
 
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
