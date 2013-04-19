@@ -39,9 +39,7 @@ using namespace std;
 
 namespace WebCore {
 
-namespace {
-
-unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const SharedBuffer& sharedBuffer, unsigned offset)
+static unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const SharedBuffer& sharedBuffer, unsigned offset)
 {
     unsigned bytesExtracted = 0;
     const char* moreData;
@@ -56,41 +54,39 @@ unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const SharedB
     return bytesExtracted;
 }
 
-bool matchesGIFSignature(char* contents)
+inline bool matchesGIFSignature(char* contents)
 {
     return !memcmp(contents, "GIF87a", 6) || !memcmp(contents, "GIF89a", 6);
 }
 
-bool matchesPNGSignature(char* contents)
+inline bool matchesPNGSignature(char* contents)
 {
     return !memcmp(contents, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8);
 }
 
-bool matchesJPEGSignature(char* contents)
+inline bool matchesJPEGSignature(char* contents)
 {
     return !memcmp(contents, "\xFF\xD8\xFF", 3);
 }
 
-bool matchesWebPSignature(char* contents)
+inline bool matchesWebPSignature(char* contents)
 {
     return !memcmp(contents, "RIFF", 4) && !memcmp(contents + 8, "WEBPVP", 6);
 }
 
-bool matchesBMPSignature(char* contents)
+inline bool matchesBMPSignature(char* contents)
 {
     return !memcmp(contents, "BM", 2);
 }
 
-bool matchesICOSignature(char* contents)
+inline bool matchesICOSignature(char* contents)
 {
     return !memcmp(contents, "\x00\x00\x01\x00", 4);
 }
 
-bool matchesCURSignature(char* contents)
+inline bool matchesCURSignature(char* contents)
 {
     return !memcmp(contents, "\x00\x00\x02\x00", 4);
-}
-
 }
 
 PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
@@ -122,7 +118,32 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     return nullptr;
 }
 
-namespace {
+bool ImageDecoder::frameHasAlphaAtIndex(size_t index) const
+{
+    if (m_frameBufferCache.size() <= index)
+        return true;
+    if (m_frameBufferCache[index].status() == ImageFrame::FrameComplete)
+        return m_frameBufferCache[index].hasAlpha();
+    return true;
+}
+
+unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
+{
+    if (m_frameBufferCache.size() <= index)
+        return 0;
+    // FIXME: Use the dimension of the requested frame.
+    return m_size.area() * sizeof(ImageFrame::PixelData);
+}
+
+void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
+    info.addMember(m_data, "data");
+    info.addMember(m_frameBufferCache, "frameBufferCache");
+    info.addMember(m_colorProfile, "colorProfile");
+    info.addMember(m_scaledColumns, "scaledColumns");
+    info.addMember(m_scaledRows, "scaledRows");
+}
 
 enum MatchType {
     Exact,
@@ -142,7 +163,7 @@ inline void fillScaledValues(Vector<int>& scaledValues, double scaleRate, int le
     }
 }
 
-template <MatchType type> int getScaledValue(const Vector<int>& scaledValues, int valueToMatch, int searchStart)
+template <MatchType type> static int getScaledValue(const Vector<int>& scaledValues, int valueToMatch, int searchStart)
 {
     if (scaledValues.isEmpty())
         return valueToMatch;
@@ -159,25 +180,6 @@ template <MatchType type> int getScaledValue(const Vector<int>& scaledValues, in
     default:
         return matched != dataEnd ? matched - dataStart : -1;
     }
-}
-
-}
-
-bool ImageDecoder::frameHasAlphaAtIndex(size_t index) const
-{
-    if (m_frameBufferCache.size() <= index)
-        return true;
-    if (m_frameBufferCache[index].status() == ImageFrame::FrameComplete)
-        return m_frameBufferCache[index].hasAlpha();
-    return true;
-}
-
-unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
-{
-    if (m_frameBufferCache.size() <= index)
-        return 0;
-    // FIXME: Use the dimension of the requested frame.
-    return m_size.area() * sizeof(ImageFrame::PixelData);
 }
 
 void ImageDecoder::prepareScaleDataIfNecessary()
@@ -223,14 +225,4 @@ int ImageDecoder::scaledY(int origY, int searchStart)
     return getScaledValue<Exact>(m_scaledRows, origY, searchStart);
 }
 
-void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    info.addMember(m_data, "data");
-    info.addMember(m_frameBufferCache, "frameBufferCache");
-    info.addMember(m_colorProfile, "colorProfile");
-    info.addMember(m_scaledColumns, "scaledColumns");
-    info.addMember(m_scaledRows, "scaledRows");
-}
-
-}
+} // namespace WebCore
