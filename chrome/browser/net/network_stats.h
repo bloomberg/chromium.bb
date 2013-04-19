@@ -83,9 +83,9 @@ class NetworkStats {
   };
 
   // |HistogramPortSelector| enumerates list of ports that are used for network
-  // connectivity tests (for UDP). Currently we are testing port 6121 only.
+  // connectivity tests (for UDP). Currently we are testing port 443 only.
   enum HistogramPortSelector {
-    PORT_6121 = 0,    // SPDY
+    PORT_443 = 0,    // HTTPS
     HISTOGRAM_PORT_MAX,
   };
 

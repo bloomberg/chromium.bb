@@ -82,7 +82,7 @@ static const uint32 kEncodedPayloadStart = kKeyEnd;
 
 // HistogramPortSelector and kPorts should be kept in sync. Port 999999 is
 // used by the unit tests.
-static const int32 kPorts[] = {6121, 999999};
+static const int32 kPorts[] = {443, 999999};
 
 // Number of packets that are recorded in a packet-correlation histogram, which
 // shows exactly what sequence of packets were responded to.  We use this to
@@ -924,7 +924,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
   static NetworkStats::HistogramPortSelector histogram_port =
-      NetworkStats::PORT_6121;
+      NetworkStats::PORT_443;
 
   if (!trial.get()) {
     // Set up a field trial to collect network stats for UDP.
@@ -937,17 +937,17 @@ void CollectNetworkStats(const std::string& network_stats_server,
     if (channel == chrome::VersionInfo::CHANNEL_CANARY)
       probability_per_group = kDivisor;
     else if (channel == chrome::VersionInfo::CHANNEL_DEV)
-      // Enable the connectivity testing for 10% of the users in dev channel.
+      // Enable the connectivity testing for 50% of the users in dev channel.
       probability_per_group = 500;
     else if (channel == chrome::VersionInfo::CHANNEL_BETA)
       // Enable the connectivity testing for 5% of the users in beta channel.
       probability_per_group = 50;
 
-    // After October 30, 2012 builds, it will always be in default group
+    // After October 30, 2013 builds, it will always be in default group
     // (disable_network_stats).
     trial = base::FieldTrialList::FactoryGetFieldTrial(
         "NetworkConnectivity", kDivisor, "disable_network_stats",
-        2012, 10, 30, NULL);
+        2013, 10, 30, NULL);
 
     // Add option to collect_stats for NetworkConnectivity.
     int collect_stats_group = trial->AppendGroup("collect_stats",
