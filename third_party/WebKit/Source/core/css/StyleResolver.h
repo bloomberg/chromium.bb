@@ -363,6 +363,7 @@ private:
     void checkForZoomChange(RenderStyle*, RenderStyle* parentStyle);
 
     void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*);
+    void adjustGridItemPosition(RenderStyle* styleToAdjust) const;
 
     bool fastRejectSelector(const RuleData&) const;
 

@@ -992,6 +992,9 @@ luminosity
 drag
 no-drag
 
+// -webkit-grid-{start|end|before|after}
+span
+
 #if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
 // text-indent
 -webkit-each-line
