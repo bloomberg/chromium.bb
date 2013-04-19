@@ -685,7 +685,7 @@ class Change(object):
 
   # Matches key/value (or "tag") lines in changelist descriptions.
   TAG_LINE_RE = re.compile(
-      '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
+      '^[ \t]*(?P<key>[A-Z][A-Z_0-9]*)[ \t]*=[ \t]*(?P<value>.*?)[ \t]*$')
   scm = ''
 
   def __init__(

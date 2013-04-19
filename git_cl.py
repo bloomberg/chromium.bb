@@ -798,7 +798,7 @@ def GetCodereviewSettingsInteractively():
 
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
-  R_LINE = r'^\s*(TBR|R)\s*=\s*(.+)\s*$'
+  R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
 
   def __init__(self, description):
     self._description = (description or '').strip()
@@ -820,7 +820,7 @@ class ChangeDescription(object):
       for i in xrange(len(matches) - 1, 0, -1):
         self._description = (
             self._description[:matches[i].start()] +
-            self._description[matches[i].end()+1:])
+            self._description[matches[i].end():])
 
     if is_tbr:
       new_r_line = 'TBR=' + ', '.join(reviewers)
@@ -830,7 +830,7 @@ class ChangeDescription(object):
     if matches:
       self._description = (
         self._description[:matches[0].start()] + new_r_line +
-        self._description[matches[0].end()+1:])
+        self._description[matches[0].end():]).strip()
     else:
       self.append_footer(new_r_line)
 
@@ -869,7 +869,7 @@ class ChangeDescription(object):
   def get_reviewers(self):
     """Retrieves the list of reviewers."""
     regexp = re.compile(self.R_LINE, re.MULTILINE)
-    reviewers = [i.group(2) for i in regexp.finditer(self._description)]
+    reviewers = [i.group(2).strip() for i in regexp.finditer(self._description)]
     return cleanup_list(reviewers)
 
 

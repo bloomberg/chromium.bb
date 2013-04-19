@@ -612,11 +612,23 @@ class TestGitCl(TestCase):
       ('foo\nBUG=', ['a@c'], 'foo\nBUG=\nR=a@c'),
       ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], 'foo\nTBR=a@c'),
       ('foo', ['a@c', 'b@c'], 'foo\n\nR=a@c, b@c'),
+      ('foo\nBar\n\nR=\nBUG=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
+      ('foo\nBar\n\nR=\nBUG=\nR=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
+      # Same as the line before, but full of whitespaces.
+      (
+        'foo\nBar\n\n R = \n BUG = \n R = ', ['c@c'],
+        'foo\nBar\n\nR=c@c\n BUG =',
+      ),
+      # Whitespaces aren't interpreted as new lines.
+      ('foo BUG=allo R=joe ', ['c@c'], 'foo BUG=allo R=joe\n\nR=c@c'),
     ]
-    for orig, reviewers, expected in data:
+    expected = [i[2] for i in data]
+    actual = []
+    for orig, reviewers, _expected in data:
       obj = git_cl.ChangeDescription(orig)
       obj.update_reviewers(reviewers)
-      self.assertEqual(expected, obj.description)
+      actual.append(obj.description)
+    self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':
