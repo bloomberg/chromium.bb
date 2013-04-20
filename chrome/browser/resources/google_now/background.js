@@ -284,7 +284,8 @@ function parseAndShowNotificationCards(response, callback) {
  * @param {function()} callback Completion callback.
  */
 function requestNotificationCards(requestParameters, callback) {
-  console.log('requestNotificationCards ' + requestParameters);
+  console.log('requestNotificationCards ' + requestParameters + ' from ' +
+     NOTIFICATION_CARDS_URL);
   recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_TOTAL);
   // TODO(vadimt): Figure out how to send user's identity to the server.
   var request = new XMLHttpRequest();
@@ -375,7 +376,8 @@ function updateNotificationsCards() {
  *     parameter.
  */
 function requestCardDismissal(notificationId, callbackBoolean) {
-  console.log('requestDismissingCard ' + notificationId);
+  console.log('requestDismissingCard ' + notificationId + ' from ' +
+      NOTIFICATION_CARDS_URL);
   recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
   // Send a dismiss request to the server.
   var requestParameters = 'id=' + notificationId;
