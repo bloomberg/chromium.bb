@@ -23,21 +23,21 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
     'R0401',  # Cyclic import
     'W0613',  # Unused argument
   ]
-  results.extend(input_api.canned_checks.RunPylint(
-      input_api,
-      output_api,
-      white_list=[r'.*\.py$'],
-      black_list=black_list,
-      disabled_warnings=disabled_warnings))
-
-  # TODO(maruel): Make sure at least one file is modified first.
-  # TODO(maruel): If only tests are modified, only run them.
-  results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api,
-      output_api,
-      'tests',
-      whitelist=[r'.*test\.py$'],
-      blacklist=tests_to_black_list))
+  results.extend(input_api.RunTests(
+      input_api.canned_checks.GetPylint(
+          input_api,
+          output_api,
+          white_list=[r'.*\.py$'],
+          black_list=black_list,
+          disabled_warnings=disabled_warnings) +
+      # TODO(maruel): Make sure at least one file is modified first.
+      # TODO(maruel): If only tests are modified, only run them.
+      input_api.canned_checks.GetUnitTestsInDirectory(
+          input_api,
+          output_api,
+          'tests',
+          whitelist=[r'.*test\.py$'],
+          blacklist=tests_to_black_list)))
   return results
 
 

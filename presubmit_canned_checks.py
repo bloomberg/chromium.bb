@@ -483,8 +483,7 @@ def CheckTreeIsOpen(input_api, output_api,
                                       long_text=str(e))]
   return []
 
-
-def RunUnitTestsInDirectory(
+def GetUnitTestsInDirectory(
     input_api, output_api, directory, whitelist=None, blacklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
@@ -517,10 +516,10 @@ def RunUnitTestsInDirectory(
           'Out of %d files, found none that matched w=%r, b=%r in directory %s'
           % (found, whitelist, blacklist, directory))
     ]
-  return RunUnitTests(input_api, output_api, unit_tests)
+  return GetUnitTests(input_api, output_api, unit_tests)
 
 
-def RunUnitTests(input_api, output_api, unit_tests):
+def GetUnitTests(input_api, output_api, unit_tests):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
@@ -541,20 +540,14 @@ def RunUnitTests(input_api, output_api, unit_tests):
     if input_api.verbose:
       print('Running %s' % unit_test)
       cmd.append('--verbose')
-    try:
-      if input_api.verbose:
-        input_api.subprocess.check_call(cmd, cwd=input_api.PresubmitLocalPath())
-      else:
-        input_api.subprocess.check_output(
-            cmd,
-            stderr=input_api.subprocess.STDOUT,
-            cwd=input_api.PresubmitLocalPath())
-    except (OSError, input_api.subprocess.CalledProcessError), e:
-      results.append(message_type('%s failed!\n%s' % (unit_test, e)))
+    results.append(input_api.Command(
+        name=unit_test,
+        cmd=cmd,
+        kwargs={'cwd': input_api.PresubmitLocalPath()},
+        message=message_type))
   return results
 
-
-def RunPythonUnitTests(input_api, output_api, unit_tests):
+def GetPythonUnitTests(input_api, output_api, unit_tests):
   """Run the unit tests out of process, capture the output and use the result
   code to determine success.
 
@@ -590,12 +583,40 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
     cmd = [input_api.python_executable, '-m', '%s' % unit_test]
-    try:
-      input_api.subprocess.check_output(
-          cmd, stderr=input_api.subprocess.STDOUT, cwd=cwd, env=env)
-    except (OSError, input_api.subprocess.CalledProcessError), e:
-      results.append(message_type('%s failed!\n%s' % (unit_test_name, e)))
+    results.append(input_api.Command(
+        name=unit_test_name,
+        cmd=cmd,
+        kwargs={'env': env, 'cwd': cwd},
+        message=message_type))
   return results
+
+
+def RunUnitTestsInDirectory(input_api, *args, **kwargs):
+  """Run tests in a directory serially.
+
+  For better performance, use GetUnitTestsInDirectory and then
+  pass to input_api.RunTests.
+  """
+  return input_api.RunTests(
+      GetUnitTestsInDirectory(input_api, *args, **kwargs), False)
+
+
+def RunUnitTests(input_api, *args, **kwargs):
+  """Run tests serially.
+
+  For better performance, use GetUnitTests and then pass to
+  input_api.RunTests.
+  """
+  return input_api.RunTests(GetUnitTests(input_api, *args, **kwargs), False)
+
+
+def RunPythonUnitTests(input_api, *args, **kwargs):
+  """Run python tests in a directory serially.
+
+  DEPRECATED
+  """
+  return input_api.RunTests(
+      GetPythonUnitTests(input_api, *args, **kwargs), False)
 
 
 def _FetchAllFiles(input_api, white_list, black_list):
@@ -626,7 +647,7 @@ def _FetchAllFiles(input_api, white_list, black_list):
   return files
 
 
-def RunPylint(input_api, output_api, white_list=None, black_list=None,
+def GetPylint(input_api, output_api, white_list=None, black_list=None,
               disabled_warnings=None, extra_paths_list=None):
   """Run pylint on python files.
 
@@ -669,6 +690,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   files = _FetchAllFiles(input_api, white_list, black_list)
   if not files:
     return []
+  files.sort()
 
   input_api.logging.info('Running pylint on %d files', len(files))
   input_api.logging.debug('Running pylint on: %s', files)
@@ -679,31 +701,23 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
       extra_paths_list + sys.path).encode('utf8')
 
-  def run_lint(files):
-    # We can't import pylint directly due to licensing issues, so we run
-    # it in another process. Windows needs help running python files so we
-    # explicitly specify the interpreter to use. It also has limitations on
-    # the size of the command-line, so we pass arguments via a pipe.
-    command = [input_api.python_executable,
-               input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
-               '--args-on-stdin']
-    try:
-      child = input_api.subprocess.Popen(command, env=env,
-          stdin=input_api.subprocess.PIPE)
+  def GetPylintCmd(files):
+    # Windows needs help running python files so we explicitly specify
+    # the interpreter to use. It also has limitations on the size of
+    # the command-line, so we pass arguments via a pipe.
+    if len(files) == 1:
+      description = files[0]
+    else:
+      description = '%s files' % len(files)
 
-      # Dump the arguments to the child process via a pipe.
-      for filename in files:
-        child.stdin.write(filename + '\n')
-      for arg in extra_args:
-        child.stdin.write(arg + '\n')
-      child.stdin.close()
+    return input_api.Command(
+        name='Pylint (%s)' % description,
+        cmd=[input_api.python_executable,
+             input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
+             '--args-on-stdin'],
+        kwargs={'env': env, 'stdin': '\n'.join(files + extra_args)},
+        message=error_type)
 
-      child.communicate()
-      return child.returncode
-    except OSError:
-      return 'Pylint failed!'
-
-  result = None
   # Always run pylint and pass it all the py files at once.
   # Passing py files one at time is slower and can produce
   # different results.  input_api.verbose used to be used
@@ -713,17 +727,18 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   # a quick local edit to diagnose pylint issues more
   # easily.
   if True:
-    print('Running pylint on %d files.' % len(files))
-    result = run_lint(sorted(files))
+    return [GetPylintCmd(files)]
   else:
-    for filename in sorted(files):
-      print('Running pylint on %s' % filename)
-      result = run_lint([filename]) or result
-  if isinstance(result, basestring):
-    return [error_type(result)]
-  elif result:
-    return [error_type('Fix pylint errors first.')]
-  return []
+    return map(GetPylintCmd, files)
+
+
+def RunPylint(input_api, *args, **kwargs):
+  """Legacy presubmit function.
+
+  For better performance, get all tests and then pass to
+  input_api.RunTests.
+  """
+  return input_api.RunTests(GetPylint(input_api, *args, **kwargs), False)
 
 
 # TODO(dpranke): Get the host_url from the input_api instead

@@ -10,9 +10,9 @@
 import logging
 import os
 import StringIO
-import subprocess
 import sys
 import time
+import unittest
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
@@ -20,6 +20,7 @@ sys.path.insert(0, _ROOT)
 from testing_support.super_mox import mox, SuperMoxTestBase
 
 import owners
+import subprocess2 as subprocess
 import presubmit_support as presubmit
 import rietveld
 
@@ -157,7 +158,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
-      'GetTrySlavesExecuter', 'GitAffectedFile',
+      'GetTrySlavesExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
@@ -167,7 +168,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
-      'urllib2', 'warn',
+      'urllib2', 'warn', 'collections', 'multiprocessing',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -881,7 +882,7 @@ class InputApiUnittest(PresubmitTestsBase):
       'AffectedTextFiles',
       'DEFAULT_BLACK_LIST', 'DEFAULT_WHITE_LIST',
       'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths',
-      'LocalToDepotPath',
+      'LocalToDepotPath', 'Command', 'RunTests',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cpplint', 'cStringIO', 'canned_checks', 'change',
       'environ', 'glob', 'host_url', 'is_committing', 'json', 'logging',
@@ -1485,6 +1486,13 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals('Y', change.AffectedFiles(include_dirs=True)[0].Action())
 
 
+def CommHelper(input_api, cmd, ret=None, **kwargs):
+  ret = ret or (('', None), 0)
+  input_api.subprocess.communicate(
+      cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs
+      ).AndReturn(ret)
+
+
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
 
@@ -1502,7 +1510,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
     input_api.unittest = unittest
-    input_api.subprocess = self.mox.CreateMock(presubmit.subprocess)
+    input_api.subprocess = self.mox.CreateMock(subprocess)
+    presubmit.subprocess = input_api.subprocess
     class fake_CalledProcessError(Exception):
       def __str__(self):
         return 'foo'
@@ -1517,6 +1526,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.platform = sys.platform
     input_api.time = time
     input_api.canned_checks = presubmit_canned_checks
+    input_api.Command = presubmit.CommandData
+    input_api.RunTests = presubmit.InputApi.RunTests
     return input_api
 
   def testMembersChanged(self):
@@ -1544,6 +1555,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'RunPythonUnitTests', 'RunPylint',
       'RunUnitTests', 'RunUnitTestsInDirectory',
+      'GetPythonUnitTests', 'GetPylint',
+      'GetUnitTests', 'GetUnitTestsInDirectory',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -2117,10 +2130,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi(None, False)
-    input_api.subprocess.check_output(
-        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
-        stderr=input_api.subprocess.STDOUT).AndRaise(
-            input_api.subprocess.CalledProcessError())
+    CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
+                    ret=(('foo', None), 1), cwd=None, env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2131,10 +2142,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi(None, True)
-    input_api.subprocess.check_output(
-        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
-        stderr=input_api.subprocess.STDOUT).AndRaise(
-            input_api.subprocess.CalledProcessError())
+    CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
+                    ret=(('foo', None), 1), cwd=None, env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2146,10 +2155,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(None, False)
     input_api.unittest = self.mox.CreateMock(unittest)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
-        stderr=input_api.subprocess.STDOUT).AndRaise(
-            input_api.subprocess.CalledProcessError())
+    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
+                    ret=(('foo', None), 1), cwd=None, env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2157,29 +2164,26 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    self.assertEquals('test_module failed!\nfoo', results[0]._message)
+    self.assertEquals('test_module failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
-    input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
-        stderr=input_api.subprocess.STDOUT).AndRaise(
-            input_api.subprocess.CalledProcessError())
+    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
+                    ret=(('foo', None), 1), cwd=None, env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    self.assertEquals('test_module failed!\nfoo', results[0]._message)
+    self.assertEquals('test_module failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     input_api.unittest = self.mox.CreateMock(unittest)
-    input_api.subprocess.check_output(
-        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
-        stderr=input_api.subprocess.STDOUT)
+    CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
+                    cwd=None, env=None)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -2197,23 +2201,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
     pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
 
-    # Create a mock Popen object, and set up its expectations.
-    child = self.mox.CreateMock(subprocess.Popen)
-    child.stdin = self.mox.CreateMock(file)
-    child.stdin.write('file1.py\n')
-    child.stdin.write('--rcfile=%s\n' % pylintrc)
-    child.stdin.close()
-    child.communicate()
-    child.returncode = 0
-
-    input_api.subprocess.Popen(['pyyyyython', pylint, '--args-on-stdin'],
-        env=mox.IgnoreArg(), stdin=subprocess.PIPE).AndReturn(child)
+    CommHelper(input_api,
+        ['pyyyyython', pylint, '--args-on-stdin'],
+        env=mox.IgnoreArg(), stdin='file1.py\n--rcfile=%s' % pylintrc)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(
         input_api, presubmit.OutputApi)
     self.assertEquals([], results)
-    self.checkstdout('Running pylint on 1 files.\n')
+    self.checkstdout('')
 
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)
@@ -2455,14 +2451,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
     unit_tests = ['allo', 'bar.py']
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
-    input_api.subprocess.check_call(
-        ['allo', '--verbose'], cwd=self.fake_root_dir)
+    CommHelper(input_api, ['allo', '--verbose'], cwd=self.fake_root_dir)
     cmd = ['bar.py', '--verbose']
     if input_api.platform == 'win32':
       cmd.insert(0, input_api.python_executable)
-    input_api.subprocess.check_call(
-        cmd, cwd=self.fake_root_dir).AndRaise(
-            input_api.subprocess.CalledProcessError())
+    CommHelper(input_api, cmd, cwd=self.fake_root_dir, ret=(('', None), 1))
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunUnitTests(
@@ -2485,7 +2478,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
     input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
     input_api.os_path.isfile = lambda x: not x.endswith('.')
-    input_api.subprocess.check_call(
+    CommHelper(
+        input_api,
         [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
         cwd=self.fake_root_dir)
     input_api.logging.debug('Found 5 files, running 1')

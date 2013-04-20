@@ -15,6 +15,7 @@ __version__ = '1.6.2'
 import cpplint
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
+import collections
 import contextlib
 import fnmatch
 import glob
@@ -22,6 +23,7 @@ import inspect
 import json  # Exposed through the API.
 import logging
 import marshal  # Exposed through the API.
+import multiprocessing
 import optparse
 import os  # Somewhat exposed through the API.
 import pickle  # Exposed through the API.
@@ -53,6 +55,9 @@ _ASKED_FOR_FEEDBACK = False
 class PresubmitFailure(Exception):
   pass
 
+
+CommandData = collections.namedtuple('CommandData',
+                                     ['name', 'cmd', 'kwargs', 'message'])
 
 def normpath(path):
   '''Version of os.path.normpath that also changes backward slashes to
@@ -104,80 +109,105 @@ class PresubmitOutput(object):
     return ''.join(self.written_output)
 
 
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _PresubmitResult(object):
+  """Base class for result objects."""
+  fatal = False
+  should_prompt = False
+
+  def __init__(self, message, items=None, long_text=''):
+    """
+    message: A short one-line message to indicate errors.
+    items: A list of short strings to indicate where errors occurred.
+    long_text: multi-line text output, e.g. from another tool
+    """
+    self._message = message
+    self._items = items or []
+    if items:
+      self._items = items
+    self._long_text = long_text.rstrip()
+
+  def handle(self, output):
+    output.write(self._message)
+    output.write('\n')
+    for index, item in enumerate(self._items):
+      output.write('  ')
+      # Write separately in case it's unicode.
+      output.write(str(item))
+      if index < len(self._items) - 1:
+        output.write(' \\')
+      output.write('\n')
+    if self._long_text:
+      output.write('\n***************\n')
+      # Write separately in case it's unicode.
+      output.write(self._long_text)
+      output.write('\n***************\n')
+    if self.fatal:
+      output.fail()
+
+
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _PresubmitAddReviewers(_PresubmitResult):
+  """Add some suggested reviewers to the change."""
+  def __init__(self, reviewers):
+    super(_PresubmitAddReviewers, self).__init__('')
+    self.reviewers = reviewers
+
+  def handle(self, output):
+    output.reviewers.extend(self.reviewers)
+
+
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _PresubmitError(_PresubmitResult):
+  """A hard presubmit error."""
+  fatal = True
+
+
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _PresubmitPromptWarning(_PresubmitResult):
+  """An warning that prompts the user if they want to continue."""
+  should_prompt = True
+
+
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _PresubmitNotifyResult(_PresubmitResult):
+  """Just print something to the screen -- but it's not even a warning."""
+  pass
+
+
+# Top level object so multiprocessing can pickle
+# Public access through OutputApi object.
+class _MailTextResult(_PresubmitResult):
+  """A warning that should be included in the review request email."""
+  def __init__(self, *args, **kwargs):
+    super(_MailTextResult, self).__init__()
+    raise NotImplementedError()
+
+
 class OutputApi(object):
   """An instance of OutputApi gets passed to presubmit scripts so that they
   can output various types of results.
   """
+  PresubmitResult = _PresubmitResult
+  PresubmitAddReviewers = _PresubmitAddReviewers
+  PresubmitError = _PresubmitError
+  PresubmitPromptWarning = _PresubmitPromptWarning
+  PresubmitNotifyResult = _PresubmitNotifyResult
+  MailTextResult = _MailTextResult
+
   def __init__(self, is_committing):
     self.is_committing = is_committing
-
-  class PresubmitResult(object):
-    """Base class for result objects."""
-    fatal = False
-    should_prompt = False
-
-    def __init__(self, message, items=None, long_text=''):
-      """
-      message: A short one-line message to indicate errors.
-      items: A list of short strings to indicate where errors occurred.
-      long_text: multi-line text output, e.g. from another tool
-      """
-      self._message = message
-      self._items = []
-      if items:
-        self._items = items
-      self._long_text = long_text.rstrip()
-
-    def handle(self, output):
-      output.write(self._message)
-      output.write('\n')
-      for index, item in enumerate(self._items):
-        output.write('  ')
-        # Write separately in case it's unicode.
-        output.write(str(item))
-        if index < len(self._items) - 1:
-          output.write(' \\')
-        output.write('\n')
-      if self._long_text:
-        output.write('\n***************\n')
-        # Write separately in case it's unicode.
-        output.write(self._long_text)
-        output.write('\n***************\n')
-      if self.fatal:
-        output.fail()
-
-  class PresubmitAddReviewers(PresubmitResult):
-    """Add some suggested reviewers to the change."""
-    def __init__(self, reviewers):
-      super(OutputApi.PresubmitAddReviewers, self).__init__('')
-      self.reviewers = reviewers
-
-    def handle(self, output):
-      output.reviewers.extend(self.reviewers)
-
-  class PresubmitError(PresubmitResult):
-    """A hard presubmit error."""
-    fatal = True
-
-  class PresubmitPromptWarning(PresubmitResult):
-    """An warning that prompts the user if they want to continue."""
-    should_prompt = True
-
-  class PresubmitNotifyResult(PresubmitResult):
-    """Just print something to the screen -- but it's not even a warning."""
-    pass
 
   def PresubmitPromptOrNotify(self, *args, **kwargs):
     """Warn the user when uploading, but only notify if committing."""
     if self.is_committing:
       return self.PresubmitNotifyResult(*args, **kwargs)
     return self.PresubmitPromptWarning(*args, **kwargs)
-
-  class MailTextResult(PresubmitResult):
-    """A warning that should be included in the review request email."""
-    def __init__(self, *args, **kwargs):
-      super(OutputApi.MailTextResult, self).__init__()
-      raise NotImplementedError()
 
 
 class InputApi(object):
@@ -284,6 +314,7 @@ class InputApi(object):
     self.owners_db = owners.Database(change.RepositoryRoot(),
         fopen=file, os_path=self.os_path, glob=self.glob)
     self.verbose = verbose
+    self.Command = CommandData
 
     # Replace <hash_map> and <hash_set> as headers that need to be included
     # with "base/hash_tables.h" instead.
@@ -436,6 +467,26 @@ class InputApi(object):
   def tbr(self):
     """Returns if a change is TBR'ed."""
     return 'TBR' in self.change.tags
+
+  @staticmethod
+  def RunTests(tests_mix, parallel=True):
+    tests = []
+    msgs = []
+    for t in tests_mix:
+      if isinstance(t, OutputApi.PresubmitResult):
+        msgs.append(t)
+      else:
+        assert issubclass(t.message, _PresubmitResult)
+        tests.append(t)
+    if parallel:
+      pool = multiprocessing.Pool()
+      # async recipe works around multiprocessing bug handling Ctrl-C
+      msgs.extend(pool.map_async(CallCommand, tests).get(99999))
+      pool.close()
+      pool.join()
+    else:
+      msgs.extend(map(CallCommand, tests))
+    return [m for m in msgs if m]
 
 
 class AffectedFile(object):
@@ -1237,6 +1288,18 @@ def canned_check_filter(method_names):
   finally:
     for name, method in filtered.iteritems():
       setattr(presubmit_canned_checks, name, method)
+
+def CallCommand(cmd_data):
+  # multiprocessing needs a top level function with a single argument.
+  cmd_data.kwargs['stdout'] = subprocess.PIPE
+  cmd_data.kwargs['stderr'] = subprocess.STDOUT
+  try:
+    (out, _), code = subprocess.communicate(cmd_data.cmd, **cmd_data.kwargs)
+    if code != 0:
+      return cmd_data.message('%s failed\n%s' % (cmd_data.name, out))
+  except OSError as e:
+    return cmd_data.message(
+        '%s exec failure\n   %s\n%s' % (cmd_data.name, e, out))
 
 
 def Main(argv):
