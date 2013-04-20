@@ -233,6 +233,7 @@
         <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_THUMB" file="slider_thumb_disabled.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="cros/menu_droparrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_MESSAGE_CLOSE" file="common/message_close.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux/linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux/linux_minimize_hover.png" />
@@ -243,6 +244,19 @@
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="minimize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_P" file="minimize_pressed.png" />
       </if>
+      <if expr="is_win">
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="win/notification_close.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="win/notification_close_hover.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="win/notification_close_pressed.png"/>
+      </if>
+      <if expr="not is_win">
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="common/notification_close.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND" file="common/notification_expand.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_HOVER" file="common/notification_expand_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_PRESSED" file="common/notification_expand_pressed.png"/>
       <if expr="pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_OAK" file="oak.png" />
       </if>
@@ -351,13 +365,6 @@
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_LEFT" file="common/window_bubble_shadow_spike_small_left.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_RIGHT" file="common/window_bubble_shadow_spike_small_right.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_TOP" file="common/window_bubble_shadow_spike_small_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_MESSAGE_CLOSE" file="common/message_close.png" />
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="common/notification_close.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND" file="common/notifications_expand.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND_HOVER" file="common/notifications_expand_hover.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND_PRESSED" file="common/notifications_expand_pressed.png"/>
     </structures>
   </release>
 </grit>

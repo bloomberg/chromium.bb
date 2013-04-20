@@ -307,9 +307,9 @@ MessageView::MessageView(const Notification& notification,
 
   ControlButton *expand = new ControlButton(this);
   expand->SetPadding(-kExpandIconRightPadding, -kExpandIconBottomPadding);
-  expand->SetNormalImage(IDR_NOTIFICATIONS_EXPAND);
-  expand->SetHoveredImage(IDR_NOTIFICATIONS_EXPAND_HOVER);
-  expand->SetPressedImage(IDR_NOTIFICATIONS_EXPAND_PRESSED);
+  expand->SetNormalImage(IDR_NOTIFICATION_EXPAND);
+  expand->SetHoveredImage(IDR_NOTIFICATION_EXPAND_HOVER);
+  expand->SetPressedImage(IDR_NOTIFICATION_EXPAND_PRESSED);
   expand->set_owned_by_client();
   expand_button_.reset(expand);
 
