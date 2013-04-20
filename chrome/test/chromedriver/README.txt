@@ -26,6 +26,12 @@ adb_commands.py and the adb tool from the Android SDK must be set in PATH. For
 more detailed instructions see the wiki:
     https://code.google.com/p/chromedriver/wiki/ChromeDriver2forAndroid
 
+NOTE: on 64-bit OSX machines (most modern ones, including laptops) it is
+necessary to set the environment variable VERSIONER_PYTHON_PREFER_32_BIT=yes,
+because the 'chromedriver2.so' library is 32-bit, while on 64-bit OSX machines
+(most modern ones including laptops), python starts as a 64-bit binary by
+default and would not be able to load the library.
+
 =====Architecture=====
 ChromeDriver is shipped separately from Chrome. It controls Chrome out of
 process through DevTools (WebKit Inspector). ChromeDriver is a shared library

@@ -27,6 +27,7 @@ PACKAGE_INFO = {
         PackageInfo('.ChromiumTestShellActivity',
                     'chromium_testshell_devtools_remote'),
     'com.google.android.apps.chrome': CHROME_INFO,
+    'com.google.android.apps.chrome_dev': CHROME_INFO,
     'com.chrome.dev': CHROME_INFO,
     'com.chrome.beta': CHROME_INFO,
     'com.android.chrome': CHROME_INFO,
